@@ -5,6 +5,8 @@ import { getLocale, getMessages } from 'next-intl/server'
 
 import { Toaster } from 'sonner'
 
+import { AppQueryProvider } from '@/components/shared/query-provider'
+
 import './globals.css'
 
 const geistSans = Geist({
@@ -37,7 +39,7 @@ export default async function RootLayout({
     >
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider messages={messages}>
-          {children}
+          <AppQueryProvider>{children}</AppQueryProvider>
           <Toaster richColors position="top-right" />
         </NextIntlClientProvider>
       </body>

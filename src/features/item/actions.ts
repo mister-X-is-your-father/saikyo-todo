@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 
 import { isAppError } from '@/lib/errors'
-import { err, type Result } from '@/lib/result'
+import { err, ok, type Result } from '@/lib/result'
 
 import type { Item } from './schema'
 import { itemService } from './service'
@@ -37,4 +37,17 @@ export async function softDeleteItemAction(input: unknown): Promise<Result<Item>
 
 export async function moveItemAction(input: unknown): Promise<Result<Item>> {
   return await wrap(() => itemService.move(input))
+}
+
+export async function listItemsAction(
+  workspaceId: string,
+  filter?: { status?: string; isMust?: boolean },
+): Promise<Result<Item[]>> {
+  try {
+    const items = await itemService.list(workspaceId, filter ?? {})
+    return ok(items)
+  } catch (e) {
+    if (isAppError(e)) return err(e)
+    throw e
+  }
 }

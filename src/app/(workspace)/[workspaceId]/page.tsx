@@ -5,6 +5,7 @@ import { requireWorkspaceMember } from '@/lib/auth/guard'
 import { AuthError, PermissionError } from '@/lib/errors'
 
 import { Button } from '@/components/ui/button'
+import { ItemsBoard } from '@/components/workspace/items-board'
 
 interface PageProps {
   params: Promise<{ workspaceId: string }>
@@ -38,11 +39,7 @@ export default async function WorkspacePage({ params }: PageProps) {
         </Button>
       </header>
 
-      <section className="bg-muted/30 rounded-lg border-2 border-dashed p-12 text-center">
-        <p className="text-muted-foreground">
-          Kanban / Gantt / Backlog ビューは Week 2 で実装予定。
-        </p>
-      </section>
+      <ItemsBoard workspaceId={workspaceId} />
     </main>
   )
 }
