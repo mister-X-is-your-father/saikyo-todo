@@ -49,3 +49,8 @@ Thumbs.db
 # Supabase local volumes
 supabase/.branches
 supabase/.temp
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
