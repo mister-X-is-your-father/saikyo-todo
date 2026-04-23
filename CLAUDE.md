@@ -44,6 +44,9 @@
 - **Mutation は `db.transaction(...)`** 内で実行
 - **楽観ロック**: `WHERE id = ? AND version = ?` で 0 行更新なら `ConflictError`
 - **Soft delete**: 物理削除しない。`deleted_at` を入れる。クエリは `WHERE deleted_at IS NULL`
+  (重要: **RLS SELECT policy に `deleted_at IS NULL` を入れてはならない** — Postgres は UPDATE 時に
+  新行が SELECT.using を満たすか暗黙チェックするため、soft delete UPDATE が "new row violates RLS"
+  で必ず弾かれる。フィルタは Repository クエリ側で `WHERE deleted_at IS NULL` を強制する)
 - **Repository は scoped Drizzle (`getDb(req)`) を使う** (RLS 効くように)
 - **workspace_id を全 query に**
 
