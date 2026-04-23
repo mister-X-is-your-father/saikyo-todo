@@ -13,9 +13,11 @@
 import 'server-only'
 
 import { sql } from 'drizzle-orm'
-import type { PgTransaction } from 'drizzle-orm/pg-core'
 
 import { db } from './client'
+
+/** Drizzle トランザクションの型 (postgres-js driver 由来を inference で取得)。 */
+export type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0]
 
 /**
  * authenticated ロール + JWT claim sub をセットして、与えられた fn をトランザクション内で実行。
@@ -23,16 +25,13 @@ import { db } from './client'
  * @param userId   Supabase auth.users.id (`requireUser()` の結果から渡す)
  * @param fn       Drizzle トランザクションを受け取って結果を返す関数
  */
-export async function withUserDb<T>(
-  userId: string,
-  fn: (tx: PgTransaction<never, never, never>) => Promise<T>,
-): Promise<T> {
+export async function withUserDb<T>(userId: string, fn: (tx: Tx) => Promise<T>): Promise<T> {
   return await db.transaction(async (tx) => {
     const claims = JSON.stringify({ sub: userId, role: 'authenticated' })
     // is_local=true で current transaction だけに効く
     await tx.execute(sql`select set_config('request.jwt.claims', ${claims}, true)`)
     await tx.execute(sql`set local role authenticated`)
-    return await fn(tx as unknown as PgTransaction<never, never, never>)
+    return await fn(tx)
   })
 }
 
