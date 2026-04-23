@@ -70,3 +70,15 @@ export const MoveItemInputSchema = z.object({
   newParentItemId: z.string().uuid().nullable(),
 })
 export type MoveItemInput = z.infer<typeof MoveItemInputSchema>
+
+/**
+ * siblings 間の並び替え。対象を prev と next の間に差し込む。
+ * 両方 null なら単独 item (意味なし、ValidationError)。片方 null は端挿入。
+ */
+export const ReorderItemInputSchema = z.object({
+  id: z.string().uuid(),
+  expectedVersion: z.number().int().nonnegative(),
+  prevSiblingId: z.string().uuid().nullable(),
+  nextSiblingId: z.string().uuid().nullable(),
+})
+export type ReorderItemInput = z.infer<typeof ReorderItemInputSchema>

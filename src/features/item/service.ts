@@ -2,6 +2,7 @@ import 'server-only'
 
 import { recordAudit } from '@/lib/audit'
 import { requireWorkspaceMember } from '@/lib/auth/guard'
+import { positionBetween } from '@/lib/db/fractional-position'
 import { moveSubtree } from '@/lib/db/ltree'
 import { withUserDb } from '@/lib/db/scoped-client'
 import { ConflictError, NotFoundError, ValidationError } from '@/lib/errors'
@@ -12,6 +13,7 @@ import {
   CreateItemInputSchema,
   type Item,
   MoveItemInputSchema,
+  ReorderItemInputSchema,
   SoftDeleteItemInputSchema,
   UpdateItemInputSchema,
   UpdateStatusInputSchema,
@@ -138,6 +140,67 @@ export const itemService = {
         action: 'move',
         before: { parentPath: before.parentPath },
         after: { parentPath: updated.parentPath },
+      })
+      return ok(updated)
+    })
+  },
+
+  async reorder(input: unknown): Promise<Result<Item>> {
+    const parsed = ReorderItemInputSchema.safeParse(input)
+    if (!parsed.success) return err(new ValidationError('入力内容を確認してください', parsed.error))
+    if (parsed.data.prevSiblingId === null && parsed.data.nextSiblingId === null) {
+      return err(new ValidationError('prev / next のどちらかは必要です'))
+    }
+
+    return await this._mutateWithGuard(parsed.data.id, async (tx, before, user) => {
+      const [prev, next] = await Promise.all([
+        parsed.data.prevSiblingId
+          ? itemRepository.findById(tx, parsed.data.prevSiblingId)
+          : Promise.resolve(null),
+        parsed.data.nextSiblingId
+          ? itemRepository.findById(tx, parsed.data.nextSiblingId)
+          : Promise.resolve(null),
+      ])
+      if (parsed.data.prevSiblingId && !prev)
+        return err(new NotFoundError('prev sibling が見つかりません'))
+      if (parsed.data.nextSiblingId && !next)
+        return err(new NotFoundError('next sibling が見つかりません'))
+      for (const sib of [prev, next]) {
+        if (!sib) continue
+        if (sib.workspaceId !== before.workspaceId) {
+          return err(new ValidationError('別 workspace の sibling は指定できません'))
+        }
+        if (sib.parentPath !== before.parentPath) {
+          return err(new ValidationError('同じ親の下の sibling のみ指定できます'))
+        }
+        if (sib.id === before.id) {
+          return err(new ValidationError('自分自身を sibling 指定できません'))
+        }
+      }
+
+      let newPosition: string
+      try {
+        newPosition = positionBetween(prev?.position ?? null, next?.position ?? null)
+      } catch (e) {
+        return err(new ValidationError(`position 計算に失敗: ${(e as Error).message}`))
+      }
+
+      const updated = await itemRepository.updateWithLock(
+        tx,
+        parsed.data.id,
+        parsed.data.expectedVersion,
+        { position: newPosition },
+      )
+      if (!updated) return err(new ConflictError())
+      await recordAudit(tx, {
+        workspaceId: before.workspaceId,
+        actorType: 'user',
+        actorId: user.id,
+        targetType: 'item',
+        targetId: updated.id,
+        action: 'reorder',
+        before: { position: before.position },
+        after: { position: updated.position },
       })
       return ok(updated)
     })

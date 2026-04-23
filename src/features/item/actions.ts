@@ -39,6 +39,10 @@ export async function moveItemAction(input: unknown): Promise<Result<Item>> {
   return await wrap(() => itemService.move(input))
 }
 
+export async function reorderItemAction(input: unknown): Promise<Result<Item>> {
+  return await wrap(() => itemService.reorder(input))
+}
+
 export async function listItemsAction(
   workspaceId: string,
   filter?: { status?: string; isMust?: boolean },

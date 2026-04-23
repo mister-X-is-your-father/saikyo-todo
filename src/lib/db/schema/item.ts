@@ -1,7 +1,7 @@
 /**
  * Item 本体 + 関連 (assignees / tags / dependencies)。
  * - parent_path は LTREE (ツリー構造)
- * - position は numeric (fractional indexing)
+ * - position は text (fractional-indexing lib の base62 文字列、lex sort)
  * - is_must + dod で MUST 管理
  */
 import {
@@ -9,7 +9,6 @@ import {
   date,
   index,
   jsonb,
-  numeric,
   pgTable,
   primaryKey,
   text,
@@ -44,7 +43,7 @@ export const items = pgTable(
     dueDate: date('due_date'),
     isMust: boolean('is_must').notNull().default(false),
     dod: text('dod'), // Definition of Done (MUST は service 層でバリデーション強制)
-    position: numeric('position', { precision: 30, scale: 15 }).notNull().default('0'),
+    position: text('position').notNull().default('a0'),
     customFields: jsonb('custom_fields').notNull().default({}),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
     ...createdByActor,

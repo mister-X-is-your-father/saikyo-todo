@@ -17,6 +17,7 @@ import {
   createItemAction,
   listItemsAction,
   moveItemAction,
+  reorderItemAction,
   softDeleteItemAction,
   updateItemAction,
   updateItemStatusAction,
@@ -25,6 +26,7 @@ import type {
   CreateItemInput,
   Item,
   MoveItemInput,
+  ReorderItemInput,
   SoftDeleteItemInput,
   UpdateItemInput,
   UpdateStatusInput,
@@ -104,6 +106,56 @@ export function useUpdateItemStatus(workspaceId: string) {
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
     },
   })
+}
+
+/**
+ * siblings の並び替え。UX の即時フィードバックが重要なので楽観更新。
+ * prev/next から新 position を計算するのはサーバ側なので、クライアントは
+ * 手元の並びを "id 配列の順序" で暫定的に書き換え、サーバ確定後に再取得で整合。
+ */
+export function useReorderItem(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: ReorderItemInput) => unwrap(await reorderItemAction(input)),
+    onMutate: async (input) => {
+      await qc.cancelQueries({ queryKey: [...itemKeys.all, workspaceId] })
+      const snapshots = qc.getQueriesData<Item[]>({ queryKey: [...itemKeys.all, workspaceId] })
+      for (const [key, prev] of snapshots) {
+        if (!prev) continue
+        qc.setQueryData<Item[]>(key, reorderInArray(prev, input))
+      }
+      return { snapshots }
+    },
+    onError: (_e, _input, ctx) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.snapshots) qc.setQueryData(key, prev)
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
+}
+
+/**
+ * 楽観更新用: position は知らないが、prev/next の相対位置に target を並べ替える。
+ * - prev の後ろ (prev != null): prev の直後に target を置く
+ * - next の前 (next != null かつ prev == null): next の直前
+ */
+function reorderInArray(items: Item[], input: ReorderItemInput): Item[] {
+  const target = items.find((i) => i.id === input.id)
+  if (!target) return items
+  const without = items.filter((i) => i.id !== input.id)
+  if (input.prevSiblingId) {
+    const idx = without.findIndex((i) => i.id === input.prevSiblingId)
+    if (idx < 0) return items
+    return [...without.slice(0, idx + 1), target, ...without.slice(idx + 1)]
+  }
+  if (input.nextSiblingId) {
+    const idx = without.findIndex((i) => i.id === input.nextSiblingId)
+    if (idx < 0) return items
+    return [...without.slice(0, idx), target, ...without.slice(idx)]
+  }
+  return items
 }
 
 export function useMoveItem(workspaceId: string) {
