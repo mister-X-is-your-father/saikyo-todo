@@ -1,0 +1,10 @@
+node_modules
+.next
+out
+build
+coverage
+drizzle
+supabase
+pnpm-lock.yaml
+*.log
+.env*
