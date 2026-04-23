@@ -69,9 +69,15 @@
 ### 5. マイグレーション
 
 - Drizzle Kit で生成 → `supabase/migrations/<番号>_<名前>.sql` に置く
+  - drizzle.config.ts で `migrations.prefix: 'supabase'` (タイムスタンプ命名) を採用済み
+  - 手書き SQL (`0001_extensions.sql` 等) は `0XXX_` 命名で必ずタイムスタンプより前に実行される
 - RLS / extension / pg_cron は手書き SQL を同フォルダに番号 prefix で
-- ファイル番号帯: `0001_extensions` / `0010_tables` / `0050_policies` / `0070_triggers`
-- `pnpm db:migrate` で適用
+- ファイル番号帯 (手書き): `0001_extensions` / `0050_policies` / `0070_triggers`
+- `pnpm db:reset` で全マイグレーション再適用
+- **Drizzle 生成時の auth schema 規約**: schema/\_shared.ts で `pgSchema('auth')` + `authUsers` を
+  参照のみ目的で宣言しているため、`pnpm db:generate` の出力には毎回 `CREATE SCHEMA "auth"` と
+  `CREATE TABLE "auth"."users"` が含まれる。**生成直後にこの 2 ブロックを手動で削除/コメントアウト**
+  すること (Supabase 管理テーブルなので作成不要)。コミット前に `pnpm db:reset` で確認。
 
 ### 6. テスト
 

@@ -19,16 +19,23 @@ import { agentInvocationStatus, agentMemoryRole, id, timestamps } from './_share
 import { items } from './item'
 import { workspaces } from './workspace'
 
-export const agents = pgTable('agents', {
-  id: id(),
-  workspaceId: uuid('workspace_id')
-    .notNull()
-    .references(() => workspaces.id, { onDelete: 'cascade' }),
-  role: text('role').notNull(), // 'pm' | 'researcher' | ...
-  displayName: text('display_name').notNull(),
-  systemPromptVersion: integer('system_prompt_version').notNull().default(1),
-  ...timestamps,
-})
+export const agents = pgTable(
+  'agents',
+  {
+    id: id(),
+    workspaceId: uuid('workspace_id')
+      .notNull()
+      .references(() => workspaces.id, { onDelete: 'cascade' }),
+    role: text('role').notNull(), // 'pm' | 'researcher' | ...
+    displayName: text('display_name').notNull(),
+    systemPromptVersion: integer('system_prompt_version').notNull().default(1),
+    ...timestamps,
+  },
+  (t) => [
+    index('agents_workspace_role_idx').on(t.workspaceId, t.role),
+    uniqueIndex('agents_workspace_role_uniq').on(t.workspaceId, t.role),
+  ],
+)
 
 export const agentPrompts = pgTable(
   'agent_prompts',

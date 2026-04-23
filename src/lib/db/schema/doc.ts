@@ -6,6 +6,7 @@ import { index, integer, pgTable, text, uuid } from 'drizzle-orm/pg-core'
 
 import { vector } from '../custom-types'
 import { createdByActor, id, mutationMarkers, timestamps } from './_shared'
+import { templates } from './template'
 import { workspaces } from './workspace'
 
 export const docs = pgTable(
@@ -17,7 +18,9 @@ export const docs = pgTable(
       .references(() => workspaces.id, { onDelete: 'cascade' }),
     title: text('title').notNull(),
     body: text('body').notNull().default(''),
-    sourceTemplateId: uuid('source_template_id'), // 後述の templates を FK (循環回避で後で追加)
+    sourceTemplateId: uuid('source_template_id').references(() => templates.id, {
+      onDelete: 'set null',
+    }),
     ...createdByActor,
     ...mutationMarkers,
     ...timestamps,

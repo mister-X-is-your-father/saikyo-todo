@@ -4,6 +4,7 @@
 import { type SQL, sql } from 'drizzle-orm'
 import {
   boolean,
+  index,
   integer,
   pgTable,
   primaryKey,
@@ -103,7 +104,10 @@ export const workspaceInvitations = pgTable(
     revoked: boolean('revoked').notNull().default(false),
     ...timestamps,
   },
-  (t) => [uniqueIndex('workspace_invitations_token_uniq').on(t.token)],
+  (t) => [
+    uniqueIndex('workspace_invitations_token_uniq').on(t.token),
+    index('workspace_invitations_workspace_idx').on(t.workspaceId),
+  ],
 )
 
 export type Workspace = typeof workspaces.$inferSelect
