@@ -10,8 +10,11 @@ export default defineConfig({
     // Supabase ローカルのデフォルト DB URL (pnpm exec supabase status で確認可)
     url: process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:54322/postgres',
   },
-  // 番号 prefix で順序保証 + RLS / extension の手書き SQL も同フォルダに置けるよう
-  // breakpoints: false を採用 (Drizzle Kit の `--breakpoints` は migration 内 statement 区切り)
+  // Supabase CLI 互換のタイムスタンプ prefix を使うことで、
+  // 手書き SQL (例: 0001_extensions.sql) は Drizzle 生成より常に前に実行される。
+  migrations: {
+    prefix: 'supabase',
+  },
   breakpoints: true,
   verbose: true,
   strict: true,
