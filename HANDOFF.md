@@ -154,19 +154,13 @@ throw new AuthError()                      // ガード違反
 
 ## 6. 次セッションの着手タスク (具体)
 
-### 6.1 Day 6b (繰越): `reorderSiblings`
+### 6.1 Day 6b ✅ 完了 (`999ba07`)
 
-`position numeric(30,15)` と `fractional-indexing` lib (string 返却) の型ミスマッチが未解決。
-**Kanban (Day 9) の前** に決める必要がある。選択肢:
-
-1. **中点計算を自作** (numeric 任意精度、decimal.js も不要)
-   `position = (prevPos + nextPos) / 2` を string で桁精度指定で実装。
-   Race は service 層で `SELECT ... FOR UPDATE` + 隣接行ロック。
-2. **decimal.js 導入** + fractional-indexing-jittered 型の lib 採用
-3. **`position` カラムを text に変更** + `fractional-indexing` 標準運用
-   (migration 1本 + 既存行は '0' → 'a0' のような初期値に揃える)
-
-MVP 工数重視なら 1 が最短。判断は次セッションで。
+`items.position` を `numeric(30,15)` → `text` に migration、`fractional-indexing` 標準運用。
+- `src/lib/db/fractional-position.ts` (positionBetween / positionsBetween / INITIAL_POSITION)
+- `itemService.reorder` + `reorderItemAction` + `useReorderItem` (楽観更新付き)
+- migration `20260424130000_position_to_text.sql`
+- PoC `scripts/poc-reorder.ts` 6 checks PASS
 
 ### 6.2 Week 2 Day 8: Plugin Registry
 
