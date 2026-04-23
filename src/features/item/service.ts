@@ -2,6 +2,7 @@ import 'server-only'
 
 import { recordAudit } from '@/lib/audit'
 import { requireWorkspaceMember } from '@/lib/auth/guard'
+import { moveSubtree } from '@/lib/db/ltree'
 import { withUserDb } from '@/lib/db/scoped-client'
 import { ConflictError, NotFoundError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
@@ -10,6 +11,7 @@ import { itemRepository } from './repository'
 import {
   CreateItemInputSchema,
   type Item,
+  MoveItemInputSchema,
   SoftDeleteItemInputSchema,
   UpdateItemInputSchema,
   UpdateStatusInputSchema,
@@ -104,6 +106,38 @@ export const itemService = {
         action: 'status_change',
         before: { status: before.status, position: before.position },
         after: { status: updated.status, position: updated.position },
+      })
+      return ok(updated)
+    })
+  },
+
+  async move(input: unknown): Promise<Result<Item>> {
+    const parsed = MoveItemInputSchema.safeParse(input)
+    if (!parsed.success) return err(new ValidationError('入力内容を確認してください', parsed.error))
+
+    return await this._mutateWithGuard(parsed.data.id, async (tx, before, user) => {
+      // 別 workspace への移動を拒否 (Alice が複数 ws に居る場合、RLS だけでは防げない)
+      if (parsed.data.newParentItemId !== null) {
+        const newParent = await itemRepository.findById(tx, parsed.data.newParentItemId)
+        if (!newParent) return err(new NotFoundError('新 parent Item が見つかりません'))
+        if (newParent.workspaceId !== before.workspaceId) {
+          return err(new ValidationError('別 workspace の item には移動できません'))
+        }
+      }
+      // moveSubtree は target 自身 + 全子孫の parent_path / version / updated_at を一括更新。
+      // NotFoundError / ValidationError を throw するので、Tx は自動 rollback される。
+      await moveSubtree(tx, before.id, parsed.data.newParentItemId)
+      const updated = await itemRepository.findById(tx, before.id)
+      if (!updated) return err(new NotFoundError('移動後の Item が見つかりません'))
+      await recordAudit(tx, {
+        workspaceId: before.workspaceId,
+        actorType: 'user',
+        actorId: user.id,
+        targetType: 'item',
+        targetId: updated.id,
+        action: 'move',
+        before: { parentPath: before.parentPath },
+        after: { parentPath: updated.parentPath },
       })
       return ok(updated)
     })

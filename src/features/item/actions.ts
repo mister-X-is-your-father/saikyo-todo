@@ -34,3 +34,7 @@ export async function updateItemStatusAction(input: unknown): Promise<Result<Ite
 export async function softDeleteItemAction(input: unknown): Promise<Result<Item>> {
   return await wrap(() => itemService.softDelete(input))
 }
+
+export async function moveItemAction(input: unknown): Promise<Result<Item>> {
+  return await wrap(() => itemService.move(input))
+}

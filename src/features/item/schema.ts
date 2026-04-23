@@ -63,3 +63,10 @@ export const SoftDeleteItemInputSchema = z.object({
   expectedVersion: z.number().int().nonnegative(),
 })
 export type SoftDeleteItemInput = z.infer<typeof SoftDeleteItemInputSchema>
+
+export const MoveItemInputSchema = z.object({
+  id: z.string().uuid(),
+  // null で root に移動
+  newParentItemId: z.string().uuid().nullable(),
+})
+export type MoveItemInput = z.infer<typeof MoveItemInputSchema>
