@@ -13,6 +13,7 @@ import 'server-only'
 import { z } from 'zod'
 
 import { recordAudit } from '@/lib/audit'
+import { fullPathOf } from '@/lib/db/ltree-path'
 import { adminDb } from '@/lib/db/scoped-client'
 
 import { commentOnItemRepository } from '@/features/comment/repository'
@@ -60,7 +61,9 @@ export const createItemTool: AgentToolFactory = {
   definition: {
     name: 'create_item',
     description:
-      '新しい Item (TODO / タスク) をこの workspace に作成する。MUST=true のときは dod 必須。作成者は実行中の Agent 本人。',
+      '新しい Item (TODO / タスク) をこの workspace に作成する。MUST=true のときは dod 必須。' +
+      'parentItemId を指定すると、その Item の子として parent_path を自動設定する (分解結果に使う)。' +
+      '作成者は実行中の Agent 本人。',
     input_schema: {
       type: 'object',
       properties: {
@@ -74,6 +77,10 @@ export const createItemTool: AgentToolFactory = {
         dod: { type: 'string', description: 'Definition of Done (MUST なら必須)。' },
         startDate: { type: 'string', description: 'ISO 日付 YYYY-MM-DD。' },
         dueDate: { type: 'string', description: 'ISO 日付 YYYY-MM-DD。' },
+        parentItemId: {
+          type: 'string',
+          description: '親 Item の id (UUID)。指定時はその子として作成される。省略で root。',
+        },
       },
       required: ['title'],
     },
@@ -86,12 +93,25 @@ export const createItemTool: AgentToolFactory = {
       }
       const v = parsed.data
 
-      const row = await adminDb.transaction(async (tx) => {
+      const result = await adminDb.transaction(async (tx) => {
+        let parentPath = ''
+        if (v.parentItemId) {
+          const parent = await itemRepository.findById(tx, v.parentItemId)
+          if (!parent) {
+            return { ok: false as const, reason: 'parent_not_found' }
+          }
+          if (parent.workspaceId !== ctx.workspaceId) {
+            return { ok: false as const, reason: 'parent_not_in_workspace' }
+          }
+          parentPath = fullPathOf({ id: parent.id, parentPath: parent.parentPath })
+        }
+
         const item = await itemRepository.insert(tx, {
           workspaceId: ctx.workspaceId,
           title: v.title,
           description: v.description,
           status: v.status,
+          parentPath,
           startDate: v.startDate ?? null,
           dueDate: v.dueDate ?? null,
           isMust: v.isMust,
@@ -106,15 +126,24 @@ export const createItemTool: AgentToolFactory = {
           targetType: 'item',
           targetId: item.id,
           action: 'create',
-          after: { id: item.id, title: item.title, isMust: item.isMust, status: item.status },
+          after: {
+            id: item.id,
+            title: item.title,
+            isMust: item.isMust,
+            status: item.status,
+            parentItemId: v.parentItemId ?? null,
+          },
         })
-        return item
+        return { ok: true as const, item }
       })
+
+      if (!result.ok) return jsonError(result.reason)
       return jsonOk({
-        itemId: row.id,
-        title: row.title,
-        status: row.status,
-        isMust: row.isMust,
+        itemId: result.item.id,
+        title: result.item.title,
+        status: result.item.status,
+        isMust: result.item.isMust,
+        parentPath: result.item.parentPath,
       })
     }
   },

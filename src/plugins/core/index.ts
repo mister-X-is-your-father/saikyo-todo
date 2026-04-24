@@ -12,6 +12,7 @@
  * register* は id 上書きなので多重呼び出しでも害なし (idempotent)。
  */
 import { registerAction, registerView } from '../registry'
+import { decomposeItemActionPlugin } from './actions/decompose-item'
 import { reloadItemsAction } from './actions/reload-items'
 import { backlogViewPlugin } from './views/backlog'
 import { dashboardViewPlugin } from './views/dashboard'
@@ -23,9 +24,15 @@ let registered = false
 export function registerCorePlugins(): void {
   if (registered) return
   registerAction(reloadItemsAction)
+  registerAction(decomposeItemActionPlugin)
   registerView(kanbanViewPlugin)
   registerView(backlogViewPlugin)
   registerView(ganttViewPlugin)
   registerView(dashboardViewPlugin)
   registered = true
+}
+
+/** テスト用: `_clearRegistriesForTest` と組み合わせて再登録を可能にする。 */
+export function _resetCorePluginsForTest(): void {
+  registered = false
 }

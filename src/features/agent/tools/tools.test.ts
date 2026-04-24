@@ -213,6 +213,45 @@ describe('agent tools', () => {
       const out = JSON.parse(await handler({ description: 'no title' }))
       expect(out.ok).toBe(false)
     })
+
+    it('parentItemId 指定時、子として parent_path が親のフル path になる', async () => {
+      const parentId = await createItemDirect(wsId, 'decompose-parent')
+      const handler = buildResearcherTools(ctx).handlers['create_item']!
+      const out = JSON.parse(await handler({ title: 'child-1', parentItemId: parentId })) as {
+        ok: boolean
+        itemId: string
+        parentPath: string
+      }
+      expect(out.ok).toBe(true)
+      // parent は root なので fullPath は parent.id からハイフンを抜いた label
+      expect(out.parentPath).toBe(parentId.replace(/-/g, ''))
+
+      // DB 側でも確認
+      const ac = adminClient()
+      const { data: row } = await ac
+        .from('items')
+        .select('parent_path')
+        .eq('id', out.itemId)
+        .single()
+      expect(row?.parent_path).toBe(parentId.replace(/-/g, ''))
+    })
+
+    it('parentItemId が他 workspace の Item なら拒否', async () => {
+      const other = await createTestUserAndWorkspace('agent-tools-parent-other')
+      const otherParent = await createItemDirect(other.wsId, 'other-parent')
+      const handler = buildResearcherTools(ctx).handlers['create_item']!
+      const out = JSON.parse(await handler({ title: 'leak-child', parentItemId: otherParent }))
+      expect(out.ok).toBe(false)
+      expect(out.error).toBe('parent_not_in_workspace')
+      await other.cleanup()
+    })
+
+    it('parentItemId が存在しない UUID なら parent_not_found', async () => {
+      const handler = buildResearcherTools(ctx).handlers['create_item']!
+      const out = JSON.parse(await handler({ title: 'orphan', parentItemId: randomUUID() }))
+      expect(out.ok).toBe(false)
+      expect(out.error).toBe('parent_not_found')
+    })
   })
 
   describe('write_comment', () => {

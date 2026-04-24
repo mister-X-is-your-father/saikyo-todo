@@ -29,7 +29,7 @@ vi.mock('@/lib/jobs/queue', () => ({
 }))
 
 import { agentMemoryService } from './memory-service'
-import { researcherService } from './researcher-service'
+import { buildDecomposeUserMessage, researcherService } from './researcher-service'
 import { agentService } from './service'
 
 function buildInvokeResult(overrides: Partial<InvokeModelOutput> = {}): InvokeModelOutput {
@@ -348,6 +348,140 @@ describe('researcherService.run', () => {
       // 元の mockAuthGuards を戻す
       await mockAuthGuards(userId, email)
       await fx.cleanup()
+    })
+  })
+
+  describe('decomposeItem', () => {
+    it('対象 Item を引いて parentItemId 付き prompt を組み立て、run に委譲する', async () => {
+      // 親 Item を作成
+      const ac = adminClient()
+      const { data: parentRow } = await ac
+        .from('items')
+        .insert({
+          workspace_id: wsId,
+          title: 'API 認証基盤を刷新',
+          description: '既存 JWT を OIDC に置き換える',
+          status: 'todo',
+          is_must: false,
+          created_by_actor_type: 'user',
+          created_by_actor_id: userId,
+        })
+        .select('id')
+        .single()
+      const parentId = parentRow!.id as string
+
+      let seenPrompt = ''
+      const invoker = vi.fn(
+        async (args: { messages: Array<{ role: string; content: unknown }> }) => {
+          const lastUser = args.messages.filter((m) => m.role === 'user').pop()
+          if (typeof lastUser?.content === 'string') seenPrompt = lastUser.content
+          return buildInvokeResult({ text: '子タスク 3 件を作成しました', stopReason: 'end_turn' })
+        },
+      )
+
+      const r = await researcherService.decomposeItem({
+        workspaceId: wsId,
+        itemId: parentId,
+        idempotencyKey: randomUUID(),
+        invoker,
+      })
+      expect(r.ok).toBe(true)
+      if (!r.ok) return
+
+      // prompt に parentItemId として渡す id、タイトル、description が含まれる
+      expect(seenPrompt).toContain(parentId)
+      expect(seenPrompt).toContain('API 認証基盤を刷新')
+      expect(seenPrompt).toContain('OIDC')
+      expect(seenPrompt).toMatch(/parentItemId/)
+
+      // invocation.target_item_id に parentId がセットされる
+      const { data: inv } = await ac
+        .from('agent_invocations')
+        .select('target_item_id, status')
+        .eq('id', r.value.invocationId)
+        .single()
+      expect(inv?.target_item_id).toBe(parentId)
+      expect(inv?.status).toBe('completed')
+    })
+
+    it('別 workspace の Item を渡すと ValidationError', async () => {
+      const other = await createTestUserAndWorkspace('researcher-decomp-other')
+      const ac = adminClient()
+      const { data: otherItem } = await ac
+        .from('items')
+        .insert({
+          workspace_id: other.wsId,
+          title: 'other-ws-item',
+          description: '',
+          status: 'todo',
+          is_must: false,
+          created_by_actor_type: 'user',
+          created_by_actor_id: other.userId,
+        })
+        .select('id')
+        .single()
+      const r = await researcherService.decomposeItem({
+        workspaceId: wsId,
+        itemId: otherItem!.id as string,
+        idempotencyKey: randomUUID(),
+        invoker: vi.fn(),
+      })
+      expect(r.ok).toBe(false)
+      if (!r.ok) expect(r.error.code).toBe('VALIDATION')
+      await other.cleanup()
+    })
+
+    it('存在しない itemId は NotFoundError', async () => {
+      const r = await researcherService.decomposeItem({
+        workspaceId: wsId,
+        itemId: randomUUID(),
+        idempotencyKey: randomUUID(),
+        invoker: vi.fn(),
+      })
+      expect(r.ok).toBe(false)
+      if (!r.ok) expect(r.error.code).toBe('NOT_FOUND')
+    })
+  })
+
+  describe('buildDecomposeUserMessage (pure)', () => {
+    it('必須情報を含む', () => {
+      const msg = buildDecomposeUserMessage({
+        itemId: 'abc-123',
+        title: 'my task',
+        description: 'detail here',
+        isMust: true,
+        dod: 'DoD text',
+      })
+      expect(msg).toContain('abc-123')
+      expect(msg).toContain('my task')
+      expect(msg).toContain('detail here')
+      expect(msg).toContain('MUST')
+      expect(msg).toContain('DoD text')
+      expect(msg).toMatch(/3.?5/)
+    })
+
+    it('description 空や dod null でもクラッシュしない', () => {
+      const msg = buildDecomposeUserMessage({
+        itemId: 'id',
+        title: 't',
+        description: '',
+        isMust: false,
+        dod: null,
+      })
+      expect(msg).toContain('id')
+      expect(msg).toContain('t')
+    })
+
+    it('extraHint があれば追記される', () => {
+      const msg = buildDecomposeUserMessage({
+        itemId: 'id',
+        title: 't',
+        description: '',
+        isMust: false,
+        dod: null,
+        extraHint: 'フロントエンドから先に着手',
+      })
+      expect(msg).toContain('フロントエンドから先に着手')
     })
   })
 })

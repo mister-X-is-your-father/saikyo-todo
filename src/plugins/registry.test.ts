@@ -37,7 +37,11 @@ describe('registry', () => {
 })
 
 describe('registerCorePlugins', () => {
-  beforeEach(() => _clearRegistriesForTest())
+  beforeEach(async () => {
+    _clearRegistriesForTest()
+    const { _resetCorePluginsForTest } = await import('./core')
+    _resetCorePluginsForTest()
+  })
 
   it('呼ぶと core アクションが登録される (idempotent)', async () => {
     const { registerCorePlugins } = await import('./core')
@@ -46,5 +50,18 @@ describe('registerCorePlugins', () => {
     registerCorePlugins()
     expect(listActions().length).toBe(first)
     expect(getAction('core.reload-items')).toBeDefined()
+    expect(getAction('core.ai-decompose')).toBeDefined()
+  })
+
+  it('ai-decompose プラグインは done 状態の Item には applicable でない', async () => {
+    const { registerCorePlugins } = await import('./core')
+    registerCorePlugins()
+    const plugin = getAction('core.ai-decompose')!
+    expect(plugin.applicableTo).toBeDefined()
+    // status done は非表示
+    expect(plugin.applicableTo!({ status: 'done' } as never)).toBe(false)
+    // それ以外は表示
+    expect(plugin.applicableTo!({ status: 'todo' } as never)).toBe(true)
+    expect(plugin.applicableTo!({ status: 'in_progress' } as never)).toBe(true)
   })
 })

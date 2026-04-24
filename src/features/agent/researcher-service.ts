@@ -20,8 +20,10 @@ import { calculateCostUsd } from '@/lib/ai/pricing'
 import { executeToolLoop, type ToolLoopInput } from '@/lib/ai/tool-loop'
 import { recordAudit } from '@/lib/audit'
 import { adminDb } from '@/lib/db/scoped-client'
-import { ExternalServiceError, ValidationError } from '@/lib/errors'
+import { ExternalServiceError, NotFoundError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
+
+import { itemRepository } from '@/features/item/repository'
 
 import { RESEARCHER_ROLE } from './roles/researcher'
 import { agentMemoryService } from './memory-service'
@@ -220,4 +222,95 @@ export const researcherService = {
       return err(e instanceof ExternalServiceError ? e : new ExternalServiceError('Anthropic', e))
     }
   },
+
+  /**
+   * 対象 Item を Researcher に「子 Item 3-5 件」に分解させる便利エントリ。
+   * 内部で `run` を呼ぶだけの薄いラッパで、以下を担う:
+   *   - target Item の存在 / workspace 一致チェック
+   *   - 分解向け user prompt の組み立て (parentItemId / title / description / dod)
+   *   - `targetItemId` を invocation row に記録
+   *
+   * 実際の子 Item 生成は Agent が `create_item` ツールを parentItemId 付きで呼ぶことで行う。
+   * UI / Server Action 側はこの関数だけ呼べばよい。
+   */
+  async decomposeItem(params: {
+    workspaceId: string
+    itemId: string
+    extraHint?: string
+    idempotencyKey: string
+    invoker?: ToolLoopInput['invoker']
+  }): Promise<Result<ResearcherRunOutput>> {
+    if (!params.idempotencyKey) {
+      return err(new ValidationError('idempotencyKey は必須です'))
+    }
+    const item = await adminDb.transaction((tx) => itemRepository.findById(tx, params.itemId))
+    if (!item) return err(new NotFoundError('Item が見つかりません'))
+    if (item.workspaceId !== params.workspaceId) {
+      return err(new ValidationError('Item が指定 workspace に属していません'))
+    }
+
+    const userMessage = buildDecomposeUserMessage({
+      itemId: item.id,
+      title: item.title,
+      description: item.description ?? '',
+      isMust: item.isMust,
+      dod: item.dod,
+      extraHint: params.extraHint,
+    })
+
+    return await researcherService.run({
+      workspaceId: params.workspaceId,
+      userMessage,
+      targetItemId: item.id,
+      idempotencyKey: params.idempotencyKey,
+      ...(params.invoker ? { invoker: params.invoker } : {}),
+    })
+  },
+}
+
+/**
+ * 分解用 user prompt。Agent が以下を確実にするよう誘導する:
+ *   - create_item を parentItemId={itemId} で呼ぶ (root 直下ではなく target の子になる)
+ *   - 3-5 件に収める (過剰分割を避ける)
+ *   - 各子は title + description + (必要なら isMust+dod)
+ */
+export function buildDecomposeUserMessage(params: {
+  itemId: string
+  title: string
+  description: string
+  isMust: boolean
+  dod: string | null
+  extraHint?: string
+}): string {
+  const lines: string[] = []
+  lines.push('以下の Item を 3〜5 件の子タスクに分解してください。')
+  lines.push('')
+  lines.push(`- 親 Item の id (parentItemId に渡す): ${params.itemId}`)
+  lines.push(`- タイトル: ${params.title}`)
+  if (params.description && params.description.trim().length > 0) {
+    lines.push('- 説明:')
+    lines.push(params.description.trim())
+  }
+  if (params.isMust) {
+    lines.push('- 親は MUST タスクです (DoD 必須)')
+    if (params.dod && params.dod.trim().length > 0) {
+      lines.push(`- 親 DoD: ${params.dod.trim()}`)
+    }
+  }
+  if (params.extraHint && params.extraHint.trim().length > 0) {
+    lines.push('')
+    lines.push('追加指示:')
+    lines.push(params.extraHint.trim())
+  }
+  lines.push('')
+  lines.push('手順:')
+  lines.push(
+    '1. 必要に応じて read_items / search_docs で周辺コンテキストを確認する (要らなければ省略)',
+  )
+  lines.push(
+    `2. create_item を 3〜5 回呼び、各子タスクを作る。parentItemId は必ず ${params.itemId} を渡すこと`,
+  )
+  lines.push('3. 親が MUST でない子は isMust=false でよい。子の dod は可能なら記載する')
+  lines.push('4. 最後に作った子タスクのタイトル一覧と意図を簡潔に日本語でまとめる')
+  return lines.join('\n')
 }
