@@ -15,7 +15,7 @@
 
 ## 2. 現在地
 
-**進捗: 15 / 33 日 (Week 3 Day 15 P1 完了)**
+**進捗: 15 / 33 日 (Week 3 Day 15 P1+P2+P3 完了、P4=streaming/Realtime は Day 19+ 統合)**
 
 完了 (要点のみ、詳細は git log):
 
