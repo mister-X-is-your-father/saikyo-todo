@@ -3,7 +3,7 @@
 > このファイルは context を `/clear` した後に **次の Claude (or 同一 Claude の続き)** が
 > 即座にプロジェクト状態を把握するためのもの。役目を終えたら削除して構わない。
 >
-> 最終更新: 2026-04-24 (Week 3 Day 21 完了 — instantiate_template tool + 自動起動)
+> 最終更新: 2026-04-24 (Week 4 Day 26 完了 — PM Agent / Heartbeat / Realtime / cron / Docker)
 
 ## 1. 最初に読む順番 (5 分で把握)
 
@@ -15,7 +15,7 @@
 
 ## 2. 現在地
 
-**進捗: 21 / 33 日 (Week 3 Day 21 完了 — Template tool + auto-invoke、Week 3 終了)**
+**進捗: 26 / 33 日 (Week 4 Day 22-26 完了 — PM / Heartbeat / Realtime / cron / Docker)**
 
 完了 (要点のみ、詳細は git log):
 
@@ -63,6 +63,22 @@
   - UI `InstantiateForm`: `{{var}}` を正規表現で抽出して動的フォーム、即実行で workspace に遷移
   - TDD: pure helper 6 tests + integration 5 tests
     - 2 階層 parent_path 繋がり検証 / MUST+dod+dueOffsetDays 反映 / cron_run_id 冪等衝突
+- Week 4 Day 26: Docker Compose 自前ホスト構成
+  - `Dockerfile` (web, Next.js standalone) / `Dockerfile.worker` (pg-boss worker)
+  - `docker-compose.yml` — web / worker / caddy / db-backup (pg_dump 日次 gzip 保持 7 日)
+  - `deploy/Caddyfile` + `deploy/backup.sh` + `.env.production.example`
+- Week 4 Day 25: pg-boss schedule で PM Standup + recurring Template 自動化
+  - `pm-standup-tick` (毎日 09:00 UTC) / `pm-standup` (per-ws 実行) /
+    `template-cron-tick` (15 分おき)
+  - recurring Template は cron_run_id UNIQUE で重複展開 DB ブロック
+- Week 4 Day 24: Realtime items 購読 — postgres_changes → TanStack Query invalidate
+  (300ms debounce)。migration `20260424180000_realtime_publication.sql` で publication 追加
+- Week 4 Day 23: MUST Heartbeat + 3 段エスカレーション (7d/3d/1d)
+  - `features/heartbeat/service.ts` — pure helpers + scanWorkspace + unreadCount
+  - 同 (user, ws, item, stage) 通知は冪等 insert。HeartbeatButton をヘッダに配置
+- Week 4 Day 22: PM Agent (system prompt + whitelist + Stand-up)
+  - `roles/pm.ts` + `PM_TOOLS` (create_item/instantiate_template 除外) + `pmService.run` /
+    `runStandup`。`runStandupAction` + `StandupButton` をヘッダに配置
 - Week 3 Day 21: instantiate_template tool + agent_role_to_invoke 自動起動
   - `templateService.instantiateForAgent` — adminDb + actor='agent' 版。既存 `instantiate`
     と内部 Tx を `_instantiateInTx` に抽出して共有。workspace 整合を二重防御
@@ -193,18 +209,16 @@
 
 現在の数:
 
-- Vitest **207 tests** PASS / E2E **2 tests** PASS
-- Plugin Registry: action 3 (reload + ai-decompose + ai-research), view 4 /
-  pg-boss queues: `agent-run`, `doc-embed`, `researcher-decompose`
-- Researcher tool whitelist: **8 本** (read_items / read_docs / search_docs /
-  search_items / create_item (parentItemId 対応) / write_comment / create_doc /
-  instantiate_template)
+- Vitest **218 tests** PASS / E2E 既存 2 tests + Day 27 golden path 1 tests
+- Plugin Registry: action 3 / view 4 / pg-boss queues 6 (agent-run, doc-embed,
+  researcher-decompose, pm-standup, pm-standup-tick, template-cron-tick)
+- Researcher whitelist 8 / PM whitelist 6 (create_item / instantiate_template 除外)
 
-次にやること (REQUIREMENTS §7 Week 4 の順):
+次にやること (REQUIREMENTS §7 Day 27-30):
 
-- **Week 4 Day 22+**: PM Agent (daily standup / heartbeat)、Realtime broadcast、
-  streaming UI、デプロイ手順、仕上げ
-- 残課題: Anthropic streaming + Supabase Realtime push UI (Day 15 からの繰越)
+- **Day 27**: E2E golden path 充実 (現状: signup → ws → Item → Kanban → Template 作成)
+- **Day 28-30**: 受け入れ基準通し検証 + RLS 抜けスキャン + バグ潰し + README 仕上げ
+- 残課題 (post-MVP 候補): Anthropic streaming UI / TZ 別 cron / cron-parser 導入
 
 MVP 完了直後の次タスク候補 (POST_MVP 先頭に記載):
 

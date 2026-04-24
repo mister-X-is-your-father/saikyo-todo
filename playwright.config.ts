@@ -25,6 +25,8 @@ export default defineConfig({
     command: 'pnpm dev',
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    // transformers ライブラリ初回ロード + Next.js 初回コンパイルで 60s 超えることがあるので
+    // 余裕を持たせる (CI も同じで OK)
+    timeout: 240_000,
   },
 })
