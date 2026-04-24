@@ -5,6 +5,25 @@
 >
 > 最終更新: 2026-04-24 (MVP Day 29 完了 — 受け入れ基準 自動検証項目すべて達成)
 
+## 0. セッション開始直後にやること (TL;DR)
+
+**今すぐやるべきは "手動の受け入れ検証" のみ** (自動テストはすべて green)。
+
+1. ユーザーに `ANTHROPIC_API_KEY` があるか確認 (無ければ AI 検証をスキップして clear 候補)
+2. Supabase / worker を起動:
+   ```bash
+   pnpm exec supabase status   # 動いていれば OK、止まってたら pnpm db:start
+   pnpm worker &                # 別ターミナル (pg-boss 消費者 + daily cron)
+   pnpm dev                    # http://localhost:3001
+   ```
+3. ブラウザで以下を手動確認 (ws 作成 → サンプル Template が自動投入される):
+   - Workspace に入り Backlog view → Item に「AI 分解」「AI 調査」ボタン
+   - ヘッダの「PM Stand-up」「Heartbeat」ボタン
+   - Dashboard view の「AI コスト (直近 3 ヶ月)」テーブル
+4. 問題が見つかったら §6 の該当章を参照して修正
+
+**手動検証が終わって OK なら MVP 完了**。残課題は POST_MVP.md へ。
+
 ## 1. 最初に読む順番 (5 分で把握)
 
 1. **本書** (HANDOFF.md) — 現在地と次の一手
@@ -410,26 +429,55 @@ return err(new NotFoundError('...'))
 throw new AuthError()                      // ガード違反
 ```
 
-## 6. 次セッションの着手タスク (具体)
+## 6. 手動検証チェックリスト (MVP クリア条件)
 
-### 6.1 Day 6b ✅ 完了 (`999ba07`)
+ANTHROPIC_API_KEY 設定後、`pnpm dev` + `pnpm worker` + ブラウザで以下を確認。
+失敗したら該当 feature (パス明記) を調査。
 
-`items.position` を `numeric(30,15)` → `text` に migration、`fractional-indexing` 標準運用。
+### 6.1 基礎操作 (API Key 不要)
 
-- `src/lib/db/fractional-position.ts` (positionBetween / positionsBetween / INITIAL_POSITION)
-- `itemService.reorder` + `reorderItemAction` + `useReorderItem` (楽観更新付き)
-- migration `20260424130000_position_to_text.sql`
-- PoC `scripts/poc-reorder.ts` 6 checks PASS
+- [ ] signup / login → workspace 一覧 → 新規 workspace 作成
+- [ ] 作成直後に **サンプル Template "クライアント onboarding"** が自動投入されている
+      (Templates ページ / `features/workspace/seed-templates.ts`)
+- [ ] Item を作成、Kanban / Backlog / Gantt / Dashboard の 4 ビューを切替
+- [ ] Backlog 行の「AI 分解」「AI 調査」ボタンが表示される (Item status=done では disabled)
+- [ ] ヘッダの「Heartbeat」ボタンで通知テーブルに row 追加 (2 回押して冪等)
+- [ ] Dashboard の「AI コスト (直近 3 ヶ月)」テーブルが空状態メッセージ or データ表示
 
-### 6.2 Week 2 Day 8: Plugin Registry
+### 6.2 AI 操作 (要 ANTHROPIC_API_KEY)
 
-`src/plugins/core/<kind>/` + `index.ts` 1 行追加で新ビュー / アクション / Agent を登録できる
-構造 (ARCHITECTURE.md §拡張ポイント参照)。
+- [ ] MUST=true + DoD 入りの Item に「AI 分解」 → 子 Item が 3〜5 件作られ parent_path 連結
+      (`src/features/agent/researcher-service.ts` decomposeItem)
+- [ ] Item に「AI 調査」 → Doc が 1 本作られ `doc_chunks` に embedding 384 次元が入る
+      (`src/features/doc/embedding.ts` / worker が拾う)
+- [ ] ヘッダ「PM Stand-up」 → 今日の Stand-up Doc が作成される
+      (`src/features/agent/pm-service.ts`)
+- [ ] `agent_invocations` に cost_usd / tokens が記録され、Dashboard の月次集計に反映
+- [ ] Template を recurring + scheduleCron で作っておくと worker が cron_run_id 冪等で展開
+      (`src/features/agent/cron-workers.ts` handleTemplateCronTick)
 
-### 6.3 Week 2 Day 9: Kanban View
+### 6.3 越境チェック (vitest 既に担保、二重確認用)
 
-@dnd-kit sortable + fractional reorder + 楽観 mutation (`useUpdateItemStatus` は既に楽観更新
-を仕込んである。`useMoveItem` も用意済)。Day 6b 完了後。
+- [ ] 2 つ目の user + workspace を作って、user1 で URL 直打ちしても user2 の ws 404 / リダイレクト
+      (自動: `src/test/rls-cross-workspace.test.ts` 6 ケース)
+
+### 6.4 失敗シナリオ
+
+- Research / PM Agent で Anthropic がエラーを返した場合、`agent_invocations.status=failed`
+  - `error_message` に記録、UI は toast.error を出す
+- 期限超過 MUST が 1d stage で通知される (dueDate in past でも 1d 扱い)
+
+## 7. post-MVP 候補 (MVP クリア後にやる)
+
+`POST_MVP.md` 先頭の 🚩「稼働入力」が最優先。そのほか本セッションで積み残した候補:
+
+- Anthropic streaming + Supabase Realtime push UI (Day 15 からの繰越、UI 体験向上)
+- TZ 別 cron + `cron-parser` 導入 (現状は全 workspace UTC 09:00 固定)
+- `workspace_announcements` テーブル追加 (現状 PM 出力は Doc のみ。専用テーブルで
+  Stand-up を別ストリームにできる)
+- `agent_prompts` テーブルから PM / Researcher の system prompt を動的読込
+- Kanban カードにも Agent アクション (現状は Backlog のみ)
+- E2E の AI パス (real Anthropic or Mock Service Worker + invokeModel DI)
 
 ## 8. その他
 
