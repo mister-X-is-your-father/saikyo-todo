@@ -3,7 +3,7 @@
 > このファイルは context を `/clear` した後に **次の Claude (or 同一 Claude の続き)** が
 > 即座にプロジェクト状態を把握するためのもの。役目を終えたら削除して構わない。
 >
-> 最終更新: 2026-04-24 (Week 3 Day 17 完了 — Semantic + FullText + Hybrid RRF)
+> 最終更新: 2026-04-24 (Week 3 Day 18 完了 — Researcher Agent system prompt + tool whitelist + agent_memories)
 
 ## 1. 最初に読む順番 (5 分で把握)
 
@@ -15,7 +15,7 @@
 
 ## 2. 現在地
 
-**進捗: 17 / 33 日 (Week 3 Day 17 P1+P2 完了、Day 10b 繰越も同時解消)**
+**進捗: 18 / 33 日 (Week 3 Day 18 完了 — Researcher Agent 基盤)**
 
 完了 (要点のみ、詳細は git log):
 
@@ -63,6 +63,27 @@
   - UI `InstantiateForm`: `{{var}}` を正規表現で抽出して動的フォーム、即実行で workspace に遷移
   - TDD: pure helper 6 tests + integration 5 tests
     - 2 階層 parent_path 繋がり検証 / MUST+dod+dueOffsetDays 反映 / cron_run_id 冪等衝突
+- Week 3 Day 18: Researcher Agent (system prompt + tool whitelist + agent_memories)
+  - `src/features/agent/memory-service.ts` + repository: adminDb で append / loadRecent
+    (past 20 件、古い順で返す → Anthropic messages に直接 feed)。RLS は読み ws-member,
+    書き service_role 前提 (CLAUDE.md 方針)
+  - `src/features/agent/tools/` — Researcher tool whitelist (6 本):
+    - `read_items` / `read_docs` / `search_items` / `search_docs` (hybrid RRF)
+    - `create_item` / `write_comment` (actor=agent、audit 記録)
+    - `instantiate_template` は Day 21 で追加予定 (別タスク分離)
+    - `delete_*` は MVP で渡さない (CLAUDE.md 方針)
+    - 各 handler は `buildResearcherTools(ctx)` で workspace/agent を bind → `executeToolLoop`
+      にそのまま渡せる shape。tool 入力の zod 検証、workspace 越境不可
+  - `src/features/agent/roles/researcher.ts` — role 定義 (model=claude-sonnet-4-6,
+    systemPromptVersion=1, maxIterations=8, memoryLimit=20)。system prompt は 1 画面に
+    収まる分量、日本語。将来 `agent_prompts` テーブル読み込みに差し替え可
+  - `src/features/agent/researcher-service.ts` — 実行エントリ。ensureAgent → 過去 memory
+    復元 (user/assistant のみ、tool\_\* は記録のみで再生しない) → queued→running INSERT →
+    executeToolLoop → 各 tool 呼びを memory に append → 最終 assistant を append →
+    completed + cost/tokens/audit。失敗時は failed + errorMessage + audit
+  - TDD: memory 5 / tools 15 / researcher 7 = 27 新規。全 181 tests PASS
+  - 注記: agent_invocations の UPDATE policy は無い (worker=service_role のみライター)
+    方針を継続。Researcher 経路も adminDb.transaction で書いている
 - Week 3 Day 17 P1+P2: Search service (Semantic + FullText + Hybrid RRF)
   - `src/features/search/{schema,repository,service,service.test}.ts`
     - `searchService.semantic` — pgvector `<=>` cosine + HNSW + Template boost
@@ -141,17 +162,24 @@
 
 現在の数:
 
-- Vitest **154 tests** PASS / E2E **2 tests** PASS
+- Vitest **181 tests** PASS / E2E **2 tests** PASS
 - Plugin Registry: action 1, view 4 (core) / pg-boss queues: `agent-run`, `doc-embed`
+- Researcher tool whitelist: 6 本 (read_items / read_docs / search_docs / search_items /
+  create_item / write_comment)。instantiate_template は Day 21
 
 次にやること (REQUIREMENTS §7 の順):
 
-- **Week 3 Day 18**: Researcher Agent の system prompt + tool whitelist
-  (`read_items` / `read_docs` / `search_docs` (= searchService.hybrid) /
-  `search_items` / `write_comment` / `create_item` / `instantiate_template`) +
-  agent_memories ロード/保存
-- **Week 3 Day 19-21**: 分解/調査 Action plugin + Template 連携 + 進捗 UI
+- **Week 3 Day 19**: Action plugin "AI 分解" — Item を選んで Researcher に渡し、
+  子 Item 群を parent_path 自動で作成。Server Action + plugin core 登録 + UI
+- **Week 3 Day 20**: Action plugin "AI 調査" — Item → Doc 生成 + doc-embed enqueue 連動
+- **Week 3 Day 21**: Researcher に `instantiate_template` tool を追加 +
+  `agent_role_to_invoke` 自動起動 + 進捗ストリーム UI
 - **Day 15 の残課題 (Day 19+ と抱き合わせ)**: Anthropic streaming + Realtime broadcast UI
+
+MVP 完了直後の次タスク候補 (POST_MVP 先頭に記載):
+
+- **「稼働入力」機能** (Item への作業時間記録)。要件定義は別途
+  `docs/spec-time-entries.md` で整理予定。MVP の Item / Workspace / RLS をそのまま使う想定
 
 ## 3. 動作確認コマンド (信頼できる checkpoint)
 
