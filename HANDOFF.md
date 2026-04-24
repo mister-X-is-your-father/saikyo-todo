@@ -3,7 +3,7 @@
 > このファイルは context を `/clear` した後に **次の Claude (or 同一 Claude の続き)** が
 > 即座にプロジェクト状態を把握するためのもの。役目を終えたら削除して構わない。
 >
-> 最終更新: 2026-04-24 (Week 1 完了時点)
+> 最終更新: 2026-04-24 (Week 2 Day 11 完了時点)
 
 ## 1. 最初に読む順番 (5 分で把握)
 
@@ -15,36 +15,45 @@
 
 ## 2. 現在地
 
-**進捗: 8 / 33 日 (Week 0 完了 + Week 1 完了)**
+**進捗: 11 / 33 日 (Week 0-1 完了 + Week 2 Day 8-11 完了)**
 
-完了:
+完了 (要点のみ、詳細は git log):
 
-- Week 0: Next.js 16 + Supabase local + Drizzle + shadcn + multilingual-e5 + Anthropic SDK PoC
-- Week 1 Day 1: Drizzle schema 26 テーブル + 初回マイグレーション
-- Week 1 Day 2: env / errors / result / Supabase clients (server/browser/middleware) /
-  scoped Drizzle (`withUserDb`) / auth guard (`requireUser`, `requireWorkspaceMember`)
-- Week 1 Day 3: RLS policies (38) + handle_new_user trigger + create_workspace RPC +
-  shadcn primitives (input/label/card) + IMEInput / AsyncStates + Auth UI (login/signup) +
-  Workspace 作成 UI + Root page + workspace-scoped page placeholder
-- Week 1 Day 4: Item CRUD (Repository / Service / Action) + 楽観ロック + DoD バリデーション +
-  audit_log helper + **RLS soft-delete バグ発見・修正・規約化**
-- Week 1 Day 5: Doc / Comment feature (Item パターン踏襲) + PoC (RLS 漏洩 × Bob 侵入試行)
-- Week 1 Day 6 (ltree 部分): `lib/db/ltree.ts` の `findDescendants` / `moveSubtree` /
-  `lockSubtree` + pure helpers 分離 (`ltree-path.ts` + Vitest) + PoC 10 checks +
-  `itemService.move` + `moveItemAction` に統合 + **別 workspace 防御**
-- Week 1 Day 7: QueryClientProvider + `listItemsAction` + `features/item/hooks.ts`
-  (useItems / useCreateItem / useUpdateItem / useUpdateItemStatus は楽観更新 / useMoveItem /
-  useSoftDeleteItem) + `CommandPalette` (cmdk, Cmd+K) + `ItemsBoard` 最小 UI
+- Week 0: 基盤 (Next.js 16 + Supabase + Drizzle + shadcn + e5 + Anthropic SDK PoC)
+- Week 1 Day 1-4: Drizzle schema 26 テーブル / auth guard / Item CRUD (楽観ロック + DoD + audit)
+  **RLS soft-delete バグ発見・修正・規約化**
+- Week 1 Day 5: Doc / Comment feature (Item パターン踏襲 + PoC RLS 漏洩検証)
+- Week 1 Day 6 (ltree): findDescendants / moveSubtree (FOR UPDATE + 自己ループ検知) + PoC 10
+  - `itemService.move` 統合 + 別 workspace 防御
+- Week 1 Day 6b: `reorderSiblings` — position を **numeric → text** migration (a0, a1,...)
+  - `fractional-indexing` 標準採用 + `itemService.reorder` + useReorderItem (楽観更新)
+- Week 1 Day 7: QueryClientProvider + item hooks.ts (楽観更新複数) + CommandPalette (cmdk)
+- Week 1 Day 7.5 **テスト駆動開発切替**:
+  - src/test/fixtures.ts (実 Supabase + auth guard mock パターン)
+  - itemService / docService / commentService / fractional-position の Vitest integration
+  - **audit_log の RLS INSERT policy 欠落バグを検出・修正**
+  - Playwright baseline E2E (login → workspace → Item 作成)
+  - CLAUDE.md §6 を TDD 運用に更新
+- Week 2 Day 8: Plugin Registry (types / registry / register\* / core 一括 bootstrap + Vitest)
+- Week 2 Day 9: Kanban View (dnd-kit、DnD で status 切替 + reorder、楽観更新)
+  - **TDD 初サイクル**: `workspaceService.listStatuses` 失敗テスト先 → 実装 → green
+- Week 2 Day 10a: Backlog View (react-table + react-virtual) + nuqs URL フィルタ
+  - view switcher (kanban / backlog / gantt)
+- Week 2 Day 11: Gantt View (自作、棒のみ、date-fns) — gantt-task-react は
+  React 18 peerDeps で不可、SVG 不要なら div + Tailwind で十分
 
-次にやること:
+現在の数:
 
-- **Week 1 Day 6b (繰越)**: `reorderSiblings` — `position` カラムが `numeric(30,15)` で
-  `fractional-indexing` lib (string 返却) と型ミスマッチ。中点計算 (numeric 任意精度)
-  の自作 or decimal.js 併用、どちらかに決める必要。Kanban 実装前の Week 2 開始直後で OK。
-- **Week 2 Day 8**: Plugin Registry + 拡張ポイント型 + Core 一括登録 bootstrap
-- **Week 2 Day 9**: Kanban View (@dnd-kit + sortable + fractional + 楽観 mutation) —
-  ここで Day 6b の reorderSiblings が必要になる
-- **Week 2 Day 10**: Backlog View (@tanstack/react-table + react-virtual + nuqs) + 検索
+- Vitest **60 tests** PASS / E2E **2 tests** PASS
+- Plugin Registry: action 1, view 3 (core)
+
+次にやること (REQUIREMENTS §7 の順):
+
+- **Week 1 Day 10b (繰越)**: FTS 検索 (cmdk + 全文検索) — migration 設計要:
+  pg_bigm vs tsvector vs pgroonga (日本語対応)。専用セッション推奨
+- **Week 2 Day 12**: MUST ダッシュボード + WIP 警告 + Recharts バーンダウン + DoD 最終化
+- **Week 2 Day 13**: Template Drizzle schema + CRUD + 基本 UI
+- **Week 2 Day 14**: Template 展開 / 適用 / recurring / "即実行" UX
 - (以降 `REQUIREMENTS.md` §7 参照)
 
 ## 3. 動作確認コマンド (信頼できる checkpoint)
@@ -61,6 +70,9 @@ pnpm db:reset                                   # 全マイグレーションを
 
 # 検証 (commit 前は必ずこれを通す)
 pnpm typecheck && pnpm lint && pnpm test
+
+# E2E (Playwright、auto dev server 起動 + auto Supabase)
+pnpm test:e2e
 
 # End-to-End 動作確認 PoC (実 Auth + RLS + RPC を通す)
 pnpm tsx --env-file=.env.local scripts/poc-auth-workspace.ts   # Workspace 系
@@ -157,6 +169,7 @@ throw new AuthError()                      // ガード違反
 ### 6.1 Day 6b ✅ 完了 (`999ba07`)
 
 `items.position` を `numeric(30,15)` → `text` に migration、`fractional-indexing` 標準運用。
+
 - `src/lib/db/fractional-position.ts` (positionBetween / positionsBetween / INITIAL_POSITION)
 - `itemService.reorder` + `reorderItemAction` + `useReorderItem` (楽観更新付き)
 - migration `20260424130000_position_to_text.sql`
