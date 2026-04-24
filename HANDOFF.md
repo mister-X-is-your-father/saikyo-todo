@@ -3,7 +3,7 @@
 > このファイルは context を `/clear` した後に **次の Claude (or 同一 Claude の続き)** が
 > 即座にプロジェクト状態を把握するためのもの。役目を終えたら削除して構わない。
 >
-> 最終更新: 2026-04-24 (Week 2 Day 12 完了時点)
+> 最終更新: 2026-04-24 (Week 2 Day 13 完了時点)
 
 ## 1. 最初に読む順番 (5 分で把握)
 
@@ -15,7 +15,7 @@
 
 ## 2. 現在地
 
-**進捗: 12 / 33 日 (Week 0-1 完了 + Week 2 Day 8-12 完了)**
+**進捗: 13 / 33 日 (Week 0-1 完了 + Week 2 Day 8-13 完了)**
 
 完了 (要点のみ、詳細は git log):
 
@@ -47,18 +47,29 @@
   - Dashboard View: StatCard x4 / WIP 警告バナー / Recharts LineChart 14 日 / MUST 一覧
   - `itemService.updateStatus` に MUST+done 時の DoD 必須 belt-and-suspenders 追加
     (通常は create/update で invariant 保証、直接 DB 更新への二重防御)
+- Week 2 Day 13: Template Drizzle feature (CRUD + 子 item CRUD) + 基本 UI
+  - `src/features/template/` — templateService / templateItemService (TDD: 14 tests)
+    - recurring kind は scheduleCron 必須 (create + update 両方で検証)
+    - templateItemService は templateId → workspaceId を scoped tx で引き直して member gate
+    - isMust=true は dod 必須 (Item 規約を踏襲)
+  - `/w/[workspaceId]/templates` 新規ページ + workspace ヘッダに導線
+  - templates-panel: 作成フォーム + カード inline expansion、削除は楽観ロック付き
+  - template-items-editor: 子 item 追加 / 一覧 / 削除 (parent_path は Day 14 で階層対応)
 
 現在の数:
 
-- Vitest **70 tests** PASS / E2E **2 tests** PASS
+- Vitest **84 tests** PASS / E2E **2 tests** PASS
 - Plugin Registry: action 1, view 4 (core)
 
 次にやること (REQUIREMENTS §7 の順):
 
 - **Week 1 Day 10b (繰越)**: FTS 検索 (cmdk + 全文検索) — migration 設計要:
   pg_bigm vs tsvector vs pgroonga (日本語対応)。専用セッション推奨
-- **Week 2 Day 13**: Template Drizzle schema + CRUD + 基本 UI
 - **Week 2 Day 14**: Template 展開 / 適用 / recurring / "即実行" UX
+  - `template_instantiations` テーブル (既存 schema あり) に書き込む instantiate ロジック
+  - Mustache 変数展開 (template_items.title) + dueOffsetDays を適用日に加算して items 生成
+  - parent_path の ltree 付け替え (template root → 実 workspace の新 root item)
+  - cron_run_id UNIQUE で recurring の多重展開防止 (pg_cron 側は Day 25)
 - (以降 `REQUIREMENTS.md` §7 参照)
 
 ## 3. 動作確認コマンド (信頼できる checkpoint)
