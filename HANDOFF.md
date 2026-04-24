@@ -3,7 +3,7 @@
 > このファイルは context を `/clear` した後に **次の Claude (or 同一 Claude の続き)** が
 > 即座にプロジェクト状態を把握するためのもの。役目を終えたら削除して構わない。
 >
-> 最終更新: 2026-04-24 (Week 2 完了時点 — Day 14 まで)
+> 最終更新: 2026-04-24 (Week 3 Day 15 P1 完了 — 同期版 agentService 着地)
 
 ## 1. 最初に読む順番 (5 分で把握)
 
@@ -15,7 +15,7 @@
 
 ## 2. 現在地
 
-**進捗: 14 / 33 日 (Week 0-2 全完了)**
+**進捗: 15 / 33 日 (Week 3 Day 15 P1 完了)**
 
 完了 (要点のみ、詳細は git log):
 
@@ -63,22 +63,30 @@
   - UI `InstantiateForm`: `{{var}}` を正規表現で抽出して動的フォーム、即実行で workspace に遷移
   - TDD: pure helper 6 tests + integration 5 tests
     - 2 階層 parent_path 繋がり検証 / MUST+dod+dueOffsetDays 反映 / cron_run_id 冪等衝突
+- Week 3 Day 15 P1: Anthropic SDK ラッパ + 同期版 agentService (TDD)
+  - `src/lib/ai/{client,invoke,pricing}.ts` — Anthropic SDK singleton、
+    非ストリーミング `invokeModel` ラッパ (normalized shape)、モデル別 cost 計算
+  - `src/features/agent/{schema,repository,service,service.test}.ts`
+    - `ensureAgent(wsId, role)` — adminDb で idempotent upsert (agents は system 管理)
+    - `enqueue` — user 文脈で queued INSERT、idempotencyKey 冪等、audit (actor=user)
+    - `runInvocation` — adminDb で queued→running→completed/failed 遷移、
+      tokens/cost/output 記録、audit (actor=agent)。worker が将来 pickup する前提
+    - `invokeSync` — enqueue + runInvocation 便利メソッド (PoC / 初期 Server Action 用)
+  - TDD: pricing 6 tests + agent service 13 tests (ensureAgent / enqueue / runInvocation /
+    invokeSync、Anthropic は `vi.mock('@/lib/ai/invoke')` で差し替え、RLS / audit 本物)
+  - PoC `scripts/poc-agent.ts` — ANTHROPIC_API_KEY あれば実 API 叩く構成 (未設定時 skip)
 
 現在の数:
 
-- Vitest **95 tests** PASS / E2E **2 tests** PASS
+- Vitest **114 tests** PASS / E2E **2 tests** PASS
 - Plugin Registry: action 1, view 4 (core)
 
 次にやること (REQUIREMENTS §7 の順):
 
-- **Week 1 Day 10b (繰越)**: FTS 検索 (cmdk + 全文検索) — migration 設計要:
-  pg_bigm vs tsvector vs pgroonga (日本語対応)。専用セッション推奨
-- **Week 3 (Day 15-21)**: AI 分解 / RAG / Researcher Agent
-  - Day 15: Anthropic SDK ラッパ + streaming 基盤 + agent_invocations 書込
-  - Day 16: 自前 embedding worker (multilingual-e5) + job キュー (pg-boss)
-  - Day 17: RAG 検索 Service (HNSW + Template Doc 重み付け + Hybrid RRF)
-  - Day 18-21: 分解ツール / Researcher Agent / Template 連携
-- (以降 `REQUIREMENTS.md` §7 参照)
+- **Week 3 Day 15 P2**: pg-boss 導入 + worker プロセス分離 + enqueue→job→pickup フロー
+- **Week 3 Day 15 P3**: Anthropic streaming + DB UPDATE イベント連動 + Supabase Realtime broadcast
+- **Week 1 Day 10b (繰越)**: FTS 検索 (pg_bigm / tsvector) — 専用セッション推奨
+- **Week 3 Day 16-21**: 自前 embedding worker / RAG / Researcher Agent / Template 連携
 
 ## 3. 動作確認コマンド (信頼できる checkpoint)
 
@@ -166,6 +174,22 @@ pnpm dev                                        # http://localhost:3001
 - `pnpm dlx shadcn@latest add command` は `button.tsx` / `input.tsx` を **再生成** する
   (quote スタイル差分のみ、機能同一) + `dialog` / `input-group` / `textarea` も自動追加
 - 競合したら `--overwrite` フラグを付けて OK (機能変化なし)。prettier が後で整形
+
+### 4.9 agent_invocations の UPDATE は adminDb 経由 (Day 15 P1)
+
+- `agent_invocations` は **INSERT だけ** authenticated (ws member) policy が付いていて、
+  **UPDATE policy は無い** (= worker/service_role のみ書ける設計)
+- `agentService.runInvocation` は worker 相当なので `adminDb.transaction(...)` を使う
+  (CLAUDE.md の「Repository は scoped Drizzle」例外扱い)
+- 同じ理由で `ensureAgent` も adminDb (`agents` の INSERT policy は admin 限定だが、
+  system 管理なので service_role で idempotent upsert)
+
+### 4.10 Anthropic SDK mock 位置 (Day 15 P1)
+
+- 単体 test は `vi.mock('@/lib/ai/invoke', () => ({ invokeModel: vi.fn() }))` で差し替え
+- 実 API 呼び出し検証は `scripts/poc-agent.ts` に寄せる (`ANTHROPIC_API_KEY` 設定時のみ)
+- `server-only` を含むモジュールを tsx から触るので
+  `NODE_OPTIONS="--conditions=react-server" pnpm tsx --env-file=.env.local ...` が必要
 
 ## 5. 重要な抽象 (Service 層を書くときに使うもの)
 
