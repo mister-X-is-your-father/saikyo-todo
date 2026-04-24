@@ -3,7 +3,7 @@
 > このファイルは context を `/clear` した後に **次の Claude (or 同一 Claude の続き)** が
 > 即座にプロジェクト状態を把握するためのもの。役目を終えたら削除して構わない。
 >
-> 最終更新: 2026-04-24 (Week 3 Day 15 P2 完了 — pg-boss + worker プロセス分離)
+> 最終更新: 2026-04-24 (Week 3 Day 15 P3 完了 — executeToolLoop 自前実装)
 
 ## 1. 最初に読む順番 (5 分で把握)
 
@@ -63,6 +63,17 @@
   - UI `InstantiateForm`: `{{var}}` を正規表現で抽出して動的フォーム、即実行で workspace に遷移
   - TDD: pure helper 6 tests + integration 5 tests
     - 2 階層 parent_path 繋がり検証 / MUST+dod+dueOffsetDays 反映 / cron_run_id 冪等衝突
+- Week 3 Day 15 P3: Agent tool loop 自前実装 (`executeToolLoop`)
+  - `src/lib/ai/tool-loop.ts` — Anthropic Messages API の tool_use ループ
+    - invokeModel を DI で差し替え可能 → テストで mock
+    - stop_reason='tool_use' を検出 → handler 並列実行 → tool_result 追記 → 再呼出
+    - maxIterations (既定 10) で無限ループ防止
+    - usage 累積 / toolCalls 履歴 / finalMessages 返却
+  - Day 19+ の "AI 分解" / Researcher が使う土台 (runInvocation への統合はまだ)
+  - TDD: 6 tests (no-tool / 1 tool call / 複数 tool 並列 / handler 欠落 / max iter / 遅延 handler)
+- **Day 15 P4 以降に残り**: Anthropic streaming + Supabase Realtime broadcast の基盤。
+  **UI 消費者が無い状態で書くと dead code になる**ため、Day 19+ で Researcher UI が必要に
+  なったタイミングで統合する予定 (切り分けの合理性判断)
 - Week 3 Day 15 P2: pg-boss + worker プロセス分離
   - `src/lib/jobs/queue.ts` — pg-boss 12 singleton ラッパ (`startBoss` / `stopBoss` /
     `enqueueJob` / `registerWorker`)。queue 名は v10+ で明示作成必須なので
@@ -92,13 +103,14 @@
 
 現在の数:
 
-- Vitest **115 tests** PASS / E2E **2 tests** PASS
+- Vitest **121 tests** PASS / E2E **2 tests** PASS
 - Plugin Registry: action 1, view 4 (core) / pg-boss queue: `agent-run`
 
 次にやること (REQUIREMENTS §7 の順):
 
-- **Week 3 Day 15 P3**: Anthropic streaming + DB UPDATE イベント連動 + Supabase Realtime broadcast +
-  tool loop 自前実装 (自己 tool 呼び出しループ、Researcher/PM の tool 基盤)
+- **Week 3 Day 16**: 自前 embedding worker (multilingual-e5-small) + Doc chunk+embed pipeline + pg-boss ジョブ
+- **Day 15 の残課題 (P4 相当、Day 19+ と抱き合わせ想定)**: Anthropic streaming + Realtime broadcast の基盤
+  - streaming を消費する Researcher UI
 - **Week 1 Day 10b (繰越)**: FTS 検索 (pg_bigm / tsvector) — 専用セッション推奨
 - **Week 3 Day 16-21**: 自前 embedding worker / RAG / Researcher Agent / Template 連携
 
