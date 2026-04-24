@@ -139,10 +139,24 @@ test('全 UI 視覚 QA スクショ収集', async ({ page }) => {
     await page.waitForTimeout(500)
     await page.screenshot({ path: `${SHOTS_DIR}/12-workspace-header.png`, fullPage: false })
 
-    // ---------- 10. モバイル幅で 1 枚確認 ----------
+    // ---------- 10. root にワークスペースが 1 件ある状態 ----------
+    await page.goto('/')
+    await page.waitForLoadState('networkidle').catch(() => {})
+    await page.waitForTimeout(300)
+    await page.screenshot({ path: `${SHOTS_DIR}/13-root-with-workspace.png`, fullPage: true })
+
+    // ---------- 11. MUST 入力フォーム (MUST check で DoD 出現) ----------
+    const wsUrl2 = wsUrl
+    await page.goto(wsUrl2)
+    await page.waitForLoadState('networkidle').catch(() => {})
+    await page.locator('[data-testid="create-must-checkbox"]').check()
+    await page.waitForTimeout(200)
+    await page.screenshot({ path: `${SHOTS_DIR}/14-create-must-expanded.png`, fullPage: true })
+
+    // ---------- 12. モバイル幅 ----------
     await page.setViewportSize({ width: 375, height: 812 })
     await page.waitForTimeout(300)
-    await page.screenshot({ path: `${SHOTS_DIR}/13-mobile-kanban.png`, fullPage: true })
+    await page.screenshot({ path: `${SHOTS_DIR}/15-mobile-kanban.png`, fullPage: true })
   } finally {
     await user.cleanup()
   }
