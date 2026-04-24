@@ -28,6 +28,7 @@ import {
 import { handleResearcherDecompose } from '@/features/agent/researcher-worker'
 import { handleAgentRun } from '@/features/agent/worker'
 import { handleDocEmbed } from '@/features/doc/worker'
+import { createTimeEntryWorker } from '@/features/time-entry/worker'
 
 async function main() {
   console.log('[worker] starting pg-boss...')
@@ -42,6 +43,7 @@ async function main() {
   await registerWorker('template-cron-tick', async () => {
     await handleTemplateCronTick()
   })
+  await registerWorker('time-entry-sync', createTimeEntryWorker())
 
   // 定期スケジュール登録 (idempotent)。
   // PM Standup: 毎日 09:00 UTC (= 18:00 JST)。TZ 制御は workspace_settings で post-MVP 精緻化。
@@ -50,7 +52,7 @@ async function main() {
   await scheduleJob('template-cron-tick', '*/15 * * * *', {})
 
   console.log(
-    '[worker] ready. listening for: agent-run, doc-embed, researcher-decompose, pm-standup, pm-standup-tick, template-cron-tick',
+    '[worker] ready. listening for: agent-run, doc-embed, researcher-decompose, pm-standup, pm-standup-tick, template-cron-tick, time-entry-sync',
   )
 
   const shutdown = async (signal: string) => {

@@ -46,6 +46,10 @@ export interface PmStandupJobData {
   dateKey: string
 }
 
+export interface TimeEntrySyncJobData {
+  entryId: string
+}
+
 let boss: PgBoss | null = null
 let startPromise: Promise<PgBoss> | null = null
 
