@@ -3,7 +3,7 @@
 > このファイルは context を `/clear` した後に **次の Claude (or 同一 Claude の続き)** が
 > 即座にプロジェクト状態を把握するためのもの。役目を終えたら削除して構わない。
 >
-> 最終更新: 2026-04-24 (Week 3 Day 20 完了 — Action plugin "AI 調査" + Doc 生成)
+> 最終更新: 2026-04-24 (Week 3 Day 21 完了 — instantiate_template tool + 自動起動)
 
 ## 1. 最初に読む順番 (5 分で把握)
 
@@ -15,7 +15,7 @@
 
 ## 2. 現在地
 
-**進捗: 20 / 33 日 (Week 3 Day 20 完了 — AI 調査 Action + Doc 生成)**
+**進捗: 21 / 33 日 (Week 3 Day 21 完了 — Template tool + auto-invoke、Week 3 終了)**
 
 完了 (要点のみ、詳細は git log):
 
@@ -63,6 +63,15 @@
   - UI `InstantiateForm`: `{{var}}` を正規表現で抽出して動的フォーム、即実行で workspace に遷移
   - TDD: pure helper 6 tests + integration 5 tests
     - 2 階層 parent_path 繋がり検証 / MUST+dod+dueOffsetDays 反映 / cron_run_id 冪等衝突
+- Week 3 Day 21: instantiate_template tool + agent_role_to_invoke 自動起動
+  - `templateService.instantiateForAgent` — adminDb + actor='agent' 版。既存 `instantiate`
+    と内部 Tx を `_instantiateInTx` に抽出して共有。workspace 整合を二重防御
+  - Researcher whitelist 8 本目: `instantiate_template` (variables object + rootTitleOverride)
+  - `researcher-decompose` pg-boss キュー新設 + `handleResearcherDecompose` worker
+    (researcherService.decomposeItem を呼ぶ)。`workers/start.ts` に登録
+  - `_instantiateInTx` が `autoInvocations: [{itemId, role}]` を返し、Tx commit 後に
+    `_enqueueAutoInvocations` が `researcher-decompose` へ送信 (role!=researcher は warn skip)
+  - TDD: 6 新規、全 207 tests PASS
 - Week 3 Day 20: Action plugin "AI 調査" (Researcher → Doc 生成)
   - `create_doc` tool を Researcher whitelist に追加 (7 本目)。adminDb で doc insert +
     actor=agent + audit + Tx commit 後 enqueueJob('doc-embed') で embedding パイプライン連動
@@ -184,18 +193,18 @@
 
 現在の数:
 
-- Vitest **201 tests** PASS / E2E **2 tests** PASS
+- Vitest **207 tests** PASS / E2E **2 tests** PASS
 - Plugin Registry: action 3 (reload + ai-decompose + ai-research), view 4 /
-  pg-boss queues: `agent-run`, `doc-embed`
-- Researcher tool whitelist: 7 本 (read_items / read_docs / search_docs / search_items /
-  create_item (parentItemId 対応) / write_comment / create_doc)。instantiate_template
-  は Day 21
+  pg-boss queues: `agent-run`, `doc-embed`, `researcher-decompose`
+- Researcher tool whitelist: **8 本** (read_items / read_docs / search_docs /
+  search_items / create_item (parentItemId 対応) / write_comment / create_doc /
+  instantiate_template)
 
-次にやること (REQUIREMENTS §7 の順):
+次にやること (REQUIREMENTS §7 Week 4 の順):
 
-- **Week 3 Day 21**: Researcher に `instantiate_template` tool を追加 +
-  `agent_role_to_invoke` 自動起動 + 進捗ストリーム UI (Day 15 の streaming と抱き合わせ)
-- **Week 4 Day 22+**: PM Agent の Stand-up / Realtime / デプロイ / 仕上げ
+- **Week 4 Day 22+**: PM Agent (daily standup / heartbeat)、Realtime broadcast、
+  streaming UI、デプロイ手順、仕上げ
+- 残課題: Anthropic streaming + Supabase Realtime push UI (Day 15 からの繰越)
 
 MVP 完了直後の次タスク候補 (POST_MVP 先頭に記載):
 
