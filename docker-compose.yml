@@ -1,0 +1,85 @@
+# ================================================================
+# saikyo-todo: 自前ホスト用 docker-compose.yml
+# ================================================================
+# 最小構成 (social 公開なし、社内 LAN 想定):
+#   - web     : Next.js standalone (port 3001)
+#   - worker  : pg-boss 消費者 (バックグラウンド)
+#   - caddy   : 逆プロキシ + TLS (:80/:443 → web:3001)
+#   - db-backup: pg_dump を cron で定期実行 (volume に保存)
+#
+# Supabase 本体は別 compose (supabase/docker/docker-compose.yml) で運用する想定。
+# 外部 Postgres 接続情報は .env.production 経由で注入。
+#
+# 起動例:
+#   cp .env.production.example .env.production  # 値を埋める
+#   docker compose --env-file .env.production up -d
+# ================================================================
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+    expose:
+      - '3001'
+    depends_on:
+      - worker
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q -O - http://localhost:3001/ > /dev/null || exit 1']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+    volumes:
+      # multilingual-e5 モデルキャッシュ (~/.cache/huggingface) を永続化
+      - hf-cache:/root/.cache/huggingface
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - web
+
+  db-backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      # DATABASE_URL から pg_dump するだけのシンプルな実装。
+      DATABASE_URL: ${DATABASE_URL}
+    volumes:
+      - ./deploy/backup.sh:/backup.sh:ro
+      - db-backups:/backups
+    entrypoint: ['/bin/sh', '/backup.sh']
+
+volumes:
+  hf-cache:
+  caddy-data:
+  caddy-config:
+  db-backups:
