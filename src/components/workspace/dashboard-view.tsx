@@ -25,6 +25,7 @@ import {
 
 import { isAppError } from '@/lib/errors'
 
+import { useMonthlyCost } from '@/features/agent/cost-hooks'
 import { useBurndown, useMustSummary } from '@/features/dashboard/hooks'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
@@ -52,6 +53,7 @@ function addDaysISO(baseISO: string, days: number): string {
 export function DashboardView({ workspaceId }: Props) {
   const summary = useMustSummary(workspaceId)
   const burndown = useBurndown(workspaceId, 14)
+  const cost = useMonthlyCost(workspaceId, 3)
 
   const todayStr = todayISO()
   const soonStr = addDaysISO(todayStr, 7)
@@ -153,6 +155,63 @@ export function DashboardView({ workspaceId }: Props) {
                   />
                 </LineChart>
               </ResponsiveContainer>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* AI コスト月次 (直近 3 ヶ月) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">AI コスト (直近 3 ヶ月)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {cost.isLoading ? (
+            <Loading message="集計中..." />
+          ) : cost.error ? (
+            <ErrorState
+              message={isAppError(cost.error) ? cost.error.message : '取得失敗'}
+              onRetry={() => void cost.refetch()}
+            />
+          ) : (cost.data ?? []).length === 0 ? (
+            <p className="text-muted-foreground text-sm">
+              まだ AI 実行がありません。Researcher / PM Agent を使うとここに記録されます。
+            </p>
+          ) : (
+            <div className="overflow-x-auto" data-testid="ai-cost-table">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-muted-foreground border-b text-left text-xs">
+                    <th className="py-1.5 pr-3">月</th>
+                    <th className="py-1.5 pr-3">Role</th>
+                    <th className="py-1.5 pr-3 text-right">実行数</th>
+                    <th className="py-1.5 pr-3 text-right">成功/失敗</th>
+                    <th className="py-1.5 pr-3 text-right">Input</th>
+                    <th className="py-1.5 pr-3 text-right">Output</th>
+                    <th className="py-1.5 text-right">Cost (USD)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(cost.data ?? []).map((r) => (
+                    <tr key={`${r.month}-${r.role}`} className="border-b last:border-0">
+                      <td className="py-1.5 pr-3 font-mono text-xs">{r.month}</td>
+                      <td className="py-1.5 pr-3">{r.role}</td>
+                      <td className="py-1.5 pr-3 text-right">{r.invocations}</td>
+                      <td className="py-1.5 pr-3 text-right">
+                        <span className="text-green-600">{r.completed}</span>/
+                        <span className="text-red-600">{r.failed}</span>
+                      </td>
+                      <td className="py-1.5 pr-3 text-right font-mono">
+                        {r.inputTokens.toLocaleString()}
+                      </td>
+                      <td className="py-1.5 pr-3 text-right font-mono">
+                        {r.outputTokens.toLocaleString()}
+                      </td>
+                      <td className="py-1.5 text-right font-mono">${r.costUsd.toFixed(4)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>
