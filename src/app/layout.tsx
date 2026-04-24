@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
 
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { Toaster } from 'sonner'
 
 import { AppQueryProvider } from '@/components/shared/query-provider'
@@ -39,7 +40,9 @@ export default async function RootLayout({
     >
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider messages={messages}>
-          <AppQueryProvider>{children}</AppQueryProvider>
+          <NuqsAdapter>
+            <AppQueryProvider>{children}</AppQueryProvider>
+          </NuqsAdapter>
           <Toaster richColors position="top-right" />
         </NextIntlClientProvider>
       </body>

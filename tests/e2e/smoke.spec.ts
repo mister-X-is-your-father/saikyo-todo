@@ -37,7 +37,7 @@ test('baseline: login → workspace 作成 → Item 作成 → 一覧表示', as
     // Item 作成フォーム内の "作成" ボタン (workspace 作成とは context が別)
     await page.getByRole('button', { name: '作成', exact: true }).click()
 
-    // Kanban board がレンダリングされる
+    // Kanban board (既定) がレンダリングされる
     await expect(page.getByTestId('kanban-board')).toBeVisible({ timeout: 10_000 })
     // todo 列に item が現れる
     const todoColumn = page.getByTestId('kanban-column-todo')
@@ -47,6 +47,20 @@ test('baseline: login → workspace 作成 → Item 作成 → 一覧表示', as
       page.getByTestId('kanban-column-in_progress').getByText('カードなし'),
     ).toBeVisible()
     await expect(page.getByTestId('kanban-column-done').getByText('カードなし')).toBeVisible()
+
+    // Backlog view に切替 → URL に ?view=backlog が付く / テーブル行に item が現れる
+    await page.getByTestId('view-backlog-btn').click()
+    await expect(page).toHaveURL(/[?&]view=backlog/)
+    await expect(page.getByTestId('backlog-view')).toBeVisible()
+    await expect(page.getByTestId('backlog-view').getByText('E2E smoke item')).toBeVisible()
+
+    // status フィルタ: done にすると item は消える (todo の 1 件だけなので)
+    await page.getByTestId('filter-status').selectOption('done')
+    await expect(page).toHaveURL(/[?&]status=done/)
+    await expect(page.getByTestId('backlog-view').getByText('E2E smoke item')).not.toBeVisible()
+    // フィルタ解除
+    await page.getByTestId('filter-status').selectOption('')
+    await expect(page.getByTestId('backlog-view').getByText('E2E smoke item')).toBeVisible()
   } finally {
     await user.cleanup()
   }

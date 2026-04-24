@@ -1,13 +1,15 @@
 'use client'
 
 /**
- * Day 7 動作確認用の最小 UI。Kanban / Gantt / Backlog の本番ビューは Week 2 以降。
- * - useItems で一覧取得
- * - 新規作成 inline フォーム (IMEInput + useCreateItem)
- * - CommandPalette マウント (Cmd+K でコマンドパレット)
+ * Workspace item ボード。
+ * - CommandPalette (Cmd+K)
+ * - 新規 Item inline フォーム
+ * - View 切替: Kanban (既定) / Backlog — URL param `?view=` で同期 (nuqs)
+ * - フィルタ: `?must=1` / `?status=...` を client 側で適用
  */
 import { useMemo, useState } from 'react'
 
+import { parseAsBoolean, parseAsString, parseAsStringEnum, useQueryState } from 'nuqs'
 import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
@@ -19,15 +21,36 @@ import { CommandPalette, type PaletteCommand } from '@/components/shared/command
 import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { BacklogView } from '@/components/workspace/backlog-view'
 import { KanbanView } from '@/components/workspace/kanban-view'
 
 interface Props {
   workspaceId: string
 }
 
+const VIEWS = ['kanban', 'backlog'] as const
+type ViewKey = (typeof VIEWS)[number]
+
 export function ItemsBoard({ workspaceId }: Props) {
+  const [view, setView] = useQueryState(
+    'view',
+    parseAsStringEnum<ViewKey>([...VIEWS]).withDefault('kanban'),
+  )
+  const [must, setMust] = useQueryState('must', parseAsBoolean.withDefault(false))
+  const [statusFilter, setStatusFilter] = useQueryState('status', parseAsString)
+
   const { data, isLoading, error, refetch } = useItems(workspaceId)
   const create = useCreateItem(workspaceId)
+
+  const filtered = useMemo(() => {
+    if (!data) return []
+    return data.filter((i) => {
+      if (i.deletedAt) return false
+      if (must && !i.isMust) return false
+      if (statusFilter && i.status !== statusFilter) return false
+      return true
+    })
+  }, [data, must, statusFilter])
 
   const [title, setTitle] = useState('')
 
@@ -46,8 +69,7 @@ export function ItemsBoard({ workspaceId }: Props) {
       setTitle('')
       toast.success('Item を作成しました')
     } catch (e) {
-      const msg = isAppError(e) ? e.message : '作成に失敗しました'
-      toast.error(msg)
+      toast.error(isAppError(e) ? e.message : '作成に失敗しました')
     }
   }
 
@@ -63,6 +85,24 @@ export function ItemsBoard({ workspaceId }: Props) {
         keywords: ['reload', 'refresh'],
       },
       {
+        id: 'view-kanban',
+        label: 'ビューを Kanban に切替',
+        group: 'ビュー',
+        run: async () => {
+          await setView('kanban')
+        },
+        keywords: ['kanban'],
+      },
+      {
+        id: 'view-backlog',
+        label: 'ビューを Backlog に切替',
+        group: 'ビュー',
+        run: async () => {
+          await setView('backlog')
+        },
+        keywords: ['backlog', 'list'],
+      },
+      {
         id: 'focus-new',
         label: '新規 Item 入力にフォーカス',
         group: 'Item',
@@ -70,7 +110,7 @@ export function ItemsBoard({ workspaceId }: Props) {
         keywords: ['create', 'new', '作成'],
       },
     ],
-    [refetch],
+    [refetch, setView],
   )
 
   return (
@@ -106,6 +146,48 @@ export function ItemsBoard({ workspaceId }: Props) {
         </CardContent>
       </Card>
 
+      <div className="flex items-center gap-2" data-testid="view-switcher">
+        <Button
+          variant={view === 'kanban' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setView('kanban')}
+          data-testid="view-kanban-btn"
+        >
+          Kanban
+        </Button>
+        <Button
+          variant={view === 'backlog' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setView('backlog')}
+          data-testid="view-backlog-btn"
+        >
+          Backlog
+        </Button>
+        <div className="ml-4 flex items-center gap-2 text-sm">
+          <label className="flex items-center gap-1">
+            <input
+              type="checkbox"
+              checked={must}
+              onChange={(e) => setMust(e.target.checked || null)}
+              data-testid="filter-must"
+            />
+            MUST のみ
+          </label>
+          <select
+            value={statusFilter ?? ''}
+            onChange={(e) => setStatusFilter(e.target.value || null)}
+            className="rounded border px-2 py-1 text-sm"
+            data-testid="filter-status"
+          >
+            <option value="">全ステータス</option>
+            <option value="todo">todo</option>
+            <option value="in_progress">in_progress</option>
+            <option value="done">done</option>
+          </select>
+          <span className="text-muted-foreground text-xs">{filtered.length} 件</span>
+        </div>
+      </div>
+
       {isLoading ? (
         <Loading />
       ) : error ? (
@@ -115,8 +197,10 @@ export function ItemsBoard({ workspaceId }: Props) {
         />
       ) : (data?.length ?? 0) === 0 ? (
         <EmptyState title="まだ Item がありません" description="上のフォームから作成してください" />
+      ) : view === 'backlog' ? (
+        <BacklogView workspaceId={workspaceId} items={filtered} />
       ) : (
-        <KanbanView workspaceId={workspaceId} items={data ?? []} />
+        <KanbanView workspaceId={workspaceId} items={filtered} />
       )}
     </div>
   )
