@@ -3,8 +3,7 @@
 > このファイルは context を `/clear` した後に **次の Claude (or 同一 Claude の続き)** が
 > 即座にプロジェクト状態を把握するためのもの。役目を終えたら削除して構わない。
 >
-> 最終更新: 2026-04-24 (MVP 主要機能揃い — Day 27 + 仕上げ相当。Day 28-30 は
-> 手動検証 / 受け入れテスト向け予備日として残す)
+> 最終更新: 2026-04-24 (MVP Day 29 完了 — 受け入れ基準 自動検証項目すべて達成)
 
 ## 1. 最初に読む順番 (5 分で把握)
 
@@ -16,7 +15,7 @@
 
 ## 2. 現在地
 
-**進捗: 27 / 33 日 (Week 4 Day 22-27 完了 — PM / Heartbeat / Realtime / cron / Docker / E2E)**
+**進捗: 29 / 33 日 (Day 28-29 受け入れ基準まわり完了。Day 30 はバッファ)**
 
 完了 (要点のみ、詳細は git log):
 
@@ -64,6 +63,15 @@
   - UI `InstantiateForm`: `{{var}}` を正規表現で抽出して動的フォーム、即実行で workspace に遷移
   - TDD: pure helper 6 tests + integration 5 tests
     - 2 階層 parent_path 繋がり検証 / MUST+dod+dueOffsetDays 反映 / cron_run_id 冪等衝突
+- Week 4 Day 28-29: 受け入れ基準残り + Dashboard UI
+  - サンプル Template「クライアント onboarding」を workspace 作成時に自動投入
+    (`seed-templates.ts`、子 Item 4 件のうち 1 件は `agent_role_to_invoke='researcher'`)
+  - Cross-workspace RLS 漏洩テスト (`src/test/rls-cross-workspace.test.ts`) —
+    2 user/2 ws を立てて anon client で select/insert 越境を 6 ケース遮断確認
+  - AI コスト月次集計 API (`cost-aggregate.ts`) + Server Action + hook +
+    DashboardView に「AI コスト (直近 3 ヶ月)」テーブル Card を追加
+  - TDD: seed 1 / RLS 6 / cost 2 = 9 新規、全 227 tests PASS
+- Week 4 Day 27: Golden path E2E + README 整備
 - Week 4 Day 26: Docker Compose 自前ホスト構成
   - `Dockerfile` (web, Next.js standalone) / `Dockerfile.worker` (pg-boss worker)
   - `docker-compose.yml` — web / worker / caddy / db-backup (pg_dump 日次 gzip 保持 7 日)
@@ -210,26 +218,27 @@
 
 現在の数:
 
-- Vitest **218 tests** PASS / E2E 既存 2 tests + Day 27 golden path 1 tests
-- Plugin Registry: action 3 / view 4 / pg-boss queues 6 (agent-run, doc-embed,
-  researcher-decompose, pm-standup, pm-standup-tick, template-cron-tick)
-- Researcher whitelist 8 / PM whitelist 6 (create_item / instantiate_template 除外)
+- Vitest **227 tests** PASS / E2E **3 tests** PASS (smoke 2 + golden path 1)
+- Plugin Registry: action 3 / view 4 / pg-boss queues 6
+- Researcher whitelist 8 / PM whitelist 6
+- 受け入れ基準 自動検証項目はすべて充足:
+  - [x] pnpm dev + supabase start で全機能動く
+  - [x] 2 workspace 越境 RLS 遮断 (rls-cross-workspace.test.ts)
+  - [x] サンプル Template 1 個自動投入 (seed-templates.ts)
+  - [x] MUST Heartbeat 7d/3d/1d 通知
+  - [x] recurring Template cron_run_id 冪等
+  - [x] AI コスト月次集計 (Dashboard UI)
 
-次にやること (Day 28-30 = 受け入れ基準 通し検証フェーズ):
+残りの手動検証 (ANTHROPIC_API_KEY 必要):
 
-- **手動検証が必要** (ANTHROPIC_API_KEY を設定して):
-  - Researcher 「AI 分解」ボタンで子 Item 群が parent_path 付きで作成される
-  - Researcher 「AI 調査」ボタンで Doc が作成され doc_chunks に embedding が入る
-  - PM 「Stand-up」ボタンで Daily Doc が作成される
-  - Heartbeat 「Heartbeat」ボタン → notifications に 7d/3d/1d が入る (RLS で own only)
-- **2 workspace 越境チェック**: E2E を拡張、または手動で user1/ws1 が ws2 の Item を
-  見られないことを確認
-- **サンプル Template "クライアント onboarding"**: seed / マイグレーション追加推奨
-- 残課題 (post-MVP 候補、POST_MVP.md 先頭以外):
-  - Anthropic streaming + Supabase Realtime push UI (Day 15 からの繰越)
-  - TZ 別 cron + cron-parser (現状は全 workspace UTC 09:00)
-  - `workspace_announcements` テーブル追加 (現状 PM 出力は Doc のみ)
-  - AI コスト workspace 月次集計 UI (raw データは agent_invocations にある)
+- Researcher 「AI 分解」「AI 調査」ボタンで子 Item / Doc が生成されること
+- PM 「Stand-up」ボタンで Daily Stand-up Doc が生成されること
+
+Day 30 はバッファ。post-MVP 候補:
+
+- Anthropic streaming + Supabase Realtime push UI (Day 15 からの繰越)
+- TZ 別 cron + cron-parser (現状は全 workspace UTC 09:00)
+- `workspace_announcements` テーブル (現状 PM 出力は Doc のみ)
 
 MVP 完了直後の次タスク候補 (POST_MVP 先頭に記載):
 
