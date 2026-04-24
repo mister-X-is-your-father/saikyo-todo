@@ -3,7 +3,7 @@
 > このファイルは context を `/clear` した後に **次の Claude (or 同一 Claude の続き)** が
 > 即座にプロジェクト状態を把握するためのもの。役目を終えたら削除して構わない。
 >
-> 最終更新: 2026-04-24 (Week 3 Day 19 完了 — Action plugin "AI 分解" + BacklogView UI)
+> 最終更新: 2026-04-24 (Week 3 Day 20 完了 — Action plugin "AI 調査" + Doc 生成)
 
 ## 1. 最初に読む順番 (5 分で把握)
 
@@ -15,7 +15,7 @@
 
 ## 2. 現在地
 
-**進捗: 19 / 33 日 (Week 3 Day 19 完了 — AI 分解 Action + UI)**
+**進捗: 20 / 33 日 (Week 3 Day 20 完了 — AI 調査 Action + Doc 生成)**
 
 完了 (要点のみ、詳細は git log):
 
@@ -63,6 +63,14 @@
   - UI `InstantiateForm`: `{{var}}` を正規表現で抽出して動的フォーム、即実行で workspace に遷移
   - TDD: pure helper 6 tests + integration 5 tests
     - 2 階層 parent_path 繋がり検証 / MUST+dod+dueOffsetDays 反映 / cron_run_id 冪等衝突
+- Week 3 Day 20: Action plugin "AI 調査" (Researcher → Doc 生成)
+  - `create_doc` tool を Researcher whitelist に追加 (7 本目)。adminDb で doc insert +
+    actor=agent + audit + Tx commit 後 enqueueJob('doc-embed') で embedding パイプライン連動
+  - `researcherService.researchItem` orchestrator — 調査用 prompt は search_docs →
+    create_doc の順序を誘導 (Markdown 300〜3000 字目安)
+  - `researchItemAction` / `researchItemActionPlugin` + `useResearchItem` hook +
+    `ItemResearchButton` を BacklogView アクション列に並べて配置 (column size 220)
+  - TDD: 7 新規、全 201 tests PASS
 - Week 3 Day 19: Action plugin "AI 分解" (Researcher が子 Item 群を生成)
   - `create_item` tool に `parentItemId` サポート追加 (fullPathOf で parent_path 自動設定、
     workspace 越境は parent_not_in_workspace で拒否)
@@ -176,19 +184,18 @@
 
 現在の数:
 
-- Vitest **194 tests** PASS / E2E **2 tests** PASS
-- Plugin Registry: action 2 (reload + ai-decompose), view 4 / pg-boss queues:
-  `agent-run`, `doc-embed`
-- Researcher tool whitelist: 6 本 (read_items / read_docs / search_docs / search_items /
-  create_item (parentItemId 対応) / write_comment)。instantiate_template は Day 21
+- Vitest **201 tests** PASS / E2E **2 tests** PASS
+- Plugin Registry: action 3 (reload + ai-decompose + ai-research), view 4 /
+  pg-boss queues: `agent-run`, `doc-embed`
+- Researcher tool whitelist: 7 本 (read_items / read_docs / search_docs / search_items /
+  create_item (parentItemId 対応) / write_comment / create_doc)。instantiate_template
+  は Day 21
 
 次にやること (REQUIREMENTS §7 の順):
 
-- **Week 3 Day 20**: Action plugin "AI 調査" — Item → Doc 生成 + doc-embed enqueue 連動。
-  Researcher に `create_doc` tool を追加 (新規) + decomposeItem と同様のラッパを作る
 - **Week 3 Day 21**: Researcher に `instantiate_template` tool を追加 +
-  `agent_role_to_invoke` 自動起動 + 進捗ストリーム UI
-- **Day 15 の残課題 (Day 19+ と抱き合わせ)**: Anthropic streaming + Realtime broadcast UI
+  `agent_role_to_invoke` 自動起動 + 進捗ストリーム UI (Day 15 の streaming と抱き合わせ)
+- **Week 4 Day 22+**: PM Agent の Stand-up / Realtime / デプロイ / 仕上げ
 
 MVP 完了直後の次タスク候補 (POST_MVP 先頭に記載):
 
