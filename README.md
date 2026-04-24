@@ -46,6 +46,11 @@ pnpm typecheck         # tsc --noEmit
 pnpm lint              # ESLint
 pnpm test              # Vitest integration (実 Supabase を使用、要 supabase start)
 pnpm test:e2e          # Playwright (auto dev server + Supabase)
+
+# Tailscale 経由 (本番ドメイン相当) の E2E:
+#   事前に `pnpm build && pnpm start` で production server を立てる
+#   (dev + Turbopack は HTTPS proxy 下で hydration が不安定なため)
+pnpm test:e2e:tailscale  # playwright.tailscale.config.ts を使う
 ```
 
 ## 主要機能
