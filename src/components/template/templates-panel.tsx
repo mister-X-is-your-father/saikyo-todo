@@ -16,6 +16,7 @@ import type { Template } from '@/features/template/schema'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { IMEInput } from '@/components/shared/ime-input'
+import { InstantiateForm } from '@/components/template/instantiate-form'
 import { TemplateItemsEditor } from '@/components/template/template-items-editor'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -179,7 +180,8 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   </Button>
                 </CardHeader>
                 {expandedId === t.id ? (
-                  <CardContent>
+                  <CardContent className="space-y-4">
+                    <InstantiateForm workspaceId={workspaceId} template={t} />
                     <TemplateItemsEditor templateId={t.id} />
                   </CardContent>
                 ) : null}

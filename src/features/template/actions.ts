@@ -4,7 +4,7 @@ import { actionWrap } from '@/lib/action-wrap'
 import { isAppError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 
-import type { Template, TemplateItem } from './schema'
+import type { InstantiateResult, Template, TemplateItem } from './schema'
 import { templateItemService, templateService } from './service'
 
 export async function createTemplateAction(input: unknown): Promise<Result<Template>> {
@@ -52,4 +52,10 @@ export async function listTemplateItemsAction(templateId: string): Promise<Resul
     if (isAppError(e)) return err(e)
     throw e
   }
+}
+
+export async function instantiateTemplateAction(
+  input: unknown,
+): Promise<Result<InstantiateResult>> {
+  return await actionWrap(() => templateService.instantiate(input))
 }

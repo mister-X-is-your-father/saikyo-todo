@@ -7,6 +7,7 @@ import { unwrap } from '@/lib/result-unwrap'
 import {
   addTemplateItemAction,
   createTemplateAction,
+  instantiateTemplateAction,
   listTemplateItemsAction,
   listTemplatesAction,
   removeTemplateItemAction,
@@ -17,6 +18,7 @@ import {
 import type {
   AddTemplateItemInput,
   CreateTemplateInput,
+  InstantiateTemplateInput,
   RemoveTemplateItemInput,
   SoftDeleteTemplateInput,
   UpdateTemplateInput,
@@ -105,6 +107,21 @@ export function useRemoveTemplateItem(templateId: string) {
       unwrap(await removeTemplateItemAction(input)),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: templateKeys.items(templateId) })
+    },
+  })
+}
+
+/**
+ * Template を instantiate。成功時に items キャッシュを invalidate するので、
+ * workspace ボードに戻ると新しい root item が出現する。
+ */
+export function useInstantiateTemplate(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: InstantiateTemplateInput) =>
+      unwrap(await instantiateTemplateAction(input)),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['items', workspaceId] })
     },
   })
 }
