@@ -21,6 +21,7 @@ export const QUEUE_NAMES = [
   'pm-standup',
   'pm-standup-tick',
   'template-cron-tick',
+  'time-entry-sync',
 ] as const
 export type QueueName = (typeof QUEUE_NAMES)[number]
 
