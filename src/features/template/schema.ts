@@ -100,3 +100,20 @@ export type UpdateTemplateItemInput = z.infer<typeof UpdateTemplateItemInputSche
 
 export const RemoveTemplateItemInputSchema = z.object({ id: z.string().uuid() })
 export type RemoveTemplateItemInput = z.infer<typeof RemoveTemplateItemInputSchema>
+
+/** Template を実 Item ツリーに展開する (instantiate)。 */
+export const InstantiateTemplateInputSchema = z.object({
+  templateId: z.string().uuid(),
+  variables: z.record(z.string(), z.unknown()).default({}),
+  /** recurring (pg_cron) からの呼び出しで多重展開防止。UNIQUE 制約違反で 2回目は ConflictError。 */
+  cronRunId: z.string().min(1).nullish(),
+  /** root item のタイトルを template.name 以外にしたい時 */
+  rootTitleOverride: z.string().nullish(),
+})
+export type InstantiateTemplateInput = z.infer<typeof InstantiateTemplateInputSchema>
+
+export interface InstantiateResult {
+  instantiationId: string
+  rootItemId: string
+  createdItemCount: number // root + children
+}

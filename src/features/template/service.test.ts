@@ -246,3 +246,175 @@ describe('templateItemService', () => {
     })
   })
 })
+
+describe('templateService.instantiate', () => {
+  let userId: string
+  let email: string
+  let wsId: string
+  let cleanup: () => Promise<void>
+
+  beforeAll(async () => {
+    const fx = await createTestUserAndWorkspace('template-instantiate')
+    userId = fx.userId
+    email = fx.email
+    wsId = fx.wsId
+    cleanup = fx.cleanup
+    await mockAuthGuards(userId, email)
+  })
+
+  afterAll(async () => {
+    await cleanup()
+  })
+
+  async function createTemplateWithItems(
+    name: string,
+    items: Array<{
+      title: string
+      parentPath?: string
+      isMust?: boolean
+      dod?: string
+      dueOffsetDays?: number
+    }>,
+  ) {
+    const t = await templateService.create({
+      workspaceId: wsId,
+      name,
+      idempotencyKey: randomUUID(),
+    })
+    if (!t.ok) throw new Error(t.error.message)
+    for (const i of items) {
+      const r = await templateItemService.add({
+        templateId: t.value.id,
+        title: i.title,
+        parentPath: i.parentPath ?? '',
+        isMust: i.isMust ?? false,
+        dod: i.dod ?? null,
+        dueOffsetDays: i.dueOffsetDays ?? null,
+      })
+      if (!r.ok) throw new Error(r.error.message)
+    }
+    return t.value
+  }
+
+  it('子なし template を instantiate → root item だけ生成、audit + template_instantiations 追加', async () => {
+    const t = await createTemplateWithItems('Onboarding {{client}}', [])
+    const r = await templateService.instantiate({
+      templateId: t.id,
+      variables: { client: 'Acme' },
+    })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.value.createdItemCount).toBe(1)
+    // items テーブルを確認
+    const { data: rootItem } = await adminClient()
+      .from('items')
+      .select('title, workspace_id, parent_path')
+      .eq('id', r.value.rootItemId)
+      .single()
+    expect(rootItem!.title).toBe('Onboarding Acme')
+    expect(rootItem!.workspace_id).toBe(wsId)
+    expect(rootItem!.parent_path).toBe('')
+    // template_instantiations
+    const { data: inst } = await adminClient()
+      .from('template_instantiations')
+      .select('root_item_id, template_id')
+      .eq('id', r.value.instantiationId)
+      .single()
+    expect(inst!.root_item_id).toBe(r.value.rootItemId)
+    expect(inst!.template_id).toBe(t.id)
+    // audit
+    const { data: audits } = await adminClient()
+      .from('audit_log')
+      .select('action, target_type')
+      .eq('target_id', t.id)
+    expect(audits?.some((a) => a.action === 'instantiate')).toBe(true)
+  })
+
+  it('2 階層 template: root + parent + child item が生成、parent_path が繋がる', async () => {
+    // template_items.parentPath に child を書く必要がある。add 時に parent の label が要るので、
+    // まず空 template 作成 → parent 追加 → 返り値 label で child 追加
+    const t = await templateService.create({
+      workspaceId: wsId,
+      name: 'Hierarchical',
+      idempotencyKey: randomUUID(),
+    })
+    if (!t.ok) throw new Error(t.error.message)
+    const parent = await templateItemService.add({
+      templateId: t.value.id,
+      title: 'Parent step',
+    })
+    if (!parent.ok) throw new Error(parent.error.message)
+    const { uuidToLabel } = await import('@/lib/db/ltree-path')
+    const child = await templateItemService.add({
+      templateId: t.value.id,
+      title: 'Child step',
+      parentPath: uuidToLabel(parent.value.id),
+    })
+    if (!child.ok) throw new Error(child.error.message)
+
+    const r = await templateService.instantiate({ templateId: t.value.id, variables: {} })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.value.createdItemCount).toBe(3)
+    // 構造確認: workspace 内に Parent / Child が存在、parent_path が繋がっている
+    const { data: items } = await adminClient()
+      .from('items')
+      .select('id, title, parent_path')
+      .eq('workspace_id', wsId)
+    const rootLabel = uuidToLabel(r.value.rootItemId)
+    const parentItem = items?.find((i) => i.title === 'Parent step')
+    const childItem = items?.find((i) => i.title === 'Child step')
+    expect(parentItem?.parent_path).toBe(rootLabel)
+    expect(childItem?.parent_path).toBe(`${rootLabel}.${uuidToLabel(parentItem!.id)}`)
+  })
+
+  it('cron_run_id 指定で同じ値を再展開すると ConflictError', async () => {
+    const t = await createTemplateWithItems('Cron-test', [])
+    // cron_run_id は workspace 横断でグローバル UNIQUE なので、parallel test 間で
+    // 衝突しないように test 内でユニーク値を作る
+    const runId = `daily-${randomUUID()}`
+    const run1 = await templateService.instantiate({
+      templateId: t.id,
+      variables: {},
+      cronRunId: runId,
+    })
+    expect(run1.ok).toBe(true)
+    const run2 = await templateService.instantiate({
+      templateId: t.id,
+      variables: {},
+      cronRunId: runId,
+    })
+    expect(run2.ok).toBe(false)
+    if (!run2.ok) expect(run2.error.code).toBe('CONFLICT')
+  })
+
+  it('MUST + dod + dueOffsetDays の template_item は実 item に反映', async () => {
+    const t = await createTemplateWithItems('MUST-test', [
+      { title: 'MUST step', isMust: true, dod: 'done criteria', dueOffsetDays: 5 },
+    ])
+    const r = await templateService.instantiate({ templateId: t.id, variables: {} })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    const { data: items } = await adminClient()
+      .from('items')
+      .select('title, is_must, dod, due_date')
+      .eq('workspace_id', wsId)
+      .eq('title', 'MUST step')
+    expect(items?.[0]?.is_must).toBe(true)
+    expect(items?.[0]?.dod).toBe('done criteria')
+    // 今日 +5 日の ISO 日付
+    const today = new Date()
+    today.setUTCDate(today.getUTCDate() + 5)
+    const expected = today.toISOString().slice(0, 10)
+    expect(items?.[0]?.due_date).toBe(expected)
+  })
+
+  it('存在しない template は NotFoundError', async () => {
+    const r = await templateService.instantiate({
+      templateId: randomUUID(),
+      variables: {},
+    })
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.error.code).toBe('NOT_FOUND')
+  })
+})

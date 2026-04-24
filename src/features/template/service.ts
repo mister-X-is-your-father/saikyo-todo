@@ -1,16 +1,22 @@
 import 'server-only'
 
+import { eq } from 'drizzle-orm'
+
 import { recordAudit } from '@/lib/audit'
 import { requireUser, requireWorkspaceMember } from '@/lib/auth/guard'
+import { items, templateInstantiations } from '@/lib/db/schema'
 import { withUserDb } from '@/lib/db/scoped-client'
 import { ConflictError, NotFoundError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 import { mutateWithGuard } from '@/lib/service-mutate'
 
+import { buildInstantiationPlan } from './instantiate-plan'
 import { templateItemRepository, templateRepository } from './repository'
 import {
   AddTemplateItemInputSchema,
   CreateTemplateInputSchema,
+  type InstantiateResult,
+  InstantiateTemplateInputSchema,
   RemoveTemplateItemInputSchema,
   SoftDeleteTemplateInputSchema,
   type Template,
@@ -125,6 +131,114 @@ export const templateService = {
     const { user } = await requireWorkspaceMember(workspaceId, 'viewer')
     return await withUserDb(user.id, async (tx) => {
       return await templateRepository.list(tx, { workspaceId, ...filter })
+    })
+  },
+
+  /**
+   * Template を実 Item ツリーに展開 (instantiate)。
+   * - Mustache 変数展開 (title / description / dod) — HTML escape は OFF
+   * - dueOffsetDays → 実 due_date = today + offset
+   * - template_items.parent_path (template 世界の ltree) を items 世界に翻訳
+   * - 全挿入を 1 Tx で実行 (部分成功させない)
+   * - cron_run_id 指定時は UNIQUE 制約で多重防止 (既存なら ConflictError)
+   */
+  async instantiate(input: unknown): Promise<Result<InstantiateResult>> {
+    const parsed = InstantiateTemplateInputSchema.safeParse(input)
+    if (!parsed.success) return err(new ValidationError('入力内容を確認してください', parsed.error))
+
+    const authUser = await requireUser()
+    const ctx = await loadTemplateWorkspace(authUser.id, parsed.data.templateId)
+    if (!ctx) return err(new NotFoundError(NOT_FOUND))
+    const { user } = await requireWorkspaceMember(ctx.workspaceId, 'member')
+
+    return await withUserDb(user.id, async (tx) => {
+      // cron_run_id 冪等チェック (先に取る方が UNIQUE 違反より明示的なエラー)
+      if (parsed.data.cronRunId) {
+        const existing = await tx
+          .select({ id: templateInstantiations.id })
+          .from(templateInstantiations)
+          .where(eq(templateInstantiations.cronRunId, parsed.data.cronRunId))
+          .limit(1)
+        if (existing.length > 0) {
+          return err(new ConflictError('この cron_run_id は既に展開済みです'))
+        }
+      }
+
+      const template = await templateRepository.findById(tx, parsed.data.templateId)
+      if (!template) return err(new NotFoundError(NOT_FOUND))
+      const tItems = await templateItemRepository.listByTemplate(tx, template.id)
+
+      const plan = buildInstantiationPlan({
+        template: { name: template.name },
+        templateItems: tItems,
+        variables: parsed.data.variables,
+        today: new Date(),
+        rootTitleOverride: parsed.data.rootTitleOverride ?? undefined,
+      })
+
+      // root item insert
+      await tx.insert(items).values({
+        id: plan.rootItem.id,
+        workspaceId: ctx.workspaceId,
+        title: plan.rootItem.title,
+        description: plan.rootItem.description,
+        status: plan.rootItem.status,
+        parentPath: plan.rootItem.parentPath,
+        isMust: plan.rootItem.isMust,
+        dod: plan.rootItem.dod,
+        dueDate: plan.rootItem.dueDate,
+        createdByActorType: 'user',
+        createdByActorId: user.id,
+      })
+      // children insert (親を先に処理する順に plan.children は既に sort されている)
+      for (const c of plan.children) {
+        await tx.insert(items).values({
+          id: c.id,
+          workspaceId: ctx.workspaceId,
+          title: c.title,
+          description: c.description,
+          status: c.status,
+          parentPath: c.parentPath,
+          isMust: c.isMust,
+          dod: c.dod,
+          dueDate: c.dueDate,
+          createdByActorType: 'user',
+          createdByActorId: user.id,
+        })
+      }
+
+      const [inst] = await tx
+        .insert(templateInstantiations)
+        .values({
+          templateId: template.id,
+          variables: parsed.data.variables,
+          instantiatedBy: user.id,
+          rootItemId: plan.rootItem.id,
+          cronRunId: parsed.data.cronRunId ?? null,
+        })
+        .returning()
+      if (!inst) return err(new ConflictError('instantiation 作成に失敗しました'))
+
+      await recordAudit(tx, {
+        workspaceId: ctx.workspaceId,
+        actorType: 'user',
+        actorId: user.id,
+        targetType: 'template',
+        targetId: template.id,
+        action: 'instantiate',
+        after: {
+          instantiationId: inst.id,
+          rootItemId: plan.rootItem.id,
+          itemCount: 1 + plan.children.length,
+          cronRunId: parsed.data.cronRunId ?? null,
+        },
+      })
+
+      return ok({
+        instantiationId: inst.id,
+        rootItemId: plan.rootItem.id,
+        createdItemCount: 1 + plan.children.length,
+      })
     })
   },
 }
