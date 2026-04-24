@@ -3,7 +3,7 @@
 > このファイルは context を `/clear` した後に **次の Claude (or 同一 Claude の続き)** が
 > 即座にプロジェクト状態を把握するためのもの。役目を終えたら削除して構わない。
 >
-> 最終更新: 2026-04-24 (Week 2 Day 11 完了時点)
+> 最終更新: 2026-04-24 (Week 2 Day 12 完了時点)
 
 ## 1. 最初に読む順番 (5 分で把握)
 
@@ -15,7 +15,7 @@
 
 ## 2. 現在地
 
-**進捗: 11 / 33 日 (Week 0-1 完了 + Week 2 Day 8-11 完了)**
+**進捗: 12 / 33 日 (Week 0-1 完了 + Week 2 Day 8-12 完了)**
 
 完了 (要点のみ、詳細は git log):
 
@@ -41,17 +41,22 @@
   - view switcher (kanban / backlog / gantt)
 - Week 2 Day 11: Gantt View (自作、棒のみ、date-fns) — gantt-task-react は
   React 18 peerDeps で不可、SVG 不要なら div + Tailwind で十分
+- Week 2 Day 12: MUST Dashboard (4th ViewPlugin) + WIP 警告 + Recharts Burndown + DoD 最終化
+  - `items.done_at` + BEFORE trigger (status type=done で自動セット/クリア)。burndown 単純化
+  - `src/features/dashboard/` — getMustSummary / getBurndown (TDD: service.test.ts 8 tests)
+  - Dashboard View: StatCard x4 / WIP 警告バナー / Recharts LineChart 14 日 / MUST 一覧
+  - `itemService.updateStatus` に MUST+done 時の DoD 必須 belt-and-suspenders 追加
+    (通常は create/update で invariant 保証、直接 DB 更新への二重防御)
 
 現在の数:
 
-- Vitest **60 tests** PASS / E2E **2 tests** PASS
-- Plugin Registry: action 1, view 3 (core)
+- Vitest **70 tests** PASS / E2E **2 tests** PASS
+- Plugin Registry: action 1, view 4 (core)
 
 次にやること (REQUIREMENTS §7 の順):
 
 - **Week 1 Day 10b (繰越)**: FTS 検索 (cmdk + 全文検索) — migration 設計要:
   pg_bigm vs tsvector vs pgroonga (日本語対応)。専用セッション推奨
-- **Week 2 Day 12**: MUST ダッシュボード + WIP 警告 + Recharts バーンダウン + DoD 最終化
 - **Week 2 Day 13**: Template Drizzle schema + CRUD + 基本 UI
 - **Week 2 Day 14**: Template 展開 / 適用 / recurring / "即実行" UX
 - (以降 `REQUIREMENTS.md` §7 参照)
