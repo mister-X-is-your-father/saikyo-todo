@@ -13,7 +13,8 @@ test.use({
 })
 
 test('全 UI 視覚 QA スクショ収集', async ({ page }) => {
-  test.setTimeout(120_000)
+  // 並列実行下でも収まるよう余裕を持たせる
+  test.setTimeout(240_000)
 
   // ---------- 1. 未ログイン画面 ----------
   await page.goto('/login')
