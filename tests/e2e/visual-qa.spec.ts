@@ -44,13 +44,19 @@ test('全 UI 視覚 QA スクショ収集', async ({ page }) => {
     await page.waitForLoadState('networkidle').catch(() => {})
     await page.screenshot({ path: `${SHOTS_DIR}/04-workspace-kanban-empty.png`, fullPage: true })
 
-    // Item を 3 件作成 (MUST / MUST+DoD / 通常)
+    // 通常タスク
     await page.locator('#new-item-input').fill('通常タスク A')
     await page.getByRole('button', { name: '作成', exact: true }).click()
-    await page.waitForTimeout(500)
-    await page.locator('#new-item-input').fill('MUST タスク B')
+    await page.waitForTimeout(400)
+
+    // MUST + DoD 入りタスク (MUST バッジ表示確認)
+    await page.locator('#new-item-input').fill('MUST タスク B (DoD 入り)')
+    await page.locator('[data-testid="create-must-checkbox"]').check()
+    await page.locator('#new-item-dod').fill('ユーザからの承認を得ている')
     await page.getByRole('button', { name: '作成', exact: true }).click()
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(400)
+
+    // 長いタイトル (折り返しテスト)
     await page
       .locator('#new-item-input')
       .fill('通常タスク C (長いタイトルで改行テスト:何文字まで入れると表示が崩れるのか見る)')

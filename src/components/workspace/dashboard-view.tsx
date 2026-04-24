@@ -30,6 +30,7 @@ import { useBurndown, useMustSummary } from '@/features/dashboard/hooks'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { StatusBadge } from '@/components/workspace/status-badge'
 
 interface Props {
   workspaceId: string
@@ -255,7 +256,7 @@ export function DashboardView({ workspaceId }: Props) {
                         </span>
                       ) : null}
                     </div>
-                    <span className="text-muted-foreground font-mono text-xs">[{item.status}]</span>
+                    <StatusBadge status={item.status} />
                     <span
                       className={
                         overdue

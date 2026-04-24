@@ -57,20 +57,29 @@ export function ItemsBoard({ workspaceId }: Props) {
   }, [data, must, statusFilter])
 
   const [title, setTitle] = useState('')
+  const [isMust, setIsMust] = useState(false)
+  const [dod, setDod] = useState('')
 
   async function handleCreate() {
     const t = title.trim()
     if (!t) return
+    if (isMust && !dod.trim()) {
+      toast.error('MUST には DoD (完了条件) が必要です')
+      return
+    }
     try {
       await create.mutateAsync({
         workspaceId,
         title: t,
         description: '',
         status: 'todo',
-        isMust: false,
+        isMust,
+        dod: isMust ? dod.trim() : null,
         idempotencyKey: crypto.randomUUID(),
       })
       setTitle('')
+      setIsMust(false)
+      setDod('')
       toast.success('Item を作成しました')
     } catch (e) {
       toast.error(isAppError(e) ? e.message : '作成に失敗しました')
@@ -145,22 +154,45 @@ export function ItemsBoard({ workspaceId }: Props) {
         </CardHeader>
         <CardContent>
           <form
-            className="flex gap-2"
+            className="space-y-2"
             onSubmit={(e) => {
               e.preventDefault()
               void handleCreate()
             }}
           >
-            <IMEInput
-              id="new-item-input"
-              placeholder="タイトル (Enter で作成)"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="flex-1"
-            />
-            <Button type="submit" disabled={create.isPending || !title.trim()}>
-              作成
-            </Button>
+            <div className="flex gap-2">
+              <IMEInput
+                id="new-item-input"
+                placeholder="タイトル (Enter で作成)"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="flex-1"
+              />
+              <Button type="submit" disabled={create.isPending || !title.trim()}>
+                作成
+              </Button>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={isMust}
+                  onChange={(e) => setIsMust(e.target.checked)}
+                  data-testid="create-must-checkbox"
+                />
+                <span className="font-medium text-red-700">MUST</span>
+                <span className="text-muted-foreground text-xs">(絶対落とさない)</span>
+              </label>
+              {isMust && (
+                <IMEInput
+                  id="new-item-dod"
+                  placeholder="DoD (完了条件、必須)"
+                  value={dod}
+                  onChange={(e) => setDod(e.target.value)}
+                  className="flex-1"
+                />
+              )}
+            </div>
           </form>
           <p className="text-muted-foreground mt-2 text-xs">
             Cmd+K でコマンドパレット、Enter で作成 (IME 変換中は無視)。

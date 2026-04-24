@@ -49,7 +49,11 @@ function buildColumns(workspaceId: string): ColumnDef<Item>[] {
       header: 'MUST',
       size: 70,
       cell: ({ getValue }) =>
-        getValue() ? <span className="text-xs text-red-500">MUST</span> : null,
+        getValue() ? (
+          <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-medium text-red-700">
+            MUST
+          </span>
+        ) : null,
     },
     {
       accessorKey: 'dueDate',

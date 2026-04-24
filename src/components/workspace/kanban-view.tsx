@@ -207,8 +207,17 @@ function KanbanCard({ item }: { item: Item }) {
       className="bg-background cursor-grab rounded border p-2 text-sm shadow-sm active:cursor-grabbing"
       data-testid={`kanban-card-${item.id}`}
     >
-      <div className="font-medium">{item.title}</div>
-      {item.isMust && <span className="text-xs text-red-500">MUST</span>}
+      <div className="flex items-start justify-between gap-2">
+        <div className="font-medium break-words">{item.title}</div>
+        {item.isMust && (
+          <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-medium text-red-700">
+            MUST
+          </span>
+        )}
+      </div>
+      {item.dueDate && (
+        <div className="text-muted-foreground mt-1 text-[11px]">期限: {item.dueDate}</div>
+      )}
     </div>
   )
 }
