@@ -25,7 +25,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:migrate": "supabase db reset",
-    "worker": "tsx scripts/worker.ts",
+    "worker": "NODE_OPTIONS=--conditions=react-server tsx --env-file=.env.local src/workers/start.ts",
     "prepare": "husky"
   },
   "dependencies": {

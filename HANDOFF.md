@@ -3,7 +3,7 @@
 > このファイルは context を `/clear` した後に **次の Claude (or 同一 Claude の続き)** が
 > 即座にプロジェクト状態を把握するためのもの。役目を終えたら削除して構わない。
 >
-> 最終更新: 2026-04-24 (Week 3 Day 15 P1 完了 — 同期版 agentService 着地)
+> 最終更新: 2026-04-24 (Week 3 Day 15 P2 完了 — pg-boss + worker プロセス分離)
 
 ## 1. 最初に読む順番 (5 分で把握)
 
@@ -63,6 +63,20 @@
   - UI `InstantiateForm`: `{{var}}` を正規表現で抽出して動的フォーム、即実行で workspace に遷移
   - TDD: pure helper 6 tests + integration 5 tests
     - 2 階層 parent_path 繋がり検証 / MUST+dod+dueOffsetDays 反映 / cron_run_id 冪等衝突
+- Week 3 Day 15 P2: pg-boss + worker プロセス分離
+  - `src/lib/jobs/queue.ts` — pg-boss 12 singleton ラッパ (`startBoss` / `stopBoss` /
+    `enqueueJob` / `registerWorker`)。queue 名は v10+ で明示作成必須なので
+    `QUEUE_NAMES` (現状 `agent-run` のみ) をまとめて `createQueue`
+  - `src/workers/start.ts` — worker プロセスエントリ。`pnpm worker` で起動。
+    SIGTERM / SIGINT で graceful shutdown
+  - `src/features/agent/worker.ts` — `agent-run` handler。runInvocation を呼んで
+    Result.err は throw しない (pg-boss retry で多重実行を招かないため)
+  - `agentService.enqueue` が wasNew=true のとき `enqueueJob('agent-run', ...)` で送信
+    (既存 row の再送は pickup 済の可能性あるため skip)
+  - `pnpm worker` スクリプト (`NODE_OPTIONS=--conditions=react-server tsx`)
+  - テスト: `vi.mock('@/lib/jobs/queue', ...)` で全テスト差し替え、
+    enqueue 新規時のみ send され再送時はされないケースを追加
+  - PoC `scripts/poc-worker.ts` (worker をこのプロセス内で起動して end-to-end 確認)
 - Week 3 Day 15 P1: Anthropic SDK ラッパ + 同期版 agentService (TDD)
   - `src/lib/ai/{client,invoke,pricing}.ts` — Anthropic SDK singleton、
     非ストリーミング `invokeModel` ラッパ (normalized shape)、モデル別 cost 計算
@@ -78,13 +92,13 @@
 
 現在の数:
 
-- Vitest **114 tests** PASS / E2E **2 tests** PASS
-- Plugin Registry: action 1, view 4 (core)
+- Vitest **115 tests** PASS / E2E **2 tests** PASS
+- Plugin Registry: action 1, view 4 (core) / pg-boss queue: `agent-run`
 
 次にやること (REQUIREMENTS §7 の順):
 
-- **Week 3 Day 15 P2**: pg-boss 導入 + worker プロセス分離 + enqueue→job→pickup フロー
-- **Week 3 Day 15 P3**: Anthropic streaming + DB UPDATE イベント連動 + Supabase Realtime broadcast
+- **Week 3 Day 15 P3**: Anthropic streaming + DB UPDATE イベント連動 + Supabase Realtime broadcast +
+  tool loop 自前実装 (自己 tool 呼び出しループ、Researcher/PM の tool 基盤)
 - **Week 1 Day 10b (繰越)**: FTS 検索 (pg_bigm / tsvector) — 専用セッション推奨
 - **Week 3 Day 16-21**: 自前 embedding worker / RAG / Researcher Agent / Template 連携
 
@@ -190,6 +204,18 @@ pnpm dev                                        # http://localhost:3001
 - 実 API 呼び出し検証は `scripts/poc-agent.ts` に寄せる (`ANTHROPIC_API_KEY` 設定時のみ)
 - `server-only` を含むモジュールを tsx から触るので
   `NODE_OPTIONS="--conditions=react-server" pnpm tsx --env-file=.env.local ...` が必要
+
+### 4.11 pg-boss queue 名にコロン使用不可 (Day 15 P2)
+
+- pg-boss v10+ は queue 名 (= object 名) を英数 / `_-./` だけに制限
+- `agent:run` は ERR_ASSERTION で落ちるので `agent-run` にした
+- 新キューを増やすときは `QUEUE_NAMES` (src/lib/jobs/queue.ts) に足すだけで
+  `createQueue` が自動で呼ばれる (start 時に全 queue 作成)
+
+### 4.12 pg-boss v12 の型 import (Day 15 P2)
+
+- 名前付き export: `import { PgBoss } from 'pg-boss'` (default export なし)
+- `stop()` の option に `wait` は無い (v10 の名残)。graceful + timeout(ms) を使う
 
 ## 5. 重要な抽象 (Service 層を書くときに使うもの)
 

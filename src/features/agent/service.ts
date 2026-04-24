@@ -6,6 +6,7 @@ import { recordAudit } from '@/lib/audit'
 import { requireWorkspaceMember } from '@/lib/auth/guard'
 import { adminDb, withUserDb } from '@/lib/db/scoped-client'
 import { ExternalServiceError, NotFoundError, ValidationError } from '@/lib/errors'
+import { enqueueJob } from '@/lib/jobs/queue'
 import { err, ok, type Result } from '@/lib/result'
 
 import { agentInvocationRepository, agentRepository } from './repository'
@@ -43,8 +44,9 @@ export const agentService = {
   },
 
   /**
-   * queued 状態の invocation を作成する。worker が pickup して runInvocation を呼ぶ想定。
-   * idempotencyKey が既存ならそれを返す (Server Action 再送対策)。
+   * queued 状態の invocation を作成し、pg-boss に 'agent-run' ジョブを送信する。
+   * worker プロセスが pickup して runInvocation を呼ぶ。
+   * idempotencyKey が既存ならそれを返し、ジョブは送信しない (重複投入防止)。
    */
   async enqueue(input: unknown): Promise<Result<AgentInvocation>> {
     const parsed = EnqueueInvocationInputSchema.safeParse(input)
@@ -55,35 +57,44 @@ export const agentService = {
 
     const agent = await agentService.ensureAgent(workspaceId, role)
 
-    return await withUserDb(user.id, async (tx) => {
-      const existing = await agentInvocationRepository.findByIdempotencyKey(tx, idempotencyKey)
-      if (existing) {
-        // 別 workspace で同じ key が来たら弾く (衝突)。
-        if (existing.workspaceId !== workspaceId) {
-          return err(new ValidationError('idempotency_key は他 workspace で使用済み'))
+    const txResult = await withUserDb(
+      user.id,
+      async (tx): Promise<Result<{ row: AgentInvocation; isNew: boolean }>> => {
+        const existing = await agentInvocationRepository.findByIdempotencyKey(tx, idempotencyKey)
+        if (existing) {
+          if (existing.workspaceId !== workspaceId) {
+            return err(new ValidationError('idempotency_key は他 workspace で使用済み'))
+          }
+          return ok({ row: existing, isNew: false })
         }
-        return ok(existing)
-      }
-      const row = await agentInvocationRepository.insert(tx, {
-        agentId: agent.id,
-        workspaceId,
-        targetItemId: targetItemId ?? null,
-        status: 'queued',
-        input: prompt as never,
-        model,
-        idempotencyKey,
-      })
-      await recordAudit(tx, {
-        workspaceId,
-        actorType: 'user',
-        actorId: user.id,
-        targetType: 'agent_invocation',
-        targetId: row.id,
-        action: 'enqueue',
-        after: { status: row.status, model: row.model, role },
-      })
-      return ok(row)
-    })
+        const row = await agentInvocationRepository.insert(tx, {
+          agentId: agent.id,
+          workspaceId,
+          targetItemId: targetItemId ?? null,
+          status: 'queued',
+          input: prompt as never,
+          model,
+          idempotencyKey,
+        })
+        await recordAudit(tx, {
+          workspaceId,
+          actorType: 'user',
+          actorId: user.id,
+          targetType: 'agent_invocation',
+          targetId: row.id,
+          action: 'enqueue',
+          after: { status: row.status, model: row.model, role },
+        })
+        return ok({ row, isNew: true })
+      },
+    )
+    if (!txResult.ok) return txResult
+    // 新規 INSERT 時のみジョブ送信 (既存 row の再送は pickup 済の可能性あり)。
+    // DB commit 後に送るため、send 失敗時は stranded な queued が残る (sweeper は post-MVP)。
+    if (txResult.value.isNew) {
+      await enqueueJob('agent-run', { invocationId: txResult.value.row.id })
+    }
+    return ok(txResult.value.row)
   },
 
   /**

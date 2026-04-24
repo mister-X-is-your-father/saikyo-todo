@@ -23,11 +23,22 @@ vi.mock('@/lib/ai/invoke', () => ({
   invokeModel: vi.fn(),
 }))
 
+// pg-boss (実ジョブ送信しない)
+vi.mock('@/lib/jobs/queue', () => ({
+  startBoss: vi.fn(),
+  stopBoss: vi.fn(),
+  enqueueJob: vi.fn().mockResolvedValue('mock-job-id'),
+  registerWorker: vi.fn(),
+  QUEUE_NAMES: ['agent-run'],
+}))
+
 import { invokeModel } from '@/lib/ai/invoke'
+import { enqueueJob } from '@/lib/jobs/queue'
 
 import { agentService } from './service'
 
 const mockInvoke = vi.mocked(invokeModel)
+const mockEnqueueJob = vi.mocked(enqueueJob)
 
 function buildInvokeResult(overrides: Partial<InvokeModelOutput> = {}): InvokeModelOutput {
   return {
@@ -77,6 +88,7 @@ describe('agentService', () => {
 
   beforeEach(() => {
     mockInvoke.mockReset()
+    mockEnqueueJob.mockReset().mockResolvedValue('mock-job-id')
   })
 
   afterAll(async () => {
@@ -145,6 +157,19 @@ describe('agentService', () => {
         // 再送なので 2回目の model 変更は反映されない (= 1回目のモデルが残る)
         expect(r2.value.model).toBe('claude-haiku-4-5')
       }
+    })
+
+    it('新規 INSERT 時は pg-boss にジョブ送信、再送時は送信しない', async () => {
+      const key = randomUUID()
+      const r1 = await agentService.enqueue(
+        buildEnqueueInput({ workspaceId: wsId, idempotencyKey: key }),
+      )
+      if (!r1.ok) throw new Error('enqueue failed')
+      expect(mockEnqueueJob).toHaveBeenCalledTimes(1)
+      expect(mockEnqueueJob).toHaveBeenCalledWith('agent-run', { invocationId: r1.value.id })
+      // 再送時は send されない
+      await agentService.enqueue(buildEnqueueInput({ workspaceId: wsId, idempotencyKey: key }))
+      expect(mockEnqueueJob).toHaveBeenCalledTimes(1)
     })
 
     it('role enum 違反は ValidationError', async () => {
