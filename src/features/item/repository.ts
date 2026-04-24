@@ -2,7 +2,7 @@ import 'server-only'
 
 import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm'
 
-import { items } from '@/lib/db/schema'
+import { items, workspaceStatuses } from '@/lib/db/schema'
 import type { Tx } from '@/lib/db/scoped-client'
 
 import type { Item } from './schema'
@@ -68,5 +68,19 @@ export const itemRepository = {
   /** Soft delete (deleted_at をセット)。楽観ロック付き。 */
   async softDelete(tx: Tx, id: string, expectedVersion: number): Promise<Item | null> {
     return await this.updateWithLock(tx, id, expectedVersion, { deletedAt: new Date() })
+  },
+
+  /** workspace_statuses.type を返す。存在しない key なら null。 */
+  async findStatusType(
+    tx: Tx,
+    workspaceId: string,
+    key: string,
+  ): Promise<'todo' | 'in_progress' | 'done' | null> {
+    const [row] = await tx
+      .select({ type: workspaceStatuses.type })
+      .from(workspaceStatuses)
+      .where(and(eq(workspaceStatuses.workspaceId, workspaceId), eq(workspaceStatuses.key, key)))
+      .limit(1)
+    return (row?.type as 'todo' | 'in_progress' | 'done' | undefined) ?? null
   },
 }

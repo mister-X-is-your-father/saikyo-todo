@@ -168,6 +168,38 @@ describe('itemService', () => {
         .eq('target_id', item.id)
       expect(audits?.some((a) => a.action === 'status_change')).toBe(true)
     })
+
+    it('MUST + DoD あり は done に移行できる (happy path、done_at が入る)', async () => {
+      const item = await createItem({ title: 'must-dod-done', isMust: true, dod: 'criteria' })
+      const result = await itemService.updateStatus({
+        id: item.id,
+        expectedVersion: item.version,
+        status: 'done',
+      })
+      expect(result.ok).toBe(true)
+      if (result.ok) {
+        expect(result.value.status).toBe('done')
+        expect(result.value.doneAt).not.toBeNull() // trigger で自動セット
+      }
+    })
+
+    it('MUST の DoD が空のまま done に移行すると ValidationError (belt-and-suspenders)', async () => {
+      // MUST は create 時 DoD 必須。admin 経由で DoD を外して下位防御を検証
+      const item = await createItem({ title: 'must-no-dod', isMust: true, dod: 'tmp' })
+      await adminClient().from('items').update({ dod: null }).eq('id', item.id)
+      const { data: fresh } = await adminClient()
+        .from('items')
+        .select('version')
+        .eq('id', item.id)
+        .single()
+      const result = await itemService.updateStatus({
+        id: item.id,
+        expectedVersion: fresh!.version,
+        status: 'done',
+      })
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.error.code).toBe('VALIDATION')
+    })
   })
 
   describe('move', () => {

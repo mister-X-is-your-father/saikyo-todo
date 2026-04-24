@@ -99,6 +99,18 @@ export const itemService = {
       id: parsed.data.id,
       notFoundMessage: NOT_FOUND,
       fn: async (tx, before, user) => {
+        // DoD 最終化: MUST を done type の status に遷移する時は DoD 必須。
+        // 通常は create/update の invariant で満たされるが、admin 直接更新や
+        // schema 変更に対する二重防御 (belt-and-suspenders)。
+        const newType = await itemRepository.findStatusType(
+          tx,
+          before.workspaceId,
+          parsed.data.status,
+        )
+        if (newType === 'done' && before.isMust && (!before.dod || before.dod.trim() === '')) {
+          return err(new ValidationError('MUST を done にするには DoD が必要です'))
+        }
+
         const patch: Partial<Parameters<typeof itemRepository.insert>[1]> = {
           status: parsed.data.status,
         }
