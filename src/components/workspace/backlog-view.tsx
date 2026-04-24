@@ -22,53 +22,63 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 
 import type { Item } from '@/features/item/schema'
 
+import { ItemDecomposeButton } from './item-decompose-button'
+
 interface Props {
   workspaceId: string
   items: Item[]
 }
 
-const columns: ColumnDef<Item>[] = [
-  {
-    accessorKey: 'status',
-    header: 'Status',
-    size: 120,
-    cell: ({ getValue }) => (
-      <span className="text-muted-foreground font-mono text-xs">[{String(getValue())}]</span>
-    ),
-  },
-  {
-    accessorKey: 'title',
-    header: 'タイトル',
-    size: 400,
-  },
-  {
-    accessorKey: 'isMust',
-    header: 'MUST',
-    size: 80,
-    cell: ({ getValue }) =>
-      getValue() ? <span className="text-xs text-red-500">MUST</span> : null,
-  },
-  {
-    accessorKey: 'dueDate',
-    header: '期限',
-    size: 120,
-    cell: ({ getValue }) => (getValue() as string | null) ?? '—',
-  },
-  {
-    accessorKey: 'updatedAt',
-    header: '更新',
-    size: 160,
-    cell: ({ getValue }) => {
-      const v = getValue() as Date | string | null
-      if (!v) return '—'
-      const d = typeof v === 'string' ? new Date(v) : v
-      return d.toISOString().slice(0, 19).replace('T', ' ')
+function buildColumns(workspaceId: string): ColumnDef<Item>[] {
+  return [
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      size: 120,
+      cell: ({ getValue }) => (
+        <span className="text-muted-foreground font-mono text-xs">[{String(getValue())}]</span>
+      ),
     },
-  },
-]
+    {
+      accessorKey: 'title',
+      header: 'タイトル',
+      size: 360,
+    },
+    {
+      accessorKey: 'isMust',
+      header: 'MUST',
+      size: 70,
+      cell: ({ getValue }) =>
+        getValue() ? <span className="text-xs text-red-500">MUST</span> : null,
+    },
+    {
+      accessorKey: 'dueDate',
+      header: '期限',
+      size: 110,
+      cell: ({ getValue }) => (getValue() as string | null) ?? '—',
+    },
+    {
+      accessorKey: 'updatedAt',
+      header: '更新',
+      size: 150,
+      cell: ({ getValue }) => {
+        const v = getValue() as Date | string | null
+        if (!v) return '—'
+        const d = typeof v === 'string' ? new Date(v) : v
+        return d.toISOString().slice(0, 19).replace('T', ' ')
+      },
+    },
+    {
+      id: 'actions',
+      header: 'アクション',
+      size: 130,
+      cell: ({ row }) => <ItemDecomposeButton workspaceId={workspaceId} item={row.original} />,
+    },
+  ]
+}
 
-// workspaceId は将来の per-row アクション (Agent 起動等) で使うので Props に残す
-export function BacklogView({ items }: Props) {
+export function BacklogView({ workspaceId, items }: Props) {
+  const columns = useMemo(() => buildColumns(workspaceId), [workspaceId])
   const [sorting, setSorting] = useState<SortingState>([{ id: 'updatedAt', desc: true }])
 
   const data = useMemo(() => items.filter((i) => !i.deletedAt), [items])
