@@ -14,7 +14,14 @@ import type { Job } from 'pg-boss'
 import { PgBoss } from 'pg-boss'
 
 /** 全キュー名を一元管理 (createQueue 忘れ防止)。v10+ で明示的作成が必須。 */
-export const QUEUE_NAMES = ['agent-run', 'doc-embed', 'researcher-decompose'] as const
+export const QUEUE_NAMES = [
+  'agent-run',
+  'doc-embed',
+  'researcher-decompose',
+  'pm-standup',
+  'pm-standup-tick',
+  'template-cron-tick',
+] as const
 export type QueueName = (typeof QUEUE_NAMES)[number]
 
 export interface AgentRunJobData {
@@ -30,6 +37,12 @@ export interface ResearcherDecomposeJobData {
   itemId: string
   /** 起動理由の識別子 (audit で便利)。例: 'template-instantiate' */
   reason?: string
+}
+
+export interface PmStandupJobData {
+  workspaceId: string
+  /** yyyy-mm-dd (UTC)。idempotency_key に使う。 */
+  dateKey: string
 }
 
 let boss: PgBoss | null = null
@@ -86,4 +99,26 @@ export async function registerWorker<T>(
   return await b.work<T>(name, async (jobs: Job<T>[]) => {
     await handler(jobs)
   })
+}
+
+/**
+ * 定期実行スケジュールを登録 (pg-boss 内蔵 timekeeper)。
+ * - 同名で複数回呼んでも冪等 (pg-boss が管理)
+ * - cron は標準 5 フィールド (分 時 日 月 曜日)
+ * - data は ジョブ発火時に handler に渡される
+ *
+ * worker プロセスが起動中でないと発火しない点に注意。
+ */
+export async function scheduleJob<T extends object>(
+  name: QueueName,
+  cron: string,
+  data: T = {} as T,
+): Promise<void> {
+  const b = await startBoss()
+  await b.schedule(name, cron, data as unknown as object)
+}
+
+export async function unscheduleJob(name: QueueName): Promise<void> {
+  const b = await startBoss()
+  await b.unschedule(name)
 }
