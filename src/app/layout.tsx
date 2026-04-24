@@ -43,7 +43,7 @@ export default async function RootLayout({
           <NuqsAdapter>
             <AppQueryProvider>{children}</AppQueryProvider>
           </NuqsAdapter>
-          <Toaster richColors position="top-right" />
+          <Toaster richColors position="bottom-right" closeButton />
         </NextIntlClientProvider>
       </body>
     </html>

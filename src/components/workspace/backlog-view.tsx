@@ -24,6 +24,7 @@ import type { Item } from '@/features/item/schema'
 
 import { ItemDecomposeButton } from './item-decompose-button'
 import { ItemResearchButton } from './item-research-button'
+import { StatusBadge } from './status-badge'
 
 interface Props {
   workspaceId: string
@@ -35,10 +36,8 @@ function buildColumns(workspaceId: string): ColumnDef<Item>[] {
     {
       accessorKey: 'status',
       header: 'Status',
-      size: 120,
-      cell: ({ getValue }) => (
-        <span className="text-muted-foreground font-mono text-xs">[{String(getValue())}]</span>
-      ),
+      size: 110,
+      cell: ({ getValue }) => <StatusBadge status={String(getValue())} />,
     },
     {
       accessorKey: 'title',

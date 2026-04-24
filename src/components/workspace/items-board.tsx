@@ -218,9 +218,9 @@ export function ItemsBoard({ workspaceId }: Props) {
             data-testid="filter-status"
           >
             <option value="">全ステータス</option>
-            <option value="todo">todo</option>
-            <option value="in_progress">in_progress</option>
-            <option value="done">done</option>
+            <option value="todo">TODO</option>
+            <option value="in_progress">進行中</option>
+            <option value="done">完了</option>
           </select>
           <span className="text-muted-foreground text-xs">{filtered.length} 件</span>
         </div>

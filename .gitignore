@@ -55,3 +55,6 @@ supabase/.temp
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# visual QA スクショ (再生成可能、コミット不要)
+/scripts/screenshots/

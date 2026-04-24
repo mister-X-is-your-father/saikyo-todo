@@ -81,7 +81,7 @@ export function DashboardView({ workspaceId }: Props) {
       <div className="grid gap-4 sm:grid-cols-4">
         <StatCard label="MUST 件数" value={s.items.length} tone="default" />
         <StatCard
-          label="in_progress"
+          label="進行中 / WIP 上限"
           value={`${s.wipInProgress}/${s.wipLimit}`}
           tone={s.wipExceeded ? 'danger' : 'default'}
         />
