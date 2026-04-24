@@ -44,9 +44,9 @@ test('baseline: login → workspace 作成 → Item 作成 → 一覧表示', as
     await expect(todoColumn.getByText('E2E smoke item')).toBeVisible({ timeout: 10_000 })
     // in_progress / done 列は空
     await expect(
-      page.getByTestId('kanban-column-in_progress').getByText('カードなし'),
+      page.getByTestId('kanban-column-in_progress').getByText('ここにドロップ'),
     ).toBeVisible()
-    await expect(page.getByTestId('kanban-column-done').getByText('カードなし')).toBeVisible()
+    await expect(page.getByTestId('kanban-column-done').getByText('ここにドロップ')).toBeVisible()
 
     // Backlog view に切替 → URL に ?view=backlog が付く / テーブル行に item が現れる
     await page.getByTestId('view-backlog-btn').click()

@@ -18,6 +18,7 @@ import {
   DndContext,
   type DragEndEvent,
   PointerSensor,
+  useDroppable,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
@@ -178,8 +179,15 @@ function KanbanColumn({
   items: Item[]
   onEdit: (item: Item) => void
 }) {
+  // 空カラムや、カード外へのドロップを受けるため列全体を droppable にする
+  // (id は statusKey なので handleDragEnd の overIsStatus 分岐に入る)
+  const { setNodeRef, isOver } = useDroppable({ id: statusKey })
   return (
-    <div className="bg-card rounded-lg border p-3" data-testid={`kanban-column-${statusKey}`}>
+    <div
+      ref={setNodeRef}
+      className={`bg-card rounded-lg border p-3 ${isOver ? 'ring-primary ring-2' : ''}`}
+      data-testid={`kanban-column-${statusKey}`}
+    >
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold" style={{ color }}>
           {label}
@@ -191,10 +199,10 @@ function KanbanColumn({
         items={items.map((i) => i.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="min-h-8 space-y-2" data-droppable-status={statusKey}>
+        <div className="min-h-16 space-y-2" data-droppable-status={statusKey}>
           {items.length === 0 ? (
             <div className="text-muted-foreground rounded border border-dashed px-2 py-4 text-center text-xs">
-              カードなし
+              ここにドロップ
             </div>
           ) : (
             items.map((item) => <KanbanCard key={item.id} item={item} onEdit={onEdit} />)
