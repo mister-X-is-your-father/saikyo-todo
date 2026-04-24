@@ -1,11 +1,11 @@
 import 'server-only'
 
-import { and, eq } from 'drizzle-orm'
+import { and, asc, desc, eq } from 'drizzle-orm'
 
-import { agentInvocations, agents } from '@/lib/db/schema'
+import { agentInvocations, agentMemories, agents } from '@/lib/db/schema'
 import type { Tx } from '@/lib/db/scoped-client'
 
-import type { Agent, AgentInvocation } from './schema'
+import type { Agent, AgentInvocation, AgentMemory, AgentMemoryRole } from './schema'
 
 export const agentRepository = {
   async findByRole(tx: Tx, workspaceId: string, role: string): Promise<Agent | null> {
@@ -60,5 +60,57 @@ export const agentInvocationRepository = {
       .where(eq(agentInvocations.id, id))
       .returning()
     return (row ?? null) as AgentInvocation | null
+  },
+}
+
+export const agentMemoryRepository = {
+  async insert(
+    tx: Tx,
+    values: {
+      agentId: string
+      role: AgentMemoryRole
+      content: string
+      toolCalls?: unknown
+    },
+  ): Promise<AgentMemory> {
+    const [row] = await tx
+      .insert(agentMemories)
+      .values({
+        agentId: values.agentId,
+        role: values.role,
+        content: values.content,
+        toolCalls: (values.toolCalls ?? null) as never,
+      })
+      .returning()
+    if (!row) throw new Error('insert agent_memories returned no row')
+    return row as AgentMemory
+  },
+
+  /**
+   * 指定 agent の会話履歴を「古い順」で最大 limit 件返す。
+   * 実装: created_at DESC で limit 件取って逆順にする (最新 N 件を時系列順で返す)。
+   */
+  async listRecent(tx: Tx, agentId: string, limit = 20): Promise<AgentMemory[]> {
+    const rows = await tx
+      .select()
+      .from(agentMemories)
+      .where(eq(agentMemories.agentId, agentId))
+      .orderBy(desc(agentMemories.createdAt))
+      .limit(limit)
+    return (rows as AgentMemory[]).reverse()
+  },
+
+  /** テスト用: 指定 agent の全メモリを古い順で返す。 */
+  async listAll(tx: Tx, agentId: string): Promise<AgentMemory[]> {
+    const rows = await tx
+      .select()
+      .from(agentMemories)
+      .where(eq(agentMemories.agentId, agentId))
+      .orderBy(asc(agentMemories.createdAt))
+    return rows as AgentMemory[]
+  },
+
+  async deleteByAgent(tx: Tx, agentId: string): Promise<void> {
+    await tx.delete(agentMemories).where(eq(agentMemories.agentId, agentId))
   },
 }
