@@ -46,6 +46,7 @@ export const items = pgTable(
     position: text('position').notNull().default('a0'),
     customFields: jsonb('custom_fields').notNull().default({}),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
+    doneAt: timestamp('done_at', { withTimezone: true }),
     ...createdByActor,
     ...mutationMarkers,
     ...timestamps,
@@ -55,6 +56,7 @@ export const items = pgTable(
     index('items_parent_path_gist').using('gist', t.parentPath),
     index('items_must_partial').on(t.workspaceId, t.dueDate),
     index('items_status_idx').on(t.workspaceId, t.status),
+    index('items_done_at_idx').on(t.workspaceId, t.doneAt),
   ],
 )
 
