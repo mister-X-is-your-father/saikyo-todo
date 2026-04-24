@@ -3,7 +3,7 @@
 > このファイルは context を `/clear` した後に **次の Claude (or 同一 Claude の続き)** が
 > 即座にプロジェクト状態を把握するためのもの。役目を終えたら削除して構わない。
 >
-> 最終更新: 2026-04-24 (Week 3 Day 16 完了 — 自前 embedding worker パイプライン)
+> 最終更新: 2026-04-24 (Week 3 Day 17 P1 完了 — Semantic search service)
 
 ## 1. 最初に読む順番 (5 分で把握)
 
@@ -15,7 +15,7 @@
 
 ## 2. 現在地
 
-**進捗: 16 / 33 日 (Week 3 Day 16 完了 — embedding pipeline が pg-boss 経由で稼働)**
+**進捗: 17 / 33 日 (Week 3 Day 17 P1 完了、P2 Hybrid RRF は別セッション)**
 
 完了 (要点のみ、詳細は git log):
 
@@ -63,6 +63,16 @@
   - UI `InstantiateForm`: `{{var}}` を正規表現で抽出して動的フォーム、即実行で workspace に遷移
   - TDD: pure helper 6 tests + integration 5 tests
     - 2 階層 parent_path 繋がり検証 / MUST+dod+dueOffsetDays 反映 / cron_run_id 冪等衝突
+- Week 3 Day 17 P1: Semantic search service (HNSW cosine + Template boost)
+  - `src/features/search/{schema,repository,service,service.test}.ts`
+    - `searchService.semantic({ workspaceId, query, limit?, templateBoost? })`
+    - `encodeQuery` を DI で差替え可能 (テストで mock)
+    - repository は生 SQL (pgvector `<=>` 演算子、HNSW 自動使用)
+    - boost 後 score 降順で limit 件を返す
+  - TDD: 7 tests
+    - similarity 降順 / Template boost 先頭化 / boost=1.0 無効 / limit 切詰 /
+      他 workspace 除外 (RLS 二重防御) / 空クエリ ValidationError /
+      soft-deleted doc 除外
 - Week 3 Day 16: 自前 embedding worker パイプライン (multilingual-e5-small 384次元)
   - `src/lib/ai/chunk.ts` — 固定長 + overlap の pure chunking (TDD 9 tests)
     - デフォルト maxChars=500 / overlap=50。overlap>=maxChars は throw (無限ループ防止)
@@ -123,15 +133,16 @@
 
 現在の数:
 
-- Vitest **139 tests** PASS / E2E **2 tests** PASS
+- Vitest **146 tests** PASS / E2E **2 tests** PASS
 - Plugin Registry: action 1, view 4 (core) / pg-boss queues: `agent-run`, `doc-embed`
 
 次にやること (REQUIREMENTS §7 の順):
 
-- **Week 3 Day 17**: RAG 検索 Service (HNSW cosine + workspace スコープ +
-  Template Doc 重み付け) + Hybrid 検索 (BM25 + semantic, RRF)
+- **Week 3 Day 17 P2**: Hybrid 検索 (FTS tsvector/pg_bigm + semantic の RRF)
+  - tsvector カラム + gin index migration、FTS service、RRF でフュージョン
+  - Day 10b (FTS 単独) もこの P2 で一緒に片付く想定
+- **Week 3 Day 18-21**: Researcher Agent + 分解ツール + Template 連携
 - **Day 15 の残課題 (P4 相当、Day 19+ と抱き合わせ)**: Anthropic streaming + Realtime broadcast
-- **Week 1 Day 10b (繰越)**: FTS 検索 (pg_bigm / tsvector、Day 17 と同じセッションで処理可)
 
 ## 3. 動作確認コマンド (信頼できる checkpoint)
 
