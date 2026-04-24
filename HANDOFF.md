@@ -1,268 +1,54 @@
 # HANDOFF.md — 次セッション開始用ガイド
 
-> このファイルは context を `/clear` した後に **次の Claude (or 同一 Claude の続き)** が
-> 即座にプロジェクト状態を把握するためのもの。役目を終えたら削除して構わない。
+> 最終更新: 2026-04-24 (**MVP クローズ**)
 >
-> 最終更新: 2026-04-24 (MVP Day 29 完了 — 受け入れ基準 自動検証項目すべて達成)
+> - MVP の実装 + 受け入れ検証は完了。POST_MVP.md の先頭「稼働入力」が次の山。
+> - §3 〜 §5 は実装時に踏んだ落とし穴の備忘録として残す。POST_MVP 作業時も参照価値あり。
 
-## 0. セッション開始直後にやること (TL;DR)
+## 0. MVP クローズ宣言
 
-**今すぐやるべきは "手動の受け入れ検証" のみ** (自動テストはすべて green)。
-
-1. ユーザーに `ANTHROPIC_API_KEY` があるか確認 (無ければ AI 検証をスキップして clear 候補)
-2. Supabase / worker を起動:
-   ```bash
-   pnpm exec supabase status   # 動いていれば OK、止まってたら pnpm db:start
-   pnpm worker &                # 別ターミナル (pg-boss 消費者 + daily cron)
-   pnpm dev                    # http://localhost:3001
-   ```
-3. ブラウザで以下を手動確認 (ws 作成 → サンプル Template が自動投入される):
-   - Workspace に入り Backlog view → Item に「AI 分解」「AI 調査」ボタン
-   - ヘッダの「PM Stand-up」「Heartbeat」ボタン
-   - Dashboard view の「AI コスト (直近 3 ヶ月)」テーブル
-4. 問題が見つかったら §6 の該当章を参照して修正
-
-**手動検証が終わって OK なら MVP 完了**。残課題は POST_MVP.md へ。
+- 受け入れ基準 **8/8 自動 PASS** (Template seed / Heartbeat 冪等 / AI 分解 / AI 調査 /
+  PM Stand-up / invocations cost / monthly 集計 / 越境 RLS)
+- 自動テスト: Vitest **227**, E2E **3**, 受け入れ検証 **8/8**
+- AI 検証は Anthropic API Key なし (**Claude Code Max プラン OAuth + MCP 経由**) で通る:
+  ```bash
+  NODE_OPTIONS="--conditions=react-server" \
+    pnpm tsx --env-file=.env.local scripts/verify-acceptance.ts
+  ```
+  本番は `ANTHROPIC_API_KEY` を `.env.local` に入れて Next 側で叩く想定 (検証スクリプトとは別経路)。
 
 ## 1. 最初に読む順番 (5 分で把握)
 
-1. **本書** (HANDOFF.md) — 現在地と次の一手
+1. **本書** (HANDOFF.md) — MVP クローズの宣言 + 落とし穴メモ
 2. `CLAUDE.md` — AI 向け規約 (短縮版, 必読)
-3. `git log --oneline | head -10` — 直近の commit 履歴
-4. `REQUIREMENTS.md` (§7 スケジュール部分だけでも) — どこを作っているか
-5. 詳細が必要になったら: `ARCHITECTURE.md` (規約) / `~/.claude/plans/smooth-dancing-aurora.md` (実装プラン)
+3. `POST_MVP.md` — 次に着手する機能 (先頭の「稼働入力」最優先)
+4. `git log --oneline | head -10` — 直近の commit 履歴
+5. 詳細が必要になったら: `ARCHITECTURE.md` (規約) / `REQUIREMENTS.md` (受け入れ基準)
 
 ## 2. 現在地
 
-**進捗: 29 / 33 日 (Day 28-29 受け入れ基準まわり完了。Day 30 はバッファ)**
+**MVP クローズ済 (2026-04-24)**。詳細な開発ログは `git log` を参照。
 
-完了 (要点のみ、詳細は git log):
+完成したスコープ (主要ブロックのみ):
 
-- Week 0: 基盤 (Next.js 16 + Supabase + Drizzle + shadcn + e5 + Anthropic SDK PoC)
-- Week 1 Day 1-4: Drizzle schema 26 テーブル / auth guard / Item CRUD (楽観ロック + DoD + audit)
-  **RLS soft-delete バグ発見・修正・規約化**
-- Week 1 Day 5: Doc / Comment feature (Item パターン踏襲 + PoC RLS 漏洩検証)
-- Week 1 Day 6 (ltree): findDescendants / moveSubtree (FOR UPDATE + 自己ループ検知) + PoC 10
-  - `itemService.move` 統合 + 別 workspace 防御
-- Week 1 Day 6b: `reorderSiblings` — position を **numeric → text** migration (a0, a1,...)
-  - `fractional-indexing` 標準採用 + `itemService.reorder` + useReorderItem (楽観更新)
-- Week 1 Day 7: QueryClientProvider + item hooks.ts (楽観更新複数) + CommandPalette (cmdk)
-- Week 1 Day 7.5 **テスト駆動開発切替**:
-  - src/test/fixtures.ts (実 Supabase + auth guard mock パターン)
-  - itemService / docService / commentService / fractional-position の Vitest integration
-  - **audit_log の RLS INSERT policy 欠落バグを検出・修正**
-  - Playwright baseline E2E (login → workspace → Item 作成)
-  - CLAUDE.md §6 を TDD 運用に更新
-- Week 2 Day 8: Plugin Registry (types / registry / register\* / core 一括 bootstrap + Vitest)
-- Week 2 Day 9: Kanban View (dnd-kit、DnD で status 切替 + reorder、楽観更新)
-  - **TDD 初サイクル**: `workspaceService.listStatuses` 失敗テスト先 → 実装 → green
-- Week 2 Day 10a: Backlog View (react-table + react-virtual) + nuqs URL フィルタ
-  - view switcher (kanban / backlog / gantt)
-- Week 2 Day 11: Gantt View (自作、棒のみ、date-fns) — gantt-task-react は
-  React 18 peerDeps で不可、SVG 不要なら div + Tailwind で十分
-- Week 2 Day 12: MUST Dashboard (4th ViewPlugin) + WIP 警告 + Recharts Burndown + DoD 最終化
-  - `items.done_at` + BEFORE trigger (status type=done で自動セット/クリア)。burndown 単純化
-  - `src/features/dashboard/` — getMustSummary / getBurndown (TDD: service.test.ts 8 tests)
-  - Dashboard View: StatCard x4 / WIP 警告バナー / Recharts LineChart 14 日 / MUST 一覧
-  - `itemService.updateStatus` に MUST+done 時の DoD 必須 belt-and-suspenders 追加
-    (通常は create/update で invariant 保証、直接 DB 更新への二重防御)
-- Week 2 Day 13: Template Drizzle feature (CRUD + 子 item CRUD) + 基本 UI
-  - `src/features/template/` — templateService / templateItemService (TDD: 14 tests)
-    - recurring kind は scheduleCron 必須 (create + update 両方で検証)
-    - templateItemService は templateId → workspaceId を scoped tx で引き直して member gate
-    - isMust=true は dod 必須 (Item 規約を踏襲)
-  - `/w/[workspaceId]/templates` 新規ページ + workspace ヘッダに導線
-  - templates-panel: 作成フォーム + カード inline expansion、削除は楽観ロック付き
-  - template-items-editor: 子 item 追加 / 一覧 / 削除 (parent_path は Day 14 で階層対応)
-- Week 2 Day 14: Template instantiate (展開) + "即実行" UI
-  - `instantiate-plan.ts` — pure helper (Mustache 変数展開、depth 昇順で label map 構築、
-    template 世界の parent_path を items 世界に翻訳、dueOffsetDays → ISO 日付)
-  - `templateService.instantiate` — cron_run_id 事前 lookup → plan 生成 → items + inst 挿入
-    - audit (action='instantiate')。1 Tx で部分成功させない
-  - UI `InstantiateForm`: `{{var}}` を正規表現で抽出して動的フォーム、即実行で workspace に遷移
-  - TDD: pure helper 6 tests + integration 5 tests
-    - 2 階層 parent_path 繋がり検証 / MUST+dod+dueOffsetDays 反映 / cron_run_id 冪等衝突
-- Week 4 Day 28-29: 受け入れ基準残り + Dashboard UI
-  - サンプル Template「クライアント onboarding」を workspace 作成時に自動投入
-    (`seed-templates.ts`、子 Item 4 件のうち 1 件は `agent_role_to_invoke='researcher'`)
-  - Cross-workspace RLS 漏洩テスト (`src/test/rls-cross-workspace.test.ts`) —
-    2 user/2 ws を立てて anon client で select/insert 越境を 6 ケース遮断確認
-  - AI コスト月次集計 API (`cost-aggregate.ts`) + Server Action + hook +
-    DashboardView に「AI コスト (直近 3 ヶ月)」テーブル Card を追加
-  - TDD: seed 1 / RLS 6 / cost 2 = 9 新規、全 227 tests PASS
-- Week 4 Day 27: Golden path E2E + README 整備
-- Week 4 Day 26: Docker Compose 自前ホスト構成
-  - `Dockerfile` (web, Next.js standalone) / `Dockerfile.worker` (pg-boss worker)
-  - `docker-compose.yml` — web / worker / caddy / db-backup (pg_dump 日次 gzip 保持 7 日)
-  - `deploy/Caddyfile` + `deploy/backup.sh` + `.env.production.example`
-- Week 4 Day 25: pg-boss schedule で PM Standup + recurring Template 自動化
-  - `pm-standup-tick` (毎日 09:00 UTC) / `pm-standup` (per-ws 実行) /
-    `template-cron-tick` (15 分おき)
-  - recurring Template は cron_run_id UNIQUE で重複展開 DB ブロック
-- Week 4 Day 24: Realtime items 購読 — postgres_changes → TanStack Query invalidate
-  (300ms debounce)。migration `20260424180000_realtime_publication.sql` で publication 追加
-- Week 4 Day 23: MUST Heartbeat + 3 段エスカレーション (7d/3d/1d)
-  - `features/heartbeat/service.ts` — pure helpers + scanWorkspace + unreadCount
-  - 同 (user, ws, item, stage) 通知は冪等 insert。HeartbeatButton をヘッダに配置
-- Week 4 Day 22: PM Agent (system prompt + whitelist + Stand-up)
-  - `roles/pm.ts` + `PM_TOOLS` (create_item/instantiate_template 除外) + `pmService.run` /
-    `runStandup`。`runStandupAction` + `StandupButton` をヘッダに配置
-- Week 3 Day 21: instantiate_template tool + agent_role_to_invoke 自動起動
-  - `templateService.instantiateForAgent` — adminDb + actor='agent' 版。既存 `instantiate`
-    と内部 Tx を `_instantiateInTx` に抽出して共有。workspace 整合を二重防御
-  - Researcher whitelist 8 本目: `instantiate_template` (variables object + rootTitleOverride)
-  - `researcher-decompose` pg-boss キュー新設 + `handleResearcherDecompose` worker
-    (researcherService.decomposeItem を呼ぶ)。`workers/start.ts` に登録
-  - `_instantiateInTx` が `autoInvocations: [{itemId, role}]` を返し、Tx commit 後に
-    `_enqueueAutoInvocations` が `researcher-decompose` へ送信 (role!=researcher は warn skip)
-  - TDD: 6 新規、全 207 tests PASS
-- Week 3 Day 20: Action plugin "AI 調査" (Researcher → Doc 生成)
-  - `create_doc` tool を Researcher whitelist に追加 (7 本目)。adminDb で doc insert +
-    actor=agent + audit + Tx commit 後 enqueueJob('doc-embed') で embedding パイプライン連動
-  - `researcherService.researchItem` orchestrator — 調査用 prompt は search_docs →
-    create_doc の順序を誘導 (Markdown 300〜3000 字目安)
-  - `researchItemAction` / `researchItemActionPlugin` + `useResearchItem` hook +
-    `ItemResearchButton` を BacklogView アクション列に並べて配置 (column size 220)
-  - TDD: 7 新規、全 201 tests PASS
-- Week 3 Day 19: Action plugin "AI 分解" (Researcher が子 Item 群を生成)
-  - `create_item` tool に `parentItemId` サポート追加 (fullPathOf で parent_path 自動設定、
-    workspace 越境は parent_not_in_workspace で拒否)
-  - `researcherService.decomposeItem(workspaceId, itemId, extraHint?)` — 対象 Item を
-    引いて分解用 user prompt を組み立て、run() に委譲。`buildDecomposeUserMessage` は
-    pure helper (title / description / MUST+DoD / 手順を展開)
-  - `decomposeItemAction` Server Action — requireWorkspaceMember('member') + zod +
-    actionWrap。idempotencyKey は未指定時サーバで生成
-  - `decomposeItemActionPlugin` を core plugin に登録 (status=done 時は applicable false)
-  - UI: `useDecomposeItem` hook + `ItemDecomposeButton` + BacklogView に 6 列目
-    「アクション」を追加 (factory `buildColumns(workspaceId)` で workspaceId を bind)
-  - TDD: tools 3 新規 / researcher 4 新規 / actions 3 新規 / registry 1 新規 = 11 新規、
-    全 194 tests PASS
-  - Kanban card はドラッグ領域のためボタンは後回し (Day 20+ でメニュー化予定)
-- Week 3 Day 18: Researcher Agent (system prompt + tool whitelist + agent_memories)
-  - `src/features/agent/memory-service.ts` + repository: adminDb で append / loadRecent
-    (past 20 件、古い順で返す → Anthropic messages に直接 feed)。RLS は読み ws-member,
-    書き service_role 前提 (CLAUDE.md 方針)
-  - `src/features/agent/tools/` — Researcher tool whitelist (6 本):
-    - `read_items` / `read_docs` / `search_items` / `search_docs` (hybrid RRF)
-    - `create_item` / `write_comment` (actor=agent、audit 記録)
-    - `instantiate_template` は Day 21 で追加予定 (別タスク分離)
-    - `delete_*` は MVP で渡さない (CLAUDE.md 方針)
-    - 各 handler は `buildResearcherTools(ctx)` で workspace/agent を bind → `executeToolLoop`
-      にそのまま渡せる shape。tool 入力の zod 検証、workspace 越境不可
-  - `src/features/agent/roles/researcher.ts` — role 定義 (model=claude-sonnet-4-6,
-    systemPromptVersion=1, maxIterations=8, memoryLimit=20)。system prompt は 1 画面に
-    収まる分量、日本語。将来 `agent_prompts` テーブル読み込みに差し替え可
-  - `src/features/agent/researcher-service.ts` — 実行エントリ。ensureAgent → 過去 memory
-    復元 (user/assistant のみ、tool\_\* は記録のみで再生しない) → queued→running INSERT →
-    executeToolLoop → 各 tool 呼びを memory に append → 最終 assistant を append →
-    completed + cost/tokens/audit。失敗時は failed + errorMessage + audit
-  - TDD: memory 5 / tools 15 / researcher 7 = 27 新規。全 181 tests PASS
-  - 注記: agent_invocations の UPDATE policy は無い (worker=service_role のみライター)
-    方針を継続。Researcher 経路も adminDb.transaction で書いている
-- Week 3 Day 17 P1+P2: Search service (Semantic + FullText + Hybrid RRF)
-  - `src/features/search/{schema,repository,service,service.test}.ts`
-    - `searchService.semantic` — pgvector `<=>` cosine + HNSW + Template boost
-    - `searchService.fullText` — pg_trgm `word_similarity()` + GIN + Template boost
-      (閾値 0.2 を explicit。既定 0.6 は短いクエリに厳しすぎる)
-    - `searchService.hybrid` — semantic と fullText を RRF (k=60) で fusion
-      上位の chunkId を Map で merge、各リストでの rank=1/(k+rank) を合算、
-      Template boost を RRF score に乗せる
-    - `encodeQuery` を DI で差替え可能 (テストで mock、実モデル不要)
-    - repository は生 SQL (index 直接使用のため drizzle-orm query builder 不使用)
-  - migration: `20260424170000_doc_chunks_trgm.sql` — pg_trgm GIN index
-  - **ARCHITECTURE.md #U の pg_bigm 採用は訂正**: Supabase local に pg_bigm は
-    無かったが、pg_trgm (既に install 済) + pgroonga (未使用) が使えた。
-    pg_trgm で MVP 十分という判断 (日本語は trigram で実用可)
-  - TDD: 15 tests
-    - semantic 7 (similarity 降順 / boost / limit / 他 ws 除外 / 空クエリ / soft-delete)
-    - fullText 4 (部分一致 / 無マッチ 0件 / boost / 空クエリ)
-    - hybrid 4 (RRF 両方ヒット上位 / 片方のみでも union / boost / 空クエリ)
-- Week 3 Day 16: 自前 embedding worker パイプライン (multilingual-e5-small 384次元)
-  - `src/lib/ai/chunk.ts` — 固定長 + overlap の pure chunking (TDD 9 tests)
-    - デフォルト maxChars=500 / overlap=50。overlap>=maxChars は throw (無限ループ防止)
-  - `src/lib/ai/embedding.ts` — `Xenova/multilingual-e5-small` ONNX singleton
-    - `encodeTexts(texts)` — "passage: " prefix 付与、normalize 済 (cosine=dot)
-    - `encodeQuery(query)` — "query: " prefix (Day 17 RAG 検索で使う)
-  - `supabase/migrations/20260424160000_doc_chunks_hnsw.sql` —
-    pgvector HNSW index (cosine_ops)
-  - `src/features/doc/embedding.ts` — `embedDoc(docId)` orchestrator
-    - 存在しない/soft-deleted/空本文 は skipped 理由付きで早期 return
-    - chunks を Tx 内で全削除 → 再 insert でアトミック置換 (再実行冪等)
-    - encoder は DI (テストで mock)
-  - `src/features/doc/worker.ts` — `doc-embed` キュー handler (batch 処理)
-  - `src/lib/jobs/queue.ts` の QUEUE_NAMES に `doc-embed` 追加
-  - `docService.create` 後に enqueueJob、`update` は title/body 変更時のみ enqueue
-    (sourceTemplateId 等の無関係 patch で re-embed しない最適化)
-  - `src/workers/start.ts` に `doc-embed` handler を登録
-  - TDD: chunk 9 / embedDoc 6 / docService enqueue 検証 2 = 17 新規
-  - PoC `scripts/poc-doc-embed.ts` — 実モデルロード → doc 作成 → worker pickup →
-    doc_chunks に 384次元 vector が入ることを確認
-- Week 3 Day 15 P3: Agent tool loop 自前実装 (`executeToolLoop`)
-  - `src/lib/ai/tool-loop.ts` — Anthropic Messages API の tool_use ループ
-    - invokeModel を DI で差し替え可能 → テストで mock
-    - stop_reason='tool_use' を検出 → handler 並列実行 → tool_result 追記 → 再呼出
-    - maxIterations (既定 10) で無限ループ防止
-    - usage 累積 / toolCalls 履歴 / finalMessages 返却
-  - Day 19+ の "AI 分解" / Researcher が使う土台 (runInvocation への統合はまだ)
-  - TDD: 6 tests (no-tool / 1 tool call / 複数 tool 並列 / handler 欠落 / max iter / 遅延 handler)
-- **Day 15 P4 以降に残り**: Anthropic streaming + Supabase Realtime broadcast の基盤。
-  **UI 消費者が無い状態で書くと dead code になる**ため、Day 19+ で Researcher UI が必要に
-  なったタイミングで統合する予定 (切り分けの合理性判断)
-- Week 3 Day 15 P2: pg-boss + worker プロセス分離
-  - `src/lib/jobs/queue.ts` — pg-boss 12 singleton ラッパ (`startBoss` / `stopBoss` /
-    `enqueueJob` / `registerWorker`)。queue 名は v10+ で明示作成必須なので
-    `QUEUE_NAMES` (現状 `agent-run` のみ) をまとめて `createQueue`
-  - `src/workers/start.ts` — worker プロセスエントリ。`pnpm worker` で起動。
-    SIGTERM / SIGINT で graceful shutdown
-  - `src/features/agent/worker.ts` — `agent-run` handler。runInvocation を呼んで
-    Result.err は throw しない (pg-boss retry で多重実行を招かないため)
-  - `agentService.enqueue` が wasNew=true のとき `enqueueJob('agent-run', ...)` で送信
-    (既存 row の再送は pickup 済の可能性あるため skip)
-  - `pnpm worker` スクリプト (`NODE_OPTIONS=--conditions=react-server tsx`)
-  - テスト: `vi.mock('@/lib/jobs/queue', ...)` で全テスト差し替え、
-    enqueue 新規時のみ send され再送時はされないケースを追加
-  - PoC `scripts/poc-worker.ts` (worker をこのプロセス内で起動して end-to-end 確認)
-- Week 3 Day 15 P1: Anthropic SDK ラッパ + 同期版 agentService (TDD)
-  - `src/lib/ai/{client,invoke,pricing}.ts` — Anthropic SDK singleton、
-    非ストリーミング `invokeModel` ラッパ (normalized shape)、モデル別 cost 計算
-  - `src/features/agent/{schema,repository,service,service.test}.ts`
-    - `ensureAgent(wsId, role)` — adminDb で idempotent upsert (agents は system 管理)
-    - `enqueue` — user 文脈で queued INSERT、idempotencyKey 冪等、audit (actor=user)
-    - `runInvocation` — adminDb で queued→running→completed/failed 遷移、
-      tokens/cost/output 記録、audit (actor=agent)。worker が将来 pickup する前提
-    - `invokeSync` — enqueue + runInvocation 便利メソッド (PoC / 初期 Server Action 用)
-  - TDD: pricing 6 tests + agent service 13 tests (ensureAgent / enqueue / runInvocation /
-    invokeSync、Anthropic は `vi.mock('@/lib/ai/invoke')` で差し替え、RLS / audit 本物)
-  - PoC `scripts/poc-agent.ts` — ANTHROPIC_API_KEY あれば実 API 叩く構成 (未設定時 skip)
+- **認証 + RLS**: Supabase Auth + workspace_members / ws-scoped policies。
+  soft-delete + RLS の既知の罠は §4.1 参照
+- **Item**: ltree 階層 + 楽観ロック + fractional-indexing position + MUST/DoD 不変条件
+- **Doc / Comment**: Item と同じ CRUD パターン。embedding は worker 経由で非同期
+- **View plugin**: Kanban (dnd-kit) / Backlog (react-table) / Gantt (自作 div) / Dashboard (Recharts)
+- **Template**: 手動 / recurring (pg-boss cron + cron_run_id 冪等) / Mustache 変数展開 / 即実行 UI
+- **AI Agent**: Researcher (Sonnet, whitelist 8 tools) / PM (Haiku, whitelist 6 tools) +
+  `executeToolLoop` 自前実装 + agent_memories 永続化 + agent_invocations cost 集計
+- **RAG**: multilingual-e5-small 384 次元 + pgvector HNSW + pg_trgm 全文 + RRF Hybrid
+- **自動化**: pg-boss worker 6 queues / daily Stand-up / MUST Heartbeat 3 段エスカレ
+- **受け入れ検証**: `scripts/verify-acceptance.ts` 8 項目並列 (§6 参照)
+- **配信**: Docker Compose (web / worker / caddy / db-backup pg_dump 日次)
 
-現在の数:
+数値:
 
-- Vitest **227 tests** PASS / E2E **3 tests** PASS (smoke 2 + golden path 1)
+- Vitest **227** PASS / Playwright E2E **3** PASS / 受け入れ検証 **8/8** PASS
+- Drizzle schema **26** テーブル / RLS policy 全テーブル
 - Plugin Registry: action 3 / view 4 / pg-boss queues 6
-- Researcher whitelist 8 / PM whitelist 6
-- 受け入れ基準 自動検証項目はすべて充足:
-  - [x] pnpm dev + supabase start で全機能動く
-  - [x] 2 workspace 越境 RLS 遮断 (rls-cross-workspace.test.ts)
-  - [x] サンプル Template 1 個自動投入 (seed-templates.ts)
-  - [x] MUST Heartbeat 7d/3d/1d 通知
-  - [x] recurring Template cron_run_id 冪等
-  - [x] AI コスト月次集計 (Dashboard UI)
-
-残りの手動検証 (ANTHROPIC_API_KEY 必要):
-
-- Researcher 「AI 分解」「AI 調査」ボタンで子 Item / Doc が生成されること
-- PM 「Stand-up」ボタンで Daily Stand-up Doc が生成されること
-
-Day 30 はバッファ。post-MVP 候補:
-
-- Anthropic streaming + Supabase Realtime push UI (Day 15 からの繰越)
-- TZ 別 cron + cron-parser (現状は全 workspace UTC 09:00)
-- `workspace_announcements` テーブル (現状 PM 出力は Doc のみ)
-
-MVP 完了直後の次タスク候補 (POST_MVP 先頭に記載):
-
-- **「稼働入力」機能** (Item への作業時間記録)。要件定義は別途
-  `docs/spec-time-entries.md` で整理予定。MVP の Item / Workspace / RLS をそのまま使う想定
 
 ## 3. 動作確認コマンド (信頼できる checkpoint)
 
@@ -429,55 +215,47 @@ return err(new NotFoundError('...'))
 throw new AuthError()                      // ガード違反
 ```
 
-## 6. 手動検証チェックリスト (MVP クリア条件)
+## 6. 受け入れ検証 (自動化済)
 
-ANTHROPIC_API_KEY 設定後、`pnpm dev` + `pnpm worker` + ブラウザで以下を確認。
-失敗したら該当 feature (パス明記) を調査。
+MVP 受け入れ基準は `scripts/verify-acceptance.ts` 1 本で 8 項目を並列検証する:
 
-### 6.1 基礎操作 (API Key 不要)
+```bash
+NODE_OPTIONS="--conditions=react-server" \
+  pnpm tsx --env-file=.env.local scripts/verify-acceptance.ts
+```
 
-- [ ] signup / login → workspace 一覧 → 新規 workspace 作成
-- [ ] 作成直後に **サンプル Template "クライアント onboarding"** が自動投入されている
-      (Templates ページ / `features/workspace/seed-templates.ts`)
-- [ ] Item を作成、Kanban / Backlog / Gantt / Dashboard の 4 ビューを切替
-- [ ] Backlog 行の「AI 分解」「AI 調査」ボタンが表示される (Item status=done では disabled)
-- [ ] ヘッダの「Heartbeat」ボタンで通知テーブルに row 追加 (2 回押して冪等)
-- [ ] Dashboard の「AI コスト (直近 3 ヶ月)」テーブルが空状態メッセージ or データ表示
+カバー内容 (全項目 PASS を確認済):
 
-### 6.2 AI 操作 (要 ANTHROPIC_API_KEY)
+- サンプル Template 自動投入 (ws 作成時)
+- MUST Item + Heartbeat 冪等 (7d/3d/1d stage)
+- AI 分解 (Researcher → 子 Item) — claude CLI + MCP 経由
+- AI 調査 (Researcher → Doc 生成) — 同上
+- PM Stand-up (Daily Doc) — 同上
+- agent_invocations に cost/tokens/audit
+- Dashboard 月次コスト集計
+- 越境 RLS (別途 `src/test/rls-cross-workspace.test.ts` 6 ケース)
 
-- [ ] MUST=true + DoD 入りの Item に「AI 分解」 → 子 Item が 3〜5 件作られ parent_path 連結
-      (`src/features/agent/researcher-service.ts` decomposeItem)
-- [ ] Item に「AI 調査」 → Doc が 1 本作られ `doc_chunks` に embedding 384 次元が入る
-      (`src/features/doc/embedding.ts` / worker が拾う)
-- [ ] ヘッダ「PM Stand-up」 → 今日の Stand-up Doc が作成される
-      (`src/features/agent/pm-service.ts`)
-- [ ] `agent_invocations` に cost_usd / tokens が記録され、Dashboard の月次集計に反映
-- [ ] Template を recurring + scheduleCron で作っておくと worker が cron_run_id 冪等で展開
-      (`src/features/agent/cron-workers.ts` handleTemplateCronTick)
+AI 系は Claude Code Max プラン経由 (OAuth) なので `ANTHROPIC_API_KEY` 無しでも検証完走。
+本番 Next.js は `ANTHROPIC_API_KEY` で Anthropic SDK を直接叩く (別経路)。
 
-### 6.3 越境チェック (vitest 既に担保、二重確認用)
+### 失敗時の挙動 (本番相当)
 
-- [ ] 2 つ目の user + workspace を作って、user1 で URL 直打ちしても user2 の ws 404 / リダイレクト
-      (自動: `src/test/rls-cross-workspace.test.ts` 6 ケース)
+- Agent が Anthropic エラーを返した場合、`agent_invocations.status=failed` +
+  `error_message` 記録、UI は toast.error
+- 期限超過 MUST は 1d stage で Heartbeat 通知
 
-### 6.4 失敗シナリオ
+## 7. 次にやること
 
-- Research / PM Agent で Anthropic がエラーを返した場合、`agent_invocations.status=failed`
-  - `error_message` に記録、UI は toast.error を出す
-- 期限超過 MUST が 1d stage で通知される (dueDate in past でも 1d 扱い)
+**POST_MVP.md 先頭の「稼働入力」が最優先**。他候補も同ファイルにリストあり。
 
-## 7. post-MVP 候補 (MVP クリア後にやる)
+本セッションで積み残した候補 (POST_MVP.md へ移す):
 
-`POST_MVP.md` 先頭の 🚩「稼働入力」が最優先。そのほか本セッションで積み残した候補:
-
-- Anthropic streaming + Supabase Realtime push UI (Day 15 からの繰越、UI 体験向上)
-- TZ 別 cron + `cron-parser` 導入 (現状は全 workspace UTC 09:00 固定)
-- `workspace_announcements` テーブル追加 (現状 PM 出力は Doc のみ。専用テーブルで
-  Stand-up を別ストリームにできる)
-- `agent_prompts` テーブルから PM / Researcher の system prompt を動的読込
-- Kanban カードにも Agent アクション (現状は Backlog のみ)
-- E2E の AI パス (real Anthropic or Mock Service Worker + invokeModel DI)
+- Anthropic streaming + Supabase Realtime push UI
+- TZ 別 cron + `cron-parser` (現状 UTC 09:00 固定)
+- `workspace_announcements` テーブル (PM 出力ストリーム分離)
+- `agent_prompts` テーブルから system prompt 動的読込
+- Kanban カードにも Agent アクション
+- E2E の AI パス (real Anthropic or MSW + invokeModel DI)
 
 ## 8. その他
 
