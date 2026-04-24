@@ -14,6 +14,7 @@
 import { registerAction, registerView } from '../registry'
 import { reloadItemsAction } from './actions/reload-items'
 import { backlogViewPlugin } from './views/backlog'
+import { ganttViewPlugin } from './views/gantt'
 import { kanbanViewPlugin } from './views/kanban'
 
 let registered = false
@@ -23,5 +24,6 @@ export function registerCorePlugins(): void {
   registerAction(reloadItemsAction)
   registerView(kanbanViewPlugin)
   registerView(backlogViewPlugin)
+  registerView(ganttViewPlugin)
   registered = true
 }

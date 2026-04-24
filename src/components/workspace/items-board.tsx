@@ -22,13 +22,14 @@ import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BacklogView } from '@/components/workspace/backlog-view'
+import { GanttView } from '@/components/workspace/gantt-view'
 import { KanbanView } from '@/components/workspace/kanban-view'
 
 interface Props {
   workspaceId: string
 }
 
-const VIEWS = ['kanban', 'backlog'] as const
+const VIEWS = ['kanban', 'backlog', 'gantt'] as const
 type ViewKey = (typeof VIEWS)[number]
 
 export function ItemsBoard({ workspaceId }: Props) {
@@ -103,6 +104,15 @@ export function ItemsBoard({ workspaceId }: Props) {
         keywords: ['backlog', 'list'],
       },
       {
+        id: 'view-gantt',
+        label: 'ビューを Gantt に切替',
+        group: 'ビュー',
+        run: async () => {
+          await setView('gantt')
+        },
+        keywords: ['gantt', 'timeline'],
+      },
+      {
         id: 'focus-new',
         label: '新規 Item 入力にフォーカス',
         group: 'Item',
@@ -163,6 +173,14 @@ export function ItemsBoard({ workspaceId }: Props) {
         >
           Backlog
         </Button>
+        <Button
+          variant={view === 'gantt' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setView('gantt')}
+          data-testid="view-gantt-btn"
+        >
+          Gantt
+        </Button>
         <div className="ml-4 flex items-center gap-2 text-sm">
           <label className="flex items-center gap-1">
             <input
@@ -199,6 +217,8 @@ export function ItemsBoard({ workspaceId }: Props) {
         <EmptyState title="まだ Item がありません" description="上のフォームから作成してください" />
       ) : view === 'backlog' ? (
         <BacklogView workspaceId={workspaceId} items={filtered} />
+      ) : view === 'gantt' ? (
+        <GanttView workspaceId={workspaceId} items={filtered} />
       ) : (
         <KanbanView workspaceId={workspaceId} items={filtered} />
       )}

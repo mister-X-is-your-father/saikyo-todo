@@ -61,6 +61,15 @@ test('baseline: login → workspace 作成 → Item 作成 → 一覧表示', as
     // フィルタ解除
     await page.getByTestId('filter-status').selectOption('')
     await expect(page.getByTestId('backlog-view').getByText('E2E smoke item')).toBeVisible()
+
+    // Gantt view に切替 → URL に ?view=gantt / dates 無しなので placeholder 表示
+    await page.getByTestId('view-gantt-btn').click()
+    await expect(page).toHaveURL(/[?&]view=gantt/)
+    await expect(page.getByTestId('gantt-view')).toBeVisible()
+    // この item は dates 未設定なので bar は出ず placeholder
+    await expect(
+      page.getByTestId('gantt-view').getByText(/startDate \/ dueDate が両方設定された/),
+    ).toBeVisible()
   } finally {
     await user.cleanup()
   }
