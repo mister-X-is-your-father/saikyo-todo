@@ -3,7 +3,7 @@
 > このファイルは context を `/clear` した後に **次の Claude (or 同一 Claude の続き)** が
 > 即座にプロジェクト状態を把握するためのもの。役目を終えたら削除して構わない。
 >
-> 最終更新: 2026-04-24 (Week 3 Day 18 完了 — Researcher Agent system prompt + tool whitelist + agent_memories)
+> 最終更新: 2026-04-24 (Week 3 Day 19 完了 — Action plugin "AI 分解" + BacklogView UI)
 
 ## 1. 最初に読む順番 (5 分で把握)
 
@@ -15,7 +15,7 @@
 
 ## 2. 現在地
 
-**進捗: 18 / 33 日 (Week 3 Day 18 完了 — Researcher Agent 基盤)**
+**進捗: 19 / 33 日 (Week 3 Day 19 完了 — AI 分解 Action + UI)**
 
 完了 (要点のみ、詳細は git log):
 
@@ -63,6 +63,20 @@
   - UI `InstantiateForm`: `{{var}}` を正規表現で抽出して動的フォーム、即実行で workspace に遷移
   - TDD: pure helper 6 tests + integration 5 tests
     - 2 階層 parent_path 繋がり検証 / MUST+dod+dueOffsetDays 反映 / cron_run_id 冪等衝突
+- Week 3 Day 19: Action plugin "AI 分解" (Researcher が子 Item 群を生成)
+  - `create_item` tool に `parentItemId` サポート追加 (fullPathOf で parent_path 自動設定、
+    workspace 越境は parent_not_in_workspace で拒否)
+  - `researcherService.decomposeItem(workspaceId, itemId, extraHint?)` — 対象 Item を
+    引いて分解用 user prompt を組み立て、run() に委譲。`buildDecomposeUserMessage` は
+    pure helper (title / description / MUST+DoD / 手順を展開)
+  - `decomposeItemAction` Server Action — requireWorkspaceMember('member') + zod +
+    actionWrap。idempotencyKey は未指定時サーバで生成
+  - `decomposeItemActionPlugin` を core plugin に登録 (status=done 時は applicable false)
+  - UI: `useDecomposeItem` hook + `ItemDecomposeButton` + BacklogView に 6 列目
+    「アクション」を追加 (factory `buildColumns(workspaceId)` で workspaceId を bind)
+  - TDD: tools 3 新規 / researcher 4 新規 / actions 3 新規 / registry 1 新規 = 11 新規、
+    全 194 tests PASS
+  - Kanban card はドラッグ領域のためボタンは後回し (Day 20+ でメニュー化予定)
 - Week 3 Day 18: Researcher Agent (system prompt + tool whitelist + agent_memories)
   - `src/features/agent/memory-service.ts` + repository: adminDb で append / loadRecent
     (past 20 件、古い順で返す → Anthropic messages に直接 feed)。RLS は読み ws-member,
@@ -162,16 +176,16 @@
 
 現在の数:
 
-- Vitest **181 tests** PASS / E2E **2 tests** PASS
-- Plugin Registry: action 1, view 4 (core) / pg-boss queues: `agent-run`, `doc-embed`
+- Vitest **194 tests** PASS / E2E **2 tests** PASS
+- Plugin Registry: action 2 (reload + ai-decompose), view 4 / pg-boss queues:
+  `agent-run`, `doc-embed`
 - Researcher tool whitelist: 6 本 (read_items / read_docs / search_docs / search_items /
-  create_item / write_comment)。instantiate_template は Day 21
+  create_item (parentItemId 対応) / write_comment)。instantiate_template は Day 21
 
 次にやること (REQUIREMENTS §7 の順):
 
-- **Week 3 Day 19**: Action plugin "AI 分解" — Item を選んで Researcher に渡し、
-  子 Item 群を parent_path 自動で作成。Server Action + plugin core 登録 + UI
-- **Week 3 Day 20**: Action plugin "AI 調査" — Item → Doc 生成 + doc-embed enqueue 連動
+- **Week 3 Day 20**: Action plugin "AI 調査" — Item → Doc 生成 + doc-embed enqueue 連動。
+  Researcher に `create_doc` tool を追加 (新規) + decomposeItem と同様のラッパを作る
 - **Week 3 Day 21**: Researcher に `instantiate_template` tool を追加 +
   `agent_role_to_invoke` 自動起動 + 進捗ストリーム UI
 - **Day 15 の残課題 (Day 19+ と抱き合わせ)**: Anthropic streaming + Realtime broadcast UI
