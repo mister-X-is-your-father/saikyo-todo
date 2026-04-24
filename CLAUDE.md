@@ -82,11 +82,21 @@
   `CREATE TABLE "auth"."users"` が含まれる。**生成直後にこの 2 ブロックを手動で削除/コメントアウト**
   すること (Supabase 管理テーブルなので作成不要)。コミット前に `pnpm db:reset` で確認。
 
-### 6. テスト
+### 6. テスト (TDD 運用)
 
-- Service の主要 happy path + 権限 + DoD 分岐は **必ず** Vitest
-- Component テストは書かない
-- E2E は golden path 1 本のみ (Playwright)
+- **新規 Service method / branch は失敗テスト先行**。red → green → refactor。
+- Service test は **実 Supabase** (local docker) + `vi.mock('@/lib/auth/guard')` で guard だけ stub。
+  RLS / trigger / constraint は本物を通す。
+  - fixture: `src/test/fixtures.ts` の `createTestUserAndWorkspace` + `mockAuthGuards`
+  - 実行前提: `pnpm exec supabase status` で Supabase 起動中
+  - config: `vitest.config.ts` の `maxWorkers: 2` + `.env.local` 自動ロード
+- カバー対象: happy path + 権限 + 楽観ロック衝突 + バリデーション主要分岐 + audit_log
+- **新規テーブルを Service 層から書く時は RLS に INSERT policy を忘れない**
+  (authenticated ロール + workspace_member 条件。過去に audit_log で踏んだ)
+- Component テストは書かない (shadcn / RHF に任せる)
+- Pure 関数 (`ltree-path.ts` / `fractional-position.ts`) は単体 Vitest で別ファイル分離
+- **E2E**: UI が Kanban 以降で揃ったら Playwright golden path 1 本
+  (signup → workspace → Item → Kanban → AI → Template → MUST)
 
 ### 7. 命名 (覚書)
 
