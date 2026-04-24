@@ -29,6 +29,20 @@ export const RESEARCHER_TOOLS: AgentToolFactory[] = [
   instantiateTemplateTool,
 ]
 
+/**
+ * PM Agent の tool whitelist。Researcher から以下を除外:
+ *   - create_item / instantiate_template: 分解 / Template 展開は Researcher の領分
+ * PM は stand-up + heartbeat + ヒアリング中心なので read + comment + 記録用 doc で十分。
+ */
+export const PM_TOOLS: AgentToolFactory[] = [
+  readItemsTool,
+  readDocsTool,
+  searchDocsTool,
+  searchItemsTool,
+  writeCommentTool,
+  createDocTool,
+]
+
 export function buildResearcherTools(
   ctx: ToolContext,
   overrideFactories?: AgentToolFactory[],
@@ -37,6 +51,16 @@ export function buildResearcherTools(
   const tools = factories.map((f) => f.definition)
   const handlers: Record<string, ReturnType<AgentToolFactory['build']>> = {}
   for (const f of factories) {
+    handlers[f.definition.name] = f.build(ctx)
+  }
+  return { tools, handlers }
+}
+
+/** PM Agent 用バンドラ (tool 集合以外は buildResearcherTools と同じ実装)。 */
+export function buildPmTools(ctx: ToolContext): ToolBundle {
+  const tools = PM_TOOLS.map((f) => f.definition)
+  const handlers: Record<string, ReturnType<AgentToolFactory['build']>> = {}
+  for (const f of PM_TOOLS) {
     handlers[f.definition.name] = f.build(ctx)
   }
   return { tools, handlers }

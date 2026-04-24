@@ -6,6 +6,7 @@ import { AuthError, PermissionError } from '@/lib/errors'
 
 import { Button } from '@/components/ui/button'
 import { ItemsBoard } from '@/components/workspace/items-board'
+import { StandupButton } from '@/components/workspace/standup-button'
 
 interface PageProps {
   params: Promise<{ workspaceId: string }>
@@ -35,6 +36,7 @@ export default async function WorkspacePage({ params }: PageProps) {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <StandupButton workspaceId={workspaceId} />
           <Button variant="outline" asChild size="sm">
             <Link href={`/${workspaceId}/templates`}>Templates</Link>
           </Button>
