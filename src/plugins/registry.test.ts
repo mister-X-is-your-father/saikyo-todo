@@ -51,6 +51,7 @@ describe('registerCorePlugins', () => {
     expect(listActions().length).toBe(first)
     expect(getAction('core.reload-items')).toBeDefined()
     expect(getAction('core.ai-decompose')).toBeDefined()
+    expect(getAction('core.ai-research')).toBeDefined()
   })
 
   it('ai-decompose プラグインは done 状態の Item には applicable でない', async () => {

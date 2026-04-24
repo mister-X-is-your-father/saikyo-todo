@@ -23,6 +23,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import type { Item } from '@/features/item/schema'
 
 import { ItemDecomposeButton } from './item-decompose-button'
+import { ItemResearchButton } from './item-research-button'
 
 interface Props {
   workspaceId: string
@@ -71,8 +72,13 @@ function buildColumns(workspaceId: string): ColumnDef<Item>[] {
     {
       id: 'actions',
       header: 'アクション',
-      size: 130,
-      cell: ({ row }) => <ItemDecomposeButton workspaceId={workspaceId} item={row.original} />,
+      size: 220,
+      cell: ({ row }) => (
+        <div className="flex gap-2">
+          <ItemDecomposeButton workspaceId={workspaceId} item={row.original} />
+          <ItemResearchButton workspaceId={workspaceId} item={row.original} />
+        </div>
+      ),
     },
   ]
 }

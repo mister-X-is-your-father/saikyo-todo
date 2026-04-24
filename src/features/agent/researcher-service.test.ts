@@ -29,7 +29,11 @@ vi.mock('@/lib/jobs/queue', () => ({
 }))
 
 import { agentMemoryService } from './memory-service'
-import { buildDecomposeUserMessage, researcherService } from './researcher-service'
+import {
+  buildDecomposeUserMessage,
+  buildResearchUserMessage,
+  researcherService,
+} from './researcher-service'
 import { agentService } from './service'
 
 function buildInvokeResult(overrides: Partial<InvokeModelOutput> = {}): InvokeModelOutput {
@@ -482,6 +486,100 @@ describe('researcherService.run', () => {
         extraHint: 'フロントエンドから先に着手',
       })
       expect(msg).toContain('フロントエンドから先に着手')
+    })
+  })
+
+  describe('researchItem', () => {
+    it('対象 Item を引いて調査用 prompt で run を呼ぶ', async () => {
+      const ac = adminClient()
+      const { data: parentRow } = await ac
+        .from('items')
+        .insert({
+          workspace_id: wsId,
+          title: '競合分析を行う',
+          description: '類似 SaaS の料金体系と機能差を調べる',
+          status: 'todo',
+          is_must: false,
+          created_by_actor_type: 'user',
+          created_by_actor_id: userId,
+        })
+        .select('id')
+        .single()
+      const targetId = parentRow!.id as string
+
+      let seen = ''
+      const invoker = vi.fn(
+        async (args: { messages: Array<{ role: string; content: unknown }> }) => {
+          const last = args.messages.filter((m) => m.role === 'user').pop()
+          if (typeof last?.content === 'string') seen = last.content
+          return buildInvokeResult({ text: 'Doc を作成しました', stopReason: 'end_turn' })
+        },
+      )
+
+      const r = await researcherService.researchItem({
+        workspaceId: wsId,
+        itemId: targetId,
+        idempotencyKey: randomUUID(),
+        invoker,
+      })
+      expect(r.ok).toBe(true)
+      if (!r.ok) return
+
+      expect(seen).toContain(targetId)
+      expect(seen).toContain('競合分析を行う')
+      expect(seen).toContain('類似 SaaS')
+      expect(seen).toMatch(/search_docs/)
+      expect(seen).toMatch(/create_doc/)
+
+      const { data: inv } = await ac
+        .from('agent_invocations')
+        .select('target_item_id, status')
+        .eq('id', r.value.invocationId)
+        .single()
+      expect(inv?.target_item_id).toBe(targetId)
+      expect(inv?.status).toBe('completed')
+    })
+
+    it('他 workspace の Item は ValidationError', async () => {
+      const other = await createTestUserAndWorkspace('researcher-research-other')
+      const ac = adminClient()
+      const { data: otherItem } = await ac
+        .from('items')
+        .insert({
+          workspace_id: other.wsId,
+          title: 'other',
+          description: '',
+          status: 'todo',
+          is_must: false,
+          created_by_actor_type: 'user',
+          created_by_actor_id: other.userId,
+        })
+        .select('id')
+        .single()
+      const r = await researcherService.researchItem({
+        workspaceId: wsId,
+        itemId: otherItem!.id as string,
+        idempotencyKey: randomUUID(),
+        invoker: vi.fn(),
+      })
+      expect(r.ok).toBe(false)
+      if (!r.ok) expect(r.error.code).toBe('VALIDATION')
+      await other.cleanup()
+    })
+  })
+
+  describe('buildResearchUserMessage (pure)', () => {
+    it('search_docs と create_doc を手順に含む', () => {
+      const msg = buildResearchUserMessage({
+        itemId: 'id',
+        title: 't',
+        description: 'desc',
+      })
+      expect(msg).toContain('id')
+      expect(msg).toContain('t')
+      expect(msg).toContain('desc')
+      expect(msg).toContain('search_docs')
+      expect(msg).toContain('create_doc')
     })
   })
 })

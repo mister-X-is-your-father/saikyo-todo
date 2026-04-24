@@ -14,6 +14,7 @@
 import { registerAction, registerView } from '../registry'
 import { decomposeItemActionPlugin } from './actions/decompose-item'
 import { reloadItemsAction } from './actions/reload-items'
+import { researchItemActionPlugin } from './actions/research-item'
 import { backlogViewPlugin } from './views/backlog'
 import { dashboardViewPlugin } from './views/dashboard'
 import { ganttViewPlugin } from './views/gantt'
@@ -25,6 +26,7 @@ export function registerCorePlugins(): void {
   if (registered) return
   registerAction(reloadItemsAction)
   registerAction(decomposeItemActionPlugin)
+  registerAction(researchItemActionPlugin)
   registerView(kanbanViewPlugin)
   registerView(backlogViewPlugin)
   registerView(ganttViewPlugin)

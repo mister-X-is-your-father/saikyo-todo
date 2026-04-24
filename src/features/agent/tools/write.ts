@@ -15,8 +15,10 @@ import { z } from 'zod'
 import { recordAudit } from '@/lib/audit'
 import { fullPathOf } from '@/lib/db/ltree-path'
 import { adminDb } from '@/lib/db/scoped-client'
+import { enqueueJob } from '@/lib/jobs/queue'
 
 import { commentOnItemRepository } from '@/features/comment/repository'
+import { docRepository } from '@/features/doc/repository'
 import { itemRepository } from '@/features/item/repository'
 
 import type { AgentToolFactory } from './types'
@@ -46,6 +48,11 @@ const AgentCreateItemSchema = z
 const AgentWriteCommentSchema = z.object({
   itemId: z.string().uuid(),
   body: z.string().min(1).max(5000),
+})
+
+const AgentCreateDocSchema = z.object({
+  title: z.string().min(1).max(500),
+  body: z.string().min(1).max(20000),
 })
 
 function jsonError(message: string, details?: unknown): string {
@@ -199,6 +206,59 @@ export const writeCommentTool: AgentToolFactory = {
 
       if (!result.ok) return jsonError(result.reason)
       return jsonOk({ commentId: result.commentId, itemId: result.itemId })
+    }
+  },
+}
+
+// --- create_doc ---------------------------------------------------------
+
+export const createDocTool: AgentToolFactory = {
+  definition: {
+    name: 'create_doc',
+    description:
+      '調査結果を Doc としてこの workspace に保存する。Markdown 可。作成後 embedding ジョブ' +
+      'が自動起動するので、次回以降 search_docs でヒットする。作成者は実行中の Agent 本人。',
+    input_schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string', description: 'Doc タイトル (1-500 文字)。' },
+        body: { type: 'string', description: 'Doc 本文 (Markdown 可、1-20000 文字)。' },
+      },
+      required: ['title', 'body'],
+    },
+  },
+  build(ctx) {
+    return async (input) => {
+      const parsed = AgentCreateDocSchema.safeParse(input ?? {})
+      if (!parsed.success) {
+        return jsonError('validation failed', parsed.error.flatten())
+      }
+      const { title, body } = parsed.data
+
+      const doc = await adminDb.transaction(async (tx) => {
+        const row = await docRepository.insert(tx, {
+          workspaceId: ctx.workspaceId,
+          title,
+          body,
+          sourceTemplateId: null,
+          createdByActorType: 'agent',
+          createdByActorId: ctx.agentId,
+        })
+        await recordAudit(tx, {
+          workspaceId: ctx.workspaceId,
+          actorType: 'agent',
+          actorId: ctx.agentId,
+          targetType: 'doc',
+          targetId: row.id,
+          action: 'create',
+          after: { id: row.id, title: row.title },
+        })
+        return row
+      })
+      // docService.create と同様、Tx commit 後に embedding ジョブ送信 (失敗しても doc 作成は成立)
+      await enqueueJob('doc-embed', { docId: doc.id })
+
+      return jsonOk({ docId: doc.id, title: doc.title })
     }
   },
 }

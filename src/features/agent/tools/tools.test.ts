@@ -76,11 +76,11 @@ describe('agent tools', () => {
   })
 
   describe('whitelist bundle', () => {
-    it('6 個の tool を bind し name 重複なし', () => {
+    it('7 個の tool を bind し name 重複なし', () => {
       const bundle = buildResearcherTools(ctx)
-      expect(bundle.tools).toHaveLength(6)
+      expect(bundle.tools).toHaveLength(7)
       const names = bundle.tools.map((t) => t.name)
-      expect(new Set(names).size).toBe(6)
+      expect(new Set(names).size).toBe(7)
       expect(names).toEqual(
         expect.arrayContaining([
           'read_items',
@@ -89,6 +89,7 @@ describe('agent tools', () => {
           'search_items',
           'create_item',
           'write_comment',
+          'create_doc',
         ]),
       )
       // delete_* は入らない
@@ -290,6 +291,53 @@ describe('agent tools', () => {
       const out = JSON.parse(await handler({ itemId: randomUUID(), body: 'x' }))
       expect(out.ok).toBe(false)
       expect(out.error).toBe('item_not_found')
+    })
+  })
+
+  describe('create_doc', () => {
+    it('Agent 作成として doc が入り、embedding ジョブが enqueue される', async () => {
+      const handler = buildResearcherTools(ctx).handlers['create_doc']!
+      const out = JSON.parse(
+        await handler({
+          title: 'agent-research-doc',
+          body: '# 調査結果\n\n本プロジェクトは...',
+        }),
+      ) as { ok: boolean; docId: string }
+      expect(out.ok).toBe(true)
+
+      const ac = adminClient()
+      const { data: row } = await ac
+        .from('docs')
+        .select('created_by_actor_type, created_by_actor_id, workspace_id, title')
+        .eq('id', out.docId)
+        .single()
+      expect(row?.created_by_actor_type).toBe('agent')
+      expect(row?.created_by_actor_id).toBe(ctx.agentId)
+      expect(row?.workspace_id).toBe(wsId)
+      expect(row?.title).toBe('agent-research-doc')
+
+      // audit
+      const { data: audits } = await ac
+        .from('audit_log')
+        .select('action, actor_type, target_type')
+        .eq('target_id', out.docId)
+      expect(
+        audits?.some(
+          (a) => a.action === 'create' && a.actor_type === 'agent' && a.target_type === 'doc',
+        ),
+      ).toBe(true)
+
+      // enqueueJob は mock 済なので直接検証 (doc-embed キューに送られているか)
+      const { enqueueJob } = await import('@/lib/jobs/queue')
+      const mockedEnqueue = vi.mocked(enqueueJob)
+      expect(mockedEnqueue).toHaveBeenCalledWith('doc-embed', { docId: out.docId })
+    })
+
+    it('body 欠落は validation エラー', async () => {
+      const handler = buildResearcherTools(ctx).handlers['create_doc']!
+      const out = JSON.parse(await handler({ title: 'no body' }))
+      expect(out.ok).toBe(false)
+      expect(out.error).toBe('validation failed')
     })
   })
 

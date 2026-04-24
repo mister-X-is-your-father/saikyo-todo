@@ -15,6 +15,7 @@ vi.mock('@/lib/auth/guard', () => ({
 vi.mock('./researcher-service', () => ({
   researcherService: {
     decomposeItem: vi.fn(),
+    researchItem: vi.fn(),
   },
 }))
 
@@ -24,30 +25,32 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 import * as guard from '@/lib/auth/guard'
 import { ok } from '@/lib/result'
 
-import { decomposeItemAction } from './actions'
+import { decomposeItemAction, researchItemAction } from './actions'
 import { researcherService } from './researcher-service'
 
 const mockedDecompose = vi.mocked(researcherService.decomposeItem)
+const mockedResearch = vi.mocked(researcherService.researchItem)
 const mockedGuard = vi.mocked(guard.requireWorkspaceMember)
 
 describe('decomposeItemAction', () => {
   beforeEach(() => {
     mockedDecompose.mockReset()
+    mockedResearch.mockReset()
     mockedGuard.mockReset().mockResolvedValue({
       user: { id: 'u1', email: 'u@example.com' },
       role: 'member',
     })
-    mockedDecompose.mockResolvedValue(
-      ok({
-        invocationId: 'inv-1',
-        agentId: 'agent-1',
-        text: 'done',
-        toolCalls: [],
-        iterations: 1,
-        usage: { inputTokens: 10, outputTokens: 5 },
-        costUsd: 0.0001,
-      }),
-    )
+    const okRes = ok({
+      invocationId: 'inv-1',
+      agentId: 'agent-1',
+      text: 'done',
+      toolCalls: [],
+      iterations: 1,
+      usage: { inputTokens: 10, outputTokens: 5 },
+      costUsd: 0.0001,
+    })
+    mockedDecompose.mockResolvedValue(okRes)
+    mockedResearch.mockResolvedValue(okRes)
   })
 
   it('workspaceId + itemId を渡すと researcherService に委譲される', async () => {
@@ -77,5 +80,45 @@ describe('decomposeItemAction', () => {
     if (!r.ok) expect(r.error.code).toBe('VALIDATION')
     expect(mockedGuard).not.toHaveBeenCalled()
     expect(mockedDecompose).not.toHaveBeenCalled()
+  })
+})
+
+describe('researchItemAction', () => {
+  beforeEach(() => {
+    mockedResearch.mockReset()
+    mockedGuard.mockReset().mockResolvedValue({
+      user: { id: 'u1', email: 'u@example.com' },
+      role: 'member',
+    })
+    mockedResearch.mockResolvedValue(
+      ok({
+        invocationId: 'inv-2',
+        agentId: 'agent-1',
+        text: '調査完了',
+        toolCalls: [],
+        iterations: 1,
+        usage: { inputTokens: 10, outputTokens: 5 },
+        costUsd: 0.0001,
+      }),
+    )
+  })
+
+  it('researcherService.researchItem に委譲する', async () => {
+    const wsId = randomUUID()
+    const itemId = randomUUID()
+    const r = await researchItemAction({ workspaceId: wsId, itemId })
+    expect(r.ok).toBe(true)
+    expect(mockedGuard).toHaveBeenCalledWith(wsId, 'member')
+    expect(mockedResearch).toHaveBeenCalledTimes(1)
+    const call = mockedResearch.mock.calls[0]![0]
+    expect(call.workspaceId).toBe(wsId)
+    expect(call.itemId).toBe(itemId)
+  })
+
+  it('invalid workspaceId は VALIDATION', async () => {
+    const r = await researchItemAction({ workspaceId: 'x', itemId: randomUUID() })
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.error.code).toBe('VALIDATION')
+    expect(mockedResearch).not.toHaveBeenCalled()
   })
 })

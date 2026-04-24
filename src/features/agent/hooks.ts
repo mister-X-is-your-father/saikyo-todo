@@ -13,7 +13,7 @@ import { unwrap } from '@/lib/result-unwrap'
 
 import { itemKeys } from '@/features/item/hooks'
 
-import { decomposeItemAction } from './actions'
+import { decomposeItemAction, researchItemAction } from './actions'
 
 export interface DecomposeItemVariables {
   workspaceId: string
@@ -38,5 +38,29 @@ export function useDecomposeItem(workspaceId: string) {
       // 子 Item が新規作成されるのでリスト再取得
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
     },
+  })
+}
+
+export interface ResearchItemVariables {
+  workspaceId: string
+  itemId: string
+  extraHint?: string
+  idempotencyKey?: string
+}
+
+// useResearchItem は workspaceId を vars.workspaceId から受ける (useDecomposeItem とは
+// シグネチャが異なる点に注意: Doc 新規作成は items キャッシュ invalidate が不要のため
+// factory 引数で workspace を bind する必要がない)
+export function useResearchItem() {
+  return useMutation({
+    mutationFn: async (vars: ResearchItemVariables) =>
+      unwrap(
+        await researchItemAction({
+          workspaceId: vars.workspaceId,
+          itemId: vars.itemId,
+          extraHint: vars.extraHint,
+          idempotencyKey: vars.idempotencyKey,
+        }),
+      ),
   })
 }
