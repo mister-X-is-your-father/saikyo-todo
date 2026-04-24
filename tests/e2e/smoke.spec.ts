@@ -37,8 +37,16 @@ test('baseline: login → workspace 作成 → Item 作成 → 一覧表示', as
     // Item 作成フォーム内の "作成" ボタン (workspace 作成とは context が別)
     await page.getByRole('button', { name: '作成', exact: true }).click()
 
-    // 一覧に表示されるのを待つ (楽観更新 + 再取得の後)
-    await expect(page.getByText('E2E smoke item')).toBeVisible({ timeout: 10_000 })
+    // Kanban board がレンダリングされる
+    await expect(page.getByTestId('kanban-board')).toBeVisible({ timeout: 10_000 })
+    // todo 列に item が現れる
+    const todoColumn = page.getByTestId('kanban-column-todo')
+    await expect(todoColumn.getByText('E2E smoke item')).toBeVisible({ timeout: 10_000 })
+    // in_progress / done 列は空
+    await expect(
+      page.getByTestId('kanban-column-in_progress').getByText('カードなし'),
+    ).toBeVisible()
+    await expect(page.getByTestId('kanban-column-done').getByText('カードなし')).toBeVisible()
   } finally {
     await user.cleanup()
   }

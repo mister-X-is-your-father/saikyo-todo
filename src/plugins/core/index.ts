@@ -11,13 +11,15 @@
  *
  * register* は id 上書きなので多重呼び出しでも害なし (idempotent)。
  */
-import { registerAction } from '../registry'
+import { registerAction, registerView } from '../registry'
 import { reloadItemsAction } from './actions/reload-items'
+import { kanbanViewPlugin } from './views/kanban'
 
 let registered = false
 
 export function registerCorePlugins(): void {
   if (registered) return
   registerAction(reloadItemsAction)
+  registerView(kanbanViewPlugin)
   registered = true
 }

@@ -12,19 +12,14 @@ import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
 
-import {
-  useCreateItem,
-  useItems,
-  useSoftDeleteItem,
-  useUpdateItemStatus,
-} from '@/features/item/hooks'
-import type { Item } from '@/features/item/schema'
+import { useCreateItem, useItems } from '@/features/item/hooks'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { CommandPalette, type PaletteCommand } from '@/components/shared/command-palette'
 import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { KanbanView } from '@/components/workspace/kanban-view'
 
 interface Props {
   workspaceId: string
@@ -33,8 +28,6 @@ interface Props {
 export function ItemsBoard({ workspaceId }: Props) {
   const { data, isLoading, error, refetch } = useItems(workspaceId)
   const create = useCreateItem(workspaceId)
-  const toggleStatus = useUpdateItemStatus(workspaceId)
-  const softDelete = useSoftDeleteItem(workspaceId)
 
   const [title, setTitle] = useState('')
 
@@ -113,73 +106,18 @@ export function ItemsBoard({ workspaceId }: Props) {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Item 一覧</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <Loading />
-          ) : error ? (
-            <ErrorState
-              message={isAppError(error) ? error.message : '一覧取得に失敗しました'}
-              onRetry={() => void refetch()}
-            />
-          ) : (data?.length ?? 0) === 0 ? (
-            <EmptyState
-              title="まだ Item がありません"
-              description="上のフォームから作成してください"
-            />
-          ) : (
-            <ul className="divide-border divide-y">
-              {(data ?? []).map((it) => (
-                <ItemRow
-                  key={it.id}
-                  item={it}
-                  onToggle={() => {
-                    const next =
-                      it.status === 'todo'
-                        ? 'in_progress'
-                        : it.status === 'in_progress'
-                          ? 'done'
-                          : 'todo'
-                    toggleStatus.mutate({ id: it.id, expectedVersion: it.version, status: next })
-                  }}
-                  onDelete={() => softDelete.mutate({ id: it.id, expectedVersion: it.version })}
-                />
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      {isLoading ? (
+        <Loading />
+      ) : error ? (
+        <ErrorState
+          message={isAppError(error) ? error.message : '一覧取得に失敗しました'}
+          onRetry={() => void refetch()}
+        />
+      ) : (data?.length ?? 0) === 0 ? (
+        <EmptyState title="まだ Item がありません" description="上のフォームから作成してください" />
+      ) : (
+        <KanbanView workspaceId={workspaceId} items={data ?? []} />
+      )}
     </div>
-  )
-}
-
-function ItemRow({
-  item,
-  onToggle,
-  onDelete,
-}: {
-  item: Item
-  onToggle: () => void
-  onDelete: () => void
-}) {
-  return (
-    <li className="flex items-center justify-between py-2">
-      <div>
-        <span className="text-muted-foreground mr-2 font-mono text-xs">[{item.status}]</span>
-        <span>{item.title}</span>
-        {item.isMust && <span className="ml-2 text-xs text-red-500">MUST</span>}
-      </div>
-      <div className="flex gap-2">
-        <Button size="sm" variant="outline" onClick={onToggle}>
-          → 次の status
-        </Button>
-        <Button size="sm" variant="ghost" onClick={onDelete}>
-          削除
-        </Button>
-      </div>
-    </li>
   )
 }

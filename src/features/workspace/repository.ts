@@ -1,9 +1,11 @@
 import 'server-only'
 
-import { and, eq, isNull, sql } from 'drizzle-orm'
+import { and, asc, eq, isNull, sql } from 'drizzle-orm'
 
-import { workspaceMembers, workspaces } from '@/lib/db/schema'
+import { workspaceMembers, workspaces, workspaceStatuses } from '@/lib/db/schema'
 import { type Tx } from '@/lib/db/scoped-client'
+
+export type WorkspaceStatusRow = typeof workspaceStatuses.$inferSelect
 
 /**
  * RPC `create_workspace` を呼んで workspace + 設定 + デフォルト status を一括作成。
@@ -19,6 +21,18 @@ export async function callCreateWorkspaceRpc(
   const row = result[0]
   if (!row?.id) throw new Error('create_workspace RPC が ID を返しませんでした')
   return row.id
+}
+
+/** Kanban 列定義 (order 昇順)。 */
+export async function findWorkspaceStatuses(
+  tx: Tx,
+  workspaceId: string,
+): Promise<WorkspaceStatusRow[]> {
+  return await tx
+    .select()
+    .from(workspaceStatuses)
+    .where(eq(workspaceStatuses.workspaceId, workspaceId))
+    .orderBy(asc(workspaceStatuses.order))
 }
 
 /** 自分が所属している (deleted_at IS NULL の) workspace 一覧。 */
