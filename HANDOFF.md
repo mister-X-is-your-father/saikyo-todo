@@ -3,7 +3,7 @@
 > このファイルは context を `/clear` した後に **次の Claude (or 同一 Claude の続き)** が
 > 即座にプロジェクト状態を把握するためのもの。役目を終えたら削除して構わない。
 >
-> 最終更新: 2026-04-24 (Week 3 Day 17 P1 完了 — Semantic search service)
+> 最終更新: 2026-04-24 (Week 3 Day 17 完了 — Semantic + FullText + Hybrid RRF)
 
 ## 1. 最初に読む順番 (5 分で把握)
 
@@ -15,7 +15,7 @@
 
 ## 2. 現在地
 
-**進捗: 17 / 33 日 (Week 3 Day 17 P1 完了、P2 Hybrid RRF は別セッション)**
+**進捗: 17 / 33 日 (Week 3 Day 17 P1+P2 完了、Day 10b 繰越も同時解消)**
 
 完了 (要点のみ、詳細は git log):
 
@@ -63,16 +63,24 @@
   - UI `InstantiateForm`: `{{var}}` を正規表現で抽出して動的フォーム、即実行で workspace に遷移
   - TDD: pure helper 6 tests + integration 5 tests
     - 2 階層 parent_path 繋がり検証 / MUST+dod+dueOffsetDays 反映 / cron_run_id 冪等衝突
-- Week 3 Day 17 P1: Semantic search service (HNSW cosine + Template boost)
+- Week 3 Day 17 P1+P2: Search service (Semantic + FullText + Hybrid RRF)
   - `src/features/search/{schema,repository,service,service.test}.ts`
-    - `searchService.semantic({ workspaceId, query, limit?, templateBoost? })`
-    - `encodeQuery` を DI で差替え可能 (テストで mock)
-    - repository は生 SQL (pgvector `<=>` 演算子、HNSW 自動使用)
-    - boost 後 score 降順で limit 件を返す
-  - TDD: 7 tests
-    - similarity 降順 / Template boost 先頭化 / boost=1.0 無効 / limit 切詰 /
-      他 workspace 除外 (RLS 二重防御) / 空クエリ ValidationError /
-      soft-deleted doc 除外
+    - `searchService.semantic` — pgvector `<=>` cosine + HNSW + Template boost
+    - `searchService.fullText` — pg_trgm `word_similarity()` + GIN + Template boost
+      (閾値 0.2 を explicit。既定 0.6 は短いクエリに厳しすぎる)
+    - `searchService.hybrid` — semantic と fullText を RRF (k=60) で fusion
+      上位の chunkId を Map で merge、各リストでの rank=1/(k+rank) を合算、
+      Template boost を RRF score に乗せる
+    - `encodeQuery` を DI で差替え可能 (テストで mock、実モデル不要)
+    - repository は生 SQL (index 直接使用のため drizzle-orm query builder 不使用)
+  - migration: `20260424170000_doc_chunks_trgm.sql` — pg_trgm GIN index
+  - **ARCHITECTURE.md #U の pg_bigm 採用は訂正**: Supabase local に pg_bigm は
+    無かったが、pg_trgm (既に install 済) + pgroonga (未使用) が使えた。
+    pg_trgm で MVP 十分という判断 (日本語は trigram で実用可)
+  - TDD: 15 tests
+    - semantic 7 (similarity 降順 / boost / limit / 他 ws 除外 / 空クエリ / soft-delete)
+    - fullText 4 (部分一致 / 無マッチ 0件 / boost / 空クエリ)
+    - hybrid 4 (RRF 両方ヒット上位 / 片方のみでも union / boost / 空クエリ)
 - Week 3 Day 16: 自前 embedding worker パイプライン (multilingual-e5-small 384次元)
   - `src/lib/ai/chunk.ts` — 固定長 + overlap の pure chunking (TDD 9 tests)
     - デフォルト maxChars=500 / overlap=50。overlap>=maxChars は throw (無限ループ防止)
@@ -133,16 +141,17 @@
 
 現在の数:
 
-- Vitest **146 tests** PASS / E2E **2 tests** PASS
+- Vitest **154 tests** PASS / E2E **2 tests** PASS
 - Plugin Registry: action 1, view 4 (core) / pg-boss queues: `agent-run`, `doc-embed`
 
 次にやること (REQUIREMENTS §7 の順):
 
-- **Week 3 Day 17 P2**: Hybrid 検索 (FTS tsvector/pg_bigm + semantic の RRF)
-  - tsvector カラム + gin index migration、FTS service、RRF でフュージョン
-  - Day 10b (FTS 単独) もこの P2 で一緒に片付く想定
-- **Week 3 Day 18-21**: Researcher Agent + 分解ツール + Template 連携
-- **Day 15 の残課題 (P4 相当、Day 19+ と抱き合わせ)**: Anthropic streaming + Realtime broadcast
+- **Week 3 Day 18**: Researcher Agent の system prompt + tool whitelist
+  (`read_items` / `read_docs` / `search_docs` (= searchService.hybrid) /
+  `search_items` / `write_comment` / `create_item` / `instantiate_template`) +
+  agent_memories ロード/保存
+- **Week 3 Day 19-21**: 分解/調査 Action plugin + Template 連携 + 進捗 UI
+- **Day 15 の残課題 (Day 19+ と抱き合わせ)**: Anthropic streaming + Realtime broadcast UI
 
 ## 3. 動作確認コマンド (信頼できる checkpoint)
 
@@ -278,6 +287,15 @@ pnpm dev                                        # http://localhost:3001
 - 2 回目以降は数秒でロード。プロセス内は singleton 化済 (`extractorPromise`)
 - Vitest では `vi.mock('@/lib/ai/embedding')` 相当を使うか、`embedDoc` の
   `encoder` DI で mock を渡す (embedding.test.ts のパターン)
+
+### 4.16 pg_trgm 閾値の既定 (Day 17 P2)
+
+- `pg_trgm.word_similarity_threshold` の既定は 0.6 で短いクエリに厳しすぎる
+- fullTextHits は WHERE 内で `word_similarity(q, content) > 0.2` を直接指定。
+  GIN index は `%>` / `<%` 演算子が既定閾値依存なので、フル活用はできない点は
+  割り切り (MVP 規模では性能問題にならない)。
+- ARCHITECTURE.md #U は pg_bigm 採用だったが、Supabase local には存在せず
+  pg_trgm (既 install) で代替 (日本語 trigram 実用充分、HANDOFF 先頭参照)
 
 ## 5. 重要な抽象 (Service 層を書くときに使うもの)
 

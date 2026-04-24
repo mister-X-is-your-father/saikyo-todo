@@ -15,15 +15,31 @@ export const SemanticSearchInputSchema = z.object({
 })
 export type SemanticSearchInput = z.infer<typeof SemanticSearchInputSchema>
 
+export const FullTextSearchInputSchema = z.object({
+  workspaceId: z.string().uuid(),
+  query: z.string().trim().min(1, '検索語を入力してください').max(500),
+  limit: z.number().int().positive().max(MAX_LIMIT).default(DEFAULT_LIMIT),
+  templateBoost: z.number().positive().max(5).default(DEFAULT_TEMPLATE_BOOST),
+})
+export type FullTextSearchInput = z.infer<typeof FullTextSearchInputSchema>
+
+/** Hybrid は semantic + fullText を RRF で fusion した結果。入力は上 2 つと同じ形。 */
+export const HybridSearchInputSchema = SemanticSearchInputSchema
+
+/** RRF (Reciprocal Rank Fusion) の k 定数。60 は論文既定値。大きいほど rank 差が圧縮される */
+export const RRF_K = 60
+
 export interface SearchHit {
   chunkId: string
   docId: string
   chunkIndex: number
   content: string
   title: string
-  /** boost 適用後のスコア (高いほど関連、0-1.x 程度) */
+  /** boost 適用後のスコア (高いほど関連) */
   score: number
-  /** 生の cosine similarity (0-1、boost 前) */
+  /** 生の cosine similarity (0-1、boost 前)。fullText のみの結果では 0。 */
   similarity: number
+  /** word_similarity (pg_trgm, 0-1)。semantic のみの結果では 0。 */
+  textSimilarity: number
   isTemplate: boolean
 }

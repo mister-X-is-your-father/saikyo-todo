@@ -244,4 +244,99 @@ describe('searchService.semantic', () => {
       await db.update(docs).set({ deletedAt: null }).where(eq(docs.id, normalDocId))
     }
   })
+
+  describe('fullText', () => {
+    it('content 内の部分文字列にマッチして word_similarity 降順で返す', async () => {
+      const r = await searchService.fullText({
+        workspaceId: wsId,
+        query: 'template 由来',
+        limit: 10,
+      })
+      expect(r.ok).toBe(true)
+      if (!r.ok) return
+      expect(r.value.length).toBeGreaterThan(0)
+      expect(r.value[0]!.docId).toBe(templateDocId)
+      expect(r.value[0]!.textSimilarity).toBeGreaterThan(0.2)
+    })
+
+    it('マッチしないクエリは空配列', async () => {
+      const r = await searchService.fullText({
+        workspaceId: wsId,
+        query: 'ZZZNoMatchXXX',
+      })
+      expect(r.ok).toBe(true)
+      if (r.ok) expect(r.value).toHaveLength(0)
+    })
+
+    it('Template boost が適用される', async () => {
+      const r = await searchService.fullText({
+        workspaceId: wsId,
+        query: 'template',
+        limit: 10,
+        templateBoost: 2,
+      })
+      expect(r.ok).toBe(true)
+      if (r.ok && r.value.length > 0) {
+        expect(r.value[0]!.isTemplate).toBe(true)
+        expect(r.value[0]!.docId).toBe(templateDocId)
+      }
+    })
+
+    it('空クエリは ValidationError', async () => {
+      const r = await searchService.fullText({ workspaceId: wsId, query: '  ' })
+      expect(r.ok).toBe(false)
+      if (!r.ok) expect(r.error.code).toBe('VALIDATION')
+    })
+  })
+
+  describe('hybrid (RRF)', () => {
+    it('semantic と fullText 両方にマッチする chunk は両方の similarity > 0', async () => {
+      const r = await searchService.hybrid(
+        { workspaceId: wsId, query: 'template', limit: 10, templateBoost: 1 },
+        { encoder: queryEncoder },
+      )
+      expect(r.ok).toBe(true)
+      if (!r.ok) return
+      expect(r.value.length).toBeGreaterThan(0)
+      const top = r.value[0]!
+      expect(top.docId).toBe(templateDocId)
+      expect(top.similarity).toBeGreaterThan(0)
+      expect(top.textSimilarity).toBeGreaterThan(0)
+    })
+
+    it('fullText がマッチしなくても semantic だけで結果を返す (union)', async () => {
+      const r = await searchService.hybrid(
+        { workspaceId: wsId, query: 'ZZZNoMatchXXX', limit: 10, templateBoost: 1 },
+        { encoder: queryEncoder },
+      )
+      expect(r.ok).toBe(true)
+      if (!r.ok) return
+      const ids = r.value.map((h) => h.docId)
+      expect(ids).toContain(templateDocId)
+      expect(ids).toContain(normalDocId)
+    })
+
+    it('Template boost は RRF score にも乗る', async () => {
+      const r = await searchService.hybrid(
+        { workspaceId: wsId, query: 'chunk', limit: 10, templateBoost: 2 },
+        { encoder: queryEncoder },
+      )
+      expect(r.ok).toBe(true)
+      if (!r.ok) return
+      const templateHit = r.value.find((h) => h.docId === templateDocId)
+      const normalHit = r.value.find((h) => h.docId === normalDocId)
+      if (templateHit && normalHit) {
+        expect(templateHit.score).toBeGreaterThan(normalHit.score)
+      }
+    })
+
+    it('空クエリは ValidationError', async () => {
+      const r = await searchService.hybrid(
+        { workspaceId: wsId, query: '' },
+        { encoder: queryEncoder },
+      )
+      expect(r.ok).toBe(false)
+      if (!r.ok) expect(r.error.code).toBe('VALIDATION')
+    })
+  })
 })
