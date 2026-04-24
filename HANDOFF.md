@@ -3,7 +3,7 @@
 > このファイルは context を `/clear` した後に **次の Claude (or 同一 Claude の続き)** が
 > 即座にプロジェクト状態を把握するためのもの。役目を終えたら削除して構わない。
 >
-> 最終更新: 2026-04-24 (Week 3 Day 15 P3 完了 — executeToolLoop 自前実装)
+> 最終更新: 2026-04-24 (Week 3 Day 16 完了 — 自前 embedding worker パイプライン)
 
 ## 1. 最初に読む順番 (5 分で把握)
 
@@ -15,7 +15,7 @@
 
 ## 2. 現在地
 
-**進捗: 15 / 33 日 (Week 3 Day 15 P1+P2+P3 完了、P4=streaming/Realtime は Day 19+ 統合)**
+**進捗: 16 / 33 日 (Week 3 Day 16 完了 — embedding pipeline が pg-boss 経由で稼働)**
 
 完了 (要点のみ、詳細は git log):
 
@@ -63,6 +63,26 @@
   - UI `InstantiateForm`: `{{var}}` を正規表現で抽出して動的フォーム、即実行で workspace に遷移
   - TDD: pure helper 6 tests + integration 5 tests
     - 2 階層 parent_path 繋がり検証 / MUST+dod+dueOffsetDays 反映 / cron_run_id 冪等衝突
+- Week 3 Day 16: 自前 embedding worker パイプライン (multilingual-e5-small 384次元)
+  - `src/lib/ai/chunk.ts` — 固定長 + overlap の pure chunking (TDD 9 tests)
+    - デフォルト maxChars=500 / overlap=50。overlap>=maxChars は throw (無限ループ防止)
+  - `src/lib/ai/embedding.ts` — `Xenova/multilingual-e5-small` ONNX singleton
+    - `encodeTexts(texts)` — "passage: " prefix 付与、normalize 済 (cosine=dot)
+    - `encodeQuery(query)` — "query: " prefix (Day 17 RAG 検索で使う)
+  - `supabase/migrations/20260424160000_doc_chunks_hnsw.sql` —
+    pgvector HNSW index (cosine_ops)
+  - `src/features/doc/embedding.ts` — `embedDoc(docId)` orchestrator
+    - 存在しない/soft-deleted/空本文 は skipped 理由付きで早期 return
+    - chunks を Tx 内で全削除 → 再 insert でアトミック置換 (再実行冪等)
+    - encoder は DI (テストで mock)
+  - `src/features/doc/worker.ts` — `doc-embed` キュー handler (batch 処理)
+  - `src/lib/jobs/queue.ts` の QUEUE_NAMES に `doc-embed` 追加
+  - `docService.create` 後に enqueueJob、`update` は title/body 変更時のみ enqueue
+    (sourceTemplateId 等の無関係 patch で re-embed しない最適化)
+  - `src/workers/start.ts` に `doc-embed` handler を登録
+  - TDD: chunk 9 / embedDoc 6 / docService enqueue 検証 2 = 17 新規
+  - PoC `scripts/poc-doc-embed.ts` — 実モデルロード → doc 作成 → worker pickup →
+    doc_chunks に 384次元 vector が入ることを確認
 - Week 3 Day 15 P3: Agent tool loop 自前実装 (`executeToolLoop`)
   - `src/lib/ai/tool-loop.ts` — Anthropic Messages API の tool_use ループ
     - invokeModel を DI で差し替え可能 → テストで mock
@@ -103,16 +123,15 @@
 
 現在の数:
 
-- Vitest **121 tests** PASS / E2E **2 tests** PASS
-- Plugin Registry: action 1, view 4 (core) / pg-boss queue: `agent-run`
+- Vitest **139 tests** PASS / E2E **2 tests** PASS
+- Plugin Registry: action 1, view 4 (core) / pg-boss queues: `agent-run`, `doc-embed`
 
 次にやること (REQUIREMENTS §7 の順):
 
-- **Week 3 Day 16**: 自前 embedding worker (multilingual-e5-small) + Doc chunk+embed pipeline + pg-boss ジョブ
-- **Day 15 の残課題 (P4 相当、Day 19+ と抱き合わせ想定)**: Anthropic streaming + Realtime broadcast の基盤
-  - streaming を消費する Researcher UI
-- **Week 1 Day 10b (繰越)**: FTS 検索 (pg_bigm / tsvector) — 専用セッション推奨
-- **Week 3 Day 16-21**: 自前 embedding worker / RAG / Researcher Agent / Template 連携
+- **Week 3 Day 17**: RAG 検索 Service (HNSW cosine + workspace スコープ +
+  Template Doc 重み付け) + Hybrid 検索 (BM25 + semantic, RRF)
+- **Day 15 の残課題 (P4 相当、Day 19+ と抱き合わせ)**: Anthropic streaming + Realtime broadcast
+- **Week 1 Day 10b (繰越)**: FTS 検索 (pg_bigm / tsvector、Day 17 と同じセッションで処理可)
 
 ## 3. 動作確認コマンド (信頼できる checkpoint)
 
@@ -228,6 +247,26 @@ pnpm dev                                        # http://localhost:3001
 
 - 名前付き export: `import { PgBoss } from 'pg-boss'` (default export なし)
 - `stop()` の option に `wait` は無い (v10 の名残)。graceful + timeout(ms) を使う
+
+### 4.13 multilingual-e5-small の prefix 規約 (Day 16)
+
+- Document/passage は `"passage: "` 前置 (encodeTexts で自動付与済)
+- Query は `"query: "` 前置 (encodeQuery で自動付与済)
+- 省略すると similarity が大きく劣化する。独自 encode を書くときは注意
+
+### 4.14 chunk overlap 制約 (Day 16)
+
+- `chunkText` の `overlap` は `[0, maxChars)` 範囲でないと無限ループ防止のため throw
+- デフォルト `maxChars=500 / overlap=50` なので短いテスト用に `maxChars=10` を渡すなら
+  `overlap` も一緒に明示する (e.g. `{ maxChars: 10, overlap: 2 }`)
+
+### 4.15 embedding model の初回ダウンロード (Day 16)
+
+- `@huggingface/transformers` の pipeline() は初回 ~120MB を `~/.cache/huggingface/`
+  にダウンロード。Docker 運用時は volume で永続化すべし
+- 2 回目以降は数秒でロード。プロセス内は singleton 化済 (`extractorPromise`)
+- Vitest では `vi.mock('@/lib/ai/embedding')` 相当を使うか、`embedDoc` の
+  `encoder` DI で mock を渡す (embedding.test.ts のパターン)
 
 ## 5. 重要な抽象 (Service 層を書くときに使うもの)
 

@@ -2,7 +2,7 @@
  * docService integration test.
  */
 import { randomUUID } from 'node:crypto'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { adminClient, createTestUserAndWorkspace, mockAuthGuards } from '@/test/fixtures'
 
@@ -12,7 +12,20 @@ vi.mock('@/lib/auth/guard', () => ({
   hasAtLeast: () => true,
 }))
 
+// pg-boss (doc-embed ジョブ送信を mock)
+vi.mock('@/lib/jobs/queue', () => ({
+  startBoss: vi.fn(),
+  stopBoss: vi.fn(),
+  enqueueJob: vi.fn().mockResolvedValue('mock-job-id'),
+  registerWorker: vi.fn(),
+  QUEUE_NAMES: ['agent-run', 'doc-embed'],
+}))
+
+import { enqueueJob } from '@/lib/jobs/queue'
+
 import { docService } from './service'
+
+const mockEnqueueJob = vi.mocked(enqueueJob)
 
 describe('docService', () => {
   let userId: string
@@ -31,6 +44,10 @@ describe('docService', () => {
 
   afterAll(async () => {
     await cleanup()
+  })
+
+  beforeEach(() => {
+    mockEnqueueJob.mockClear()
   })
 
   async function createDoc(overrides: Record<string, unknown> = {}) {
@@ -75,6 +92,11 @@ describe('docService', () => {
         .eq('target_id', doc.id)
       expect(audits?.some((a) => a.action === 'create' && a.target_type === 'doc')).toBe(true)
     })
+
+    it('create 後に doc-embed ジョブが enqueue される', async () => {
+      const doc = await createDoc({ title: 'embed me', body: '埋め込む本文' })
+      expect(mockEnqueueJob).toHaveBeenCalledWith('doc-embed', { docId: doc.id })
+    })
   })
 
   describe('update', () => {
@@ -114,6 +136,31 @@ describe('docService', () => {
       })
       expect(result.ok).toBe(false)
       if (!result.ok) expect(result.error.code).toBe('VALIDATION')
+    })
+
+    it('title 更新で doc-embed が再 enqueue される', async () => {
+      const doc = await createDoc({ title: 'before' })
+      mockEnqueueJob.mockClear() // create 時の呼び出しを除外
+      const r = await docService.update({
+        id: doc.id,
+        expectedVersion: doc.version,
+        patch: { title: 'after' },
+      })
+      expect(r.ok).toBe(true)
+      expect(mockEnqueueJob).toHaveBeenCalledWith('doc-embed', { docId: doc.id })
+    })
+
+    it('body を含まない update (sourceTemplateId のみ) は doc-embed を enqueue しない', async () => {
+      const doc = await createDoc()
+      mockEnqueueJob.mockClear()
+      // sourceTemplateId はスキーマで許可されている field
+      const r = await docService.update({
+        id: doc.id,
+        expectedVersion: doc.version,
+        patch: { sourceTemplateId: null },
+      })
+      expect(r.ok).toBe(true)
+      expect(mockEnqueueJob).not.toHaveBeenCalled()
     })
   })
 

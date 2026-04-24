@@ -14,11 +14,15 @@ import type { Job } from 'pg-boss'
 import { PgBoss } from 'pg-boss'
 
 /** 全キュー名を一元管理 (createQueue 忘れ防止)。v10+ で明示的作成が必須。 */
-export const QUEUE_NAMES = ['agent-run'] as const
+export const QUEUE_NAMES = ['agent-run', 'doc-embed'] as const
 export type QueueName = (typeof QUEUE_NAMES)[number]
 
 export interface AgentRunJobData {
   invocationId: string
+}
+
+export interface DocEmbedJobData {
+  docId: string
 }
 
 let boss: PgBoss | null = null

@@ -4,6 +4,7 @@ import { recordAudit } from '@/lib/audit'
 import { requireWorkspaceMember } from '@/lib/auth/guard'
 import { withUserDb } from '@/lib/db/scoped-client'
 import { ConflictError, ValidationError } from '@/lib/errors'
+import { enqueueJob } from '@/lib/jobs/queue'
 import { err, ok, type Result } from '@/lib/result'
 import { mutateWithGuard } from '@/lib/service-mutate'
 
@@ -15,6 +16,11 @@ import {
   UpdateDocInputSchema,
 } from './schema'
 
+/** title/body 変更を含む patch かを判定 (embedding 対象が変わるかだけ気にする) */
+function needsReembed(patch: Record<string, unknown>): boolean {
+  return 'title' in patch || 'body' in patch
+}
+
 const NOT_FOUND = 'Doc が見つかりません'
 
 export const docService = {
@@ -25,7 +31,7 @@ export const docService = {
 
     const { user } = await requireWorkspaceMember(workspaceId, 'member')
 
-    return await withUserDb(user.id, async (tx) => {
+    const result = await withUserDb(user.id, async (tx) => {
       const doc = await docRepository.insert(tx, {
         workspaceId,
         title: rest.title,
@@ -45,13 +51,18 @@ export const docService = {
       })
       return ok(doc)
     })
+    // Commit 後に embedding ジョブを enqueue (失敗しても Doc 作成は成立)
+    if (result.ok) {
+      await enqueueJob('doc-embed', { docId: result.value.id })
+    }
+    return result
   },
 
   async update(input: unknown): Promise<Result<Doc>> {
     const parsed = UpdateDocInputSchema.safeParse(input)
     if (!parsed.success) return err(new ValidationError('入力内容を確認してください', parsed.error))
 
-    return await mutateWithGuard<Doc>({
+    const result = await mutateWithGuard<Doc>({
       findById: (tx, id) => docRepository.findById(tx, id),
       id: parsed.data.id,
       notFoundMessage: NOT_FOUND,
@@ -76,6 +87,11 @@ export const docService = {
         return ok(updated)
       },
     })
+    // title/body 変更時のみ re-embed (sourceTemplateId だけの更新は不要)
+    if (result.ok && needsReembed(parsed.data.patch as Record<string, unknown>)) {
+      await enqueueJob('doc-embed', { docId: result.value.id })
+    }
+    return result
   },
 
   async softDelete(input: unknown): Promise<Result<Doc>> {

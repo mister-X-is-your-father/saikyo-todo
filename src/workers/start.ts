@@ -7,21 +7,24 @@
  *   (pnpm worker でも可)
  *
  * 役割: pg-boss の各キュー handler を登録してジョブを pickup し続ける。
- *   - agent-run → features/agent/worker.ts
+ *   - agent-run  → features/agent/worker.ts
+ *   - doc-embed  → features/doc/worker.ts
  *
- * 将来 (embedding / researcher / cron) でキューが増えたらここに register を追加する。
+ * 将来 (researcher / cron 等) でキューが増えたらここに register を追加する。
  */
 import 'dotenv/config'
 
 import { registerWorker, startBoss, stopBoss } from '@/lib/jobs/queue'
 
 import { handleAgentRun } from '@/features/agent/worker'
+import { handleDocEmbed } from '@/features/doc/worker'
 
 async function main() {
   console.log('[worker] starting pg-boss...')
   await startBoss()
   await registerWorker('agent-run', handleAgentRun)
-  console.log('[worker] ready. listening for: agent-run')
+  await registerWorker('doc-embed', handleDocEmbed)
+  console.log('[worker] ready. listening for: agent-run, doc-embed')
 
   const shutdown = async (signal: string) => {
     console.log(`[worker] received ${signal}, shutting down...`)
