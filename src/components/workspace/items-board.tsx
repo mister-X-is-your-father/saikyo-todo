@@ -15,6 +15,7 @@ import { toast } from 'sonner'
 import { isAppError } from '@/lib/errors'
 
 import { useCreateItem, useItems } from '@/features/item/hooks'
+import { useItemsRealtime } from '@/features/item/realtime'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { CommandPalette, type PaletteCommand } from '@/components/shared/command-palette'
@@ -43,6 +44,7 @@ export function ItemsBoard({ workspaceId }: Props) {
 
   const { data, isLoading, error, refetch } = useItems(workspaceId)
   const create = useCreateItem(workspaceId)
+  useItemsRealtime(workspaceId)
 
   const filtered = useMemo(() => {
     if (!data) return []
