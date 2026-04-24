@@ -7,6 +7,7 @@ import { err, ok, type Result } from '@/lib/result'
 
 import { callCreateWorkspaceRpc, findMyWorkspaces, findWorkspaceStatuses } from './repository'
 import { type CreateWorkspaceInput, CreateWorkspaceInputSchema } from './schema'
+import { seedSampleTemplate } from './seed-templates'
 
 export const workspaceService = {
   async create(input: CreateWorkspaceInput): Promise<Result<{ id: string }>> {
@@ -15,11 +16,11 @@ export const workspaceService = {
       return err(new ValidationError('入力内容を確認してください', parsed.error))
     }
     const user = await requireUser()
+    let id: string
     try {
-      const id = await withUserDb(user.id, async (tx) => {
+      id = await withUserDb(user.id, async (tx) => {
         return await callCreateWorkspaceRpc(tx, parsed.data)
       })
-      return ok({ id })
     } catch (e) {
       // slug uniq 違反など
       if (e instanceof Error && /workspaces_slug_uniq|duplicate key/.test(e.message)) {
@@ -27,6 +28,9 @@ export const workspaceService = {
       }
       throw e
     }
+    // サンプル Template を自動投入 (失敗しても ws 作成は成立させる)
+    await seedSampleTemplate(id, user.id)
+    return ok({ id })
   },
 
   async listForCurrentUser() {
