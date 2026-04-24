@@ -1,54 +1,105 @@
 # HANDOFF.md — 次セッション開始用ガイド
 
-> 最終更新: 2026-04-24 (**MVP クローズ**)
+> 最終更新: 2026-04-25 (**MVP + 稼働入力 + Phase 1 完了**)
 >
-> - MVP の実装 + 受け入れ検証は完了。POST_MVP.md の先頭「稼働入力」が次の山。
-> - §3 〜 §5 は実装時に踏んだ落とし穴の備忘録として残す。POST_MVP 作業時も参照価値あり。
+> - MVP (8/8) → 稼働入力 (mock Playwright sync) → **Phase 1 (Todoist/TickTick 基本 UX)** 完了
+> - 次セッションは **Phase 2 (コラボ hygiene)** または **Phase 5 (業務/OKR/振り返り自動化)** から
+> - 詳細プラン: `~/.claude/plans/todoist-ticktick-todo-ui-ux-sleepy-hamster.md`
 
-## 0. MVP クローズ宣言
+## 0. 現状サマリ (2026-04-25)
 
-- 受け入れ基準 **8/8 自動 PASS** (Template seed / Heartbeat 冪等 / AI 分解 / AI 調査 /
-  PM Stand-up / invocations cost / monthly 集計 / 越境 RLS)
-- 自動テスト: Vitest **227**, E2E **3**, 受け入れ検証 **8/8**
-- AI 検証は Anthropic API Key なし (**Claude Code Max プラン OAuth + MCP 経由**) で通る:
+- 受け入れ基準 **8/8 自動 PASS** (MVP 検証スクリプトは健在)
+- 自動テスト: **Vitest 274**, **E2E localhost 13**, **E2E Tailscale 13** PASS
+- AI 検証は Claude Code Max プラン OAuth + MCP 経由:
   ```bash
   NODE_OPTIONS="--conditions=react-server" \
     pnpm tsx --env-file=.env.local scripts/verify-acceptance.ts
   ```
-  本番は `ANTHROPIC_API_KEY` を `.env.local` に入れて Next 側で叩く想定 (検証スクリプトとは別経路)。
 
 ## 1. 最初に読む順番 (5 分で把握)
 
-1. **本書** (HANDOFF.md) — MVP クローズの宣言 + 落とし穴メモ
-2. `CLAUDE.md` — AI 向け規約 (短縮版, 必読)
-3. `POST_MVP.md` — 次に着手する機能 (先頭の「稼働入力」最優先)
-4. `git log --oneline | head -10` — 直近の commit 履歴
-5. 詳細が必要になったら: `ARCHITECTURE.md` (規約) / `REQUIREMENTS.md` (受け入れ基準)
+1. **本書** (HANDOFF.md) — 現在地 + 次の一手
+2. **~/.claude/plans/todoist-ticktick-todo-ui-ux-sleepy-hamster.md** — 4+1 phase の詳細プラン
+3. `CLAUDE.md` — AI 向け規約 (短縮版, 必読)
+4. `POST_MVP.md` — やらないリスト
+5. `git log --oneline | head -20` — 直近の commit 履歴
 
 ## 2. 現在地
 
-**MVP クローズ済 (2026-04-24)**。詳細な開発ログは `git log` を参照。
+**Phase 1 (2026-04-25) 完了**: Todoist/TickTick 基本 UX の 5 大 gap を埋めて
+"Work-from-Command-Palette" の基盤を敷いた。
 
-完成したスコープ (主要ブロックのみ):
+### MVP (2026-04-24 クローズ)
 
-- **認証 + RLS**: Supabase Auth + workspace_members / ws-scoped policies。
-  soft-delete + RLS の既知の罠は §4.1 参照
-- **Item**: ltree 階層 + 楽観ロック + fractional-indexing position + MUST/DoD 不変条件
-- **Doc / Comment**: Item と同じ CRUD パターン。embedding は worker 経由で非同期
-- **View plugin**: Kanban (dnd-kit) / Backlog (react-table) / Gantt (自作 div) / Dashboard (Recharts)
-- **Template**: 手動 / recurring (pg-boss cron + cron_run_id 冪等) / Mustache 変数展開 / 即実行 UI
-- **AI Agent**: Researcher (Sonnet, whitelist 8 tools) / PM (Haiku, whitelist 6 tools) +
-  `executeToolLoop` 自前実装 + agent_memories 永続化 + agent_invocations cost 集計
-- **RAG**: multilingual-e5-small 384 次元 + pgvector HNSW + pg_trgm 全文 + RRF Hybrid
-- **自動化**: pg-boss worker 6 queues / daily Stand-up / MUST Heartbeat 3 段エスカレ
-- **受け入れ検証**: `scripts/verify-acceptance.ts` 8 項目並列 (§6 参照)
-- **配信**: Docker Compose (web / worker / caddy / db-backup pg_dump 日次)
+- **認証 + RLS**: Supabase Auth + workspace_members / ws-scoped policies
+  (soft-delete + RLS の既知の罠は §4.1)
+- **Item**: ltree 階層 + 楽観ロック + fractional-indexing position + MUST/DoD
+  不変条件 + **priority (1-4) / due_time / scheduled_for (Phase 1 追加)**
+- **Doc / Comment**: Item と同じ CRUD パターン (comment は hooks 無で UI 化待ち)
+- **View plugin (6)**: **Today / Inbox (Phase 1 追加)** / Kanban / Backlog / Gantt / Dashboard
+- **Template**: 手動 / recurring (pg-boss cron + cron_run_id 冪等) / Mustache 変数
+- **AI Agent**: Researcher / PM + executeToolLoop + agent_memories + cost 集計
+- **RAG**: multilingual-e5 + pgvector HNSW + pg_trgm + RRF Hybrid
+- **自動化**: pg-boss worker **7 queues** (agent-run / doc-embed / researcher-decompose
+  / pm-standup / pm-standup-tick / template-cron-tick / time-entry-sync)
+- **受け入れ検証**: `scripts/verify-acceptance.ts` 8 項目並列
+- **配信**: Docker Compose (web / worker / caddy / db-backup)
+
+### 稼働入力 (Phase 2 OF POST_MVP → 実装済)
+
+- `time_entries` / `mock_timesheet_entries` テーブル
+- `/w/[wsId]/time-entries` UI (作成 / 一覧 / Sync ボタン)
+- `/mock-timesheet/{login,new,entries}` (Playwright ターゲット)
+- Playwright driver + pg-boss worker で sync 実行 → external_ref 返し
+
+### Phase 1 (今回) 追加
+
+- **ワンクリック完了**: `itemService.toggleComplete` + `useToggleCompleteItem` (楽観更新)
+  - `ItemCheckbox` (優先度色 p1 赤 / p2 橙 / p3 青 / p4 灰)
+- **Today / Inbox ビュー** (plugin、既定 = today)
+- **自然言語 QuickAdd**: `nl-parse.ts` (今日/明日/来週X曜/HH:MM/p1-p4/#tag/@user/MUST)
+  - `quick-add.tsx` (chip preview)
+- **グローバルショートカット**: `q / ? / g t-d` (GlobalShortcuts コンポーネント)
+- **Command Palette** view 切替を 7 項目に拡張
 
 数値:
 
-- Vitest **227** PASS / Playwright E2E **3** PASS / 受け入れ検証 **8/8** PASS
-- Drizzle schema **26** テーブル / RLS policy 全テーブル
-- Plugin Registry: action 3 / view 4 / pg-boss queues 6
+- Vitest **274** PASS / Playwright E2E **13/13** PASS (localhost + Tailscale)
+- Drizzle schema **28** テーブル (time_entries / mock_timesheet_entries 追加)
+- Plugin Registry: action 3 / view **6** (Today + Inbox 追加) / pg-boss queues 7
+
+## 2.5 次セッションでやること
+
+### A. Phase 2 (コラボ hygiene、工数 M)
+
+schema はあるのに UI が無い資産を可視化。**タスク自動分解** を主 CTA に昇格。
+
+1. `src/features/comment/hooks.ts` (新規) — `useItemComments` 等
+2. `src/features/tag/` 新規 feature (CRUD)
+3. `itemService.setAssignees / setTags` + Repository 拡張
+4. `src/components/workspace/{assignee-picker,tag-picker,comment-thread}.tsx`
+5. `item-edit-dialog.tsx` を Tab 化 (基本 / コメント / Activity)
+6. **AI 分解 CTA 前面化**: Kanban card `+` / Item dialog 主ボタン /
+   Template instantiate 後の自動 researcher chain (`agentRoleToInvoke` 既存活用)
+7. Item 検索 (fuse.js で client fuzzy)
+8. 並行 E2E: `collaboration.spec.ts` + `ai-decompose-card.spec.ts`
+
+### B. Phase 5 (業務/長期/個人/OKR/習慣/振り返り/自動化/PDCA、工数 L)
+
+- **5.1 Sprint**: `sprints` テーブル + `items.sprint_id` + SprintView (Kanban filter)
+- **5.2 OKR**: `goals` + `key_results` + `item.goal_id` + 進捗 %
+- **5.3 振り返り自動化**: weekly cron で PM が audit_log + 完了 items を要約
+  → Retro Doc + action items を Inbox に自動投下
+- **5.4 PDCA dashboard**: Plan/Do/Check/Act を status type にマップ、
+  cycle time メトリクス
+
+### 推奨進め方
+
+Phase 2 (ユーザー間協業基盤) → Phase 5.1 (Sprint) → Phase 5.3 (Retro) →
+Phase 5.2 (OKR) → Phase 5.4 (PDCA dashboard) の順。
+
+Phase 3 (bulk / Activity / MUST escalation) と Phase 4 (dark / 通知 bell) は
+Phase 2 と並行でも可 (独立性高い)。
 
 ## 3. 動作確認コマンド (信頼できる checkpoint)
 
@@ -246,16 +297,18 @@ AI 系は Claude Code Max プラン経由 (OAuth) なので `ANTHROPIC_API_KEY` 
 
 ## 7. 次にやること
 
-**POST_MVP.md 先頭の「稼働入力」が最優先**。他候補も同ファイルにリストあり。
+**Phase 2 (comments/tags/assignee UI + AI 分解 CTA 前面化)** が次の主戦場。§2.5 に詳細。
+詳細プラン: `~/.claude/plans/todoist-ticktick-todo-ui-ux-sleepy-hamster.md`
 
-本セッションで積み残した候補 (POST_MVP.md へ移す):
+他の積み残し候補 (優先度低 / POST_MVP):
 
 - Anthropic streaming + Supabase Realtime push UI
 - TZ 別 cron + `cron-parser` (現状 UTC 09:00 固定)
 - `workspace_announcements` テーブル (PM 出力ストリーム分離)
 - `agent_prompts` テーブルから system prompt 動的読込
-- Kanban カードにも Agent アクション
+- Kanban カードにも Agent アクション (AI 分解 CTA は Phase 2 で実装予定)
 - E2E の AI パス (real Anthropic or MSW + invokeModel DI)
+- PWA / Service Worker / Email 通知 / Push 通知
 
 ## 8. その他
 
