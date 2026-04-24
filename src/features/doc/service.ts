@@ -1,10 +1,11 @@
 import 'server-only'
 
 import { recordAudit } from '@/lib/audit'
-import { requireUser, requireWorkspaceMember } from '@/lib/auth/guard'
+import { requireWorkspaceMember } from '@/lib/auth/guard'
 import { withUserDb } from '@/lib/db/scoped-client'
-import { ConflictError, NotFoundError, ValidationError } from '@/lib/errors'
+import { ConflictError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
+import { mutateWithGuard } from '@/lib/service-mutate'
 
 import { docRepository } from './repository'
 import {
@@ -13,6 +14,8 @@ import {
   SoftDeleteDocInputSchema,
   UpdateDocInputSchema,
 } from './schema'
+
+const NOT_FOUND = 'Doc が見つかりません'
 
 export const docService = {
   async create(input: unknown): Promise<Result<Doc>> {
@@ -48,25 +51,30 @@ export const docService = {
     const parsed = UpdateDocInputSchema.safeParse(input)
     if (!parsed.success) return err(new ValidationError('入力内容を確認してください', parsed.error))
 
-    return await this._mutateWithGuard(parsed.data.id, async (tx, before, user) => {
-      const updated = await docRepository.updateWithLock(
-        tx,
-        parsed.data.id,
-        parsed.data.expectedVersion,
-        parsed.data.patch as Partial<Parameters<typeof docRepository.insert>[1]>,
-      )
-      if (!updated) return err(new ConflictError())
-      await recordAudit(tx, {
-        workspaceId: before.workspaceId,
-        actorType: 'user',
-        actorId: user.id,
-        targetType: 'doc',
-        targetId: updated.id,
-        action: 'update',
-        before,
-        after: updated,
-      })
-      return ok(updated)
+    return await mutateWithGuard<Doc>({
+      findById: (tx, id) => docRepository.findById(tx, id),
+      id: parsed.data.id,
+      notFoundMessage: NOT_FOUND,
+      fn: async (tx, before, user) => {
+        const updated = await docRepository.updateWithLock(
+          tx,
+          parsed.data.id,
+          parsed.data.expectedVersion,
+          parsed.data.patch as Partial<Parameters<typeof docRepository.insert>[1]>,
+        )
+        if (!updated) return err(new ConflictError())
+        await recordAudit(tx, {
+          workspaceId: before.workspaceId,
+          actorType: 'user',
+          actorId: user.id,
+          targetType: 'doc',
+          targetId: updated.id,
+          action: 'update',
+          before,
+          after: updated,
+        })
+        return ok(updated)
+      },
     })
   },
 
@@ -74,23 +82,28 @@ export const docService = {
     const parsed = SoftDeleteDocInputSchema.safeParse(input)
     if (!parsed.success) return err(new ValidationError('入力内容を確認してください', parsed.error))
 
-    return await this._mutateWithGuard(parsed.data.id, async (tx, before, user) => {
-      const updated = await docRepository.softDelete(
-        tx,
-        parsed.data.id,
-        parsed.data.expectedVersion,
-      )
-      if (!updated) return err(new ConflictError())
-      await recordAudit(tx, {
-        workspaceId: before.workspaceId,
-        actorType: 'user',
-        actorId: user.id,
-        targetType: 'doc',
-        targetId: updated.id,
-        action: 'delete',
-        before,
-      })
-      return ok(updated)
+    return await mutateWithGuard<Doc>({
+      findById: (tx, id) => docRepository.findById(tx, id),
+      id: parsed.data.id,
+      notFoundMessage: NOT_FOUND,
+      fn: async (tx, before, user) => {
+        const updated = await docRepository.softDelete(
+          tx,
+          parsed.data.id,
+          parsed.data.expectedVersion,
+        )
+        if (!updated) return err(new ConflictError())
+        await recordAudit(tx, {
+          workspaceId: before.workspaceId,
+          actorType: 'user',
+          actorId: user.id,
+          targetType: 'doc',
+          targetId: updated.id,
+          action: 'delete',
+          before,
+        })
+        return ok(updated)
+      },
     })
   },
 
@@ -98,26 +111,6 @@ export const docService = {
     const { user } = await requireWorkspaceMember(workspaceId, 'viewer')
     return await withUserDb(user.id, async (tx) => {
       return await docRepository.list(tx, { workspaceId })
-    })
-  },
-
-  /**
-   * Item と同パターン: RLS 経由で before を取得 → workspace_id で member ガード → fn 実行。
-   */
-  async _mutateWithGuard(
-    docId: string,
-    fn: (
-      tx: Parameters<Parameters<typeof withUserDb>[1]>[0],
-      before: Doc,
-      user: { id: string },
-    ) => Promise<Result<Doc>>,
-  ): Promise<Result<Doc>> {
-    const user = await requireUser()
-    return await withUserDb(user.id, async (tx) => {
-      const before = await docRepository.findById(tx, docId)
-      if (!before) return err(new NotFoundError('Doc が見つかりません'))
-      await requireWorkspaceMember(before.workspaceId, 'member')
-      return await fn(tx, before, user)
     })
   },
 }

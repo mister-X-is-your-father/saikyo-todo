@@ -1,7 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
-
+import { actionWrap } from '@/lib/action-wrap'
 import { isAppError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 
@@ -12,16 +11,7 @@ import { workspaceService } from './service'
 export async function createWorkspaceAction(
   input: CreateWorkspaceInput,
 ): Promise<Result<{ id: string }>> {
-  try {
-    const result = await workspaceService.create(input)
-    if (result.ok) {
-      revalidatePath('/')
-    }
-    return result
-  } catch (e) {
-    if (isAppError(e)) return err(e)
-    throw e
-  }
+  return await actionWrap(() => workspaceService.create(input), '/')
 }
 
 export async function listWorkspaceStatusesAction(

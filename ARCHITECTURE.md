@@ -272,27 +272,22 @@ export interface AgentRole {
 ```
 
 ```ts
-// src/plugins/registry.ts
-export const viewRegistry = new Map<string, ViewPlugin>()
-export const fieldRegistry = new Map<string, FieldPlugin>()
-export const actionRegistry = new Map<string, ActionPlugin>()
-export const agentRegistry = new Map<string, AgentRole>()
+// src/plugins/registry.ts (Map は private、アクセスは関数経由)
+export function registerView(p: ViewPlugin): void
+export function registerField(p: FieldPlugin): void
+export function registerAction(p: ActionPlugin): void
+export function registerAgent(p: AgentRole): void
 
-export function registerView(p: ViewPlugin) {
-  viewRegistry.set(p.id, p)
-}
-export function registerField(p: FieldPlugin) {
-  fieldRegistry.set(p.id, p)
-}
-export function registerAction(p: ActionPlugin) {
-  actionRegistry.set(p.id, p)
-}
-export function registerAgent(p: AgentRole) {
-  agentRegistry.set(p.id, p)
-}
+export function getView(id: string): ViewPlugin | undefined
+export function listViews(): ViewPlugin[]
+// 同様に getField/listFields, getAction/listActions, getAgent/listAgents
+
+// core/index.ts で一括 bootstrap (idempotent)
+export function registerCorePlugins(): void
 ```
 
-→ **新ビュー追加 = `core/views/` にファイル + `index.ts` で 1 行**。
+→ **新ビュー追加 = `core/views/xxx.tsx` にファイル + `core/index.ts` で 1 行登録**。
+実装済 core plugins: kanban / backlog / gantt (3 view) + reload-items (1 action)
 
 ---
 
@@ -307,14 +302,22 @@ export function registerAgent(p: AgentRole) {
 ### 7.2 LTREE / 楽観ロック / fractional indexing
 
 - ツリー操作は `lib/db/ltree.ts` に集約
-- `move subtree`: トランザクション + `SELECT ... FOR UPDATE` で対象サブツリーをロック → path 一括 UPDATE
-- 並び順: `position numeric` + `fractional-indexing` で race-free
+  - `moveSubtree`: トランザクション + `SELECT ... FOR UPDATE` で対象サブツリーをロック → path 一括 UPDATE
+  - 注: PG15 の `subpath(x, nlevel(x))` guard を回避するため UPDATE の CASE は 3 分岐
+    (target 自身 / 直接の子 / 孫以降)。詳細は `ltree.ts` 内コメント参照
+- 並び順: `position text` (`fractional-indexing` の base62 文字列) + `lib/db/fractional-position.ts`
+  - 文字列 lex sort が位置順と一致、append で無限分割可能 (numeric 中点だと ~50 回で精度枯渇するため text を採用)
 - 全 mutation で `WHERE id = ? AND version = ?` → 0 行なら `ConflictError`
+- `lib/service-mutate.ts` の `mutateWithGuard<T>` が共通パターンを提供
+  (findById → RLS + workspace ガード → fn)
 
 ### 7.3 Audit Log (`lib/audit.ts`)
 
 - Service 層から `recordAudit({ workspace_id, target_type, target_id, action, before, after, actor })` を呼ぶ
 - audit 書き込み失敗は **mutation 自体を rollback**
+- **RLS**: 新規テーブルを Service 層から書く場合は `authenticated` ロール用の INSERT policy
+  (workspace_member 条件) を **必ず** 追加する。`audit_log` で踏んだ落とし穴
+  (初期 migration は service_role 限定だったが Service は `withUserDb` = authenticated で動く)
 
 ### 7.4 Soft Delete
 
@@ -399,17 +402,23 @@ UI → Server Action → agent_invocations INSERT (status='queued') + pg-boss en
 
 ---
 
-## 12. テスト戦略 (現実線)
+## 12. テスト戦略 (TDD 運用)
 
-| 層                   | ツール               | 目標                  | 何を                                        |
-| -------------------- | -------------------- | --------------------- | ------------------------------------------- |
-| Service              | Vitest               | **50%**               | 主要 happy path + 権限 + DoD 分岐           |
-| Repository           | Vitest + 実 Supabase | LTREE / pgvector のみ | 集計・検索                                  |
-| Component            | RTL                  | **やらない**          | shadcn と RHF に任せる                      |
-| E2E                  | Playwright           | **golden path 1 本**  | Auth → Item → Kanban → AI → Template → MUST |
-| Cross-workspace 漏洩 | Playwright           | 必須 1 本             | 別 ws の漏洩                                |
+| 層                   | ツール                                               | 何を                                                                                                        |
+| -------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Service              | Vitest + 実 Supabase + `vi.mock('@/lib/auth/guard')` | 新規 method / branch は **失敗テスト先**。happy + 権限 + 楽観ロック + audit                                 |
+| Pure 関数            | Vitest (単体)                                        | `ltree-path.ts` / `fractional-position.ts` 等の純粋ロジック                                                 |
+| Plugin Registry      | Vitest                                               | register / list / id 上書き / core bootstrap idempotent                                                     |
+| Component            | —                                                    | **書かない** (shadcn + RHF + E2E でカバー)                                                                  |
+| E2E                  | Playwright                                           | **golden path 1 本**: signup → workspace → Item → Kanban → AI → Template → MUST。UI 追加の都度 smoke に追記 |
+| Cross-workspace 漏洩 | Playwright                                           | 必須 1 本 (別 ws の漏洩)                                                                                    |
+
+テスト用 fixture: `src/test/fixtures.ts` の `createTestUserAndWorkspace` +
+`mockAuthGuards(userId, email)`。auth guard だけ mock、RLS / trigger / constraint は本物を通す
+(過去に `audit_log` の RLS INSERT policy 欠落を検出した実績)。
 
 CI: `pnpm typecheck && pnpm lint && pnpm test` を pre-push hook (Husky)。
+E2E は手動 or CI の別 job で `pnpm test:e2e`。
 
 ---
 
@@ -418,14 +427,18 @@ CI: `pnpm typecheck && pnpm lint && pnpm test` を pre-push hook (Husky)。
 | 箇所                       | 共通化先                                        |
 | -------------------------- | ----------------------------------------------- |
 | エラー → トースト          | `lib/handle-result.ts` の `toastResult`         |
-| Loading / Empty / Error UI | `components/shared/AsyncStates.tsx`             |
+| Loading / Empty / Error UI | `components/shared/async-states.tsx`            |
 | 権限チェック               | `lib/auth/guard.ts` の `requireWorkspaceMember` |
+| Service mutation ガード    | `lib/service-mutate.ts` の `mutateWithGuard<T>` |
+| Server Action ラッパ       | `lib/action-wrap.ts` の `actionWrap`            |
+| Result → Query unwrap      | `lib/result-unwrap.ts` の `unwrap`              |
 | 日付表示                   | `lib/date.ts` (TZ aware)                        |
 | AI Agent 起動              | `features/agent/invoke.ts` の `invokeAgent`     |
 | ツリー操作                 | `lib/db/ltree.ts`                               |
+| 並び順 (fractional)        | `lib/db/fractional-position.ts`                 |
 | 変数展開                   | `features/template/expand.ts`                   |
 | audit_log                  | `lib/audit.ts` の `recordAudit`                 |
-| IME 対応 Input             | `components/shared/IMEInput.tsx`                |
+| IME 対応 Input             | `components/shared/ime-input.tsx`               |
 | pg-boss enqueue            | `lib/jobs/queue.ts`                             |
 
 ---

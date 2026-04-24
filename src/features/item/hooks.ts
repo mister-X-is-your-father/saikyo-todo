@@ -9,9 +9,7 @@
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import type { AppError } from '@/lib/errors'
-import { AppError as AppErrorClass } from '@/lib/errors'
-import type { Result } from '@/lib/result'
+import { unwrap } from '@/lib/result-unwrap'
 
 import {
   createItemAction,
@@ -39,16 +37,6 @@ export const itemKeys = {
   list: (workspaceId: string, filter?: ItemFilter) =>
     [...itemKeys.all, workspaceId, filter ?? {}] as const,
   detail: (id: string) => [...itemKeys.all, 'detail', id] as const,
-}
-
-function unwrap<T>(r: Result<T>): T {
-  if (r.ok) return r.value
-  // AppError は Result 経由で渡ってくる。Query の onError は Error を受け取るので
-  // そのまま throw する。元の instanceof 情報が sera 越しで失われるケースに備えて
-  // AppErrorClass 相当を再構築する (code / message 情報は保持)。
-  if (r.error instanceof Error) throw r.error
-  const e = r.error as AppError
-  throw Object.assign(new AppErrorClass(e.code ?? 'UNKNOWN', e.message ?? 'Unknown error'), e)
 }
 
 export function useItems(workspaceId: string, filter?: ItemFilter) {

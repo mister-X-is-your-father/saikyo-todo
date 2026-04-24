@@ -1,46 +1,34 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
-
+import { actionWrap } from '@/lib/action-wrap'
 import { isAppError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 
 import type { Item } from './schema'
 import { itemService } from './service'
 
-async function wrap<T>(fn: () => Promise<Result<T>>, revalidate?: string): Promise<Result<T>> {
-  try {
-    const result = await fn()
-    if (result.ok && revalidate) revalidatePath(revalidate, 'layout')
-    return result
-  } catch (e) {
-    if (isAppError(e)) return err(e)
-    throw e
-  }
-}
-
 export async function createItemAction(input: unknown): Promise<Result<Item>> {
-  return await wrap(() => itemService.create(input))
+  return await actionWrap(() => itemService.create(input))
 }
 
 export async function updateItemAction(input: unknown): Promise<Result<Item>> {
-  return await wrap(() => itemService.update(input))
+  return await actionWrap(() => itemService.update(input))
 }
 
 export async function updateItemStatusAction(input: unknown): Promise<Result<Item>> {
-  return await wrap(() => itemService.updateStatus(input))
+  return await actionWrap(() => itemService.updateStatus(input))
 }
 
 export async function softDeleteItemAction(input: unknown): Promise<Result<Item>> {
-  return await wrap(() => itemService.softDelete(input))
+  return await actionWrap(() => itemService.softDelete(input))
 }
 
 export async function moveItemAction(input: unknown): Promise<Result<Item>> {
-  return await wrap(() => itemService.move(input))
+  return await actionWrap(() => itemService.move(input))
 }
 
 export async function reorderItemAction(input: unknown): Promise<Result<Item>> {
-  return await wrap(() => itemService.reorder(input))
+  return await actionWrap(() => itemService.reorder(input))
 }
 
 export async function listItemsAction(
