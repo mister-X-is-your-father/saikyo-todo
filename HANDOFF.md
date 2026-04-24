@@ -3,7 +3,8 @@
 > このファイルは context を `/clear` した後に **次の Claude (or 同一 Claude の続き)** が
 > 即座にプロジェクト状態を把握するためのもの。役目を終えたら削除して構わない。
 >
-> 最終更新: 2026-04-24 (Week 4 Day 26 完了 — PM Agent / Heartbeat / Realtime / cron / Docker)
+> 最終更新: 2026-04-24 (MVP 主要機能揃い — Day 27 + 仕上げ相当。Day 28-30 は
+> 手動検証 / 受け入れテスト向け予備日として残す)
 
 ## 1. 最初に読む順番 (5 分で把握)
 
@@ -15,7 +16,7 @@
 
 ## 2. 現在地
 
-**進捗: 26 / 33 日 (Week 4 Day 22-26 完了 — PM / Heartbeat / Realtime / cron / Docker)**
+**進捗: 27 / 33 日 (Week 4 Day 22-27 完了 — PM / Heartbeat / Realtime / cron / Docker / E2E)**
 
 完了 (要点のみ、詳細は git log):
 
@@ -214,11 +215,21 @@
   researcher-decompose, pm-standup, pm-standup-tick, template-cron-tick)
 - Researcher whitelist 8 / PM whitelist 6 (create_item / instantiate_template 除外)
 
-次にやること (REQUIREMENTS §7 Day 27-30):
+次にやること (Day 28-30 = 受け入れ基準 通し検証フェーズ):
 
-- **Day 27**: E2E golden path 充実 (現状: signup → ws → Item → Kanban → Template 作成)
-- **Day 28-30**: 受け入れ基準通し検証 + RLS 抜けスキャン + バグ潰し + README 仕上げ
-- 残課題 (post-MVP 候補): Anthropic streaming UI / TZ 別 cron / cron-parser 導入
+- **手動検証が必要** (ANTHROPIC_API_KEY を設定して):
+  - Researcher 「AI 分解」ボタンで子 Item 群が parent_path 付きで作成される
+  - Researcher 「AI 調査」ボタンで Doc が作成され doc_chunks に embedding が入る
+  - PM 「Stand-up」ボタンで Daily Doc が作成される
+  - Heartbeat 「Heartbeat」ボタン → notifications に 7d/3d/1d が入る (RLS で own only)
+- **2 workspace 越境チェック**: E2E を拡張、または手動で user1/ws1 が ws2 の Item を
+  見られないことを確認
+- **サンプル Template "クライアント onboarding"**: seed / マイグレーション追加推奨
+- 残課題 (post-MVP 候補、POST_MVP.md 先頭以外):
+  - Anthropic streaming + Supabase Realtime push UI (Day 15 からの繰越)
+  - TZ 別 cron + cron-parser (現状は全 workspace UTC 09:00)
+  - `workspace_announcements` テーブル追加 (現状 PM 出力は Doc のみ)
+  - AI コスト workspace 月次集計 UI (raw データは agent_invocations にある)
 
 MVP 完了直後の次タスク候補 (POST_MVP 先頭に記載):
 
