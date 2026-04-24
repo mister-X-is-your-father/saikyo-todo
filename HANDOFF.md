@@ -3,7 +3,7 @@
 > このファイルは context を `/clear` した後に **次の Claude (or 同一 Claude の続き)** が
 > 即座にプロジェクト状態を把握するためのもの。役目を終えたら削除して構わない。
 >
-> 最終更新: 2026-04-24 (Week 2 Day 13 完了時点)
+> 最終更新: 2026-04-24 (Week 2 完了時点 — Day 14 まで)
 
 ## 1. 最初に読む順番 (5 分で把握)
 
@@ -15,7 +15,7 @@
 
 ## 2. 現在地
 
-**進捗: 13 / 33 日 (Week 0-1 完了 + Week 2 Day 8-13 完了)**
+**進捗: 14 / 33 日 (Week 0-2 全完了)**
 
 完了 (要点のみ、詳細は git log):
 
@@ -55,21 +55,29 @@
   - `/w/[workspaceId]/templates` 新規ページ + workspace ヘッダに導線
   - templates-panel: 作成フォーム + カード inline expansion、削除は楽観ロック付き
   - template-items-editor: 子 item 追加 / 一覧 / 削除 (parent_path は Day 14 で階層対応)
+- Week 2 Day 14: Template instantiate (展開) + "即実行" UI
+  - `instantiate-plan.ts` — pure helper (Mustache 変数展開、depth 昇順で label map 構築、
+    template 世界の parent_path を items 世界に翻訳、dueOffsetDays → ISO 日付)
+  - `templateService.instantiate` — cron_run_id 事前 lookup → plan 生成 → items + inst 挿入
+    - audit (action='instantiate')。1 Tx で部分成功させない
+  - UI `InstantiateForm`: `{{var}}` を正規表現で抽出して動的フォーム、即実行で workspace に遷移
+  - TDD: pure helper 6 tests + integration 5 tests
+    - 2 階層 parent_path 繋がり検証 / MUST+dod+dueOffsetDays 反映 / cron_run_id 冪等衝突
 
 現在の数:
 
-- Vitest **84 tests** PASS / E2E **2 tests** PASS
+- Vitest **95 tests** PASS / E2E **2 tests** PASS
 - Plugin Registry: action 1, view 4 (core)
 
 次にやること (REQUIREMENTS §7 の順):
 
 - **Week 1 Day 10b (繰越)**: FTS 検索 (cmdk + 全文検索) — migration 設計要:
   pg_bigm vs tsvector vs pgroonga (日本語対応)。専用セッション推奨
-- **Week 2 Day 14**: Template 展開 / 適用 / recurring / "即実行" UX
-  - `template_instantiations` テーブル (既存 schema あり) に書き込む instantiate ロジック
-  - Mustache 変数展開 (template_items.title) + dueOffsetDays を適用日に加算して items 生成
-  - parent_path の ltree 付け替え (template root → 実 workspace の新 root item)
-  - cron_run_id UNIQUE で recurring の多重展開防止 (pg_cron 側は Day 25)
+- **Week 3 (Day 15-21)**: AI 分解 / RAG / Researcher Agent
+  - Day 15: Anthropic SDK ラッパ + streaming 基盤 + agent_invocations 書込
+  - Day 16: 自前 embedding worker (multilingual-e5) + job キュー (pg-boss)
+  - Day 17: RAG 検索 Service (HNSW + Template Doc 重み付け + Hybrid RRF)
+  - Day 18-21: 分解ツール / Researcher Agent / Template 連携
 - (以降 `REQUIREMENTS.md` §7 参照)
 
 ## 3. 動作確認コマンド (信頼できる checkpoint)
