@@ -36,7 +36,7 @@ export function SignupForm() {
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <form method="post" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="displayName">表示名</Label>
         <IMEInput id="displayName" autoComplete="name" {...form.register('displayName')} />

@@ -8,8 +8,13 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '4mb',
-      // CSRF 対策。本番デプロイ時に Caddy 越しの実ドメインを追加する想定。
-      allowedOrigins: ['localhost:3001'],
+      // CSRF 対策。本番は Caddy 越しの実ドメインを追加する。
+      // `*.ts.net` は Tailscale 経由アクセス (社内テスト用) を許可。
+      allowedOrigins: [
+        'localhost:3001',
+        '127.0.0.1:3001',
+        ...(process.env.NEXT_PUBLIC_ALLOWED_ORIGINS?.split(',').map((s) => s.trim()) ?? []),
+      ],
     },
   },
 }

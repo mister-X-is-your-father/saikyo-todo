@@ -36,7 +36,7 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <form method="post" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="email">メールアドレス</Label>
         <IMEInput id="email" type="email" autoComplete="email" {...form.register('email')} />
