@@ -21,8 +21,8 @@ test('Item 編集: Backlog から編集ダイアログで開始日 / 期限 / MU
     await page.waitForURL(/\/[0-9a-f-]{36}$/)
 
     // 通常 item を作成
-    await page.locator('#new-item-input').fill('編集対象 Item')
-    await page.getByRole('button', { name: '作成', exact: true }).click()
+    await page.locator('#quick-add-input').fill('編集対象 Item')
+    await page.getByTestId('quick-add-submit').click()
     await page.waitForTimeout(500)
 
     // Backlog に切替

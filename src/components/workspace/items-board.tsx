@@ -7,43 +7,43 @@
  * - View 切替: Kanban (既定) / Backlog — URL param `?view=` で同期 (nuqs)
  * - フィルタ: `?must=1` / `?status=...` を client 側で適用
  */
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import { parseAsBoolean, parseAsString, parseAsStringEnum, useQueryState } from 'nuqs'
-import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
 
-import { useCreateItem, useItems } from '@/features/item/hooks'
+import { useItems } from '@/features/item/hooks'
 import { useItemsRealtime } from '@/features/item/realtime'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { CommandPalette, type PaletteCommand } from '@/components/shared/command-palette'
-import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BacklogView } from '@/components/workspace/backlog-view'
 import { DashboardView } from '@/components/workspace/dashboard-view'
 import { GanttView } from '@/components/workspace/gantt-view'
+import { InboxView } from '@/components/workspace/inbox-view'
 import { KanbanView } from '@/components/workspace/kanban-view'
+import { QuickAdd } from '@/components/workspace/quick-add'
+import { TodayView } from '@/components/workspace/today-view'
 
 interface Props {
   workspaceId: string
 }
 
-const VIEWS = ['kanban', 'backlog', 'gantt', 'dashboard'] as const
+const VIEWS = ['today', 'inbox', 'kanban', 'backlog', 'gantt', 'dashboard'] as const
 type ViewKey = (typeof VIEWS)[number]
 
 export function ItemsBoard({ workspaceId }: Props) {
   const [view, setView] = useQueryState(
     'view',
-    parseAsStringEnum<ViewKey>([...VIEWS]).withDefault('kanban'),
+    parseAsStringEnum<ViewKey>([...VIEWS]).withDefault('today'),
   )
   const [must, setMust] = useQueryState('must', parseAsBoolean.withDefault(false))
   const [statusFilter, setStatusFilter] = useQueryState('status', parseAsString)
 
   const { data, isLoading, error, refetch } = useItems(workspaceId)
-  const create = useCreateItem(workspaceId)
   useItemsRealtime(workspaceId)
 
   const filtered = useMemo(() => {
@@ -55,46 +55,6 @@ export function ItemsBoard({ workspaceId }: Props) {
       return true
     })
   }, [data, must, statusFilter])
-
-  const [title, setTitle] = useState('')
-  const [isMust, setIsMust] = useState(false)
-  const [dod, setDod] = useState('')
-  const [startDate, setStartDate] = useState('')
-  const [dueDate, setDueDate] = useState('')
-
-  async function handleCreate() {
-    const t = title.trim()
-    if (!t) return
-    if (isMust && !dod.trim()) {
-      toast.error('MUST には DoD (完了条件) が必要です')
-      return
-    }
-    if (startDate && dueDate && startDate > dueDate) {
-      toast.error('期限は開始日以降にしてください')
-      return
-    }
-    try {
-      await create.mutateAsync({
-        workspaceId,
-        title: t,
-        description: '',
-        status: 'todo',
-        isMust,
-        dod: isMust ? dod.trim() : null,
-        startDate: startDate || null,
-        dueDate: dueDate || null,
-        idempotencyKey: crypto.randomUUID(),
-      })
-      setTitle('')
-      setIsMust(false)
-      setDod('')
-      setStartDate('')
-      setDueDate('')
-      toast.success('Item を作成しました')
-    } catch (e) {
-      toast.error(isAppError(e) ? e.message : '作成に失敗しました')
-    }
-  }
 
   const commands = useMemo<PaletteCommand[]>(
     () => [
@@ -108,8 +68,26 @@ export function ItemsBoard({ workspaceId }: Props) {
         keywords: ['reload', 'refresh'],
       },
       {
+        id: 'view-today',
+        label: 'Today に切替',
+        group: 'ビュー',
+        run: async () => {
+          await setView('today')
+        },
+        keywords: ['today', '今日'],
+      },
+      {
+        id: 'view-inbox',
+        label: 'Inbox に切替',
+        group: 'ビュー',
+        run: async () => {
+          await setView('inbox')
+        },
+        keywords: ['inbox', '未整理'],
+      },
+      {
         id: 'view-kanban',
-        label: 'ビューを Kanban に切替',
+        label: 'Kanban に切替',
         group: 'ビュー',
         run: async () => {
           await setView('kanban')
@@ -118,7 +96,7 @@ export function ItemsBoard({ workspaceId }: Props) {
       },
       {
         id: 'view-backlog',
-        label: 'ビューを Backlog に切替',
+        label: 'Backlog に切替',
         group: 'ビュー',
         run: async () => {
           await setView('backlog')
@@ -127,7 +105,7 @@ export function ItemsBoard({ workspaceId }: Props) {
       },
       {
         id: 'view-gantt',
-        label: 'ビューを Gantt に切替',
+        label: 'Gantt に切替',
         group: 'ビュー',
         run: async () => {
           await setView('gantt')
@@ -136,7 +114,7 @@ export function ItemsBoard({ workspaceId }: Props) {
       },
       {
         id: 'view-dashboard',
-        label: 'ビューを Dashboard に切替',
+        label: 'Dashboard に切替',
         group: 'ビュー',
         run: async () => {
           await setView('dashboard')
@@ -145,10 +123,10 @@ export function ItemsBoard({ workspaceId }: Props) {
       },
       {
         id: 'focus-new',
-        label: '新規 Item 入力にフォーカス',
+        label: 'クイック追加にフォーカス (q)',
         group: 'Item',
-        run: () => document.getElementById('new-item-input')?.focus(),
-        keywords: ['create', 'new', '作成'],
+        run: () => document.getElementById('quick-add-input')?.focus(),
+        keywords: ['create', 'new', '作成', 'q'],
       },
     ],
     [refetch, setView],
@@ -160,81 +138,30 @@ export function ItemsBoard({ workspaceId }: Props) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">新規 Item</CardTitle>
+          <CardTitle className="text-base">新規 Item (クイック追加)</CardTitle>
         </CardHeader>
         <CardContent>
-          <form
-            className="space-y-2"
-            onSubmit={(e) => {
-              e.preventDefault()
-              void handleCreate()
-            }}
-          >
-            <div className="flex gap-2">
-              <IMEInput
-                id="new-item-input"
-                placeholder="タイトル (Enter で作成)"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="flex-1"
-              />
-              <Button type="submit" disabled={create.isPending || !title.trim()}>
-                作成
-              </Button>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 text-sm">
-              <label className="flex cursor-pointer items-center gap-1.5">
-                <input
-                  type="checkbox"
-                  checked={isMust}
-                  onChange={(e) => setIsMust(e.target.checked)}
-                  data-testid="create-must-checkbox"
-                />
-                <span className="font-medium text-red-700">MUST</span>
-                <span className="text-muted-foreground text-xs">(絶対落とさない)</span>
-              </label>
-              {isMust && (
-                <IMEInput
-                  id="new-item-dod"
-                  placeholder="DoD (完了条件、必須)"
-                  value={dod}
-                  onChange={(e) => setDod(e.target.value)}
-                  className="flex-1"
-                />
-              )}
-            </div>
-            <div className="flex flex-wrap items-center gap-3 text-sm">
-              <label className="flex items-center gap-2">
-                <span className="text-muted-foreground text-xs">開始日</span>
-                <IMEInput
-                  id="new-item-start"
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-40"
-                  data-testid="create-item-start-date"
-                />
-              </label>
-              <label className="flex items-center gap-2">
-                <span className="text-muted-foreground text-xs">期限</span>
-                <IMEInput
-                  id="new-item-due"
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="w-40"
-                  data-testid="create-item-due-date"
-                />
-              </label>
-            </div>
-          </form>
-          <p className="text-muted-foreground mt-2 text-xs">
-            Cmd+K でコマンドパレット、Enter で作成 (IME 変換中は無視)。
-          </p>
+          <QuickAdd workspaceId={workspaceId} />
         </CardContent>
       </Card>
 
-      <div className="flex items-center gap-2" data-testid="view-switcher">
+      <div className="flex flex-wrap items-center gap-2" data-testid="view-switcher">
+        <Button
+          variant={view === 'today' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setView('today')}
+          data-testid="view-today-btn"
+        >
+          Today
+        </Button>
+        <Button
+          variant={view === 'inbox' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setView('inbox')}
+          data-testid="view-inbox-btn"
+        >
+          Inbox
+        </Button>
         <Button
           variant={view === 'kanban' ? 'default' : 'outline'}
           size="sm"
@@ -301,6 +228,10 @@ export function ItemsBoard({ workspaceId }: Props) {
         />
       ) : view === 'dashboard' ? (
         <DashboardView workspaceId={workspaceId} />
+      ) : view === 'today' ? (
+        <TodayView workspaceId={workspaceId} items={filtered} />
+      ) : view === 'inbox' ? (
+        <InboxView workspaceId={workspaceId} items={filtered} />
       ) : (data?.length ?? 0) === 0 ? (
         <EmptyState title="まだ Item がありません" description="上のフォームから作成してください" />
       ) : view === 'backlog' ? (

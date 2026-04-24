@@ -137,6 +137,46 @@ export const itemService = {
     })
   },
 
+  /**
+   * ワンクリック完了 / 未完了トグル。workspace の type='done' status に遷移。
+   * MUST+DoD invariant は updateStatus 側で保証。
+   */
+  async toggleComplete(input: {
+    id: string
+    expectedVersion: number
+    complete: boolean
+  }): Promise<Result<Item>> {
+    return await mutateWithGuard<Item>({
+      findById: (tx, id) => itemRepository.findById(tx, id),
+      id: input.id,
+      notFoundMessage: NOT_FOUND,
+      fn: async (tx, before, user) => {
+        const targetKey = input.complete
+          ? await itemRepository.findDoneStatusKey(tx, before.workspaceId)
+          : await itemRepository.findTodoStatusKey(tx, before.workspaceId)
+        if (!targetKey) return err(new ValidationError('遷移先 status が見つかりません'))
+        if (input.complete && before.isMust && (!before.dod || before.dod.trim() === '')) {
+          return err(new ValidationError('MUST を done にするには DoD が必要です'))
+        }
+        const updated = await itemRepository.updateWithLock(tx, input.id, input.expectedVersion, {
+          status: targetKey,
+        })
+        if (!updated) return err(new ConflictError())
+        await recordAudit(tx, {
+          workspaceId: before.workspaceId,
+          actorType: 'user',
+          actorId: user.id,
+          targetType: 'item',
+          targetId: updated.id,
+          action: input.complete ? 'complete' : 'uncomplete',
+          before: { status: before.status },
+          after: { status: updated.status },
+        })
+        return ok(updated)
+      },
+    })
+  },
+
   async move(input: unknown): Promise<Result<Item>> {
     const parsed = MoveItemInputSchema.safeParse(input)
     if (!parsed.success) return err(new ValidationError('入力内容を確認してください', parsed.error))

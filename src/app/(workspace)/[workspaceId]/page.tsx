@@ -7,6 +7,7 @@ import { AuthError, PermissionError } from '@/lib/errors'
 
 import { findMyWorkspaces } from '@/features/workspace/repository'
 
+import { GlobalShortcuts } from '@/components/shared/global-shortcuts'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { HeartbeatButton } from '@/components/workspace/heartbeat-button'
@@ -59,6 +60,7 @@ export default async function WorkspacePage({ params }: PageProps) {
         </div>
       </header>
 
+      <GlobalShortcuts workspaceId={workspaceId} />
       <ItemsBoard workspaceId={workspaceId} />
     </main>
   )

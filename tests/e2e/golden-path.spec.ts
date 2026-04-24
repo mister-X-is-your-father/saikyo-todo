@@ -23,9 +23,11 @@ test('golden path: workspace → Item → Template 展開 → Dashboard 表示',
     await page.getByRole('button', { name: '作成', exact: true }).click()
     await page.waitForURL(/\/[0-9a-f-]{36}$/)
 
-    // Item を 1 件作成
-    await page.locator('#new-item-input').fill('Golden smoke item')
-    await page.getByRole('button', { name: '作成', exact: true }).click()
+    // Item を 1 件作成 (QuickAdd 経由)
+    await page.locator('#quick-add-input').fill('Golden smoke item')
+    await page.getByTestId('quick-add-submit').click()
+    await page.waitForTimeout(400)
+    await page.getByTestId('view-kanban-btn').click()
     await expect(page.getByTestId('kanban-board')).toBeVisible({ timeout: 10_000 })
 
     // Dashboard View に切替 (MUST Dashboard + Burndown が表示される)

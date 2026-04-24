@@ -17,6 +17,7 @@ import {
   moveItemAction,
   reorderItemAction,
   softDeleteItemAction,
+  toggleCompleteItemAction,
   updateItemAction,
   updateItemStatusAction,
 } from './actions'
@@ -82,6 +83,46 @@ export function useUpdateItemStatus(workspaceId: string) {
         qc.setQueryData<Item[]>(
           key,
           prev.map((it) => (it.id === input.id ? { ...it, status: input.status } : it)),
+        )
+      }
+      return { snapshots }
+    },
+    onError: (_e, _input, ctx) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.snapshots) qc.setQueryData(key, prev)
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
+}
+
+/**
+ * ワンクリック完了/未完了切替。楽観更新 (checkbox の即応性重視)。
+ * status を一旦 'done'/'todo' 文字列で暫定置換 (サーバ側が実 key を決める)。
+ */
+export function useToggleCompleteItem(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: { id: string; expectedVersion: number; complete: boolean }) =>
+      unwrap(await toggleCompleteItemAction(input)),
+    onMutate: async (input) => {
+      await qc.cancelQueries({ queryKey: [...itemKeys.all, workspaceId] })
+      const snapshots = qc.getQueriesData<Item[]>({ queryKey: [...itemKeys.all, workspaceId] })
+      const provisionalStatus = input.complete ? 'done' : 'todo'
+      for (const [key, prev] of snapshots) {
+        if (!prev) continue
+        qc.setQueryData<Item[]>(
+          key,
+          prev.map((it) =>
+            it.id === input.id
+              ? {
+                  ...it,
+                  status: provisionalStatus,
+                  doneAt: input.complete ? new Date() : null,
+                }
+              : it,
+          ),
         )
       }
       return { snapshots }

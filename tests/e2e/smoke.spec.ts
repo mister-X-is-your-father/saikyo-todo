@@ -32,12 +32,13 @@ test('baseline: login → workspace 作成 → Item 作成 → 一覧表示', as
     // /[wsId] に遷移 (uuid)
     await page.waitForURL(/\/[0-9a-f-]{36}$/)
 
-    // ItemsBoard: 新規 Item 入力 → 作成
-    await page.locator('#new-item-input').fill('E2E smoke item')
-    // Item 作成フォーム内の "作成" ボタン (workspace 作成とは context が別)
-    await page.getByRole('button', { name: '作成', exact: true }).click()
+    // ItemsBoard: QuickAdd で作成
+    await page.locator('#quick-add-input').fill('E2E smoke item')
+    await page.getByTestId('quick-add-submit').click()
+    await page.waitForTimeout(400)
 
-    // Kanban board (既定) がレンダリングされる
+    // Kanban に切替 (既定は today)
+    await page.getByTestId('view-kanban-btn').click()
     await expect(page.getByTestId('kanban-board')).toBeVisible({ timeout: 10_000 })
     // todo 列に item が現れる
     const todoColumn = page.getByTestId('kanban-column-todo')

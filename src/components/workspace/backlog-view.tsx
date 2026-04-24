@@ -24,6 +24,7 @@ import type { Item } from '@/features/item/schema'
 
 import { Button } from '@/components/ui/button'
 
+import { ItemCheckbox } from './item-checkbox'
 import { ItemDecomposeButton } from './item-decompose-button'
 import { ItemEditDialog } from './item-edit-dialog'
 import { ItemResearchButton } from './item-research-button'
@@ -37,6 +38,12 @@ interface Props {
 function buildColumns(workspaceId: string, onEdit: (item: Item) => void): ColumnDef<Item>[] {
   return [
     {
+      id: 'checkbox',
+      header: '',
+      size: 40,
+      cell: ({ row }) => <ItemCheckbox item={row.original} workspaceId={workspaceId} />,
+    },
+    {
       accessorKey: 'status',
       header: 'Status',
       size: 110,
@@ -46,6 +53,11 @@ function buildColumns(workspaceId: string, onEdit: (item: Item) => void): Column
       accessorKey: 'title',
       header: 'タイトル',
       size: 360,
+      cell: ({ getValue, row }) => (
+        <span className={row.original.doneAt ? 'text-muted-foreground line-through' : ''}>
+          {String(getValue())}
+        </span>
+      ),
     },
     {
       accessorKey: 'isMust',

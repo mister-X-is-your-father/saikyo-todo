@@ -18,8 +18,10 @@ test('Kanban DnD: TODO の card を 空の「進行中」列にドロップ → 
     await page.getByRole('button', { name: '作成', exact: true }).click()
     await page.waitForURL(/\/[0-9a-f-]{36}$/)
 
-    await page.locator('#new-item-input').fill('ドラッグ対象タスク')
-    await page.getByRole('button', { name: '作成', exact: true }).click()
+    await page.locator('#quick-add-input').fill('ドラッグ対象タスク')
+    await page.getByTestId('quick-add-submit').click()
+    await page.waitForTimeout(400)
+    await page.getByTestId('view-kanban-btn').click()
 
     const card = page.locator('[data-testid^="kanban-card-"]').first()
     await expect(card).toBeVisible({ timeout: 5_000 })

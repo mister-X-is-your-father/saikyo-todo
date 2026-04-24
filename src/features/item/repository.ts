@@ -83,4 +83,28 @@ export const itemRepository = {
       .limit(1)
     return (row?.type as 'todo' | 'in_progress' | 'done' | undefined) ?? null
   },
+
+  /** workspace 内で type='done' の先頭 status key を返す (order 昇順)。 */
+  async findDoneStatusKey(tx: Tx, workspaceId: string): Promise<string | null> {
+    const [row] = await tx
+      .select({ key: workspaceStatuses.key })
+      .from(workspaceStatuses)
+      .where(
+        and(eq(workspaceStatuses.workspaceId, workspaceId), eq(workspaceStatuses.type, 'done')),
+      )
+      .limit(1)
+    return row?.key ?? null
+  },
+
+  /** workspace 内で type='todo' の先頭 status key を返す。 */
+  async findTodoStatusKey(tx: Tx, workspaceId: string): Promise<string | null> {
+    const [row] = await tx
+      .select({ key: workspaceStatuses.key })
+      .from(workspaceStatuses)
+      .where(
+        and(eq(workspaceStatuses.workspaceId, workspaceId), eq(workspaceStatuses.type, 'todo')),
+      )
+      .limit(1)
+    return row?.key ?? null
+  },
 }

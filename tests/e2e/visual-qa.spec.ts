@@ -41,30 +41,29 @@ test('全 UI 視覚 QA スクショ収集', async ({ page }) => {
     await page.getByRole('button', { name: '作成', exact: true }).click()
     await page.waitForURL(/\/[0-9a-f-]{36}$/)
 
-    // ---------- 3. workspace ページ (Kanban default) ----------
+    // ---------- 3. workspace ページ (Today default) ----------
     await page.waitForLoadState('networkidle').catch(() => {})
-    await page.screenshot({ path: `${SHOTS_DIR}/04-workspace-kanban-empty.png`, fullPage: true })
+    await page.screenshot({ path: `${SHOTS_DIR}/04-workspace-today-empty.png`, fullPage: true })
 
-    // 通常タスク
-    await page.locator('#new-item-input').fill('通常タスク A')
-    await page.getByRole('button', { name: '作成', exact: true }).click()
+    // QuickAdd で 3 件作成
+    await page.locator('#quick-add-input').fill('今日 通常タスク A')
+    await page.getByTestId('quick-add-submit').click()
     await page.waitForTimeout(400)
-
-    // MUST + DoD 入りタスク (MUST バッジ表示確認)
-    await page.locator('#new-item-input').fill('MUST タスク B (DoD 入り)')
-    await page.locator('[data-testid="create-must-checkbox"]').check()
-    await page.locator('#new-item-dod').fill('ユーザからの承認を得ている')
-    await page.getByRole('button', { name: '作成', exact: true }).click()
+    await page.locator('#quick-add-input').fill('明日 p1 #仕事 タスク B')
+    await page.getByTestId('quick-add-submit').click()
     await page.waitForTimeout(400)
-
-    // 長いタイトル (折り返しテスト)
     await page
-      .locator('#new-item-input')
+      .locator('#quick-add-input')
       .fill('通常タスク C (長いタイトルで改行テスト:何文字まで入れると表示が崩れるのか見る)')
-    await page.getByRole('button', { name: '作成', exact: true }).click()
+    await page.getByTestId('quick-add-submit').click()
     await page.waitForTimeout(800)
 
-    await page.screenshot({ path: `${SHOTS_DIR}/05-kanban-with-items.png`, fullPage: true })
+    await page.screenshot({ path: `${SHOTS_DIR}/05a-today-with-items.png`, fullPage: true })
+
+    // Kanban に切替 (既存 kanban view のスクショは今も価値あり)
+    await page.getByTestId('view-kanban-btn').click()
+    await page.waitForTimeout(400)
+    await page.screenshot({ path: `${SHOTS_DIR}/05b-kanban-with-items.png`, fullPage: true })
 
     // ---------- 4. Backlog view ----------
     await page
@@ -146,13 +145,13 @@ test('全 UI 視覚 QA スクショ収集', async ({ page }) => {
     await page.waitForTimeout(300)
     await page.screenshot({ path: `${SHOTS_DIR}/13-root-with-workspace.png`, fullPage: true })
 
-    // ---------- 11. MUST 入力フォーム (MUST check で DoD 出現) ----------
+    // ---------- 11. QuickAdd preview (chip 表示) ----------
     const wsUrl2 = wsUrl
     await page.goto(wsUrl2)
     await page.waitForLoadState('networkidle').catch(() => {})
-    await page.locator('[data-testid="create-must-checkbox"]').check()
-    await page.waitForTimeout(200)
-    await page.screenshot({ path: `${SHOTS_DIR}/14-create-must-expanded.png`, fullPage: true })
+    await page.locator('#quick-add-input').fill('明日 15:00 p1 #会議 打ち合わせ')
+    await page.waitForTimeout(300)
+    await page.screenshot({ path: `${SHOTS_DIR}/14-quick-add-preview.png`, fullPage: true })
 
     // ---------- 12. モバイル幅 ----------
     await page.setViewportSize({ width: 375, height: 812 })

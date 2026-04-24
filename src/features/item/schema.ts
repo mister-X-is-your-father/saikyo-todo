@@ -7,6 +7,7 @@ export const ItemSelectSchema = createSelectSchema(items)
 export type Item = z.infer<typeof ItemSelectSchema>
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
+const ISO_TIME = /^\d{2}:\d{2}(:\d{2})?$/
 
 export const CreateItemInputSchema = z
   .object({
@@ -17,6 +18,9 @@ export const CreateItemInputSchema = z
     parentItemId: z.string().uuid().nullish(),
     startDate: z.string().regex(ISO_DATE).nullish(),
     dueDate: z.string().regex(ISO_DATE).nullish(),
+    dueTime: z.string().regex(ISO_TIME).nullish(),
+    scheduledFor: z.string().regex(ISO_DATE).nullish(),
+    priority: z.number().int().min(1).max(4).default(4),
     isMust: z.boolean().default(false),
     dod: z.string().nullish(),
     idempotencyKey: z.string().uuid(),
@@ -41,6 +45,9 @@ export const UpdateItemInputSchema = z.object({
       status: z.string().min(1).optional(),
       startDate: z.string().regex(ISO_DATE).nullish(),
       dueDate: z.string().regex(ISO_DATE).nullish(),
+      dueTime: z.string().regex(ISO_TIME).nullish(),
+      scheduledFor: z.string().regex(ISO_DATE).nullish(),
+      priority: z.number().int().min(1).max(4).optional(),
       isMust: z.boolean().optional(),
       dod: z.string().nullish(),
     })

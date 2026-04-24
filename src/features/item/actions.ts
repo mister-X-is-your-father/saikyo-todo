@@ -19,6 +19,14 @@ export async function updateItemStatusAction(input: unknown): Promise<Result<Ite
   return await actionWrap(() => itemService.updateStatus(input))
 }
 
+export async function toggleCompleteItemAction(input: {
+  id: string
+  expectedVersion: number
+  complete: boolean
+}): Promise<Result<Item>> {
+  return await actionWrap(() => itemService.toggleComplete(input))
+}
+
 export async function softDeleteItemAction(input: unknown): Promise<Result<Item>> {
   return await actionWrap(() => itemService.softDelete(input))
 }

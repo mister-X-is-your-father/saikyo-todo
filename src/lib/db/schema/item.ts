@@ -4,6 +4,7 @@
  * - position は text (fractional-indexing lib の base62 文字列、lex sort)
  * - is_must + dod で MUST 管理
  */
+import { sql } from 'drizzle-orm'
 import {
   boolean,
   date,
@@ -11,7 +12,9 @@ import {
   jsonb,
   pgTable,
   primaryKey,
+  smallint,
   text,
+  time,
   timestamp,
   uniqueIndex,
   uuid,
@@ -41,6 +44,9 @@ export const items = pgTable(
     parentPath: ltree('parent_path').notNull().default(''), // root は空 ltree
     startDate: date('start_date'),
     dueDate: date('due_date'),
+    dueTime: time('due_time'), // HH:MM:SS (seconds = 00)。dueDate と併用
+    scheduledFor: date('scheduled_for'), // Today ビュー用 "いつやる予定か" (dueDate と別軸)
+    priority: smallint('priority').notNull().default(4), // 1 = highest, 4 = none
     isMust: boolean('is_must').notNull().default(false),
     dod: text('dod'), // Definition of Done (MUST は service 層でバリデーション強制)
     position: text('position').notNull().default('a0'),
@@ -57,6 +63,9 @@ export const items = pgTable(
     index('items_must_partial').on(t.workspaceId, t.dueDate),
     index('items_status_idx').on(t.workspaceId, t.status),
     index('items_done_at_idx').on(t.workspaceId, t.doneAt),
+    index('items_today_idx')
+      .on(t.workspaceId, t.scheduledFor)
+      .where(sql`scheduled_for is not null and deleted_at is null`),
   ],
 )
 

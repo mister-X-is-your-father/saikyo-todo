@@ -18,7 +18,9 @@ import { researchItemActionPlugin } from './actions/research-item'
 import { backlogViewPlugin } from './views/backlog'
 import { dashboardViewPlugin } from './views/dashboard'
 import { ganttViewPlugin } from './views/gantt'
+import { inboxViewPlugin } from './views/inbox'
 import { kanbanViewPlugin } from './views/kanban'
+import { todayViewPlugin } from './views/today'
 
 let registered = false
 
@@ -27,6 +29,9 @@ export function registerCorePlugins(): void {
   registerAction(reloadItemsAction)
   registerAction(decomposeItemActionPlugin)
   registerAction(researchItemActionPlugin)
+  // 並び順が switcher の並びになる
+  registerView(todayViewPlugin)
+  registerView(inboxViewPlugin)
   registerView(kanbanViewPlugin)
   registerView(backlogViewPlugin)
   registerView(ganttViewPlugin)

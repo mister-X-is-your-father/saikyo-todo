@@ -37,6 +37,7 @@ import { useReorderItem, useUpdateItemStatus } from '@/features/item/hooks'
 import type { Item } from '@/features/item/schema'
 import { useWorkspaceStatuses } from '@/features/workspace/hooks'
 
+import { ItemCheckbox } from './item-checkbox'
 import { ItemEditDialog } from './item-edit-dialog'
 
 interface Props {
@@ -153,6 +154,7 @@ export function KanbanView({ workspaceId, items }: Props) {
           {statuses.map((s) => (
             <KanbanColumn
               key={s.key}
+              workspaceId={workspaceId}
               statusKey={s.key}
               label={s.label}
               color={s.color}
@@ -167,12 +169,14 @@ export function KanbanView({ workspaceId, items }: Props) {
 }
 
 function KanbanColumn({
+  workspaceId,
   statusKey,
   label,
   color,
   items,
   onEdit,
 }: {
+  workspaceId: string
   statusKey: string
   label: string
   color: string
@@ -205,7 +209,9 @@ function KanbanColumn({
               ここにドロップ
             </div>
           ) : (
-            items.map((item) => <KanbanCard key={item.id} item={item} onEdit={onEdit} />)
+            items.map((item) => (
+              <KanbanCard key={item.id} item={item} workspaceId={workspaceId} onEdit={onEdit} />
+            ))
           )}
         </div>
       </SortableContext>
@@ -213,7 +219,15 @@ function KanbanColumn({
   )
 }
 
-function KanbanCard({ item, onEdit }: { item: Item; onEdit: (item: Item) => void }) {
+function KanbanCard({
+  item,
+  workspaceId,
+  onEdit,
+}: {
+  item: Item
+  workspaceId: string
+  onEdit: (item: Item) => void
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
   })
@@ -232,7 +246,14 @@ function KanbanCard({ item, onEdit }: { item: Item; onEdit: (item: Item) => void
       data-testid={`kanban-card-${item.id}`}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="font-medium break-words">{item.title}</div>
+        <div className="flex min-w-0 items-start gap-2">
+          <ItemCheckbox item={item} workspaceId={workspaceId} className="mt-0.5" />
+          <div
+            className={`font-medium break-words ${item.doneAt ? 'text-muted-foreground line-through' : ''}`}
+          >
+            {item.title}
+          </div>
+        </div>
         <div className="flex shrink-0 items-center gap-1">
           {item.isMust && (
             <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-medium text-red-700">
