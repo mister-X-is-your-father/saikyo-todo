@@ -22,6 +22,7 @@ import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BacklogView } from '@/components/workspace/backlog-view'
+import { DashboardView } from '@/components/workspace/dashboard-view'
 import { GanttView } from '@/components/workspace/gantt-view'
 import { KanbanView } from '@/components/workspace/kanban-view'
 
@@ -29,7 +30,7 @@ interface Props {
   workspaceId: string
 }
 
-const VIEWS = ['kanban', 'backlog', 'gantt'] as const
+const VIEWS = ['kanban', 'backlog', 'gantt', 'dashboard'] as const
 type ViewKey = (typeof VIEWS)[number]
 
 export function ItemsBoard({ workspaceId }: Props) {
@@ -113,6 +114,15 @@ export function ItemsBoard({ workspaceId }: Props) {
         keywords: ['gantt', 'timeline'],
       },
       {
+        id: 'view-dashboard',
+        label: 'ビューを Dashboard に切替',
+        group: 'ビュー',
+        run: async () => {
+          await setView('dashboard')
+        },
+        keywords: ['dashboard', 'must', 'burndown'],
+      },
+      {
         id: 'focus-new',
         label: '新規 Item 入力にフォーカス',
         group: 'Item',
@@ -181,6 +191,14 @@ export function ItemsBoard({ workspaceId }: Props) {
         >
           Gantt
         </Button>
+        <Button
+          variant={view === 'dashboard' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setView('dashboard')}
+          data-testid="view-dashboard-btn"
+        >
+          Dashboard
+        </Button>
         <div className="ml-4 flex items-center gap-2 text-sm">
           <label className="flex items-center gap-1">
             <input
@@ -213,6 +231,8 @@ export function ItemsBoard({ workspaceId }: Props) {
           message={isAppError(error) ? error.message : '一覧取得に失敗しました'}
           onRetry={() => void refetch()}
         />
+      ) : view === 'dashboard' ? (
+        <DashboardView workspaceId={workspaceId} />
       ) : (data?.length ?? 0) === 0 ? (
         <EmptyState title="まだ Item がありません" description="上のフォームから作成してください" />
       ) : view === 'backlog' ? (
