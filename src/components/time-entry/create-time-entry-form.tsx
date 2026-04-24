@@ -25,8 +25,8 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
 
   const create = useCreateTimeEntry(workspaceId)
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleSubmit(e?: React.FormEvent) {
+    if (e) e.preventDefault()
     if (durationMinutes <= 0) {
       toast.error('時間 (分) は 1 以上')
       return
@@ -43,14 +43,13 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
       toast.success('稼働を記録しました')
       setDescription('')
       setDurationMinutes(30)
-    } catch (e) {
-      toast.error(isAppError(e) ? e.message : '作成に失敗しました')
+    } catch (err) {
+      toast.error(isAppError(err) ? err.message : '作成に失敗しました')
     }
   }
 
   return (
     <form
-      method="post"
       onSubmit={handleSubmit}
       className="grid gap-3 md:grid-cols-[auto_auto_1fr_auto_auto]"
       data-testid="create-time-entry-form"
@@ -110,7 +109,12 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
         />
       </div>
       <div className="flex items-end">
-        <Button type="submit" disabled={create.isPending} data-testid="create-time-entry-submit">
+        <Button
+          type="button"
+          onClick={() => void handleSubmit()}
+          disabled={create.isPending}
+          data-testid="create-time-entry-submit"
+        >
           {create.isPending ? '...' : '記録'}
         </Button>
       </div>

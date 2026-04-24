@@ -11,7 +11,7 @@
  * 注意: position は items 全体で共有の numeric lex (fractional-indexing) なので、
  *       別列間で drop した時は status だけ変えて position は据置き (MVP 簡易実装)。
  */
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import {
   closestCenter,
@@ -36,6 +36,8 @@ import { useReorderItem, useUpdateItemStatus } from '@/features/item/hooks'
 import type { Item } from '@/features/item/schema'
 import { useWorkspaceStatuses } from '@/features/workspace/hooks'
 
+import { ItemEditDialog } from './item-edit-dialog'
+
 interface Props {
   workspaceId: string
   items: Item[]
@@ -45,6 +47,7 @@ export function KanbanView({ workspaceId, items }: Props) {
   const { data: statuses } = useWorkspaceStatuses(workspaceId)
   const updateStatus = useUpdateItemStatus(workspaceId)
   const reorder = useReorderItem(workspaceId)
+  const [editing, setEditing] = useState<Item | null>(null)
 
   const sensors = useSensors(
     // 5px 以上動いてから drag 開始 (click と区別するため)
@@ -131,23 +134,34 @@ export function KanbanView({ workspaceId, items }: Props) {
   }
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <div
-        className="grid gap-4"
-        style={{ gridTemplateColumns: `repeat(${statuses.length}, minmax(260px, 1fr))` }}
-        data-testid="kanban-board"
-      >
-        {statuses.map((s) => (
-          <KanbanColumn
-            key={s.key}
-            statusKey={s.key}
-            label={s.label}
-            color={s.color}
-            items={itemsByStatus.get(s.key) ?? []}
-          />
-        ))}
-      </div>
-    </DndContext>
+    <>
+      <ItemEditDialog
+        workspaceId={workspaceId}
+        item={editing}
+        open={editing !== null}
+        onOpenChange={(o) => {
+          if (!o) setEditing(null)
+        }}
+      />
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <div
+          className="grid gap-4"
+          style={{ gridTemplateColumns: `repeat(${statuses.length}, minmax(260px, 1fr))` }}
+          data-testid="kanban-board"
+        >
+          {statuses.map((s) => (
+            <KanbanColumn
+              key={s.key}
+              statusKey={s.key}
+              label={s.label}
+              color={s.color}
+              items={itemsByStatus.get(s.key) ?? []}
+              onEdit={(item) => setEditing(item)}
+            />
+          ))}
+        </div>
+      </DndContext>
+    </>
   )
 }
 
@@ -156,11 +170,13 @@ function KanbanColumn({
   label,
   color,
   items,
+  onEdit,
 }: {
   statusKey: string
   label: string
   color: string
   items: Item[]
+  onEdit: (item: Item) => void
 }) {
   return (
     <div className="bg-card rounded-lg border p-3" data-testid={`kanban-column-${statusKey}`}>
@@ -181,7 +197,7 @@ function KanbanColumn({
               カードなし
             </div>
           ) : (
-            items.map((item) => <KanbanCard key={item.id} item={item} />)
+            items.map((item) => <KanbanCard key={item.id} item={item} onEdit={onEdit} />)
           )}
         </div>
       </SortableContext>
@@ -189,7 +205,7 @@ function KanbanColumn({
   )
 }
 
-function KanbanCard({ item }: { item: Item }) {
+function KanbanCard({ item, onEdit }: { item: Item; onEdit: (item: Item) => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
   })
@@ -209,14 +225,33 @@ function KanbanCard({ item }: { item: Item }) {
     >
       <div className="flex items-start justify-between gap-2">
         <div className="font-medium break-words">{item.title}</div>
-        {item.isMust && (
-          <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-medium text-red-700">
-            MUST
-          </span>
-        )}
+        <div className="flex shrink-0 items-center gap-1">
+          {item.isMust && (
+            <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-medium text-red-700">
+              MUST
+            </span>
+          )}
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation()
+              onEdit(item)
+            }}
+            aria-label="編集"
+            className="text-muted-foreground hover:text-foreground rounded px-1 text-xs"
+            data-testid={`kanban-edit-${item.id}`}
+          >
+            ✎
+          </button>
+        </div>
       </div>
-      {item.dueDate && (
-        <div className="text-muted-foreground mt-1 text-[11px]">期限: {item.dueDate}</div>
+      {(item.startDate || item.dueDate) && (
+        <div className="text-muted-foreground mt-1 text-[11px]">
+          {item.startDate ? `開始: ${item.startDate}` : ''}
+          {item.startDate && item.dueDate ? ' / ' : ''}
+          {item.dueDate ? `期限: ${item.dueDate}` : ''}
+        </div>
       )}
     </div>
   )

@@ -22,7 +22,10 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 
 import type { Item } from '@/features/item/schema'
 
+import { Button } from '@/components/ui/button'
+
 import { ItemDecomposeButton } from './item-decompose-button'
+import { ItemEditDialog } from './item-edit-dialog'
 import { ItemResearchButton } from './item-research-button'
 import { StatusBadge } from './status-badge'
 
@@ -31,7 +34,7 @@ interface Props {
   items: Item[]
 }
 
-function buildColumns(workspaceId: string): ColumnDef<Item>[] {
+function buildColumns(workspaceId: string, onEdit: (item: Item) => void): ColumnDef<Item>[] {
   return [
     {
       accessorKey: 'status',
@@ -75,9 +78,17 @@ function buildColumns(workspaceId: string): ColumnDef<Item>[] {
     {
       id: 'actions',
       header: 'アクション',
-      size: 220,
+      size: 300,
       cell: ({ row }) => (
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onEdit(row.original)}
+            data-testid={`backlog-edit-${row.original.id}`}
+          >
+            編集
+          </Button>
           <ItemDecomposeButton workspaceId={workspaceId} item={row.original} />
           <ItemResearchButton workspaceId={workspaceId} item={row.original} />
         </div>
@@ -87,7 +98,11 @@ function buildColumns(workspaceId: string): ColumnDef<Item>[] {
 }
 
 export function BacklogView({ workspaceId, items }: Props) {
-  const columns = useMemo(() => buildColumns(workspaceId), [workspaceId])
+  const [editing, setEditing] = useState<Item | null>(null)
+  const columns = useMemo(
+    () => buildColumns(workspaceId, (item) => setEditing(item)),
+    [workspaceId],
+  )
   const [sorting, setSorting] = useState<SortingState>([{ id: 'updatedAt', desc: true }])
 
   const data = useMemo(() => items.filter((i) => !i.deletedAt), [items])
@@ -111,72 +126,86 @@ export function BacklogView({ workspaceId, items }: Props) {
   })
 
   return (
-    <div
-      ref={scrollRef}
-      data-testid="backlog-view"
-      className="h-[600px] overflow-auto rounded-lg border"
-    >
-      <table className="w-full border-collapse text-sm">
-        <thead className="bg-muted sticky top-0 z-10">
-          {table.getHeaderGroups().map((hg) => (
-            <tr key={hg.id}>
-              {hg.headers.map((h) => (
-                <th
-                  key={h.id}
-                  style={{ width: h.getSize() }}
-                  onClick={h.column.getToggleSortingHandler()}
-                  className="cursor-pointer border-b px-3 py-2 text-left font-semibold"
-                >
-                  {flexRender(h.column.columnDef.header, h.getContext())}
-                  {{ asc: ' ▲', desc: ' ▼' }[h.column.getIsSorted() as string] ?? ''}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody
-          style={{
-            height: `${rowVirtualizer.getTotalSize()}px`,
-            display: 'block',
-            position: 'relative',
-          }}
-        >
-          {rowVirtualizer.getVirtualItems().map((vRow) => {
-            const row = rows[vRow.index]
-            if (!row) return null
-            return (
-              <tr
-                key={row.id}
-                data-testid={`backlog-row-${row.original.id}`}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  transform: `translateY(${vRow.start}px)`,
-                  display: 'table',
-                  width: '100%',
-                  tableLayout: 'fixed',
-                }}
-                className="hover:bg-muted/50 border-b"
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} style={{ width: cell.column.getSize() }} className="px-3 py-2">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
+    <>
+      <ItemEditDialog
+        workspaceId={workspaceId}
+        item={editing}
+        open={editing !== null}
+        onOpenChange={(o) => {
+          if (!o) setEditing(null)
+        }}
+      />
+      <div
+        ref={scrollRef}
+        data-testid="backlog-view"
+        className="h-[600px] overflow-auto rounded-lg border"
+      >
+        <table className="w-full border-collapse text-sm">
+          <thead className="bg-muted sticky top-0 z-10">
+            {table.getHeaderGroups().map((hg) => (
+              <tr key={hg.id}>
+                {hg.headers.map((h) => (
+                  <th
+                    key={h.id}
+                    style={{ width: h.getSize() }}
+                    onClick={h.column.getToggleSortingHandler()}
+                    className="cursor-pointer border-b px-3 py-2 text-left font-semibold"
+                  >
+                    {flexRender(h.column.columnDef.header, h.getContext())}
+                    {{ asc: ' ▲', desc: ' ▼' }[h.column.getIsSorted() as string] ?? ''}
+                  </th>
                 ))}
               </tr>
-            )
-          })}
-          {rows.length === 0 && (
-            <tr>
-              <td colSpan={columns.length} className="text-muted-foreground py-8 text-center">
-                表示する item がありません
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+            ))}
+          </thead>
+          <tbody
+            style={{
+              height: `${rowVirtualizer.getTotalSize()}px`,
+              display: 'block',
+              position: 'relative',
+            }}
+          >
+            {rowVirtualizer.getVirtualItems().map((vRow) => {
+              const row = rows[vRow.index]
+              if (!row) return null
+              return (
+                <tr
+                  key={row.id}
+                  data-testid={`backlog-row-${row.original.id}`}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    transform: `translateY(${vRow.start}px)`,
+                    display: 'table',
+                    width: '100%',
+                    tableLayout: 'fixed',
+                  }}
+                  className="hover:bg-muted/50 border-b"
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <td
+                      key={cell.id}
+                      style={{ width: cell.column.getSize() }}
+                      className="px-3 py-2"
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              )
+            })}
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={columns.length} className="text-muted-foreground py-8 text-center">
+                  表示する item がありません
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </>
   )
 }

@@ -59,12 +59,18 @@ export function ItemsBoard({ workspaceId }: Props) {
   const [title, setTitle] = useState('')
   const [isMust, setIsMust] = useState(false)
   const [dod, setDod] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [dueDate, setDueDate] = useState('')
 
   async function handleCreate() {
     const t = title.trim()
     if (!t) return
     if (isMust && !dod.trim()) {
       toast.error('MUST には DoD (完了条件) が必要です')
+      return
+    }
+    if (startDate && dueDate && startDate > dueDate) {
+      toast.error('期限は開始日以降にしてください')
       return
     }
     try {
@@ -75,11 +81,15 @@ export function ItemsBoard({ workspaceId }: Props) {
         status: 'todo',
         isMust,
         dod: isMust ? dod.trim() : null,
+        startDate: startDate || null,
+        dueDate: dueDate || null,
         idempotencyKey: crypto.randomUUID(),
       })
       setTitle('')
       setIsMust(false)
       setDod('')
+      setStartDate('')
+      setDueDate('')
       toast.success('Item を作成しました')
     } catch (e) {
       toast.error(isAppError(e) ? e.message : '作成に失敗しました')
@@ -192,6 +202,30 @@ export function ItemsBoard({ workspaceId }: Props) {
                   className="flex-1"
                 />
               )}
+            </div>
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              <label className="flex items-center gap-2">
+                <span className="text-muted-foreground text-xs">開始日</span>
+                <IMEInput
+                  id="new-item-start"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-40"
+                  data-testid="create-item-start-date"
+                />
+              </label>
+              <label className="flex items-center gap-2">
+                <span className="text-muted-foreground text-xs">期限</span>
+                <IMEInput
+                  id="new-item-due"
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className="w-40"
+                  data-testid="create-item-due-date"
+                />
+              </label>
             </div>
           </form>
           <p className="text-muted-foreground mt-2 text-xs">
