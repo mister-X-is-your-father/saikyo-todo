@@ -14,7 +14,7 @@ import type { Job } from 'pg-boss'
 import { PgBoss } from 'pg-boss'
 
 /** 全キュー名を一元管理 (createQueue 忘れ防止)。v10+ で明示的作成が必須。 */
-export const QUEUE_NAMES = ['agent-run', 'doc-embed'] as const
+export const QUEUE_NAMES = ['agent-run', 'doc-embed', 'researcher-decompose'] as const
 export type QueueName = (typeof QUEUE_NAMES)[number]
 
 export interface AgentRunJobData {
@@ -23,6 +23,13 @@ export interface AgentRunJobData {
 
 export interface DocEmbedJobData {
   docId: string
+}
+
+export interface ResearcherDecomposeJobData {
+  workspaceId: string
+  itemId: string
+  /** 起動理由の識別子 (audit で便利)。例: 'template-instantiate' */
+  reason?: string
 }
 
 let boss: PgBoss | null = null

@@ -76,11 +76,11 @@ describe('agent tools', () => {
   })
 
   describe('whitelist bundle', () => {
-    it('7 個の tool を bind し name 重複なし', () => {
+    it('8 個の tool を bind し name 重複なし', () => {
       const bundle = buildResearcherTools(ctx)
-      expect(bundle.tools).toHaveLength(7)
+      expect(bundle.tools).toHaveLength(8)
       const names = bundle.tools.map((t) => t.name)
-      expect(new Set(names).size).toBe(7)
+      expect(new Set(names).size).toBe(8)
       expect(names).toEqual(
         expect.arrayContaining([
           'read_items',
@@ -90,6 +90,7 @@ describe('agent tools', () => {
           'create_item',
           'write_comment',
           'create_doc',
+          'instantiate_template',
         ]),
       )
       // delete_* は入らない
@@ -336,6 +337,86 @@ describe('agent tools', () => {
     it('body 欠落は validation エラー', async () => {
       const handler = buildResearcherTools(ctx).handlers['create_doc']!
       const out = JSON.parse(await handler({ title: 'no body' }))
+      expect(out.ok).toBe(false)
+      expect(out.error).toBe('validation failed')
+    })
+  })
+
+  describe('instantiate_template', () => {
+    it('workspace 内 Template を展開し、root Item id を返す', async () => {
+      const ac = adminClient()
+      // 最小 Template を作る
+      const { data: t } = await ac
+        .from('templates')
+        .insert({
+          workspace_id: wsId,
+          name: 'mini-template',
+          description: '',
+          kind: 'manual',
+          variables_schema: {},
+          tags: [],
+          created_by: userId,
+        })
+        .select('id')
+        .single()
+      const templateId = t!.id as string
+      await ac
+        .from('template_items')
+        .insert({
+          template_id: templateId,
+          title: '子 1',
+          description: '',
+          parent_path: '',
+          status_initial: 'todo',
+          is_must: false,
+        })
+        .throwOnError()
+
+      const handler = buildResearcherTools(ctx).handlers['instantiate_template']!
+      const out = JSON.parse(await handler({ templateId })) as {
+        ok: boolean
+        rootItemId: string
+        createdItemCount: number
+      }
+      expect(out.ok).toBe(true)
+      expect(out.createdItemCount).toBeGreaterThanOrEqual(2) // root + 子 1
+
+      const { data: root } = await ac
+        .from('items')
+        .select('created_by_actor_type, created_by_actor_id, workspace_id')
+        .eq('id', out.rootItemId)
+        .single()
+      expect(root?.created_by_actor_type).toBe('agent')
+      expect(root?.created_by_actor_id).toBe(ctx.agentId)
+      expect(root?.workspace_id).toBe(wsId)
+    })
+
+    it('他 workspace の Template は拒否される (越境不可)', async () => {
+      const other = await createTestUserAndWorkspace('agent-tools-inst-other')
+      const ac = adminClient()
+      const { data: t } = await ac
+        .from('templates')
+        .insert({
+          workspace_id: other.wsId,
+          name: 'other-t',
+          description: '',
+          kind: 'manual',
+          variables_schema: {},
+          tags: [],
+          created_by: other.userId,
+        })
+        .select('id')
+        .single()
+      const handler = buildResearcherTools(ctx).handlers['instantiate_template']!
+      const out = JSON.parse(await handler({ templateId: t!.id as string }))
+      expect(out.ok).toBe(false)
+      expect(out.error).toBe('VALIDATION')
+      await other.cleanup()
+    })
+
+    it('templateId が UUID でなければ validation エラー', async () => {
+      const handler = buildResearcherTools(ctx).handlers['instantiate_template']!
+      const out = JSON.parse(await handler({ templateId: 'nope' }))
       expect(out.ok).toBe(false)
       expect(out.error).toBe('validation failed')
     })

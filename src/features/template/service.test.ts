@@ -12,6 +12,16 @@ vi.mock('@/lib/auth/guard', () => ({
   hasAtLeast: () => true,
 }))
 
+vi.mock('@/lib/jobs/queue', () => ({
+  enqueueJob: vi.fn().mockResolvedValue('mock'),
+  startBoss: vi.fn(),
+  stopBoss: vi.fn(),
+  registerWorker: vi.fn(),
+  QUEUE_NAMES: ['agent-run', 'doc-embed', 'researcher-decompose'] as const,
+}))
+
+import { enqueueJob } from '@/lib/jobs/queue'
+
 import { templateItemService, templateService } from './service'
 
 describe('templateService', () => {
@@ -416,5 +426,99 @@ describe('templateService.instantiate', () => {
     })
     expect(r.ok).toBe(false)
     if (!r.ok) expect(r.error.code).toBe('NOT_FOUND')
+  })
+
+  it('agent_role_to_invoke=researcher 付きの template_item → researcher-decompose キューに投入される', async () => {
+    // enqueueJob mock をリセット
+    const mockedEnqueue = vi.mocked(enqueueJob)
+    mockedEnqueue.mockClear()
+
+    const t = await templateService.create({
+      workspaceId: wsId,
+      name: 'auto-invoke-tmpl',
+      idempotencyKey: randomUUID(),
+    })
+    if (!t.ok) throw new Error(t.error.message)
+    // 直接 DB に agent_role_to_invoke='researcher' を書く (service 経由だと渡せない)
+    const ac = adminClient()
+    await ac
+      .from('template_items')
+      .insert({
+        template_id: t.value.id,
+        title: 'auto-invoke-child',
+        description: '',
+        parent_path: '',
+        status_initial: 'todo',
+        is_must: false,
+        agent_role_to_invoke: 'researcher',
+      })
+      .throwOnError()
+
+    const r = await templateService.instantiate({ templateId: t.value.id, variables: {} })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+
+    // researcher-decompose キューに workspaceId + itemId が投入される
+    const autoInvokeCalls = mockedEnqueue.mock.calls.filter(
+      (call) => call[0] === 'researcher-decompose',
+    )
+    expect(autoInvokeCalls.length).toBeGreaterThanOrEqual(1)
+    const payload = autoInvokeCalls[0]![1] as {
+      workspaceId: string
+      itemId: string
+      reason?: string
+    }
+    expect(payload.workspaceId).toBe(wsId)
+    expect(payload.reason).toBe('template-instantiate')
+    // itemId は child の方 (root ではない)
+    const { data: child } = await ac
+      .from('items')
+      .select('id')
+      .eq('workspace_id', wsId)
+      .eq('title', 'auto-invoke-child')
+      .single()
+    expect(payload.itemId).toBe(child!.id)
+  })
+
+  it('agent_role_to_invoke=pm など未対応 role は skip されてもエラーにならない', async () => {
+    const mockedEnqueue = vi.mocked(enqueueJob)
+    mockedEnqueue.mockClear()
+
+    const t = await templateService.create({
+      workspaceId: wsId,
+      name: 'pm-role-tmpl',
+      idempotencyKey: randomUUID(),
+    })
+    if (!t.ok) throw new Error(t.error.message)
+    const ac = adminClient()
+    await ac
+      .from('template_items')
+      .insert({
+        template_id: t.value.id,
+        title: 'pm-child',
+        description: '',
+        parent_path: '',
+        status_initial: 'todo',
+        is_must: false,
+        agent_role_to_invoke: 'pm',
+      })
+      .throwOnError()
+
+    const r = await templateService.instantiate({ templateId: t.value.id, variables: {} })
+    expect(r.ok).toBe(true)
+    // researcher-decompose キューには入らない (pm 対応は post-MVP)
+    const autoInvokeCalls = mockedEnqueue.mock.calls.filter((c) => c[0] === 'researcher-decompose')
+    expect(autoInvokeCalls.length).toBe(0)
+  })
+
+  it('agent_role_to_invoke が null の template_item → enqueueJob は呼ばれない', async () => {
+    const mockedEnqueue = vi.mocked(enqueueJob)
+    mockedEnqueue.mockClear()
+
+    const t = await createTemplateWithItems('no-auto-invoke', [{ title: 'plain-child' }])
+    const r = await templateService.instantiate({ templateId: t.id, variables: {} })
+    expect(r.ok).toBe(true)
+    const autoInvokeCalls = mockedEnqueue.mock.calls.filter((c) => c[0] === 'researcher-decompose')
+    expect(autoInvokeCalls.length).toBe(0)
   })
 })
