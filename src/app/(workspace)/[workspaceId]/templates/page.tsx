@@ -4,8 +4,8 @@ import { redirect } from 'next/navigation'
 import { requireWorkspaceMember } from '@/lib/auth/guard'
 import { AuthError, PermissionError } from '@/lib/errors'
 
+import { TemplatesPanel } from '@/components/template/templates-panel'
 import { Button } from '@/components/ui/button'
-import { ItemsBoard } from '@/components/workspace/items-board'
 
 interface PageProps {
   params: Promise<{ workspaceId: string }>
@@ -21,7 +21,7 @@ async function loadAccess(workspaceId: string) {
   }
 }
 
-export default async function WorkspacePage({ params }: PageProps) {
+export default async function TemplatesPage({ params }: PageProps) {
   const { workspaceId } = await params
   const { user, role } = await loadAccess(workspaceId)
 
@@ -29,22 +29,17 @@ export default async function WorkspacePage({ params }: PageProps) {
     <main className="container mx-auto max-w-5xl space-y-6 p-6">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Workspace</h1>
+          <h1 className="text-2xl font-bold">Templates</h1>
           <p className="text-muted-foreground text-sm">
-            ID: {workspaceId} · あなた: {user.email} ({role})
+            ワークパッケージ定義 · {user.email} ({role})
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" asChild size="sm">
-            <Link href={`/${workspaceId}/templates`}>Templates</Link>
-          </Button>
-          <Button variant="outline" asChild size="sm">
-            <Link href="/">← Workspace 一覧</Link>
-          </Button>
-        </div>
+        <Button variant="outline" asChild size="sm">
+          <Link href={`/${workspaceId}`}>← Workspace に戻る</Link>
+        </Button>
       </header>
 
-      <ItemsBoard workspaceId={workspaceId} />
+      <TemplatesPanel workspaceId={workspaceId} />
     </main>
   )
 }
