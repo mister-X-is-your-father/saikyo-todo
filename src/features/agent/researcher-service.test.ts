@@ -355,8 +355,154 @@ describe('researcherService.run', () => {
     })
   })
 
-  describe('decomposeItem', () => {
-    it('対象 Item を引いて parentItemId 付き prompt を組み立て、run に委譲する', async () => {
+  describe('decomposeItem (staging mode)', () => {
+    it('既定 (staging) では propose_child_item で agent_decompose_proposals に書かれ、items は増えない', async () => {
+      const ac = adminClient()
+      const { data: parentRow } = await ac
+        .from('items')
+        .insert({
+          workspace_id: wsId,
+          title: 'staging-parent',
+          description: '',
+          status: 'todo',
+          is_must: false,
+          created_by_actor_type: 'user',
+          created_by_actor_id: userId,
+        })
+        .select('id')
+        .single()
+      const parentId = parentRow!.id as string
+
+      const invoker = vi
+        .fn()
+        .mockResolvedValueOnce(
+          buildInvokeResult({
+            stopReason: 'tool_use',
+            toolUses: [
+              {
+                id: 'tu-pp',
+                name: 'propose_child_item',
+                input: { title: 'staging-child-1' },
+              },
+            ],
+            rawMessage: {
+              content: [
+                {
+                  type: 'tool_use',
+                  id: 'tu-pp',
+                  name: 'propose_child_item',
+                  input: { title: 'staging-child-1' },
+                },
+              ],
+            } as unknown as InvokeModelOutput['rawMessage'],
+            usage: { inputTokens: 80, outputTokens: 30 },
+          }),
+        )
+        .mockResolvedValueOnce(
+          buildInvokeResult({
+            text: '提案を 1 件出しました',
+            stopReason: 'end_turn',
+            usage: { inputTokens: 60, outputTokens: 10 },
+          }),
+        )
+
+      const r = await researcherService.decomposeItem({
+        workspaceId: wsId,
+        itemId: parentId,
+        idempotencyKey: randomUUID(),
+        invoker,
+      })
+      expect(r.ok).toBe(true)
+      if (!r.ok) return
+      expect(r.value.toolCalls.map((c) => c.name)).toContain('propose_child_item')
+
+      // proposals に行が入る
+      const { data: props } = await ac
+        .from('agent_decompose_proposals')
+        .select('id, title, status_proposal, parent_item_id, agent_invocation_id')
+        .eq('parent_item_id', parentId)
+      expect(props?.length).toBe(1)
+      expect(props?.[0]?.title).toBe('staging-child-1')
+      expect(props?.[0]?.status_proposal).toBe('pending')
+      expect(props?.[0]?.agent_invocation_id).toBe(r.value.invocationId)
+
+      // items 側には子が増えていない (root に直接書かれていないかも合わせて確認)
+      const { data: childItems } = await ac
+        .from('items')
+        .select('id, title')
+        .eq('workspace_id', wsId)
+        .eq('title', 'staging-child-1')
+      expect(childItems?.length ?? 0).toBe(0)
+    })
+
+    it('staging=false では旧挙動 (create_item で直接 items に書く)', async () => {
+      const ac = adminClient()
+      const { data: parentRow } = await ac
+        .from('items')
+        .insert({
+          workspace_id: wsId,
+          title: 'legacy-parent',
+          description: '',
+          status: 'todo',
+          is_must: false,
+          created_by_actor_type: 'user',
+          created_by_actor_id: userId,
+        })
+        .select('id')
+        .single()
+      const parentId = parentRow!.id as string
+
+      const invoker = vi
+        .fn()
+        .mockResolvedValueOnce(
+          buildInvokeResult({
+            stopReason: 'tool_use',
+            toolUses: [
+              {
+                id: 'tu-ci',
+                name: 'create_item',
+                input: { title: 'legacy-child', parentItemId: parentId },
+              },
+            ],
+            rawMessage: {
+              content: [
+                {
+                  type: 'tool_use',
+                  id: 'tu-ci',
+                  name: 'create_item',
+                  input: { title: 'legacy-child', parentItemId: parentId },
+                },
+              ],
+            } as unknown as InvokeModelOutput['rawMessage'],
+            usage: { inputTokens: 80, outputTokens: 30 },
+          }),
+        )
+        .mockResolvedValueOnce(
+          buildInvokeResult({
+            text: '直接 1 件作成',
+            stopReason: 'end_turn',
+            usage: { inputTokens: 60, outputTokens: 10 },
+          }),
+        )
+
+      const r = await researcherService.decomposeItem({
+        workspaceId: wsId,
+        itemId: parentId,
+        idempotencyKey: randomUUID(),
+        staging: false,
+        invoker,
+      })
+      expect(r.ok).toBe(true)
+
+      const { data: childItems } = await ac
+        .from('items')
+        .select('id, title')
+        .eq('workspace_id', wsId)
+        .eq('title', 'legacy-child')
+      expect(childItems?.length ?? 0).toBeGreaterThan(0)
+    })
+
+    it('対象 Item を引いて prompt を組み立て、run に委譲する', async () => {
       // 親 Item を作成
       const ac = adminClient()
       const { data: parentRow } = await ac

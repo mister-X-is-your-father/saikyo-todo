@@ -16,6 +16,16 @@ export interface ToolContext {
   workspaceId: string
   agentId: string
   agentRole: AgentRole
+  /**
+   * 現在実行中の agent_invocation の id (decompose 専用ツールで staging 行に紐付ける)。
+   * decomposeItem 経由で起動された時のみセットされる。通常 run() では undefined。
+   */
+  agentInvocationId?: string
+  /**
+   * decompose 専用ツール (`propose_child_item`) の対象親 Item id。
+   * decomposeItem で staging mode を有効にした時のみセットされる。
+   */
+  decomposeParentItemId?: string
 }
 
 /**

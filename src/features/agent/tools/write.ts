@@ -10,10 +10,12 @@
  */
 import 'server-only'
 
+import { eq, sql } from 'drizzle-orm'
 import { z } from 'zod'
 
 import { recordAudit } from '@/lib/audit'
 import { fullPathOf } from '@/lib/db/ltree-path'
+import { agentDecomposeProposals } from '@/lib/db/schema'
 import { adminDb } from '@/lib/db/scoped-client'
 import { enqueueJob } from '@/lib/jobs/queue'
 
@@ -60,6 +62,101 @@ function jsonError(message: string, details?: unknown): string {
 }
 function jsonOk(data: unknown): string {
   return JSON.stringify({ ok: true, ...(data as Record<string, unknown>) })
+}
+
+// --- propose_child_item -------------------------------------------------
+
+const AgentProposeChildItemSchema = z
+  .object({
+    title: z.string().min(1).max(500),
+    description: z.string().max(5000).default(''),
+    isMust: z.boolean().default(false),
+    dod: z.string().max(2000).nullish(),
+  })
+  .superRefine((v, ctx) => {
+    if (v.isMust && (!v.dod || v.dod.trim().length === 0)) {
+      ctx.addIssue({ code: 'custom', path: ['dod'], message: 'MUST には DoD が必要です' })
+    }
+  })
+
+export const proposeChildItemTool: AgentToolFactory = {
+  definition: {
+    name: 'propose_child_item',
+    description:
+      '【AI 分解 staging mode 専用】子タスクの提案を 1 件 staging テーブルに置く。' +
+      '即時には items に作成されず、ユーザーが UI で採用するまで保留される。' +
+      'decompose の対象親 Item は ctx 側で固定されているので parentItemId 引数は不要。' +
+      '3〜5 回呼び出して候補を出すこと。MUST=true なら dod 必須。',
+    input_schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string', description: 'タイトル (1-500 文字)。' },
+        description: { type: 'string', description: '説明 (省略可)。' },
+        isMust: {
+          type: 'boolean',
+          description: 'true にする場合 dod 必須。既定 false。',
+        },
+        dod: { type: 'string', description: 'Definition of Done (MUST なら必須)。' },
+      },
+      required: ['title'],
+    },
+  },
+  build(ctx) {
+    return async (input) => {
+      if (!ctx.decomposeParentItemId) {
+        return jsonError(
+          'propose_child_item is only available in decompose staging mode (no parent set)',
+        )
+      }
+      const parsed = AgentProposeChildItemSchema.safeParse(input ?? {})
+      if (!parsed.success) {
+        return jsonError('validation failed', parsed.error.flatten())
+      }
+      const v = parsed.data
+
+      const result = await adminDb.transaction(async (tx) => {
+        const parent = await itemRepository.findById(tx, ctx.decomposeParentItemId!)
+        if (!parent) return { ok: false as const, reason: 'parent_not_found' }
+        if (parent.workspaceId !== ctx.workspaceId) {
+          return { ok: false as const, reason: 'parent_not_in_workspace' }
+        }
+        // 直近の sort_order を引いて +1 (Agent が呼んだ順を保持)
+        const existing = await tx
+          .select({ max: sql<number>`coalesce(max(${agentDecomposeProposals.sortOrder}), -1)` })
+          .from(agentDecomposeProposals)
+          .where(eq(agentDecomposeProposals.parentItemId, parent.id))
+        const nextOrder = (existing[0]?.max ?? -1) + 1
+        const [row] = await tx
+          .insert(agentDecomposeProposals)
+          .values({
+            workspaceId: ctx.workspaceId,
+            parentItemId: parent.id,
+            agentInvocationId: ctx.agentInvocationId ?? null,
+            title: v.title,
+            description: v.description,
+            isMust: v.isMust,
+            dod: v.dod ?? null,
+            statusProposal: 'pending',
+            sortOrder: nextOrder,
+          })
+          .returning()
+        if (!row) return { ok: false as const, reason: 'insert_failed' }
+        await recordAudit(tx, {
+          workspaceId: ctx.workspaceId,
+          actorType: 'agent',
+          actorId: ctx.agentId,
+          targetType: 'agent_decompose_proposal',
+          targetId: row.id,
+          action: 'create',
+          after: { id: row.id, title: row.title, parentItemId: parent.id },
+        })
+        return { ok: true as const, proposalId: row.id, title: row.title }
+      })
+
+      if (!result.ok) return jsonError(result.reason)
+      return jsonOk({ proposalId: result.proposalId, title: result.title, status: 'pending' })
+    }
+  },
 }
 
 // --- create_item --------------------------------------------------------

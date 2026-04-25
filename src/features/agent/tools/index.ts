@@ -16,7 +16,7 @@ import 'server-only'
 import { readDocsTool, readItemsTool, searchDocsTool, searchItemsTool } from './read'
 import { instantiateTemplateTool } from './template'
 import type { AgentToolFactory, ToolBundle, ToolContext } from './types'
-import { createDocTool, createItemTool, writeCommentTool } from './write'
+import { createDocTool, createItemTool, proposeChildItemTool, writeCommentTool } from './write'
 
 export const RESEARCHER_TOOLS: AgentToolFactory[] = [
   readItemsTool,
@@ -27,6 +27,23 @@ export const RESEARCHER_TOOLS: AgentToolFactory[] = [
   writeCommentTool,
   createDocTool,
   instantiateTemplateTool,
+]
+
+/**
+ * AI 分解 (staging mode) 用の tool whitelist。
+ *   - create_item を `propose_child_item` に置き換え (即時 items に書かない)
+ *   - read 系は残す (周辺コンテキスト確認のため)
+ *   - write_comment / create_doc / instantiate_template は外す (分解中の脱線を防ぐ)
+ *
+ * `buildDecomposeTools(ctx)` でこのバンドルを bind すること。ctx には
+ * `decomposeParentItemId` と `agentInvocationId` を必ず詰めて渡す。
+ */
+export const DECOMPOSE_TOOLS: AgentToolFactory[] = [
+  readItemsTool,
+  readDocsTool,
+  searchDocsTool,
+  searchItemsTool,
+  proposeChildItemTool,
 ]
 
 /**
@@ -66,7 +83,20 @@ export function buildPmTools(ctx: ToolContext): ToolBundle {
   return { tools, handlers }
 }
 
+/**
+ * AI 分解 staging mode 用バンドラ。
+ * ctx に `decomposeParentItemId` と `agentInvocationId` を入れて渡すこと。
+ */
+export function buildDecomposeTools(ctx: ToolContext): ToolBundle {
+  const tools = DECOMPOSE_TOOLS.map((f) => f.definition)
+  const handlers: Record<string, ReturnType<AgentToolFactory['build']>> = {}
+  for (const f of DECOMPOSE_TOOLS) {
+    handlers[f.definition.name] = f.build(ctx)
+  }
+  return { tools, handlers }
+}
+
 export { readDocsTool, readItemsTool, searchDocsTool, searchItemsTool } from './read'
 export { instantiateTemplateTool } from './template'
 export type { AgentToolFactory, ToolBundle, ToolContext } from './types'
-export { createDocTool, createItemTool, writeCommentTool } from './write'
+export { createDocTool, createItemTool, proposeChildItemTool, writeCommentTool } from './write'

@@ -11,6 +11,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { unwrap } from '@/lib/result-unwrap'
 
+import { proposalKeys } from '@/features/decompose-proposal/hooks'
 import { itemKeys } from '@/features/item/hooks'
 
 import { decomposeItemAction, researchItemAction } from './actions'
@@ -34,9 +35,12 @@ export function useDecomposeItem(workspaceId: string) {
           idempotencyKey: vars.idempotencyKey,
         }),
       ),
-    onSuccess: () => {
-      // 子 Item が新規作成されるのでリスト再取得
+    onSuccess: (_data, vars) => {
+      // staging mode 既定なので items 直接は変わらないが、後方互換 (staging=false) で
+      // 直接書く時のために両方 invalidate する。
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+      // pending 提案が増えるので proposals も refetch
+      void qc.invalidateQueries({ queryKey: proposalKeys.pendingByParent(vars.itemId) })
     },
   })
 }

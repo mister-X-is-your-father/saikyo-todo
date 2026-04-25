@@ -27,6 +27,11 @@ const DecomposeItemActionInputSchema = z.object({
   extraHint: z.string().max(500).optional(),
   /** 省略時はサーバ側で randomUUID を生成。UI から制御したい時だけ渡す。 */
   idempotencyKey: z.string().uuid().optional(),
+  /**
+   * 省略時 true (staging mode)。Researcher の出力は agent_decompose_proposals に置かれ、
+   * ユーザーが UI で承認するまで items に書かれない。バッチ等で旧挙動が欲しい時のみ false。
+   */
+  staging: z.boolean().optional(),
 })
 
 export async function decomposeItemAction(input: unknown): Promise<Result<ResearcherRunOutput>> {
@@ -43,6 +48,7 @@ export async function decomposeItemAction(input: unknown): Promise<Result<Resear
       itemId: parsed.data.itemId,
       ...(parsed.data.extraHint ? { extraHint: parsed.data.extraHint } : {}),
       idempotencyKey: parsed.data.idempotencyKey ?? randomUUID(),
+      ...(parsed.data.staging !== undefined ? { staging: parsed.data.staging } : {}),
     })
     // UI 側は TanStack Query の invalidateQueries(['items', wsId]) で refetch するため
     // revalidatePath は不要

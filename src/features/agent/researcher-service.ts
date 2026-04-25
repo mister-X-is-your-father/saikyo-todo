@@ -30,13 +30,20 @@ import { agentMemoryService } from './memory-service'
 import { agentInvocationRepository } from './repository'
 import { type Agent } from './schema'
 import { agentService } from './service'
-import { buildResearcherTools } from './tools'
+import { buildDecomposeTools, buildResearcherTools } from './tools'
 
 export interface ResearcherRunInput {
   workspaceId: string
   userMessage: string
   targetItemId?: string | null
   idempotencyKey: string
+  /**
+   * 'researcher' = フル tool bundle (既定。自由に Item / Doc / Comment を作る)
+   * 'decompose'  = staging mode (子 Item は agent_decompose_proposals に置く、commit はユーザー)
+   */
+  toolMode?: 'researcher' | 'decompose'
+  /** toolMode='decompose' の時に必須。propose_child_item ツールが参照する。 */
+  decomposeParentItemId?: string
   /** テスト用 DI: invokeModel を差し替える (executeToolLoop の invoker に流す) */
   invoker?: ToolLoopInput['invoker']
 }
@@ -112,12 +119,18 @@ export const researcherService = {
       }),
     )
 
-    // 5. tool bundle を bind
-    const bundle = buildResearcherTools({
+    // 5. tool bundle を bind (toolMode で staging / 通常 を切替)
+    const toolCtx = {
       workspaceId: input.workspaceId,
       agentId: agent.id,
-      agentRole: 'researcher',
-    })
+      agentRole: 'researcher' as const,
+      agentInvocationId: invocation.id,
+      ...(input.toolMode === 'decompose' && input.decomposeParentItemId
+        ? { decomposeParentItemId: input.decomposeParentItemId }
+        : {}),
+    }
+    const bundle =
+      input.toolMode === 'decompose' ? buildDecomposeTools(toolCtx) : buildResearcherTools(toolCtx)
 
     try {
       const loopResult = await executeToolLoop({
@@ -238,6 +251,11 @@ export const researcherService = {
     itemId: string
     extraHint?: string
     idempotencyKey: string
+    /**
+     * staging=true (既定): 子は agent_decompose_proposals に置く (UI で承認するまで items に書かない)
+     * staging=false: 旧挙動 (Researcher が直接 items に書く)。後方互換 / バッチ用
+     */
+    staging?: boolean
     invoker?: ToolLoopInput['invoker']
   }): Promise<Result<ResearcherRunOutput>> {
     if (!params.idempotencyKey) {
@@ -248,6 +266,7 @@ export const researcherService = {
     if (item.workspaceId !== params.workspaceId) {
       return err(new ValidationError('Item が指定 workspace に属していません'))
     }
+    const useStaging = params.staging !== false
 
     const userMessage = buildDecomposeUserMessage({
       itemId: item.id,
@@ -256,6 +275,7 @@ export const researcherService = {
       isMust: item.isMust,
       dod: item.dod,
       extraHint: params.extraHint,
+      staging: useStaging,
     })
 
     return await researcherService.run({
@@ -263,6 +283,7 @@ export const researcherService = {
       userMessage,
       targetItemId: item.id,
       idempotencyKey: params.idempotencyKey,
+      ...(useStaging ? { toolMode: 'decompose' as const, decomposeParentItemId: item.id } : {}),
       ...(params.invoker ? { invoker: params.invoker } : {}),
     })
   },
@@ -317,11 +338,14 @@ export function buildDecomposeUserMessage(params: {
   isMust: boolean
   dod: string | null
   extraHint?: string
+  /** 省略時 true (staging mode)。 */
+  staging?: boolean
 }): string {
+  const useStaging = params.staging !== false
   const lines: string[] = []
   lines.push('以下の Item を 3〜5 件の子タスクに分解してください。')
   lines.push('')
-  lines.push(`- 親 Item の id (parentItemId に渡す): ${params.itemId}`)
+  lines.push(`- 親 Item の id: ${params.itemId}`)
   lines.push(`- タイトル: ${params.title}`)
   if (params.description && params.description.trim().length > 0) {
     lines.push('- 説明:')
@@ -343,9 +367,17 @@ export function buildDecomposeUserMessage(params: {
   lines.push(
     '1. 必要に応じて read_items / search_docs で周辺コンテキストを確認する (要らなければ省略)',
   )
-  lines.push(
-    `2. create_item を 3〜5 回呼び、各子タスクを作る。parentItemId は必ず ${params.itemId} を渡すこと`,
-  )
+  if (useStaging) {
+    lines.push(
+      '2. propose_child_item を 3〜5 回呼び、各子タスク候補を提案する。' +
+        'parentItemId は ctx で固定なので渡す必要なし。即時 items には作成されず、' +
+        'ユーザーが UI で 1 件ずつ採用 / 却下する',
+    )
+  } else {
+    lines.push(
+      `2. create_item を 3〜5 回呼び、各子タスクを作る。parentItemId は必ず ${params.itemId} を渡すこと`,
+    )
+  }
   lines.push('3. 親が MUST でない子は isMust=false でよい。子の dod は可能なら記載する')
   lines.push('4. 最後に作った子タスクのタイトル一覧と意図を簡潔に日本語でまとめる')
   return lines.join('\n')
