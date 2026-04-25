@@ -1,10 +1,12 @@
 # HANDOFF.md — 次セッション開始用ガイド
 
-> 最終更新: 2026-04-26 (**MVP + 稼働入力 + Phase 1-5.4 + 手動分解 + 5.3 weekly cron 完了**)
+> 最終更新: 2026-04-26 (**MVP + 稼働入力 + Phase 1-5.4 + 6.1 + 6.2 + MUST Recovery live 検証 完了**)
 >
 > - 進捗: MVP (8/8) → 稼働入力 → Phase 1 → 2 → 3 → 4 → 5.1 → 5.3 → 5.2 → 5.4 →
->   5.3 weekly cron (sprint-retro-tick) ✅
-> - 次の主戦場: **AI 分解 UX 強化** / **Realtime push UI** / **MUST Recovery 実配信検証**
+>   5.3 weekly cron → **6.1 (AI 分解 staging)** → **6.2 (streaming + Realtime push)** →
+>   **MUST Recovery 実配信検証 ✅**
+> - 次の主戦場: **通知 → Item dialog 自動 open** / **AI 分解 UX 細部調整** /
+>   **POST_MVP 候補 (TZ 別 cron / PWA / streaming のさらなる磨き)**
 > - 詳細プラン: `~/.claude/plans/todoist-ticktick-todo-ui-ux-sleepy-hamster.md`
 
 ## 0. 現状サマリ
@@ -12,11 +14,12 @@
 | 指標           | 値                                                                                                                            |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 受け入れ基準   | **8/8** PASS (`scripts/verify-acceptance.ts`)                                                                                 |
-| Vitest         | **330** PASS / 39 files                                                                                                       |
+| MUST Recovery  | **6/6** PASS (`scripts/verify-must-recovery.ts`、live AI / claude CLI)                                                        |
+| Vitest         | **343** PASS / 40 files                                                                                                       |
 | E2E (local)    | **14** PASS / 2 skip (bulk-action-bar / backlog-dnd: dev mode 並列で QuickAdd 連続入力が flaky — §5.16; workers=4 で他は安定) |
 | pg-boss queues | **10** (+sprint-retro-tick)                                                                                                   |
 | views          | **6** (Today / Inbox / Kanban / Backlog / Gantt / Dashboard)                                                                  |
-| schema         | 31 テーブル (auth schema 除く、+goals, +key_results)                                                                          |
+| schema         | 32 テーブル (+agent_decompose_proposals)                                                                                      |
 
 AI 検証は Claude Code Max OAuth + MCP 経由なので `ANTHROPIC_API_KEY` 無しでも完走:
 
@@ -73,6 +76,47 @@ NODE_OPTIONS="--conditions=react-server" \
 - Kanban カード: hover で AI 分解ボタン + 子 Item 件数 badge
 - Item 検索: `useSearchItems` (fuse.js) + Command Palette `?` プレフィクス
 - Template instantiate 後の `agentRoleToInvoke='researcher'` chain は配線済
+
+### 2.13 Phase 6.2 — Anthropic streaming + Realtime push UI (2026-04-26)
+
+- **publication 拡張**: `agent_decompose_proposals` + `agent_invocations` を
+  `supabase_realtime` に追加 (REPLICA IDENTITY FULL)。migration
+  `20260426020000_realtime_decompose_proposals.sql`
+- **Anthropic streaming**: `invokeModelStream` (`messages.stream` で text delta コールバック)
+  - `streamingInvoker(onTextDelta)` factory。既存 `invokeModel` は据え置き
+- **researcherService.run**: invoker 未指定時は streamingInvoker を採用、
+  `output.streamingText` を 250ms debounce で UPDATE → Realtime に流れる
+- **Realtime hooks**:
+  - `useDecomposeProposalsRealtime(parentItemId)`: pending 一覧を 150ms debounce で invalidate
+  - `useAgentInvocationProgressByTarget(targetItemId)`: status + streamingText を Query キャッシュに直接書き込み
+    (set-state-in-effect lint 回避)
+- **DecomposeProposalsPanel**:
+  - Agent 実行中は "Researcher が分解中…" + 流れる streamingText を 3 行 line-clamp で表示
+  - 完了 / pending=0 で自然消滅 (item-edit-dialog の他タブとの整合)
+- **検証**: `scripts/verify-phase6_2-realtime.ts` 全項目 PASS
+  (3 proposals が 1 件ずつ live 出現 / streamingText 反映 / completed で UI hidden)
+
+### 2.12 Phase 6.1 — AI 分解 staging (preview / accept / reject) (2026-04-26)
+
+- **目的**: Researcher の分解結果を即時 items に書く代わりに staging に置き、
+  ユーザーが UI で行ごとに採用 / 却下 / 編集できる導線。`undo` を不要にする
+- **schema**: `agent_decompose_proposals` (workspace_id / parent_item_id /
+  agent_invocation_id / title / description / is_must / dod / status_proposal:
+  pending|accepted|rejected / accepted_item_id / sort_order)
+  - RLS (member: insert/update; all member: select)
+  * migration: `20260426010000_agent_decompose_proposals.sql`
+- **tool**: `propose_child_item` (decompose mode 専用、ctx.decomposeParentItemId に閉じ込め)
+- **bundle**: `buildDecomposeTools` (read 系 + propose_child_item のみ。
+  create_item / write_comment / create_doc は外して脱線抑制)
+- **researcherService.run** に `toolMode: 'researcher' | 'decompose'` 追加
+- **decomposeItem(staging=true)** が既定 (旧挙動は staging=false で残置)
+- **Service**: list / accept (items に実 INSERT) / reject / update / rejectAllPending
+  - accept は `mutateWithGuard` 経由ではなく withUserDb 直 (parent ws 一致 + member ガード)
+- **UI**: `DecomposeProposalsPanel` を ItemEditDialog "子タスク" タブ上部に組み込む。
+  pending=0 + Agent 非実行で消える / 行 click で title/description/MUST/DoD 編集
+- **テスト**: `decompose-proposal/service.test.ts` 11 ケース + researcher staging 切替 2 ケース
+- **検証**: `scripts/verify-phase6_1-ui.ts` (admin で proposals 直挿入し UI 動作だけ検証、
+  ANTHROPIC_API_KEY 不要) 全項目 PASS
 
 ### 2.11 Phase 5.3 weekly cron — Sprint retro fallback (2026-04-26)
 
@@ -236,9 +280,8 @@ NODE_OPTIONS="--conditions=react-server" \
 
 ### A. Phase 4 残タスク (積み残し)
 
-- **MUST Recovery 実配信検証**: pm-recovery worker が実際に Doc + comment を
-  投下するか手動確認 (`ANTHROPIC_API_KEY` 設定 + worker 起動が必要)。Phase 4 では
-  実装済 (`pmService.runRecovery`) だが live 検証は未
+- **MUST Recovery 実配信検証** ✅ (2026-04-26 — `scripts/verify-must-recovery.ts` 6/6 PASS、
+  claude CLI 経由で Doc 2241 chars + comment 投下 / cost \$0.038 / 45s)
 - **その他 type の通知接続**: 現状は heartbeat type のみ生成。mention / invite /
   sync-failure type は hook さえ用意すれば bell に並ぶ (formatNotification を拡張)
 - **通知 → Item dialog 自動 open**: 現状は通知 click で既読化のみ。`?item=<id>`
