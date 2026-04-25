@@ -4,8 +4,10 @@ import { redirect } from 'next/navigation'
 import { requireWorkspaceMember } from '@/lib/auth/guard'
 import { AuthError, PermissionError } from '@/lib/errors'
 
+import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { TemplatesPanel } from '@/components/template/templates-panel'
 import { Button } from '@/components/ui/button'
+import { NotificationBell } from '@/components/workspace/notification-bell'
 import { WorkspaceHeader } from '@/components/workspace/workspace-header'
 
 interface PageProps {
@@ -36,6 +38,12 @@ export default async function TemplatesPage({ params }: PageProps) {
           <Button variant="outline" asChild size="sm">
             <Link href={`/${workspaceId}`}>← Workspace</Link>
           </Button>
+        }
+        utility={
+          <>
+            <NotificationBell workspaceId={workspaceId} currentUserId={user.id} />
+            <ThemeToggle />
+          </>
         }
       />
 

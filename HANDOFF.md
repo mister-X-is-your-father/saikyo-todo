@@ -1,10 +1,10 @@
 # HANDOFF.md — 次セッション開始用ガイド
 
-> 最終更新: 2026-04-25 (**MVP + 稼働入力 + Phase 1-3 完了**)
+> 最終更新: 2026-04-25 (**MVP + 稼働入力 + Phase 1-4 完了**)
 >
 > - 進捗: MVP (8/8) → 稼働入力 → Phase 1 (基本 UX) → Phase 2 (コラボ hygiene) →
->   Phase 3 (生産性加速 + MUST Escalation) ✅
-> - 次の主戦場: **Phase 4 (Dark + Notification bell)** または Phase 5 (Sprint/OKR/Retro)
+>   Phase 3 (生産性加速 + MUST Escalation) → Phase 4 (Dark + Notification bell) ✅
+> - 次の主戦場: **Phase 5 (Sprint/OKR/Retro)** ※推奨は 5.1 Sprint から
 > - 詳細プラン: `~/.claude/plans/todoist-ticktick-todo-ui-ux-sleepy-hamster.md`
 
 ## 0. 現状サマリ
@@ -12,7 +12,7 @@
 | 指標           | 値                                                                                                                                       |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | 受け入れ基準   | **8/8** PASS (`scripts/verify-acceptance.ts`)                                                                                            |
-| Vitest         | **294** PASS / 34 files                                                                                                                  |
+| Vitest         | **300** PASS / 35 files                                                                                                                  |
 | E2E (local)    | **16** PASS                                                                                                                              |
 | pg-boss queues | **8** (agent-run / doc-embed / researcher-decompose / pm-standup / pm-standup-tick / pm-recovery / template-cron-tick / time-entry-sync) |
 | views          | **6** (Today / Inbox / Kanban / Backlog / Gantt / Dashboard)                                                                             |
@@ -74,6 +74,25 @@ NODE_OPTIONS="--conditions=react-server" \
 - Item 検索: `useSearchItems` (fuse.js) + Command Palette `?` プレフィクス
 - Template instantiate 後の `agentRoleToInvoke='researcher'` chain は配線済
 
+### 2.6 Phase 4 — Dark mode + Notification bell
+
+- **Refactor**: `WorkspaceHeader` を抽出 (3 ページの header 重複を統一)。
+  `pageActions` (ページ固有) + `utility` (Theme/Bell など全 ws ページ共通) slot
+- **Dark mode**: `next-themes` 導入、`<ThemeProvider attribute="class">` を
+  `app/layout.tsx` で適用 (`suppressHydrationWarning` も同時)。
+  `theme-toggle.tsx` は CSS の `dark:` variant でアイコン切替 (setState 不使用 →
+  `react-hooks/set-state-in-effect` lint を回避し hydration mismatch も無し)
+- **Notification feature**: `src/features/notification/{schema,repository,service,actions,hooks,realtime}.ts`
+  - Repository は scoped Drizzle (RLS で `user_id = auth.uid()` 強制)
+  - Service: `list / unreadCount / markRead / markAllRead`
+    (作成系は heartbeat / mention worker 側 — service には置かない)
+  - Hooks: `useUnreadNotificationCount` (常時) + `useNotifications` (popover open 時のみ enabled)
+  - Realtime: `useNotificationsRealtime` で `postgres_changes filter=user_id=eq.<uid>` 購読、
+    200ms debounce で count + list を invalidate
+- **NotificationBell** (`src/components/workspace/notification-bell.tsx`):
+  Bell icon + 未読バッジ + Popover dropdown (50 件、相対時刻、各通知 click で既読化)。
+  heartbeat type の payload は `{itemId, stage, dueDate, daysUntilDue}` を日本語整形
+
 ### 2.5 Phase 3 — 生産性加速 + MUST Escalation
 
 - **Backlog DnD**: `@dnd-kit/sortable` (position ソート時のみ有効)
@@ -90,15 +109,16 @@ NODE_OPTIONS="--conditions=react-server" \
 
 ## 3. 次セッションでやること
 
-### A. Phase 4 — Dark + Notification bell (工数 S、推奨次)
+### A. Phase 4 残タスク (積み残し)
 
-1. **Dark mode**: `next-themes` 導入、`theme-toggle.tsx` を header に。
-   既存 `dark:` class を shadcn token に整理
-2. **Notification bell**: `src/features/notification/{hooks,realtime}.ts`
-   (postgres_changes on notifications)、`notification-bell.tsx` を header 右端に。
-   heartbeat / sync 失敗 / PM escalation 通知がここに集まる
-3. **MUST Recovery 実配信検証**: pm-recovery worker が実際に Doc + comment を
-   投下するか手動確認 (`ANTHROPIC_API_KEY` 設定 + worker 起動が必要)
+- **MUST Recovery 実配信検証**: pm-recovery worker が実際に Doc + comment を
+  投下するか手動確認 (`ANTHROPIC_API_KEY` 設定 + worker 起動が必要)。Phase 4 では
+  実装済 (`pmService.runRecovery`) だが live 検証は未
+- **その他 type の通知接続**: 現状は heartbeat type のみ生成。mention / invite /
+  sync-failure type は hook さえ用意すれば bell に並ぶ (formatNotification を拡張)
+- **通知 → Item dialog 自動 open**: 現状は通知 click で既読化のみ。`?item=<id>`
+  query で item dialog を開くには items-board の selected state を URL 駆動 (nuqs) に
+  リフトする必要
 
 ### B. Phase 5 — 業務/長期/個人/OKR/習慣/振り返り (工数 L)
 

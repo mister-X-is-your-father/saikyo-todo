@@ -7,6 +7,7 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { Toaster } from 'sonner'
 
 import { AppQueryProvider } from '@/components/shared/query-provider'
+import { ThemeProvider } from '@/components/shared/theme-provider'
 
 import './globals.css'
 
@@ -37,14 +38,17 @@ export default async function RootLayout({
     <html
       lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col">
-        <NextIntlClientProvider messages={messages}>
-          <NuqsAdapter>
-            <AppQueryProvider>{children}</AppQueryProvider>
-          </NuqsAdapter>
-          <Toaster richColors position="bottom-right" closeButton />
-        </NextIntlClientProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <NextIntlClientProvider messages={messages}>
+            <NuqsAdapter>
+              <AppQueryProvider>{children}</AppQueryProvider>
+            </NuqsAdapter>
+            <Toaster richColors position="bottom-right" closeButton />
+          </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

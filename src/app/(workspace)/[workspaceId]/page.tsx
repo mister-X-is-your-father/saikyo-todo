@@ -8,9 +8,11 @@ import { AuthError, PermissionError } from '@/lib/errors'
 import { findMyWorkspaces } from '@/features/workspace/repository'
 
 import { GlobalShortcuts } from '@/components/shared/global-shortcuts'
+import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { Button } from '@/components/ui/button'
 import { HeartbeatButton } from '@/components/workspace/heartbeat-button'
 import { ItemsBoard } from '@/components/workspace/items-board'
+import { NotificationBell } from '@/components/workspace/notification-bell'
 import { StandupButton } from '@/components/workspace/standup-button'
 import { WorkspaceHeader } from '@/components/workspace/workspace-header'
 
@@ -52,6 +54,12 @@ export default async function WorkspacePage({ params }: PageProps) {
             <Button variant="outline" asChild size="sm">
               <Link href="/">← 一覧</Link>
             </Button>
+          </>
+        }
+        utility={
+          <>
+            <NotificationBell workspaceId={workspaceId} currentUserId={user.id} />
+            <ThemeToggle />
           </>
         }
       />
