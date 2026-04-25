@@ -1,10 +1,10 @@
 # HANDOFF.md — 次セッション開始用ガイド
 
-> 最終更新: 2026-04-25 (**MVP + 稼働入力 + Phase 1-5.1 + 5.3 (手動 + Sprint 完了 trigger) 完了**)
+> 最終更新: 2026-04-25 (**MVP + 稼働入力 + Phase 1-5.3 + 5.2 OKR + 手動分解 完了**)
 >
-> - 進捗: MVP (8/8) → 稼働入力 → Phase 1 → 2 → 3 → 4 → 5.1 (Sprint) → 5.3 retro
->   (手動起動 + Sprint completed → 自動 enqueue) ✅
-> - 次の主戦場: **5.3 weekly cron** or **5.2 OKR** or **5.4 PDCA**
+> - 進捗: MVP (8/8) → 稼働入力 → Phase 1 → 2 → 3 → 4 → 5.1 → 5.3 → 5.2 (OKR) +
+>   ItemEditDialog の "子タスク" tab で手動 bulk 分解 ✅
+> - 次の主戦場: **5.4 PDCA dashboard** or **5.3 weekly cron** or **AI 分解 UX 強化**
 > - 詳細プラン: `~/.claude/plans/todoist-ticktick-todo-ui-ux-sleepy-hamster.md`
 
 ## 0. 現状サマリ
@@ -12,11 +12,11 @@
 | 指標           | 値                                                                                                                            |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 受け入れ基準   | **8/8** PASS (`scripts/verify-acceptance.ts`)                                                                                 |
-| Vitest         | **316** PASS / 37 files                                                                                                       |
+| Vitest         | **323** PASS / 38 files                                                                                                       |
 | E2E (local)    | **14** PASS / 2 skip (bulk-action-bar / backlog-dnd: dev mode 並列で QuickAdd 連続入力が flaky — §5.16; workers=4 で他は安定) |
 | pg-boss queues | **9** (+sprint-retro)                                                                                                         |
 | views          | **6** (Today / Inbox / Kanban / Backlog / Gantt / Dashboard)                                                                  |
-| schema         | 29 テーブル (auth schema 除く、+sprints)                                                                                      |
+| schema         | 31 テーブル (auth schema 除く、+goals, +key_results)                                                                          |
 
 AI 検証は Claude Code Max OAuth + MCP 経由なので `ANTHROPIC_API_KEY` 無しでも完走:
 
@@ -73,6 +73,45 @@ NODE_OPTIONS="--conditions=react-server" \
 - Kanban カード: hover で AI 分解ボタン + 子 Item 件数 badge
 - Item 検索: `useSearchItems` (fuse.js) + Command Palette `?` プレフィクス
 - Template instantiate 後の `agentRoleToInvoke='researcher'` chain は配線済
+
+### 2.9 Phase 5.2 — OKR (Goals + Key Results) + 手動タスク分解
+
+**OKR**:
+
+- Schema: `goals` (Objective: title/desc/period/start/end/status) + `key_results`
+  (KR: title/progress_mode/target/current/unit/weight/position) + `items.key_result_id`
+  - DB CHECK: status enum / weight 1-10 / progress_mode IN ('items','manual') / start≤end
+  - RLS: goals は workspace member、key_results は親 goal を辿って判定
+- Service `okrService`:
+  - createGoal / updateGoal / listGoals
+  - createKeyResult / updateKeyResult / listKeyResults / **listAllKeyResultsByWorkspace** (Item picker 用)
+  - assignItemToKeyResult (別 ws 拒否)
+  - **goalProgress**: KR ごとに mode 分岐 (items: done/total / manual: current/target) →
+    Goal pct は **weighted average**
+  - 全 mutation で audit_log
+- UI:
+  - `/[wsId]/goals` ページ — `GoalsPanel` で Goal 作成 + expand で KR 一覧 + KR 追加
+    (mode=items なら weight のみ、mode=manual なら target/unit 入力)
+  - 進捗バー: Goal 全体 % + KR ごと %
+  - ItemEditDialog 基本 Tab に **KR picker** (Sprint picker と並列)
+  - workspace header に `Goals` link
+- テスト: 7 ケース (CRUD + items mode 進捗 + manual mode 進捗 + weighted average + 越境 ws 弾き)
+
+**手動タスク分解** (ItemEditDialog "子タスク" tab):
+
+- 既存 children を `useItems` の client filter で表示 (`parentPath === fullPathOf(parent)`)
+- textarea で改行区切り bulk 追加 → sequential `useCreateItem.mutateAsync`
+  - parent_path 自動 (parentItemId を service.create で正しく処理)
+- AI 分解 (Researcher) とは別経路 (即時、課金なし、長文 brainstorm を行内で素早く起こせる)
+
+**既存 bug fix**: `itemService.create` が `parentItemId` を **無視していた** のを修正
+(従来は parent 指定しても root に作られてた)。`parentPath = fullPathOf(parent)` を計算
+
+- workspaceId 一致チェック。`priority` / `dueTime` / `scheduledFor` も同時に明示的に渡すよう
+  変更 (今までは default に寄ってた可能性あり)。
+
+検証: `scripts/verify-phase5_2-ui.ts` で OKR 全フロー + 子タスク bulk add (3 件) PASS。
+全体 vitest 316 → **323 PASS / 38 files**、E2E 14 PASS / 2 skip 維持。
 
 ### 2.8 Phase 5.3 (手動起動部) — Sprint Retrospective
 

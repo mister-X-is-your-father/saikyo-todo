@@ -29,6 +29,7 @@ import {
   mutationMarkers,
   timestamps,
 } from './_shared'
+import { keyResults } from './okr'
 import { sprints } from './sprint'
 import { workspaces } from './workspace'
 
@@ -60,6 +61,8 @@ export const items = pgTable(
      * soft delete 代替なので物理削除は cascade では起きない。`set null` で十分。
      */
     sprintId: uuid('sprint_id').references(() => sprints.id, { onDelete: 'set null' }),
+    /** Phase 5.2: OKR の Key Result への紐付け (nullable) */
+    keyResultId: uuid('key_result_id').references(() => keyResults.id, { onDelete: 'set null' }),
     ...createdByActor,
     ...mutationMarkers,
     ...timestamps,
@@ -76,6 +79,9 @@ export const items = pgTable(
     index('items_sprint_idx')
       .on(t.workspaceId, t.sprintId)
       .where(sql`sprint_id is not null and deleted_at is null`),
+    index('items_key_result_idx')
+      .on(t.keyResultId)
+      .where(sql`key_result_id is not null and deleted_at is null`),
   ],
 )
 

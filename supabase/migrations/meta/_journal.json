@@ -29,6 +29,13 @@
       "when": 1777080849969,
       "tag": "20260425013409_foamy_risque",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1777086968809,
+      "tag": "20260425031608_slow_stingray",
+      "breakpoints": true
     }
   ]
 }

@@ -54,6 +54,9 @@ export default async function WorkspacePage({ params }: PageProps) {
             <HeartbeatButton workspaceId={workspaceId} />
             <StandupButton workspaceId={workspaceId} />
             <Button variant="outline" asChild size="sm">
+              <Link href={`/${workspaceId}/goals`}>Goals</Link>
+            </Button>
+            <Button variant="outline" asChild size="sm">
               <Link href={`/${workspaceId}/sprints`}>Sprints</Link>
             </Button>
             <Button variant="outline" asChild size="sm">

@@ -6,6 +6,7 @@ import { recordAudit } from '@/lib/audit'
 import { requireUser, requireWorkspaceMember } from '@/lib/auth/guard'
 import { positionBetween } from '@/lib/db/fractional-position'
 import { moveSubtree } from '@/lib/db/ltree'
+import { fullPathOf } from '@/lib/db/ltree-path'
 import { workspaceMembers } from '@/lib/db/schema'
 import { adminDb, withUserDb } from '@/lib/db/scoped-client'
 import { ConflictError, NotFoundError, ValidationError } from '@/lib/errors'
@@ -34,6 +35,16 @@ export const itemService = {
     const { user } = await requireWorkspaceMember(workspaceId, 'member')
 
     return await withUserDb(user.id, async (tx) => {
+      // parentItemId が指定されたら parent_path = fullPathOf(parent) で配下に作成
+      let parentPath: string | undefined
+      if (rest.parentItemId) {
+        const parent = await itemRepository.findById(tx, rest.parentItemId)
+        if (!parent) return err(new NotFoundError('親 Item が見つかりません'))
+        if (parent.workspaceId !== workspaceId) {
+          return err(new ValidationError('別 workspace の Item を親に指定できません'))
+        }
+        parentPath = fullPathOf({ id: parent.id, parentPath: parent.parentPath })
+      }
       const item = await itemRepository.insert(tx, {
         workspaceId,
         title: rest.title,
@@ -41,8 +52,12 @@ export const itemService = {
         status: rest.status,
         startDate: rest.startDate ?? null,
         dueDate: rest.dueDate ?? null,
+        dueTime: rest.dueTime ?? null,
+        scheduledFor: rest.scheduledFor ?? null,
+        priority: rest.priority,
         isMust: rest.isMust,
         dod: rest.dod ?? null,
+        ...(parentPath !== undefined ? { parentPath } : {}),
         createdByActorType: 'user',
         createdByActorId: user.id,
       })

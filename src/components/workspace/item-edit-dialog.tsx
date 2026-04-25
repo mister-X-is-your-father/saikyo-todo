@@ -12,10 +12,13 @@ import { useState } from 'react'
 
 import { toast } from 'sonner'
 
+import { fullPathOf } from '@/lib/db/ltree-path'
 import { isAppError } from '@/lib/errors'
 
 import {
+  useCreateItem,
   useItemAssignees,
+  useItems,
   useItemTagIds,
   useSetItemAssignees,
   useSetItemTags,
@@ -23,6 +26,7 @@ import {
 } from '@/features/item/hooks'
 import type { AssigneeRef } from '@/features/item/repository'
 import type { Item } from '@/features/item/schema'
+import { useAllKeyResultsByWorkspace, useAssignItemToKeyResult } from '@/features/okr/hooks'
 import { useAssignItemToSprint, useSprints } from '@/features/sprint/hooks'
 
 import { IMEInput } from '@/components/shared/ime-input'
@@ -79,7 +83,7 @@ function ItemEditDialogInner({
   onOpenChange: (open: boolean) => void
   currentUserId?: string
 }) {
-  const [tab, setTab] = useState<'base' | 'comments' | 'activity'>('base')
+  const [tab, setTab] = useState<'base' | 'subtasks' | 'comments' | 'activity'>('base')
   const [title, setTitle] = useState(item.title)
   const [description, setDescription] = useState(item.description ?? '')
   const [startDate, setStartDate] = useState(item.startDate ?? '')
@@ -95,6 +99,8 @@ function ItemEditDialogInner({
   const setTags = useSetItemTags(workspaceId, item.id)
   const sprintsList = useSprints(workspaceId)
   const assignSprint = useAssignItemToSprint(workspaceId)
+  const krsList = useAllKeyResultsByWorkspace(workspaceId)
+  const assignKr = useAssignItemToKeyResult(workspaceId)
 
   async function handleSave() {
     if (isMust && !dod.trim()) {
@@ -142,6 +148,15 @@ function ItemEditDialogInner({
     }
   }
 
+  async function handleKrChange(next: string | null) {
+    try {
+      await assignKr.mutateAsync({ itemId: item.id, keyResultId: next })
+      toast.success(next ? 'Key Result に割当しました' : 'KR 割当を解除しました')
+    } catch (e) {
+      toast.error(isAppError(e) ? e.message : 'KR 割当に失敗')
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl" data-testid="item-edit-dialog">
@@ -164,6 +179,9 @@ function ItemEditDialogInner({
           <TabsList className="w-full">
             <TabsTrigger value="base" data-testid="tab-base">
               基本
+            </TabsTrigger>
+            <TabsTrigger value="subtasks" data-testid="tab-subtasks">
+              子タスク
             </TabsTrigger>
             <TabsTrigger value="comments" data-testid="tab-comments">
               コメント
@@ -218,26 +236,48 @@ function ItemEditDialogInner({
                 />
               </div>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="editSprint">Sprint</Label>
-              <select
-                id="editSprint"
-                value={item.sprintId ?? ''}
-                onChange={(e) => void handleSprintChange(e.target.value || null)}
-                disabled={assignSprint.isPending}
-                className="w-full rounded border px-2 py-1.5 text-sm"
-                data-testid="edit-item-sprint"
-              >
-                <option value="">未割当</option>
-                {(sprintsList.data ?? [])
-                  .filter((s) => s.status === 'active' || s.status === 'planning')
-                  .map((sp) => (
-                    <option key={sp.id} value={sp.id}>
-                      {sp.status === 'active' ? '★ ' : ''}
-                      {sp.name}
-                    </option>
-                  ))}
-              </select>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="editSprint">Sprint</Label>
+                <select
+                  id="editSprint"
+                  value={item.sprintId ?? ''}
+                  onChange={(e) => void handleSprintChange(e.target.value || null)}
+                  disabled={assignSprint.isPending}
+                  className="w-full rounded border px-2 py-1.5 text-sm"
+                  data-testid="edit-item-sprint"
+                >
+                  <option value="">未割当</option>
+                  {(sprintsList.data ?? [])
+                    .filter((s) => s.status === 'active' || s.status === 'planning')
+                    .map((sp) => (
+                      <option key={sp.id} value={sp.id}>
+                        {sp.status === 'active' ? '★ ' : ''}
+                        {sp.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="editKr">Key Result (OKR)</Label>
+                <select
+                  id="editKr"
+                  value={item.keyResultId ?? ''}
+                  onChange={(e) => void handleKrChange(e.target.value || null)}
+                  disabled={assignKr.isPending}
+                  className="w-full rounded border px-2 py-1.5 text-sm"
+                  data-testid="edit-item-kr"
+                >
+                  <option value="">未割当</option>
+                  {(krsList.data ?? [])
+                    .filter((k) => k.goalStatus === 'active')
+                    .map((kr) => (
+                      <option key={kr.id} value={kr.id}>
+                        [{kr.goalTitle}] {kr.title}
+                      </option>
+                    ))}
+                </select>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -278,6 +318,10 @@ function ItemEditDialogInner({
             )}
           </TabsContent>
 
+          <TabsContent value="subtasks" className="mt-4">
+            <SubtasksPanel workspaceId={workspaceId} parent={item} />
+          </TabsContent>
+
           <TabsContent value="comments" className="mt-4">
             {currentUserId ? (
               <CommentThread
@@ -311,5 +355,129 @@ function ItemEditDialogInner({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+/**
+ * 子タスク (subtasks) panel — ItemEditDialog の "子タスク" tab。
+ *   - 既存 children を一覧表示 (status badge)
+ *   - textarea で改行区切り bulk 追加 (parentItemId=item.id)
+ *   - Researcher 等の AI 分解とは別経路 (即時、課金なし)
+ *
+ * children の判定: items 全件取得して parentPath が parent の fullPath に一致するもの。
+ * fullPathOf は pure function なので client で計算可能。
+ */
+function SubtasksPanel({ workspaceId, parent }: { workspaceId: string; parent: Item }) {
+  const items = useItems(workspaceId)
+  const create = useCreateItem(workspaceId)
+  const [bulkText, setBulkText] = useState('')
+
+  const parentFullPath = fullPathOf({ id: parent.id, parentPath: parent.parentPath })
+
+  const children = (items.data ?? [])
+    .filter((i) => !i.deletedAt && i.parentPath === parentFullPath)
+    .sort((a, b) => a.position.localeCompare(b.position))
+
+  async function handleBulkAdd() {
+    const titles = bulkText
+      .split('\n')
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0)
+    if (titles.length === 0) return
+    let succeeded = 0
+    for (const t of titles) {
+      try {
+        await create.mutateAsync({
+          workspaceId,
+          title: t,
+          description: '',
+          status: 'todo',
+          parentItemId: parent.id,
+          priority: 4,
+          isMust: false,
+          idempotencyKey: crypto.randomUUID(),
+        })
+        succeeded += 1
+      } catch (e) {
+        console.error('[subtasks] create failed', e)
+      }
+    }
+    if (succeeded > 0) {
+      toast.success(`子タスクを ${succeeded} 件追加しました`)
+      setBulkText('')
+    }
+    if (succeeded < titles.length) {
+      toast.error(`${titles.length - succeeded} 件は追加に失敗しました`)
+    }
+  }
+
+  return (
+    <div className="space-y-4" data-testid="subtasks-panel">
+      <div className="space-y-2">
+        <h3 className="text-sm font-semibold">既存の子タスク ({children.length})</h3>
+        {items.isLoading ? (
+          <p className="text-muted-foreground text-xs">読み込み中…</p>
+        ) : children.length === 0 ? (
+          <p className="text-muted-foreground text-xs">まだ子タスクがありません</p>
+        ) : (
+          <ul className="space-y-1" data-testid="subtasks-list">
+            {children.map((c) => (
+              <li
+                key={c.id}
+                className="flex items-center gap-2 rounded border px-2 py-1.5 text-sm"
+                data-testid={`subtask-${c.id}`}
+              >
+                <span
+                  className={`rounded px-1.5 py-0.5 text-[10px] ${
+                    c.status === 'done'
+                      ? 'bg-green-100 text-green-700'
+                      : c.status === 'in_progress'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  {c.status}
+                </span>
+                <span className="flex-1 truncate">{c.title}</span>
+                {c.isMust && (
+                  <span className="rounded bg-red-100 px-1 py-0.5 text-[10px] text-red-700">
+                    MUST
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="space-y-2 rounded border border-dashed p-2">
+        <Label htmlFor="subtasks-bulk">改行区切りで bulk 追加</Label>
+        <textarea
+          id="subtasks-bulk"
+          value={bulkText}
+          onChange={(e) => setBulkText(e.target.value)}
+          rows={5}
+          className="bg-background w-full rounded border px-2 py-1.5 font-mono text-sm"
+          placeholder={'例:\n仕様書を読む\nスキーマ設計\nプロトタイプ実装'}
+          data-testid="subtasks-bulk-input"
+        />
+        <div className="flex items-center justify-between">
+          <span className="text-muted-foreground text-xs">
+            空行は無視。priority=4 / status=todo で作成。
+          </span>
+          <Button
+            type="button"
+            size="sm"
+            disabled={!bulkText.trim() || create.isPending}
+            onClick={() => void handleBulkAdd()}
+            data-testid="subtasks-bulk-add-btn"
+          >
+            {create.isPending
+              ? '追加中…'
+              : `${bulkText.split('\n').filter((t) => t.trim()).length} 件追加`}
+          </Button>
+        </div>
+      </div>
+    </div>
   )
 }
