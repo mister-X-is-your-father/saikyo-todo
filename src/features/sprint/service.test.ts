@@ -11,6 +11,16 @@ vi.mock('@/lib/auth/guard', () => ({
   hasAtLeast: () => true,
 }))
 
+vi.mock('@/lib/jobs/queue', () => ({
+  enqueueJob: vi.fn().mockResolvedValue('mock'),
+  startBoss: vi.fn(),
+  stopBoss: vi.fn(),
+  registerWorker: vi.fn(),
+  QUEUE_NAMES: ['sprint-retro'] as const,
+}))
+
+import { enqueueJob } from '@/lib/jobs/queue'
+
 import { sprintService } from './service'
 
 function isoDaysFromNow(days: number): string {
@@ -147,6 +157,45 @@ describe('sprintService.changeStatus', () => {
   })
   afterAll(async () => {
     await cleanup()
+  })
+
+  it('completed への遷移で sprint-retro ジョブを enqueue (Phase 5.3 自動化)', async () => {
+    vi.mocked(enqueueJob).mockClear()
+    const created = await sprintService.create({
+      workspaceId: wsId,
+      name: 'Auto-retro target',
+      startDate: isoDaysFromNow(-7),
+      endDate: isoDaysFromNow(0),
+      idempotencyKey: crypto.randomUUID(),
+    })
+    if (!created.ok) throw created.error
+    // planning → active
+    const a = await sprintService.changeStatus({
+      id: created.value.id,
+      expectedVersion: created.value.version,
+      status: 'active',
+    })
+    if (!a.ok) throw a.error
+    // この時点では retro enqueue されない (active にしただけ)
+    expect(
+      vi.mocked(enqueueJob).mock.calls.find(([name]) => name === 'sprint-retro'),
+    ).toBeUndefined()
+
+    // active → completed → enqueue されるべき
+    const c = await sprintService.changeStatus({
+      id: a.value.id,
+      expectedVersion: a.value.version,
+      status: 'completed',
+    })
+    if (!c.ok) throw c.error
+    const retroCall = vi.mocked(enqueueJob).mock.calls.find(([name]) => name === 'sprint-retro')
+    expect(retroCall).toBeDefined()
+    if (retroCall) {
+      const [, data, options] = retroCall
+      expect((data as { sprintId?: string }).sprintId).toBe(c.value.id)
+      expect((data as { trigger?: string }).trigger).toBe('sprint-completed')
+      expect((options as { singletonKey?: string })?.singletonKey).toContain(c.value.id)
+    }
   })
 
   it('planning → active → completed', async () => {

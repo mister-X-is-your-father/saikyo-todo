@@ -1,21 +1,22 @@
 # HANDOFF.md — 次セッション開始用ガイド
 
-> 最終更新: 2026-04-25 (**MVP + 稼働入力 + Phase 1-5.1 + 5.3 (手動起動部) 完了**)
+> 最終更新: 2026-04-25 (**MVP + 稼働入力 + Phase 1-5.1 + 5.3 (手動 + Sprint 完了 trigger) 完了**)
 >
-> - 進捗: MVP (8/8) → 稼働入力 → Phase 1 → 2 → 3 → 4 → 5.1 (Sprint) → 5.3 retro (手動起動) ✅
-> - 次の主戦場: **5.3 自動化 (weekly cron / Sprint completed トリガ)** or **5.2 OKR**
+> - 進捗: MVP (8/8) → 稼働入力 → Phase 1 → 2 → 3 → 4 → 5.1 (Sprint) → 5.3 retro
+>   (手動起動 + Sprint completed → 自動 enqueue) ✅
+> - 次の主戦場: **5.3 weekly cron** or **5.2 OKR** or **5.4 PDCA**
 > - 詳細プラン: `~/.claude/plans/todoist-ticktick-todo-ui-ux-sleepy-hamster.md`
 
 ## 0. 現状サマリ
 
-| 指標           | 値                                                                                                                                       |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| 受け入れ基準   | **8/8** PASS (`scripts/verify-acceptance.ts`)                                                                                            |
-| Vitest         | **315** PASS / 37 files                                                                                                                  |
-| E2E (local)    | **14** PASS / 2 skip (bulk-action-bar / backlog-dnd: dev mode 並列で QuickAdd 連続入力が flaky — §5.16; workers=4 で他は安定)            |
-| pg-boss queues | **8** (agent-run / doc-embed / researcher-decompose / pm-standup / pm-standup-tick / pm-recovery / template-cron-tick / time-entry-sync) |
-| views          | **6** (Today / Inbox / Kanban / Backlog / Gantt / Dashboard)                                                                             |
-| schema         | 29 テーブル (auth schema 除く、+sprints)                                                                                                 |
+| 指標           | 値                                                                                                                            |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 受け入れ基準   | **8/8** PASS (`scripts/verify-acceptance.ts`)                                                                                 |
+| Vitest         | **316** PASS / 37 files                                                                                                       |
+| E2E (local)    | **14** PASS / 2 skip (bulk-action-bar / backlog-dnd: dev mode 並列で QuickAdd 連続入力が flaky — §5.16; workers=4 で他は安定) |
+| pg-boss queues | **9** (+sprint-retro)                                                                                                         |
+| views          | **6** (Today / Inbox / Kanban / Backlog / Gantt / Dashboard)                                                                  |
+| schema         | 29 テーブル (auth schema 除く、+sprints)                                                                                      |
 
 AI 検証は Claude Code Max OAuth + MCP 経由なので `ANTHROPIC_API_KEY` 無しでも完走:
 
@@ -83,10 +84,17 @@ NODE_OPTIONS="--conditions=react-server" \
 - UI: `SprintsPanel` の active / completed Sprint card に "振り返り生成" ボタン
   (Sparkles アイコン)。完了後 toast に iter / cost を表示
 - テスト: `retro-service.test.ts` 6 ケース (pure helper 3 + service mock 3)
-- **未実装** (POST_MVP / 次セッション):
-  - weekly cron (pg-boss) で workspace ごとに自動実行
-  - Sprint changeStatus → 'completed' の trigger で自動起動
-  - (両方とも `pmService.run` 呼び出しは既に動くので、worker 配線だけ)
+- **自動化** (2026-04-25 同セッションで追加):
+  - `sprint-retro` queue (pg-boss QUEUE_NAMES に追加、9 個目)
+  - `handleSprintRetro` worker (`src/features/sprint/retro-worker.ts`) を `start.ts` に登録
+  - `sprintService.changeStatus(... status='completed')` で `enqueueJob('sprint-retro', ...)`、
+    `singletonKey: 'sprint-retro-<sprintId>'` で同 sprint 二重実行を抑制
+  - 失敗してもスループ throw せずログのみ (Sprint 完了自体は成立)
+- **未実装** (次セッション):
+  - **weekly cron**: 1 週間以内に completed → retro 未実行 sprint を pickup して enqueue
+    (どの sprint で retro 走ったかを判定する仕組みが必要 — agent_invocations の input.userMessage
+    に sprintId が入るので grep でも可、より厳密には sprints 側に `retro_invocation_id` 列追加)
+  - retro Doc が出来た時に Inbox に通知 (notifications テーブル経由)
 
 ### 2.7 Phase 5.1 — Sprint
 

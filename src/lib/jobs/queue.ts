@@ -21,6 +21,7 @@ export const QUEUE_NAMES = [
   'pm-standup',
   'pm-standup-tick',
   'pm-recovery',
+  'sprint-retro',
   'template-cron-tick',
   'time-entry-sync',
 ] as const
@@ -31,6 +32,14 @@ export interface PmRecoveryJobData {
   itemId: string
   stage: '1d' | 'overdue'
   triggeredAt: string
+}
+
+export interface SprintRetroJobData {
+  workspaceId: string
+  sprintId: string
+  triggeredAt: string
+  /** 'sprint-completed' | 'manual' | 'cron' */
+  trigger: 'sprint-completed' | 'manual' | 'cron'
 }
 
 export interface AgentRunJobData {

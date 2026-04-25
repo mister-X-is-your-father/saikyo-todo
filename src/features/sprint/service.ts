@@ -12,6 +12,7 @@ import { recordAudit } from '@/lib/audit'
 import { requireUser, requireWorkspaceMember } from '@/lib/auth/guard'
 import { withUserDb } from '@/lib/db/scoped-client'
 import { ConflictError, NotFoundError, ValidationError } from '@/lib/errors'
+import { enqueueJob } from '@/lib/jobs/queue'
 import { err, ok, type Result } from '@/lib/result'
 
 import { itemRepository } from '@/features/item/repository'
@@ -111,8 +112,9 @@ export const sprintService = {
     const data: ChangeSprintStatusInput = parsed.data
 
     const user = await requireUser()
+    let result: Result<Sprint>
     try {
-      return await withUserDb(user.id, async (tx) => {
+      result = await withUserDb(user.id, async (tx) => {
         const before = await sprintRepository.findById(tx, data.id)
         if (!before) return err(new NotFoundError('Sprint が見つかりません'))
         await requireWorkspaceMember(before.workspaceId, 'member')
@@ -139,6 +141,27 @@ export const sprintService = {
       }
       throw e
     }
+
+    // Sprint 完了 → 自動で Retro を enqueue (Phase 5.3 自動化)。
+    // singletonKey で同 sprint 二重実行を抑制。失敗は致命的でないので throw せずログ。
+    if (result.ok && data.status === 'completed') {
+      try {
+        await enqueueJob(
+          'sprint-retro',
+          {
+            workspaceId: result.value.workspaceId,
+            sprintId: result.value.id,
+            triggeredAt: new Date().toISOString(),
+            trigger: 'sprint-completed' as const,
+          },
+          { singletonKey: `sprint-retro-${result.value.id}` },
+        )
+      } catch (e) {
+        console.error(`[sprintService] retro enqueue failed sprint=${result.value.id}`, e)
+      }
+    }
+
+    return result
   },
 
   async list(workspaceId: string): Promise<Result<Sprint[]>> {

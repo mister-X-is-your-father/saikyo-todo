@@ -29,6 +29,7 @@ import {
 import { handleResearcherDecompose } from '@/features/agent/researcher-worker'
 import { handleAgentRun } from '@/features/agent/worker'
 import { handleDocEmbed } from '@/features/doc/worker'
+import { handleSprintRetro } from '@/features/sprint/retro-worker'
 import { createTimeEntryWorker } from '@/features/time-entry/worker'
 
 async function main() {
@@ -42,6 +43,7 @@ async function main() {
     await handlePmStandupTick()
   })
   await registerWorker('pm-recovery', handlePmRecovery)
+  await registerWorker('sprint-retro', handleSprintRetro)
   await registerWorker('template-cron-tick', async () => {
     await handleTemplateCronTick()
   })
@@ -54,7 +56,7 @@ async function main() {
   await scheduleJob('template-cron-tick', '*/15 * * * *', {})
 
   console.log(
-    '[worker] ready. listening for: agent-run, doc-embed, researcher-decompose, pm-standup, pm-standup-tick, pm-recovery, template-cron-tick, time-entry-sync',
+    '[worker] ready. listening for: agent-run, doc-embed, researcher-decompose, pm-standup, pm-standup-tick, pm-recovery, sprint-retro, template-cron-tick, time-entry-sync',
   )
 
   const shutdown = async (signal: string) => {
