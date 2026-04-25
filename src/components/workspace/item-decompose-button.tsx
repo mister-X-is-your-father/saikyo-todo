@@ -28,9 +28,15 @@ export function ItemDecomposeButton({ workspaceId, item }: Props) {
   async function run() {
     try {
       const r = await decompose.mutateAsync({ workspaceId, itemId: item.id })
-      toast.success(
-        `AI 分解完了 (子 ${r.toolCalls.filter((c) => c.name === 'create_item').length} 件)`,
-      )
+      const proposed = r.toolCalls.filter((c) => c.name === 'propose_child_item').length
+      const created = r.toolCalls.filter((c) => c.name === 'create_item').length
+      if (proposed > 0) {
+        toast.success(`AI 分解完了 — ${proposed} 件の提案を確認してください (子タスクタブ)`)
+      } else if (created > 0) {
+        toast.success(`AI 分解完了 (子 ${created} 件作成)`)
+      } else {
+        toast.success('AI 分解完了')
+      }
     } catch (e) {
       toast.error(isAppError(e) ? e.message : 'AI 分解に失敗しました')
     }

@@ -45,6 +45,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ActivityLog } from './activity-log'
 import { AssigneePicker } from './assignee-picker'
 import { CommentThread } from './comment-thread'
+import { DecomposeProposalsPanel } from './decompose-proposals-panel'
 import { ItemDecomposeButton } from './item-decompose-button'
 import { TagPicker } from './tag-picker'
 
@@ -413,6 +414,8 @@ function SubtasksPanel({ workspaceId, parent }: { workspaceId: string; parent: I
 
   return (
     <div className="space-y-4" data-testid="subtasks-panel">
+      <DecomposeProposalsPanel workspaceId={workspaceId} parentItemId={parent.id} />
+
       <div className="space-y-2">
         <h3 className="text-sm font-semibold">既存の子タスク ({children.length})</h3>
         {items.isLoading ? (
