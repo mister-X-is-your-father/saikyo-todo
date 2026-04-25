@@ -8,11 +8,11 @@ import { AuthError, PermissionError } from '@/lib/errors'
 import { findMyWorkspaces } from '@/features/workspace/repository'
 
 import { GlobalShortcuts } from '@/components/shared/global-shortcuts'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { HeartbeatButton } from '@/components/workspace/heartbeat-button'
 import { ItemsBoard } from '@/components/workspace/items-board'
 import { StandupButton } from '@/components/workspace/standup-button'
+import { WorkspaceHeader } from '@/components/workspace/workspace-header'
 
 interface PageProps {
   params: Promise<{ workspaceId: string }>
@@ -38,27 +38,23 @@ export default async function WorkspacePage({ params }: PageProps) {
 
   return (
     <main className="container mx-auto max-w-5xl space-y-6 p-4 md:p-6">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <h1 className="truncate text-2xl font-bold">{displayName}</h1>
-            <Badge variant="secondary" className="shrink-0">
-              {role}
-            </Badge>
-          </div>
-          <p className="text-muted-foreground mt-1 truncate text-xs">{user.email}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <HeartbeatButton workspaceId={workspaceId} />
-          <StandupButton workspaceId={workspaceId} />
-          <Button variant="outline" asChild size="sm">
-            <Link href={`/${workspaceId}/templates`}>Templates</Link>
-          </Button>
-          <Button variant="outline" asChild size="sm">
-            <Link href="/">← 一覧</Link>
-          </Button>
-        </div>
-      </header>
+      <WorkspaceHeader
+        title={displayName}
+        role={role}
+        subtitle={user.email ?? ''}
+        pageActions={
+          <>
+            <HeartbeatButton workspaceId={workspaceId} />
+            <StandupButton workspaceId={workspaceId} />
+            <Button variant="outline" asChild size="sm">
+              <Link href={`/${workspaceId}/templates`}>Templates</Link>
+            </Button>
+            <Button variant="outline" asChild size="sm">
+              <Link href="/">← 一覧</Link>
+            </Button>
+          </>
+        }
+      />
 
       <GlobalShortcuts workspaceId={workspaceId} />
       <ItemsBoard workspaceId={workspaceId} currentUserId={user.id} />

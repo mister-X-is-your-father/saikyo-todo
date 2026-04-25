@@ -17,7 +17,7 @@
  */
 import 'server-only'
 
-import { and, eq, gte, isNotNull, isNull, lte, sql } from 'drizzle-orm'
+import { and, eq, isNotNull, isNull, sql } from 'drizzle-orm'
 
 import { items, notifications, workspaceMembers } from '@/lib/db/schema'
 import { adminDb } from '@/lib/db/scoped-client'
@@ -206,7 +206,3 @@ export const heartbeatService = {
       .limit(limit)
   },
 }
-
-// 未使用 import 抑止 (将来のフィルタ追加用に keep)
-void gte
-void lte
