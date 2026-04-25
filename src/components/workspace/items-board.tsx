@@ -7,7 +7,7 @@
  * - View 切替: Kanban (既定) / Backlog — URL param `?view=` で同期 (nuqs)
  * - フィルタ: `?must=1` / `?status=...` を client 側で適用
  */
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import { parseAsBoolean, parseAsString, parseAsStringEnum, useQueryState } from 'nuqs'
 
@@ -15,6 +15,7 @@ import { isAppError } from '@/lib/errors'
 
 import { useItems } from '@/features/item/hooks'
 import { useItemsRealtime } from '@/features/item/realtime'
+import type { Item } from '@/features/item/schema'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { CommandPalette, type PaletteCommand } from '@/components/shared/command-palette'
@@ -24,24 +25,27 @@ import { BacklogView } from '@/components/workspace/backlog-view'
 import { DashboardView } from '@/components/workspace/dashboard-view'
 import { GanttView } from '@/components/workspace/gantt-view'
 import { InboxView } from '@/components/workspace/inbox-view'
+import { ItemEditDialog } from '@/components/workspace/item-edit-dialog'
 import { KanbanView } from '@/components/workspace/kanban-view'
 import { QuickAdd } from '@/components/workspace/quick-add'
 import { TodayView } from '@/components/workspace/today-view'
 
 interface Props {
   workspaceId: string
+  currentUserId: string
 }
 
 const VIEWS = ['today', 'inbox', 'kanban', 'backlog', 'gantt', 'dashboard'] as const
 type ViewKey = (typeof VIEWS)[number]
 
-export function ItemsBoard({ workspaceId }: Props) {
+export function ItemsBoard({ workspaceId, currentUserId }: Props) {
   const [view, setView] = useQueryState(
     'view',
     parseAsStringEnum<ViewKey>([...VIEWS]).withDefault('today'),
   )
   const [must, setMust] = useQueryState('must', parseAsBoolean.withDefault(false))
   const [statusFilter, setStatusFilter] = useQueryState('status', parseAsString)
+  const [paletteSelected, setPaletteSelected] = useState<Item | null>(null)
 
   const { data, isLoading, error, refetch } = useItems(workspaceId)
   useItemsRealtime(workspaceId)
@@ -134,7 +138,20 @@ export function ItemsBoard({ workspaceId }: Props) {
 
   return (
     <div className="space-y-6">
-      <CommandPalette commands={commands} />
+      <CommandPalette
+        commands={commands}
+        items={data ?? []}
+        onSelectItem={(item) => setPaletteSelected(item)}
+      />
+      <ItemEditDialog
+        workspaceId={workspaceId}
+        item={paletteSelected}
+        open={paletteSelected !== null}
+        onOpenChange={(o) => {
+          if (!o) setPaletteSelected(null)
+        }}
+        currentUserId={currentUserId}
+      />
 
       <Card>
         <CardHeader>
@@ -229,17 +246,17 @@ export function ItemsBoard({ workspaceId }: Props) {
       ) : view === 'dashboard' ? (
         <DashboardView workspaceId={workspaceId} />
       ) : view === 'today' ? (
-        <TodayView workspaceId={workspaceId} items={filtered} />
+        <TodayView workspaceId={workspaceId} items={filtered} currentUserId={currentUserId} />
       ) : view === 'inbox' ? (
-        <InboxView workspaceId={workspaceId} items={filtered} />
+        <InboxView workspaceId={workspaceId} items={filtered} currentUserId={currentUserId} />
       ) : (data?.length ?? 0) === 0 ? (
         <EmptyState title="まだ Item がありません" description="上のフォームから作成してください" />
       ) : view === 'backlog' ? (
-        <BacklogView workspaceId={workspaceId} items={filtered} />
+        <BacklogView workspaceId={workspaceId} items={filtered} currentUserId={currentUserId} />
       ) : view === 'gantt' ? (
         <GanttView workspaceId={workspaceId} items={filtered} />
       ) : (
-        <KanbanView workspaceId={workspaceId} items={filtered} />
+        <KanbanView workspaceId={workspaceId} items={filtered} currentUserId={currentUserId} />
       )}
     </div>
   )

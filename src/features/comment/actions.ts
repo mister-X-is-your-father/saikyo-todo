@@ -1,13 +1,34 @@
 'use server'
 
 import { actionWrap } from '@/lib/action-wrap'
-import type { Result } from '@/lib/result'
+import { isAppError } from '@/lib/errors'
+import { err, ok, type Result } from '@/lib/result'
 
 import type { CommentOnDoc, CommentOnItem } from './schema'
 import { commentService } from './service'
 
 export async function createCommentOnItemAction(input: unknown): Promise<Result<CommentOnItem>> {
   return await actionWrap(() => commentService.onItem.create(input))
+}
+
+export async function listCommentsOnItemAction(itemId: string): Promise<Result<CommentOnItem[]>> {
+  try {
+    const comments = await commentService.onItem.list(itemId)
+    return ok(comments)
+  } catch (e) {
+    if (isAppError(e)) return err(e)
+    throw e
+  }
+}
+
+export async function listCommentsOnDocAction(docId: string): Promise<Result<CommentOnDoc[]>> {
+  try {
+    const comments = await commentService.onDoc.list(docId)
+    return ok(comments)
+  } catch (e) {
+    if (isAppError(e)) return err(e)
+    throw e
+  }
 }
 
 export async function updateCommentOnItemAction(input: unknown): Promise<Result<CommentOnItem>> {

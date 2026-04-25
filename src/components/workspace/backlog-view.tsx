@@ -33,6 +33,7 @@ import { StatusBadge } from './status-badge'
 interface Props {
   workspaceId: string
   items: Item[]
+  currentUserId?: string
 }
 
 function buildColumns(workspaceId: string, onEdit: (item: Item) => void): ColumnDef<Item>[] {
@@ -109,7 +110,7 @@ function buildColumns(workspaceId: string, onEdit: (item: Item) => void): Column
   ]
 }
 
-export function BacklogView({ workspaceId, items }: Props) {
+export function BacklogView({ workspaceId, items, currentUserId }: Props) {
   const [editing, setEditing] = useState<Item | null>(null)
   const columns = useMemo(
     () => buildColumns(workspaceId, (item) => setEditing(item)),
@@ -146,6 +147,7 @@ export function BacklogView({ workspaceId, items }: Props) {
         onOpenChange={(o) => {
           if (!o) setEditing(null)
         }}
+        currentUserId={currentUserId}
       />
       <div
         ref={scrollRef}

@@ -7,20 +7,28 @@
  * - 楽観更新が効くのは updateStatus / move (リスト再取得前にユーザが見る順序が変わるもの)
  * - create / delete はシンプルな invalidate のみ (race 回避)
  */
+import { useMemo } from 'react'
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import Fuse from 'fuse.js'
 
 import { unwrap } from '@/lib/result-unwrap'
 
 import {
   createItemAction,
+  listItemAssigneesAction,
   listItemsAction,
+  listItemTagIdsAction,
   moveItemAction,
   reorderItemAction,
+  setItemAssigneesAction,
+  setItemTagsAction,
   softDeleteItemAction,
   toggleCompleteItemAction,
   updateItemAction,
   updateItemStatusAction,
 } from './actions'
+import type { AssigneeRef } from './repository'
 import type {
   CreateItemInput,
   Item,
@@ -206,4 +214,77 @@ export function useSoftDeleteItem(workspaceId: string) {
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
     },
   })
+}
+
+export const itemRelationKeys = {
+  assignees: (itemId: string) => ['items', 'assignees', itemId] as const,
+  tagIds: (itemId: string) => ['items', 'tagIds', itemId] as const,
+}
+
+export function useItemAssignees(itemId: string | undefined) {
+  return useQuery({
+    queryKey: itemId ? itemRelationKeys.assignees(itemId) : ['items', 'assignees', 'noop'],
+    queryFn: async () => unwrap(await listItemAssigneesAction(itemId!)),
+    enabled: Boolean(itemId),
+  })
+}
+
+export function useSetItemAssignees(workspaceId: string, itemId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (assignees: AssigneeRef[]) =>
+      unwrap(await setItemAssigneesAction({ itemId, assignees })),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: itemRelationKeys.assignees(itemId) })
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
+}
+
+export function useItemTagIds(itemId: string | undefined) {
+  return useQuery({
+    queryKey: itemId ? itemRelationKeys.tagIds(itemId) : ['items', 'tagIds', 'noop'],
+    queryFn: async () => unwrap(await listItemTagIdsAction(itemId!)),
+    enabled: Boolean(itemId),
+  })
+}
+
+export function useSetItemTags(workspaceId: string, itemId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (tagIds: string[]) => unwrap(await setItemTagsAction({ itemId, tagIds })),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: itemRelationKeys.tagIds(itemId) })
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
+}
+
+/**
+ * Client 側 fuzzy 検索 (fuse.js)。title / description の両方を見て
+ * 先頭 limit 件を返す。cache された items に対して実行するので追加の
+ * server call 無し。query が空なら全件 (position 順のまま) を返す。
+ */
+export function useSearchItems(
+  workspaceId: string,
+  query: string,
+  options: { limit?: number } = {},
+) {
+  const { data } = useItems(workspaceId)
+  const { limit = 30 } = options
+  return useMemo(() => {
+    if (!data) return []
+    const q = query.trim()
+    if (q === '') return data.slice(0, limit)
+    const fuse = new Fuse(data, {
+      keys: [
+        { name: 'title', weight: 0.7 },
+        { name: 'description', weight: 0.3 },
+      ],
+      threshold: 0.4,
+      includeScore: true,
+      ignoreLocation: true,
+    })
+    return fuse.search(q, { limit }).map((r) => r.item)
+  }, [data, query, limit])
 }

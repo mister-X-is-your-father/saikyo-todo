@@ -5,7 +5,12 @@ import { withUserDb } from '@/lib/db/scoped-client'
 import { ConflictError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 
-import { callCreateWorkspaceRpc, findMyWorkspaces, findWorkspaceStatuses } from './repository'
+import {
+  callCreateWorkspaceRpc,
+  findMyWorkspaces,
+  findWorkspaceMembers,
+  findWorkspaceStatuses,
+} from './repository'
 import { type CreateWorkspaceInput, CreateWorkspaceInputSchema } from './schema'
 import { seedSampleTemplate } from './seed-templates'
 
@@ -44,6 +49,13 @@ export const workspaceService = {
     const { user } = await requireWorkspaceMember(workspaceId, 'viewer')
     return await withUserDb(user.id, async (tx) => {
       return await findWorkspaceStatuses(tx, workspaceId)
+    })
+  },
+
+  async listMembers(workspaceId: string) {
+    const { user } = await requireWorkspaceMember(workspaceId, 'viewer')
+    return await withUserDb(user.id, async (tx) => {
+      return await findWorkspaceMembers(tx, workspaceId)
     })
   },
 }

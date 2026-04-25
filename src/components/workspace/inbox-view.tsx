@@ -17,7 +17,14 @@ const PRIO_DOT: Record<number, string> = {
  * Inbox = scheduledFor も dueDate も無く、done でない Item (未整理 backlog)。
  * ここからユーザが「今日やる / 今週やる」に仕分ける導線。
  */
-export function InboxView({ workspaceId, items }: { workspaceId: string; items: Item[] }) {
+export function InboxView({
+  workspaceId,
+  items,
+}: {
+  workspaceId: string
+  items: Item[]
+  currentUserId?: string
+}) {
   const inbox = items
     .filter((i) => !i.doneAt && !i.scheduledFor && !i.dueDate)
     .sort((a, b) => (a.priority ?? 4) - (b.priority ?? 4))

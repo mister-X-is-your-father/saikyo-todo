@@ -31,6 +31,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { toast } from 'sonner'
 
+import { uuidToLabel } from '@/lib/db/ltree-path'
 import { isAppError } from '@/lib/errors'
 
 import { useReorderItem, useUpdateItemStatus } from '@/features/item/hooks'
@@ -38,14 +39,16 @@ import type { Item } from '@/features/item/schema'
 import { useWorkspaceStatuses } from '@/features/workspace/hooks'
 
 import { ItemCheckbox } from './item-checkbox'
+import { ItemDecomposeButton } from './item-decompose-button'
 import { ItemEditDialog } from './item-edit-dialog'
 
 interface Props {
   workspaceId: string
   items: Item[]
+  currentUserId?: string
 }
 
-export function KanbanView({ workspaceId, items }: Props) {
+export function KanbanView({ workspaceId, items, currentUserId }: Props) {
   const { data: statuses } = useWorkspaceStatuses(workspaceId)
   const updateStatus = useUpdateItemStatus(workspaceId)
   const reorder = useReorderItem(workspaceId)
@@ -72,6 +75,24 @@ export function KanbanView({ workspaceId, items }: Props) {
     }
     return groups
   }, [items, statuses])
+
+  // parent_path から子カウントを逆引き (各 Kanban カード下に表示)
+  const childCountByItemId = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const parent of items) {
+      const parentLabel = uuidToLabel(parent.id)
+      // 自分の直下の parent_path は 既存 parent_path + '.' + parentLabel
+      const childPath =
+        parent.parentPath === '' ? parentLabel : `${parent.parentPath}.${parentLabel}`
+      let n = 0
+      for (const maybeChild of items) {
+        if (maybeChild.deletedAt) continue
+        if (maybeChild.parentPath === childPath) n += 1
+      }
+      counts.set(parent.id, n)
+    }
+    return counts
+  }, [items])
 
   function findContainerAndIndex(itemId: string): { status: string; index: number } | null {
     for (const [status, list] of itemsByStatus) {
@@ -144,6 +165,7 @@ export function KanbanView({ workspaceId, items }: Props) {
         onOpenChange={(o) => {
           if (!o) setEditing(null)
         }}
+        currentUserId={currentUserId}
       />
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <div
@@ -159,6 +181,7 @@ export function KanbanView({ workspaceId, items }: Props) {
               label={s.label}
               color={s.color}
               items={itemsByStatus.get(s.key) ?? []}
+              childCountByItemId={childCountByItemId}
               onEdit={(item) => setEditing(item)}
             />
           ))}
@@ -174,6 +197,7 @@ function KanbanColumn({
   label,
   color,
   items,
+  childCountByItemId,
   onEdit,
 }: {
   workspaceId: string
@@ -181,6 +205,7 @@ function KanbanColumn({
   label: string
   color: string
   items: Item[]
+  childCountByItemId: Map<string, number>
   onEdit: (item: Item) => void
 }) {
   // 空カラムや、カード外へのドロップを受けるため列全体を droppable にする
@@ -210,7 +235,13 @@ function KanbanColumn({
             </div>
           ) : (
             items.map((item) => (
-              <KanbanCard key={item.id} item={item} workspaceId={workspaceId} onEdit={onEdit} />
+              <KanbanCard
+                key={item.id}
+                item={item}
+                workspaceId={workspaceId}
+                childCount={childCountByItemId.get(item.id) ?? 0}
+                onEdit={onEdit}
+              />
             ))
           )}
         </div>
@@ -222,10 +253,12 @@ function KanbanColumn({
 function KanbanCard({
   item,
   workspaceId,
+  childCount,
   onEdit,
 }: {
   item: Item
   workspaceId: string
+  childCount: number
   onEdit: (item: Item) => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -242,7 +275,7 @@ function KanbanCard({
       style={style}
       {...attributes}
       {...listeners}
-      className="bg-background cursor-grab rounded border p-2 text-sm shadow-sm active:cursor-grabbing"
+      className="bg-background group cursor-grab rounded border p-2 text-sm shadow-sm active:cursor-grabbing"
       data-testid={`kanban-card-${item.id}`}
     >
       <div className="flex items-start justify-between gap-2">
@@ -282,6 +315,24 @@ function KanbanCard({
           {item.dueDate ? `期限: ${item.dueDate}` : ''}
         </div>
       )}
+      <div className="mt-2 flex items-center justify-between gap-2">
+        {childCount > 0 ? (
+          <span
+            className="text-muted-foreground bg-muted inline-flex items-center rounded-full px-2 py-0.5 text-[10px]"
+            data-testid={`kanban-child-count-${item.id}`}
+          >
+            子 {childCount} 件
+          </span>
+        ) : (
+          <span />
+        )}
+        <div
+          className="opacity-0 transition-opacity group-hover:opacity-100"
+          data-testid={`kanban-decompose-wrapper-${item.id}`}
+        >
+          <ItemDecomposeButton workspaceId={workspaceId} item={item} />
+        </div>
+      </div>
     </div>
   )
 }

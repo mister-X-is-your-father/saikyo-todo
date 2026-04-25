@@ -46,7 +46,14 @@ function buildGroups(items: Item[], today: string): Group[] {
   ]
 }
 
-export function TodayView({ workspaceId, items }: { workspaceId: string; items: Item[] }) {
+export function TodayView({
+  workspaceId,
+  items,
+}: {
+  workspaceId: string
+  items: Item[]
+  currentUserId?: string
+}) {
   const today = todayISO()
   const groups = buildGroups(items, today)
   const total = groups.reduce((sum, g) => sum + g.items.length, 0)

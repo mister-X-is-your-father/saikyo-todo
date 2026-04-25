@@ -1,15 +1,18 @@
 import 'server-only'
 
+import { eq } from 'drizzle-orm'
+
 import { recordAudit } from '@/lib/audit'
-import { requireWorkspaceMember } from '@/lib/auth/guard'
+import { requireUser, requireWorkspaceMember } from '@/lib/auth/guard'
 import { positionBetween } from '@/lib/db/fractional-position'
 import { moveSubtree } from '@/lib/db/ltree'
-import { withUserDb } from '@/lib/db/scoped-client'
+import { workspaceMembers } from '@/lib/db/schema'
+import { adminDb, withUserDb } from '@/lib/db/scoped-client'
 import { ConflictError, NotFoundError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 import { mutateWithGuard } from '@/lib/service-mutate'
 
-import { itemRepository } from './repository'
+import { type AssigneeRef, itemRepository } from './repository'
 import {
   CreateItemInputSchema,
   type Item,
@@ -312,6 +315,99 @@ export const itemService = {
     const { user } = await requireWorkspaceMember(workspaceId, 'viewer')
     return await withUserDb(user.id, async (tx) => {
       return await itemRepository.list(tx, { workspaceId, ...filter })
+    })
+  },
+
+  /**
+   * Item の assignees を置換。
+   * - actor_type='user' の場合は workspace member であることをチェック (RLS では防げない)
+   * - actor_type='agent' は agent レコード存在を信頼 (agent は system 管理)
+   */
+  async setAssignees(itemId: string, assignees: AssigneeRef[]): Promise<Result<AssigneeRef[]>> {
+    const user = await requireUser()
+    return await withUserDb(user.id, async (tx) => {
+      const before = await itemRepository.findById(tx, itemId)
+      if (!before) return err(new NotFoundError(NOT_FOUND))
+      await requireWorkspaceMember(before.workspaceId, 'member')
+
+      const userAssignees = assignees.filter((a) => a.actorType === 'user')
+      if (userAssignees.length > 0) {
+        const memberRows = await adminDb
+          .select({ userId: workspaceMembers.userId })
+          .from(workspaceMembers)
+          .where(eq(workspaceMembers.workspaceId, before.workspaceId))
+        const memberIds = new Set(memberRows.map((r) => r.userId))
+        for (const a of userAssignees) {
+          if (!memberIds.has(a.actorId)) {
+            return err(
+              new ValidationError('workspace の member ではないユーザは assign できません'),
+            )
+          }
+        }
+      }
+      const prevAssignees = await itemRepository.listAssignees(tx, itemId)
+      await itemRepository.setAssignees(tx, itemId, assignees)
+      await recordAudit(tx, {
+        workspaceId: before.workspaceId,
+        actorType: 'user',
+        actorId: user.id,
+        targetType: 'item',
+        targetId: itemId,
+        action: 'set_assignees',
+        before: prevAssignees,
+        after: assignees,
+      })
+      return ok(assignees)
+    })
+  },
+
+  /**
+   * Item の tags を置換。workspace が一致しない tag は弾く。
+   */
+  async setTags(itemId: string, tagIds: string[]): Promise<Result<string[]>> {
+    const user = await requireUser()
+    return await withUserDb(user.id, async (tx) => {
+      const before = await itemRepository.findById(tx, itemId)
+      if (!before) return err(new NotFoundError(NOT_FOUND))
+      await requireWorkspaceMember(before.workspaceId, 'member')
+
+      const tagsOk = await itemRepository.tagsBelongToWorkspace(tx, before.workspaceId, tagIds)
+      if (!tagsOk) {
+        return err(new ValidationError('別 workspace の tag は指定できません'))
+      }
+      const prevTagIds = await itemRepository.listTagIds(tx, itemId)
+      await itemRepository.setTags(tx, itemId, tagIds)
+      await recordAudit(tx, {
+        workspaceId: before.workspaceId,
+        actorType: 'user',
+        actorId: user.id,
+        targetType: 'item',
+        targetId: itemId,
+        action: 'set_tags',
+        before: prevTagIds,
+        after: tagIds,
+      })
+      return ok(tagIds)
+    })
+  },
+
+  async listAssignees(itemId: string): Promise<AssigneeRef[]> {
+    const user = await requireUser()
+    return await withUserDb(user.id, async (tx) => {
+      const item = await itemRepository.findById(tx, itemId)
+      if (!item) return []
+      await requireWorkspaceMember(item.workspaceId, 'viewer')
+      return await itemRepository.listAssignees(tx, itemId)
+    })
+  },
+
+  async listTagIds(itemId: string): Promise<string[]> {
+    const user = await requireUser()
+    return await withUserDb(user.id, async (tx) => {
+      const item = await itemRepository.findById(tx, itemId)
+      if (!item) return []
+      await requireWorkspaceMember(item.workspaceId, 'viewer')
+      return await itemRepository.listTagIds(tx, itemId)
     })
   },
 }

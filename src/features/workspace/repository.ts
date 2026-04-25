@@ -2,10 +2,35 @@ import 'server-only'
 
 import { and, asc, eq, isNull, sql } from 'drizzle-orm'
 
-import { workspaceMembers, workspaces, workspaceStatuses } from '@/lib/db/schema'
+import { profiles, workspaceMembers, workspaces, workspaceStatuses } from '@/lib/db/schema'
 import { type Tx } from '@/lib/db/scoped-client'
 
 export type WorkspaceStatusRow = typeof workspaceStatuses.$inferSelect
+
+export interface WorkspaceMemberRow {
+  userId: string
+  role: string
+  displayName: string | null
+  avatarUrl: string | null
+}
+
+export async function findWorkspaceMembers(
+  tx: Tx,
+  workspaceId: string,
+): Promise<WorkspaceMemberRow[]> {
+  const rows = await tx
+    .select({
+      userId: workspaceMembers.userId,
+      role: workspaceMembers.role,
+      displayName: profiles.displayName,
+      avatarUrl: profiles.avatarUrl,
+    })
+    .from(workspaceMembers)
+    .leftJoin(profiles, eq(profiles.id, workspaceMembers.userId))
+    .where(eq(workspaceMembers.workspaceId, workspaceId))
+    .orderBy(asc(profiles.displayName))
+  return rows as WorkspaceMemberRow[]
+}
 
 /**
  * RPC `create_workspace` を呼んで workspace + 設定 + デフォルト status を一括作成。

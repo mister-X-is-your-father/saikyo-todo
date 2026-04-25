@@ -4,6 +4,7 @@ import { actionWrap } from '@/lib/action-wrap'
 import { isAppError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 
+import type { AssigneeRef } from './repository'
 import type { Item } from './schema'
 import { itemService } from './service'
 
@@ -46,6 +47,38 @@ export async function listItemsAction(
   try {
     const items = await itemService.list(workspaceId, filter ?? {})
     return ok(items)
+  } catch (e) {
+    if (isAppError(e)) return err(e)
+    throw e
+  }
+}
+
+export async function setItemAssigneesAction(input: {
+  itemId: string
+  assignees: AssigneeRef[]
+}): Promise<Result<AssigneeRef[]>> {
+  return await actionWrap(() => itemService.setAssignees(input.itemId, input.assignees))
+}
+
+export async function setItemTagsAction(input: {
+  itemId: string
+  tagIds: string[]
+}): Promise<Result<string[]>> {
+  return await actionWrap(() => itemService.setTags(input.itemId, input.tagIds))
+}
+
+export async function listItemAssigneesAction(itemId: string): Promise<Result<AssigneeRef[]>> {
+  try {
+    return ok(await itemService.listAssignees(itemId))
+  } catch (e) {
+    if (isAppError(e)) return err(e)
+    throw e
+  }
+}
+
+export async function listItemTagIdsAction(itemId: string): Promise<Result<string[]>> {
+  try {
+    return ok(await itemService.listTagIds(itemId))
   } catch (e) {
     if (isAppError(e)) return err(e)
     throw e

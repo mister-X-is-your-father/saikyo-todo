@@ -1,15 +1,15 @@
 # HANDOFF.md — 次セッション開始用ガイド
 
-> 最終更新: 2026-04-25 (**MVP + 稼働入力 + Phase 1 完了**)
+> 最終更新: 2026-04-25 (**MVP + 稼働入力 + Phase 1 + Phase 2 完了**)
 >
-> - MVP (8/8) → 稼働入力 (mock Playwright sync) → **Phase 1 (Todoist/TickTick 基本 UX)** 完了
-> - 次セッションは **Phase 2 (コラボ hygiene)** または **Phase 5 (業務/OKR/振り返り自動化)** から
+> - MVP (8/8) → 稼働入力 (mock Playwright sync) → Phase 1 (基本 UX) → **Phase 2 (コラボ hygiene)** 完了
+> - 次セッションは **Phase 3 (生産性加速 + MUST Escalation)** または **Phase 5 (業務/OKR/振り返り自動化)** から
 > - 詳細プラン: `~/.claude/plans/todoist-ticktick-todo-ui-ux-sleepy-hamster.md`
 
 ## 0. 現状サマリ (2026-04-25)
 
 - 受け入れ基準 **8/8 自動 PASS** (MVP 検証スクリプトは健在)
-- 自動テスト: **Vitest 274**, **E2E localhost 13**, **E2E Tailscale 13** PASS
+- 自動テスト: **Vitest 286**, **E2E localhost 14** PASS (Phase 2: collaboration.spec.ts 追加)
 - AI 検証は Claude Code Max プラン OAuth + MCP 経由:
   ```bash
   NODE_OPTIONS="--conditions=react-server" \
@@ -25,6 +25,11 @@
 5. `git log --oneline | head -20` — 直近の commit 履歴
 
 ## 2. 現在地
+
+**Phase 2 (2026-04-25) 完了**: DB だけあって UI が無かった schema 資産
+(comment / assignee / tag) を可視化。Item edit dialog を Tab 化して AI 分解 CTA
+を主ボタン昇格、Command Palette に `?` プレフィクスで fuse.js fuzzy タスク検索
+を追加した。
 
 **Phase 1 (2026-04-25) 完了**: Todoist/TickTick 基本 UX の 5 大 gap を埋めて
 "Work-from-Command-Palette" の基盤を敷いた。
@@ -52,7 +57,7 @@
 - `/mock-timesheet/{login,new,entries}` (Playwright ターゲット)
 - Playwright driver + pg-boss worker で sync 実行 → external_ref 返し
 
-### Phase 1 (今回) 追加
+### Phase 1 追加
 
 - **ワンクリック完了**: `itemService.toggleComplete` + `useToggleCompleteItem` (楽観更新)
   - `ItemCheckbox` (優先度色 p1 赤 / p2 橙 / p3 青 / p4 灰)
@@ -62,27 +67,47 @@
 - **グローバルショートカット**: `q / ? / g t-d` (GlobalShortcuts コンポーネント)
 - **Command Palette** view 切替を 7 項目に拡張
 
+### Phase 2 (今回) 追加
+
+- **comment hooks**: `useItemComments` / `useCreateItemComment` /
+  `useUpdateItemComment` / `useSoftDeleteItemComment` + Doc 版同一パターン。
+  list 用 server action (`listCommentsOnItemAction`) を追加
+- **tag feature (新規)**: `src/features/tag/` 一式 (schema/repository/service/
+  actions/hooks)。同名 uniq + color `#RRGGBB` 検証 + audit_log
+- **itemService.setAssignees / setTags**: 非 member assignee は
+  ValidationError、別 workspace tag も弾く。audit_log に before/after を記録
+- **UI picker**: `AssigneePicker` (Popover + cmdk combobox で member 多選択) /
+  `TagPicker` (同、インライン新規作成サポート) / `CommentThread` (投稿 / 編集 /
+  削除、自分の comment のみ編集ボタン)
+- **item-edit-dialog を Tab 化**: 基本 / コメント の 2 Tab。基本 Tab の上部に
+  🧠 AI 分解 CTA を箱付きで主ボタン昇格、assignee / tag picker を配置
+- **Kanban カード**: hover で AI 分解ボタン表示 + 子 Item 件数 badge (`子 N 件`、
+  parent_path で逆引き)
+- **Item 検索 (fuse.js)**: `useSearchItems` hook + Command Palette の `?`
+  プレフィクスで fuzzy タスク検索モード、選択で edit dialog を開く
+- **Template researcher chain**: instantiate 後の `agentRoleToInvoke`='researcher'
+  で自動 enqueue は既に配線済 (Phase 1 時点)。Phase 2 でその動線をドキュメント化
+- **並行 E2E**: `collaboration.spec.ts` (assignee + tag 新規 + comment 投稿)
+
 数値:
 
-- Vitest **274** PASS / Playwright E2E **13/13** PASS (localhost + Tailscale)
-- Drizzle schema **28** テーブル (time_entries / mock_timesheet_entries 追加)
-- Plugin Registry: action 3 / view **6** (Today + Inbox 追加) / pg-boss queues 7
+- Vitest **286** PASS (Phase 1: 274 → +tag 6 + assign 6)
+- Playwright E2E **14** PASS localhost (Phase 1: 13 → +collaboration)
+- Drizzle schema **28** テーブル (変更なし、tags / item_tags は既存資産を活性化)
+- shadcn components: +`popover`, +`tabs` / new dep: `fuse.js`
+- Plugin Registry: action 3 / view 6 / pg-boss queues 7
 
 ## 2.5 次セッションでやること
 
-### A. Phase 2 (コラボ hygiene、工数 M)
+### A. Phase 3 (生産性加速 + MUST Escalation、工数 M)
 
-schema はあるのに UI が無い資産を可視化。**タスク自動分解** を主 CTA に昇格。
-
-1. `src/features/comment/hooks.ts` (新規) — `useItemComments` 等
-2. `src/features/tag/` 新規 feature (CRUD)
-3. `itemService.setAssignees / setTags` + Repository 拡張
-4. `src/components/workspace/{assignee-picker,tag-picker,comment-thread}.tsx`
-5. `item-edit-dialog.tsx` を Tab 化 (基本 / コメント / Activity)
-6. **AI 分解 CTA 前面化**: Kanban card `+` / Item dialog 主ボタン /
-   Template instantiate 後の自動 researcher chain (`agentRoleToInvoke` 既存活用)
-7. Item 検索 (fuse.js で client fuzzy)
-8. 並行 E2E: `collaboration.spec.ts` + `ai-decompose-card.spec.ts`
+1. **Backlog DnD 並び替え**: `@dnd-kit/sortable` を Kanban から複製
+2. **一括選択 / 一括操作**: `src/lib/stores/bulk-selection.ts` (Zustand) +
+   `bulk-action-bar.tsx` + `itemService.bulkUpdateStatus(ids[], status)`
+3. **Activity UI**: `src/features/audit/` feature + `ItemEditDialog` に
+   Activity Tab を追加 (Phase 2 で Tab 化の土台はできた)
+4. **MUST Escalation**: `heartbeat.service.scanWorkspace` に `overdue` stage 追加、
+   各 stage で PM agent を自動 enqueue、write_comment tool で注意喚起 comment
 
 ### B. Phase 5 (業務/長期/個人/OKR/習慣/振り返り/自動化/PDCA、工数 L)
 
@@ -95,11 +120,11 @@ schema はあるのに UI が無い資産を可視化。**タスク自動分解*
 
 ### 推奨進め方
 
-Phase 2 (ユーザー間協業基盤) → Phase 5.1 (Sprint) → Phase 5.3 (Retro) →
-Phase 5.2 (OKR) → Phase 5.4 (PDCA dashboard) の順。
+Phase 3 (bulk / Activity / MUST escalation) → Phase 4 (dark / 通知 bell) →
+Phase 5.1 (Sprint) → Phase 5.3 (Retro) → Phase 5.2 (OKR) →
+Phase 5.4 (PDCA dashboard) の順。
 
-Phase 3 (bulk / Activity / MUST escalation) と Phase 4 (dark / 通知 bell) は
-Phase 2 と並行でも可 (独立性高い)。
+Phase 3 と Phase 4 は独立性高いので並行可。
 
 ## 3. 動作確認コマンド (信頼できる checkpoint)
 
@@ -297,7 +322,7 @@ AI 系は Claude Code Max プラン経由 (OAuth) なので `ANTHROPIC_API_KEY` 
 
 ## 7. 次にやること
 
-**Phase 2 (comments/tags/assignee UI + AI 分解 CTA 前面化)** が次の主戦場。§2.5 に詳細。
+**Phase 3 (Backlog DnD + 一括操作 + Activity UI + MUST Escalation)** が次の主戦場。§2.5 に詳細。
 詳細プラン: `~/.claude/plans/todoist-ticktick-todo-ui-ux-sleepy-hamster.md`
 
 他の積み残し候補 (優先度低 / POST_MVP):

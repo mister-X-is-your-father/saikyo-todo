@@ -61,7 +61,7 @@ export default async function WorkspacePage({ params }: PageProps) {
       </header>
 
       <GlobalShortcuts workspaceId={workspaceId} />
-      <ItemsBoard workspaceId={workspaceId} />
+      <ItemsBoard workspaceId={workspaceId} currentUserId={user.id} />
     </main>
   )
 }

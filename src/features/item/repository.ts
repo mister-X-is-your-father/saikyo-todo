@@ -1,11 +1,17 @@
 import 'server-only'
 
-import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm'
 
-import { items, workspaceStatuses } from '@/lib/db/schema'
+import type { ActorType } from '@/lib/audit'
+import { itemAssignees, items, itemTags, tags, workspaceStatuses } from '@/lib/db/schema'
 import type { Tx } from '@/lib/db/scoped-client'
 
 import type { Item } from './schema'
+
+export interface AssigneeRef {
+  actorType: ActorType
+  actorId: string
+}
 
 export interface ListItemsFilter {
   workspaceId: string
@@ -106,5 +112,62 @@ export const itemRepository = {
       )
       .limit(1)
     return row?.key ?? null
+  },
+
+  /** Item の assignees を取得 (actor_type / actor_id ペア)。 */
+  async listAssignees(tx: Tx, itemId: string): Promise<AssigneeRef[]> {
+    const rows = await tx
+      .select({ actorType: itemAssignees.actorType, actorId: itemAssignees.actorId })
+      .from(itemAssignees)
+      .where(eq(itemAssignees.itemId, itemId))
+    return rows as AssigneeRef[]
+  },
+
+  /** Item の assignees を置換。差分 insert/delete。 */
+  async setAssignees(tx: Tx, itemId: string, next: AssigneeRef[]): Promise<AssigneeRef[]> {
+    await tx.delete(itemAssignees).where(eq(itemAssignees.itemId, itemId))
+    if (next.length > 0) {
+      await tx.insert(itemAssignees).values(
+        next.map((a) => ({
+          itemId,
+          actorType: a.actorType,
+          actorId: a.actorId,
+        })),
+      )
+    }
+    return next
+  },
+
+  /** Item の tag_id 一覧。 */
+  async listTagIds(tx: Tx, itemId: string): Promise<string[]> {
+    const rows = await tx
+      .select({ tagId: itemTags.tagId })
+      .from(itemTags)
+      .where(eq(itemTags.itemId, itemId))
+    return rows.map((r) => r.tagId)
+  },
+
+  /** Item の tags を置換。 */
+  async setTags(tx: Tx, itemId: string, tagIds: string[]): Promise<string[]> {
+    await tx.delete(itemTags).where(eq(itemTags.itemId, itemId))
+    if (tagIds.length > 0) {
+      await tx.insert(itemTags).values(
+        tagIds.map((tagId) => ({
+          itemId,
+          tagId,
+        })),
+      )
+    }
+    return tagIds
+  },
+
+  /** 指定した tagId 群が同じ workspace に属しているかチェック。 */
+  async tagsBelongToWorkspace(tx: Tx, workspaceId: string, tagIds: string[]): Promise<boolean> {
+    if (tagIds.length === 0) return true
+    const rows = await tx
+      .select({ id: tags.id })
+      .from(tags)
+      .where(and(eq(tags.workspaceId, workspaceId), inArray(tags.id, tagIds)))
+    return rows.length === tagIds.length
   },
 }
