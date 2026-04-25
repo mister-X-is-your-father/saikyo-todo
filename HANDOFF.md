@@ -1,15 +1,17 @@
 # HANDOFF.md — 次セッション開始用ガイド
 
-> 最終更新: 2026-04-25 (**MVP + 稼働入力 + Phase 1 + Phase 2 完了**)
+> 最終更新: 2026-04-25 (**MVP + 稼働入力 + Phase 1-3 完了**)
 >
-> - MVP (8/8) → 稼働入力 (mock Playwright sync) → Phase 1 (基本 UX) → **Phase 2 (コラボ hygiene)** 完了
-> - 次セッションは **Phase 3 (生産性加速 + MUST Escalation)** または **Phase 5 (業務/OKR/振り返り自動化)** から
+> - MVP (8/8) → 稼働入力 → Phase 1 (基本 UX) → Phase 2 (コラボ hygiene) →
+>   **Phase 3 (生産性加速 + MUST Escalation)** 完了
+> - 次セッションは **Phase 4 (ダーク + in-app 通知 UI)** または
+>   **Phase 5 (業務/OKR/振り返り自動化)** から
 > - 詳細プラン: `~/.claude/plans/todoist-ticktick-todo-ui-ux-sleepy-hamster.md`
 
 ## 0. 現状サマリ (2026-04-25)
 
 - 受け入れ基準 **8/8 自動 PASS** (MVP 検証スクリプトは健在)
-- 自動テスト: **Vitest 286**, **E2E localhost 14** PASS (Phase 2: collaboration.spec.ts 追加)
+- 自動テスト: **Vitest 294**, **E2E localhost 16** PASS (Phase 3: backlog-dnd + bulk-action-bar 追加)
 - AI 検証は Claude Code Max プラン OAuth + MCP 経由:
   ```bash
   NODE_OPTIONS="--conditions=react-server" \
@@ -25,6 +27,12 @@
 5. `git log --oneline | head -20` — 直近の commit 履歴
 
 ## 2. 現在地
+
+**Phase 3 (2026-04-25) 完了**: Backlog DnD / 一括選択 / Activity Tab /
+MUST Escalation を投入。Zustand bulk store + bulk-action-bar で一括完了・削除、
+audit feature で Activity Tab、heartbeat overdue stage 追加で期限超過 MUST を
+pm-recovery queue に自動 enqueue、PM Agent が Recovery Plan Doc + 注意喚起 comment
+を投下する配線を敷いた。
 
 **Phase 2 (2026-04-25) 完了**: DB だけあって UI が無かった schema 資産
 (comment / assignee / tag) を可視化。Item edit dialog を Tab 化して AI 分解 CTA
@@ -97,17 +105,39 @@
 - shadcn components: +`popover`, +`tabs` / new dep: `fuse.js`
 - Plugin Registry: action 3 / view 6 / pg-boss queues 7
 
+### Phase 3 (今回) 追加
+
+- **Backlog DnD**: `@dnd-kit/sortable` を Backlog の table 行に適用。
+  position 初期ソート時のみ DnD 有効、他列 sort 中は無効化メッセージ表示
+- **一括選択 + 一括操作**: `src/lib/stores/bulk-selection.ts` (Zustand Set<id>),
+  `bulk-action-bar.tsx` を固定 bottom に。`itemService.bulkUpdateStatus` /
+  `bulkSoftDelete` で 1 件ずつ楽観ロック、部分失敗を `{succeeded, failed[]}` で集計
+- **Activity Tab**: `src/features/audit/` 新規 (service + hooks read-only)。
+  ItemEditDialog に 3 本目 Tab、audit_log の SELECT policy (admin 以上) を
+  サービス層で catch して member 以下は空配列 fallback。action ラベル日本語化
+- **MUST Escalation**: `heartbeat.service.scanWorkspace` に `overdue` stage (days < 0)
+  を追加、1d/overdue の MUST を `pm-recovery` queue に singletonKey (ws+item+stage+date)
+  で enqueue。worker `handlePmRecovery` が `pmService.runRecovery` を呼び、PM Agent が
+  Recovery Plan Doc + write_comment で注意喚起を投下
+- **enqueueJob options**: `singletonKey` / `startAfter` を第 3 引数で受けられるよう拡張
+
+数値 (Phase 3):
+
+- Vitest **294** PASS (286 → +bulk 5 + heartbeat overdue 1 + stage update 1 -1 置換)
+- Playwright E2E **16** PASS localhost (14 → +backlog-dnd + bulk-action-bar)
+- pg-boss queues **8** (pm-recovery 追加)
+- new dep: `zustand` (既存) の新 store 1 本
+
 ## 2.5 次セッションでやること
 
-### A. Phase 3 (生産性加速 + MUST Escalation、工数 M)
+### A. Phase 4 (ダーク + in-app 通知 bell、工数 S)
 
-1. **Backlog DnD 並び替え**: `@dnd-kit/sortable` を Kanban から複製
-2. **一括選択 / 一括操作**: `src/lib/stores/bulk-selection.ts` (Zustand) +
-   `bulk-action-bar.tsx` + `itemService.bulkUpdateStatus(ids[], status)`
-3. **Activity UI**: `src/features/audit/` feature + `ItemEditDialog` に
-   Activity Tab を追加 (Phase 2 で Tab 化の土台はできた)
-4. **MUST Escalation**: `heartbeat.service.scanWorkspace` に `overdue` stage 追加、
-   各 stage で PM agent を自動 enqueue、write_comment tool で注意喚起 comment
+1. **Dark mode**: `next-themes` + `theme-toggle.tsx` を header に。
+   既存 `dark:` class を shadcn token に整理
+2. **Notification bell**: `src/features/notification/hooks.ts` + realtime
+   (postgres_changes on notifications)、`notification-bell.tsx` を header 右端に
+3. **MUST Recovery の実配信確認**: pm-recovery worker が実際に Doc + comment を
+   投下するかどうかの手動検証 (ANTHROPIC_API_KEY 必要)
 
 ### B. Phase 5 (業務/長期/個人/OKR/習慣/振り返り/自動化/PDCA、工数 L)
 
@@ -120,11 +150,8 @@
 
 ### 推奨進め方
 
-Phase 3 (bulk / Activity / MUST escalation) → Phase 4 (dark / 通知 bell) →
-Phase 5.1 (Sprint) → Phase 5.3 (Retro) → Phase 5.2 (OKR) →
-Phase 5.4 (PDCA dashboard) の順。
-
-Phase 3 と Phase 4 は独立性高いので並行可。
+Phase 4 (dark / 通知 bell) → Phase 5.1 (Sprint) → Phase 5.3 (Retro) →
+Phase 5.2 (OKR) → Phase 5.4 (PDCA dashboard) の順。
 
 ## 3. 動作確認コマンド (信頼できる checkpoint)
 
@@ -322,7 +349,7 @@ AI 系は Claude Code Max プラン経由 (OAuth) なので `ANTHROPIC_API_KEY` 
 
 ## 7. 次にやること
 
-**Phase 3 (Backlog DnD + 一括操作 + Activity UI + MUST Escalation)** が次の主戦場。§2.5 に詳細。
+**Phase 4 (Dark mode + Notification bell)** が次の主戦場。§2.5 に詳細。
 詳細プラン: `~/.claude/plans/todoist-ticktick-todo-ui-ux-sleepy-hamster.md`
 
 他の積み残し候補 (優先度低 / POST_MVP):

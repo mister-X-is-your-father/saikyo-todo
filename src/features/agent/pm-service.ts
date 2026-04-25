@@ -223,6 +223,61 @@ export const pmService = {
       ...(params.invoker ? { invoker: params.invoker } : {}),
     })
   },
+
+  /**
+   * MUST 遅延救済。stage='1d' or 'overdue' の MUST Item に対して
+   * 遅延要因 / 代替案 / 代替担当候補を整理し、Item に注意喚起コメントと
+   * Doc 形式の Recovery plan を残す。
+   */
+  async runRecovery(params: {
+    workspaceId: string
+    itemId: string
+    stage: '1d' | 'overdue'
+    idempotencyKey: string
+    invoker?: ToolLoopInput['invoker']
+  }): Promise<Result<PmRunOutput>> {
+    const userMessage = buildRecoveryUserMessage({
+      itemId: params.itemId,
+      stage: params.stage,
+    })
+    return await pmService.run({
+      workspaceId: params.workspaceId,
+      userMessage,
+      idempotencyKey: params.idempotencyKey,
+      ...(params.invoker ? { invoker: params.invoker } : {}),
+    })
+  },
+}
+
+/**
+ * Pure helper: MUST Recovery 用 user message を組み立てる。
+ * stage によって urgency tone を切り替える (overdue の方がより強い)。
+ */
+export function buildRecoveryUserMessage(params: {
+  itemId: string
+  stage: '1d' | 'overdue'
+}): string {
+  const tone =
+    params.stage === 'overdue'
+      ? '**期限超過** の MUST です。即座に救済が必要。'
+      : '**期限直前 (1 日以内)** の MUST です。落とさないための手を打ってください。'
+  return [
+    `MUST Item id=${params.itemId} について Recovery Plan を作成してください。`,
+    '',
+    tone,
+    '',
+    '手順:',
+    `1. read_items で id=${params.itemId} の現状 (title / dueDate / DoD / assignees / description) を確認`,
+    '2. search_items / read_docs で関連コンテキスト (子 Item / 過去 Doc / 類似タスク) を最大 3 件取得',
+    '3. 以下の構成で Recovery Plan を作る:',
+    '   - 遅延要因 3 つ (根拠/推測を明示)',
+    '   - 代替案 3 つ (スコープ縮小 / 期限再交渉 / 外部依頼 等)',
+    '   - 代替担当候補 2 名 (現担当の負荷 / スキルマッチ)',
+    '   - 直近 24h のアクション (誰が何を)',
+    `4. create_doc で保存 (title: "MUST Recovery - ${params.itemId.slice(0, 8)} - ${params.stage}")`,
+    `5. write_comment で Item id=${params.itemId} に注意喚起コメントを投下 (Recovery Plan Doc への参照 + TL;DR 3 行)`,
+    '6. 最後に日本語 3 行で状況と次アクションをサマリで返す',
+  ].join('\n')
 }
 
 /** Pure helper: stand-up 用 user message を組み立てる (テスト可能)。 */

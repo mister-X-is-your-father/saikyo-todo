@@ -22,9 +22,10 @@ import { and, eq, gte, isNotNull, isNull, lte, sql } from 'drizzle-orm'
 import { items, notifications, workspaceMembers } from '@/lib/db/schema'
 import { adminDb } from '@/lib/db/scoped-client'
 import { ValidationError } from '@/lib/errors'
+import { enqueueJob } from '@/lib/jobs/queue'
 import { err, ok, type Result } from '@/lib/result'
 
-export type HeartbeatStage = '7d' | '3d' | '1d'
+export type HeartbeatStage = '7d' | '3d' | '1d' | 'overdue'
 
 export interface HeartbeatScanResult {
   /** 対象 workspace 内で検出された MUST Item の数 */
@@ -49,10 +50,16 @@ export function daysUntilDue(dueISO: string, today: Date): number {
 
 /** days → stage マップ。該当無しは null (通知不要)。 */
 export function stageForDays(days: number): HeartbeatStage | null {
-  if (days <= 1) return '1d' // 期限切れも 1d 扱い (最後の警告)
+  if (days < 0) return 'overdue' // 期限超過: PM Recovery 発動対象
+  if (days <= 1) return '1d'
   if (days <= 3) return '3d'
   if (days <= 7) return '7d'
   return null
+}
+
+/** stage → PM Recovery enqueue 対象か。1d / overdue で発動。 */
+function shouldEnqueuePmRecovery(stage: HeartbeatStage): boolean {
+  return stage === '1d' || stage === 'overdue'
 }
 
 export const heartbeatService = {
@@ -90,12 +97,16 @@ export const heartbeatService = {
 
       let created = 0
       let skipped = 0
+      const pmRecoveryItems: Array<{ itemId: string; stage: HeartbeatStage }> = []
 
       for (const item of rows) {
         if (!item.dueDate) continue
         const days = daysUntilDue(item.dueDate, today)
         const stage = stageForDays(days)
         if (!stage) continue
+        if (shouldEnqueuePmRecovery(stage)) {
+          pmRecoveryItems.push({ itemId: item.id, stage })
+        }
 
         for (const { userId } of members) {
           // 同一 (userId, workspaceId, itemId, stage) の heartbeat 通知が既にあるか
@@ -128,6 +139,29 @@ export const heartbeatService = {
             } as never,
           })
           created += 1
+        }
+      }
+
+      // PM Recovery を pg-boss queue に投入 (失敗しても scan 全体は成立させる)。
+      // singletonKey で同一 (item, stage) の重複 enqueue を 1 日スパンで抑制。
+      const todayKey = today.toISOString().slice(0, 10)
+      for (const { itemId, stage } of pmRecoveryItems) {
+        try {
+          await enqueueJob(
+            'pm-recovery',
+            {
+              workspaceId,
+              itemId,
+              stage,
+              triggeredAt: today.toISOString(),
+            },
+            {
+              singletonKey: `pm-recovery-${workspaceId}-${itemId}-${stage}-${todayKey}`,
+            },
+          )
+        } catch (e) {
+          // enqueue 失敗は致命的ではない (scan は idempotent に再実行される)
+          console.error(`[heartbeat] pm-recovery enqueue failed item=${itemId}`, e)
         }
       }
 

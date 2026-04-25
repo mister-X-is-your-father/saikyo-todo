@@ -37,6 +37,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
+import { ActivityLog } from './activity-log'
 import { AssigneePicker } from './assignee-picker'
 import { CommentThread } from './comment-thread'
 import { ItemDecomposeButton } from './item-decompose-button'
@@ -77,7 +78,7 @@ function ItemEditDialogInner({
   onOpenChange: (open: boolean) => void
   currentUserId?: string
 }) {
-  const [tab, setTab] = useState<'base' | 'comments'>('base')
+  const [tab, setTab] = useState<'base' | 'comments' | 'activity'>('base')
   const [title, setTitle] = useState(item.title)
   const [description, setDescription] = useState(item.description ?? '')
   const [startDate, setStartDate] = useState(item.startDate ?? '')
@@ -154,6 +155,9 @@ function ItemEditDialogInner({
             </TabsTrigger>
             <TabsTrigger value="comments" data-testid="tab-comments">
               コメント
+            </TabsTrigger>
+            <TabsTrigger value="activity" data-testid="tab-activity">
+              Activity
             </TabsTrigger>
           </TabsList>
 
@@ -252,6 +256,10 @@ function ItemEditDialogInner({
                 コメント機能を使うには再読み込みしてください
               </p>
             )}
+          </TabsContent>
+
+          <TabsContent value="activity" className="mt-4">
+            <ActivityLog itemId={item.id} />
           </TabsContent>
         </Tabs>
 

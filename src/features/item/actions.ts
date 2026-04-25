@@ -84,3 +84,20 @@ export async function listItemTagIdsAction(itemId: string): Promise<Result<strin
     throw e
   }
 }
+
+export async function bulkUpdateItemStatusAction(input: {
+  workspaceId: string
+  ids: string[]
+  status: string
+}): Promise<Result<{ succeeded: string[]; failed: { id: string; reason: string }[] }>> {
+  return await actionWrap(() =>
+    itemService.bulkUpdateStatus(input.workspaceId, input.ids, input.status),
+  )
+}
+
+export async function bulkSoftDeleteItemAction(input: {
+  workspaceId: string
+  ids: string[]
+}): Promise<Result<{ succeeded: string[]; failed: { id: string; reason: string }[] }>> {
+  return await actionWrap(() => itemService.bulkSoftDelete(input.workspaceId, input.ids))
+}

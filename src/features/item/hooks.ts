@@ -15,6 +15,8 @@ import Fuse from 'fuse.js'
 import { unwrap } from '@/lib/result-unwrap'
 
 import {
+  bulkSoftDeleteItemAction,
+  bulkUpdateItemStatusAction,
   createItemAction,
   listItemAssigneesAction,
   listItemsAction,
@@ -287,4 +289,26 @@ export function useSearchItems(
     })
     return fuse.search(q, { limit }).map((r) => r.item)
   }, [data, query, limit])
+}
+
+export function useBulkUpdateItemStatus(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: { ids: string[]; status: string }) =>
+      unwrap(await bulkUpdateItemStatusAction({ workspaceId, ...input })),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
+}
+
+export function useBulkSoftDeleteItem(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: { ids: string[] }) =>
+      unwrap(await bulkSoftDeleteItemAction({ workspaceId, ...input })),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
 }

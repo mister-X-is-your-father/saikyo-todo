@@ -22,6 +22,7 @@ import { CommandPalette, type PaletteCommand } from '@/components/shared/command
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BacklogView } from '@/components/workspace/backlog-view'
+import { BulkActionBar } from '@/components/workspace/bulk-action-bar'
 import { DashboardView } from '@/components/workspace/dashboard-view'
 import { GanttView } from '@/components/workspace/gantt-view'
 import { InboxView } from '@/components/workspace/inbox-view'
@@ -258,6 +259,8 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
       ) : (
         <KanbanView workspaceId={workspaceId} items={filtered} currentUserId={currentUserId} />
       )}
+
+      <BulkActionBar workspaceId={workspaceId} />
     </div>
   )
 }

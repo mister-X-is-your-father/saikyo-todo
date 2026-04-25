@@ -3,27 +3,48 @@
 /**
  * Backlog View (2nd ViewPlugin)。
  * - @tanstack/react-table でカラム定義・ソート
- * - @tanstack/react-virtual で行仮想化 (~1000 件想定でも軽い)
+ * - @dnd-kit/sortable で行並び替え (position ソート時のみ有効)
  * - フィルタは親から URL 由来 (nuqs) の値が Item[] に適用済みで渡ってくる前提
  *
- * columns: status / title / MUST / dueDate / updatedAt
+ * columns: drag / checkbox / status / title / MUST / dueDate / updatedAt / actions
+ * 初期ソート: position (手動並び替えを活かす)
  */
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
+  type Row,
   type SortingState,
   useReactTable,
 } from '@tanstack/react-table'
-import { useVirtualizer } from '@tanstack/react-virtual'
+import { toast } from 'sonner'
 
+import { isAppError } from '@/lib/errors'
+
+import { useReorderItem } from '@/features/item/hooks'
 import type { Item } from '@/features/item/schema'
 
 import { Button } from '@/components/ui/button'
 
+import { BulkCheckbox, BulkHeaderCheckbox } from './bulk-action-bar'
 import { ItemCheckbox } from './item-checkbox'
 import { ItemDecomposeButton } from './item-decompose-button'
 import { ItemEditDialog } from './item-edit-dialog'
@@ -39,9 +60,26 @@ interface Props {
 function buildColumns(workspaceId: string, onEdit: (item: Item) => void): ColumnDef<Item>[] {
   return [
     {
+      id: 'drag',
+      header: '',
+      size: 28,
+      enableSorting: false,
+      cell: () => <DragHandle />,
+    },
+    {
+      id: 'select',
+      header: ({ table }) => (
+        <BulkHeaderCheckbox rowIds={table.getRowModel().rows.map((r) => r.original.id)} />
+      ),
+      size: 28,
+      enableSorting: false,
+      cell: ({ row }) => <BulkCheckbox itemId={row.original.id} />,
+    },
+    {
       id: 'checkbox',
       header: '',
       size: 40,
+      enableSorting: false,
       cell: ({ row }) => <ItemCheckbox item={row.original} workspaceId={workspaceId} />,
     },
     {
@@ -53,7 +91,7 @@ function buildColumns(workspaceId: string, onEdit: (item: Item) => void): Column
     {
       accessorKey: 'title',
       header: 'タイトル',
-      size: 360,
+      size: 340,
       cell: ({ getValue, row }) => (
         <span className={row.original.doneAt ? 'text-muted-foreground line-through' : ''}>
           {String(getValue())}
@@ -92,6 +130,7 @@ function buildColumns(workspaceId: string, onEdit: (item: Item) => void): Column
       id: 'actions',
       header: 'アクション',
       size: 300,
+      enableSorting: false,
       cell: ({ row }) => (
         <div className="flex gap-2">
           <Button
@@ -116,9 +155,18 @@ export function BacklogView({ workspaceId, items, currentUserId }: Props) {
     () => buildColumns(workspaceId, (item) => setEditing(item)),
     [workspaceId],
   )
-  const [sorting, setSorting] = useState<SortingState>([{ id: 'updatedAt', desc: true }])
+  // 初期は position ソート (手動並び替えを効かせる)。ユーザが他列 header を click した場合のみ再ソート。
+  const [sorting, setSorting] = useState<SortingState>([])
 
-  const data = useMemo(() => items.filter((i) => !i.deletedAt), [items])
+  const data = useMemo(() => {
+    const visible = items.filter((i) => !i.deletedAt)
+    // position 昇順 (同率 position は createdAt で fallback)
+    visible.sort((a, b) => {
+      if (a.position !== b.position) return a.position < b.position ? -1 : 1
+      return (a.createdAt ?? 0) < (b.createdAt ?? 0) ? -1 : 1
+    })
+    return visible
+  }, [items])
 
   const table = useReactTable({
     data,
@@ -127,16 +175,43 @@ export function BacklogView({ workspaceId, items, currentUserId }: Props) {
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getRowId: (row) => row.id,
   })
 
-  const scrollRef = useRef<HTMLDivElement>(null)
   const rows = table.getRowModel().rows
-  const rowVirtualizer = useVirtualizer({
-    count: rows.length,
-    getScrollElement: () => scrollRef.current,
-    estimateSize: () => 40,
-    overscan: 8,
-  })
+  const rowIds = useMemo(() => rows.map((r) => r.original.id), [rows])
+
+  // DnD は sort が無指定 (= position 昇順) の時のみ有効
+  const dndEnabled = sorting.length === 0
+
+  const reorder = useReorderItem(workspaceId)
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const activeId = String(active.id)
+    const overId = String(over.id)
+    const srcIdx = rows.findIndex((r) => r.original.id === activeId)
+    const dstIdx = rows.findIndex((r) => r.original.id === overId)
+    if (srcIdx < 0 || dstIdx < 0) return
+    const activeItem = rows[srcIdx]?.original
+    if (!activeItem) return
+    const next = arrayMove(rows, srcIdx, dstIdx)
+    const newIdx = next.findIndex((r) => r.original.id === activeId)
+    const prev = newIdx > 0 ? next[newIdx - 1]?.original : null
+    const nextSib = newIdx < next.length - 1 ? next[newIdx + 1]?.original : null
+    try {
+      await reorder.mutateAsync({
+        id: activeItem.id,
+        expectedVersion: activeItem.version,
+        prevSiblingId: prev?.id ?? null,
+        nextSiblingId: nextSib?.id ?? null,
+      })
+    } catch (e) {
+      toast.error(isAppError(e) ? e.message : '並び替えに失敗')
+    }
+  }
 
   return (
     <>
@@ -149,77 +224,99 @@ export function BacklogView({ workspaceId, items, currentUserId }: Props) {
         }}
         currentUserId={currentUserId}
       />
-      <div
-        ref={scrollRef}
-        data-testid="backlog-view"
-        className="h-[600px] overflow-auto rounded-lg border"
-      >
-        <table className="w-full border-collapse text-sm">
-          <thead className="bg-muted sticky top-0 z-10">
-            {table.getHeaderGroups().map((hg) => (
-              <tr key={hg.id}>
-                {hg.headers.map((h) => (
-                  <th
-                    key={h.id}
-                    style={{ width: h.getSize() }}
-                    onClick={h.column.getToggleSortingHandler()}
-                    className="cursor-pointer border-b px-3 py-2 text-left font-semibold"
-                  >
-                    {flexRender(h.column.columnDef.header, h.getContext())}
-                    {{ asc: ' ▲', desc: ' ▼' }[h.column.getIsSorted() as string] ?? ''}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody
-            style={{
-              height: `${rowVirtualizer.getTotalSize()}px`,
-              display: 'block',
-              position: 'relative',
-            }}
-          >
-            {rowVirtualizer.getVirtualItems().map((vRow) => {
-              const row = rows[vRow.index]
-              if (!row) return null
-              return (
-                <tr
-                  key={row.id}
-                  data-testid={`backlog-row-${row.original.id}`}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    transform: `translateY(${vRow.start}px)`,
-                    display: 'table',
-                    width: '100%',
-                    tableLayout: 'fixed',
-                  }}
-                  className="hover:bg-muted/50 border-b"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      style={{ width: cell.column.getSize() }}
-                      className="px-3 py-2"
+      <div data-testid="backlog-view" className="max-h-[600px] overflow-auto rounded-lg border">
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <table className="w-full border-collapse text-sm">
+            <thead className="bg-muted sticky top-0 z-10">
+              {table.getHeaderGroups().map((hg) => (
+                <tr key={hg.id}>
+                  {hg.headers.map((h) => (
+                    <th
+                      key={h.id}
+                      style={{ width: h.getSize() }}
+                      onClick={
+                        h.column.getCanSort() ? h.column.getToggleSortingHandler() : undefined
+                      }
+                      className={`border-b px-3 py-2 text-left font-semibold ${
+                        h.column.getCanSort() ? 'cursor-pointer' : ''
+                      }`}
                     >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
+                      {flexRender(h.column.columnDef.header, h.getContext())}
+                      {{ asc: ' ▲', desc: ' ▼' }[h.column.getIsSorted() as string] ?? ''}
+                    </th>
                   ))}
                 </tr>
-              )
-            })}
-            {rows.length === 0 && (
-              <tr>
-                <td colSpan={columns.length} className="text-muted-foreground py-8 text-center">
-                  表示する item がありません
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              ))}
+            </thead>
+            <tbody>
+              <SortableContext
+                items={rowIds}
+                strategy={verticalListSortingStrategy}
+                disabled={!dndEnabled}
+              >
+                {rows.map((row) => (
+                  <BacklogRow key={row.original.id} row={row} dndEnabled={dndEnabled} />
+                ))}
+              </SortableContext>
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={columns.length} className="text-muted-foreground py-8 text-center">
+                    表示する item がありません
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </DndContext>
       </div>
+      {!dndEnabled && (
+        <p className="text-muted-foreground mt-2 text-xs">
+          並び替えは列のソートを解除してから (position 順表示中のみ DnD 可能)
+        </p>
+      )}
     </>
+  )
+}
+
+function BacklogRow({ row, dndEnabled }: { row: Row<Item>; dndEnabled: boolean }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: row.original.id,
+    disabled: !dndEnabled,
+  })
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+  return (
+    <tr
+      ref={setNodeRef}
+      style={style}
+      data-testid={`backlog-row-${row.original.id}`}
+      className="hover:bg-muted/50 border-b"
+    >
+      {row.getVisibleCells().map((cell) => (
+        <td
+          key={cell.id}
+          style={{ width: cell.column.getSize() }}
+          className="px-3 py-2"
+          {...(cell.column.id === 'drag' && dndEnabled ? { ...attributes, ...listeners } : {})}
+        >
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </td>
+      ))}
+    </tr>
+  )
+}
+
+function DragHandle() {
+  return (
+    <span
+      className="text-muted-foreground cursor-grab select-none active:cursor-grabbing"
+      aria-label="ドラッグで並び替え"
+      data-testid="backlog-drag-handle"
+    >
+      ≡
+    </span>
   )
 }

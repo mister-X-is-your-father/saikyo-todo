@@ -410,4 +410,106 @@ export const itemService = {
       return await itemRepository.listTagIds(tx, itemId)
     })
   },
+
+  /**
+   * 複数 Item の status を一括更新。
+   * 1 件ずつ version を取って楽観ロック付きで update。
+   * 戻り値: 成功した id / 失敗した { id, reason } を仕分けた Result。
+   * 部分成功を許容 (= 1 件失敗しても残りは反映)。
+   */
+  async bulkUpdateStatus(
+    workspaceId: string,
+    ids: string[],
+    status: string,
+  ): Promise<Result<{ succeeded: string[]; failed: { id: string; reason: string }[] }>> {
+    if (ids.length === 0) {
+      return ok({ succeeded: [], failed: [] })
+    }
+    const { user } = await requireWorkspaceMember(workspaceId, 'member')
+    return await withUserDb(user.id, async (tx) => {
+      const succeeded: string[] = []
+      const failed: { id: string; reason: string }[] = []
+      for (const id of ids) {
+        const before = await itemRepository.findById(tx, id)
+        if (!before) {
+          failed.push({ id, reason: 'not_found' })
+          continue
+        }
+        if (before.workspaceId !== workspaceId) {
+          failed.push({ id, reason: 'wrong_workspace' })
+          continue
+        }
+        const newType = await itemRepository.findStatusType(tx, workspaceId, status)
+        if (!newType) {
+          failed.push({ id, reason: 'unknown_status' })
+          continue
+        }
+        if (newType === 'done' && before.isMust && (!before.dod || before.dod.trim() === '')) {
+          failed.push({ id, reason: 'must_without_dod' })
+          continue
+        }
+        const updated = await itemRepository.updateWithLock(tx, id, before.version, { status })
+        if (!updated) {
+          failed.push({ id, reason: 'conflict' })
+          continue
+        }
+        await recordAudit(tx, {
+          workspaceId,
+          actorType: 'user',
+          actorId: user.id,
+          targetType: 'item',
+          targetId: updated.id,
+          action: 'bulk_status_change',
+          before: { status: before.status },
+          after: { status: updated.status },
+        })
+        succeeded.push(id)
+      }
+      return ok({ succeeded, failed })
+    })
+  },
+
+  /**
+   * 複数 Item の soft delete 一括。楽観ロックで 1 件ずつ削除 (race 時はスキップ)。
+   */
+  async bulkSoftDelete(
+    workspaceId: string,
+    ids: string[],
+  ): Promise<Result<{ succeeded: string[]; failed: { id: string; reason: string }[] }>> {
+    if (ids.length === 0) {
+      return ok({ succeeded: [], failed: [] })
+    }
+    const { user } = await requireWorkspaceMember(workspaceId, 'member')
+    return await withUserDb(user.id, async (tx) => {
+      const succeeded: string[] = []
+      const failed: { id: string; reason: string }[] = []
+      for (const id of ids) {
+        const before = await itemRepository.findById(tx, id)
+        if (!before) {
+          failed.push({ id, reason: 'not_found' })
+          continue
+        }
+        if (before.workspaceId !== workspaceId) {
+          failed.push({ id, reason: 'wrong_workspace' })
+          continue
+        }
+        const deleted = await itemRepository.softDelete(tx, id, before.version)
+        if (!deleted) {
+          failed.push({ id, reason: 'conflict' })
+          continue
+        }
+        await recordAudit(tx, {
+          workspaceId,
+          actorType: 'user',
+          actorId: user.id,
+          targetType: 'item',
+          targetId: deleted.id,
+          action: 'bulk_delete',
+          before,
+        })
+        succeeded.push(id)
+      }
+      return ok({ succeeded, failed })
+    })
+  },
 }

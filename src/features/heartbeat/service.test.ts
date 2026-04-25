@@ -11,6 +11,16 @@ vi.mock('@/lib/auth/guard', () => ({
   hasAtLeast: () => true,
 }))
 
+vi.mock('@/lib/jobs/queue', () => ({
+  enqueueJob: vi.fn().mockResolvedValue('mock'),
+  startBoss: vi.fn(),
+  stopBoss: vi.fn(),
+  registerWorker: vi.fn(),
+  QUEUE_NAMES: ['pm-recovery'] as const,
+}))
+
+import { enqueueJob } from '@/lib/jobs/queue'
+
 import { daysUntilDue, heartbeatService, stageForDays } from './service'
 
 function isoDaysFromNow(base: Date, days: number): string {
@@ -57,7 +67,7 @@ describe('daysUntilDue (pure)', () => {
 })
 
 describe('stageForDays (pure)', () => {
-  it('7d: 4-7 日後、3d: 2-3 日後、1d: 0-1 日、それ以上は null', () => {
+  it('7d: 4-7 日後、3d: 2-3 日後、1d: 0-1 日、負値は overdue、それ以上は null', () => {
     expect(stageForDays(8)).toBeNull()
     expect(stageForDays(7)).toBe('7d')
     expect(stageForDays(4)).toBe('7d')
@@ -65,7 +75,8 @@ describe('stageForDays (pure)', () => {
     expect(stageForDays(2)).toBe('3d')
     expect(stageForDays(1)).toBe('1d')
     expect(stageForDays(0)).toBe('1d')
-    expect(stageForDays(-3)).toBe('1d')
+    expect(stageForDays(-1)).toBe('overdue')
+    expect(stageForDays(-10)).toBe('overdue')
   })
 })
 
@@ -203,6 +214,57 @@ describe('heartbeatService.scanWorkspace', () => {
       (n) => (n.payload as { daysUntilDue?: number })?.daysUntilDue === 10,
     )
     expect(hasFar).toBe(false)
+  })
+})
+
+describe('heartbeatService.scanWorkspace — overdue stage', () => {
+  let userId: string
+  let wsId: string
+  let cleanup: () => Promise<void>
+
+  beforeAll(async () => {
+    const fx = await createTestUserAndWorkspace('heartbeat-overdue')
+    userId = fx.userId
+    wsId = fx.wsId
+    cleanup = fx.cleanup
+    await mockAuthGuards(fx.userId, fx.email)
+  })
+
+  afterAll(async () => {
+    await cleanup()
+  })
+
+  it('期限超過 (due -2 日) で overdue stage 通知 + pm-recovery を enqueue', async () => {
+    vi.mocked(enqueueJob).mockClear()
+    const today = new Date('2026-04-24T00:00:00Z')
+    const itemId = await createMustItem(wsId, userId, -2, today, 'item-overdue')
+
+    const r = await heartbeatService.scanWorkspace(wsId, { today })
+    expect(r.ok).toBe(true)
+
+    // notifications に overdue stage の payload が入っている
+    const ac = adminClient()
+    const { data: notifs } = await ac
+      .from('notifications')
+      .select('payload, type')
+      .eq('workspace_id', wsId)
+      .eq('user_id', userId)
+      .eq('type', 'heartbeat')
+    const matched = notifs?.find((n) => (n.payload as { itemId?: string })?.itemId === itemId)
+    expect(matched).toBeTruthy()
+    expect((matched?.payload as { stage?: string })?.stage).toBe('overdue')
+
+    // pm-recovery queue に enqueue された
+    const calls = vi.mocked(enqueueJob).mock.calls
+    const matchedCall = calls.find(
+      ([name, data]) => name === 'pm-recovery' && (data as { itemId?: string }).itemId === itemId,
+    )
+    expect(matchedCall).toBeTruthy()
+    if (matchedCall) {
+      const [, data, options] = matchedCall
+      expect((data as { stage?: string }).stage).toBe('overdue')
+      expect((options as { singletonKey?: string })?.singletonKey).toContain(itemId)
+    }
   })
 })
 

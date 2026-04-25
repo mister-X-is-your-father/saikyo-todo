@@ -15,7 +15,7 @@ import { sql } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
 
 import { adminDb } from '@/lib/db/scoped-client'
-import { enqueueJob, type PmStandupJobData } from '@/lib/jobs/queue'
+import { enqueueJob, type PmRecoveryJobData, type PmStandupJobData } from '@/lib/jobs/queue'
 
 import { pmService } from '@/features/agent/pm-service'
 import { templateService } from '@/features/template/service'
@@ -90,6 +90,42 @@ export async function handlePmStandup(
       }
     } catch (e) {
       console.error(`[pm-standup] unexpected workspace=${workspaceId}`, e)
+    }
+  }
+}
+
+/**
+ * MUST Recovery worker. heartbeat service から stage=1d|overdue の MUST item が
+ * enqueue される。pm-service.runRecovery で Recovery Plan Doc + 注意喚起コメントを
+ * 投下する。singletonKey (ws+item+stage+date) で 1 日 1 回に抑制済み。
+ */
+export async function handlePmRecovery(
+  jobs: Array<{ id: string; data: PmRecoveryJobData }>,
+): Promise<void> {
+  const { pmService } = await import('@/features/agent/pm-service')
+  for (const job of jobs) {
+    const { workspaceId, itemId, stage } = job.data
+    try {
+      const r = await pmService.runRecovery({
+        workspaceId,
+        itemId,
+        stage,
+        idempotencyKey: randomUUID(),
+      })
+      if (!r.ok) {
+        console.error(
+          `[pm-recovery] failed workspace=${workspaceId} item=${itemId} stage=${stage}: ${r.error.code} ${r.error.message}`,
+        )
+      } else {
+        console.log(
+          `[pm-recovery] completed workspace=${workspaceId} item=${itemId} stage=${stage} cost=${r.value.costUsd}`,
+        )
+      }
+    } catch (e) {
+      console.error(
+        `[pm-recovery] unexpected workspace=${workspaceId} item=${itemId} stage=${stage}`,
+        e,
+      )
     }
   }
 }

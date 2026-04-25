@@ -20,10 +20,18 @@ export const QUEUE_NAMES = [
   'researcher-decompose',
   'pm-standup',
   'pm-standup-tick',
+  'pm-recovery',
   'template-cron-tick',
   'time-entry-sync',
 ] as const
 export type QueueName = (typeof QUEUE_NAMES)[number]
+
+export interface PmRecoveryJobData {
+  workspaceId: string
+  itemId: string
+  stage: '1d' | 'overdue'
+  triggeredAt: string
+}
 
 export interface AgentRunJobData {
   invocationId: string
@@ -86,13 +94,21 @@ export async function stopBoss(): Promise<void> {
   await b.stop({ graceful: true, timeout: 5_000 })
 }
 
-/** Server Action からジョブ送信。wasNew=true のときのみ呼ぶこと (重複投入防止)。 */
+/**
+ * Server Action からジョブ送信。wasNew=true のときのみ呼ぶこと (重複投入防止)。
+ * options.singletonKey で pg-boss の重複抑制 (同 key で active/pending な job が
+ * あれば 2 重送信しない) を有効化できる。
+ */
 export async function enqueueJob<T extends object>(
   name: QueueName,
   data: T,
+  options: { singletonKey?: string; startAfter?: Date | string | number } = {},
 ): Promise<string | null> {
   const b = await startBoss()
-  return await b.send(name, data)
+  return await b.send(name, data, {
+    singletonKey: options.singletonKey,
+    startAfter: options.startAfter,
+  })
 }
 
 /** Worker 側: キューに対する handler を登録。handler は `Job[]` (batch) を受ける。 */

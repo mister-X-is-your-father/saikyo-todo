@@ -21,6 +21,7 @@ import 'dotenv/config'
 import { registerWorker, scheduleJob, startBoss, stopBoss } from '@/lib/jobs/queue'
 
 import {
+  handlePmRecovery,
   handlePmStandup,
   handlePmStandupTick,
   handleTemplateCronTick,
@@ -40,6 +41,7 @@ async function main() {
   await registerWorker('pm-standup-tick', async () => {
     await handlePmStandupTick()
   })
+  await registerWorker('pm-recovery', handlePmRecovery)
   await registerWorker('template-cron-tick', async () => {
     await handleTemplateCronTick()
   })
@@ -52,7 +54,7 @@ async function main() {
   await scheduleJob('template-cron-tick', '*/15 * * * *', {})
 
   console.log(
-    '[worker] ready. listening for: agent-run, doc-embed, researcher-decompose, pm-standup, pm-standup-tick, template-cron-tick, time-entry-sync',
+    '[worker] ready. listening for: agent-run, doc-embed, researcher-decompose, pm-standup, pm-standup-tick, pm-recovery, template-cron-tick, time-entry-sync',
   )
 
   const shutdown = async (signal: string) => {
