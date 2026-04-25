@@ -38,7 +38,7 @@ NODE_OPTIONS="--conditions=react-server" \
 ### 2.1 MVP (2026-04-24 クローズ)
 
 - **認証 + RLS**: Supabase Auth + workspace_members + ws-scoped policy
-  (soft-delete + RLS の罠は §4.1)
+  (soft-delete + RLS の罠は §5.1)
 - **Item**: ltree 階層 + 楽観ロック + fractional-indexing position +
   MUST/DoD 不変条件 + priority (1-4) / due_time / scheduled_for
 - **Doc / Comment**: 同パターン CRUD
