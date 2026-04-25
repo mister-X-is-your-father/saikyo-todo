@@ -16,6 +16,7 @@
  */
 import 'server-only'
 
+import { streamingInvoker } from '@/lib/ai/invoke'
 import { calculateCostUsd } from '@/lib/ai/pricing'
 import { executeToolLoop, type ToolLoopInput } from '@/lib/ai/tool-loop'
 import { recordAudit } from '@/lib/audit'
@@ -132,6 +133,38 @@ export const researcherService = {
     const bundle =
       input.toolMode === 'decompose' ? buildDecomposeTools(toolCtx) : buildResearcherTools(toolCtx)
 
+    // streaming text のための debounce 付き UPDATE。
+    // テストで invoker が DI されている時は streaming しない (mock 互換のため)。
+    const useStreaming = !input.invoker
+    let streamBuf = ''
+    let streamUpdateTimer: ReturnType<typeof setTimeout> | null = null
+    const flushStreamingText = async () => {
+      streamUpdateTimer = null
+      if (!streamBuf) return
+      const text = streamBuf
+      try {
+        await adminDb.transaction((tx) =>
+          agentInvocationRepository.update(tx, invocation.id, {
+            output: { streamingText: text } as never,
+          }),
+        )
+      } catch (e) {
+        // streaming 用の中間 UPDATE が失敗しても agent 実行自体は止めない
+        console.warn('[researcher] streaming flush failed', e)
+      }
+    }
+    const onTextDelta = (delta: string) => {
+      streamBuf += delta
+      if (!streamUpdateTimer) {
+        streamUpdateTimer = setTimeout(() => void flushStreamingText(), 250)
+      }
+    }
+    const invoker: ToolLoopInput['invoker'] | undefined = input.invoker
+      ? input.invoker
+      : useStreaming
+        ? streamingInvoker(onTextDelta)
+        : undefined
+
     try {
       const loopResult = await executeToolLoop({
         model: RESEARCHER_ROLE.model,
@@ -141,8 +174,15 @@ export const researcherService = {
         handlers: bundle.handlers,
         maxIterations: RESEARCHER_ROLE.maxIterations,
         maxTokens: RESEARCHER_ROLE.maxTokens,
-        ...(input.invoker ? { invoker: input.invoker } : {}),
+        ...(invoker ? { invoker } : {}),
       })
+
+      // streaming 完了: pending な timer をクリアして最終 flush は不要
+      // (下の status='completed' UPDATE で output が上書きされるため)
+      if (streamUpdateTimer) {
+        clearTimeout(streamUpdateTimer)
+        streamUpdateTimer = null
+      }
 
       // 6. tool_call / tool_result を memories に記録 (監査用ログ、再生はしない)
       for (const call of loopResult.toolCalls) {

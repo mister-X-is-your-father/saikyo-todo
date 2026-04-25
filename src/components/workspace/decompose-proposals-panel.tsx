@@ -19,6 +19,7 @@ import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
 
+import { useAgentInvocationProgressByTarget } from '@/features/agent/realtime'
 import {
   useAcceptProposal,
   usePendingProposals,
@@ -26,6 +27,7 @@ import {
   useRejectProposal,
   useUpdateProposal,
 } from '@/features/decompose-proposal/hooks'
+import { useDecomposeProposalsRealtime } from '@/features/decompose-proposal/realtime'
 import type { DecomposeProposal } from '@/features/decompose-proposal/schema'
 
 import { IMEInput } from '@/components/shared/ime-input'
@@ -38,14 +40,18 @@ interface Props {
 }
 
 export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
+  useDecomposeProposalsRealtime(parentItemId)
+  const progress = useAgentInvocationProgressByTarget(parentItemId)
   const proposals = usePendingProposals(parentItemId)
   const accept = useAcceptProposal(workspaceId, parentItemId)
   const reject = useRejectProposal(parentItemId)
   const rejectAll = useRejectAllPendingProposals(parentItemId)
 
   const list = proposals.data ?? []
+  const isAgentRunning = progress.status === 'queued' || progress.status === 'running'
+  // 提案が無くて Agent も走っていなければ何も出さない
   if (proposals.isLoading) return null
-  if (list.length === 0) return null
+  if (list.length === 0 && !isAgentRunning) return null
 
   async function handleAcceptAll() {
     let ok = 0
@@ -75,37 +81,52 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
       data-testid="decompose-proposals-panel"
     >
       <div className="flex items-start justify-between gap-2">
-        <div>
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 text-sm font-semibold">
-            <Sparkles className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-            AI 分解の提案 ({list.length})
+            <Sparkles
+              className={`h-3.5 w-3.5 text-amber-600 dark:text-amber-400 ${
+                isAgentRunning ? 'animate-pulse' : ''
+              }`}
+            />
+            {isAgentRunning ? 'Researcher が分解中…' : `AI 分解の提案 (${list.length})`}
           </div>
-          <p className="text-muted-foreground text-xs">
-            行ごとに採用 / 却下 / 編集できます。採用すると子タスクとして items に追加されます。
-          </p>
+          {isAgentRunning ? (
+            <p
+              className="text-muted-foreground mt-0.5 line-clamp-3 text-xs italic"
+              data-testid="agent-streaming-text"
+            >
+              {progress.streamingText || '思考中…'}
+            </p>
+          ) : (
+            <p className="text-muted-foreground text-xs">
+              行ごとに採用 / 却下 / 編集できます。採用すると子タスクとして items に追加されます。
+            </p>
+          )}
         </div>
-        <div className="flex shrink-0 gap-1.5">
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={accept.isPending || rejectAll.isPending}
-            onClick={() => void handleAcceptAll()}
-            data-testid="proposals-accept-all"
-          >
-            全て採用
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            disabled={rejectAll.isPending || accept.isPending}
-            onClick={() => void handleRejectAll()}
-            data-testid="proposals-reject-all"
-          >
-            全て却下
-          </Button>
-        </div>
+        {!isAgentRunning && list.length > 0 && (
+          <div className="flex shrink-0 gap-1.5">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={accept.isPending || rejectAll.isPending}
+              onClick={() => void handleAcceptAll()}
+              data-testid="proposals-accept-all"
+            >
+              全て採用
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={rejectAll.isPending || accept.isPending}
+              onClick={() => void handleRejectAll()}
+              data-testid="proposals-reject-all"
+            >
+              全て却下
+            </Button>
+          </div>
+        )}
       </div>
 
       <ul className="space-y-1.5" data-testid="proposals-list">
