@@ -31,15 +31,24 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 interface Props {
   workspaceId: string
   currentUserId: string
+  /**
+   * SSR で取得した初期未読件数。これを `initialData` に渡し、count query は
+   * staleTime: Infinity + Realtime 経由でのみ invalidate されるようにする
+   * (常時 polling すると Server Action の router.refresh と他 mutation flow が
+   *  競合し、QuickAdd input fill が不安定化する dev mode regression があった)。
+   */
+  initialUnreadCount: number
 }
 
-export function NotificationBell({ workspaceId, currentUserId }: Props) {
+export function NotificationBell({ workspaceId, currentUserId, initialUnreadCount }: Props) {
   const [open, setOpen] = useState(false)
 
-  // Realtime: count + list を invalidate (popover 開かなくてもバッジは更新したい)
+  // Realtime: notifications テーブルの INSERT/UPDATE で count + list を invalidate
   useNotificationsRealtime(workspaceId, currentUserId)
 
-  const { data: unreadCount = 0 } = useUnreadNotificationCount(workspaceId)
+  const { data: unreadCount = initialUnreadCount } = useUnreadNotificationCount(workspaceId, {
+    initialData: initialUnreadCount,
+  })
   const { data: notifications = [], isLoading } = useNotifications(workspaceId, {
     enabled: open,
   })

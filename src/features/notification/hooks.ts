@@ -28,12 +28,23 @@ export const notificationKeys = {
     [...notificationKeys.all, 'unreadCount', workspaceId] as const,
 }
 
-export function useUnreadNotificationCount(workspaceId: string) {
+/**
+ * 未読件数。`initialData` が渡されたら staleTime: Infinity + 自動 polling 無し
+ * (Realtime invalidation でのみ refetch)。dev mode で Server Action の
+ * router.refresh が他 mutation flow と競合する問題を避けるため。
+ */
+export function useUnreadNotificationCount(
+  workspaceId: string,
+  options: { initialData?: number } = {},
+) {
   return useQuery({
     queryKey: notificationKeys.unreadCount(workspaceId),
     queryFn: async () => unwrap(await unreadNotificationCountAction(workspaceId)),
     enabled: Boolean(workspaceId),
-    staleTime: 30_000,
+    initialData: options.initialData,
+    staleTime: options.initialData !== undefined ? Infinity : 30_000,
+    refetchOnMount: options.initialData === undefined,
+    refetchOnWindowFocus: false,
   })
 }
 

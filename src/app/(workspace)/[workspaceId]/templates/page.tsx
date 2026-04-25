@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation'
 import { requireWorkspaceMember } from '@/lib/auth/guard'
 import { AuthError, PermissionError } from '@/lib/errors'
 
+import { notificationService } from '@/features/notification/service'
+
 import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { TemplatesPanel } from '@/components/template/templates-panel'
 import { Button } from '@/components/ui/button'
@@ -27,6 +29,8 @@ async function loadAccess(workspaceId: string) {
 export default async function TemplatesPage({ params }: PageProps) {
   const { workspaceId } = await params
   const { user, role } = await loadAccess(workspaceId)
+  const unreadResult = await notificationService.unreadCount(workspaceId)
+  const initialUnreadCount = unreadResult.ok ? unreadResult.value : 0
 
   return (
     <main className="container mx-auto max-w-5xl space-y-6 p-4 md:p-6">
@@ -41,7 +45,11 @@ export default async function TemplatesPage({ params }: PageProps) {
         }
         utility={
           <>
-            <NotificationBell workspaceId={workspaceId} currentUserId={user.id} />
+            <NotificationBell
+              workspaceId={workspaceId}
+              currentUserId={user.id}
+              initialUnreadCount={initialUnreadCount}
+            />
             <ThemeToggle />
           </>
         }

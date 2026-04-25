@@ -28,33 +28,47 @@ export function useItemsRealtime(workspaceId: string): void {
   useEffect(() => {
     if (!workspaceId) return
     const supabase = createSupabaseBrowserClient()
-    const channel = supabase.channel(`items:${workspaceId}`).on(
-      // postgres_changes: INSERT / UPDATE / DELETE すべてを捕捉
-      // 型は @supabase/realtime-js の内部型なので as-never で暫定対応
-      'postgres_changes' as never,
-      {
-        event: '*',
-        schema: 'public',
-        table: 'items',
-        filter: `workspace_id=eq.${workspaceId}`,
-      } as never,
-      () => {
-        // debounce: 複数行が同時に変わってもまとめて 1 回 invalidate
-        if (pendingRef.current) return
-        pendingRef.current = setTimeout(() => {
-          pendingRef.current = null
-          void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
-        }, INVALIDATE_DEBOUNCE_MS)
-      },
-    )
-    channel.subscribe()
+    let channel: ReturnType<typeof supabase.channel> | null = null
+    let cancelled = false
+
+    void (async () => {
+      // Realtime の RLS 評価には現在の JWT が必要 — 明示的に setAuth してから
+      // subscribe しないと postgres_changes イベントが届かない
+      // (Phase 4 notification 検証で発覚)
+      const { data: sess } = await supabase.auth.getSession()
+      const token = sess.session?.access_token
+      if (token) supabase.realtime.setAuth(token)
+      if (cancelled) return
+
+      channel = supabase.channel(`items:${workspaceId}`).on(
+        // postgres_changes: INSERT / UPDATE / DELETE すべてを捕捉
+        // 型は @supabase/realtime-js の内部型なので as-never で暫定対応
+        'postgres_changes' as never,
+        {
+          event: '*',
+          schema: 'public',
+          table: 'items',
+          filter: `workspace_id=eq.${workspaceId}`,
+        } as never,
+        () => {
+          // debounce: 複数行が同時に変わってもまとめて 1 回 invalidate
+          if (pendingRef.current) return
+          pendingRef.current = setTimeout(() => {
+            pendingRef.current = null
+            void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+          }, INVALIDATE_DEBOUNCE_MS)
+        },
+      )
+      channel.subscribe()
+    })()
 
     return () => {
+      cancelled = true
       if (pendingRef.current) {
         clearTimeout(pendingRef.current)
         pendingRef.current = null
       }
-      void supabase.removeChannel(channel)
+      if (channel) void supabase.removeChannel(channel)
     }
   }, [workspaceId, qc])
 }

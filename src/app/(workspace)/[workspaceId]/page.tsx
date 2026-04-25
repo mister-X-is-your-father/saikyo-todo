@@ -5,6 +5,7 @@ import { requireWorkspaceMember } from '@/lib/auth/guard'
 import { withUserDb } from '@/lib/db/scoped-client'
 import { AuthError, PermissionError } from '@/lib/errors'
 
+import { notificationService } from '@/features/notification/service'
 import { findMyWorkspaces } from '@/features/workspace/repository'
 
 import { GlobalShortcuts } from '@/components/shared/global-shortcuts'
@@ -38,6 +39,10 @@ export default async function WorkspacePage({ params }: PageProps) {
   const workspace = workspaces.find((w) => w.id === workspaceId)
   const displayName = workspace?.name ?? 'Workspace'
 
+  // Bell の初期未読件数を SSR 時に取得 (client polling を避けて Realtime のみで更新)
+  const unreadResult = await notificationService.unreadCount(workspaceId)
+  const initialUnreadCount = unreadResult.ok ? unreadResult.value : 0
+
   return (
     <main className="container mx-auto max-w-5xl space-y-6 p-4 md:p-6">
       <WorkspaceHeader
@@ -58,7 +63,11 @@ export default async function WorkspacePage({ params }: PageProps) {
         }
         utility={
           <>
-            <NotificationBell workspaceId={workspaceId} currentUserId={user.id} />
+            <NotificationBell
+              workspaceId={workspaceId}
+              currentUserId={user.id}
+              initialUnreadCount={initialUnreadCount}
+            />
             <ThemeToggle />
           </>
         }
