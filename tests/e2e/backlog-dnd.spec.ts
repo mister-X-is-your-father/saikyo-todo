@@ -8,7 +8,7 @@ import { expect, test } from '@playwright/test'
 import { createE2EUser, loginViaUI } from './helpers'
 
 // bulk-action-bar.spec.ts と同じ理由で skip (QuickAdd 連続入力 + dev server SA 競合 flaky)。
-// 単体実行は PASS、並列フル実行で fill 取りこぼし。Phase 4 hybrid 方針で Playwright MCP 側に。
+// 単体実行は PASS、並列実行で fill 取りこぼし。Phase 4 hybrid 方針で Playwright MCP 側に。
 test.skip('backlog DnD: 行をドラッグして並び替え', async ({ page }) => {
   test.setTimeout(90_000)
   const user = await createE2EUser('backlog-dnd')

@@ -23,6 +23,7 @@ import {
 } from '@/features/item/hooks'
 import type { AssigneeRef } from '@/features/item/repository'
 import type { Item } from '@/features/item/schema'
+import { useAssignItemToSprint, useSprints } from '@/features/sprint/hooks'
 
 import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
@@ -92,6 +93,8 @@ function ItemEditDialogInner({
   const setAssignees = useSetItemAssignees(workspaceId, item.id)
   const { data: tagIds } = useItemTagIds(item.id)
   const setTags = useSetItemTags(workspaceId, item.id)
+  const sprintsList = useSprints(workspaceId)
+  const assignSprint = useAssignItemToSprint(workspaceId)
 
   async function handleSave() {
     if (isMust && !dod.trim()) {
@@ -128,6 +131,15 @@ function ItemEditDialogInner({
 
   async function handleTagChange(next: string[]) {
     await setTags.mutateAsync(next)
+  }
+
+  async function handleSprintChange(next: string | null) {
+    try {
+      await assignSprint.mutateAsync({ itemId: item.id, sprintId: next })
+      toast.success(next ? 'Sprint に割当しました' : 'Sprint 割当を解除しました')
+    } catch (e) {
+      toast.error(isAppError(e) ? e.message : 'Sprint 割当に失敗')
+    }
   }
 
   return (
@@ -206,6 +218,28 @@ function ItemEditDialogInner({
                 />
               </div>
             </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="editSprint">Sprint</Label>
+              <select
+                id="editSprint"
+                value={item.sprintId ?? ''}
+                onChange={(e) => void handleSprintChange(e.target.value || null)}
+                disabled={assignSprint.isPending}
+                className="w-full rounded border px-2 py-1.5 text-sm"
+                data-testid="edit-item-sprint"
+              >
+                <option value="">未割当</option>
+                {(sprintsList.data ?? [])
+                  .filter((s) => s.status === 'active' || s.status === 'planning')
+                  .map((sp) => (
+                    <option key={sp.id} value={sp.id}>
+                      {sp.status === 'active' ? '★ ' : ''}
+                      {sp.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>担当者</Label>

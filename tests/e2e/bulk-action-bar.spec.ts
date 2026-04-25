@@ -9,9 +9,8 @@ import { expect, test } from '@playwright/test'
 import { createE2EUser, loginViaUI } from './helpers'
 
 // 単体実行 (`pnpm test:e2e tests/e2e/bulk-action-bar.spec.ts`) では reliably PASS。
-// 並列フル実行で QuickAdd 連続入力が dev server の SA 競合で fill 取りこぼし → flaky。
-// Phase 4 hybrid 方針: 機能確認は Playwright MCP 側に寄せ、ここは保留 (skip)。
-// 直す時は workers=1 / dev server 別 PID / build prod で再評価。
+// 並列実行 (workers=4 でも) で QuickAdd 連続入力が dev server の SA 競合で fill 取りこぼし → flaky。
+// Phase 4 hybrid 方針: 機能確認は Playwright MCP 側 / scripts/verify-*.ts に寄せて skip 維持。
 test.skip('bulk: 選択 → 一括完了 → 一括削除', async ({ page }) => {
   test.setTimeout(90_000)
   const user = await createE2EUser('bulk')

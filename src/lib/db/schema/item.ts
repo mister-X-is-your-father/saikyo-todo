@@ -29,6 +29,7 @@ import {
   mutationMarkers,
   timestamps,
 } from './_shared'
+import { sprints } from './sprint'
 import { workspaces } from './workspace'
 
 export const items = pgTable(
@@ -53,6 +54,12 @@ export const items = pgTable(
     customFields: jsonb('custom_fields').notNull().default({}),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
     doneAt: timestamp('done_at', { withTimezone: true }),
+    /**
+     * Phase 5.1: Sprint 割当 (nullable)。Sprint 削除 (cancelled) で外す方針なので
+     * `set null` ではなく `restrict` 相当の意図はないが、sprints は cancelled で
+     * soft delete 代替なので物理削除は cascade では起きない。`set null` で十分。
+     */
+    sprintId: uuid('sprint_id').references(() => sprints.id, { onDelete: 'set null' }),
     ...createdByActor,
     ...mutationMarkers,
     ...timestamps,
@@ -66,6 +73,9 @@ export const items = pgTable(
     index('items_today_idx')
       .on(t.workspaceId, t.scheduledFor)
       .where(sql`scheduled_for is not null and deleted_at is null`),
+    index('items_sprint_idx')
+      .on(t.workspaceId, t.sprintId)
+      .where(sql`sprint_id is not null and deleted_at is null`),
   ],
 )
 

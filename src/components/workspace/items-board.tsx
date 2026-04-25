@@ -16,6 +16,7 @@ import { isAppError } from '@/lib/errors'
 import { useItems } from '@/features/item/hooks'
 import { useItemsRealtime } from '@/features/item/realtime'
 import type { Item } from '@/features/item/schema'
+import { useSprints } from '@/features/sprint/hooks'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { CommandPalette, type PaletteCommand } from '@/components/shared/command-palette'
@@ -46,20 +47,30 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
   )
   const [must, setMust] = useQueryState('must', parseAsBoolean.withDefault(false))
   const [statusFilter, setStatusFilter] = useQueryState('status', parseAsString)
+  const [sprintFilter, setSprintFilter] = useQueryState('sprint', parseAsString)
   const [paletteSelected, setPaletteSelected] = useState<Item | null>(null)
 
   const { data, isLoading, error, refetch } = useItems(workspaceId)
   useItemsRealtime(workspaceId)
+  const sprintsList = useSprints(workspaceId)
 
   const filtered = useMemo(() => {
     if (!data) return []
+    const activeSprintId = sprintsList.data?.find((s) => s.status === 'active')?.id ?? null
     return data.filter((i) => {
       if (i.deletedAt) return false
       if (must && !i.isMust) return false
       if (statusFilter && i.status !== statusFilter) return false
+      if (sprintFilter === 'active') {
+        if (!activeSprintId || i.sprintId !== activeSprintId) return false
+      } else if (sprintFilter === 'none') {
+        if (i.sprintId) return false
+      } else if (sprintFilter && sprintFilter !== '') {
+        if (i.sprintId !== sprintFilter) return false
+      }
       return true
     })
-  }, [data, must, statusFilter])
+  }, [data, must, statusFilter, sprintFilter, sprintsList.data])
 
   const commands = useMemo<PaletteCommand[]>(
     () => [
@@ -232,6 +243,22 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
             <option value="todo">TODO</option>
             <option value="in_progress">進行中</option>
             <option value="done">完了</option>
+          </select>
+          <select
+            value={sprintFilter ?? ''}
+            onChange={(e) => setSprintFilter(e.target.value || null)}
+            className="rounded border px-2 py-1 text-sm"
+            data-testid="filter-sprint"
+            aria-label="Sprint filter"
+          >
+            <option value="">全 Sprint</option>
+            <option value="active">稼働中の Sprint</option>
+            <option value="none">未割当のみ</option>
+            {(sprintsList.data ?? []).map((sp) => (
+              <option key={sp.id} value={sp.id}>
+                {sp.name}
+              </option>
+            ))}
           </select>
           <span className="text-muted-foreground text-xs">{filtered.length} 件</span>
         </div>
