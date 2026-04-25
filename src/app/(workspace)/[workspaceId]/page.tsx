@@ -60,6 +60,9 @@ export default async function WorkspacePage({ params }: PageProps) {
               <Link href={`/${workspaceId}/sprints`}>Sprints</Link>
             </Button>
             <Button variant="outline" asChild size="sm">
+              <Link href={`/${workspaceId}/pdca`}>PDCA</Link>
+            </Button>
+            <Button variant="outline" asChild size="sm">
               <Link href={`/${workspaceId}/templates`}>Templates</Link>
             </Button>
             <Button variant="outline" asChild size="sm">
