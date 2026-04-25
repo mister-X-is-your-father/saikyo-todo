@@ -22,6 +22,7 @@ export const QUEUE_NAMES = [
   'pm-standup-tick',
   'pm-recovery',
   'sprint-retro',
+  'sprint-retro-tick',
   'template-cron-tick',
   'time-entry-sync',
 ] as const

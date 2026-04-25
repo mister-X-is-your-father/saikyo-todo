@@ -29,7 +29,7 @@ import {
 import { handleResearcherDecompose } from '@/features/agent/researcher-worker'
 import { handleAgentRun } from '@/features/agent/worker'
 import { handleDocEmbed } from '@/features/doc/worker'
-import { handleSprintRetro } from '@/features/sprint/retro-worker'
+import { handleSprintRetro, handleSprintRetroTick } from '@/features/sprint/retro-worker'
 import { createTimeEntryWorker } from '@/features/time-entry/worker'
 
 async function main() {
@@ -44,6 +44,9 @@ async function main() {
   })
   await registerWorker('pm-recovery', handlePmRecovery)
   await registerWorker('sprint-retro', handleSprintRetro)
+  await registerWorker('sprint-retro-tick', async () => {
+    await handleSprintRetroTick()
+  })
   await registerWorker('template-cron-tick', async () => {
     await handleTemplateCronTick()
   })
@@ -54,9 +57,11 @@ async function main() {
   await scheduleJob('pm-standup-tick', '0 9 * * *', {})
   // Recurring Template: 15 分おき。cron_run_id UNIQUE で重複展開は DB レベルで防止。
   await scheduleJob('template-cron-tick', '*/15 * * * *', {})
+  // Sprint Retro fallback: 毎週月曜 09:00 UTC (= 18:00 JST) に completed + retro 未生成を pickup
+  await scheduleJob('sprint-retro-tick', '0 9 * * 1', {})
 
   console.log(
-    '[worker] ready. listening for: agent-run, doc-embed, researcher-decompose, pm-standup, pm-standup-tick, pm-recovery, sprint-retro, template-cron-tick, time-entry-sync',
+    '[worker] ready. listening for: agent-run, doc-embed, researcher-decompose, pm-standup, pm-standup-tick, pm-recovery, sprint-retro, sprint-retro-tick, template-cron-tick, time-entry-sync',
   )
 
   const shutdown = async (signal: string) => {

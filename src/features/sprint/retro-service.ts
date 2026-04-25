@@ -71,12 +71,27 @@ export const retroService = {
       })),
     })
 
-    return await pmService.run({
+    const r = await pmService.run({
       workspaceId: sprint.workspaceId,
       userMessage,
       idempotencyKey: input.idempotencyKey,
       ...(input.invoker ? { invoker: input.invoker } : {}),
     })
+
+    // 成功時のみ retro_generated_at をセット (weekly cron が再 enqueue しないように)。
+    // 失敗時は次回 cron で再試行されるべきなので残しておく。
+    if (r.ok) {
+      try {
+        await adminDb
+          .update(sprints)
+          .set({ retroGeneratedAt: new Date() })
+          .where(eq(sprints.id, sprint.id))
+      } catch (e) {
+        // marker 更新失敗は本処理を成立させた上でログのみ (cron 重複の不利益は受容)
+        console.error(`[retro] retro_generated_at update failed sprint=${sprint.id}`, e)
+      }
+    }
+    return r
   },
 }
 

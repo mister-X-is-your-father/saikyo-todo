@@ -1,9 +1,10 @@
 # HANDOFF.md — 次セッション開始用ガイド
 
-> 最終更新: 2026-04-25 (**MVP + 稼働入力 + Phase 1-5.4 + 手動分解 完了**)
+> 最終更新: 2026-04-26 (**MVP + 稼働入力 + Phase 1-5.4 + 手動分解 + 5.3 weekly cron 完了**)
 >
-> - 進捗: MVP (8/8) → 稼働入力 → Phase 1 → 2 → 3 → 4 → 5.1 → 5.3 → 5.2 → 5.4 (PDCA) ✅
-> - 次の主戦場: **5.3 weekly cron** or **AI 分解 UX 強化** or **Realtime push UI**
+> - 進捗: MVP (8/8) → 稼働入力 → Phase 1 → 2 → 3 → 4 → 5.1 → 5.3 → 5.2 → 5.4 →
+>   5.3 weekly cron (sprint-retro-tick) ✅
+> - 次の主戦場: **AI 分解 UX 強化** / **Realtime push UI** / **MUST Recovery 実配信検証**
 > - 詳細プラン: `~/.claude/plans/todoist-ticktick-todo-ui-ux-sleepy-hamster.md`
 
 ## 0. 現状サマリ
@@ -11,9 +12,9 @@
 | 指標           | 値                                                                                                                            |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 受け入れ基準   | **8/8** PASS (`scripts/verify-acceptance.ts`)                                                                                 |
-| Vitest         | **327** PASS / 39 files                                                                                                       |
+| Vitest         | **330** PASS / 39 files                                                                                                       |
 | E2E (local)    | **14** PASS / 2 skip (bulk-action-bar / backlog-dnd: dev mode 並列で QuickAdd 連続入力が flaky — §5.16; workers=4 で他は安定) |
-| pg-boss queues | **9** (+sprint-retro)                                                                                                         |
+| pg-boss queues | **10** (+sprint-retro-tick)                                                                                                   |
 | views          | **6** (Today / Inbox / Kanban / Backlog / Gantt / Dashboard)                                                                  |
 | schema         | 31 テーブル (auth schema 除く、+goals, +key_results)                                                                          |
 
@@ -72,6 +73,21 @@ NODE_OPTIONS="--conditions=react-server" \
 - Kanban カード: hover で AI 分解ボタン + 子 Item 件数 badge
 - Item 検索: `useSearchItems` (fuse.js) + Command Palette `?` プレフィクス
 - Template instantiate 後の `agentRoleToInvoke='researcher'` chain は配線済
+
+### 2.11 Phase 5.3 weekly cron — Sprint retro fallback (2026-04-26)
+
+- **目的**: Sprint completed → 自動 enqueue trigger を取り逃したケース (worker 落ち / 手動 status
+  変更 / 過去の completed sprint で trigger 配線前) の救済
+- **schema**: `sprints.retro_generated_at timestamptz` 列を追加
+  - partial index `(workspace_id, end_date) WHERE status='completed' AND retro_generated_at IS NULL`
+  * 手書き migration `20260426000000_sprint_retro_generated_at.sql`
+- **retroService.runForSprint**: pmService.run 成功時に `retro_generated_at = NOW()` を adminDb で UPDATE
+  (失敗時はセットしない → 次回 cron で再試行可能)
+- **handleSprintRetroTick**: status='completed' AND retro_generated_at IS NULL AND end_date >= now() - 30d
+  の sprint を全件 pickup → `sprint-retro` queue に fan-out (singletonKey で重複抑制)
+- **cron**: 毎週月曜 09:00 UTC (= 18:00 JST) に `sprint-retro-tick` 発火
+  (`scheduleJob('sprint-retro-tick', '0 9 * * 1', {})`)
+- **テスト**: 3 ケース追加 (成功時 marker 更新 / 失敗時 marker 不変 / tick の pickup 条件 4 通り)
 
 ### 2.10 Phase 5.4 — PDCA dashboard
 

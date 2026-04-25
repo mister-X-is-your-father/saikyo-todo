@@ -27,7 +27,7 @@ vi.mock('@/features/agent/pm-service', () => ({
   },
 }))
 
-import { ok } from '@/lib/result'
+import { err, ok } from '@/lib/result'
 
 import { pmService } from '@/features/agent/pm-service'
 
@@ -180,5 +180,172 @@ describe('retroService.runForSprint', () => {
       idempotencyKey: '',
     })
     expect(r2.ok).toBe(false)
+  })
+
+  it('成功時に sprints.retro_generated_at がセットされる (weekly cron 重複防止)', async () => {
+    const sp = await sprintService.create({
+      workspaceId: wsId,
+      name: 'Marker Sprint',
+      startDate: '2026-04-20',
+      endDate: '2026-04-26',
+      idempotencyKey: crypto.randomUUID(),
+    })
+    if (!sp.ok) throw sp.error
+
+    vi.mocked(pmService.run).mockResolvedValue(
+      ok({
+        invocationId: 'inv-2',
+        agentId: 'ag-2',
+        text: 'ok',
+        toolCalls: [],
+        iterations: 1,
+        usage: {
+          inputTokens: 1,
+          outputTokens: 1,
+          cacheCreationTokens: null,
+          cacheReadTokens: null,
+        },
+        costUsd: 0,
+      }),
+    )
+
+    const r = await retroService.runForSprint({
+      sprintId: sp.value.id,
+      idempotencyKey: crypto.randomUUID(),
+    })
+    expect(r.ok).toBe(true)
+
+    const ac = adminClient()
+    const { data } = await ac
+      .from('sprints')
+      .select('retro_generated_at')
+      .eq('id', sp.value.id)
+      .single()
+    expect(data?.retro_generated_at).toBeTruthy()
+  })
+
+  it('失敗時は retro_generated_at をセットしない (cron 再試行可能に)', async () => {
+    const sp = await sprintService.create({
+      workspaceId: wsId,
+      name: 'Failed Retro Sprint',
+      startDate: '2026-04-20',
+      endDate: '2026-04-26',
+      idempotencyKey: crypto.randomUUID(),
+    })
+    if (!sp.ok) throw sp.error
+
+    vi.mocked(pmService.run).mockResolvedValue(
+      err(new (await import('@/lib/errors')).ExternalServiceError('Anthropic down')),
+    )
+    const r = await retroService.runForSprint({
+      sprintId: sp.value.id,
+      idempotencyKey: crypto.randomUUID(),
+    })
+    expect(r.ok).toBe(false)
+
+    const ac = adminClient()
+    const { data } = await ac
+      .from('sprints')
+      .select('retro_generated_at')
+      .eq('id', sp.value.id)
+      .single()
+    expect(data?.retro_generated_at).toBeNull()
+  })
+})
+
+describe('handleSprintRetroTick (weekly cron)', () => {
+  let userId: string
+  let wsId: string
+  let cleanup: () => Promise<void>
+
+  beforeAll(async () => {
+    const fx = await createTestUserAndWorkspace('retro-tick')
+    userId = fx.userId
+    wsId = fx.wsId
+    cleanup = fx.cleanup
+    await mockAuthGuards(fx.userId, fx.email)
+  })
+  afterAll(async () => {
+    await cleanup()
+  })
+
+  it('completed + retro 未生成 + lookback 内 の sprint だけ enqueue する', async () => {
+    const ac = adminClient()
+    // 1. completed + retro 未生成 (lookback 内) → 拾われる
+    const sA = await ac
+      .from('sprints')
+      .insert({
+        workspace_id: wsId,
+        name: 'A: completed pending',
+        start_date: '2026-04-19',
+        end_date: '2026-04-25',
+        status: 'completed',
+        created_by_actor_type: 'user',
+        created_by_actor_id: userId,
+      })
+      .select('id')
+      .single()
+    if (sA.error) throw sA.error
+    // 2. completed + retro 生成済 → skip
+    const sB = await ac
+      .from('sprints')
+      .insert({
+        workspace_id: wsId,
+        name: 'B: completed done',
+        start_date: '2026-04-12',
+        end_date: '2026-04-18',
+        status: 'completed',
+        retro_generated_at: new Date().toISOString(),
+        created_by_actor_type: 'user',
+        created_by_actor_id: userId,
+      })
+      .select('id')
+      .single()
+    if (sB.error) throw sB.error
+    // 3. planning → skip
+    const sC = await ac
+      .from('sprints')
+      .insert({
+        workspace_id: wsId,
+        name: 'C: planning',
+        start_date: '2026-04-26',
+        end_date: '2026-05-02',
+        status: 'planning',
+        created_by_actor_type: 'user',
+        created_by_actor_id: userId,
+      })
+      .select('id')
+      .single()
+    if (sC.error) throw sC.error
+    // 4. completed + retro 未生成 だが lookback (30日) より古い → skip
+    const sD = await ac
+      .from('sprints')
+      .insert({
+        workspace_id: wsId,
+        name: 'D: too old',
+        start_date: '2026-01-01',
+        end_date: '2026-01-15',
+        status: 'completed',
+        created_by_actor_type: 'user',
+        created_by_actor_id: userId,
+      })
+      .select('id')
+      .single()
+    if (sD.error) throw sD.error
+
+    const { handleSprintRetroTick } = await import('./retro-worker')
+    const { enqueueJob } = await import('@/lib/jobs/queue')
+    vi.mocked(enqueueJob).mockClear()
+
+    await handleSprintRetroTick({ now: new Date('2026-04-26T00:00:00Z'), lookbackDays: 30 })
+
+    const calls = vi.mocked(enqueueJob).mock.calls
+    const pickedIds = calls
+      .filter(([name]) => name === 'sprint-retro')
+      .map(([, data]) => (data as { sprintId: string }).sprintId)
+    expect(pickedIds).toContain(sA.data!.id)
+    expect(pickedIds).not.toContain(sB.data!.id)
+    expect(pickedIds).not.toContain(sC.data!.id)
+    expect(pickedIds).not.toContain(sD.data!.id)
   })
 })

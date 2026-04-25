@@ -10,7 +10,16 @@
  *   (deleted_at は agent / template と異なり置かない — status で表現)
  */
 import { sql } from 'drizzle-orm'
-import { check, date, index, pgTable, text, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
+import {
+  check,
+  date,
+  index,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core'
 
 import { createdByActor, id, mutationMarkers, timestamps } from './_shared'
 import { workspaces } from './workspace'
@@ -27,6 +36,12 @@ export const sprints = pgTable(
     startDate: date('start_date').notNull(),
     endDate: date('end_date').notNull(),
     status: text('status').notNull().default('planning'),
+    /**
+     * Phase 5.3 weekly cron: retro が生成済みかの marker。
+     * - sprint-retro worker 成功時にセット
+     * - cron は status='completed' AND retro_generated_at IS NULL の sprint だけ pickup
+     */
+    retroGeneratedAt: timestamp('retro_generated_at', { withTimezone: true }),
     ...createdByActor,
     ...mutationMarkers,
     ...timestamps,
