@@ -15,6 +15,7 @@ import {
   sprintProgressAction,
   updateSprintAction,
 } from './actions'
+import { runRetroForSprintAction } from './retro-actions'
 import type {
   AssignItemToSprintInput,
   ChangeSprintStatusInput,
@@ -80,6 +81,18 @@ export function useChangeSprintStatus(workspaceId: string) {
     mutationFn: async (input: ChangeSprintStatusInput) =>
       unwrap(await changeSprintStatusAction(input)),
     onSuccess: () => invalidateSprintScope(qc, workspaceId),
+  })
+}
+
+export function useRunRetro(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (sprintId: string) => unwrap(await runRetroForSprintAction(sprintId)),
+    onSuccess: () => {
+      // Doc / Item が増えるので関連 query を invalidate
+      void qc.invalidateQueries({ queryKey: ['docs', workspaceId] })
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
   })
 }
 

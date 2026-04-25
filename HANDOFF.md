@@ -1,11 +1,9 @@
 # HANDOFF.md — 次セッション開始用ガイド
 
-> 最終更新: 2026-04-25 (**MVP + 稼働入力 + Phase 1-5.1 完了**)
+> 最終更新: 2026-04-25 (**MVP + 稼働入力 + Phase 1-5.1 + 5.3 (手動起動部) 完了**)
 >
-> - 進捗: MVP (8/8) → 稼働入力 → Phase 1 (基本 UX) → Phase 2 (コラボ hygiene) →
->   Phase 3 (生産性加速 + MUST Escalation) → Phase 4 (Dark + Notification bell) →
->   Phase 5.1 (Sprint) ✅
-> - 次の主戦場: **Phase 5.3 振り返り自動化** または 5.2 OKR / 5.4 PDCA
+> - 進捗: MVP (8/8) → 稼働入力 → Phase 1 → 2 → 3 → 4 → 5.1 (Sprint) → 5.3 retro (手動起動) ✅
+> - 次の主戦場: **5.3 自動化 (weekly cron / Sprint completed トリガ)** or **5.2 OKR**
 > - 詳細プラン: `~/.claude/plans/todoist-ticktick-todo-ui-ux-sleepy-hamster.md`
 
 ## 0. 現状サマリ
@@ -13,7 +11,7 @@
 | 指標           | 値                                                                                                                                       |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | 受け入れ基準   | **8/8** PASS (`scripts/verify-acceptance.ts`)                                                                                            |
-| Vitest         | **309** PASS / 36 files                                                                                                                  |
+| Vitest         | **315** PASS / 37 files                                                                                                                  |
 | E2E (local)    | **14** PASS / 2 skip (bulk-action-bar / backlog-dnd: dev mode 並列で QuickAdd 連続入力が flaky — §5.16; workers=4 で他は安定)            |
 | pg-boss queues | **8** (agent-run / doc-embed / researcher-decompose / pm-standup / pm-standup-tick / pm-recovery / template-cron-tick / time-entry-sync) |
 | views          | **6** (Today / Inbox / Kanban / Backlog / Gantt / Dashboard)                                                                             |
@@ -74,6 +72,21 @@ NODE_OPTIONS="--conditions=react-server" \
 - Kanban カード: hover で AI 分解ボタン + 子 Item 件数 badge
 - Item 検索: `useSearchItems` (fuse.js) + Command Palette `?` プレフィクス
 - Template instantiate 後の `agentRoleToInvoke='researcher'` chain は配線済
+
+### 2.8 Phase 5.3 (手動起動部) — Sprint Retrospective
+
+- `src/features/sprint/retro-service.ts`:
+  - `runForSprint({sprintId, idempotencyKey})` — adminDb で sprint + items を集計、
+    `buildRetroUserMessage` で Keep / Problem / Try 構成 prompt を組んで pmService.run に委譲
+  - PM Agent が `create_doc` で Retro Doc を保存 + `create_item` で action items を投下
+  - **MUST 落ち** が 1 件以上ある場合のみ "MUST 落ちの根本原因" セクションを促す
+- UI: `SprintsPanel` の active / completed Sprint card に "振り返り生成" ボタン
+  (Sparkles アイコン)。完了後 toast に iter / cost を表示
+- テスト: `retro-service.test.ts` 6 ケース (pure helper 3 + service mock 3)
+- **未実装** (POST_MVP / 次セッション):
+  - weekly cron (pg-boss) で workspace ごとに自動実行
+  - Sprint changeStatus → 'completed' の trigger で自動起動
+  - (両方とも `pmService.run` 呼び出しは既に動くので、worker 配線だけ)
 
 ### 2.7 Phase 5.1 — Sprint
 
@@ -158,12 +171,15 @@ NODE_OPTIONS="--conditions=react-server" \
 ### B. Phase 5 — 業務/長期/個人/OKR/習慣/振り返り (工数 L)
 
 - **5.1 Sprint** ✅ (2026-04-25)
-- **5.3 振り返り自動化** ★次推奨: weekly cron で PM が audit_log + 完了 items を要約 →
-  Retro Doc + action items を Inbox に自動投下。Sprint 完了時もトリガにする
+- **5.3 振り返り (手動起動)** ✅ — `retroService.runForSprint` + Sprint card の button
+- **5.3 振り返り自動化 (残)** ★次: weekly cron worker + Sprint changeStatus='completed' トリガ
+  (pm-recovery worker と同じ pattern: pg-boss に `sprint-retro` queue 追加 → handler が
+  retroService.runForSprint を呼ぶ。完了 Sprint はその場で enqueue、cron は workspace ごと
+  最新 sprint を見る)
 - **5.2 OKR**: `goals` + `key_results` + `item.goal_id` + 進捗 %
 - **5.4 PDCA dashboard**: Plan/Do/Check/Act を status type にマップ + cycle time
 
-**推奨順 (残り)**: 5.3 (Retro) → 5.2 (OKR) → 5.4 (PDCA)。
+**推奨順 (残り)**: 5.3 自動化 → 5.2 (OKR) → 5.4 (PDCA)。
 
 ### C. 積み残し (優先度低 / POST_MVP 候補)
 

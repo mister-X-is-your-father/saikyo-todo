@@ -9,7 +9,7 @@
  */
 import { useState } from 'react'
 
-import { CheckCircle, Pause, Play, X } from 'lucide-react'
+import { CheckCircle, Pause, Play, Sparkles, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
@@ -17,6 +17,7 @@ import { isAppError } from '@/lib/errors'
 import {
   useChangeSprintStatus,
   useCreateSprint,
+  useRunRetro,
   useSprintProgress,
   useSprints,
 } from '@/features/sprint/hooks'
@@ -72,6 +73,16 @@ export function SprintsPanel({ workspaceId }: Props) {
   const list = useSprints(workspaceId)
   const createMut = useCreateSprint(workspaceId)
   const changeMut = useChangeSprintStatus(workspaceId)
+  const retroMut = useRunRetro(workspaceId)
+
+  async function handleRetro(sp: Sprint) {
+    try {
+      const r = await retroMut.mutateAsync(sp.id)
+      toast.success(`Retro Doc を生成しました (${r.iterations} iter, $${r.costUsd.toFixed(4)})`)
+    } catch (e) {
+      toast.error(isAppError(e) ? e.message : 'Retro 生成に失敗')
+    }
+  }
 
   const [name, setName] = useState('')
   const [goal, setGoal] = useState('')
@@ -179,6 +190,8 @@ export function SprintsPanel({ workspaceId }: Props) {
               sprint={sp}
               onStatusChange={(s) => void handleStatusChange(sp, s)}
               changing={changeMut.isPending}
+              onRunRetro={() => void handleRetro(sp)}
+              retroPending={retroMut.isPending}
             />
           ))}
         </ul>
@@ -191,9 +204,11 @@ interface CardProps {
   sprint: Sprint
   onStatusChange: (status: SprintStatus) => void
   changing: boolean
+  onRunRetro: () => void
+  retroPending: boolean
 }
 
-function SprintCard({ sprint, onStatusChange, changing }: CardProps) {
+function SprintCard({ sprint, onStatusChange, changing, onRunRetro, retroPending }: CardProps) {
   const status = sprint.status as SprintStatus
   // active / completed は進捗を取る (planning は未割当が多いので skip)
   const showProgress = status === 'active' || status === 'completed'
@@ -311,6 +326,19 @@ function SprintCard({ sprint, onStatusChange, changing }: CardProps) {
               >
                 <X className="mr-1 h-3.5 w-3.5" />
                 中止
+              </Button>
+            )}
+            {(status === 'active' || status === 'completed') && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={retroPending}
+                onClick={onRunRetro}
+                data-testid={`sprint-retro-${sprint.id}`}
+                title="PM Agent が完了/未完 items を要約して Retro Doc を生成"
+              >
+                <Sparkles className="mr-1 h-3.5 w-3.5" />
+                {retroPending ? '振り返り生成中…' : '振り返り生成'}
               </Button>
             )}
           </div>
