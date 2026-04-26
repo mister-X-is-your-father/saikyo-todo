@@ -391,4 +391,35 @@ describe('itemService', () => {
       if (!r.ok) expect(r.error.code).toBe('VALIDATION')
     })
   })
+
+  describe('clearBaseline', () => {
+    it('baseline 設定済み item は clear で NULL に戻る', async () => {
+      const item = await createItem({
+        title: 'clear-baseline',
+        startDate: '2026-05-01',
+        dueDate: '2026-05-10',
+      })
+      const r1 = await itemService.setBaseline({ id: item.id, expectedVersion: item.version })
+      if (!r1.ok) throw new Error('setBaseline failed')
+      const r2 = await itemService.clearBaseline({
+        id: item.id,
+        expectedVersion: r1.value.version,
+      })
+      expect(r2.ok).toBe(true)
+      if (r2.ok) {
+        expect(r2.value.baselineStartDate).toBeNull()
+        expect(r2.value.baselineEndDate).toBeNull()
+        expect(r2.value.baselineTakenAt).toBeNull()
+      }
+    })
+    it('baseline 未設定の item を clear すると ValidationError', async () => {
+      const item = await createItem({ title: 'no-baseline' })
+      const r = await itemService.clearBaseline({
+        id: item.id,
+        expectedVersion: item.version,
+      })
+      expect(r.ok).toBe(false)
+      if (!r.ok) expect(r.error.code).toBe('VALIDATION')
+    })
+  })
 })

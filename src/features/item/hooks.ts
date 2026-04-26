@@ -18,6 +18,7 @@ import {
   archiveItemAction,
   bulkSoftDeleteItemAction,
   bulkUpdateItemStatusAction,
+  clearItemBaselineAction,
   createItemAction,
   listItemAssigneesAction,
   listItemsAction,
@@ -248,6 +249,17 @@ export function useSetItemBaseline(workspaceId: string) {
   return useMutation({
     mutationFn: async (input: { id: string; expectedVersion: number }) =>
       unwrap(await setItemBaselineAction(input)),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
+}
+
+export function useClearItemBaseline(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: { id: string; expectedVersion: number }) =>
+      unwrap(await clearItemBaselineAction(input)),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
     },

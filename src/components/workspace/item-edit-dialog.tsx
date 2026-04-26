@@ -17,6 +17,7 @@ import { isAppError } from '@/lib/errors'
 
 import {
   useArchiveItem,
+  useClearItemBaseline,
   useCreateItem,
   useItemAssignees,
   useItems,
@@ -103,6 +104,7 @@ function ItemEditDialogInner({
   const archive = useArchiveItem(workspaceId)
   const unarchive = useUnarchiveItem(workspaceId)
   const setBaseline = useSetItemBaseline(workspaceId)
+  const clearBaseline = useClearItemBaseline(workspaceId)
 
   const { data: assignees } = useItemAssignees(item.id)
   const setAssignees = useSetItemAssignees(workspaceId, item.id)
@@ -457,6 +459,30 @@ function ItemEditDialogInner({
                 : item.baselineStartDate
                   ? 'ベースライン更新'
                   : 'ベースライン記録'}
+            </Button>
+          )}
+          {item.baselineStartDate && !item.archivedAt && (
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={clearBaseline.isPending}
+              onClick={async () => {
+                if (!window.confirm('baseline をクリアしますか?\n(差分集計から外れます)')) return
+                try {
+                  await clearBaseline.mutateAsync({
+                    id: item.id,
+                    expectedVersion: item.version,
+                  })
+                  toast.success('ベースラインをクリアしました')
+                } catch (e) {
+                  toast.error(isAppError(e) ? e.message : 'ベースラインクリアに失敗しました')
+                }
+              }}
+              data-testid="item-edit-clear-baseline"
+              className="text-muted-foreground"
+              title="baseline 列を NULL に戻す"
+            >
+              {clearBaseline.isPending ? 'クリア中…' : 'baseline クリア'}
             </Button>
           )}
           <Button variant="outline" onClick={() => onOpenChange(false)}>

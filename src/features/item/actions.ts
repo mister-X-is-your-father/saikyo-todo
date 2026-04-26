@@ -53,6 +53,13 @@ export async function setItemBaselineAction(input: {
   return await actionWrap(() => itemService.setBaseline(input))
 }
 
+export async function clearItemBaselineAction(input: {
+  id: string
+  expectedVersion: number
+}): Promise<Result<Item>> {
+  return await actionWrap(() => itemService.clearBaseline(input))
+}
+
 export async function moveItemAction(input: unknown): Promise<Result<Item>> {
   return await actionWrap(() => itemService.move(input))
 }

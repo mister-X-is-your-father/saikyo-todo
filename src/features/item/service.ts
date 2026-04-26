@@ -402,6 +402,44 @@ export const itemService = {
     })
   },
 
+  /**
+   * Phase 6.15 iter 53 — baseline をクリア (3 列を NULL に戻す)。
+   * baseline 未設定の item に呼ぶと ValidationError。
+   */
+  async clearBaseline(input: { id: string; expectedVersion: number }): Promise<Result<Item>> {
+    if (!input.id) return err(new ValidationError('id 必須'))
+    return await mutateWithGuard<Item>({
+      findById: (tx, id) => itemRepository.findById(tx, id),
+      id: input.id,
+      notFoundMessage: NOT_FOUND,
+      fn: async (tx, before, user) => {
+        if (!before.baselineStartDate && !before.baselineEndDate && !before.baselineTakenAt) {
+          return err(new ValidationError('baseline 未設定です'))
+        }
+        const updated = await itemRepository.updateWithLock(tx, input.id, input.expectedVersion, {
+          baselineStartDate: null,
+          baselineEndDate: null,
+          baselineTakenAt: null,
+        })
+        if (!updated) return err(new ConflictError())
+        await recordAudit(tx, {
+          workspaceId: before.workspaceId,
+          actorType: 'user',
+          actorId: user.id,
+          targetType: 'item',
+          targetId: updated.id,
+          action: 'clear_baseline',
+          before: {
+            baselineStartDate: before.baselineStartDate,
+            baselineEndDate: before.baselineEndDate,
+          },
+          after: { baselineStartDate: null, baselineEndDate: null },
+        })
+        return ok(updated)
+      },
+    })
+  },
+
   /** Unarchive (アーカイブ復元)。archived_at を NULL に戻す。 */
   async unarchive(input: { id: string; expectedVersion: number }): Promise<Result<Item>> {
     if (!input.id) return err(new ValidationError('id 必須'))
