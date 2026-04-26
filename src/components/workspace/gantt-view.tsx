@@ -21,7 +21,7 @@
  *     (Phase 6.15 iter 1 の computeCriticalPath を呼んだ結果を渡す想定)
  *   - workspace 横断 edges 取得 hook は次 iter (現状は呼び出し元から渡す)
  */
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 
 import { addDays, differenceInCalendarDays, format, isValid, parseISO } from 'date-fns'
 import { parseAsString, useQueryState } from 'nuqs'
@@ -62,6 +62,8 @@ export function GanttView({
   const criticalSet = useMemo(() => new Set(criticalIds), [criticalIds])
   // Phase 6.15 iter 31: bar click で ItemEditDialog (deep link 経由) を開く
   const [, setOpenItemId] = useQueryState('item', parseAsString)
+  // Phase 6.15 iter 60: "今日にジャンプ" — outer scroll container を ref で持つ
+  const scrollRef = useRef<HTMLDivElement | null>(null)
 
   const withDates = useMemo(
     () =>
@@ -159,8 +161,15 @@ export function GanttView({
     }
   }
 
+  function scrollToToday() {
+    const el = scrollRef.current
+    if (!el || todayX === null) return
+    const target = LABEL_COL_PX + todayX - el.clientWidth / 2
+    el.scrollTo({ left: Math.max(0, target), behavior: 'smooth' })
+  }
+
   return (
-    <div data-testid="gantt-view" className="overflow-auto rounded-lg border">
+    <div ref={scrollRef} data-testid="gantt-view" className="overflow-auto rounded-lg border">
       {/* Project summary banner (Phase 6.15 iter 46 — TeamGantt/GanttPRO 風) */}
       <div
         data-testid="gantt-summary"
@@ -196,6 +205,17 @@ export function GanttView({
             遅延 <span className="font-mono">{slipItemCount}</span> 件 / 計
             <span className="font-mono"> {totalSlipDays}</span> 日
           </span>
+        )}
+        {todayX !== null && (
+          <button
+            type="button"
+            data-testid="gantt-jump-today"
+            onClick={scrollToToday}
+            className="text-foreground hover:bg-muted ml-auto rounded border px-2 py-0.5 text-xs"
+            title="今日の縦線まで横スクロール"
+          >
+            今日へジャンプ
+          </button>
         )}
       </div>
       <div style={{ width: LABEL_COL_PX + timelineWidth, position: 'relative' }}>
