@@ -26,7 +26,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { addDays, differenceInCalendarDays, format, isValid, parseISO } from 'date-fns'
 import { parseAsBoolean, parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs'
 
-import { computeProjectStats } from '@/features/gantt/project-stats'
+import { computeProjectStats, formatSlipText } from '@/features/gantt/project-stats'
 import type { Item } from '@/features/item/schema'
 
 import { type GanttBar, type GanttDepEdge, GanttDependencyArrows } from './gantt-dependency-arrows'
@@ -418,15 +418,9 @@ export function GanttView({
           const baselineLeft = blStart ? differenceInCalendarDays(blStart, range!.start) * dayPx : 0
           const baselineWidth =
             blStart && blEnd ? (differenceInCalendarDays(blEnd, blStart) + 1) * dayPx : 0
-          // Phase 6.15 iter 51: slip 日数 (現 due - baselineEnd)。tooltip / title に追記
+          // Phase 6.15 iter 51/88: slip 日数 (現 due - baselineEnd)。formatSlipText で文字列化
           const slipDays = blEnd ? differenceInCalendarDays(due, blEnd) : 0
-          const slipText = !blEnd
-            ? ''
-            : slipDays > 0
-              ? ` [遅延 +${slipDays}日]`
-              : slipDays < 0
-                ? ` [前倒し ${slipDays}日]`
-                : ' [計画通り]'
+          const slipText = formatSlipText(slipDays, Boolean(blEnd))
           // Phase 6.15 iter 79: bar 内部に進捗 fill (TeamGantt 風)。status 文字列ベース。
           //   todo: 0% / in_progress: 50% / done: 100% (それ以外は 0%)
           //   done は既に opacity 落としていて見にくいので fill は省略

@@ -865,6 +865,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter85] Today group label に **日付 + 曜日** を埋め込み (Todoist Upcoming 風): "今日 (4/27 月)" / "明日 (4/28 火)" / "今週内 (4/29 水 〜 5/4 月)"。"明日って何日?" の認知コストを下げる。unit test +1 件 (label format assertion) = 446 PASS
 - ✅ [iter86] notification-bell の `formatNotificationBody` / `formatRelativeTime` を `src/features/notification/format.ts` に抽出 + **vitest 単体テスト 10 件追加**: heartbeat (overdue/7d) / mention (40 文字 truncate) / invite / sync-failure 各 type + 相対時刻 5 buckets。53 files / 456 tests PASS
 - ✅ [iter87] gantt-view の baseline / slip 集計を `src/features/gantt/project-stats.ts` の `computeProjectStats(rows)` に抽出 + **vitest 単体テスト 4 件追加**: baseline 未設定 / 遅延 / 前倒し&計画通り / 複数 item 合算。54 files / 460 tests PASS。Playwright で "遅延 1 件 / 計 3 日" がそのまま表示されることを確認
+- ✅ [iter88] gantt-view の slipText 文字列化を `formatSlipText(slipDays, hasBaseline)` に抽出 + **vitest 単体テスト 4 件追加** (空 / 遅延 / 前倒し / 計画通り の 4 ケース)。464 tests PASS。Playwright で 5 日遅延 item の bar title に "[遅延 +5日]" が含まれることを確認
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 

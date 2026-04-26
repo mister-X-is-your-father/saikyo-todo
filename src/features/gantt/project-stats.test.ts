@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { Item } from '@/features/item/schema'
 
-import { computeProjectStats, type DatedItem } from './project-stats'
+import { computeProjectStats, type DatedItem, formatSlipText } from './project-stats'
 
 function makeItem(overrides: Partial<Item> & { id: string }): Item {
   return {
@@ -130,5 +130,25 @@ describe('computeProjectStats', () => {
       slipItemCount: 2,
       totalSlipDays: 10,
     })
+  })
+})
+
+describe('formatSlipText', () => {
+  it('baseline 未設定 (hasBaseline=false) は空文字', () => {
+    expect(formatSlipText(0, false)).toBe('')
+    expect(formatSlipText(5, false)).toBe('')
+  })
+
+  it('遅延 (>0) は " [遅延 +N日]"', () => {
+    expect(formatSlipText(3, true)).toBe(' [遅延 +3日]')
+    expect(formatSlipText(1, true)).toBe(' [遅延 +1日]')
+  })
+
+  it('前倒し (<0) は " [前倒し N日]" (符号付き)', () => {
+    expect(formatSlipText(-2, true)).toBe(' [前倒し -2日]')
+  })
+
+  it('計画通り (=0) は " [計画通り]"', () => {
+    expect(formatSlipText(0, true)).toBe(' [計画通り]')
   })
 })

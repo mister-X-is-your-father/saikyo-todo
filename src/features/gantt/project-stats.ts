@@ -49,3 +49,19 @@ export function computeProjectStats(rows: DatedItem[]): ProjectStats {
   }
   return { baselineCount, slipItemCount, totalSlipDays }
 }
+
+/**
+ * Gantt bar の title attr に追記する slip 表示文字列。
+ * - baseline 未設定 (hasBaseline=false): '' (空文字)
+ * - slipDays > 0: ` [遅延 +N日]`
+ * - slipDays < 0: ` [前倒し N日]` (符号付き=負数のまま見せる)
+ * - slipDays === 0: ` [計画通り]`
+ *
+ * 先頭スペース込みで返すので caller は単純に template literal に挿入できる。
+ */
+export function formatSlipText(slipDays: number, hasBaseline: boolean): string {
+  if (!hasBaseline) return ''
+  if (slipDays > 0) return ` [遅延 +${slipDays}日]`
+  if (slipDays < 0) return ` [前倒し ${slipDays}日]`
+  return ' [計画通り]'
+}
