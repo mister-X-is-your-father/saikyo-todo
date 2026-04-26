@@ -126,6 +126,14 @@ export function GanttView({
 
   const totalHeight = HEADER_PX + withDates.length * ROW_PX
 
+  // 月境界線 (TeamGantt 風)。日 i の day が前日と異なる月に変わるとき縦線
+  const monthBoundaryDays: number[] = []
+  for (let i = 1; i < days.length; i++) {
+    if (days[i]!.getMonth() !== days[i - 1]!.getMonth()) {
+      monthBoundaryDays.push(i)
+    }
+  }
+
   return (
     <div data-testid="gantt-view" className="overflow-auto rounded-lg border">
       <div style={{ width: LABEL_COL_PX + timelineWidth, position: 'relative' }}>
@@ -189,6 +197,41 @@ export function GanttView({
             })}
           </div>
         </div>
+        {/* 月境界線 (Phase 6.15 iter 16 — TeamGantt 風) */}
+        {monthBoundaryDays.length > 0 && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute z-10"
+            style={{
+              left: LABEL_COL_PX,
+              top: 0,
+              width: timelineWidth,
+              height: totalHeight,
+            }}
+          >
+            {monthBoundaryDays.map((dayIdx) => (
+              <div
+                key={`month-${dayIdx}`}
+                data-testid={`gantt-month-boundary-${dayIdx}`}
+                className="absolute"
+                style={{
+                  left: dayIdx * DAY_PX - 0.5,
+                  top: 0,
+                  width: 1,
+                  height: '100%',
+                  background: 'rgba(100, 116, 139, 0.4)', // slate-500 半透明
+                }}
+              >
+                <span
+                  className="bg-background absolute -top-1 left-0.5 rounded px-1 text-[10px] leading-none font-medium text-slate-700 dark:text-slate-300"
+                  style={{ whiteSpace: 'nowrap' }}
+                >
+                  {format(days[dayIdx]!, 'M月')}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
         {/* 週末縦帯 (Phase 6.15 iter 11 — TeamGantt の典型表現)。bar の下に薄い背景 */}
         <div
           aria-hidden

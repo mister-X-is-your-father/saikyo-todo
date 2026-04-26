@@ -781,7 +781,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter13] /sprints form a11y: sprint-name (required + minLength + maxLength{100}) / sprint-start, sprint-end (required + min={startDate} で end >= start を HTML 検証) を追加
 - ✅ [iter14] /time-entries form: teDate / teCategory / teDescription / teMinutes に required + aria-required を追加。teDate に max=today / teDescription に maxLength=500 / 全項目に native 検証
 - ✅ [iter15] Dashboard view の recharts ResponsiveContainer warning (`width(-1) height(-1)`) → fix: 親 div に `minWidth:0 minHeight:256`、ResponsiveContainer に明示的に width/height/minWidth/minHeight 指定 (dev mode の hidden state レース回避)
-- ⏳ [iter15] Gantt: today-line が表示されないケースあり (items 範囲内のはずだが count=0、view 切替直後の wait 不足の可能性) — 次 iter で wait 時間増やして再検証
+- ✅ [iter15→16] Gantt today-line: iter15 で count=0 だったのは items の date range が今日を含んでいなかった + wait 不足。iter16 で「今日±3 日」items + 2.5s wait → today-line=1 / weekend cells=2 確認 OK
+- ✅ [iter16] Gantt: 月境界線追加 (TeamGantt 風) — 月が切り替わる位置に slate 半透明 1px 線 + 「M月」ラベル
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
 ## 6. Service 層を書くときの抽象
