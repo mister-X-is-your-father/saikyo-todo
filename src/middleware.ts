@@ -12,8 +12,10 @@ export const config = {
      * 以下を除く全パスに適用:
      * - _next/static / _next/image (Next.js 静的)
      * - 画像 (favicon.ico, .svg, .png 等)
+     * - PWA 関連 (sw.js / manifest.webmanifest / ~offline / icon* / apple-icon)
+     *   → Supabase Auth Cookie 注入を SW リクエストに乗せない
      * - api/health 等 (将来必要なら)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|sw\\.js|manifest\\.webmanifest|~offline|icon$|icon-512$|apple-icon$|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

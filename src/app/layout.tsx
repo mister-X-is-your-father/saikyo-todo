@@ -7,6 +7,7 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { Toaster } from 'sonner'
 
 import { AppQueryProvider } from '@/components/shared/query-provider'
+import { ServiceWorkerRegister } from '@/components/shared/sw-register'
 import { ThemeProvider } from '@/components/shared/theme-provider'
 
 import './globals.css'
@@ -24,6 +25,22 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: '最強TODO',
   description: 'チーム共有 AI 駆動 TODO',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: '最強TODO',
+  },
+}
+
+export const viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f8fafc' },
+    { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover' as const,
 }
 
 export default async function RootLayout({
@@ -47,6 +64,7 @@ export default async function RootLayout({
               <AppQueryProvider>{children}</AppQueryProvider>
             </NuqsAdapter>
             <Toaster richColors position="bottom-right" closeButton />
+            <ServiceWorkerRegister />
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

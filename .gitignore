@@ -58,3 +58,8 @@ supabase/.temp
 
 # visual QA スクショ (再生成可能、コミット不要)
 /scripts/screenshots/
+
+# PWA Service Worker (Serwist 生成物、production build で再生成)
+/public/sw.js
+/public/sw.js.map
+/public/swe-worker-*.js

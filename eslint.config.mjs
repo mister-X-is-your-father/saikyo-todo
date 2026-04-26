@@ -48,6 +48,10 @@ const eslintConfig = defineConfig([
     'supabase/**',
     'node_modules/**',
     'coverage/**',
+    // Serwist 生成物 (PWA Service Worker)
+    'public/sw.js',
+    'public/sw.js.map',
+    'public/swe-worker-*.js',
   ]),
 ])
 
