@@ -34,6 +34,7 @@ import type { DecomposeProposal } from '@/features/decompose-proposal/schema'
 import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 
 interface Props {
   workspaceId: string
@@ -299,62 +300,82 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
   if (editing) {
     return (
       <li
-        className="space-y-2 rounded border bg-white p-2 dark:bg-slate-900"
+        className="rounded border bg-white p-2 dark:bg-slate-900"
         data-testid={`proposal-${proposal.id}-edit`}
       >
-        <div className="space-y-1">
-          <Label htmlFor={`p-title-${proposal.id}`}>タイトル</Label>
-          <IMEInput
-            id={`p-title-${proposal.id}`}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor={`p-desc-${proposal.id}`}>説明</Label>
-          <IMEInput
-            id={`p-desc-${proposal.id}`}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
-        <label className="flex items-center gap-1.5 text-xs">
-          <input
-            type="checkbox"
-            checked={isMust}
-            onChange={(e) => setIsMust(e.target.checked)}
-            data-testid={`proposal-${proposal.id}-must`}
-          />
-          <span className="font-medium text-red-700">MUST</span>
-        </label>
-        {isMust && (
+        <form
+          className="space-y-2"
+          onSubmit={(e) => {
+            e.preventDefault()
+            void handleSaveEdit()
+          }}
+        >
           <div className="space-y-1">
-            <Label htmlFor={`p-dod-${proposal.id}`}>DoD</Label>
+            <Label htmlFor={`p-title-${proposal.id}`}>タイトル</Label>
             <IMEInput
-              id={`p-dod-${proposal.id}`}
-              value={dod}
-              onChange={(e) => setDod(e.target.value)}
+              id={`p-title-${proposal.id}`}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              aria-required="true"
+              minLength={1}
+              maxLength={500}
             />
           </div>
-        )}
-        <div className="flex justify-end gap-1">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setEditing(false)}
-            disabled={update.isPending}
-          >
-            キャンセル
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => void handleSaveEdit()}
-            disabled={update.isPending}
-            data-testid={`proposal-${proposal.id}-save`}
-          >
-            {update.isPending ? '保存中…' : '保存'}
-          </Button>
-        </div>
+          <div className="space-y-1">
+            <Label htmlFor={`p-desc-${proposal.id}`}>説明</Label>
+            <Textarea
+              id={`p-desc-${proposal.id}`}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              maxLength={10000}
+              aria-label="提案 description"
+            />
+          </div>
+          <label className="flex items-center gap-1.5 text-xs">
+            <input
+              type="checkbox"
+              checked={isMust}
+              onChange={(e) => setIsMust(e.target.checked)}
+              data-testid={`proposal-${proposal.id}-must`}
+            />
+            <span className="font-medium text-red-700">MUST</span>
+          </label>
+          {isMust && (
+            <div className="space-y-1">
+              <Label htmlFor={`p-dod-${proposal.id}`}>DoD</Label>
+              <IMEInput
+                id={`p-dod-${proposal.id}`}
+                value={dod}
+                onChange={(e) => setDod(e.target.value)}
+                required
+                aria-required="true"
+                minLength={1}
+                maxLength={2000}
+              />
+            </div>
+          )}
+          <div className="flex justify-end gap-1">
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => setEditing(false)}
+              disabled={update.isPending}
+            >
+              キャンセル
+            </Button>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={update.isPending}
+              data-testid={`proposal-${proposal.id}-save`}
+            >
+              {update.isPending ? '保存中…' : '保存'}
+            </Button>
+          </div>
+        </form>
       </li>
     )
   }
