@@ -30,6 +30,7 @@ import { GanttView } from '@/components/workspace/gantt-view'
 import { InboxView } from '@/components/workspace/inbox-view'
 import { ItemEditDialog } from '@/components/workspace/item-edit-dialog'
 import { KanbanView } from '@/components/workspace/kanban-view'
+import { PersonalPeriodView } from '@/components/workspace/personal-period-view'
 import { QuickAdd } from '@/components/workspace/quick-add'
 import { TodayView } from '@/components/workspace/today-view'
 
@@ -38,7 +39,18 @@ interface Props {
   currentUserId: string
 }
 
-const VIEWS = ['today', 'inbox', 'kanban', 'backlog', 'gantt', 'dashboard'] as const
+// Phase 6.15 iter108: 個人 daily/weekly/monthly view (ゴール付) を追加。
+const VIEWS = [
+  'today',
+  'inbox',
+  'kanban',
+  'backlog',
+  'gantt',
+  'dashboard',
+  'daily',
+  'weekly',
+  'monthly',
+] as const
 type ViewKey = (typeof VIEWS)[number]
 
 export function ItemsBoard({ workspaceId, currentUserId }: Props) {
@@ -248,6 +260,33 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         >
           Dashboard
         </Button>
+        <Button
+          variant={view === 'daily' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setView('daily')}
+          data-testid="view-daily-btn"
+          aria-pressed={view === 'daily'}
+        >
+          日次
+        </Button>
+        <Button
+          variant={view === 'weekly' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setView('weekly')}
+          data-testid="view-weekly-btn"
+          aria-pressed={view === 'weekly'}
+        >
+          週次
+        </Button>
+        <Button
+          variant={view === 'monthly' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setView('monthly')}
+          data-testid="view-monthly-btn"
+          aria-pressed={view === 'monthly'}
+        >
+          月次
+        </Button>
         <div className="ml-4 flex items-center gap-2 text-sm">
           <label className="flex items-center gap-1">
             <input
@@ -303,6 +342,12 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         <TodayView workspaceId={workspaceId} items={filtered} currentUserId={currentUserId} />
       ) : view === 'inbox' ? (
         <InboxView workspaceId={workspaceId} items={filtered} currentUserId={currentUserId} />
+      ) : view === 'daily' ? (
+        <PersonalPeriodView workspaceId={workspaceId} items={filtered} period="day" />
+      ) : view === 'weekly' ? (
+        <PersonalPeriodView workspaceId={workspaceId} items={filtered} period="week" />
+      ) : view === 'monthly' ? (
+        <PersonalPeriodView workspaceId={workspaceId} items={filtered} period="month" />
       ) : (data?.length ?? 0) === 0 ? (
         <EmptyState title="まだ Item がありません" description="上のフォームから作成してください" />
       ) : view === 'backlog' ? (
