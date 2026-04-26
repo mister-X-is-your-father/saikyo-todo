@@ -768,6 +768,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter5] signup: displayName / email / password に required + aria-required + minLength を追加 (signup-form.tsx)
 - ⏳ [iter4] signup: 短 password 送信時に toast が出ない (RHF zodResolver が submit 前に block しているか、エラー UI 不足) — required で空送信は防げるが zod errors のインライン表示 / toast は別問題、次 iter
 - ✅ [iter5] 未 login workspace アクセス: /login へ redirect されることを確認 (middleware OK)
+- 🚨 [iter6] login: Playwright UI signin で url が /login のまま (=login form 経由 signin が動かない疑い) — 要詳細調査 (login-form.tsx の Server Action 経路 / supabase auth cookie / dev devtools 干渉のいずれか) — 次 iter
+- ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
 ## 6. Service 層を書くときの抽象
 

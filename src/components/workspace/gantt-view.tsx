@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Gantt View (3rd ViewPlugin)。MVP は棒のみ、依存線は post-MVP。
+ * Gantt View。MVP は棒のみ実装、Phase 6.15 iter 6 で **依存線 SVG オーバーレイ** を統合。
  *
  * 自作理由: gantt-task-react は peerDeps が React 18 固定。React 19 の pnpm strict peer
  * で install できない。MVP は "棒のみ" なので SVG 不要、div + Tailwind で十分。
@@ -13,6 +13,13 @@
  *   - 1 day = 40px 固定
  *   - bar left = (startDate - rangeStart) * dayWidth
  *   - bar width = (dueDate - startDate + 1) * dayWidth
+ *
+ * 依存線 (Phase 6.15 iter 2 で component 化、iter 6 で配線):
+ *   - props.edges に Phase 6.10 item_dependencies (type='blocks') を fromId/toId で渡すと
+ *     Manhattan L 字パスで矢印描画。両端 bar が isCritical なら赤実線
+ *   - props.criticalIds に critical path 上の itemId を渡すと bar が isCritical 扱い
+ *     (Phase 6.15 iter 1 の computeCriticalPath を呼んだ結果を渡す想定)
+ *   - workspace 横断 edges 取得 hook は次 iter (現状は呼び出し元から渡す)
  */
 import { useMemo } from 'react'
 
@@ -20,9 +27,15 @@ import { addDays, differenceInCalendarDays, format, isValid, parseISO } from 'da
 
 import type { Item } from '@/features/item/schema'
 
+import { type GanttBar, type GanttDepEdge, GanttDependencyArrows } from './gantt-dependency-arrows'
+
 interface Props {
   workspaceId: string
   items: Item[]
+  /** Phase 6.10 item_dependencies の type='blocks' edges (workspace 横断) */
+  edges?: GanttDepEdge[]
+  /** Phase 6.15 iter 1 computeCriticalPath の criticalPathIds */
+  criticalIds?: string[]
 }
 
 const DAY_PX = 40
@@ -36,8 +49,13 @@ function toDate(v: Date | string | null | undefined): Date | null {
   return isValid(d) ? d : null
 }
 
-export function GanttView({ items }: Omit<Props, 'workspaceId'> & { workspaceId?: string }) {
+export function GanttView({
+  items,
+  edges = [],
+  criticalIds = [],
+}: Omit<Props, 'workspaceId'> & { workspaceId?: string }) {
   const active = useMemo(() => items.filter((i) => !i.deletedAt), [items])
+  const criticalSet = useMemo(() => new Set(criticalIds), [criticalIds])
 
   const withDates = useMemo(
     () =>
@@ -83,9 +101,36 @@ export function GanttView({ items }: Omit<Props, 'workspaceId'> & { workspaceId?
   const days: Date[] = []
   for (let i = 0; i < totalDays; i++) days.push(addDays(range!.start, i))
 
+  // 行の Y 位置 = HEADER_PX + index * ROW_PX、bar は top:1 + (ROW_PX - 8)/2 が中央
+  const ganttBars: GanttBar[] = withDates.map((x, idx) => {
+    const leftDays = differenceInCalendarDays(x.start, range!.start)
+    const spanDays = differenceInCalendarDays(x.due, x.start) + 1
+    const barLeft = leftDays * DAY_PX
+    const barWidth = spanDays * DAY_PX
+    return {
+      id: x.item.id,
+      leftPx: barLeft,
+      rightPx: barLeft + barWidth,
+      centerYPx: HEADER_PX + idx * ROW_PX + ROW_PX / 2,
+      isCritical: criticalSet.has(x.item.id),
+    }
+  })
+
+  const totalHeight = HEADER_PX + withDates.length * ROW_PX
+
   return (
     <div data-testid="gantt-view" className="overflow-auto rounded-lg border">
       <div style={{ width: LABEL_COL_PX + timelineWidth, position: 'relative' }}>
+        {/* 依存線 SVG オーバーレイ (Phase 6.15 iter 2 の component を iter 6 で配線) */}
+        {edges.length > 0 && (
+          <GanttDependencyArrows
+            width={timelineWidth}
+            height={totalHeight}
+            bars={ganttBars}
+            edges={edges}
+            offsetLeftPx={LABEL_COL_PX}
+          />
+        )}
         {/* Header */}
         <div className="bg-muted sticky top-0 z-10 flex border-b" style={{ height: HEADER_PX }}>
           <div
@@ -130,6 +175,7 @@ export function GanttView({ items }: Omit<Props, 'workspaceId'> & { workspaceId?
               <div style={{ width: timelineWidth, position: 'relative', height: ROW_PX }}>
                 <div
                   data-testid={`gantt-bar-${item.id}`}
+                  data-critical={criticalSet.has(item.id) ? 'true' : 'false'}
                   className="absolute top-1 rounded text-xs leading-6"
                   style={{
                     left: barLeft,
@@ -138,8 +184,10 @@ export function GanttView({ items }: Omit<Props, 'workspaceId'> & { workspaceId?
                     background: item.isMust ? 'rgba(239,68,68,0.8)' : 'rgba(59,130,246,0.8)',
                     color: 'white',
                     paddingLeft: 6,
+                    // critical path 強調: 赤い太枠 (TeamGantt / GanttPRO 風)
+                    boxShadow: criticalSet.has(item.id) ? '0 0 0 2px rgb(220, 38, 38)' : undefined,
                   }}
-                  title={`${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')}`}
+                  title={`${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')}${criticalSet.has(item.id) ? ' (critical path)' : ''}`}
                 >
                   {spanDays}d
                 </div>
