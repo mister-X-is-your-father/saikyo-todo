@@ -41,10 +41,15 @@ interface Props {
   projectDurationDays?: number
 }
 
-const DAY_PX = 40
 const ROW_PX = 32
 const HEADER_PX = 32
 const LABEL_COL_PX = 240
+/** Phase 6.15 iter 73: TeamGantt 風 zoom (1 day = N px)。default は 1x = 40px。 */
+const ZOOM_PX: Record<'compact' | 'normal' | 'wide', number> = {
+  compact: 24,
+  normal: 40,
+  wide: 64,
+}
 
 function toDate(v: Date | string | null | undefined): Date | null {
   if (!v) return null
@@ -66,6 +71,9 @@ export function GanttView({
   const scrollRef = useRef<HTMLDivElement | null>(null)
   // Phase 6.15 iter 62: 完了済 (doneAt あり) を行から隠す toggle (TeamGantt 風 filter)
   const [hideDone, setHideDone] = useState(false)
+  // Phase 6.15 iter 73: zoom (compact/normal/wide) — TeamGantt の day/week/month zoom 相当
+  const [zoom, setZoom] = useState<'compact' | 'normal' | 'wide'>('normal')
+  const dayPx = ZOOM_PX[zoom]
 
   const withDates = useMemo(
     () =>
@@ -98,7 +106,7 @@ export function GanttView({
 
   // 共通計算。range が null (= withDates 空) のときは安全に飛ばす。
   const totalDays = range ? differenceInCalendarDays(range.end, range.start) + 1 : 0
-  const timelineWidth = totalDays * DAY_PX
+  const timelineWidth = totalDays * dayPx
   const days: Date[] = []
   if (range) {
     for (let i = 0; i < totalDays; i++) days.push(addDays(range.start, i))
@@ -108,9 +116,9 @@ export function GanttView({
   const today = new Date()
   const todayDayOffset = range ? differenceInCalendarDays(today, range.start) : -1
   const todayInRange = todayDayOffset >= 0 && todayDayOffset < totalDays
-  // bar の day cell は左端に位置するので、現在時刻分だけ DAY_PX 内をシフト
+  // bar の day cell は左端に位置するので、現在時刻分だけ dayPx 内をシフト
   const todayHourFraction = (today.getHours() * 60 + today.getMinutes()) / (24 * 60)
-  const todayX = todayInRange ? (todayDayOffset + todayHourFraction) * DAY_PX : null
+  const todayX = todayInRange ? (todayDayOffset + todayHourFraction) * dayPx : null
 
   // Phase 6.15 iter 61: 初回 mount で today に自動スクロール (TeamGantt default)。
   // 早期 return より先に Hook を呼ぶ必要があるためここに置く (rules-of-hooks)。
@@ -140,8 +148,8 @@ export function GanttView({
   const ganttBars: GanttBar[] = withDates.map((x, idx) => {
     const leftDays = differenceInCalendarDays(x.start, range!.start)
     const spanDays = differenceInCalendarDays(x.due, x.start) + 1
-    const barLeft = leftDays * DAY_PX
-    const barWidth = spanDays * DAY_PX
+    const barLeft = leftDays * dayPx
+    const barWidth = spanDays * dayPx
     return {
       id: x.item.id,
       leftPx: barLeft,
@@ -225,10 +233,21 @@ export function GanttView({
             <span className="font-mono"> {totalSlipDays}</span> 日
           </span>
         )}
-        <label
-          data-testid="gantt-hide-done-toggle"
-          className="ml-auto flex items-center gap-1 text-xs"
-        >
+        <label className="ml-auto flex items-center gap-1 text-xs">
+          <span className="text-muted-foreground">zoom</span>
+          <select
+            value={zoom}
+            onChange={(e) => setZoom(e.target.value as typeof zoom)}
+            className="rounded border bg-transparent px-1 py-0.5 text-xs"
+            data-testid="gantt-zoom-select"
+            aria-label="Gantt の 1 日あたりの幅"
+          >
+            <option value="compact">狭 (24px/day)</option>
+            <option value="normal">標準 (40px/day)</option>
+            <option value="wide">広 (64px/day)</option>
+          </select>
+        </label>
+        <label data-testid="gantt-hide-done-toggle" className="flex items-center gap-1 text-xs">
           <input
             type="checkbox"
             checked={hideDone}
@@ -297,7 +316,7 @@ export function GanttView({
               return (
                 <div
                   key={i}
-                  style={{ width: DAY_PX }}
+                  style={{ width: dayPx }}
                   data-weekend={isWeekend ? 'true' : 'false'}
                   className={
                     'shrink-0 border-r px-1 text-center text-xs ' +
@@ -328,7 +347,7 @@ export function GanttView({
                 data-testid={`gantt-month-boundary-${dayIdx}`}
                 className="absolute"
                 style={{
-                  left: dayIdx * DAY_PX - 0.5,
+                  left: dayIdx * dayPx - 0.5,
                   top: 0,
                   width: 1,
                   height: '100%',
@@ -365,9 +384,9 @@ export function GanttView({
                 data-testid={`gantt-weekend-${i}`}
                 className="absolute"
                 style={{
-                  left: i * DAY_PX,
+                  left: i * dayPx,
                   top: 0,
-                  width: DAY_PX,
+                  width: dayPx,
                   height: '100%',
                   background: 'rgba(148, 163, 184, 0.10)', // slate-400 薄め
                 }}
@@ -380,8 +399,8 @@ export function GanttView({
         {withDates.map(({ item, start, due }, idx) => {
           const leftDays = differenceInCalendarDays(start, range!.start)
           const spanDays = differenceInCalendarDays(due, start) + 1
-          const barLeft = leftDays * DAY_PX
-          const barWidth = spanDays * DAY_PX
+          const barLeft = leftDays * dayPx
+          const barWidth = spanDays * dayPx
           // 完了済 (doneAt あり) は TeamGantt 風 opacity を下げ + bar に取り消し線
           const isDone = Boolean(item.doneAt)
           const baseAlpha = isDone ? 0.4 : item.isMust ? 0.9 : 0.8
@@ -392,11 +411,9 @@ export function GanttView({
           const blStart = toDate(item.baselineStartDate)
           const blEnd = toDate(item.baselineEndDate)
           const hasBaseline = Boolean(blStart && blEnd)
-          const baselineLeft = blStart
-            ? differenceInCalendarDays(blStart, range!.start) * DAY_PX
-            : 0
+          const baselineLeft = blStart ? differenceInCalendarDays(blStart, range!.start) * dayPx : 0
           const baselineWidth =
-            blStart && blEnd ? (differenceInCalendarDays(blEnd, blStart) + 1) * DAY_PX : 0
+            blStart && blEnd ? (differenceInCalendarDays(blEnd, blStart) + 1) * dayPx : 0
           // Phase 6.15 iter 51: slip 日数 (現 due - baselineEnd)。tooltip / title に追記
           const slipDays = blEnd ? differenceInCalendarDays(due, blEnd) : 0
           const slipText = !blEnd
@@ -453,7 +470,7 @@ export function GanttView({
                     data-critical={criticalSet.has(item.id) ? 'true' : 'false'}
                     className="absolute"
                     style={{
-                      left: barLeft + (DAY_PX - 18) / 2,
+                      left: barLeft + (dayPx - 18) / 2,
                       top: (ROW_PX - 18) / 2,
                       width: 18,
                       height: 18,

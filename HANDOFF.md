@@ -850,6 +850,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter70] navigation 整合: workspace home に **Time Entries** link 追加 (PDCA / Templates と並ぶ)、`/archive` ページの pageActions に **← Workspace** back link 追加 (Sprint/Goals/PDCA/Templates/TimeEntries と同パターン)。これで全 6 サブページに統一された戻り動線
 - ✅ [iter71] **Dashboard MUST item title click → ItemEditDialog**: title-click pattern を Dashboard view にも展開 (Today/Inbox/Kanban/Backlog/Gantt/Archive に続いて 7 箇所目)。`useQueryState('item')` + `dashboard-must-title-<id>` button。Playwright で deep link 反映を確認
 - ✅ [iter72] **recharts `width(-1)/height(-1)` warning 解消** (Dashboard burndown chart): ResponsiveContainer の `height="100%"` と `minHeight={0}` を併用していたため race で 0-px で measure → 警告が出ていた。`height={256}` 数値固定 + minHeight prop 削除に変更、親 div の `h-64` も外して duplicated layout 制約を排除。Playwright で view 切替往復しても警告 0 件
+- ✅ [iter73] **Gantt zoom (compact/normal/wide) select** (TeamGantt の day/week/month zoom 相当): `DAY_PX` 定数 → state-driven `dayPx`、ZOOM_PX={compact:24, normal:40, wide:64}、summary banner に `<select aria-label="Gantt の 1 日あたりの幅">` 追加。Playwright で 10-day item の bar 幅が compact=240px → normal=400px → wide=640px に追従することを確認
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
