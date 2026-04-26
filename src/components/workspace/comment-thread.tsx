@@ -157,7 +157,16 @@ function CommentItem({
       </div>
       {editing ? (
         <div className="space-y-2">
-          <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3} />
+          <Textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            rows={3}
+            aria-label="コメント編集"
+            required
+            aria-required="true"
+            maxLength={10_000}
+            data-testid={`comment-edit-input-${comment.id}`}
+          />
           <div className="flex justify-end gap-2">
             <Button variant="outline" size="sm" onClick={() => setEditing(false)}>
               キャンセル
