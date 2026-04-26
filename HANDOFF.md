@@ -764,7 +764,9 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
 - ✅ [iter3] login: email/password input に required 属性なし → fix: `login-form.tsx` に required + aria-required + minLength=8
-- ⏳ [iter3] login: signup link click 後 url が /login のまま (要再検証 / 失敗 submit が混ざった可能性、次 iter で signup 画面探索時に確認)
+- ✅ [iter4] login: signup link plain click が dev overlay で hit-test 失敗していた → fix: `login/page.tsx` の Link / CardFooter に `relative z-10` を付与 (force:true なら遷移するが本来不要のはず → dev devtools overlay が遮ってた)
+- ⏳ [iter4] signup: displayName / email input に required 属性なし (次 iter で signup-form.tsx に追加)
+- ⏳ [iter4] signup: 短 password 送信時に toast が出ない (RHF zodResolver が submit 前に block しているか、エラー UI 不足)
 
 ## 6. Service 層を書くときの抽象
 

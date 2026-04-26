@@ -20,9 +20,13 @@ export default function LoginPage() {
       <CardContent>
         <LoginForm />
       </CardContent>
-      <CardFooter className="flex justify-between text-sm">
+      <CardFooter className="relative z-10 flex justify-between text-sm">
         <span className="text-muted-foreground">アカウント未作成?</span>
-        <Link href="/signup" className="text-primary underline-offset-4 hover:underline">
+        <Link
+          href="/signup"
+          className="text-primary relative z-10 underline-offset-4 hover:underline"
+          data-testid="signup-link"
+        >
           サインアップ
         </Link>
       </CardFooter>
