@@ -24,7 +24,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { addDays, differenceInCalendarDays, format, isValid, parseISO } from 'date-fns'
-import { parseAsString, useQueryState } from 'nuqs'
+import { parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs'
 
 import type { Item } from '@/features/item/schema'
 
@@ -71,8 +71,12 @@ export function GanttView({
   const scrollRef = useRef<HTMLDivElement | null>(null)
   // Phase 6.15 iter 62: 完了済 (doneAt あり) を行から隠す toggle (TeamGantt 風 filter)
   const [hideDone, setHideDone] = useState(false)
-  // Phase 6.15 iter 73: zoom (compact/normal/wide) — TeamGantt の day/week/month zoom 相当
-  const [zoom, setZoom] = useState<'compact' | 'normal' | 'wide'>('normal')
+  // Phase 6.15 iter 73-74: zoom (compact/normal/wide) — TeamGantt の day/week/month zoom 相当。
+  // iter 74 で nuqs URL state 化 (?zoom=wide が refresh 後も保持される)
+  const [zoom, setZoom] = useQueryState(
+    'zoom',
+    parseAsStringLiteral(['compact', 'normal', 'wide'] as const).withDefault('normal'),
+  )
   const dayPx = ZOOM_PX[zoom]
 
   const withDates = useMemo(
