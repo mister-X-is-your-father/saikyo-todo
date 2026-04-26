@@ -428,6 +428,16 @@ export function GanttView({
               : slipDays < 0
                 ? ` [前倒し ${slipDays}日]`
                 : ' [計画通り]'
+          // Phase 6.15 iter 79: bar 内部に進捗 fill (TeamGantt 風)。status 文字列ベース。
+          //   todo: 0% / in_progress: 50% / done: 100% (それ以外は 0%)
+          //   done は既に opacity 落としていて見にくいので fill は省略
+          const progressPct = isDone
+            ? 0
+            : item.status === 'in_progress'
+              ? 50
+              : item.status === 'done'
+                ? 100
+                : 0
           return (
             <div
               key={item.id}
@@ -512,9 +522,20 @@ export function GanttView({
                       cursor: 'pointer',
                       textDecoration: isDone ? 'line-through' : undefined,
                     }}
-                    title={`${item.title} — ${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')} (${spanDays}日)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}${slipText}`}
+                    title={`${item.title} — ${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')} (${spanDays}日)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}${slipText}${progressPct > 0 ? ` [進捗 ${progressPct}%]` : ''}`}
                     onClick={() => void setOpenItemId(item.id)}
                   >
+                    {progressPct > 0 && (
+                      <div
+                        data-testid={`gantt-progress-${item.id}`}
+                        aria-hidden
+                        className="pointer-events-none absolute inset-y-0 left-0 rounded-l"
+                        style={{
+                          width: `${progressPct}%`,
+                          background: 'rgba(0, 0, 0, 0.2)',
+                        }}
+                      />
+                    )}
                     {/* 短い bar (< 60px) では title 省略して d だけにする */}
                     {barWidth >= 60 && (
                       <span className="truncate font-medium" style={{ maxWidth: barWidth - 32 }}>

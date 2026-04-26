@@ -856,6 +856,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter76] **PDCA period (30/90) も URL 永続化** (nuqs `parseAsInteger.withDefault(30)`): `?pdcaDays=90` が反映 + reload 後も 90 日 button が aria-pressed のまま。Gantt と同パターンで view setting を URL に集約
 - ✅ [iter77] **BacklogView の dialog state を URL `?item=` に統合**: 旧 `useState<Item|null>(editing)` + 専用 `<ItemEditDialog>` を削除し、items-board 側の単一 dialog (URL 駆動) に集約。重複 rendering が無くなり、Backlog でも refresh / 共有 link で詳細 dialog が復元できる。Playwright で URL 反映 + dialog count=1 を直接確認
 - ✅ [iter78] **KanbanView も同パターン**で URL 統合: 専用 dialog 削除、`useQueryState('item')` 経由に変更。Playwright で URL 反映 / dialog 1 個 / reload 後も dialog 1 個 を確認。Today/Inbox/Kanban/Backlog/Gantt/Archive/Dashboard の 7 view すべて URL 駆動 dialog に揃った
+- ✅ [iter79] **Gantt bar 内 progress fill** (TeamGantt 風): in_progress=50% / todo=0% / done は opacity で表現。bar 内に半透明の黒 fill (`rgba(0,0,0,0.2)`) を `position:absolute inset-y-0 left-0 width:N%` で重ねる。tooltip にも `[進捗 50%]` を追記。Playwright で in_progress bar の fill 幅が 240→120px (50%) に正しくなることを直接確認
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
