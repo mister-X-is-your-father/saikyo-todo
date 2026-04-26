@@ -287,7 +287,7 @@ export function GanttView({
                 <div
                   data-testid={`gantt-bar-${item.id}`}
                   data-critical={criticalSet.has(item.id) ? 'true' : 'false'}
-                  className="absolute top-1 rounded text-xs leading-6"
+                  className="absolute top-1 flex items-center gap-1 overflow-hidden rounded text-xs leading-6"
                   style={{
                     left: barLeft,
                     width: barWidth,
@@ -295,12 +295,20 @@ export function GanttView({
                     background: item.isMust ? 'rgba(239,68,68,0.8)' : 'rgba(59,130,246,0.8)',
                     color: 'white',
                     paddingLeft: 6,
+                    paddingRight: 6,
                     // critical path 強調: 赤い太枠 (TeamGantt / GanttPRO 風)
                     boxShadow: criticalSet.has(item.id) ? '0 0 0 2px rgb(220, 38, 38)' : undefined,
                   }}
-                  title={`${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')}${criticalSet.has(item.id) ? ' (critical path)' : ''}`}
+                  title={`${item.title} — ${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')} (${spanDays}日)${criticalSet.has(item.id) ? ' [critical path]' : ''}`}
                 >
-                  {spanDays}d
+                  {/* Gantt bar 内タイトル (Phase 6.15 iter 17 — TeamGantt 風)。
+                      短い bar (< 60px) では title 省略して d だけにする */}
+                  {barWidth >= 60 && (
+                    <span className="truncate font-medium" style={{ maxWidth: barWidth - 32 }}>
+                      {item.title}
+                    </span>
+                  )}
+                  <span className="ml-auto shrink-0 opacity-75">{spanDays}d</span>
                 </div>
               </div>
             </div>
