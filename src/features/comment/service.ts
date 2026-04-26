@@ -14,6 +14,7 @@ import { buildAppHref, notifyMentionEmail } from '@/features/email/notify'
 import { itemRepository } from '@/features/item/repository'
 import { notificationRepository } from '@/features/notification/repository'
 import type { MentionPayload } from '@/features/notification/schema'
+import { dispatchSlack } from '@/features/slack/dispatcher'
 
 import { commentOnDocRepository, commentOnItemRepository } from './repository'
 import {
@@ -391,11 +392,12 @@ async function _emitMentionNotifications(args: {
     return
   }
 
-  // commit 後に email を配信 (失敗は notify* 内部の try/catch で握り潰される)
+  // commit 後に email + Slack を並列配信 (失敗は notify* / dispatchSlack 内で握り潰し)。
+  // SLACK_WEBHOOK_URL 未設定時 dispatchSlack は console.info の mock 経路。
   const preview = args.body.slice(0, 200)
   if (emailPending.length > 0) {
     await Promise.all(
-      emailPending.map((p) =>
+      emailPending.flatMap((p) => [
         notifyMentionEmail({
           userId: p.userId,
           workspaceId: args.workspaceId,
@@ -404,7 +406,15 @@ async function _emitMentionNotifications(args: {
           itemTitle: p.itemTitle,
           href: buildAppHref({ workspaceId: args.workspaceId, itemId: args.itemId }),
         }),
-      ),
+        // Phase 6.15 iter 33: Slack 並列配線 (POST_MVP "Slack 通知")
+        dispatchSlack({
+          workspaceId: args.workspaceId,
+          type: 'mention',
+          text: `*${p.mentionedBy}* が *${p.itemTitle}* で @ メンションしました\n> ${preview}`,
+          linkUrl: buildAppHref({ workspaceId: args.workspaceId, itemId: args.itemId }),
+          linkLabel: 'コメントを開く',
+        }),
+      ]),
     )
   }
 }
