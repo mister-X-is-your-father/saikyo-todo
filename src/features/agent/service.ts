@@ -24,6 +24,7 @@ const DEFAULT_DISPLAY_NAMES: Record<AgentRole, string> = {
   pm: 'PM Agent',
   researcher: 'Researcher Agent',
   engineer: 'Engineer Agent',
+  reviewer: 'Reviewer Agent',
 }
 
 export const agentService = {

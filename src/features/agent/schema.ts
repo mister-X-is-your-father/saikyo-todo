@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { agentInvocations, agentMemories, agents } from '@/lib/db/schema'
 
 /** MVP で稼働する Agent ロール。POST_MVP で増えたらここを拡張。 */
-export const AGENT_ROLES = ['pm', 'researcher', 'engineer'] as const
+export const AGENT_ROLES = ['pm', 'researcher', 'engineer', 'reviewer'] as const
 export const AgentRoleSchema = z.enum(AGENT_ROLES)
 export type AgentRole = z.infer<typeof AgentRoleSchema>
 

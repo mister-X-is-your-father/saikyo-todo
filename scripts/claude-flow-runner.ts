@@ -17,6 +17,7 @@ import { agentInvocationRepository } from '@/features/agent/repository'
 import { ENGINEER_ROLE } from '@/features/agent/roles/engineer'
 import { PM_ROLE } from '@/features/agent/roles/pm'
 import { RESEARCHER_ROLE } from '@/features/agent/roles/researcher'
+import { REVIEWER_ROLE } from '@/features/agent/roles/reviewer'
 import type { AgentRole } from '@/features/agent/schema'
 import { agentService } from '@/features/agent/service'
 
@@ -72,6 +73,7 @@ const ROLE_CONFIG = {
   researcher: RESEARCHER_ROLE,
   pm: PM_ROLE,
   engineer: ENGINEER_ROLE,
+  reviewer: REVIEWER_ROLE,
 } as const satisfies Record<
   AgentRole,
   { model: string; systemPrompt: string; maxIterations: number }
