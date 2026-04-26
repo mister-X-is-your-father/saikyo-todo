@@ -800,6 +800,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter25] itemService.archive / unarchive method 追加 + 4 ケース test (happy / 二重 archive / unarchive / unarchived の unarchive)。audit 'archive'/'unarchive' / 楽観ロック対応
 - ✅ [iter26] ItemEditDialog activity tab 軽探索 (open 900ms、新規バグ無し)
 - ✅ [iter26] archive/unarchive Server Action + useArchiveItem/useUnarchiveItem hook + ArchivedItemsPanel に「復元」button (POST_MVP "アーカイブビュー" 復元 機能完成)
+- ✅ [iter27] Today view card hover 軽探索 (visible=0 は wait 不足、既知)。新規バグ無し
+- ✅ [iter27] ItemEditDialog の DialogFooter に **archive / unarchive button** を追加 (archived 状態で動的切替、confirm 付き)。POST_MVP "アーカイブビュー" の一連のフロー完成: 一般 view → 編集 → アーカイブ → /archive → 復元
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 

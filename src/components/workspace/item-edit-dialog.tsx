@@ -16,12 +16,14 @@ import { fullPathOf } from '@/lib/db/ltree-path'
 import { isAppError } from '@/lib/errors'
 
 import {
+  useArchiveItem,
   useCreateItem,
   useItemAssignees,
   useItems,
   useItemTagIds,
   useSetItemAssignees,
   useSetItemTags,
+  useUnarchiveItem,
   useUpdateItem,
 } from '@/features/item/hooks'
 import type { AssigneeRef } from '@/features/item/repository'
@@ -97,6 +99,8 @@ function ItemEditDialogInner({
   const [dod, setDod] = useState(item.dod ?? '')
 
   const update = useUpdateItem(workspaceId)
+  const archive = useArchiveItem(workspaceId)
+  const unarchive = useUnarchiveItem(workspaceId)
 
   const { data: assignees } = useItemAssignees(item.id)
   const setAssignees = useSetItemAssignees(workspaceId, item.id)
@@ -375,6 +379,49 @@ function ItemEditDialogInner({
         </Tabs>
 
         <DialogFooter>
+          {item.archivedAt ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={unarchive.isPending}
+              onClick={async () => {
+                try {
+                  await unarchive.mutateAsync({ id: item.id, expectedVersion: item.version })
+                  toast.success('アーカイブを復元しました')
+                  onOpenChange(false)
+                } catch (e) {
+                  toast.error(isAppError(e) ? e.message : '復元に失敗しました')
+                }
+              }}
+              data-testid="item-edit-unarchive"
+              className="mr-auto"
+            >
+              {unarchive.isPending ? '復元中…' : 'アーカイブ復元'}
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={archive.isPending}
+              onClick={async () => {
+                if (
+                  !window.confirm('この Item をアーカイブしますか?\n(後で /archive から復元可能)')
+                )
+                  return
+                try {
+                  await archive.mutateAsync({ id: item.id, expectedVersion: item.version })
+                  toast.success('アーカイブしました')
+                  onOpenChange(false)
+                } catch (e) {
+                  toast.error(isAppError(e) ? e.message : 'アーカイブに失敗しました')
+                }
+              }}
+              data-testid="item-edit-archive"
+              className="text-muted-foreground mr-auto"
+            >
+              {archive.isPending ? 'アーカイブ中…' : 'アーカイブ'}
+            </Button>
+          )}
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             キャンセル
           </Button>
