@@ -770,6 +770,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter5] 未 login workspace アクセス: /login へ redirect されることを確認 (middleware OK)
 - ❎ [iter6] login: Playwright UI signin で url が /login のまま **誤検出** → iter 7 で再検証 (POST 200 / cookie sb-127-auth-token 設定 / 5s wait 後に / へ遷移済) → bug 無し
 - ✅ [iter7] Gantt: workspace 横断 blocks edges 取得 hook (`useWorkspaceBlocksDependencies`) を追加 (gantt-view.tsx の edges prop に渡せるようになった、配線は次 iter)
+- ✅ [iter8] Gantt: GanttViewWithDeps wrapper を作って ganttViewPlugin に配線。hook で edges 取得 + computeCriticalPath 計算 → GanttView の edges/criticalIds に流し込み完了
+- ⏳ [iter8] / root (workspace 作成画面) name input に required なし (placeholder="例: チーム A") — 次 iter
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
 ## 6. Service 層を書くときの抽象

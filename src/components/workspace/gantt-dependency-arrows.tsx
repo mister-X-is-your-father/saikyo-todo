@@ -34,8 +34,10 @@ export interface GanttBar {
 }
 
 export interface GanttDepEdge {
-  fromId: string
-  toId: string
+  /** 前提 (上流) の item id。Phase 6.10 item_dependencies.from_item_id と一致 */
+  fromItemId: string
+  /** 後続 (下流) の item id */
+  toItemId: string
 }
 
 interface Props {
@@ -97,8 +99,8 @@ export function GanttDependencyArrows({ width, height, bars, edges, offsetLeftPx
         </marker>
       </defs>
       {edges.map((e, idx) => {
-        const from = barById.get(e.fromId)
-        const to = barById.get(e.toId)
+        const from = barById.get(e.fromItemId)
+        const to = barById.get(e.toItemId)
         if (!from || !to) return null
         const isCritical = from.isCritical && to.isCritical
         const stroke = isCritical ? STROKE_CRITICAL : STROKE_DEFAULT
@@ -114,7 +116,7 @@ export function GanttDependencyArrows({ width, height, bars, edges, offsetLeftPx
             : `M${startX},${startY} L${(startX + endX) / 2},${startY} L${(startX + endX) / 2},${endY} L${endX},${endY}`
         return (
           <path
-            key={`${e.fromId}-${e.toId}-${idx}`}
+            key={`${e.fromItemId}-${e.toItemId}-${idx}`}
             d={path}
             fill="none"
             stroke={stroke}
