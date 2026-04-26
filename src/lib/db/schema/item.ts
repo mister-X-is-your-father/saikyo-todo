@@ -48,6 +48,15 @@ export const items = pgTable(
     dueDate: date('due_date'),
     dueTime: time('due_time'), // HH:MM:SS (seconds = 00)。dueDate と併用
     scheduledFor: date('scheduled_for'), // Today ビュー用 "いつやる予定か" (dueDate と別軸)
+    /**
+     * Phase 6.15 iter 47: Gantt baseline (TeamGantt 風)。
+     * Sprint 開始時 / 計画凍結時に start_date / due_date のスナップショットを取り、
+     * Gantt 上で「当初計画 vs 現在」の差分を可視化する土台。
+     * 両方 NULL or 両方 set の制約は DB CHECK で担保 (items_baseline_pair_check)。
+     */
+    baselineStartDate: date('baseline_start_date'),
+    baselineEndDate: date('baseline_end_date'),
+    baselineTakenAt: timestamp('baseline_taken_at', { withTimezone: true }),
     priority: smallint('priority').notNull().default(4), // 1 = highest, 4 = none
     isMust: boolean('is_must').notNull().default(false),
     dod: text('dod'), // Definition of Done (MUST は service 層でバリデーション強制)
