@@ -46,6 +46,13 @@ export async function unarchiveItemAction(input: {
   return await actionWrap(() => itemService.unarchive(input))
 }
 
+export async function setItemBaselineAction(input: {
+  id: string
+  expectedVersion: number
+}): Promise<Result<Item>> {
+  return await actionWrap(() => itemService.setBaseline(input))
+}
+
 export async function moveItemAction(input: unknown): Promise<Result<Item>> {
   return await actionWrap(() => itemService.move(input))
 }

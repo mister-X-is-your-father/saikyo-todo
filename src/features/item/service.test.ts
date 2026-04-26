@@ -365,4 +365,30 @@ describe('itemService', () => {
       if (!r.ok) expect(r.error.code).toBe('VALIDATION')
     })
   })
+
+  describe('setBaseline', () => {
+    it('startDate / dueDate がある item は baseline がセットされる', async () => {
+      const item = await createItem({
+        title: 'baseline-target',
+        startDate: '2026-05-01',
+        dueDate: '2026-05-10',
+      })
+      const r = await itemService.setBaseline({
+        id: item.id,
+        expectedVersion: item.version,
+      })
+      expect(r.ok).toBe(true)
+      if (r.ok) {
+        expect(r.value.baselineStartDate).toBe('2026-05-01')
+        expect(r.value.baselineEndDate).toBe('2026-05-10')
+        expect(r.value.baselineTakenAt).not.toBeNull()
+      }
+    })
+    it('startDate / dueDate が無い item に baseline は ValidationError', async () => {
+      const item = await createItem({ title: 'no-dates' })
+      const r = await itemService.setBaseline({ id: item.id, expectedVersion: item.version })
+      expect(r.ok).toBe(false)
+      if (!r.ok) expect(r.error.code).toBe('VALIDATION')
+    })
+  })
 })

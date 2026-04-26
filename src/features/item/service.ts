@@ -357,6 +357,51 @@ export const itemService = {
     })
   },
 
+  /**
+   * Phase 6.15 iter 48 — Gantt baseline スナップショット取得。
+   * current の startDate / dueDate を baseline_start_date / baseline_end_date に写す。
+   * 両方の日付が無い item には設定不可 (ValidationError)。
+   * Sprint 開始時 / 計画凍結時に呼び出される想定。
+   */
+  async setBaseline(input: { id: string; expectedVersion: number }): Promise<Result<Item>> {
+    if (!input.id) return err(new ValidationError('id 必須'))
+    return await mutateWithGuard<Item>({
+      findById: (tx, id) => itemRepository.findById(tx, id),
+      id: input.id,
+      notFoundMessage: NOT_FOUND,
+      fn: async (tx, before, user) => {
+        if (!before.startDate || !before.dueDate) {
+          return err(new ValidationError('startDate / dueDate 両方が必要です'))
+        }
+        const takenAt = new Date()
+        const updated = await itemRepository.updateWithLock(tx, input.id, input.expectedVersion, {
+          baselineStartDate: before.startDate,
+          baselineEndDate: before.dueDate,
+          baselineTakenAt: takenAt,
+        })
+        if (!updated) return err(new ConflictError())
+        await recordAudit(tx, {
+          workspaceId: before.workspaceId,
+          actorType: 'user',
+          actorId: user.id,
+          targetType: 'item',
+          targetId: updated.id,
+          action: 'set_baseline',
+          before: {
+            baselineStartDate: before.baselineStartDate,
+            baselineEndDate: before.baselineEndDate,
+          },
+          after: {
+            baselineStartDate: updated.baselineStartDate,
+            baselineEndDate: updated.baselineEndDate,
+            baselineTakenAt: takenAt.toISOString(),
+          },
+        })
+        return ok(updated)
+      },
+    })
+  },
+
   /** Unarchive (アーカイブ復元)。archived_at を NULL に戻す。 */
   async unarchive(input: { id: string; expectedVersion: number }): Promise<Result<Item>> {
     if (!input.id) return err(new ValidationError('id 必須'))
