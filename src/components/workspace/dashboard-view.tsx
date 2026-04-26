@@ -12,6 +12,7 @@
 import { useMemo } from 'react'
 
 import { AlertTriangle, Flame } from 'lucide-react'
+import { parseAsString, useQueryState } from 'nuqs'
 import {
   CartesianGrid,
   Legend,
@@ -56,6 +57,8 @@ export function DashboardView({ workspaceId }: Props) {
   const summary = useMustSummary(workspaceId)
   const burndown = useBurndown(workspaceId, 14)
   const cost = useMonthlyCost(workspaceId, 3)
+  // Phase 6.15 iter 71: MUST item title click で ItemEditDialog を open
+  const [, setOpenItemId] = useQueryState('item', parseAsString)
 
   const todayStr = todayISO()
   const soonStr = addDaysISO(todayStr, 7)
@@ -275,7 +278,14 @@ export function DashboardView({ workspaceId }: Props) {
                     data-testid="must-item-row"
                   >
                     <div className="flex min-w-0 flex-col">
-                      <span className="truncate font-medium">{item.title}</span>
+                      <button
+                        type="button"
+                        onClick={() => void setOpenItemId(item.id)}
+                        className="hover:text-primary truncate text-left font-medium hover:underline"
+                        data-testid={`dashboard-must-title-${item.id}`}
+                      >
+                        {item.title}
+                      </button>
                       {item.dod ? (
                         <span className="text-muted-foreground truncate text-xs">
                           DoD: {item.dod}
