@@ -269,6 +269,12 @@ export function GanttView({
           const spanDays = differenceInCalendarDays(due, start) + 1
           const barLeft = leftDays * DAY_PX
           const barWidth = spanDays * DAY_PX
+          // 完了済 (doneAt あり) は TeamGantt 風 opacity を下げ + bar に取り消し線
+          const isDone = Boolean(item.doneAt)
+          const baseAlpha = isDone ? 0.4 : item.isMust ? 0.9 : 0.8
+          const barBg = item.isMust
+            ? `rgba(239,68,68,${baseAlpha})`
+            : `rgba(59,130,246,${baseAlpha})`
           return (
             <div
               key={item.id}
@@ -296,6 +302,7 @@ export function GanttView({
                   <div
                     data-testid={`gantt-bar-${item.id}`}
                     data-milestone="true"
+                    data-done={isDone ? 'true' : 'false'}
                     data-critical={criticalSet.has(item.id) ? 'true' : 'false'}
                     className="absolute"
                     style={{
@@ -303,33 +310,35 @@ export function GanttView({
                       top: (ROW_PX - 18) / 2,
                       width: 18,
                       height: 18,
-                      background: item.isMust ? 'rgba(239,68,68,0.9)' : 'rgba(59,130,246,0.9)',
+                      background: barBg,
                       transform: 'rotate(45deg)',
                       boxShadow: criticalSet.has(item.id)
                         ? '0 0 0 2px rgb(220, 38, 38)'
                         : undefined,
                     }}
-                    title={`${item.title} — ${format(start, 'yyyy-MM-dd')} (milestone)${criticalSet.has(item.id) ? ' [critical path]' : ''}`}
+                    title={`${item.title} — ${format(start, 'yyyy-MM-dd')} (milestone)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}`}
                   />
                 ) : (
                   <div
                     data-testid={`gantt-bar-${item.id}`}
                     data-milestone="false"
+                    data-done={isDone ? 'true' : 'false'}
                     data-critical={criticalSet.has(item.id) ? 'true' : 'false'}
                     className="absolute top-1 flex items-center gap-1 overflow-hidden rounded text-xs leading-6"
                     style={{
                       left: barLeft,
                       width: barWidth,
                       height: ROW_PX - 8,
-                      background: item.isMust ? 'rgba(239,68,68,0.8)' : 'rgba(59,130,246,0.8)',
+                      background: barBg,
                       color: 'white',
                       paddingLeft: 6,
                       paddingRight: 6,
                       boxShadow: criticalSet.has(item.id)
                         ? '0 0 0 2px rgb(220, 38, 38)'
                         : undefined,
+                      textDecoration: isDone ? 'line-through' : undefined,
                     }}
-                    title={`${item.title} — ${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')} (${spanDays}日)${criticalSet.has(item.id) ? ' [critical path]' : ''}`}
+                    title={`${item.title} — ${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')} (${spanDays}日)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}`}
                   >
                     {/* 短い bar (< 60px) では title 省略して d だけにする */}
                     {barWidth >= 60 && (

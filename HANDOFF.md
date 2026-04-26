@@ -787,7 +787,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter17] Gantt bar 内に item title 表示 (TeamGantt 風) — barWidth>=60px のみ truncate で。短い bar は d 数字のみ。title 属性に start→due + (critical) 詳細を含める
 - ✅ [iter18] Backlog view 詳細探索 (items=8 / rows=9 / sort header / bulk-action-bar 動作確認) → 新規バグ無し
 - ✅ [iter18] Gantt: spanDays=1 (1 日完結) を **milestone ◇ 菱形** で表示 (TeamGantt 風 18px rotate 45)。critical path 強調 / MUST 色は維持。data-milestone="true|false" で testable
-- ⏳ [iter19] Inbox view: items 3 件投入したが visible 0 (wait 不足 or filter 過多 / SSR vs client cache の race) — 次 iter で詳細調査
+- ✅ [iter19→20] Inbox view items 0 は **wait 不足** が原因。3000ms wait で 2/2 visible 確認 (filter / cache 問題なし)
+- ✅ [iter20] Gantt: 完了済 (doneAt あり) bar に opacity=0.4 + line-through (TeamGantt 風)。data-done="true|false" で testable / title に "[完了]" 追記
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
