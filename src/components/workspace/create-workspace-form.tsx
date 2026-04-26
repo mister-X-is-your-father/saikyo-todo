@@ -39,14 +39,34 @@ export function CreateWorkspaceForm() {
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="name">Workspace 名</Label>
-        <IMEInput id="name" placeholder="例: チーム A" {...form.register('name')} />
+        <IMEInput
+          id="name"
+          placeholder="例: チーム A"
+          required
+          aria-required="true"
+          minLength={1}
+          maxLength={50}
+          {...form.register('name')}
+        />
         {form.formState.errors.name && (
           <p className="text-destructive text-xs">{form.formState.errors.name.message}</p>
         )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="slug">URL slug</Label>
-        <IMEInput id="slug" placeholder="team-a" {...form.register('slug')} />
+        <IMEInput
+          id="slug"
+          placeholder="team-a"
+          required
+          aria-required="true"
+          pattern="^[a-z0-9-]+$"
+          minLength={1}
+          maxLength={50}
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          {...form.register('slug')}
+        />
         {form.formState.errors.slug && (
           <p className="text-destructive text-xs">{form.formState.errors.slug.message}</p>
         )}
