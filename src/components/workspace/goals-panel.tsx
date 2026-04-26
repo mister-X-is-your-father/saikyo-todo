@@ -68,6 +68,10 @@ export function GoalsPanel({ workspaceId }: Props) {
   async function handleCreate() {
     const t = title.trim()
     if (!t) return
+    if (startDate && endDate && endDate < startDate) {
+      toast.error('終了日は開始日以降にしてください')
+      return
+    }
     try {
       await createMut.mutateAsync({
         workspaceId,
@@ -138,6 +142,7 @@ export function GoalsPanel({ workspaceId }: Props) {
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              maxLength={2000}
             />
           </div>
           <div className="flex justify-end">

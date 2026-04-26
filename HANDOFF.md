@@ -813,6 +813,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter33] @ メンション通知も `dispatchSlack` 並列配線 (comment/service.ts)。`*<by>* が *<itemTitle>* で @ メンションしました\n> <preview>` 形式で linkUrl 付き
 - ✅ [iter34] workspace **invite** 通知も `dispatchSlack` 並列配線。残: sync-failure / agent-result。/docs route は未実装 (404) を確認 → POST_MVP として記録
 - ✅ [iter35] /sprints 作成 form: goal textarea に `maxLength={500}` (schema 上限と整合) + 終了 < 開始 を runtime validation で toast.error → submit 阻止 (button onClick なので native HTML5 validation 効かず)
+- ✅ [iter36] /goals 作成 form: description textarea に `maxLength={2000}` (schema 上限) + 終了 < 開始 を runtime validation で toast.error → submit 阻止 (sprint と同パターン水平展開)
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
