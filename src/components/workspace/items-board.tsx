@@ -188,12 +188,18 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         </CardContent>
       </Card>
 
-      <div className="flex flex-wrap items-center gap-2" data-testid="view-switcher">
+      <div
+        className="flex flex-wrap items-center gap-2"
+        data-testid="view-switcher"
+        role="group"
+        aria-label="表示切替"
+      >
         <Button
           variant={view === 'today' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setView('today')}
           data-testid="view-today-btn"
+          aria-pressed={view === 'today'}
         >
           Today
         </Button>
@@ -202,6 +208,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           size="sm"
           onClick={() => setView('inbox')}
           data-testid="view-inbox-btn"
+          aria-pressed={view === 'inbox'}
         >
           Inbox
         </Button>
@@ -210,6 +217,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           size="sm"
           onClick={() => setView('kanban')}
           data-testid="view-kanban-btn"
+          aria-pressed={view === 'kanban'}
         >
           Kanban
         </Button>
@@ -218,6 +226,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           size="sm"
           onClick={() => setView('backlog')}
           data-testid="view-backlog-btn"
+          aria-pressed={view === 'backlog'}
         >
           Backlog
         </Button>
@@ -226,6 +235,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           size="sm"
           onClick={() => setView('gantt')}
           data-testid="view-gantt-btn"
+          aria-pressed={view === 'gantt'}
         >
           Gantt
         </Button>
@@ -234,6 +244,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           size="sm"
           onClick={() => setView('dashboard')}
           data-testid="view-dashboard-btn"
+          aria-pressed={view === 'dashboard'}
         >
           Dashboard
         </Button>

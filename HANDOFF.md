@@ -820,6 +820,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter40] /goals 作成 form: 同じく form 要素なしで Enter submit 不可 → `<form onSubmit>` wrap + button type="submit" (iter39 sprint と同パターン)
 - ✅ [iter41] /templates instantiate-form: `<div>` で wrap されており Enter submit 不可 → `<form onSubmit>` 化 + button type="submit" (sprint/goal と同パターンを template にも展開)
 - ✅ [iter42] /pdca period toggle (30 日 / 90 日): aria-pressed が無く SR で選択状態が伝わらない → `aria-pressed={days === N}` + `role="group" aria-label="集計期間"` 付与
+- ✅ [iter43] workspace view-switcher (Today/Inbox/Kanban/Backlog/Gantt/Dashboard) も同症状 → 各 button に `aria-pressed={view === X}` + 親 div に `role="group" aria-label="表示切替"` (iter42 と同パターン水平展開)
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
