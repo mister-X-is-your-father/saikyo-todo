@@ -9,7 +9,7 @@
  */
 import { useState } from 'react'
 
-import { CheckCircle, Pause, Play, Sparkles, X } from 'lucide-react'
+import { CalendarRange, CheckCircle, Pause, Play, Sparkles, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
@@ -21,6 +21,7 @@ import {
   useRunRetro,
   useSprintProgress,
   useSprints,
+  useUpdateSprint,
 } from '@/features/sprint/hooks'
 import type { Sprint, SprintStatus } from '@/features/sprint/schema'
 
@@ -49,6 +50,23 @@ const STATUS_COLOR: Record<SprintStatus, 'secondary' | 'default' | 'destructive'
   active: 'default',
   completed: 'secondary',
   cancelled: 'destructive',
+}
+
+const DOW_JA = ['日', '月', '火', '水', '木', '金', '土'] as const
+
+/** "2026-04-27" → "月" */
+function dayOfWeekJa(iso: string): string {
+  // ISO date を UTC ベースで読み、curtain time zone のずれを排除
+  const [y, m, d] = iso.split('-').map(Number)
+  if (!y || !m || !d) return ''
+  const dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay()
+  return DOW_JA[dow] ?? ''
+}
+
+/** "2026-04-27" → "2026-04-27 (月)" */
+function formatDateJa(iso: string): string {
+  const dow = dayOfWeekJa(iso)
+  return dow ? `${iso} (${dow})` : iso
 }
 
 function todayISO(): string {
@@ -257,6 +275,11 @@ function SprintCard({
   premortemPending,
 }: CardProps) {
   const status = sprint.status as SprintStatus
+  const update = useUpdateSprint(sprint.workspaceId)
+  // 期間編集モード (Sprint card 内 inline form)
+  const [editing, setEditing] = useState(false)
+  const [editStart, setEditStart] = useState(sprint.startDate)
+  const [editEnd, setEditEnd] = useState(sprint.endDate)
   // active / completed は進捗を取る (planning は未割当が多いので skip)
   const showProgress = status === 'active' || status === 'completed'
   const progress = useSprintProgress(showProgress ? sprint.id : null)
@@ -280,8 +303,11 @@ function SprintCard({
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <CardTitle className="truncate text-base">{sprint.name}</CardTitle>
-              <p className="text-muted-foreground mt-0.5 text-xs">
-                {sprint.startDate} 〜 {sprint.endDate}
+              <p
+                className="text-muted-foreground mt-0.5 text-xs"
+                data-testid={`sprint-period-${sprint.id}`}
+              >
+                {formatDateJa(sprint.startDate)} 〜 {formatDateJa(sprint.endDate)}
               </p>
             </div>
             <Badge variant={STATUS_COLOR[status]} data-testid={`sprint-status-${sprint.id}`}>
@@ -337,7 +363,99 @@ function SprintCard({
               )}
             </div>
           )}
+          {editing && (
+            <form
+              className="space-y-2 rounded border border-dashed p-2"
+              onSubmit={async (e) => {
+                e.preventDefault()
+                if (editStart > editEnd) {
+                  toast.error('終了日は開始日以降にしてください')
+                  return
+                }
+                try {
+                  await update.mutateAsync({
+                    id: sprint.id,
+                    expectedVersion: sprint.version,
+                    patch: { startDate: editStart, endDate: editEnd },
+                  })
+                  toast.success('期間を更新しました')
+                  setEditing(false)
+                } catch (err) {
+                  toast.error(isAppError(err) ? err.message : '更新に失敗')
+                }
+              }}
+              data-testid={`sprint-period-edit-${sprint.id}`}
+            >
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label htmlFor={`sprint-edit-start-${sprint.id}`} className="text-[10px]">
+                    開始 ({dayOfWeekJa(editStart)})
+                  </Label>
+                  <Input
+                    id={`sprint-edit-start-${sprint.id}`}
+                    type="date"
+                    value={editStart}
+                    onChange={(e) => setEditStart(e.target.value)}
+                    required
+                    aria-label="Sprint 開始日"
+                    className="h-8 text-xs"
+                    data-testid={`sprint-edit-start-${sprint.id}`}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor={`sprint-edit-end-${sprint.id}`} className="text-[10px]">
+                    終了 ({dayOfWeekJa(editEnd)})
+                  </Label>
+                  <Input
+                    id={`sprint-edit-end-${sprint.id}`}
+                    type="date"
+                    value={editEnd}
+                    min={editStart}
+                    onChange={(e) => setEditEnd(e.target.value)}
+                    required
+                    aria-label="Sprint 終了日"
+                    className="h-8 text-xs"
+                    data-testid={`sprint-edit-end-${sprint.id}`}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-1.5">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setEditing(false)
+                    setEditStart(sprint.startDate)
+                    setEditEnd(sprint.endDate)
+                  }}
+                >
+                  キャンセル
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={update.isPending}
+                  data-testid={`sprint-period-save-${sprint.id}`}
+                >
+                  {update.isPending ? '保存中…' : '保存'}
+                </Button>
+              </div>
+            </form>
+          )}
           <div className="flex flex-wrap gap-1.5">
+            {!editing && status !== 'cancelled' && status !== 'completed' && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setEditing(true)}
+                data-testid={`sprint-period-edit-btn-${sprint.id}`}
+                title="期間を編集"
+              >
+                <CalendarRange className="mr-1 h-3.5 w-3.5" />
+                期間
+              </Button>
+            )}
             {status === 'planning' && (
               <Button
                 size="sm"
