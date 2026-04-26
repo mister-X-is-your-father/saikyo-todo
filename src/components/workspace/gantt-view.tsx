@@ -72,6 +72,8 @@ export function GanttView({
   // Phase 6.15 iter 62/75: 完了済 (doneAt あり) を行から隠す toggle (TeamGantt 風 filter)。
   // iter 75 で nuqs URL state 化 (?hideDone=true が refresh 後も保持される)
   const [hideDone, setHideDone] = useQueryState('hideDone', parseAsBoolean.withDefault(false))
+  // Phase 6.15 iter 82: 依存線 (SVG 矢印) の表示 toggle (混雑した Gantt で off にして見やすく)
+  const [showDeps, setShowDeps] = useQueryState('showDeps', parseAsBoolean.withDefault(true))
   // Phase 6.15 iter 73-74: zoom (compact/normal/wide) — TeamGantt の day/week/month zoom 相当。
   // iter 74 で nuqs URL state 化 (?zoom=wide が refresh 後も保持される)
   const [zoom, setZoom] = useQueryState(
@@ -252,6 +254,15 @@ export function GanttView({
             <option value="wide">広 (64px/day)</option>
           </select>
         </label>
+        <label data-testid="gantt-show-deps-toggle" className="flex items-center gap-1 text-xs">
+          <input
+            type="checkbox"
+            checked={showDeps}
+            onChange={(e) => setShowDeps(e.target.checked)}
+            className="size-3.5 cursor-pointer accent-current"
+          />
+          依存線
+        </label>
         <label data-testid="gantt-hide-done-toggle" className="flex items-center gap-1 text-xs">
           <input
             type="checkbox"
@@ -275,7 +286,7 @@ export function GanttView({
       </div>
       <div style={{ width: LABEL_COL_PX + timelineWidth, position: 'relative' }}>
         {/* 依存線 SVG オーバーレイ (Phase 6.15 iter 2 の component を iter 6 で配線) */}
-        {edges.length > 0 && (
+        {showDeps && edges.length > 0 && (
           <GanttDependencyArrows
             width={timelineWidth}
             height={totalHeight}
