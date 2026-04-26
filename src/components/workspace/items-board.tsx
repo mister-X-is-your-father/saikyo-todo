@@ -20,6 +20,7 @@ import { useSprints } from '@/features/sprint/hooks'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { CommandPalette, type PaletteCommand } from '@/components/shared/command-palette'
+import { KeybindingsHelpModal } from '@/components/shared/keybindings-help-modal'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BacklogView } from '@/components/workspace/backlog-view'
@@ -51,6 +52,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
   /** Notification click や Command Palette 検索からの deep link 用 URL param */
   const [openItemId, setOpenItemId] = useQueryState('item', parseAsString)
   const [paletteSelected, setPaletteSelected] = useState<Item | null>(null)
+  const [helpOpen, setHelpOpen] = useState(false)
 
   const { data, isLoading, error, refetch } = useItems(workspaceId)
   useItemsRealtime(workspaceId)
@@ -146,6 +148,13 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         run: () => document.getElementById('quick-add-input')?.focus(),
         keywords: ['create', 'new', '作成', 'q'],
       },
+      {
+        id: 'help-keybindings',
+        label: 'ヘルプ: ショートカット一覧 (?)',
+        group: 'ヘルプ',
+        run: () => setHelpOpen(true),
+        keywords: ['help', 'shortcut', 'ショートカット', 'キー', 'keybinding', '?'],
+      },
     ],
     [refetch, setView],
   )
@@ -157,6 +166,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         items={data ?? []}
         onSelectItem={(item) => setPaletteSelected(item)}
       />
+      <KeybindingsHelpModal open={helpOpen} onOpenChange={setHelpOpen} />
       <DeepLinkedItemDialog
         items={data ?? []}
         paletteSelected={paletteSelected}

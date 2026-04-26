@@ -3,17 +3,21 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
-import { toast } from 'sonner'
-
 /**
  * グローバルキーボードショートカット。
  *
  *   q     → #quick-add-input にフォーカス
- *   ?     → help toast 表示 (Cmd+K でパレット案内)
  *   g t   → view=today に切替
  *   g i   → view=inbox
  *   g k   → view=kanban
  *   g b   → view=backlog
+ *   g g   → view=gantt
+ *   g d   → view=dashboard
+ *
+ * `?` は KeybindingsHelpModal が単独で購読する (open toggle のため)。
+ * Cmd+K は CommandPalette が単独で購読する。
+ *
+ * 一覧は `src/lib/keybindings.ts` の KEYBINDINGS と必ず一致させること。
  *
  * IME 変換中 / input / textarea / contentEditable にフォーカスしてる時は無効。
  */
@@ -68,13 +72,6 @@ export function GlobalShortcuts({ workspaceId }: { workspaceId: string }) {
           e.preventDefault()
           el.focus()
         }
-        return
-      }
-      if (e.key === '?') {
-        e.preventDefault()
-        toast.info('ショートカット', {
-          description: 'q=クイック追加 / g t=Today / g i=Inbox / g k=Kanban / Cmd+K=パレット',
-        })
         return
       }
       if (e.key === 'g') {
