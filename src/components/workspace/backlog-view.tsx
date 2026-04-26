@@ -93,9 +93,21 @@ function buildColumns(workspaceId: string, onEdit: (item: Item) => void): Column
       header: 'タイトル',
       size: 340,
       cell: ({ getValue, row }) => (
-        <span className={row.original.doneAt ? 'text-muted-foreground line-through' : ''}>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            onEdit(row.original)
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+          className={
+            'hover:text-primary text-left hover:underline ' +
+            (row.original.doneAt ? 'text-muted-foreground line-through' : '')
+          }
+          data-testid={`backlog-title-${row.original.id}`}
+        >
           {String(getValue())}
-        </span>
+        </button>
       ),
     },
     {
