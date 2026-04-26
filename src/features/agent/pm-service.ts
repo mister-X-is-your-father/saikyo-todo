@@ -56,6 +56,13 @@ export const pmService = {
       return err(new ValidationError('idempotencyKey は必須です'))
     }
 
+    // 予算 pre-flight (DI 時は skip)
+    if (!input.invoker) {
+      const { checkBudget } = await import('./cost-budget')
+      const budget = await checkBudget(input.workspaceId)
+      if (!budget.ok) return err(budget.error)
+    }
+
     const agent: Agent = await agentService.ensureAgent(input.workspaceId, 'pm')
 
     const past = await agentMemoryService.loadRecent(agent.id, PM_ROLE.memoryLimit)

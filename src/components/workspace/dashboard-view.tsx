@@ -30,6 +30,7 @@ import { useBurndown, useMustSummary } from '@/features/dashboard/hooks'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { BudgetPanel } from '@/components/workspace/budget-panel'
 import { StatusBadge } from '@/components/workspace/status-badge'
 
 interface Props {
@@ -160,6 +161,9 @@ export function DashboardView({ workspaceId }: Props) {
           )}
         </CardContent>
       </Card>
+
+      {/* AI 月次コスト上限 + 当月利用状況 */}
+      <BudgetPanel workspaceId={workspaceId} />
 
       {/* AI コスト月次 (直近 3 ヶ月) */}
       <Card>

@@ -68,4 +68,15 @@ export class CancelledError extends AppError {
   }
 }
 
+/**
+ * AI コスト月次上限を超過したときに Agent 起動を弾くエラー。
+ * researcher / pm の pre-flight で `workspace_settings.monthly_cost_limit_usd` を
+ * 当月集計と比較し、超過していたらこれを返す。
+ */
+export class BudgetExceededError extends AppError {
+  constructor(message = 'AI コスト上限に達しています') {
+    super('BUDGET_EXCEEDED', message)
+  }
+}
+
 export const isAppError = (e: unknown): e is AppError => e instanceof AppError

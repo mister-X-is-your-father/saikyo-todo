@@ -6,6 +6,7 @@ import {
   boolean,
   index,
   integer,
+  numeric,
   pgTable,
   primaryKey,
   text,
@@ -68,6 +69,19 @@ export const workspaceSettings = pgTable('workspace_settings', {
   timezone: text('timezone').notNull().default('Asia/Tokyo'),
   standupCron: text('standup_cron').notNull().default('0 9 * * *'), // 毎朝 9:00
   wipLimitMust: integer('wip_limit_must').notNull().default(5),
+  /**
+   * Phase 6.9: AI 月次コスト上限 (USD)。NULL = 無制限。
+   * 月次集計 (now() basis, calendar month) が limit を超えていたら
+   * researcher / pm の起動前 pre-flight で BudgetExceededError で弾く。
+   */
+  monthlyCostLimitUsd: numeric('monthly_cost_limit_usd', { precision: 10, scale: 2 }),
+  /**
+   * 警告通知を出す閾値 (0..1 の比率)。0.8 = limit の 80% を超えた最初の起動で warning。
+   * limit が NULL の時は無視。
+   */
+  costWarnThresholdRatio: numeric('cost_warn_threshold_ratio', { precision: 3, scale: 2 })
+    .notNull()
+    .default('0.80'),
   ...timestamps,
 })
 

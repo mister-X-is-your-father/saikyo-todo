@@ -27,6 +27,7 @@ import { err, ok, type Result } from '@/lib/result'
 import { itemRepository } from '@/features/item/repository'
 
 import { RESEARCHER_ROLE } from './roles/researcher'
+import { checkBudget } from './cost-budget'
 import { agentMemoryService } from './memory-service'
 import { agentInvocationRepository } from './repository'
 import { type Agent } from './schema'
@@ -77,6 +78,13 @@ export const researcherService = {
     }
     if (!input.idempotencyKey) {
       return err(new ValidationError('idempotencyKey は必須です'))
+    }
+
+    // 予算チェック (limit 設定済 + 超過なら BudgetExceededError)。
+    // テストで invoker が DI されている時は skip (mock 用フローを汚さない)。
+    if (!input.invoker) {
+      const budget = await checkBudget(input.workspaceId)
+      if (!budget.ok) return err(budget.error)
     }
 
     const agent: Agent = await agentService.ensureAgent(input.workspaceId, 'researcher')
