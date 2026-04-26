@@ -101,6 +101,14 @@ export function GanttView({
   const days: Date[] = []
   for (let i = 0; i < totalDays; i++) days.push(addDays(range!.start, i))
 
+  // Today 縦線 (TeamGantt/GanttPRO の典型機能)。range 範囲外なら null
+  const today = new Date()
+  const todayDayOffset = differenceInCalendarDays(today, range!.start)
+  const todayInRange = todayDayOffset >= 0 && todayDayOffset < totalDays
+  // bar の day cell は左端に位置するので、現在時刻分だけ DAY_PX 内をシフト
+  const todayHourFraction = (today.getHours() * 60 + today.getMinutes()) / (24 * 60)
+  const todayX = todayInRange ? (todayDayOffset + todayHourFraction) * DAY_PX : null
+
   // 行の Y 位置 = HEADER_PX + index * ROW_PX、bar は top:1 + (ROW_PX - 8)/2 が中央
   const ganttBars: GanttBar[] = withDates.map((x, idx) => {
     const leftDays = differenceInCalendarDays(x.start, range!.start)
@@ -130,6 +138,28 @@ export function GanttView({
             edges={edges}
             offsetLeftPx={LABEL_COL_PX}
           />
+        )}
+        {/* Today 縦線 (Phase 6.15 iter 10 — TeamGantt/GanttPRO の典型機能) */}
+        {todayX !== null && (
+          <div
+            data-testid="gantt-today-line"
+            aria-label="今日"
+            className="pointer-events-none absolute z-20"
+            style={{
+              left: LABEL_COL_PX + todayX,
+              top: 0,
+              width: 1.5,
+              height: totalHeight,
+              background: 'rgba(220, 38, 38, 0.7)', // red-600 半透明
+            }}
+          >
+            <span
+              className="absolute -top-0.5 left-1 rounded bg-red-600 px-1 py-0.5 text-[10px] leading-none text-white"
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              今日
+            </span>
+          </div>
         )}
         {/* Header */}
         <div className="bg-muted sticky top-0 z-10 flex border-b" style={{ height: HEADER_PX }}>
