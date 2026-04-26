@@ -21,7 +21,7 @@
  *     (Phase 6.15 iter 1 の computeCriticalPath を呼んだ結果を渡す想定)
  *   - workspace 横断 edges 取得 hook は次 iter (現状は呼び出し元から渡す)
  */
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 import { addDays, differenceInCalendarDays, format, isValid, parseISO } from 'date-fns'
 import { parseAsString, useQueryState } from 'nuqs'
@@ -93,6 +93,35 @@ export function GanttView({
     return { start: addDays(min, -1), end: addDays(max, 1) }
   }, [withDates])
 
+  // 共通計算。range が null (= withDates 空) のときは安全に飛ばす。
+  const totalDays = range ? differenceInCalendarDays(range.end, range.start) + 1 : 0
+  const timelineWidth = totalDays * DAY_PX
+  const days: Date[] = []
+  if (range) {
+    for (let i = 0; i < totalDays; i++) days.push(addDays(range.start, i))
+  }
+
+  // Today 縦線 (TeamGantt/GanttPRO の典型機能)。range 範囲外なら null
+  const today = new Date()
+  const todayDayOffset = range ? differenceInCalendarDays(today, range.start) : -1
+  const todayInRange = todayDayOffset >= 0 && todayDayOffset < totalDays
+  // bar の day cell は左端に位置するので、現在時刻分だけ DAY_PX 内をシフト
+  const todayHourFraction = (today.getHours() * 60 + today.getMinutes()) / (24 * 60)
+  const todayX = todayInRange ? (todayDayOffset + todayHourFraction) * DAY_PX : null
+
+  // Phase 6.15 iter 61: 初回 mount で today に自動スクロール (TeamGantt default)。
+  // 早期 return より先に Hook を呼ぶ必要があるためここに置く (rules-of-hooks)。
+  const didInitialScrollRef = useRef(false)
+  useEffect(() => {
+    if (didInitialScrollRef.current) return
+    if (todayX === null) return
+    const el = scrollRef.current
+    if (!el) return
+    didInitialScrollRef.current = true
+    const target = LABEL_COL_PX + todayX - el.clientWidth / 2
+    el.scrollTo({ left: Math.max(0, target), behavior: 'instant' as ScrollBehavior })
+  }, [todayX])
+
   if (withDates.length === 0) {
     return (
       <div data-testid="gantt-view" className="rounded-lg border p-6">
@@ -103,19 +132,6 @@ export function GanttView({
       </div>
     )
   }
-
-  const totalDays = differenceInCalendarDays(range!.end, range!.start) + 1
-  const timelineWidth = totalDays * DAY_PX
-  const days: Date[] = []
-  for (let i = 0; i < totalDays; i++) days.push(addDays(range!.start, i))
-
-  // Today 縦線 (TeamGantt/GanttPRO の典型機能)。range 範囲外なら null
-  const today = new Date()
-  const todayDayOffset = differenceInCalendarDays(today, range!.start)
-  const todayInRange = todayDayOffset >= 0 && todayDayOffset < totalDays
-  // bar の day cell は左端に位置するので、現在時刻分だけ DAY_PX 内をシフト
-  const todayHourFraction = (today.getHours() * 60 + today.getMinutes()) / (24 * 60)
-  const todayX = todayInRange ? (todayDayOffset + todayHourFraction) * DAY_PX : null
 
   // 行の Y 位置 = HEADER_PX + index * ROW_PX、bar は top:1 + (ROW_PX - 8)/2 が中央
   const ganttBars: GanttBar[] = withDates.map((x, idx) => {
@@ -161,11 +177,11 @@ export function GanttView({
     }
   }
 
-  function scrollToToday() {
+  function scrollToToday(behavior: ScrollBehavior = 'smooth') {
     const el = scrollRef.current
     if (!el || todayX === null) return
     const target = LABEL_COL_PX + todayX - el.clientWidth / 2
-    el.scrollTo({ left: Math.max(0, target), behavior: 'smooth' })
+    el.scrollTo({ left: Math.max(0, target), behavior })
   }
 
   return (
@@ -210,7 +226,7 @@ export function GanttView({
           <button
             type="button"
             data-testid="gantt-jump-today"
-            onClick={scrollToToday}
+            onClick={() => scrollToToday('smooth')}
             className="text-foreground hover:bg-muted ml-auto rounded border px-2 py-0.5 text-xs"
             title="今日の縦線まで横スクロール"
           >
