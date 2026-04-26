@@ -765,8 +765,9 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 - ✅ [iter3] login: email/password input に required 属性なし → fix: `login-form.tsx` に required + aria-required + minLength=8
 - ✅ [iter4] login: signup link plain click が dev overlay で hit-test 失敗していた → fix: `login/page.tsx` の Link / CardFooter に `relative z-10` を付与 (force:true なら遷移するが本来不要のはず → dev devtools overlay が遮ってた)
-- ⏳ [iter4] signup: displayName / email input に required 属性なし (次 iter で signup-form.tsx に追加)
-- ⏳ [iter4] signup: 短 password 送信時に toast が出ない (RHF zodResolver が submit 前に block しているか、エラー UI 不足)
+- ✅ [iter5] signup: displayName / email / password に required + aria-required + minLength を追加 (signup-form.tsx)
+- ⏳ [iter4] signup: 短 password 送信時に toast が出ない (RHF zodResolver が submit 前に block しているか、エラー UI 不足) — required で空送信は防げるが zod errors のインライン表示 / toast は別問題、次 iter
+- ✅ [iter5] 未 login workspace アクセス: /login へ redirect されることを確認 (middleware OK)
 
 ## 6. Service 層を書くときの抽象
 
