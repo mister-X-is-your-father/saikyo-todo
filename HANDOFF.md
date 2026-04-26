@@ -860,6 +860,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter80] Dashboard StatCard の **tone を SR 語彙化**: 旧 visual-only だった warning/danger border を `aria-label` に "(注意)" / "(要対応)" として加筆。`role="group"` + `data-testid="stat-card-<tone>"` も付与。Playwright で 期限超過 item 投入 → danger card の aria-label に "要対応" 含まれることを確認
 - ✅ [iter81] **/ (Workspace list) ページの a11y 補完**: section に aria-labelledby、ul に aria-label、各 Link に aria-label="<name> (slug: …, role: …) を開く"、装飾の "→" を aria-hidden 化。section heading id 紐付けで SR の領域認識が改善
 - ✅ [iter82] **Gantt 依存線 toggle** (混雑時の可視化制御): summary banner に "依存線" checkbox 追加、`?showDeps=true` (default) を URL 永続化。OFF にすると `<GanttDependencyArrows>` が dom から消えて bar が見やすくなる。Playwright で URL 反映 + arrows 0 個を確認
+- ✅ [iter83] **Today view を 4 group 化** (Todoist Today/Upcoming 風): 既存の "期限超過" / "今日" に加え "明日" / "今週内 (今日+2..+7)" を追加。空 group は自動非表示 (g.items.length>0 ガード)。`shiftISO(iso, days)` で UTC ベース計算)
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 

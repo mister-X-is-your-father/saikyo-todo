@@ -26,9 +26,22 @@ interface Group {
   items: Item[]
 }
 
+/** YYYY-MM-DD 文字列を日数 offset (UTC ベース) で進める。 */
+function shiftISO(iso: string, days: number): string {
+  const d = new Date(`${iso}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + days)
+  return d.toISOString().slice(0, 10)
+}
+
 function buildGroups(items: Item[], today: string): Group[] {
+  // Phase 6.15 iter 83: Todoist 風の Today / Upcoming サブグループ化。
+  // 期限超過 / 今日 / 明日 / 今週内 (今日+2..+7) で分類。
+  const tomorrow = shiftISO(today, 1)
+  const weekEnd = shiftISO(today, 7)
   const overdue: Item[] = []
   const todayList: Item[] = []
+  const tomorrowList: Item[] = []
+  const weekList: Item[] = []
   for (const it of items) {
     if (it.doneAt) continue
     const due = it.dueDate
@@ -39,12 +52,25 @@ function buildGroups(items: Item[], today: string): Group[] {
     }
     if (sched === today || due === today) {
       todayList.push(it)
+      continue
+    }
+    if (due === tomorrow || sched === tomorrow) {
+      tomorrowList.push(it)
+      continue
+    }
+    // 今週内 (今日+2 〜 今日+7)
+    if (due && due > tomorrow && due <= weekEnd) {
+      weekList.push(it)
+    } else if (sched && sched > tomorrow && sched <= weekEnd) {
+      weekList.push(it)
     }
   }
   const priSort = (a: Item, b: Item) => (a.priority ?? 4) - (b.priority ?? 4)
   return [
     { label: '期限超過', items: overdue.sort(priSort) },
     { label: '今日', items: todayList.sort(priSort) },
+    { label: '明日', items: tomorrowList.sort(priSort) },
+    { label: '今週内', items: weekList.sort(priSort) },
   ]
 }
 
