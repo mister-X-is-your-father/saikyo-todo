@@ -204,6 +204,8 @@ function Section({
                 size="sm"
                 onClick={() => onRemove(ref)}
                 data-testid={`dep-remove-${ref.id}`}
+                aria-label={`依存「${ref.title}」を解除`}
+                title={`依存「${ref.title}」を解除`}
               >
                 解除
               </Button>

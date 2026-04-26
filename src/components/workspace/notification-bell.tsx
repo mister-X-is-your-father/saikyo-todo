@@ -130,6 +130,7 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                     onClick={() => handleNotificationClick(n)}
                     className="hover:bg-muted/60 flex w-full items-start gap-2 px-3 py-2 text-left"
                     data-testid="notification-item"
+                    aria-label={`${n.readAt ? '既読' : '未読'}通知: ${formatNotification(n)}`}
                   >
                     <span
                       className={`mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full ${
