@@ -140,9 +140,7 @@ export async function handlePmStandup(
         sql`select timezone from public.workspace_settings where workspace_id = ${workspaceId}::uuid limit 1`,
       )
       const tz =
-        (tzRow as unknown as Array<{ timezone: string | null }>)[0]?.timezone ??
-        null ??
-        DEFAULT_TIMEZONE
+        (tzRow as unknown as Array<{ timezone: string | null }>)[0]?.timezone ?? DEFAULT_TIMEZONE
 
       // その日既に stand-up が走った agent_invocation があるかチェック (workspace tz 基準)
       const existing = await adminDb.execute<{ id: string }>(
