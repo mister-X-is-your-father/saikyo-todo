@@ -195,6 +195,49 @@ describe('runWorkflow', () => {
     expect(r.status).toBe('failed')
   })
 
+  // Phase 6.15 iter116: script node
+  it('script node: name 未指定で fail', async () => {
+    const c = await workflowService.create({
+      workspaceId: wsId,
+      name: 'script-no-name',
+      graph: {
+        nodes: [{ id: 's', type: 'script', config: {} }],
+        edges: [],
+      },
+    })
+    if (!c.ok) throw c.error
+    const r = await runWorkflow({ workflowId: c.value.id, triggerKind: 'manual' })
+    expect(r.status).toBe('failed')
+  })
+
+  it('script node: パスエスケープ ".." は拒否', async () => {
+    const c = await workflowService.create({
+      workspaceId: wsId,
+      name: 'script-escape',
+      graph: {
+        nodes: [{ id: 's', type: 'script', config: { name: '../../etc/passwd.ts' } }],
+        edges: [],
+      },
+    })
+    if (!c.ok) throw c.error
+    const r = await runWorkflow({ workflowId: c.value.id, triggerKind: 'manual' })
+    expect(r.status).toBe('failed')
+  })
+
+  it('script node: 存在しない script で fail', async () => {
+    const c = await workflowService.create({
+      workspaceId: wsId,
+      name: 'script-missing',
+      graph: {
+        nodes: [{ id: 's', type: 'script', config: { name: 'definitely_does_not_exist.ts' } }],
+        edges: [],
+      },
+    })
+    if (!c.ok) throw c.error
+    const r = await runWorkflow({ workflowId: c.value.id, triggerKind: 'manual' })
+    expect(r.status).toBe('failed')
+  })
+
   it('email node: toEmail 未指定で fail', async () => {
     const c = await workflowService.create({
       workspaceId: wsId,

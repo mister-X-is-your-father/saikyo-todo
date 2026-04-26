@@ -1,5 +1,5 @@
 /**
- * Phase 6.15 iter113-115: Workflow node 実行 registry。
+ * Phase 6.15 iter113-116: Workflow node 実行 registry。
  * 各 node 種別の executor を集約。Engine から `executors[type](ctx, config, input)` で呼ぶ。
  *
  * 実装済:
@@ -8,12 +8,16 @@
  *   - slack: dispatchSlack (best-effort 通知)
  *   - email: dispatchEmail (mock_email_outbox に write、本番は Resend へ差し替え)
  *   - ai: Researcher Agent をカスタムプロンプトで起動 (Claude Max OAuth + claude CLI)
+ *   - script: scripts/ 配下の whitelist された .ts ファイルを `pnpm tsx` で実行 (timeout 60s)
  *
  * 次 iter で追加予定:
- *   - script: scripts/ 配下を invoke (whitelist)
  *   - branch / parallel: 制御フロー
  */
 import 'server-only'
+
+import { spawn } from 'node:child_process'
+import { existsSync } from 'node:fs'
+import path from 'node:path'
 
 import { researcherService } from '@/features/agent/researcher-service'
 import { dispatchEmail } from '@/features/email/dispatcher'
@@ -202,12 +206,107 @@ const aiExecutor: NodeExecutor = async (ctx, config) => {
   }
 }
 
+/**
+ * script node: scripts/ 配下の .ts を `pnpm tsx --env-file=.env.local` で実行。
+ * セキュリティ:
+ *   - 名前のホワイトリスト: 英数 / `_` / `-` / `.` のみ、`.ts` 終端
+ *   - パスエスケープ防止 (`..` / `/` / `\` は名前には含めない)
+ *   - 既存ファイル必須 (実体が無ければ即 fail)
+ *   - args は string 配列のみ (shell expansion させない、shell: false で spawn)
+ *   - timeout 60s — Playwright 系を想定 (workflow が hang しないよう短めに)
+ *   - stdout / stderr は workflow_node_runs.log へ
+ *
+ * Playwright を呼ぶ場合は `scripts/explore-uiux-*.ts` のような script を置いておけば呼べる。
+ */
+const SCRIPT_NAME_RE = /^[a-zA-Z0-9._-]+\.ts$/
+const SCRIPT_TIMEOUT_MS = 60_000
+const PROJECT_ROOT = process.cwd()
+
+const scriptExecutor: NodeExecutor = async (_ctx, config) => {
+  const name = typeof config.name === 'string' ? config.name : null
+  if (!name) throw new Error('script node: config.name が未指定')
+  if (!SCRIPT_NAME_RE.test(name)) {
+    throw new Error(`script node: name "${name}" は不正 (英数 / _ / - / . と .ts 終端のみ許可)`)
+  }
+  if (name.includes('..')) {
+    throw new Error('script node: パスエスケープ "..": 不許可')
+  }
+  const args =
+    Array.isArray(config.args) && config.args.every((a) => typeof a === 'string')
+      ? (config.args as string[])
+      : []
+
+  const scriptPath = path.join(PROJECT_ROOT, 'scripts', name)
+  if (!existsSync(scriptPath)) {
+    throw new Error(`script node: scripts/${name} が見つかりません`)
+  }
+
+  // pnpm tsx --env-file=.env.local scripts/<name> [...args]
+  // shell: false で arg 配列を直接渡す (shell expansion / injection 防止)
+  return await new Promise((resolve, reject) => {
+    const child = spawn('pnpm', ['tsx', '--env-file=.env.local', `scripts/${name}`, ...args], {
+      cwd: PROJECT_ROOT,
+      env: process.env,
+      shell: false,
+    })
+    let stdout = ''
+    let stderr = ''
+    let killed = false
+    const t = setTimeout(() => {
+      killed = true
+      child.kill('SIGKILL')
+    }, SCRIPT_TIMEOUT_MS)
+    child.stdout?.on('data', (b) => {
+      stdout += b.toString()
+      if (stdout.length > 1_000_000) stdout = stdout.slice(-500_000) // 過大 stdout 切詰
+    })
+    child.stderr?.on('data', (b) => {
+      stderr += b.toString()
+      if (stderr.length > 1_000_000) stderr = stderr.slice(-500_000)
+    })
+    child.on('error', (e) => {
+      clearTimeout(t)
+      reject(new Error(`script node spawn failed: ${e.message}`))
+    })
+    child.on('close', (code) => {
+      clearTimeout(t)
+      if (killed) {
+        reject(new Error(`script node timeout (${SCRIPT_TIMEOUT_MS}ms) — SIGKILL`))
+        return
+      }
+      if (code !== 0) {
+        reject(
+          new Error(`script ${name} exited ${code}\n--- stderr (tail) ---\n${stderr.slice(-2000)}`),
+        )
+        return
+      }
+      // stdout の最後を JSON parse できれば output、ダメなら text のまま
+      let parsed: unknown = stdout
+      const trimmed = stdout.trim()
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        try {
+          parsed = JSON.parse(trimmed)
+        } catch {
+          // ignore
+        }
+      }
+      resolve({
+        output: parsed,
+        log:
+          `script ${name} exit=0 stdout=${stdout.length}B stderr=${stderr.length}B\n` +
+          (stdout.length > 0 ? `--- stdout (tail) ---\n${stdout.slice(-2000)}` : ''),
+      })
+    })
+  })
+}
+
 export const nodeExecutors: Record<string, NodeExecutor> = {
   noop: noopExecutor,
   http: httpExecutor,
   slack: slackExecutor,
   email: emailExecutor,
   ai: aiExecutor,
+  script: scriptExecutor,
 }
 
 /** 未実装 node 型は明示的に NotImplemented で fail させる */
@@ -216,7 +315,7 @@ export function getNodeExecutor(type: string): NodeExecutor {
   if (!exec) {
     return async () => {
       throw new Error(
-        `node type "${type}" is not yet implemented (iter115 までは noop / http / slack / email / ai)`,
+        `node type "${type}" is not yet implemented (iter116 までは noop / http / slack / email / ai / script)`,
       )
     }
   }
