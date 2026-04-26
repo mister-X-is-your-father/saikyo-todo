@@ -321,11 +321,17 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
             placeholder="KR タイトル (例: p95 < 200ms)"
             className="flex-1"
             data-testid={`kr-title-input-${goalId}`}
+            aria-label="KR タイトル"
+            required
+            aria-required="true"
+            minLength={1}
+            maxLength={300}
           />
           <select
             value={mode}
             onChange={(e) => setMode(e.target.value as ProgressMode)}
             className="rounded border px-2 py-1 text-xs"
+            aria-label="KR 進捗算出モード"
           >
             <option value="items">items</option>
             <option value="manual">manual</option>
@@ -339,12 +345,15 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
               onChange={(e) => setTarget(e.target.value)}
               placeholder="target"
               className="w-32 text-sm"
+              aria-label="目標値"
             />
             <Input
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
               placeholder="unit (件 / %)"
               className="w-24 text-sm"
+              aria-label="単位"
+              maxLength={20}
             />
           </div>
         )}
