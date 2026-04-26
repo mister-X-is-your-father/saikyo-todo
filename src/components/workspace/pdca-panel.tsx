@@ -188,14 +188,22 @@ function DailyBars({
   color: string
 }) {
   const max = Math.max(1, ...data.map((d) => d.done))
+  // Phase 6.15 iter 90: SR 用に list semantics と aria-label を付与 (元は title のみで mouse hover 専用)
   return (
     <div className="space-y-1">
-      <div className="flex h-[100px] items-end gap-px overflow-hidden rounded border p-1">
+      <div
+        className="flex h-[100px] items-end gap-px overflow-hidden rounded border p-1"
+        role="list"
+        aria-label={`日次完了 throughput (${data.length} 日分)`}
+        data-testid="pdca-daily-bars"
+      >
         {data.map((d) => {
           const h = Math.round((d.done / max) * 100)
           return (
             <div
               key={d.date}
+              role="listitem"
+              aria-label={`${d.date}: 完了 ${d.done} 件`}
               className="flex flex-1 flex-col items-center justify-end"
               title={`${d.date}: ${d.done} 件`}
             >
