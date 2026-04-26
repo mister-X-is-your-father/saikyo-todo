@@ -324,4 +324,45 @@ describe('itemService', () => {
       expect(items.every((i) => i.deletedAt === null)).toBe(true)
     })
   })
+
+  describe('archive / unarchive', () => {
+    it('archive で archivedAt がセットされる', async () => {
+      const item = await createItem({ title: 'to-archive' })
+      const r = await itemService.archive({ id: item.id, expectedVersion: item.version })
+      expect(r.ok).toBe(true)
+      if (r.ok) expect(r.value.archivedAt).not.toBeNull()
+    })
+    it('既に archived の item を archive すると ValidationError', async () => {
+      const item = await createItem({ title: 'twice-archive' })
+      const r1 = await itemService.archive({ id: item.id, expectedVersion: item.version })
+      expect(r1.ok).toBe(true)
+      if (!r1.ok) return
+      const r2 = await itemService.archive({
+        id: item.id,
+        expectedVersion: r1.value.version,
+      })
+      expect(r2.ok).toBe(false)
+      if (!r2.ok) expect(r2.error.code).toBe('VALIDATION')
+    })
+    it('unarchive で archivedAt が null に戻る', async () => {
+      const item = await createItem({ title: 'restore' })
+      const archived = await itemService.archive({
+        id: item.id,
+        expectedVersion: item.version,
+      })
+      if (!archived.ok) throw new Error('archive failed')
+      const r = await itemService.unarchive({
+        id: item.id,
+        expectedVersion: archived.value.version,
+      })
+      expect(r.ok).toBe(true)
+      if (r.ok) expect(r.value.archivedAt).toBeNull()
+    })
+    it('unarchived の item を unarchive すると ValidationError', async () => {
+      const item = await createItem({ title: 'never-archived' })
+      const r = await itemService.unarchive({ id: item.id, expectedVersion: item.version })
+      expect(r.ok).toBe(false)
+      if (!r.ok) expect(r.error.code).toBe('VALIDATION')
+    })
+  })
 })

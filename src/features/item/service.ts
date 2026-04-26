@@ -326,6 +326,65 @@ export const itemService = {
     })
   },
 
+  /**
+   * Archive (POST_MVP "アーカイブビュー" の操作)。`archived_at` を NOW にセット。
+   * 既に archived な item は ValidationError。soft delete とは別軸 (deleted_at とは独立)。
+   */
+  async archive(input: { id: string; expectedVersion: number }): Promise<Result<Item>> {
+    if (!input.id) return err(new ValidationError('id 必須'))
+    return await mutateWithGuard<Item>({
+      findById: (tx, id) => itemRepository.findById(tx, id),
+      id: input.id,
+      notFoundMessage: NOT_FOUND,
+      fn: async (tx, before, user) => {
+        if (before.archivedAt) return err(new ValidationError('既にアーカイブ済みです'))
+        const updated = await itemRepository.updateWithLock(tx, input.id, input.expectedVersion, {
+          archivedAt: new Date(),
+        })
+        if (!updated) return err(new ConflictError())
+        await recordAudit(tx, {
+          workspaceId: before.workspaceId,
+          actorType: 'user',
+          actorId: user.id,
+          targetType: 'item',
+          targetId: updated.id,
+          action: 'archive',
+          before: { archivedAt: before.archivedAt },
+          after: { archivedAt: updated.archivedAt },
+        })
+        return ok(updated)
+      },
+    })
+  },
+
+  /** Unarchive (アーカイブ復元)。archived_at を NULL に戻す。 */
+  async unarchive(input: { id: string; expectedVersion: number }): Promise<Result<Item>> {
+    if (!input.id) return err(new ValidationError('id 必須'))
+    return await mutateWithGuard<Item>({
+      findById: (tx, id) => itemRepository.findById(tx, id),
+      id: input.id,
+      notFoundMessage: NOT_FOUND,
+      fn: async (tx, before, user) => {
+        if (!before.archivedAt) return err(new ValidationError('archive されていません'))
+        const updated = await itemRepository.updateWithLock(tx, input.id, input.expectedVersion, {
+          archivedAt: null,
+        })
+        if (!updated) return err(new ConflictError())
+        await recordAudit(tx, {
+          workspaceId: before.workspaceId,
+          actorType: 'user',
+          actorId: user.id,
+          targetType: 'item',
+          targetId: updated.id,
+          action: 'unarchive',
+          before: { archivedAt: before.archivedAt },
+          after: { archivedAt: null },
+        })
+        return ok(updated)
+      },
+    })
+  },
+
   async list(workspaceId: string, filter: { status?: string; isMust?: boolean } = {}) {
     const { user } = await requireWorkspaceMember(workspaceId, 'viewer')
     return await withUserDb(user.id, async (tx) => {
