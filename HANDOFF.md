@@ -86,6 +86,13 @@ NODE_OPTIONS="--conditions=react-server" \
 - Item 検索: `useSearchItems` (fuse.js) + Command Palette `?` プレフィクス
 - Template instantiate 後の `agentRoleToInvoke='researcher'` chain は配線済
 
+### 2.25 Phase 6.15 (loop iter 1) — Gantt critical path 純関数 (2026-04-26)
+
+TeamGantt / GanttPRO ベンチマーク gap close。`src/features/gantt/critical-path.ts`
+純関数 + 10 ケース test。AON-CPM (Kahn topo sort + forward/backward pass + slack)。
+循環 / 未知 node / 負 duration を Result で err。**DB 不要、UI 不要**。
+次 iter で `gantt-service.ts` から item + dependency を集計して呼ぶ予定。
+
 ### 2.24 Phase 6.13 — POST_MVP 棚卸し (2026-04-26)
 
 完了済を `POST_MVP.md` 上で取り消し線 + Phase 番号 reference 化:
