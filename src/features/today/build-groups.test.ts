@@ -75,6 +75,15 @@ describe('buildTodayGroups', () => {
     expect(groups[1]!.items.map((i) => i.id)).toEqual(['b-p1', 'c-p2', 'a-p4'])
   })
 
+  it('group label に日付 (M/D 曜) が含まれる', () => {
+    // TODAY = 2026-04-27 (月) なので 今日=4/27 月、明日=4/28 火
+    const groups = buildTodayGroups([], TODAY)
+    expect(groups[1]!.label).toBe('今日 (4/27 月)')
+    expect(groups[2]!.label).toBe('明日 (4/28 火)')
+    expect(groups[3]!.label).toContain('今週内 (4/29')
+    expect(groups[3]!.label).toContain('5/4')
+  })
+
   it('scheduledFor も dueDate と同じ扱いで bucket 振り分け', () => {
     const items = [
       makeItem({ id: 'sched-today', scheduledFor: TODAY }),

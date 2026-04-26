@@ -56,10 +56,23 @@ export function buildTodayGroups(items: Item[], today: string): Group[] {
     }
   }
   const priSort = (a: Item, b: Item) => (a.priority ?? 4) - (b.priority ?? 4)
+  // Phase 6.15 iter 85: ラベルに日付 / 範囲を追記して "明日って何日?" を一目で
+  const todayLabel = `今日 (${shortDate(today)})`
+  const tomorrowLabel = `明日 (${shortDate(tomorrow)})`
+  const weekLabel = `今週内 (${shortDate(shiftISO(today, 2))} 〜 ${shortDate(weekEnd)})`
   return [
     { label: '期限超過', items: overdue.sort(priSort) },
-    { label: '今日', items: todayList.sort(priSort) },
-    { label: '明日', items: tomorrowList.sort(priSort) },
-    { label: '今週内', items: weekList.sort(priSort) },
+    { label: todayLabel, items: todayList.sort(priSort) },
+    { label: tomorrowLabel, items: tomorrowList.sort(priSort) },
+    { label: weekLabel, items: weekList.sort(priSort) },
   ]
+}
+
+/** YYYY-MM-DD → "M/D (曜)" 形式に圧縮。 */
+function shortDate(iso: string): string {
+  const d = new Date(`${iso}T00:00:00Z`)
+  const m = d.getUTCMonth() + 1
+  const day = d.getUTCDate()
+  const dow = '日月火水木金土'[d.getUTCDay()]
+  return `${m}/${day} ${dow}`
 }
