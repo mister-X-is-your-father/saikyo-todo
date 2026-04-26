@@ -849,6 +849,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter69] dep-remove / notification-item の aria-label を具体化: dep-remove は `依存「<title>」を解除` (& title attr で hover tooltip)、notification-item は `<未読/既読>通知: <body>` を付与 (read 状態を SR にも明示。視覚は dot で示唆していたが aria-hidden だったため非視覚 user に伝わらなかった)
 - ✅ [iter70] navigation 整合: workspace home に **Time Entries** link 追加 (PDCA / Templates と並ぶ)、`/archive` ページの pageActions に **← Workspace** back link 追加 (Sprint/Goals/PDCA/Templates/TimeEntries と同パターン)。これで全 6 サブページに統一された戻り動線
 - ✅ [iter71] **Dashboard MUST item title click → ItemEditDialog**: title-click pattern を Dashboard view にも展開 (Today/Inbox/Kanban/Backlog/Gantt/Archive に続いて 7 箇所目)。`useQueryState('item')` + `dashboard-must-title-<id>` button。Playwright で deep link 反映を確認
+- ✅ [iter72] **recharts `width(-1)/height(-1)` warning 解消** (Dashboard burndown chart): ResponsiveContainer の `height="100%"` と `minHeight={0}` を併用していたため race で 0-px で measure → 警告が出ていた。`height={256}` 数値固定 + minHeight prop 削除に変更、親 div の `h-64` も外して duplicated layout 制約を排除。Playwright で view 切替往復しても警告 0 件
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 

@@ -134,12 +134,14 @@ export function DashboardView({ workspaceId }: Props) {
               onRetry={() => void burndown.refetch()}
             />
           ) : (
-            // ResponsiveContainer は親が display:none / 幅 0 だと
+            // ResponsiveContainer は親が幅 0 / display:none だと
             //   "The width(-1) and height(-1) of chart should be greater than 0"
-            // を console warn する。minWidth=0 + width="100%" + height="100%" を明示
-            // して dev hidden 状態のレース condition で警告が出ないようにする
-            <div className="h-64 w-full" style={{ minWidth: 0, minHeight: 256 }}>
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+            // を出す。Phase 6.15 iter 72: height は固定数値 (256px) で渡し、
+            // ResponsiveContainer 自身の minHeight=0 / minWidth=0 はやめて
+            // width だけ親の 100% に追従させる ("100%"+0 minHeight が逆に
+            // 0-px の race を許してしまっていたため)。
+            <div className="w-full" style={{ minWidth: 0 }}>
+              <ResponsiveContainer width="100%" height={256}>
                 <LineChart data={burndownData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                   <XAxis dataKey="label" tick={{ fontSize: 12 }} />
