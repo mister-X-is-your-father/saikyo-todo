@@ -249,4 +249,20 @@ export const sprintService = {
       return ok(p)
     })
   },
+
+  /**
+   * Phase 6.15 iter 106: workspace 単位の Sprint デフォルト (起動曜日 + 期間日数) を取得。
+   * Sprint 新規作成 form がこれを引いて初期 startDate / endDate を計算する。
+   */
+  async getDefaults(
+    workspaceId: string,
+  ): Promise<Result<{ startDow: number; lengthDays: number }>> {
+    if (!workspaceId) return err(new ValidationError('workspaceId 必須'))
+    const user = await requireUser()
+    await requireWorkspaceMember(workspaceId, 'viewer')
+    return await withUserDb(user.id, async (tx) => {
+      const v = await sprintRepository.getDefaults(tx, workspaceId)
+      return ok(v)
+    })
+  },
 }

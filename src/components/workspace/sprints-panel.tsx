@@ -19,6 +19,7 @@ import {
   useCreateSprint,
   useRunPremortem,
   useRunRetro,
+  useSprintDefaults,
   useSprintProgress,
   useSprints,
   useUpdateSprint,
@@ -74,6 +75,25 @@ function todayISO(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+/**
+ * Phase 6.15 iter 106: 今日以降で曜日 (0=日, 1=月, …, 6=土) と一致する直近日を返す。
+ * 今日がその曜日なら今日を返す (= 即時 Sprint 起動可能)。
+ */
+function nextDowISO(targetDow: number): string {
+  const d = new Date()
+  const cur = d.getDay()
+  const delta = (targetDow - cur + 7) % 7
+  d.setDate(d.getDate() + delta)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function addDaysISO(iso: string, days: number): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  const dt = new Date(Date.UTC(y!, m! - 1, d!))
+  dt.setUTCDate(dt.getUTCDate() + days)
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}`
+}
+
 function isoDaysFromNow(days: number): string {
   const d = new Date()
   d.setDate(d.getDate() + days)
@@ -115,10 +135,26 @@ export function SprintsPanel({ workspaceId }: Props) {
     }
   }
 
+  // Phase 6.15 iter 106: workspace_settings から Sprint 基本曜日 + 期間長を取得し、
+  // 新規 form の startDate を「次の起動曜日」、endDate を startDate + (期間-1) 日に初期化する。
+  // load 中は従来の "今日 / 13 日後" を使い、defaults 到着後に追従する。
+  const defaults = useSprintDefaults(workspaceId)
+  const initStart = defaults.data ? nextDowISO(defaults.data.startDow) : todayISO()
+  const initEnd = defaults.data
+    ? addDaysISO(initStart, Math.max(0, defaults.data.lengthDays - 1))
+    : isoDaysFromNow(13)
+
   const [name, setName] = useState('')
   const [goal, setGoal] = useState('')
-  const [startDate, setStartDate] = useState(todayISO())
-  const [endDate, setEndDate] = useState(isoDaysFromNow(13))
+  const [startDate, setStartDate] = useState(initStart)
+  const [endDate, setEndDate] = useState(initEnd)
+  const [defaultsApplied, setDefaultsApplied] = useState(Boolean(defaults.data))
+  // defaults が後から到着した場合、ユーザがまだ手で触っていなければ初期値を defaults に揃える
+  if (defaults.data && !defaultsApplied) {
+    setStartDate(initStart)
+    setEndDate(initEnd)
+    setDefaultsApplied(true)
+  }
 
   async function handleCreate() {
     const n = name.trim()

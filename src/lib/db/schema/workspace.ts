@@ -9,6 +9,7 @@ import {
   numeric,
   pgTable,
   primaryKey,
+  smallint,
   text,
   timestamp,
   uniqueIndex,
@@ -82,6 +83,14 @@ export const workspaceSettings = pgTable('workspace_settings', {
   costWarnThresholdRatio: numeric('cost_warn_threshold_ratio', { precision: 3, scale: 2 })
     .notNull()
     .default('0.80'),
+  /**
+   * Phase 6.15 iter 106: Sprint デフォルト設定。
+   * - sprintDefaultStartDow: 0=日, 1=月, …, 6=土 (既定 1 = 月曜開始)
+   * - sprintDefaultLengthDays: Sprint 長 (既定 14 = 2 週間)
+   * 個別 Sprint の期間 override (iter105) は引き続き可能。
+   */
+  sprintDefaultStartDow: smallint('sprint_default_start_dow').notNull().default(1),
+  sprintDefaultLengthDays: smallint('sprint_default_length_days').notNull().default(14),
   ...timestamps,
 })
 

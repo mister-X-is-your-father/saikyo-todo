@@ -143,6 +143,20 @@ describe('sprintService.create / list / get / update', () => {
     })
     expect(r.ok).toBe(false)
   })
+
+  // Phase 6.15 iter 106: workspace 単位 Sprint デフォルト
+  it('getDefaults: 既定 (月曜開始 / 14 日) を返す', async () => {
+    const r = await sprintService.getDefaults(wsId)
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.value.startDow).toBe(1)
+    expect(r.value.lengthDays).toBe(14)
+  })
+
+  it('getDefaults: 空 workspaceId は ValidationError', async () => {
+    const r = await sprintService.getDefaults('')
+    expect(r.ok).toBe(false)
+  })
 })
 
 describe('sprintService.changeStatus', () => {

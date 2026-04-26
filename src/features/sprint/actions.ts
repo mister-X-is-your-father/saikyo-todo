@@ -11,6 +11,12 @@ export async function createSprintAction(input: unknown): Promise<Result<Sprint>
   return await actionWrap(() => sprintService.create(input))
 }
 
+export async function getSprintDefaultsAction(
+  workspaceId: string,
+): Promise<Result<{ startDow: number; lengthDays: number }>> {
+  return await actionWrap(() => sprintService.getDefaults(workspaceId))
+}
+
 export async function updateSprintAction(input: unknown): Promise<Result<Sprint>> {
   return await actionWrap(() => sprintService.update(input))
 }

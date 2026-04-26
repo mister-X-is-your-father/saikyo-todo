@@ -11,6 +11,7 @@ import {
   changeSprintStatusAction,
   createSprintAction,
   getActiveSprintAction,
+  getSprintDefaultsAction,
   listSprintsAction,
   sprintProgressAction,
   updateSprintAction,
@@ -29,6 +30,17 @@ export const sprintKeys = {
   list: (workspaceId: string) => [...sprintKeys.all, 'list', workspaceId] as const,
   active: (workspaceId: string) => [...sprintKeys.all, 'active', workspaceId] as const,
   progress: (sprintId: string) => [...sprintKeys.all, 'progress', sprintId] as const,
+  defaults: (workspaceId: string) => [...sprintKeys.all, 'defaults', workspaceId] as const,
+}
+
+/** Phase 6.15 iter 106: workspace 単位 Sprint デフォルト (基本曜日 / 期間日数) */
+export function useSprintDefaults(workspaceId: string) {
+  return useQuery({
+    queryKey: sprintKeys.defaults(workspaceId),
+    queryFn: async () => unwrap(await getSprintDefaultsAction(workspaceId)),
+    enabled: Boolean(workspaceId),
+    staleTime: 5 * 60_000,
+  })
 }
 
 export function useSprints(workspaceId: string) {
