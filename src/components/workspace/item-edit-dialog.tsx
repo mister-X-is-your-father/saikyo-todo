@@ -47,6 +47,7 @@ import { AssigneePicker } from './assignee-picker'
 import { CommentThread } from './comment-thread'
 import { DecomposeProposalsPanel } from './decompose-proposals-panel'
 import { ItemDecomposeButton } from './item-decompose-button'
+import { ItemDependenciesPanel } from './item-dependencies-panel'
 import { TagPicker } from './tag-picker'
 
 interface Props {
@@ -84,7 +85,9 @@ function ItemEditDialogInner({
   onOpenChange: (open: boolean) => void
   currentUserId?: string
 }) {
-  const [tab, setTab] = useState<'base' | 'subtasks' | 'comments' | 'activity'>('base')
+  const [tab, setTab] = useState<'base' | 'subtasks' | 'dependencies' | 'comments' | 'activity'>(
+    'base',
+  )
   const [title, setTitle] = useState(item.title)
   const [description, setDescription] = useState(item.description ?? '')
   const [startDate, setStartDate] = useState(item.startDate ?? '')
@@ -183,6 +186,9 @@ function ItemEditDialogInner({
             </TabsTrigger>
             <TabsTrigger value="subtasks" data-testid="tab-subtasks">
               子タスク
+            </TabsTrigger>
+            <TabsTrigger value="dependencies" data-testid="tab-dependencies">
+              依存
             </TabsTrigger>
             <TabsTrigger value="comments" data-testid="tab-comments">
               コメント
@@ -321,6 +327,10 @@ function ItemEditDialogInner({
 
           <TabsContent value="subtasks" className="mt-4">
             <SubtasksPanel workspaceId={workspaceId} parent={item} />
+          </TabsContent>
+
+          <TabsContent value="dependencies" className="mt-4">
+            <ItemDependenciesPanel workspaceId={workspaceId} item={item} />
           </TabsContent>
 
           <TabsContent value="comments" className="mt-4">
