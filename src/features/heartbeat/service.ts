@@ -26,6 +26,7 @@ import { enqueueJob } from '@/lib/jobs/queue'
 import { err, ok, type Result } from '@/lib/result'
 
 import { buildAppHref, notifyHeartbeatEmail } from '@/features/email/notify'
+import { dispatchSlack } from '@/features/slack/dispatcher'
 
 export type HeartbeatStage = '7d' | '3d' | '1d' | 'overdue'
 
@@ -192,11 +193,19 @@ export const heartbeatService = {
       })
     })
 
-    // commit 後に email 配信 (best-effort: 個別失敗で他のを巻き込まない)。
-    // notify* は内部で try/catch して console.error する設計なので await Promise.all で十分。
+    // commit 後に email + Slack 配信 (best-effort: 個別失敗で他のを巻き込まない)。
+    // notify* / dispatchSlack は内部で try/catch して console.error する設計なので
+    // await Promise.all で十分。SLACK_WEBHOOK_URL が無い時 dispatchSlack は console.info
+    // のみで delivered:false を返す (mock)。
     if (emailPending.length > 0) {
+      const stageLabel: Record<(typeof emailPending)[number]['stage'], string> = {
+        '7d': '7 日後',
+        '3d': '3 日後',
+        '1d': '1 日後',
+        overdue: '期限切れ',
+      }
       await Promise.all(
-        emailPending.map((p) =>
+        emailPending.flatMap((p) => [
           notifyHeartbeatEmail({
             userId: p.userId,
             workspaceId,
@@ -205,7 +214,18 @@ export const heartbeatService = {
             dueDate: p.dueDate,
             href: buildAppHref({ workspaceId, itemId: p.itemId }),
           }),
-        ),
+          // Phase 6.15 iter 32: Slack dispatch を並列に追加 (POST_MVP "Slack 通知")
+          dispatchSlack({
+            workspaceId,
+            type: 'heartbeat',
+            text:
+              p.stage === 'overdue'
+                ? `*MUST 期限切れ*: ${p.itemTitle} (期限 ${p.dueDate})`
+                : `*MUST 期限が ${stageLabel[p.stage]} に迫っています*: ${p.itemTitle} (期限 ${p.dueDate})`,
+            linkUrl: buildAppHref({ workspaceId, itemId: p.itemId }),
+            linkLabel: '詳細を確認',
+          }),
+        ]),
       )
     }
 
