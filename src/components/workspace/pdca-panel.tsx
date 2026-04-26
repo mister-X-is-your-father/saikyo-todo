@@ -7,7 +7,7 @@
  * - Daily throughput (period 内の done 件数推移)
  * - 期間切替: 30 日 / 90 日 (default 30)
  */
-import { useState } from 'react'
+import { parseAsInteger, useQueryState } from 'nuqs'
 
 import { usePdcaSummary } from '@/features/pdca/hooks'
 
@@ -33,7 +33,9 @@ const PDCA_COLORS = {
 } as const
 
 export function PdcaPanel({ workspaceId }: Props) {
-  const [days, setDays] = useState<30 | 90>(30)
+  // Phase 6.15 iter 76: PDCA period (30/90) を URL に永続化 (Gantt iter74-75 と同パターン)
+  const [daysRaw, setDays] = useQueryState('pdcaDays', parseAsInteger.withDefault(30))
+  const days: 30 | 90 = daysRaw === 90 ? 90 : 30
   const from = isoDaysFromToday(-(days - 1))
   const to = isoDaysFromToday(0)
   const summary = usePdcaSummary(workspaceId, { from, to })

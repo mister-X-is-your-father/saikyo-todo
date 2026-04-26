@@ -853,6 +853,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter73] **Gantt zoom (compact/normal/wide) select** (TeamGantt の day/week/month zoom 相当): `DAY_PX` 定数 → state-driven `dayPx`、ZOOM_PX={compact:24, normal:40, wide:64}、summary banner に `<select aria-label="Gantt の 1 日あたりの幅">` 追加。Playwright で 10-day item の bar 幅が compact=240px → normal=400px → wide=640px に追従することを確認
 - ✅ [iter74] **Gantt zoom を URL に永続化** (nuqs `parseAsStringLiteral([...]).withDefault('normal')`): `?zoom=wide` が URL に反映され reload 後も復元される。Playwright で URL 反映 + reload 後 select value=wide を直接確認 (TeamGantt 風の "view setting persisted" UX)
 - ✅ [iter75] **Gantt hideDone toggle も URL 永続化** (nuqs `parseAsBoolean.withDefault(false)`): `?hideDone=true` が反映 + reload 復元。useState を完全に外してすべての Gantt view 状態が URL ベース (zoom + hideDone + item)。共有 link で view setting を相手に渡せる
+- ✅ [iter76] **PDCA period (30/90) も URL 永続化** (nuqs `parseAsInteger.withDefault(30)`): `?pdcaDays=90` が反映 + reload 後も 90 日 button が aria-pressed のまま。Gantt と同パターンで view setting を URL に集約
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
