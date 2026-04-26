@@ -306,6 +306,15 @@ export function GanttView({
           const barBg = item.isMust
             ? `rgba(239,68,68,${baseAlpha})`
             : `rgba(59,130,246,${baseAlpha})`
+          // Phase 6.15 iter 49: baseline (TeamGantt 風 — 当初計画 vs 現在の差分)
+          const blStart = toDate(item.baselineStartDate)
+          const blEnd = toDate(item.baselineEndDate)
+          const hasBaseline = Boolean(blStart && blEnd)
+          const baselineLeft = blStart
+            ? differenceInCalendarDays(blStart, range!.start) * DAY_PX
+            : 0
+          const baselineWidth =
+            blStart && blEnd ? (differenceInCalendarDays(blEnd, blStart) + 1) * DAY_PX : 0
           return (
             <div
               key={item.id}
@@ -328,6 +337,22 @@ export function GanttView({
                 {item.isMust && <span className="ml-1 shrink-0 text-xs text-red-500">MUST</span>}
               </div>
               <div style={{ width: timelineWidth, position: 'relative', height: ROW_PX }}>
+                {hasBaseline && (
+                  <div
+                    data-testid={`gantt-baseline-${item.id}`}
+                    aria-label={`baseline ${item.baselineStartDate} → ${item.baselineEndDate}`}
+                    className="pointer-events-none absolute"
+                    style={{
+                      left: baselineLeft,
+                      width: baselineWidth,
+                      bottom: 2,
+                      height: 5,
+                      background: 'rgba(100, 116, 139, 0.45)', // slate-500 半透明
+                      borderRadius: 2,
+                    }}
+                    title={`baseline: ${item.baselineStartDate} → ${item.baselineEndDate}`}
+                  />
+                )}
                 {spanDays === 1 ? (
                   // milestone (1 日完結) — TeamGantt 風 ◇ 菱形 (rotate 45)
                   <div
