@@ -136,6 +136,41 @@ describe('executeToolLoop', () => {
     expect(invoker).toHaveBeenCalledTimes(3)
   })
 
+  it('shouldAbort=true なら CancelledError を throw + invoker を呼ばない', async () => {
+    const { CancelledError } = await import('@/lib/errors')
+    const invoker = vi.fn(async () => buildInvokeResult({ text: 'never', stopReason: 'end_turn' }))
+    await expect(
+      executeToolLoop(baseInput({ invoker, shouldAbort: async () => true })),
+    ).rejects.toBeInstanceOf(CancelledError)
+    expect(invoker).not.toHaveBeenCalled()
+  })
+
+  it('shouldAbort が iteration 2 で true を返すと 1 回 tool 実行後に中止', async () => {
+    const { CancelledError } = await import('@/lib/errors')
+    const invoker = vi
+      .fn()
+      .mockResolvedValueOnce(
+        buildInvokeResult({
+          stopReason: 'tool_use',
+          toolUses: [{ id: 't1', name: 'echo', input: { x: 1 } }],
+          rawMessage: {
+            content: [{ type: 'tool_use', id: 't1', name: 'echo', input: { x: 1 } }],
+          } as never,
+        }),
+      )
+      // 2 回目は呼ばれない (shouldAbort で先に弾かれる)
+      .mockResolvedValueOnce(buildInvokeResult({ text: 'never', stopReason: 'end_turn' }))
+    let calls = 0
+    const shouldAbort = async () => {
+      calls += 1
+      return calls >= 2 // 1 回目 false / 2 回目 true
+    }
+    await expect(executeToolLoop(baseInput({ invoker, shouldAbort }))).rejects.toBeInstanceOf(
+      CancelledError,
+    )
+    expect(invoker).toHaveBeenCalledTimes(1)
+  })
+
   it('handlers で非同期の遅延があっても結果を蓄積する', async () => {
     const invoker = vi
       .fn()

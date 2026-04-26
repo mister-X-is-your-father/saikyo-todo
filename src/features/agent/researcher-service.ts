@@ -21,7 +21,7 @@ import { calculateCostUsd } from '@/lib/ai/pricing'
 import { executeToolLoop, type ToolLoopInput } from '@/lib/ai/tool-loop'
 import { recordAudit } from '@/lib/audit'
 import { adminDb } from '@/lib/db/scoped-client'
-import { ExternalServiceError, NotFoundError, ValidationError } from '@/lib/errors'
+import { CancelledError, ExternalServiceError, NotFoundError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 
 import { itemRepository } from '@/features/item/repository'
@@ -47,6 +47,12 @@ export interface ResearcherRunInput {
   decomposeParentItemId?: string
   /** テスト用 DI: invokeModel を差し替える (executeToolLoop の invoker に流す) */
   invoker?: ToolLoopInput['invoker']
+  /**
+   * テスト用 DI: 中止判定を差し替える。省略時は invoker の有無で挙動が変わる:
+   *   - invoker 未指定 (本番): agent_invocations.status を毎 iteration ポーリング
+   *   - invoker 指定 (mock テスト): デフォルトでは abort しない
+   */
+  shouldAbort?: ToolLoopInput['shouldAbort']
 }
 
 export interface ResearcherRunOutput {
@@ -165,6 +171,28 @@ export const researcherService = {
         ? streamingInvoker(onTextDelta)
         : undefined
 
+    /**
+     * 中止判定: input.shouldAbort で DI、未指定なら invocation.status をポーリングする
+     * (本番: ユーザーが cancelInvocationAction で status='cancelled' に立てたら次の
+     * iteration で検知してループを抜ける)。input.invoker が DI されている mock テストで
+     * shouldAbort も指定されていないときは "決して中止しない" (= undefined) を維持。
+     */
+    const shouldAbort: ToolLoopInput['shouldAbort'] | undefined =
+      input.shouldAbort ??
+      (input.invoker
+        ? undefined
+        : async () => {
+            try {
+              const row = await adminDb.transaction((tx) =>
+                agentInvocationRepository.findById(tx, invocation.id),
+              )
+              return row?.status === 'cancelled'
+            } catch (e) {
+              console.warn('[researcher] shouldAbort poll failed', e)
+              return false
+            }
+          })
+
     try {
       const loopResult = await executeToolLoop({
         model: RESEARCHER_ROLE.model,
@@ -175,6 +203,7 @@ export const researcherService = {
         maxIterations: RESEARCHER_ROLE.maxIterations,
         maxTokens: RESEARCHER_ROLE.maxTokens,
         ...(invoker ? { invoker } : {}),
+        ...(shouldAbort ? { shouldAbort } : {}),
       })
 
       // streaming 完了: pending な timer をクリアして最終 flush は不要
@@ -254,6 +283,34 @@ export const researcherService = {
         costUsd: cost,
       })
     } catch (e) {
+      // streaming タイマがあれば畳む
+      if (streamUpdateTimer) {
+        clearTimeout(streamUpdateTimer)
+        streamUpdateTimer = null
+      }
+      // CancelledError は failure ではなく "cancelled" として記録する。
+      if (e instanceof CancelledError) {
+        await adminDb.transaction(async (tx) => {
+          // 既に cancelled (= cancelInvocationAction が status を立てた経路) のときは
+          // finishedAt だけ詰めて再度上書き。currently running 状態から本関数内で
+          // CancelledError を抜けたケース (ほぼ無いが defensive) でも cancelled に揃える。
+          await agentInvocationRepository.update(tx, invocation.id, {
+            status: 'cancelled',
+            errorMessage: null,
+            finishedAt: new Date(),
+          })
+          await recordAudit(tx, {
+            workspaceId: input.workspaceId,
+            actorType: 'agent',
+            actorId: agent.id,
+            targetType: 'agent_invocation',
+            targetId: invocation.id,
+            action: 'cancel',
+            after: { status: 'cancelled' },
+          })
+        })
+        return err(e)
+      }
       const raw = e instanceof Error ? e.message : String(e)
       const errorMessage = raw.slice(0, 2000)
       await adminDb.transaction(async (tx) => {

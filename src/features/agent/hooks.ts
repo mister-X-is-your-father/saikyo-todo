@@ -14,7 +14,7 @@ import { unwrap } from '@/lib/result-unwrap'
 import { proposalKeys } from '@/features/decompose-proposal/hooks'
 import { itemKeys } from '@/features/item/hooks'
 
-import { decomposeItemAction, researchItemAction } from './actions'
+import { cancelInvocationAction, decomposeItemAction, researchItemAction } from './actions'
 
 export interface DecomposeItemVariables {
   workspaceId: string
@@ -66,5 +66,17 @@ export function useResearchItem() {
           idempotencyKey: vars.idempotencyKey,
         }),
       ),
+  })
+}
+
+/**
+ * 実行中 invocation を中止する。Server Action は status='cancelled' を立てるだけで、
+ * tool-loop 側 (researcher / pm service) の shouldAbort poll が次の iteration で
+ * 検知してループを抜ける (~2-3 秒で UI が完了状態に遷移)。
+ */
+export function useCancelInvocation() {
+  return useMutation({
+    mutationFn: async (invocationId: string) =>
+      unwrap(await cancelInvocationAction({ invocationId })),
   })
 }

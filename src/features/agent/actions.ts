@@ -14,11 +14,14 @@ import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 
 import { actionWrap } from '@/lib/action-wrap'
+import { recordAudit } from '@/lib/audit'
 import { requireWorkspaceMember } from '@/lib/auth/guard'
-import { ValidationError } from '@/lib/errors'
-import { err, type Result } from '@/lib/result'
+import { adminDb } from '@/lib/db/scoped-client'
+import { NotFoundError, ValidationError } from '@/lib/errors'
+import { err, ok, type Result } from '@/lib/result'
 
 import { type PmRunOutput, pmService } from './pm-service'
+import { agentInvocationRepository } from './repository'
 import { type ResearcherRunOutput, researcherService } from './researcher-service'
 
 const DecomposeItemActionInputSchema = z.object({
@@ -76,6 +79,61 @@ const StandupActionInputSchema = z.object({
   workspaceId: z.string().uuid(),
   idempotencyKey: z.string().uuid().optional(),
 })
+
+const CancelInvocationInputSchema = z.object({
+  invocationId: z.string().uuid(),
+})
+
+/**
+ * 実行中 (queued / running) の agent_invocation を中止する。
+ * status='cancelled' に立てるだけで、実体の executeToolLoop は次の iteration の
+ * shouldAbort チェックで自然停止 → researcherService / pmService の catch 経路で
+ * 監査ログ + finishedAt が詰められる。
+ *
+ * 既に completed / failed / cancelled の行は no-op。
+ */
+export interface CancelInvocationOutput {
+  invocationId: string
+  /** 'cancelled' = この呼び出しで cancelled に遷移、'noop' = 既に終了済で何もしなかった */
+  status: 'cancelled' | 'noop'
+}
+
+export async function cancelInvocationAction(
+  input: unknown,
+): Promise<Result<CancelInvocationOutput>> {
+  return await actionWrap<CancelInvocationOutput>(async () => {
+    const parsed = CancelInvocationInputSchema.safeParse(input)
+    if (!parsed.success) {
+      return err(new ValidationError('入力内容を確認してください', parsed.error))
+    }
+    const inv = await adminDb.transaction((tx) =>
+      agentInvocationRepository.findById(tx, parsed.data.invocationId),
+    )
+    if (!inv) return err(new NotFoundError('invocation が見つかりません'))
+    const { user } = await requireWorkspaceMember(inv.workspaceId, 'member')
+
+    if (inv.status !== 'queued' && inv.status !== 'running') {
+      // 既に終了済 — 何もしない (ユーザーには成功扱いで返す)
+      return ok<CancelInvocationOutput>({ invocationId: inv.id, status: 'noop' })
+    }
+    await adminDb.transaction(async (tx) => {
+      await agentInvocationRepository.update(tx, parsed.data.invocationId, {
+        status: 'cancelled',
+      })
+      await recordAudit(tx, {
+        workspaceId: inv.workspaceId,
+        actorType: 'user',
+        actorId: user.id,
+        targetType: 'agent_invocation',
+        targetId: inv.id,
+        action: 'cancel_request',
+        before: { status: inv.status },
+        after: { status: 'cancelled' },
+      })
+    })
+    return ok<CancelInvocationOutput>({ invocationId: inv.id, status: 'cancelled' })
+  })
+}
 
 export async function runStandupAction(input: unknown): Promise<Result<PmRunOutput>> {
   return await actionWrap(async () => {

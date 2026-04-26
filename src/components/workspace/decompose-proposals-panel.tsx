@@ -19,7 +19,7 @@ import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
 
-import { useDecomposeItem } from '@/features/agent/hooks'
+import { useCancelInvocation, useDecomposeItem } from '@/features/agent/hooks'
 import { useAgentInvocationProgressByTarget } from '@/features/agent/realtime'
 import {
   useAcceptProposal,
@@ -48,6 +48,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
   const reject = useRejectProposal(parentItemId)
   const rejectAll = useRejectAllPendingProposals(parentItemId)
   const decompose = useDecomposeItem(workspaceId)
+  const cancel = useCancelInvocation()
 
   const list = proposals.data ?? []
   const isAgentRunning = progress.status === 'queued' || progress.status === 'running'
@@ -78,6 +79,16 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
       toast.success(`${r.count} 件却下しました`)
     } catch (e) {
       toast.error(isAppError(e) ? e.message : '却下に失敗')
+    }
+  }
+
+  async function handleCancel() {
+    if (!progress.invocationId) return
+    try {
+      await cancel.mutateAsync(progress.invocationId)
+      toast.success('中止リクエストを送信しました')
+    } catch (e) {
+      toast.error(isAppError(e) ? e.message : '中止に失敗')
     }
   }
 
@@ -131,6 +142,22 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
             </p>
           )}
         </div>
+        {isAgentRunning && progress.invocationId && (
+          <div className="flex shrink-0 items-center">
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={cancel.isPending}
+              onClick={() => void handleCancel()}
+              data-testid="agent-cancel"
+              title="実行中の Agent を中止"
+            >
+              <X className="mr-1 h-3.5 w-3.5" />
+              中止
+            </Button>
+          </div>
+        )}
         {!isAgentRunning && (
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
             {list.length > 0 && (

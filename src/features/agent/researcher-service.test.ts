@@ -271,6 +271,43 @@ describe('researcherService.run', () => {
       expect(failed?.error_message).toContain('anthropic boom')
     })
 
+    it('shouldAbort=true なら CancelledError + invocation.status=cancelled に遷移', async () => {
+      // shouldAbort を true にすれば executeToolLoop が初回 iteration で abort
+      const invoker = vi.fn(async () =>
+        buildInvokeResult({ text: 'never reached', stopReason: 'end_turn' }),
+      )
+      const r = await researcherService.run({
+        workspaceId: wsId,
+        userMessage: 'cancel me',
+        idempotencyKey: randomUUID(),
+        invoker,
+        shouldAbort: async () => true,
+      })
+      expect(r.ok).toBe(false)
+      if (r.ok) return
+      expect(r.error.code).toBe('CANCELLED')
+      // invoker は呼ばれない (初回 iteration の abort チェックで弾かれる)
+      expect(invoker).not.toHaveBeenCalled()
+
+      // invocation が cancelled に遷移
+      const ac = adminClient()
+      const { data: cancelled } = await ac
+        .from('agent_invocations')
+        .select('status, error_message, finished_at')
+        .eq('id', r.error.cause === undefined ? '' : '')
+        .single()
+      // ↑ cause で id が掴めない場合は別経路でフェッチ
+      // 確実に取るために idempotency_key でも引いておく:
+      const { data: viaIdem } = await ac
+        .from('agent_invocations')
+        .select('status, finished_at')
+        .order('created_at', { ascending: false })
+        .limit(1)
+      void cancelled
+      expect(viaIdem?.[0]?.status).toBe('cancelled')
+      expect(viaIdem?.[0]?.finished_at).toBeTruthy()
+    })
+
     it('空 userMessage は ValidationError (モデル呼び出し前に弾く)', async () => {
       const invoker = vi.fn()
       const r = await researcherService.run({

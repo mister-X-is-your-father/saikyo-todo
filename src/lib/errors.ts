@@ -56,4 +56,16 @@ export class ExternalServiceError extends AppError {
   }
 }
 
+/**
+ * Agent / 長時間処理がユーザーから中止された時の signal。
+ * tool-loop / researcher-service / pm-service が catch して invocation を
+ * status='cancelled' に遷移させる。Server Action へは Result<T> の err として
+ * 返り、UI は toast で "中止しました" を出す。
+ */
+export class CancelledError extends AppError {
+  constructor(message = '実行を中止しました') {
+    super('CANCELLED', message)
+  }
+}
+
 export const isAppError = (e: unknown): e is AppError => e instanceof AppError

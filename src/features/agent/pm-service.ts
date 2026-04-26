@@ -15,7 +15,7 @@ import { calculateCostUsd } from '@/lib/ai/pricing'
 import { executeToolLoop, type ToolLoopInput } from '@/lib/ai/tool-loop'
 import { recordAudit } from '@/lib/audit'
 import { adminDb } from '@/lib/db/scoped-client'
-import { ExternalServiceError, ValidationError } from '@/lib/errors'
+import { CancelledError, ExternalServiceError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 
 import { PM_ROLE } from './roles/pm'
@@ -105,6 +105,21 @@ export const pmService = {
       agentRole: 'pm',
     })
 
+    /** ユーザーが cancelInvocationAction で status='cancelled' に立てたら abort */
+    const shouldAbort = input.invoker
+      ? undefined
+      : async () => {
+          try {
+            const row = await adminDb.transaction((tx) =>
+              agentInvocationRepository.findById(tx, invocation.id),
+            )
+            return row?.status === 'cancelled'
+          } catch (e) {
+            console.warn('[pm] shouldAbort poll failed', e)
+            return false
+          }
+        }
+
     try {
       const loopResult = await executeToolLoop({
         model: PM_ROLE.model,
@@ -115,6 +130,7 @@ export const pmService = {
         maxIterations: PM_ROLE.maxIterations,
         maxTokens: PM_ROLE.maxTokens,
         ...(input.invoker ? { invoker: input.invoker } : {}),
+        ...(shouldAbort ? { shouldAbort } : {}),
       })
 
       for (const call of loopResult.toolCalls) {
@@ -183,6 +199,25 @@ export const pmService = {
         costUsd: cost,
       })
     } catch (e) {
+      if (e instanceof CancelledError) {
+        await adminDb.transaction(async (tx) => {
+          await agentInvocationRepository.update(tx, invocation.id, {
+            status: 'cancelled',
+            errorMessage: null,
+            finishedAt: new Date(),
+          })
+          await recordAudit(tx, {
+            workspaceId: input.workspaceId,
+            actorType: 'agent',
+            actorId: agent.id,
+            targetType: 'agent_invocation',
+            targetId: invocation.id,
+            action: 'cancel',
+            after: { status: 'cancelled' },
+          })
+        })
+        return err(e)
+      }
       const raw = e instanceof Error ? e.message : String(e)
       const errorMessage = raw.slice(0, 2000)
       await adminDb.transaction(async (tx) => {

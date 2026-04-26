@@ -20,6 +20,8 @@ import 'server-only'
 
 import type { MessageParam, Tool } from '@anthropic-ai/sdk/resources/messages'
 
+import { CancelledError } from '@/lib/errors'
+
 import { invokeModel, type InvokeModelOutput } from './invoke'
 import type { TokenUsage } from './pricing'
 
@@ -41,6 +43,12 @@ export interface ToolLoopInput {
     tools?: Tool[]
     maxTokens?: number
   }) => Promise<InvokeModelOutput>
+  /**
+   * 各 iteration の前 + tool 呼び出しの前に呼ばれる中止判定。
+   * true を返すと `CancelledError` が throw されてループを抜ける。
+   * 用途: Server Action 経由でユーザーが invocation を cancel した時の検知。
+   */
+  shouldAbort?: () => Promise<boolean>
 }
 
 export interface ToolCallRecord {
@@ -78,6 +86,9 @@ export async function executeToolLoop(input: ToolLoopInput): Promise<ToolLoopOut
   let lastStopReason: InvokeModelOutput['stopReason'] = null
 
   for (let iter = 1; iter <= maxIterations; iter++) {
+    if (input.shouldAbort && (await input.shouldAbort())) {
+      throw new CancelledError()
+    }
     const result = await invoker({
       model: input.model,
       ...(input.system ? { system: input.system } : {}),
