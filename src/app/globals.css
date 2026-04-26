@@ -123,8 +123,16 @@
   }
   body {
     @apply bg-background text-foreground;
+    /*
+     * Phase 6.15 iter 107: Kanban のような横長 grid が body を viewport より wide にしてしまうと
+     * `position: fixed` の Dialog が拡大された layout viewport を参照して画面右に切れる。
+     * `overflow-x: clip` を body / html に強制し、横スクロールは内部 (kanban-board の overflow-x-auto) に
+     * 限定。`clip` は scroll を無効化するが scroll position も作らないので安全。
+     */
+    overflow-x: clip;
   }
   html {
     @apply font-sans;
+    overflow-x: clip;
   }
 }
