@@ -817,6 +817,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter37] /goals KR 追加 form a11y 強化: KR title に aria-label / required / minLength=1 / maxLength=300、mode select に aria-label、target/unit input に aria-label 付与 (unit は maxLength=20 も)
 - ✅ [iter38] /time-entries 作成 form: submit button が type="button" だったため Enter キーで submit 不可 → type="submit" に変更し冗長な onClick 削除 (form onSubmit に一本化、IMEInput は IME 確定中のみ Enter ガード)
 - ✅ [iter39] /sprints 作成 form: そもそも `<form>` で wrap されておらず Enter キーで submit 不可 → CardContent 内を `<form onSubmit>` で包み button を type="submit" に。Todoist 風の Enter-to-submit を sprint にも展開
+- ✅ [iter40] /goals 作成 form: 同じく form 要素なしで Enter submit 不可 → `<form onSubmit>` wrap + button type="submit" (iter39 sprint と同パターン)
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 

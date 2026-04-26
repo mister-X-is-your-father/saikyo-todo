@@ -96,64 +96,72 @@ export function GoalsPanel({ workspaceId }: Props) {
         <CardHeader>
           <CardTitle className="text-base">新規 Goal (Objective)</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-            <div className="space-y-1 md:col-span-3">
-              <Label htmlFor="goal-title">Objective (なに / なぜ)</Label>
-              <IMEInput
-                id="goal-title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="例: 2026 Q2 — システム速度を体感半分に"
-                required
-                aria-required="true"
-                minLength={1}
-                maxLength={200}
-              />
+        <CardContent>
+          <form
+            className="space-y-3"
+            onSubmit={(e) => {
+              e.preventDefault()
+              void handleCreate()
+            }}
+          >
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <div className="space-y-1 md:col-span-3">
+                <Label htmlFor="goal-title">Objective (なに / なぜ)</Label>
+                <IMEInput
+                  id="goal-title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="例: 2026 Q2 — システム速度を体感半分に"
+                  required
+                  aria-required="true"
+                  minLength={1}
+                  maxLength={200}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="goal-start">開始</Label>
+                <Input
+                  id="goal-start"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  required
+                  aria-required="true"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="goal-end">終了</Label>
+                <Input
+                  id="goal-end"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  required
+                  aria-required="true"
+                  min={startDate || undefined}
+                />
+              </div>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="goal-start">開始</Label>
-              <Input
-                id="goal-start"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                required
-                aria-required="true"
+              <Label htmlFor="goal-desc">説明 (任意)</Label>
+              <Textarea
+                id="goal-desc"
+                rows={2}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                maxLength={2000}
               />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="goal-end">終了</Label>
-              <Input
-                id="goal-end"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                required
-                aria-required="true"
-                min={startDate || undefined}
-              />
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                disabled={!title.trim() || createMut.isPending}
+                data-testid="goal-create-btn"
+              >
+                {createMut.isPending ? '作成中…' : '作成'}
+              </Button>
             </div>
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="goal-desc">説明 (任意)</Label>
-            <Textarea
-              id="goal-desc"
-              rows={2}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              maxLength={2000}
-            />
-          </div>
-          <div className="flex justify-end">
-            <Button
-              onClick={() => void handleCreate()}
-              disabled={!title.trim() || createMut.isPending}
-              data-testid="goal-create-btn"
-            >
-              {createMut.isPending ? '作成中…' : '作成'}
-            </Button>
-          </div>
+          </form>
         </CardContent>
       </Card>
 
