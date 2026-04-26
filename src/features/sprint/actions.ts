@@ -17,6 +17,12 @@ export async function getSprintDefaultsAction(
   return await actionWrap(() => sprintService.getDefaults(workspaceId))
 }
 
+export async function updateSprintDefaultsAction(
+  input: unknown,
+): Promise<Result<{ startDow: number; lengthDays: number }>> {
+  return await actionWrap(() => sprintService.updateDefaults(input))
+}
+
 export async function updateSprintAction(input: unknown): Promise<Result<Sprint>> {
   return await actionWrap(() => sprintService.update(input))
 }

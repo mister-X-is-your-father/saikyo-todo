@@ -15,6 +15,7 @@ import {
   listSprintsAction,
   sprintProgressAction,
   updateSprintAction,
+  updateSprintDefaultsAction,
 } from './actions'
 import { runPremortemForSprintAction } from './premortem-actions'
 import { runRetroForSprintAction } from './retro-actions'
@@ -40,6 +41,18 @@ export function useSprintDefaults(workspaceId: string) {
     queryFn: async () => unwrap(await getSprintDefaultsAction(workspaceId)),
     enabled: Boolean(workspaceId),
     staleTime: 5 * 60_000,
+  })
+}
+
+/** Phase 6.15 iter 110: Sprint デフォルト更新 (admin 以上) */
+export function useUpdateSprintDefaults(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: { startDow: number; lengthDays: number }) =>
+      unwrap(await updateSprintDefaultsAction({ workspaceId, ...input })),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: sprintKeys.defaults(workspaceId) })
+    },
   })
 }
 

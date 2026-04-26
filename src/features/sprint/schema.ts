@@ -58,3 +58,15 @@ export const AssignItemToSprintInputSchema = z.object({
   sprintId: z.string().uuid().nullable(),
 })
 export type AssignItemToSprintInput = z.infer<typeof AssignItemToSprintInputSchema>
+
+/**
+ * Phase 6.15 iter 110: Sprint workspace デフォルト編集入力。
+ * - startDow: 0=日, 1=月, …, 6=土
+ * - lengthDays: 1..90 (DB CHECK 制約と整合)
+ */
+export const UpdateSprintDefaultsInputSchema = z.object({
+  workspaceId: z.string().uuid(),
+  startDow: z.number().int().min(0).max(6),
+  lengthDays: z.number().int().min(1).max(90),
+})
+export type UpdateSprintDefaultsInput = z.infer<typeof UpdateSprintDefaultsInputSchema>

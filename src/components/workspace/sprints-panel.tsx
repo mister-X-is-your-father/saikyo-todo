@@ -7,7 +7,7 @@
  *   - status 遷移ボタン: planning → active / active → completed / cancelled
  *   - 編集 (name / 期間 / goal) は inline edit を後回し、まず最小機能
  */
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { CalendarRange, CheckCircle, Pause, Play, Sparkles, X } from 'lucide-react'
 import { toast } from 'sonner'
@@ -23,6 +23,7 @@ import {
   useSprintProgress,
   useSprints,
   useUpdateSprint,
+  useUpdateSprintDefaults,
 } from '@/features/sprint/hooks'
 import type { Sprint, SprintStatus } from '@/features/sprint/schema'
 
@@ -191,6 +192,8 @@ export function SprintsPanel({ workspaceId }: Props) {
 
   return (
     <div className="space-y-6">
+      <SprintDefaultsEditor workspaceId={workspaceId} />
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">新規 Sprint</CardTitle>
@@ -581,5 +584,132 @@ function SprintCard({
         </CardContent>
       </Card>
     </li>
+  )
+}
+
+/**
+ * Phase 6.15 iter 110: workspace 単位 Sprint デフォルト (基本曜日 + 期間日数) 編集 inline editor。
+ * member 以下が見ても read-only 状態 (mutation でサーバが PermissionError を返す)。
+ */
+function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
+  const q = useSprintDefaults(workspaceId)
+  const upd = useUpdateSprintDefaults(workspaceId)
+  const [editing, setEditing] = useState(false)
+  const [dow, setDow] = useState(1)
+  const [length, setLength] = useState(14)
+
+  // 取得後 form state を初期化 (1 回のみ — ユーザ編集中は上書きしない)
+  const lastLoadedRef = useRef(false)
+  useEffect(() => {
+    if (lastLoadedRef.current || !q.data) return
+    lastLoadedRef.current = true
+    setDow(q.data.startDow)
+    setLength(q.data.lengthDays)
+  }, [q.data])
+
+  if (!q.data) return null
+  const cur = q.data
+
+  async function save() {
+    try {
+      await upd.mutateAsync({ startDow: dow, lengthDays: length })
+      toast.success('Sprint デフォルトを更新しました')
+      setEditing(false)
+    } catch (e) {
+      toast.error(isAppError(e) ? e.message : '更新に失敗 (admin 以上が必要)')
+    }
+  }
+
+  return (
+    <Card data-testid="sprint-defaults-editor">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm">Sprint デフォルト (workspace 全体)</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {!editing ? (
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span data-testid="sprint-defaults-summary">
+              基本: <strong>{DOW_JA[cur.startDow]}曜開始</strong> /{' '}
+              <strong>{cur.lengthDays} 日</strong>
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setEditing(true)}
+              data-testid="sprint-defaults-edit-btn"
+            >
+              編集
+            </Button>
+          </div>
+        ) : (
+          <form
+            className="flex flex-wrap items-end gap-2"
+            onSubmit={(e) => {
+              e.preventDefault()
+              void save()
+            }}
+          >
+            <div>
+              <Label htmlFor="sprint-defaults-dow" className="text-[10px]">
+                基本曜日
+              </Label>
+              <select
+                id="sprint-defaults-dow"
+                value={dow}
+                onChange={(e) => setDow(Number(e.target.value))}
+                className="h-9 rounded-md border px-2 text-sm"
+                aria-label="Sprint 基本曜日"
+                data-testid="sprint-defaults-dow"
+              >
+                {DOW_JA.map((label, i) => (
+                  <option key={i} value={i}>
+                    {label}曜
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label htmlFor="sprint-defaults-length" className="text-[10px]">
+                期間 (日)
+              </Label>
+              <Input
+                id="sprint-defaults-length"
+                type="number"
+                min={1}
+                max={90}
+                value={length}
+                onChange={(e) => setLength(Number(e.target.value))}
+                className="h-9 w-20 text-sm"
+                aria-label="Sprint 期間 (日数)"
+                data-testid="sprint-defaults-length"
+              />
+            </div>
+            <div className="flex gap-1.5">
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setEditing(false)
+                  setDow(cur.startDow)
+                  setLength(cur.lengthDays)
+                }}
+              >
+                キャンセル
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={upd.isPending}
+                data-testid="sprint-defaults-save-btn"
+              >
+                {upd.isPending ? '保存中…' : '保存'}
+              </Button>
+            </div>
+          </form>
+        )}
+      </CardContent>
+    </Card>
   )
 }

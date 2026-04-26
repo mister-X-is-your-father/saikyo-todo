@@ -26,6 +26,7 @@ import {
   type CreateSprintInput,
   CreateSprintInputSchema,
   type Sprint,
+  UpdateSprintDefaultsInputSchema,
   type UpdateSprintInput,
   UpdateSprintInputSchema,
 } from './schema'
@@ -263,6 +264,38 @@ export const sprintService = {
     return await withUserDb(user.id, async (tx) => {
       const v = await sprintRepository.getDefaults(tx, workspaceId)
       return ok(v)
+    })
+  },
+
+  /**
+   * Phase 6.15 iter 110: workspace 単位 Sprint デフォルトを更新 (admin 以上)。
+   * audit_log に before / after を残す。
+   */
+  async updateDefaults(input: unknown): Promise<Result<{ startDow: number; lengthDays: number }>> {
+    const parsed = UpdateSprintDefaultsInputSchema.safeParse(input)
+    if (!parsed.success) return err(new ValidationError('入力内容を確認', parsed.error))
+    const data = parsed.data
+
+    const user = await requireUser()
+    await requireWorkspaceMember(data.workspaceId, 'admin')
+    return await withUserDb(user.id, async (tx) => {
+      const before = await sprintRepository.getDefaults(tx, data.workspaceId)
+      await sprintRepository.updateDefaults(tx, data.workspaceId, {
+        startDow: data.startDow,
+        lengthDays: data.lengthDays,
+      })
+      const after = { startDow: data.startDow, lengthDays: data.lengthDays }
+      await recordAudit(tx, {
+        workspaceId: data.workspaceId,
+        actorType: 'user',
+        actorId: user.id,
+        targetType: 'workspace_settings',
+        targetId: data.workspaceId,
+        action: 'update_sprint_defaults',
+        before,
+        after,
+      })
+      return ok(after)
     })
   },
 }

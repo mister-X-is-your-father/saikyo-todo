@@ -125,4 +125,30 @@ export const sprintRepository = {
       .limit(1)
     return rows[0] ?? { startDow: 1, lengthDays: 14 }
   },
+
+  /**
+   * Phase 6.15 iter 110: workspace_settings の Sprint デフォルトを更新。
+   * 該当 workspace_settings が無ければ insert (= upsert)。
+   */
+  async updateDefaults(
+    tx: Tx,
+    workspaceId: string,
+    values: { startDow: number; lengthDays: number },
+  ): Promise<void> {
+    const updated = await tx
+      .update(workspaceSettings)
+      .set({
+        sprintDefaultStartDow: values.startDow,
+        sprintDefaultLengthDays: values.lengthDays,
+      })
+      .where(eq(workspaceSettings.workspaceId, workspaceId))
+      .returning({ workspaceId: workspaceSettings.workspaceId })
+    if (updated.length === 0) {
+      await tx.insert(workspaceSettings).values({
+        workspaceId,
+        sprintDefaultStartDow: values.startDow,
+        sprintDefaultLengthDays: values.lengthDays,
+      })
+    }
+  },
 }

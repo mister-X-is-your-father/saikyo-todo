@@ -157,6 +157,30 @@ describe('sprintService.create / list / get / update', () => {
     const r = await sprintService.getDefaults('')
     expect(r.ok).toBe(false)
   })
+
+  // Phase 6.15 iter 110: workspace デフォルト編集
+  it('updateDefaults: 値が永続化される', async () => {
+    const r = await sprintService.updateDefaults({
+      workspaceId: wsId,
+      startDow: 5, // 金
+      lengthDays: 7,
+    })
+    expect(r.ok).toBe(true)
+    const after = await sprintService.getDefaults(wsId)
+    expect(after.ok).toBe(true)
+    if (!after.ok) return
+    expect(after.value.startDow).toBe(5)
+    expect(after.value.lengthDays).toBe(7)
+  })
+
+  it('updateDefaults: 範囲外 (lengthDays=999) は ValidationError', async () => {
+    const r = await sprintService.updateDefaults({
+      workspaceId: wsId,
+      startDow: 1,
+      lengthDays: 999,
+    })
+    expect(r.ok).toBe(false)
+  })
 })
 
 describe('sprintService.changeStatus', () => {
