@@ -95,6 +95,10 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="例: クライアント onboarding"
+                  required
+                  aria-required="true"
+                  minLength={1}
+                  maxLength={200}
                 />
               </div>
               <div>
@@ -158,6 +162,9 @@ export function TemplatesPanel({ workspaceId }: Props) {
                     type="button"
                     className="flex-1 text-left"
                     onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
+                    aria-expanded={expandedId === t.id}
+                    aria-controls={`template-body-${t.id}`}
+                    aria-label={`Template「${t.name}」の詳細を${expandedId === t.id ? '閉じる' : '開く'}`}
                   >
                     <CardTitle className="text-base">
                       {t.name}
@@ -180,7 +187,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   </Button>
                 </CardHeader>
                 {expandedId === t.id ? (
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-4" id={`template-body-${t.id}`}>
                     <InstantiateForm workspaceId={workspaceId} template={t} />
                     <TemplateItemsEditor templateId={t.id} />
                   </CardContent>
