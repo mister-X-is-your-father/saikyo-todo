@@ -160,7 +160,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
   )
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6">
       <CommandPalette
         commands={commands}
         items={data ?? []}

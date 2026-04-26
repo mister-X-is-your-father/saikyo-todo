@@ -165,8 +165,14 @@ export function KanbanView({ workspaceId, items }: Props) {
   return (
     <>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        {/*
+         * 横スクロールを内部 (この div) で完結させる。body を横長にしないことで
+         * 1) スマホで右切れ防止、2) `position: fixed` Dialog が viewport 中央に正しく出る、
+         * 3) ヘッダ / nav が Kanban スクロールに巻き込まれない。
+         * Trello / TickTick の Kanban が同パターン。
+         */}
         <div
-          className="grid gap-4"
+          className="grid gap-4 overflow-x-auto pb-2"
           style={{ gridTemplateColumns: `repeat(${statuses.length}, minmax(260px, 1fr))` }}
           data-testid="kanban-board"
           role="group"
@@ -214,11 +220,13 @@ function KanbanColumn({
   return (
     <section
       ref={setNodeRef}
-      className={`bg-card rounded-lg border p-3 ${isOver ? 'ring-primary ring-2' : ''}`}
+      // 列ごとに viewport 内で縦スクロールを完結させる (Trello / TickTick Kanban パターン)。
+      // max-h は viewport 高さから上部 UI (workspace header + quick-add + view-switcher) を引いた残り。
+      className={`bg-card flex max-h-[calc(100dvh-14rem)] flex-col rounded-lg border p-3 ${isOver ? 'ring-primary ring-2' : ''}`}
       data-testid={`kanban-column-${statusKey}`}
       aria-labelledby={headingId}
     >
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex shrink-0 items-center justify-between">
         <h3 id={headingId} className="text-sm font-semibold" style={{ color }}>
           {label}
           <span className="sr-only"> ({items.length} 件)</span>
@@ -232,7 +240,10 @@ function KanbanColumn({
         items={items.map((i) => i.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="min-h-16 space-y-2" data-droppable-status={statusKey}>
+        <div
+          className="min-h-16 flex-1 space-y-2 overflow-y-auto pr-1"
+          data-droppable-status={statusKey}
+        >
           {items.length === 0 ? (
             <div className="text-muted-foreground rounded border border-dashed px-2 py-4 text-center text-xs">
               ここにドロップ

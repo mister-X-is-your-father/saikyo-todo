@@ -57,7 +57,17 @@ function DialogContent({
         className={cn(
           // 高さ制限 + 縦スクロール: 内容が viewport を超えても切れずにスクロールできる
           // (shadcn 既定では max-h / overflow が無く、長い form / activity log で操作不能になっていた)
-          'bg-popover text-popover-foreground ring-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-xl p-4 text-sm ring-1 duration-100 outline-none sm:max-w-sm',
+          // 100% ではなく 100dvw を使う:
+          // 親 (body / portal container) の overflow が viewport を超えていると `100%` は
+          // viewport ではなく拡大された layout viewport を参照してしまい、Kanban のような
+          // 横長コンテンツの隣で dialog 幅が暴れて画面右に切れる事故が起きる。
+          // 100dvw は visual viewport ベースなので Kanban スクロールでも常に viewport 中央に収まる。
+          // 100% / 50% ではなく 100dvw / 50dvw を使う:
+          // 親 (body / portal container) の overflow が viewport を超えていると % 系単位は
+          // viewport ではなく拡大された layout viewport を参照してしまい、Kanban のような
+          // 横長コンテンツの隣で dialog 幅が暴れて中央計算もズレ、画面右に切れる事故が起きる。
+          // dvw は visual viewport ベースなので Kanban スクロール時でも常に viewport 中央に収まる。
+          'bg-popover text-popover-foreground ring-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 fixed top-1/2 left-[50dvw] z-50 grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100dvw-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-xl p-4 text-sm ring-1 duration-100 outline-none sm:max-w-sm',
           className,
         )}
         {...props}
