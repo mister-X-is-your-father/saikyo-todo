@@ -108,6 +108,32 @@ export const itemDependencyRepository = {
     return rows as ItemDependencyRow[]
   },
 
+  /**
+   * Workspace 横断の blocks 依存を全部取得 (Gantt 全体描画 / critical path 計算用)。
+   * RLS 経由で呼ぶと自分が member の ws の依存だけ見える。type='blocks' のみ返す。
+   */
+  async listBlocksForWorkspace(
+    tx: Tx,
+    workspaceId: string,
+  ): Promise<Array<{ fromItemId: string; toItemId: string }>> {
+    // workspaceId は items 経由で確認 (item_dependencies に直接 ws_id が無い)
+    const rows = await tx
+      .select({
+        fromItemId: itemDependencies.fromItemId,
+        toItemId: itemDependencies.toItemId,
+      })
+      .from(itemDependencies)
+      .innerJoin(items, eq(items.id, itemDependencies.fromItemId))
+      .where(
+        and(
+          eq(items.workspaceId, workspaceId),
+          isNull(items.deletedAt),
+          eq(itemDependencies.type, 'blocks'),
+        ),
+      )
+    return rows
+  },
+
   async fetchItemRefs(tx: Tx, itemIds: string[]): Promise<Map<string, ItemRef>> {
     if (itemIds.length === 0) return new Map()
     const rows = await tx

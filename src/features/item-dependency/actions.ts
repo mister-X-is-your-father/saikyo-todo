@@ -27,3 +27,14 @@ export async function listItemDependenciesAction(
     throw e
   }
 }
+
+export async function listWorkspaceBlocksDependenciesAction(
+  workspaceId: string,
+): Promise<Result<Array<{ fromItemId: string; toItemId: string }>>> {
+  try {
+    return await itemDependencyService.listBlocksForWorkspace(workspaceId)
+  } catch (e) {
+    if (isAppError(e)) return err(e)
+    throw e
+  }
+}

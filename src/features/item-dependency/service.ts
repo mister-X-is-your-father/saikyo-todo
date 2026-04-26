@@ -143,4 +143,20 @@ export const itemDependencyService = {
       return ok(result)
     })
   },
+
+  /**
+   * Workspace 横断の blocks edges を返す (Gantt 全体描画 / critical path 計算用)。
+   * 権限: workspace member 必須。RLS が結合先 items に効くため越境は読めない。
+   */
+  async listBlocksForWorkspace(
+    workspaceId: string,
+  ): Promise<Result<Array<{ fromItemId: string; toItemId: string }>>> {
+    if (!workspaceId) return err(new ValidationError('workspaceId 必須'))
+    const user = await requireUser()
+    await requireWorkspaceMember(workspaceId, 'viewer')
+    return await withUserDb(user.id, async (tx) => {
+      const rows = await itemDependencyRepository.listBlocksForWorkspace(tx, workspaceId)
+      return ok(rows)
+    })
+  },
 }

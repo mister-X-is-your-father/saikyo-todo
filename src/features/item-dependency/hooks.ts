@@ -7,6 +7,7 @@ import { unwrap } from '@/lib/result-unwrap'
 import {
   addItemDependencyAction,
   listItemDependenciesAction,
+  listWorkspaceBlocksDependenciesAction,
   removeItemDependencyAction,
 } from './actions'
 import type { AddItemDependencyInput, RemoveItemDependencyInput } from './schema'
@@ -14,6 +15,8 @@ import type { AddItemDependencyInput, RemoveItemDependencyInput } from './schema
 export const itemDependencyKeys = {
   all: ['item-dependencies'] as const,
   forItem: (itemId: string) => [...itemDependencyKeys.all, itemId] as const,
+  forWorkspace: (workspaceId: string) =>
+    [...itemDependencyKeys.all, 'workspace', workspaceId] as const,
 }
 
 export function useItemDependencies(itemId: string | null) {
@@ -21,6 +24,17 @@ export function useItemDependencies(itemId: string | null) {
     queryKey: itemDependencyKeys.forItem(itemId ?? '__none__'),
     queryFn: async () => unwrap(await listItemDependenciesAction(itemId as string)),
     enabled: Boolean(itemId),
+  })
+}
+
+/**
+ * Workspace 横断の blocks edges (Gantt 依存線描画 / critical path 計算用)。
+ */
+export function useWorkspaceBlocksDependencies(workspaceId: string | null) {
+  return useQuery({
+    queryKey: itemDependencyKeys.forWorkspace(workspaceId ?? '__none__'),
+    queryFn: async () => unwrap(await listWorkspaceBlocksDependenciesAction(workspaceId as string)),
+    enabled: Boolean(workspaceId),
   })
 }
 
