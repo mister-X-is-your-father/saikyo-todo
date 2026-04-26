@@ -789,6 +789,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter18] Gantt: spanDays=1 (1 日完結) を **milestone ◇ 菱形** で表示 (TeamGantt 風 18px rotate 45)。critical path 強調 / MUST 色は維持。data-milestone="true|false" で testable
 - ✅ [iter19→20] Inbox view items 0 は **wait 不足** が原因。3000ms wait で 2/2 visible 確認 (filter / cache 問題なし)
 - ✅ [iter20] Gantt: 完了済 (doneAt あり) bar に opacity=0.4 + line-through (TeamGantt 風)。data-done="true|false" で testable / title に "[完了]" 追記
+- ✅ [iter21] Theme toggle (light↔dark) / Command palette (Cmd+K で focus INPUT) 両方 OK、新規バグ無し
+- ✅ [iter21] Gantt bar に subtle drop shadow `0 1px 2px rgba(0,0,0,0.18)` を追加 (TeamGantt 風奥行き感、critical 赤太枠と 2 段重ね)
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 

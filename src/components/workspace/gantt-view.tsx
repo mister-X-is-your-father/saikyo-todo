@@ -312,9 +312,10 @@ export function GanttView({
                       height: 18,
                       background: barBg,
                       transform: 'rotate(45deg)',
+                      // Subtle drop shadow + critical 強調の 2 段重ね (TeamGantt 風)
                       boxShadow: criticalSet.has(item.id)
-                        ? '0 0 0 2px rgb(220, 38, 38)'
-                        : undefined,
+                        ? '0 0 0 2px rgb(220, 38, 38), 0 1px 2px rgba(0,0,0,0.18)'
+                        : '0 1px 2px rgba(0,0,0,0.18)',
                     }}
                     title={`${item.title} — ${format(start, 'yyyy-MM-dd')} (milestone)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}`}
                   />
@@ -333,9 +334,10 @@ export function GanttView({
                       color: 'white',
                       paddingLeft: 6,
                       paddingRight: 6,
+                      // Subtle drop shadow + critical 強調の 2 段重ね (TeamGantt 風)
                       boxShadow: criticalSet.has(item.id)
-                        ? '0 0 0 2px rgb(220, 38, 38)'
-                        : undefined,
+                        ? '0 0 0 2px rgb(220, 38, 38), 0 1px 2px rgba(0,0,0,0.18)'
+                        : '0 1px 2px rgba(0,0,0,0.18)',
                       textDecoration: isDone ? 'line-through' : undefined,
                     }}
                     title={`${item.title} — ${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')} (${spanDays}日)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}`}
