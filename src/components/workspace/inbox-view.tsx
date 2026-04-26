@@ -1,5 +1,7 @@
 'use client'
 
+import { parseAsString, useQueryState } from 'nuqs'
+
 import type { Item } from '@/features/item/schema'
 
 import { EmptyState } from '@/components/shared/async-states'
@@ -25,6 +27,9 @@ export function InboxView({
   items: Item[]
   currentUserId?: string
 }) {
+  // Phase 6.15 iter 64: title click で ItemEditDialog 開く (Today iter63 と同パターン)
+  const [, setOpenItemId] = useQueryState('item', parseAsString)
+
   const inbox = items
     .filter((i) => !i.doneAt && !i.scheduledFor && !i.dueDate)
     .sort((a, b) => (a.priority ?? 4) - (b.priority ?? 4))
@@ -54,7 +59,14 @@ export function InboxView({
             className={`inline-block h-2 w-2 shrink-0 rounded-full ${PRIO_DOT[it.priority ?? 4]}`}
             title={`p${it.priority ?? 4}`}
           />
-          <span className="truncate font-medium">{it.title}</span>
+          <button
+            type="button"
+            onClick={() => void setOpenItemId(it.id)}
+            className="hover:text-primary truncate text-left font-medium hover:underline"
+            data-testid={`inbox-title-${it.id}`}
+          >
+            {it.title}
+          </button>
           {it.isMust && (
             <span className="shrink-0 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700">
               MUST
