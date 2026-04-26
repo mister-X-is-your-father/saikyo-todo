@@ -337,7 +337,9 @@ describe('handleSprintRetroTick (weekly cron)', () => {
     const { enqueueJob } = await import('@/lib/jobs/queue')
     vi.mocked(enqueueJob).mockClear()
 
-    await handleSprintRetroTick({ now: new Date('2026-04-26T00:00:00Z'), lookbackDays: 30 })
+    // 2026-04-27 00:00 UTC = 2026-04-27 09:00 JST (Monday) — workspace は既定 Asia/Tokyo
+    // で `0 9 * * 1` cron が発火するタイミング。retro 未生成の sprint があれば fan-out。
+    await handleSprintRetroTick({ now: new Date('2026-04-27T00:00:00Z'), lookbackDays: 30 })
 
     const calls = vi.mocked(enqueueJob).mock.calls
     const pickedIds = calls

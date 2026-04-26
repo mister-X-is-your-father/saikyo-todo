@@ -14,11 +14,12 @@
  */
 import { useState } from 'react'
 
-import { Sparkles, X } from 'lucide-react'
+import { RotateCw, Sparkles, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
 
+import { useDecomposeItem } from '@/features/agent/hooks'
 import { useAgentInvocationProgressByTarget } from '@/features/agent/realtime'
 import {
   useAcceptProposal,
@@ -46,12 +47,17 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
   const accept = useAcceptProposal(workspaceId, parentItemId)
   const reject = useRejectProposal(parentItemId)
   const rejectAll = useRejectAllPendingProposals(parentItemId)
+  const decompose = useDecomposeItem(workspaceId)
 
   const list = proposals.data ?? []
   const isAgentRunning = progress.status === 'queued' || progress.status === 'running'
-  // 提案が無くて Agent も走っていなければ何も出さない
+  // 直近 invocation が完了していて、かつ pending=0 のときは "0 件" フォールバック CTA を出す
+  const completedWithNoProposals =
+    progress.status === 'completed' && list.length === 0 && !isAgentRunning
+
   if (proposals.isLoading) return null
-  if (list.length === 0 && !isAgentRunning) return null
+  // 提案 / Agent 実行中 / フォールバック対象 のいずれかでなければ何も出さない
+  if (list.length === 0 && !isAgentRunning && !completedWithNoProposals) return null
 
   async function handleAcceptAll() {
     let ok = 0
@@ -75,6 +81,19 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
     }
   }
 
+  async function handleRedecompose(opts: { clearExisting: boolean }) {
+    try {
+      if (opts.clearExisting && list.length > 0) {
+        await rejectAll.mutateAsync()
+      }
+      const r = await decompose.mutateAsync({ workspaceId, itemId: parentItemId })
+      const proposed = r.toolCalls.filter((c) => c.name === 'propose_child_item').length
+      toast.success(`再分解完了 (${proposed} 件提案)`)
+    } catch (e) {
+      toast.error(isAppError(e) ? e.message : '再分解に失敗')
+    }
+  }
+
   return (
     <div
       className="space-y-2 rounded-lg border bg-amber-50/50 p-3 dark:bg-amber-950/20"
@@ -88,7 +107,11 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                 isAgentRunning ? 'animate-pulse' : ''
               }`}
             />
-            {isAgentRunning ? 'Researcher が分解中…' : `AI 分解の提案 (${list.length})`}
+            {isAgentRunning
+              ? 'Researcher が分解中…'
+              : completedWithNoProposals
+                ? '提案が出ませんでした'
+                : `AI 分解の提案 (${list.length})`}
           </div>
           {isAgentRunning ? (
             <p
@@ -97,34 +120,70 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
             >
               {progress.streamingText || '思考中…'}
             </p>
+          ) : completedWithNoProposals ? (
+            <p className="text-muted-foreground text-xs" data-testid="proposals-empty-msg">
+              Researcher は完了しましたが提案を出力しませんでした。
+              ヒントを足してもう一度試すか、下の bulk 入力から手動で追加できます。
+            </p>
           ) : (
             <p className="text-muted-foreground text-xs">
               行ごとに採用 / 却下 / 編集できます。採用すると子タスクとして items に追加されます。
             </p>
           )}
         </div>
-        {!isAgentRunning && list.length > 0 && (
-          <div className="flex shrink-0 gap-1.5">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              disabled={accept.isPending || rejectAll.isPending}
-              onClick={() => void handleAcceptAll()}
-              data-testid="proposals-accept-all"
-            >
-              全て採用
-            </Button>
+        {!isAgentRunning && (
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+            {list.length > 0 && (
+              <>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={accept.isPending || rejectAll.isPending || decompose.isPending}
+                  onClick={() => void handleAcceptAll()}
+                  data-testid="proposals-accept-all"
+                >
+                  全て採用
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  disabled={rejectAll.isPending || accept.isPending || decompose.isPending}
+                  onClick={() => void handleRejectAll()}
+                  data-testid="proposals-reject-all"
+                >
+                  全て却下
+                </Button>
+              </>
+            )}
+            {/* 再分解 CTA: pending を残したまま追加 / 全クリアして再生成 */}
             <Button
               type="button"
               size="sm"
               variant="ghost"
-              disabled={rejectAll.isPending || accept.isPending}
-              onClick={() => void handleRejectAll()}
-              data-testid="proposals-reject-all"
+              className="gap-1"
+              disabled={decompose.isPending || rejectAll.isPending}
+              onClick={() => void handleRedecompose({ clearExisting: false })}
+              data-testid="proposals-redecompose"
+              title="既存の提案を残したまま追加で分解"
             >
-              全て却下
+              <RotateCw className="h-3.5 w-3.5" />
+              {list.length > 0 ? '追加分解' : '再分解'}
             </Button>
+            {list.length > 0 && (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                disabled={decompose.isPending || rejectAll.isPending}
+                onClick={() => void handleRedecompose({ clearExisting: true })}
+                data-testid="proposals-redecompose-fresh"
+                title="既存提案を全て却下してから再分解"
+              >
+                やり直し
+              </Button>
+            )}
           </div>
         )}
       </div>

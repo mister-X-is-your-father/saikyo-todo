@@ -10,9 +10,10 @@
  *   - agent-run            → features/agent/worker.ts
  *   - doc-embed            → features/doc/worker.ts
  *   - researcher-decompose → features/agent/researcher-worker.ts (Template 自動起動用)
- *   - pm-standup-tick      → daily 09:00 UTC fan-out
+ *   - pm-standup-tick      → 15 分おき TZ-aware fan-out (workspace ごとに 09:00 ローカル発火)
  *   - pm-standup           → per-workspace standup
  *   - template-cron-tick   → 15 分おき recurring Template instantiate
+ *   - sprint-retro-tick    → 15 分おき TZ-aware fan-out (workspace ごとに Mon 09:00 ローカル発火)
  *
  * 将来キューが増えたらここに register を追加する。
  */
@@ -53,12 +54,20 @@ async function main() {
   await registerWorker('time-entry-sync', createTimeEntryWorker())
 
   // 定期スケジュール登録 (idempotent)。
-  // PM Standup: 毎日 09:00 UTC (= 18:00 JST)。TZ 制御は workspace_settings で post-MVP 精緻化。
-  await scheduleJob('pm-standup-tick', '0 9 * * *', {})
-  // Recurring Template: 15 分おき。cron_run_id UNIQUE で重複展開は DB レベルで防止。
+  //
+  // PM Standup / Sprint Retro は **TZ-aware fan-out** を採用:
+  //   - pg-boss schedule は 15 分おきに tick だけ発火
+  //   - handler が各 workspace の `workspace_settings.timezone` を見て、ローカライズした
+  //     standup_cron (`0 9 * * *`) / weekly retro cron (`0 9 * * 1`) が
+  //     前回処理以降に発火していれば fan-out
+  //   → JST の workspace は 18:00 UTC (= 09:00 JST) 近傍の tick で発火、
+  //      America/New_York なら 13:00 / 14:00 UTC (DST 依存)。
+  //   遅延は最大 15 分。daily / weekly fan-out には十分。
+  //
+  // Recurring Template: 既に 15 分おき。cron_run_id UNIQUE で重複展開は DB レベルで防止。
+  await scheduleJob('pm-standup-tick', '*/15 * * * *', {})
   await scheduleJob('template-cron-tick', '*/15 * * * *', {})
-  // Sprint Retro fallback: 毎週月曜 09:00 UTC (= 18:00 JST) に completed + retro 未生成を pickup
-  await scheduleJob('sprint-retro-tick', '0 9 * * 1', {})
+  await scheduleJob('sprint-retro-tick', '*/15 * * * *', {})
 
   console.log(
     '[worker] ready. listening for: agent-run, doc-embed, researcher-decompose, pm-standup, pm-standup-tick, pm-recovery, sprint-retro, sprint-retro-tick, template-cron-tick, time-entry-sync',

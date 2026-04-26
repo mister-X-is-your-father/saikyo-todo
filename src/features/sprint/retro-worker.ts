@@ -2,7 +2,7 @@
  * Sprint Retrospective worker (Phase 5.3 自動化 + weekly cron)。
  *
  * - sprintService.changeStatus → 'completed' のときに enqueue される
- * - sprint-retro-tick (weekly cron) からも fan-out で enqueue される
+ * - sprint-retro-tick (TZ-aware weekly cron) からも fan-out で enqueue される
  * - 1 ジョブ = 1 sprint の retro 生成
  * - singletonKey で同 sprint 二重実行を抑制
  *
@@ -16,6 +16,12 @@ import { randomUUID } from 'node:crypto'
 import { sprints } from '@/lib/db/schema'
 import { adminDb } from '@/lib/db/scoped-client'
 import { enqueueJob, type SprintRetroJobData } from '@/lib/jobs/queue'
+
+import { shouldFireForWorkspace } from '@/features/agent/cron-tz'
+
+/** Default weekly cron used when a workspace has no settings row. */
+const DEFAULT_RETRO_CRON = '0 9 * * 1'
+const DEFAULT_TIMEZONE = 'Asia/Tokyo'
 
 export async function handleSprintRetro(
   jobs: Array<{ id: string; data: SprintRetroJobData }>,
@@ -49,13 +55,18 @@ export async function handleSprintRetro(
 }
 
 /**
- * Weekly cron tick (Mon 09:00 UTC):
- *   - status='completed' AND retro_generated_at IS NULL の Sprint を全件 pickup
- *   - 古すぎる sprint (end_date が `lookbackDays` より前) は再度走らせる価値が低いので除外
- *   - 各 sprint を sprint-retro queue に fan-out (singletonKey で重複抑制済)
+ * 15 分おきの tick (TZ-aware fallback fan-out)。
+ *
+ *   - 各 workspace の `workspace_settings.timezone` でローカライズした
+ *     weekly cron (`0 9 * * 1` 既定) が「前回の retro 生成以降に発火」したかを判定
+ *   - 発火した workspace についてのみ status='completed' AND retro_generated_at IS NULL
+ *     の Sprint (lookback 内) を fan-out する
  *
  * 通常は changeStatus('completed') の trigger でその場 enqueue されるので、
  * cron が拾うのは worker 落ち / DB トリガ漏れ / 手動 status 変更などの fallback ケースのみ。
+ *
+ * lastFiredAt は workspace 内で直近に retro_generated_at が立った sprint の値を採用。
+ * (= 前回の Mon 09:00 fan-out で生成した retro が cutoff になる)
  */
 export async function handleSprintRetroTick(
   options: { lookbackDays?: number; now?: Date } = {},
@@ -65,6 +76,50 @@ export async function handleSprintRetroTick(
   const cutoff = new Date(now.getTime() - lookbackDays * 24 * 60 * 60 * 1000)
   const cutoffISO = cutoff.toISOString().slice(0, 10) // YYYY-MM-DD (sprints.end_date は date 型)
 
+  // 1) どの workspace で今 tick が発火するべきかを TZ-aware で評価。
+  type WsRow = {
+    id: string
+    timezone: string | null
+    last_fired_at: string | null
+  }
+  const wsRows = await adminDb.execute<WsRow>(
+    sql`
+      select
+        w.id,
+        s.timezone,
+        (
+          select max(sp.retro_generated_at)::text
+          from public.sprints sp
+          where sp.workspace_id = w.id
+            and sp.retro_generated_at is not null
+        ) as last_fired_at
+      from public.workspaces w
+      left join public.workspace_settings s on s.workspace_id = w.id
+      where w.deleted_at is null
+    `,
+  )
+  const workspaces = wsRows as unknown as Array<WsRow>
+  const firingWorkspaceIds = new Set<string>()
+  for (const w of workspaces) {
+    const tz = w.timezone ?? DEFAULT_TIMEZONE
+    const lastFiredAt = w.last_fired_at ? new Date(w.last_fired_at) : null
+    const should = shouldFireForWorkspace({
+      cronExpr: DEFAULT_RETRO_CRON,
+      tz,
+      now,
+      lastFiredAt,
+    })
+    if (should) firingWorkspaceIds.add(w.id)
+  }
+
+  if (firingWorkspaceIds.size === 0) {
+    console.log(
+      `[sprint-retro-tick] evaluated ${workspaces.length} ws, none firing at ${now.toISOString()}`,
+    )
+    return
+  }
+
+  // 2) 該当 workspace の中から retro 未生成 sprint (lookback 内) を全部拾う。
   const candidates = await adminDb
     .select({
       id: sprints.id,
@@ -80,9 +135,12 @@ export async function handleSprintRetroTick(
       ),
     )
 
-  console.log(`[sprint-retro-tick] picked up ${candidates.length} sprint(s)`)
+  const picked = candidates.filter((c) => firingWorkspaceIds.has(c.workspaceId))
+  console.log(
+    `[sprint-retro-tick] firing ws=${firingWorkspaceIds.size}, picked ${picked.length} sprint(s)`,
+  )
 
-  for (const sp of candidates) {
+  for (const sp of picked) {
     try {
       await enqueueJob(
         'sprint-retro',

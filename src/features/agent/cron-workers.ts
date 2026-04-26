@@ -1,8 +1,12 @@
 /**
  * 定期実行 worker: PM Stand-up / Template 再展開。
  *
- * - `pm-standup-tick`: pg-boss schedule で毎日 09:00 UTC に発火。
- *     全 workspace に対して pm-standup ジョブを fan-out。
+ * - `pm-standup-tick`: pg-boss schedule で 15 分おきに発火 (TZ-aware fan-out)。
+ *     各 workspace の `workspace_settings.timezone` でローカライズした
+ *     `standup_cron` (既定 `0 9 * * *`) を評価し、前回処理以降に発火していれば
+ *     その workspace に pm-standup ジョブを enqueue する。
+ *     → JST workspace は 18:00 UTC (= 09:00 JST) 前後の tick で発火、
+ *        America/New_York なら 13:00/14:00 UTC (DST 依存) で発火する。
  * - `pm-standup`: 1 workspace の stand-up を実行。
  * - `template-cron-tick`: 15 分おき。recurring Template を全部 instantiate 試行。
  *     `cron_run_id` UNIQUE 制約で重複実行は DB レベルで防止される。
@@ -17,6 +21,7 @@ import { randomUUID } from 'node:crypto'
 import { adminDb } from '@/lib/db/scoped-client'
 import { enqueueJob, type PmRecoveryJobData, type PmStandupJobData } from '@/lib/jobs/queue'
 
+import { shouldFireForWorkspace } from '@/features/agent/cron-tz'
 import { pmService } from '@/features/agent/pm-service'
 import { templateService } from '@/features/template/service'
 
@@ -24,24 +29,94 @@ function dateKeyUTC(now: Date): string {
   return now.toISOString().slice(0, 10)
 }
 
+/** Default cron used when a workspace has no settings row (defensive). */
+const DEFAULT_STANDUP_CRON = '0 9 * * *'
+const DEFAULT_TIMEZONE = 'Asia/Tokyo'
+
 /**
- * Daily 09:00 UTC tick.
- * 全 workspace に pm-standup ジョブを fan-out (per workspace 1 件)。
- * idempotency は pm-standup handler 側で agent_invocations.idempotency_key で担保。
+ * 15 分おきの tick (TZ-aware fan-out).
+ *
+ * 各 workspace について
+ *   - `workspace_settings.timezone` (既定 Asia/Tokyo)
+ *   - `workspace_settings.standup_cron` (既定 `0 9 * * *`)
+ *   - その workspace で最後に completed した PM stand-up invocation の `created_at`
+ * を組み合わせて `shouldFireForWorkspace` を評価し、true のときだけ enqueue する。
+ *
+ * idempotency は pm-standup handler 側で agent_invocations の dateKey 重複検知で
+ * 二重に守られている。`dateKey` は workspace tz でのローカル日付を採用する
+ * (= JST workspace なら JST 基準の YYYY-MM-DD)。
+ *
+ * 内部で例外が起きても他 workspace の処理を止めない。
  */
-export async function handlePmStandupTick(): Promise<void> {
-  const dateKey = dateKeyUTC(new Date())
-  const rows = await adminDb.execute<{ id: string }>(
-    sql`select id from public.workspaces where deleted_at is null`,
+export async function handlePmStandupTick(options: { now?: Date } = {}): Promise<void> {
+  const now = options.now ?? new Date()
+  type WsRow = {
+    id: string
+    timezone: string | null
+    standup_cron: string | null
+    last_fired_at: string | null
+  }
+  // 1 クエリで workspace + settings + 直近 stand-up invocation を引く。
+  // last_fired_at は role='pm' かつ status='completed' で input.role='pm' のもの最大。
+  const rows = await adminDb.execute<WsRow>(
+    sql`
+      select
+        w.id,
+        s.timezone,
+        s.standup_cron,
+        (
+          select max(i.created_at)::text
+          from public.agent_invocations i
+          join public.agents a on a.id = i.agent_id
+          where a.workspace_id = w.id
+            and a.role = 'pm'
+            and i.status = 'completed'
+            and (i.input->>'role') = 'pm'
+        ) as last_fired_at
+      from public.workspaces w
+      left join public.workspace_settings s on s.workspace_id = w.id
+      where w.deleted_at is null
+    `,
   )
-  const workspaceIds = (rows as unknown as Array<{ id: string }>).map((r) => r.id)
-  console.log(`[pm-standup-tick] fan-out to ${workspaceIds.length} workspaces for ${dateKey}`)
-  for (const workspaceId of workspaceIds) {
+  const workspaces = rows as unknown as Array<WsRow>
+  let fired = 0
+  for (const ws of workspaces) {
     try {
-      await enqueueJob('pm-standup', { workspaceId, dateKey })
+      const tz = ws.timezone ?? DEFAULT_TIMEZONE
+      const cronExpr = ws.standup_cron ?? DEFAULT_STANDUP_CRON
+      const lastFiredAt = ws.last_fired_at ? new Date(ws.last_fired_at) : null
+      const should = shouldFireForWorkspace({ cronExpr, tz, now, lastFiredAt })
+      if (!should) continue
+
+      // dateKey は workspace tz のローカル日付。idempotency 強化と log 用。
+      const dateKey = formatLocalDateKey(now, tz)
+      await enqueueJob('pm-standup', { workspaceId: ws.id, dateKey })
+      fired++
     } catch (e) {
-      console.error(`[pm-standup-tick] enqueue failed workspace=${workspaceId}`, e)
+      console.error(`[pm-standup-tick] enqueue failed workspace=${ws.id}`, e)
     }
+  }
+  console.log(
+    `[pm-standup-tick] evaluated ${workspaces.length} ws, fired=${fired} at ${now.toISOString()}`,
+  )
+}
+
+/**
+ * Format a UTC `Date` as `YYYY-MM-DD` in the given IANA timezone.
+ * Avoids pulling Luxon into the worker — `Intl.DateTimeFormat` is enough.
+ */
+function formatLocalDateKey(now: Date, tz: string): string {
+  try {
+    const fmt = new Intl.DateTimeFormat('en-CA', {
+      timeZone: tz,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+    // 'en-CA' yields YYYY-MM-DD natively.
+    return fmt.format(now)
+  } catch {
+    return dateKeyUTC(now)
   }
 }
 
@@ -50,6 +125,9 @@ export async function handlePmStandupTick(): Promise<void> {
  * idempotency_key = UUIDv5-相当の安定キー (namespace = 'standup', name = ws + dateKey)
  * を本来は使いたいが、MVP では UUID を使いつつ agent_invocations UNIQUE で防ぐ。
  * ここでは dateKey × workspaceId で手動重複検知を行う (既に completed invocation があれば skip)。
+ *
+ * dateKey は tick handler が workspace tz で計算した YYYY-MM-DD を渡してくる。
+ * 重複チェックも同じ tz で日付を切り出す (workspace_settings.timezone 取得)。
  */
 export async function handlePmStandup(
   jobs: Array<{ id: string; data: PmStandupJobData }>,
@@ -57,7 +135,16 @@ export async function handlePmStandup(
   for (const job of jobs) {
     const { workspaceId, dateKey } = job.data
     try {
-      // その日既に stand-up が走った agent_invocation があるかチェック
+      // workspace tz を取得 (無ければ既定 Asia/Tokyo)。
+      const tzRow = await adminDb.execute<{ timezone: string | null }>(
+        sql`select timezone from public.workspace_settings where workspace_id = ${workspaceId}::uuid limit 1`,
+      )
+      const tz =
+        (tzRow as unknown as Array<{ timezone: string | null }>)[0]?.timezone ??
+        null ??
+        DEFAULT_TIMEZONE
+
+      // その日既に stand-up が走った agent_invocation があるかチェック (workspace tz 基準)
       const existing = await adminDb.execute<{ id: string }>(
         sql`
           select i.id from public.agent_invocations i
@@ -66,7 +153,7 @@ export async function handlePmStandup(
             and a.role = 'pm'
             and i.status = 'completed'
             and (i.input->>'role') = 'pm'
-            and to_char(i.created_at at time zone 'UTC', 'YYYY-MM-DD') = ${dateKey}
+            and to_char(i.created_at at time zone ${tz}, 'YYYY-MM-DD') = ${dateKey}
           limit 1
         `,
       )
