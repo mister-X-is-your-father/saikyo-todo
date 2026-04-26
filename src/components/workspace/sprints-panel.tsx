@@ -141,65 +141,73 @@ export function SprintsPanel({ workspaceId }: Props) {
         <CardHeader>
           <CardTitle className="text-base">新規 Sprint</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <div className="space-y-1">
-              <Label htmlFor="sprint-name">名前</Label>
-              <IMEInput
-                id="sprint-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="例: 2026 W18 Sprint"
-                required
-                aria-required="true"
-                minLength={1}
-                maxLength={100}
-              />
+        <CardContent>
+          <form
+            className="space-y-3"
+            onSubmit={(e) => {
+              e.preventDefault()
+              void handleCreate()
+            }}
+          >
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="space-y-1">
+                <Label htmlFor="sprint-name">名前</Label>
+                <IMEInput
+                  id="sprint-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="例: 2026 W18 Sprint"
+                  required
+                  aria-required="true"
+                  minLength={1}
+                  maxLength={100}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="sprint-start">開始</Label>
+                <Input
+                  id="sprint-start"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  required
+                  aria-required="true"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="sprint-end">終了</Label>
+                <Input
+                  id="sprint-end"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  required
+                  aria-required="true"
+                  min={startDate || undefined}
+                />
+              </div>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="sprint-start">開始</Label>
-              <Input
-                id="sprint-start"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                required
-                aria-required="true"
+              <Label htmlFor="sprint-goal">ゴール (任意)</Label>
+              <Textarea
+                id="sprint-goal"
+                value={goal}
+                onChange={(e) => setGoal(e.target.value)}
+                placeholder="この Sprint で達成したいこと"
+                rows={2}
+                maxLength={500}
               />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="sprint-end">終了</Label>
-              <Input
-                id="sprint-end"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                required
-                aria-required="true"
-                min={startDate || undefined}
-              />
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                disabled={!name.trim() || createMut.isPending}
+                data-testid="sprint-create-btn"
+              >
+                {createMut.isPending ? '作成中…' : '作成'}
+              </Button>
             </div>
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="sprint-goal">ゴール (任意)</Label>
-            <Textarea
-              id="sprint-goal"
-              value={goal}
-              onChange={(e) => setGoal(e.target.value)}
-              placeholder="この Sprint で達成したいこと"
-              rows={2}
-              maxLength={500}
-            />
-          </div>
-          <div className="flex justify-end">
-            <Button
-              onClick={() => void handleCreate()}
-              disabled={!name.trim() || createMut.isPending}
-              data-testid="sprint-create-btn"
-            >
-              {createMut.isPending ? '作成中…' : '作成'}
-            </Button>
-          </div>
+          </form>
         </CardContent>
       </Card>
 
