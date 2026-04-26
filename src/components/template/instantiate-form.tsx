@@ -70,7 +70,14 @@ export function InstantiateForm({ workspaceId, template }: Props) {
   }
 
   return (
-    <div className="space-y-3 rounded-md border p-3" data-testid="instantiate-form">
+    <form
+      className="space-y-3 rounded-md border p-3"
+      data-testid="instantiate-form"
+      onSubmit={(e) => {
+        e.preventDefault()
+        void handleInstantiate()
+      }}
+    >
       <div className="text-sm font-medium">この Template を展開</div>
       <div>
         <Label htmlFor={`override-${template.id}`}>root Item タイトル (任意)</Label>
@@ -100,9 +107,9 @@ export function InstantiateForm({ workspaceId, template }: Props) {
       ) : (
         <p className="text-muted-foreground text-xs">変数なし (そのまま展開)</p>
       )}
-      <Button size="sm" onClick={handleInstantiate} disabled={mut.isPending}>
+      <Button type="submit" size="sm" disabled={mut.isPending}>
         {mut.isPending ? '展開中...' : '即実行 (Instantiate)'}
       </Button>
-    </div>
+    </form>
   )
 }
