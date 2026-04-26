@@ -791,6 +791,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter20] Gantt: 完了済 (doneAt あり) bar に opacity=0.4 + line-through (TeamGantt 風)。data-done="true|false" で testable / title に "[完了]" 追記
 - ✅ [iter21] Theme toggle (light↔dark) / Command palette (Cmd+K で focus INPUT) 両方 OK、新規バグ無し
 - ✅ [iter21] Gantt bar に subtle drop shadow `0 1px 2px rgba(0,0,0,0.18)` を追加 (TeamGantt 風奥行き感、critical 赤太枠と 2 段重ね)
+- ✅ [iter22] ItemEditDialog: deep link `?item=<id>` で開く / 5 tabs (base/subtasks/dependencies/comments/activity) 全部 OK / dependencies-panel render OK
+- ✅ [iter22] ItemEditDialog editTitle / editDue / editDescription a11y: title required + maxLength=500 / due に min={startDate} で期限>=開始 / description に maxLength=10000
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 

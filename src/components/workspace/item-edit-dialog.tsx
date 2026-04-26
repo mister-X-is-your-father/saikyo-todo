@@ -223,7 +223,15 @@ function ItemEditDialogInner({
 
             <div className="space-y-1.5">
               <Label htmlFor="editTitle">タイトル</Label>
-              <IMEInput id="editTitle" value={title} onChange={(e) => setTitle(e.target.value)} />
+              <IMEInput
+                id="editTitle"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+                aria-required="true"
+                minLength={1}
+                maxLength={500}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="editDescription">説明</Label>
@@ -231,6 +239,7 @@ function ItemEditDialogInner({
                 id="editDescription"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                maxLength={10_000}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -252,6 +261,7 @@ function ItemEditDialogInner({
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
                   data-testid="edit-item-due-date"
+                  min={startDate || undefined}
                 />
               </div>
             </div>
