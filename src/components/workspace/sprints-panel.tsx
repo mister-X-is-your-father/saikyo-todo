@@ -105,6 +105,10 @@ export function SprintsPanel({ workspaceId }: Props) {
   async function handleCreate() {
     const n = name.trim()
     if (!n) return
+    if (startDate && endDate && endDate < startDate) {
+      toast.error('終了日は開始日以降にしてください')
+      return
+    }
     try {
       await createMut.mutateAsync({
         workspaceId,
@@ -184,6 +188,7 @@ export function SprintsPanel({ workspaceId }: Props) {
               onChange={(e) => setGoal(e.target.value)}
               placeholder="この Sprint で達成したいこと"
               rows={2}
+              maxLength={500}
             />
           </div>
           <div className="flex justify-end">
