@@ -17,7 +17,8 @@ import {
   closestCenter,
   DndContext,
   type DragEndEvent,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useDroppable,
   useSensor,
   useSensors,
@@ -57,8 +58,11 @@ export function KanbanView({ workspaceId, items }: Props) {
   const reorder = useReorderItem(workspaceId)
 
   const sensors = useSensors(
-    // 5px 以上動いてから drag 開始 (click と区別するため)
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    // Mouse: 5px 動かないと drag 開始しない (click と区別)
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    // Touch: 250ms 長押し + 5px 以内なら drag 開始 (スクロールと区別)。
+    // tolerance を超えるスワイプは scroll として扱われ、drag は発火しない (Todoist / Trello 風)。
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
   )
 
   const itemsByStatus = useMemo(() => {

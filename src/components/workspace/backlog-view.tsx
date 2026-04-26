@@ -15,7 +15,8 @@ import {
   closestCenter,
   DndContext,
   type DragEndEvent,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
@@ -199,7 +200,12 @@ export function BacklogView({ workspaceId, items }: Props) {
   const dndEnabled = sorting.length === 0
 
   const reorder = useReorderItem(workspaceId)
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+  const sensors = useSensors(
+    // Mouse: 5px 動かないと drag 開始しない (click と区別)
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    // Touch: 250ms 長押し + 5px 以内なら drag 開始 (スクロールと区別)。
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
+  )
 
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
