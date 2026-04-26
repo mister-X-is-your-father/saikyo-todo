@@ -281,11 +281,21 @@ function KanbanCard({
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-start gap-2">
           <ItemCheckbox item={item} workspaceId={workspaceId} className="mt-0.5" />
-          <div
-            className={`font-medium break-words ${item.doneAt ? 'text-muted-foreground line-through' : ''}`}
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation()
+              onEdit(item)
+            }}
+            data-testid={`kanban-title-${item.id}`}
+            className={
+              'hover:text-primary text-left font-medium break-words hover:underline ' +
+              (item.doneAt ? 'text-muted-foreground line-through' : '')
+            }
           >
             {item.title}
-          </div>
+          </button>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           {item.isMust && (

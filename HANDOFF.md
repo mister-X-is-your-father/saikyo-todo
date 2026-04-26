@@ -843,6 +843,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter63] **Today view の title click → ItemEditDialog** 配線 (Gantt iter31 と同パターンを Today にも展開)。`useQueryState('item')` で deep link 化、title を `<button>` 化して click → `?item=<id>`。Todoist 風: list item の title click で詳細編集に直接遷移
 - ✅ [iter64] **Inbox view の title click** も同パターン展開: `inbox-title-<id>` button + nuqs deep link。これで Today / Inbox / Gantt / Archive で title click → 編集 dialog の UX が統一
 - ✅ [iter65] **Backlog view の title cell も clickable** に: `<span>` を `<button onClick={onEdit}>` に変更、stopPropagation で DnD listener と分離、`data-testid="backlog-title-<id>"`。Today/Inbox/Gantt/Archive/Backlog の 5 view すべてで title click UX 統一
+- ✅ [iter66] **Kanban card の title も clickable** に: `<div>{item.title}</div>` を `<button onClick={onEdit}>` 化、stopPropagation で dnd-kit drag listener と分離。これで全 6 view (Today/Inbox/Kanban/Backlog/Gantt/Archive) で title click → ItemEditDialog UX が完全統一
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
