@@ -22,6 +22,7 @@ import {
   useItems,
   useItemTagIds,
   useSetItemAssignees,
+  useSetItemBaseline,
   useSetItemTags,
   useUnarchiveItem,
   useUpdateItem,
@@ -101,6 +102,7 @@ function ItemEditDialogInner({
   const update = useUpdateItem(workspaceId)
   const archive = useArchiveItem(workspaceId)
   const unarchive = useUnarchiveItem(workspaceId)
+  const setBaseline = useSetItemBaseline(workspaceId)
 
   const { data: assignees } = useItemAssignees(item.id)
   const setAssignees = useSetItemAssignees(workspaceId, item.id)
@@ -420,6 +422,41 @@ function ItemEditDialogInner({
               className="text-muted-foreground mr-auto"
             >
               {archive.isPending ? 'アーカイブ中…' : 'アーカイブ'}
+            </Button>
+          )}
+          {item.startDate && item.dueDate && !item.archivedAt && (
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={setBaseline.isPending}
+              onClick={async () => {
+                try {
+                  await setBaseline.mutateAsync({
+                    id: item.id,
+                    expectedVersion: item.version,
+                  })
+                  toast.success(
+                    item.baselineStartDate
+                      ? 'ベースラインを更新しました'
+                      : 'ベースラインを記録しました',
+                  )
+                } catch (e) {
+                  toast.error(isAppError(e) ? e.message : 'ベースライン記録に失敗しました')
+                }
+              }}
+              data-testid="item-edit-set-baseline"
+              className="text-muted-foreground"
+              title={
+                item.baselineStartDate
+                  ? `現在の baseline: ${item.baselineStartDate} → ${item.baselineEndDate}`
+                  : 'startDate / dueDate を当初計画として保存'
+              }
+            >
+              {setBaseline.isPending
+                ? '記録中…'
+                : item.baselineStartDate
+                  ? 'ベースライン更新'
+                  : 'ベースライン記録'}
             </Button>
           )}
           <Button variant="outline" onClick={() => onOpenChange(false)}>

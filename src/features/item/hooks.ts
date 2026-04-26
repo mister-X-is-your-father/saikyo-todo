@@ -25,6 +25,7 @@ import {
   moveItemAction,
   reorderItemAction,
   setItemAssigneesAction,
+  setItemBaselineAction,
   setItemTagsAction,
   softDeleteItemAction,
   toggleCompleteItemAction,
@@ -236,6 +237,17 @@ export function useUnarchiveItem(workspaceId: string) {
   return useMutation({
     mutationFn: async (input: { id: string; expectedVersion: number }) =>
       unwrap(await unarchiveItemAction(input)),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
+}
+
+export function useSetItemBaseline(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: { id: string; expectedVersion: number }) =>
+      unwrap(await setItemBaselineAction(input)),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
     },
