@@ -59,7 +59,7 @@ export function ItemCheckbox({
       disabled={toggle.isPending}
       className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${colorClass} ${className ?? ''}`}
       data-testid={`item-checkbox-${item.id}`}
-      aria-label={isDone ? '未完了に戻す' : '完了にする'}
+      aria-label={`「${item.title}」を${isDone ? '未完了に戻す' : '完了にする'}`}
       title={isDone ? '未完了に戻す' : '完了にする'}
     >
       {isDone && (
