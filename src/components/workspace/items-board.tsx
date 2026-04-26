@@ -263,6 +263,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
             onChange={(e) => setStatusFilter(e.target.value || null)}
             className="rounded border px-2 py-1 text-sm"
             data-testid="filter-status"
+            aria-label="ステータスで絞り込み"
           >
             <option value="">全ステータス</option>
             <option value="todo">TODO</option>
@@ -274,7 +275,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
             onChange={(e) => setSprintFilter(e.target.value || null)}
             className="rounded border px-2 py-1 text-sm"
             data-testid="filter-sprint"
-            aria-label="Sprint filter"
+            aria-label="Sprint で絞り込み"
           >
             <option value="">全 Sprint</option>
             <option value="active">稼働中の Sprint</option>
