@@ -27,6 +27,7 @@ import {
   handlePmStandupTick,
   handleTemplateCronTick,
 } from '@/features/agent/cron-workers'
+import { handleEngineerRun } from '@/features/agent/engineer-worker'
 import { handleResearcherDecompose } from '@/features/agent/researcher-worker'
 import { handleAgentRun } from '@/features/agent/worker'
 import { handleDocEmbed } from '@/features/doc/worker'
@@ -54,6 +55,7 @@ async function main() {
     await handleTemplateCronTick()
   })
   await registerWorker('time-entry-sync', createTimeEntryWorker())
+  await registerWorker('engineer-run', handleEngineerRun)
 
   // 定期スケジュール登録 (idempotent)。
   //
@@ -72,7 +74,7 @@ async function main() {
   await scheduleJob('sprint-retro-tick', '*/15 * * * *', {})
 
   console.log(
-    '[worker] ready. listening for: agent-run, doc-embed, researcher-decompose, pm-standup, pm-standup-tick, pm-recovery, sprint-retro, sprint-retro-tick, sprint-premortem, template-cron-tick, time-entry-sync',
+    '[worker] ready. listening for: agent-run, doc-embed, researcher-decompose, pm-standup, pm-standup-tick, pm-recovery, sprint-retro, sprint-retro-tick, sprint-premortem, template-cron-tick, time-entry-sync, engineer-run',
   )
 
   const shutdown = async (signal: string) => {

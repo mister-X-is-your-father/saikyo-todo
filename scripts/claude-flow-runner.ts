@@ -14,6 +14,7 @@ import { recordAudit } from '@/lib/audit'
 import { adminDb } from '@/lib/db/scoped-client'
 
 import { agentInvocationRepository } from '@/features/agent/repository'
+import { ENGINEER_ROLE } from '@/features/agent/roles/engineer'
 import { PM_ROLE } from '@/features/agent/roles/pm'
 import { RESEARCHER_ROLE } from '@/features/agent/roles/researcher'
 import type { AgentRole } from '@/features/agent/schema'
@@ -70,6 +71,7 @@ interface StreamJsonAssistant {
 const ROLE_CONFIG = {
   researcher: RESEARCHER_ROLE,
   pm: PM_ROLE,
+  engineer: ENGINEER_ROLE,
 } as const satisfies Record<
   AgentRole,
   { model: string; systemPrompt: string; maxIterations: number }

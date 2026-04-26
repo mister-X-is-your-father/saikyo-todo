@@ -26,6 +26,7 @@ export const QUEUE_NAMES = [
   'sprint-premortem',
   'template-cron-tick',
   'time-entry-sync',
+  'engineer-run',
 ] as const
 export type QueueName = (typeof QUEUE_NAMES)[number]
 
@@ -75,6 +76,18 @@ export interface PmStandupJobData {
 
 export interface TimeEntrySyncJobData {
   entryId: string
+}
+
+export interface EngineerRunJobData {
+  workspaceId: string
+  itemId: string
+  /** 既定 'main'。worktree のベース。 */
+  baseBranch?: string
+  /** 既定 false (commit のみ、PR 起票しない)。true なら gh pr create --draft。 */
+  autoPr?: boolean
+  /** 起動した user (audit 用) */
+  triggeredByUserId: string
+  triggeredAt: string
 }
 
 let boss: PgBoss | null = null

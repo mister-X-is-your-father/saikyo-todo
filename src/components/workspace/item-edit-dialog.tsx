@@ -46,6 +46,7 @@ import { ActivityLog } from './activity-log'
 import { AssigneePicker } from './assignee-picker'
 import { CommentThread } from './comment-thread'
 import { DecomposeProposalsPanel } from './decompose-proposals-panel'
+import { EngineerTriggerButton } from './engineer-trigger-button'
 import { ItemDecomposeButton } from './item-decompose-button'
 import { ItemDependenciesPanel } from './item-dependencies-panel'
 import { TagPicker } from './tag-picker'
@@ -207,6 +208,17 @@ function ItemEditDialogInner({
                 </p>
               </div>
               <ItemDecomposeButton workspaceId={workspaceId} item={item} />
+            </div>
+
+            <div className="flex items-start justify-between gap-3 rounded-lg border border-dashed p-3">
+              <div className="min-w-0">
+                <div className="text-sm font-semibold">🛠 Engineer に実装させる</div>
+                <p className="text-muted-foreground text-xs">
+                  Claude (Engineer) が git worktree でコードを書き、commit / PR を作ります。 人間
+                  review 必須。
+                </p>
+              </div>
+              <EngineerTriggerButton item={item} />
             </div>
 
             <div className="space-y-1.5">

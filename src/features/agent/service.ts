@@ -23,6 +23,7 @@ const NOT_FOUND = 'AgentInvocation が見つかりません'
 const DEFAULT_DISPLAY_NAMES: Record<AgentRole, string> = {
   pm: 'PM Agent',
   researcher: 'Researcher Agent',
+  engineer: 'Engineer Agent',
 }
 
 export const agentService = {
