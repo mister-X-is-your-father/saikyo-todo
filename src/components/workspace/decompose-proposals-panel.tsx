@@ -74,6 +74,10 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
   }
 
   async function handleRejectAll() {
+    if (list.length > 1) {
+      // 1 件なら確認なしで OK (個別却下と等価)、複数あれば事故防止に確認を挟む
+      if (!window.confirm(`pending な提案 ${list.length} 件をまとめて却下しますか?`)) return
+    }
     try {
       const r = await rejectAll.mutateAsync()
       toast.success(`${r.count} 件却下しました`)
