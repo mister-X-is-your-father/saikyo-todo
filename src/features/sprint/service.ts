@@ -161,6 +161,25 @@ export const sprintService = {
       }
     }
 
+    // Sprint 開始 (active 化) → 未生成なら Pre-mortem を enqueue (Phase 6.8)。
+    // premortemGeneratedAt が立っていれば二重起動しない。失敗は throw せずログ。
+    if (result.ok && data.status === 'active' && !result.value.premortemGeneratedAt) {
+      try {
+        await enqueueJob(
+          'sprint-premortem',
+          {
+            workspaceId: result.value.workspaceId,
+            sprintId: result.value.id,
+            triggeredAt: new Date().toISOString(),
+            trigger: 'sprint-activated' as const,
+          },
+          { singletonKey: `sprint-premortem-${result.value.id}` },
+        )
+      } catch (e) {
+        console.error(`[sprintService] premortem enqueue failed sprint=${result.value.id}`, e)
+      }
+    }
+
     return result
   },
 

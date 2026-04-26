@@ -42,6 +42,12 @@ export const sprints = pgTable(
      * - cron は status='completed' AND retro_generated_at IS NULL の sprint だけ pickup
      */
     retroGeneratedAt: timestamp('retro_generated_at', { withTimezone: true }),
+    /**
+     * Phase 6.8: Pre-mortem が生成済みかの marker。
+     * - premortem-worker 成功時にセット
+     * - 二重起動抑制 (planning → active 化のたびに走らないように)
+     */
+    premortemGeneratedAt: timestamp('premortem_generated_at', { withTimezone: true }),
     ...createdByActor,
     ...mutationMarkers,
     ...timestamps,

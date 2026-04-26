@@ -17,6 +17,7 @@ import { isAppError } from '@/lib/errors'
 import {
   useChangeSprintStatus,
   useCreateSprint,
+  useRunPremortem,
   useRunRetro,
   useSprintProgress,
   useSprints,
@@ -74,6 +75,7 @@ export function SprintsPanel({ workspaceId }: Props) {
   const createMut = useCreateSprint(workspaceId)
   const changeMut = useChangeSprintStatus(workspaceId)
   const retroMut = useRunRetro(workspaceId)
+  const premortemMut = useRunPremortem(workspaceId)
 
   async function handleRetro(sp: Sprint) {
     try {
@@ -81,6 +83,17 @@ export function SprintsPanel({ workspaceId }: Props) {
       toast.success(`Retro Doc を生成しました (${r.iterations} iter, $${r.costUsd.toFixed(4)})`)
     } catch (e) {
       toast.error(isAppError(e) ? e.message : 'Retro 生成に失敗')
+    }
+  }
+
+  async function handlePremortem(sp: Sprint) {
+    try {
+      const r = await premortemMut.mutateAsync(sp.id)
+      toast.success(
+        `Pre-mortem Doc を生成しました (${r.iterations} iter, $${r.costUsd.toFixed(4)})`,
+      )
+    } catch (e) {
+      toast.error(isAppError(e) ? e.message : 'Pre-mortem 生成に失敗')
     }
   }
 
@@ -192,6 +205,8 @@ export function SprintsPanel({ workspaceId }: Props) {
               changing={changeMut.isPending}
               onRunRetro={() => void handleRetro(sp)}
               retroPending={retroMut.isPending}
+              onRunPremortem={() => void handlePremortem(sp)}
+              premortemPending={premortemMut.isPending}
             />
           ))}
         </ul>
@@ -206,9 +221,19 @@ interface CardProps {
   changing: boolean
   onRunRetro: () => void
   retroPending: boolean
+  onRunPremortem: () => void
+  premortemPending: boolean
 }
 
-function SprintCard({ sprint, onStatusChange, changing, onRunRetro, retroPending }: CardProps) {
+function SprintCard({
+  sprint,
+  onStatusChange,
+  changing,
+  onRunRetro,
+  retroPending,
+  onRunPremortem,
+  premortemPending,
+}: CardProps) {
   const status = sprint.status as SprintStatus
   // active / completed は進捗を取る (planning は未割当が多いので skip)
   const showProgress = status === 'active' || status === 'completed'
@@ -339,6 +364,23 @@ function SprintCard({ sprint, onStatusChange, changing, onRunRetro, retroPending
               >
                 <Sparkles className="mr-1 h-3.5 w-3.5" />
                 {retroPending ? '振り返り生成中…' : '振り返り生成'}
+              </Button>
+            )}
+            {(status === 'planning' || status === 'active') && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={premortemPending}
+                onClick={onRunPremortem}
+                data-testid={`sprint-premortem-${sprint.id}`}
+                title="PM Agent が想定リスクと早期警報を Pre-mortem Doc にまとめる"
+              >
+                <Sparkles className="mr-1 h-3.5 w-3.5" />
+                {premortemPending
+                  ? 'Pre-mortem 生成中…'
+                  : sprint.premortemGeneratedAt
+                    ? 'Pre-mortem 再生成'
+                    : 'Pre-mortem 生成'}
               </Button>
             )}
           </div>

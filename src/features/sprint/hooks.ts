@@ -15,6 +15,7 @@ import {
   sprintProgressAction,
   updateSprintAction,
 } from './actions'
+import { runPremortemForSprintAction } from './premortem-actions'
 import { runRetroForSprintAction } from './retro-actions'
 import type {
   AssignItemToSprintInput,
@@ -92,6 +93,18 @@ export function useRunRetro(workspaceId: string) {
       // Doc / Item が増えるので関連 query を invalidate
       void qc.invalidateQueries({ queryKey: ['docs', workspaceId] })
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
+}
+
+export function useRunPremortem(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (sprintId: string) => unwrap(await runPremortemForSprintAction(sprintId)),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['docs', workspaceId] })
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+      invalidateSprintScope(qc, workspaceId)
     },
   })
 }

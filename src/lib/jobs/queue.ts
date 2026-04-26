@@ -23,6 +23,7 @@ export const QUEUE_NAMES = [
   'pm-recovery',
   'sprint-retro',
   'sprint-retro-tick',
+  'sprint-premortem',
   'template-cron-tick',
   'time-entry-sync',
 ] as const
@@ -41,6 +42,14 @@ export interface SprintRetroJobData {
   triggeredAt: string
   /** 'sprint-completed' | 'manual' | 'cron' */
   trigger: 'sprint-completed' | 'manual' | 'cron'
+}
+
+export interface SprintPremortemJobData {
+  workspaceId: string
+  sprintId: string
+  triggeredAt: string
+  /** 'sprint-activated' | 'manual' */
+  trigger: 'sprint-activated' | 'manual'
 }
 
 export interface AgentRunJobData {
