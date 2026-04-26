@@ -26,12 +26,10 @@ import {
 
 import { isAppError } from '@/lib/errors'
 
-import { useMonthlyCost } from '@/features/agent/cost-hooks'
 import { useBurndown, useMustSummary } from '@/features/dashboard/hooks'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { BudgetPanel } from '@/components/workspace/budget-panel'
 import { StatusBadge } from '@/components/workspace/status-badge'
 
 interface Props {
@@ -56,7 +54,6 @@ function addDaysISO(baseISO: string, days: number): string {
 export function DashboardView({ workspaceId }: Props) {
   const summary = useMustSummary(workspaceId)
   const burndown = useBurndown(workspaceId, 14)
-  const cost = useMonthlyCost(workspaceId, 3)
   // Phase 6.15 iter 71: MUST item title click で ItemEditDialog を open
   const [, setOpenItemId] = useQueryState('item', parseAsString)
 
@@ -171,83 +168,12 @@ export function DashboardView({ workspaceId }: Props) {
         </CardContent>
       </Card>
 
-      {/* AI 月次コスト上限 + 当月利用状況 */}
-      <BudgetPanel workspaceId={workspaceId} />
-
-      {/* AI コスト月次 (直近 3 ヶ月) */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">AI コスト (直近 3 ヶ月)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {cost.isLoading ? (
-            <Loading message="集計中..." />
-          ) : cost.error ? (
-            <ErrorState
-              message={isAppError(cost.error) ? cost.error.message : '取得失敗'}
-              onRetry={() => void cost.refetch()}
-            />
-          ) : (cost.data ?? []).length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              まだ AI 実行がありません。Researcher / PM Agent を使うとここに記録されます。
-            </p>
-          ) : (
-            <div className="overflow-x-auto" data-testid="ai-cost-table">
-              <table className="w-full text-sm">
-                <caption className="sr-only">
-                  AI Agent (Researcher / PM 等) の月次コストサマリ (月 / Role / 実行数 / 成功失敗
-                  内訳 / Input/Output トークン数 / Cost USD)
-                </caption>
-                <thead>
-                  <tr className="text-muted-foreground border-b text-left text-xs">
-                    <th scope="col" className="py-1.5 pr-3">
-                      月
-                    </th>
-                    <th scope="col" className="py-1.5 pr-3">
-                      Role
-                    </th>
-                    <th scope="col" className="py-1.5 pr-3 text-right">
-                      実行数
-                    </th>
-                    <th scope="col" className="py-1.5 pr-3 text-right">
-                      成功/失敗
-                    </th>
-                    <th scope="col" className="py-1.5 pr-3 text-right">
-                      Input
-                    </th>
-                    <th scope="col" className="py-1.5 pr-3 text-right">
-                      Output
-                    </th>
-                    <th scope="col" className="py-1.5 text-right">
-                      Cost (USD)
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(cost.data ?? []).map((r) => (
-                    <tr key={`${r.month}-${r.role}`} className="border-b last:border-0">
-                      <td className="py-1.5 pr-3 font-mono text-xs">{r.month}</td>
-                      <td className="py-1.5 pr-3">{r.role}</td>
-                      <td className="py-1.5 pr-3 text-right">{r.invocations}</td>
-                      <td className="py-1.5 pr-3 text-right">
-                        <span className="text-green-600">{r.completed}</span>/
-                        <span className="text-red-600">{r.failed}</span>
-                      </td>
-                      <td className="py-1.5 pr-3 text-right font-mono">
-                        {r.inputTokens.toLocaleString()}
-                      </td>
-                      <td className="py-1.5 pr-3 text-right font-mono">
-                        {r.outputTokens.toLocaleString()}
-                      </td>
-                      <td className="py-1.5 text-right font-mono">${r.costUsd.toFixed(4)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/*
+       * Phase 6.15 iter104: 「AI 月次コスト上限 + 当月利用状況」と
+       * 「AI コスト (直近 3 ヶ月)」テーブルを削除。
+       * Claude Max OAuth (claude CLI) 前提なので API 課金は発生せず、コスト集計の意味がない。
+       * 残された Researcher / PM 実行履歴の表示は POST_MVP の "監査ログ UI" にまとめる。
+       */}
 
       {/* MUST 一覧 */}
       <Card>
