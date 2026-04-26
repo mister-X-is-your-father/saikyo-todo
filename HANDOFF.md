@@ -835,6 +835,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter55] /time-entries 表にも同 a11y パターン水平展開: caption + 6 `<th>` に scope="col" + 操作列の空 th に `<span class="sr-only">操作</span>` (空 header は読み飛ばされて列数が伝わらない問題対策)
 - ✅ [iter56] Dashboard ai-cost-table も同パターンで a11y 補完: caption + 7 `<th>` (月/Role/実行数/成功失敗/Input/Output/Cost) に `scope="col"` (iter54-55 と同じ WCAG 1.3.1 ベース)。recharts の width(-1) warning は別途記録
 - ✅ [iter57] Backlog view (TanStack Table) にも展開: caption + 全 `<th>` に `scope="col"`、sortable 列には sort 状態に応じた `aria-sort="ascending|descending|none"` (header click で動的更新)。これで /archive, /time-entries, /dashboard, /backlog の 4 表すべて WCAG 1.3.1 準拠
+- ✅ [iter58] comment-thread textarea (item edit dialog Comments tab) の a11y 補完: aria-label="コメント本文" / required / maxLength=10000 (schema z.string().max(10_000) と一致) / placeholder に "@user で言及・通知" を加筆して機能を hint
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 

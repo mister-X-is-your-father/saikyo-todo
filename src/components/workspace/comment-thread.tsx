@@ -75,11 +75,15 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
       )}
       <div className="space-y-2">
         <Textarea
-          placeholder="コメントを入力…"
+          placeholder="コメントを入力… (@user で言及・通知)"
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={3}
           data-testid="comment-input"
+          aria-label="コメント本文"
+          maxLength={10_000}
+          required
+          aria-required="true"
         />
         <div className="flex justify-end">
           <Button
