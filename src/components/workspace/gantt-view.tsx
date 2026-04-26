@@ -429,6 +429,13 @@ export function GanttView({
           // Phase 6.15 iter 51/88: slip 日数 (現 due - baselineEnd)。formatSlipText で文字列化
           const slipDays = blEnd ? differenceInCalendarDays(due, blEnd) : 0
           const slipText = formatSlipText(slipDays, Boolean(blEnd))
+          // bar / milestone 共通の SR 用ラベルとキー操作 (Enter/Space で ItemEditDialog 起動)
+          const onBarKeyDown = (e: React.KeyboardEvent) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              void setOpenItemId(item.id)
+            }
+          }
           // Phase 6.15 iter 79: bar 内部に進捗 fill (TeamGantt 風)。status 文字列ベース。
           //   todo: 0% / in_progress: 50% / done: 100% (それ以外は 0%)
           //   done は既に opacity 落としていて見にくいので fill は省略
@@ -486,7 +493,10 @@ export function GanttView({
                     data-milestone="true"
                     data-done={isDone ? 'true' : 'false'}
                     data-critical={criticalSet.has(item.id) ? 'true' : 'false'}
-                    className="absolute"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${item.title} (milestone ${format(start, 'yyyy-MM-dd')})${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}${slipText}`}
+                    className="focus-visible:ring-foreground absolute focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none"
                     style={{
                       left: barLeft + (dayPx - 18) / 2,
                       top: (ROW_PX - 18) / 2,
@@ -502,6 +512,7 @@ export function GanttView({
                     }}
                     title={`${item.title} — ${format(start, 'yyyy-MM-dd')} (milestone)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}${slipText}`}
                     onClick={() => void setOpenItemId(item.id)}
+                    onKeyDown={onBarKeyDown}
                   />
                 ) : (
                   <div
@@ -509,7 +520,11 @@ export function GanttView({
                     data-milestone="false"
                     data-done={isDone ? 'true' : 'false'}
                     data-critical={criticalSet.has(item.id) ? 'true' : 'false'}
-                    className="absolute top-1 flex items-center gap-1 overflow-hidden rounded text-xs leading-6"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${item.title} ${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')} (${spanDays}日)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}${slipText}${progressPct > 0 ? ` [進捗 ${progressPct}%]` : ''}`}
+                    onKeyDown={onBarKeyDown}
+                    className="focus-visible:ring-foreground absolute top-1 flex items-center gap-1 overflow-hidden rounded text-xs leading-6 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none"
                     style={{
                       left: barLeft,
                       width: barWidth,
