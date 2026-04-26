@@ -62,14 +62,29 @@ export function TimeEntriesTable({
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm" data-testid="time-entries-table">
+        <caption className="sr-only">
+          稼働時間記録一覧 (日付 / カテゴリ / 作業内容 / 時間 / 外部同期ステータス)
+        </caption>
         <thead>
           <tr className="border-b text-left">
-            <th className="py-2">日付</th>
-            <th className="py-2">カテゴリ</th>
-            <th className="py-2">作業内容</th>
-            <th className="py-2 text-right">時間</th>
-            <th className="py-2">Sync</th>
-            <th className="py-2"></th>
+            <th scope="col" className="py-2">
+              日付
+            </th>
+            <th scope="col" className="py-2">
+              カテゴリ
+            </th>
+            <th scope="col" className="py-2">
+              作業内容
+            </th>
+            <th scope="col" className="py-2 text-right">
+              時間
+            </th>
+            <th scope="col" className="py-2">
+              Sync
+            </th>
+            <th scope="col" className="py-2">
+              <span className="sr-only">操作</span>
+            </th>
           </tr>
         </thead>
         <tbody>
