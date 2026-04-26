@@ -37,6 +37,8 @@ interface Props {
   edges?: GanttDepEdge[]
   /** Phase 6.15 iter 1 computeCriticalPath の criticalPathIds */
   criticalIds?: string[]
+  /** Phase 6.15 iter 46 — CPM 出力 projectDurationDays (summary banner 用) */
+  projectDurationDays?: number
 }
 
 const DAY_PX = 40
@@ -54,6 +56,7 @@ export function GanttView({
   items,
   edges = [],
   criticalIds = [],
+  projectDurationDays,
 }: Omit<Props, 'workspaceId'> & { workspaceId?: string }) {
   const active = useMemo(() => items.filter((i) => !i.deletedAt), [items])
   const criticalSet = useMemo(() => new Set(criticalIds), [criticalIds])
@@ -137,8 +140,33 @@ export function GanttView({
     }
   }
 
+  const criticalCount = criticalSet.size
+  const totalSpanDays = differenceInCalendarDays(range!.end, range!.start) + 1
+
   return (
     <div data-testid="gantt-view" className="overflow-auto rounded-lg border">
+      {/* Project summary banner (Phase 6.15 iter 46 — TeamGantt/GanttPRO 風) */}
+      <div
+        data-testid="gantt-summary"
+        className="bg-muted/40 text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 border-b px-3 py-1.5 text-xs"
+      >
+        <span>
+          表示範囲 <span className="text-foreground font-mono">{totalSpanDays}</span> 日
+        </span>
+        <span>
+          表示中 Item <span className="text-foreground font-mono">{withDates.length}</span> 件
+        </span>
+        {projectDurationDays !== undefined && projectDurationDays > 0 && (
+          <span>
+            CPM 期間 <span className="text-foreground font-mono">{projectDurationDays}</span> 日
+          </span>
+        )}
+        {criticalCount > 0 && (
+          <span className="text-red-600 dark:text-red-400">
+            critical path <span className="font-mono">{criticalCount}</span> 件
+          </span>
+        )}
+      </div>
       <div style={{ width: LABEL_COL_PX + timelineWidth, position: 'relative' }}>
         {/* 依存線 SVG オーバーレイ (Phase 6.15 iter 2 の component を iter 6 で配線) */}
         {edges.length > 0 && (

@@ -823,6 +823,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter43] workspace view-switcher (Today/Inbox/Kanban/Backlog/Gantt/Dashboard) も同症状 → 各 button に `aria-pressed={view === X}` + 親 div に `role="group" aria-label="表示切替"` (iter42 と同パターン水平展開)
 - ✅ [iter44] filter / dependency 用 native `<select>` の aria-label 抜け 3 件補完: filter-status / dep-kind / dep-target に label 追加 (filter-sprint は既設、Sprint filter → Sprint で絞り込みに用語統一)
 - ✅ [iter45] template-items-editor 子 Item 追加 form: title input に aria-label / required / minLength=1 / maxLength=500 (schema 整合)、期日 offset input に aria-label。Playwright は seed sample template 未配置 workspace で editor 描画されず、コード inspection で fix
+- ✅ [iter46] **Gantt project summary banner** を timeline 上部に追加 (TeamGantt/GanttPRO 風)。表示範囲日数 / 表示中 Item 数 / CPM 期間 / critical path 件数を一行で表示。`gantt-view-with-deps` から `projectDurationDays` を渡す配線も同時実装
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 

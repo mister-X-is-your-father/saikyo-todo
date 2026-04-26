@@ -35,7 +35,7 @@ function toDate(v: Date | string | null | undefined): Date | null {
 export function GanttViewWithDeps({ workspaceId, items }: Props) {
   const { data: edges = [] } = useWorkspaceBlocksDependencies(workspaceId)
 
-  const criticalIds = useMemo(() => {
+  const cpm = useMemo(() => {
     // 期間が引ける item だけを CPM 入力にする (duration = dueDate - startDate + 1)
     const cpmItems: CpmItem[] = []
     const validIds = new Set<string>()
@@ -54,11 +54,20 @@ export function GanttViewWithDeps({ workspaceId, items }: Props) {
       .filter((e) => validIds.has(e.fromItemId) && validIds.has(e.toItemId))
       .map((e) => ({ fromId: e.fromItemId, toId: e.toItemId }))
     const r = computeCriticalPath(cpmItems, cpmEdges)
-    if (!r.ok) return [] // 循環等で失敗したら critical 強調無し (silent)
-    return r.value.criticalPathIds
+    if (!r.ok) return { criticalIds: [] as string[], projectDurationDays: 0 } // 循環等で失敗したら critical 強調無し (silent)
+    return {
+      criticalIds: r.value.criticalPathIds,
+      projectDurationDays: r.value.projectDurationDays,
+    }
   }, [items, edges])
 
   return (
-    <GanttView workspaceId={workspaceId} items={items} edges={edges} criticalIds={criticalIds} />
+    <GanttView
+      workspaceId={workspaceId}
+      items={items}
+      edges={edges}
+      criticalIds={cpm.criticalIds}
+      projectDurationDays={cpm.projectDurationDays}
+    />
   )
 }
