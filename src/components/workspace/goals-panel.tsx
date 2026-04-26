@@ -197,7 +197,8 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
               type="button"
               onClick={() => setOpen((v) => !v)}
               className="hover:bg-muted mt-0.5 rounded p-1"
-              aria-label={open ? '閉じる' : '開く'}
+              aria-expanded={open}
+              aria-label={`Goal「${goal.title}」の KR ${open ? '一覧を閉じる' : '一覧を開く'}`}
               data-testid={`goal-toggle-${goal.id}`}
             >
               {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -321,7 +322,22 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
                   </div>
                   <span className="font-mono text-xs">{pct}%</span>
                 </div>
-                <div className="bg-muted h-1 w-full overflow-hidden rounded-full">
+                <div
+                  className="bg-muted h-1 w-full overflow-hidden rounded-full"
+                  role="progressbar"
+                  aria-label={`KR「${kr.title}」進捗`}
+                  aria-valuenow={pct}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuetext={
+                    kr.progressMode === 'manual' && p
+                      ? `${p.current ?? 0} / ${p.target ?? 0} ${p.unit ?? ''} (${pct}%)`
+                      : p
+                        ? `items ${p.itemsDone}/${p.itemsTotal} (${pct}%)`
+                        : `${pct}%`
+                  }
+                  data-testid={`kr-progress-${kr.id}`}
+                >
                   <div className="bg-primary h-full" style={{ width: `${pct}%` }} />
                 </div>
               </li>
@@ -330,7 +346,13 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
         </ul>
       )}
 
-      <div className="space-y-2 rounded border border-dashed p-2">
+      <form
+        className="space-y-2 rounded border border-dashed p-2"
+        onSubmit={(e) => {
+          e.preventDefault()
+          void handleAdd()
+        }}
+      >
         <div className="flex items-center gap-2">
           <IMEInput
             value={krTitle}
@@ -376,17 +398,16 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
         )}
         <div className="flex justify-end">
           <Button
-            type="button"
+            type="submit"
             size="sm"
             disabled={!krTitle.trim() || create.isPending}
-            onClick={() => void handleAdd()}
             data-testid={`kr-add-btn-${goalId}`}
           >
             <Plus className="mr-1 h-3.5 w-3.5" />
             KR 追加
           </Button>
         </div>
-      </div>
+      </form>
     </div>
   )
 }
