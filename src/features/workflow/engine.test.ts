@@ -136,4 +136,62 @@ describe('runWorkflow', () => {
       /disabled/,
     )
   })
+
+  // Phase 6.15 iter114: slack / email node
+  it('email node: mock outbox に書き込まれる', async () => {
+    const c = await workflowService.create({
+      workspaceId: wsId,
+      name: 'email-wf',
+      graph: {
+        nodes: [
+          {
+            id: 'send',
+            type: 'email',
+            config: {
+              toEmail: 'iter114@example.com',
+              subject: 'workflow test',
+              text: 'body text',
+            },
+          },
+        ],
+        edges: [],
+      },
+    })
+    if (!c.ok) throw c.error
+    const r = await runWorkflow({ workflowId: c.value.id, triggerKind: 'manual' })
+    expect(r.status).toBe('succeeded')
+    const out = r.output as Record<string, { id: string; toEmail: string }>
+    expect(out.send?.toEmail).toBe('iter114@example.com')
+    expect(out.send?.id).toMatch(/[0-9a-f-]{36}/i)
+  })
+
+  it('slack node: webhook 未設定なら mock 配信 (delivered=false)', async () => {
+    const c = await workflowService.create({
+      workspaceId: wsId,
+      name: 'slack-wf',
+      graph: {
+        nodes: [{ id: 'notify', type: 'slack', config: { text: 'workflow ping' } }],
+        edges: [],
+      },
+    })
+    if (!c.ok) throw c.error
+    const r = await runWorkflow({ workflowId: c.value.id, triggerKind: 'manual' })
+    expect(r.status).toBe('succeeded')
+    const out = r.output as Record<string, { delivered: boolean }>
+    expect(out.notify?.delivered).toBe(false)
+  })
+
+  it('email node: toEmail 未指定で fail', async () => {
+    const c = await workflowService.create({
+      workspaceId: wsId,
+      name: 'email-bad',
+      graph: {
+        nodes: [{ id: 'e', type: 'email', config: { subject: 'no to' } }],
+        edges: [],
+      },
+    })
+    if (!c.ok) throw c.error
+    const r = await runWorkflow({ workflowId: c.value.id, triggerKind: 'manual' })
+    expect(r.status).toBe('failed')
+  })
 })

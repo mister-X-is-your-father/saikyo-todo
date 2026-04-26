@@ -21,6 +21,7 @@ export type SlackNotificationType =
   | 'invite'
   | 'sync-failure'
   | 'agent-result'
+  | 'workflow'
 
 export interface SlackMessageToSend {
   workspaceId?: string | null

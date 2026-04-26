@@ -16,7 +16,7 @@ import 'server-only'
 import { mockEmailOutbox } from '@/lib/db/schema'
 import { adminDb } from '@/lib/db/scoped-client'
 
-export type EmailType = 'heartbeat' | 'mention' | 'invite' | 'sync-failure'
+export type EmailType = 'heartbeat' | 'mention' | 'invite' | 'sync-failure' | 'workflow'
 
 export interface EmailToSend {
   /** workspace 単位のスレッド絞込み用。null 可 (system 全体メールなら省略) */

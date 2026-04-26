@@ -32,6 +32,8 @@ const DEFAULT_PREFS: Record<EmailType, boolean> = {
   mention: true,
   invite: true,
   'sync-failure': false,
+  // workflow node 経由のメールは個人 pref で gate せず常に送る (送信元が明示制御するため)
+  workflow: true,
 }
 
 async function isEmailEnabled(userId: string, type: EmailType): Promise<boolean> {
@@ -55,6 +57,9 @@ async function isEmailEnabled(userId: string, type: EmailType): Promise<boolean>
       return row.invite
     case 'sync-failure':
       return row.syncFailure
+    case 'workflow':
+      // workflow 経由は pref で gate しない (送信元 = workflow author の責任)
+      return true
   }
 }
 
