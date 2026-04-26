@@ -369,7 +369,16 @@ function SprintCard({
                 size="sm"
                 variant="ghost"
                 disabled={changing}
-                onClick={() => onStatusChange('cancelled')}
+                onClick={() => {
+                  if (
+                    !window.confirm(
+                      'この Sprint を中止しますか?\n割当中の Item は外れず残りますが、status は cancelled になります。',
+                    )
+                  )
+                    return
+                  onStatusChange('cancelled')
+                }}
+                data-testid={`sprint-cancel-${sprint.id}`}
               >
                 <X className="mr-1 h-3.5 w-3.5" />
                 中止
