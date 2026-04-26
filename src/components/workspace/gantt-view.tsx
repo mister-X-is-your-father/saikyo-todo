@@ -264,7 +264,7 @@ export function GanttView({
         </div>
 
         {/* Rows */}
-        {withDates.map(({ item, start, due }) => {
+        {withDates.map(({ item, start, due }, idx) => {
           const leftDays = differenceInCalendarDays(start, range!.start)
           const spanDays = differenceInCalendarDays(due, start) + 1
           const barLeft = leftDays * DAY_PX
@@ -277,11 +277,18 @@ export function GanttView({
               style={{ height: ROW_PX }}
             >
               <div
-                className="flex shrink-0 items-center border-r px-3 text-sm"
+                className="flex shrink-0 items-center gap-2 border-r px-3 text-sm"
                 style={{ width: LABEL_COL_PX }}
               >
+                {/* 行番号 (TeamGantt 風 — 全体把握しやすく) */}
+                <span
+                  className="text-muted-foreground inline-block w-5 shrink-0 text-right text-xs tabular-nums"
+                  data-testid={`gantt-row-num-${idx + 1}`}
+                >
+                  {idx + 1}
+                </span>
                 <span className="truncate">{item.title}</span>
-                {item.isMust && <span className="ml-1 text-xs text-red-500">MUST</span>}
+                {item.isMust && <span className="ml-1 shrink-0 text-xs text-red-500">MUST</span>}
               </div>
               <div style={{ width: timelineWidth, position: 'relative', height: ROW_PX }}>
                 {spanDays === 1 ? (
