@@ -19,10 +19,11 @@ import { timeEntries } from '@/lib/db/schema'
 import { adminDb } from '@/lib/db/scoped-client'
 import type { TimeEntrySyncJobData } from '@/lib/jobs/queue'
 
-import { notifySyncFailureEmail } from '@/features/email/notify'
+import { buildAppHref, notifySyncFailureEmail } from '@/features/email/notify'
 import { getMockCredentials } from '@/features/mock-timesheet/service'
 import { notificationRepository } from '@/features/notification/repository'
 import type { SyncFailurePayload } from '@/features/notification/schema'
+import { dispatchSlack } from '@/features/slack/dispatcher'
 
 import {
   minutesToHoursDecimal,
@@ -148,16 +149,26 @@ async function processOne(
       )
     }
 
-    // email 配信は in-app 通知が出せた時のみ追従 (pref デフォルト OFF)。
-    // notify* は内部で try/catch する best-effort 設計
+    // email + Slack 配信は in-app 通知が出せた時のみ追従 (pref デフォルト OFF)。
+    // notify* / dispatchSlack は内部で try/catch する best-effort 設計なので
+    // Promise.all で並列化 (Phase 6.15 iter 52 — Slack 配信を sync-failure にも展開)。
     if (inAppOk) {
-      await notifySyncFailureEmail({
-        userId: entry.userId,
-        workspaceId: entry.workspaceId,
-        source: 'time-entry',
-        reason: errorMessage,
-        entryId,
-      })
+      await Promise.all([
+        notifySyncFailureEmail({
+          userId: entry.userId,
+          workspaceId: entry.workspaceId,
+          source: 'time-entry',
+          reason: errorMessage,
+          entryId,
+        }),
+        dispatchSlack({
+          workspaceId: entry.workspaceId,
+          type: 'sync-failure',
+          text: `*外部同期に失敗しました* (time-entry)\n> ${errorMessage}`,
+          linkUrl: buildAppHref({ workspaceId: entry.workspaceId }),
+          linkLabel: 'workspace を開く',
+        }),
+      ])
     }
   }
 }

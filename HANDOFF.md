@@ -829,6 +829,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter49] **Gantt baseline bar 描画** (TeamGantt 風 — 当初計画 vs 現在の差分可視化): baseline_start/end が set された item に slate-500 半透明の細 bar (5px) を行下端に表示。pointer-events:none で actual bar との click 競合なし、title attr で日付 tooltip。`gantt-baseline-<id>` testid。Playwright で描画確認
 - ✅ [iter50] **ItemEditDialog にベースライン記録 button** 追加: `useSetItemBaseline` hook + DialogFooter に `data-testid="item-edit-set-baseline"` button (label は「ベースライン記録」/ 既設なら「ベースライン更新」、tooltip で現 baseline 日付表示)。これで schema → service → action → hook → UI の baseline 配線完結。Playwright で実 DB 書き込みも確認
 - ✅ [iter51] **Gantt slip 集計** (TeamGantt の "behind / ahead schedule" 風): summary banner に baseline 件数 + 遅延件数 + 合計遅延日数 (amber) を追加、bar tooltip にも `[遅延 +N日]` / `[前倒し N日]` / `[計画通り]` を付与。Playwright で 3 日遅延 item 投入 → "遅延 1 件 / 計 3 日" 表示確認
+- ✅ [iter52] **sync-failure 通知も Slack 並列配信** (POST_MVP "Slack 通知" 残: agent-result のみに): time-entry/worker.ts の email 配信 `await` を Promise.all で email + Slack 並列化、text に `*外部同期に失敗しました* (time-entry)\n> <reason>` + linkUrl を入れる
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
