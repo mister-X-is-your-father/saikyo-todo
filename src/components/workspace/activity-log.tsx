@@ -56,6 +56,7 @@ function ActivityRow({
   const [open, setOpen] = useState(false)
   const label = ACTION_LABEL[entry.action] ?? entry.action
   const hasDetail = entry.before != null || entry.after != null
+  const detailId = `activity-detail-${entry.id}`
   return (
     <li className="rounded border p-2 text-xs" data-testid={`activity-row-${entry.id}`}>
       <div className="flex items-center justify-between gap-2">
@@ -67,25 +68,31 @@ function ActivityRow({
                 ? 'bg-primary/10 text-primary'
                 : 'bg-muted text-muted-foreground'
             }`}
+            aria-label={entry.actorType === 'agent' ? '実行者: AI Agent' : '実行者: ユーザ'}
           >
             {entry.actorType === 'agent' ? 'AI' : 'user'}
           </span>
         </div>
-        <span className="text-muted-foreground tabular-nums">
+        <time
+          className="text-muted-foreground tabular-nums"
+          dateTime={new Date(entry.ts).toISOString()}
+        >
           {new Date(entry.ts).toLocaleString('ja-JP')}
-        </span>
+        </time>
       </div>
       {hasDetail && (
         <button
           type="button"
           className="text-muted-foreground mt-1 text-[11px] underline"
           onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-controls={detailId}
         >
           {open ? '詳細を閉じる' : '詳細を見る'}
         </button>
       )}
       {open && hasDetail && (
-        <pre className="bg-muted/40 mt-1 overflow-x-auto rounded p-2 text-[10px]">
+        <pre id={detailId} className="bg-muted/40 mt-1 overflow-x-auto rounded p-2 text-[10px]">
           {JSON.stringify({ before: entry.before, after: entry.after }, null, 2)}
         </pre>
       )}
