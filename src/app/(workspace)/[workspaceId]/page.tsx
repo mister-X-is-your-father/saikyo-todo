@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { HeartbeatButton } from '@/components/workspace/heartbeat-button'
 import { ItemsBoard } from '@/components/workspace/items-board'
 import { NotificationBell } from '@/components/workspace/notification-bell'
+import { NotificationPreferencesButton } from '@/components/workspace/notification-preferences'
 import { StandupButton } from '@/components/workspace/standup-button'
 import { WorkspaceHeader } from '@/components/workspace/workspace-header'
 
@@ -77,6 +78,7 @@ export default async function WorkspacePage({ params }: PageProps) {
               currentUserId={user.id}
               initialUnreadCount={initialUnreadCount}
             />
+            <NotificationPreferencesButton />
             <ThemeToggle />
           </>
         }

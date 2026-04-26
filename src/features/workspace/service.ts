@@ -9,6 +9,7 @@ import { adminDb, withUserDb } from '@/lib/db/scoped-client'
 import { ConflictError, NotFoundError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 
+import { buildAppHref, notifyInviteEmail } from '@/features/email/notify'
 import { notificationRepository } from '@/features/notification/repository'
 import type { InvitePayload } from '@/features/notification/schema'
 
@@ -127,6 +128,7 @@ export const workspaceService = {
     }
 
     // 通知発行は best-effort (membership は既に commit 済)
+    let emailContext: { workspaceName: string; invitedBy: string } | null = null
     try {
       await adminDb.transaction(async (tx) => {
         const [ws] = await tx
@@ -142,10 +144,11 @@ export const workspaceService = {
           .where(eq(profiles.id, actor.id))
           .limit(1)
 
+        const invitedBy = actorProfile?.displayName ?? 'unknown'
         const payload: InvitePayload = {
           workspaceId: input.workspaceId,
           workspaceName: ws.name,
-          invitedBy: actorProfile?.displayName ?? 'unknown',
+          invitedBy,
           role,
         }
         await notificationRepository.insert(tx, {
@@ -154,9 +157,22 @@ export const workspaceService = {
           type: 'invite',
           payload: payload as unknown as Record<string, unknown>,
         })
+        emailContext = { workspaceName: ws.name, invitedBy }
       })
     } catch (e) {
       console.error('[workspace] invite notification emit failed', e)
+    }
+
+    if (emailContext) {
+      const ctx = emailContext as { workspaceName: string; invitedBy: string }
+      await notifyInviteEmail({
+        userId: input.userId,
+        workspaceId: input.workspaceId,
+        workspaceName: ctx.workspaceName,
+        invitedBy: ctx.invitedBy,
+        role,
+        href: buildAppHref({ workspaceId: input.workspaceId }),
+      })
     }
 
     return ok({ workspaceId: input.workspaceId, userId: input.userId, role })

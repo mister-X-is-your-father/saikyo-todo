@@ -10,6 +10,7 @@ import { ConflictError, NotFoundError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 
 import { docRepository } from '@/features/doc/repository'
+import { buildAppHref, notifyMentionEmail } from '@/features/email/notify'
 import { itemRepository } from '@/features/item/repository'
 import { notificationRepository } from '@/features/notification/repository'
 import type { MentionPayload } from '@/features/notification/schema'
@@ -328,6 +329,8 @@ async function _emitMentionNotifications(args: {
   itemId: string
   body: string
 }): Promise<void> {
+  // email dispatch を commit 後に行うために候補を集める
+  const emailPending: Array<{ userId: string; mentionedBy: string; itemTitle: string }> = []
   try {
     const tokens = extractMentionTokens(args.body)
     if (tokens.length === 0) return
@@ -361,6 +364,10 @@ async function _emitMentionNotifications(args: {
 
       const preview = args.body.slice(0, 200)
 
+      // mention email 用に親 Item のタイトルを引く
+      const item = await itemRepository.findById(tx, args.itemId)
+      const itemTitle = item?.title ?? '(Item)'
+
       for (const r of rows) {
         if (r.userId === args.authorUserId) continue // 自己言及 skip
         const payload: MentionPayload = {
@@ -375,10 +382,29 @@ async function _emitMentionNotifications(args: {
           type: 'mention',
           payload: payload as unknown as Record<string, unknown>,
         })
+        emailPending.push({ userId: r.userId, mentionedBy, itemTitle })
       }
     })
   } catch (e) {
     // best-effort: 通知失敗で親 (comment) を巻き戻さない
     console.error('[comment] mention notification emit failed', e)
+    return
+  }
+
+  // commit 後に email を配信 (失敗は notify* 内部の try/catch で握り潰される)
+  const preview = args.body.slice(0, 200)
+  if (emailPending.length > 0) {
+    await Promise.all(
+      emailPending.map((p) =>
+        notifyMentionEmail({
+          userId: p.userId,
+          workspaceId: args.workspaceId,
+          mentionedBy: p.mentionedBy,
+          commentBody: preview,
+          itemTitle: p.itemTitle,
+          href: buildAppHref({ workspaceId: args.workspaceId, itemId: args.itemId }),
+        }),
+      ),
+    )
   }
 }

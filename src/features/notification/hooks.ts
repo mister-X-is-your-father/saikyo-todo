@@ -14,11 +14,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { unwrap } from '@/lib/result-unwrap'
 
 import {
+  getNotificationPreferencesAction,
   listNotificationsAction,
   markAllNotificationsReadAction,
   markNotificationReadAction,
   unreadNotificationCountAction,
+  updateNotificationPreferencesAction,
 } from './actions'
+import type { NotificationPreferenceUpdate } from './repository'
 
 export const notificationKeys = {
   all: ['notifications'] as const,
@@ -26,6 +29,7 @@ export const notificationKeys = {
     [...notificationKeys.all, 'list', workspaceId, opts] as const,
   unreadCount: (workspaceId: string) =>
     [...notificationKeys.all, 'unreadCount', workspaceId] as const,
+  preferences: () => [...notificationKeys.all, 'preferences'] as const,
 }
 
 /**
@@ -79,6 +83,34 @@ export function useMarkAllNotificationsRead(workspaceId: string) {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: notificationKeys.unreadCount(workspaceId) })
       void qc.invalidateQueries({ queryKey: [...notificationKeys.all, 'list', workspaceId] })
+    },
+  })
+}
+
+/**
+ * 自分の通知設定 (email チャネル ON/OFF) を取得。
+ * 行が無いユーザは default 値が埋まって返る (Server 側で default 解決済)。
+ */
+export function useNotificationPreferences() {
+  return useQuery({
+    queryKey: notificationKeys.preferences(),
+    queryFn: async () => unwrap(await getNotificationPreferencesAction()),
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  })
+}
+
+/**
+ * 通知設定を 1 フィールド以上 patch 更新。
+ * onSuccess で preferences cache を invalidate。
+ */
+export function useUpdateNotificationPreferences() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (patch: NotificationPreferenceUpdate) =>
+      unwrap(await updateNotificationPreferencesAction(patch)),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: notificationKeys.preferences() })
     },
   })
 }

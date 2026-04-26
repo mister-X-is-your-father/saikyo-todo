@@ -2,7 +2,8 @@ import 'server-only'
 
 import { and, desc, eq, isNull, sql } from 'drizzle-orm'
 
-import { notifications } from '@/lib/db/schema'
+import type { NotificationPreference } from '@/lib/db/schema'
+import { notificationPreferences, notifications } from '@/lib/db/schema'
 import type { Tx } from '@/lib/db/scoped-client'
 
 import type { Notification } from './schema'
@@ -98,5 +99,52 @@ export const notificationRepository = {
       )
       .returning({ id: notifications.id })
     return rows.length
+  },
+}
+
+// ----------------------------------------------------------------------------
+// notification_preferences (1 user 1 row)
+// ----------------------------------------------------------------------------
+
+export interface NotificationPreferenceUpdate {
+  emailForHeartbeat?: boolean
+  emailForMention?: boolean
+  emailForInvite?: boolean
+  emailForSyncFailure?: boolean
+}
+
+export const notificationPreferenceRepository = {
+  /** 自分の pref を返す。行がなければ null。 */
+  async findByUser(tx: Tx, userId: string): Promise<NotificationPreference | null> {
+    const [row] = await tx
+      .select()
+      .from(notificationPreferences)
+      .where(eq(notificationPreferences.userId, userId))
+      .limit(1)
+    return (row ?? null) as NotificationPreference | null
+  },
+
+  /**
+   * upsert: 存在しなければ default 値で INSERT、あれば patch を ON CONFLICT で適用。
+   * default は schema 側の `boolean.default(...)` に従う (heartbeat/mention/invite=true, sync-failure=false)。
+   */
+  async upsert(
+    tx: Tx,
+    userId: string,
+    patch: NotificationPreferenceUpdate,
+  ): Promise<NotificationPreference> {
+    const [row] = await tx
+      .insert(notificationPreferences)
+      .values({
+        userId,
+        ...patch,
+      })
+      .onConflictDoUpdate({
+        target: notificationPreferences.userId,
+        set: patch,
+      })
+      .returning()
+    if (!row) throw new Error('upsert returned no row')
+    return row as NotificationPreference
   },
 }

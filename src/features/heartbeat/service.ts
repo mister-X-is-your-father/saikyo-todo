@@ -25,6 +25,8 @@ import { ValidationError } from '@/lib/errors'
 import { enqueueJob } from '@/lib/jobs/queue'
 import { err, ok, type Result } from '@/lib/result'
 
+import { buildAppHref, notifyHeartbeatEmail } from '@/features/email/notify'
+
 export type HeartbeatStage = '7d' | '3d' | '1d' | 'overdue'
 
 export interface HeartbeatScanResult {
@@ -70,11 +72,21 @@ export const heartbeatService = {
     if (!workspaceId) return err(new ValidationError('workspaceId 必須'))
     const today = options.today ?? new Date()
 
-    return await adminDb.transaction(async (tx) => {
+    // 後処理 (commit 後の email dispatch) で使う送信ペンディングを集める
+    const emailPending: Array<{
+      userId: string
+      itemId: string
+      itemTitle: string
+      stage: HeartbeatStage
+      dueDate: string
+    }> = []
+
+    const result = await adminDb.transaction(async (tx) => {
       // MUST + dueDate あり + 未削除 + done 以外
       const rows = await tx
         .select({
           id: items.id,
+          title: items.title,
           dueDate: items.dueDate,
         })
         .from(items)
@@ -139,6 +151,14 @@ export const heartbeatService = {
             } as never,
           })
           created += 1
+          // email pending: commit 後に dispatch (best-effort)
+          emailPending.push({
+            userId,
+            itemId: item.id,
+            itemTitle: item.title,
+            stage,
+            dueDate: item.dueDate,
+          })
         }
       }
 
@@ -171,6 +191,25 @@ export const heartbeatService = {
         notificationsSkipped: skipped,
       })
     })
+
+    // commit 後に email 配信 (best-effort: 個別失敗で他のを巻き込まない)。
+    // notify* は内部で try/catch して console.error する設計なので await Promise.all で十分。
+    if (emailPending.length > 0) {
+      await Promise.all(
+        emailPending.map((p) =>
+          notifyHeartbeatEmail({
+            userId: p.userId,
+            workspaceId,
+            itemTitle: p.itemTitle,
+            stage: p.stage,
+            dueDate: p.dueDate,
+            href: buildAppHref({ workspaceId, itemId: p.itemId }),
+          }),
+        ),
+      )
+    }
+
+    return result
   },
 
   /** ユーザ視点の未読 heartbeat 件数 (Dashboard バッジ用)。 */

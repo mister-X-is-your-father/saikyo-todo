@@ -11,12 +11,33 @@
 import 'server-only'
 
 import { requireUser, requireWorkspaceMember } from '@/lib/auth/guard'
+import type { NotificationPreference } from '@/lib/db/schema'
 import { withUserDb } from '@/lib/db/scoped-client'
 import { ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 
-import { notificationRepository } from './repository'
+import {
+  notificationPreferenceRepository,
+  type NotificationPreferenceUpdate,
+  notificationRepository,
+} from './repository'
 import type { Notification } from './schema'
+
+/** 通知設定 (email チャネル) を解決した値。行が無いユーザは default 値が入る */
+export interface ResolvedNotificationPreference {
+  emailForHeartbeat: boolean
+  emailForMention: boolean
+  emailForInvite: boolean
+  emailForSyncFailure: boolean
+}
+
+/** UI が想定するデフォルト値 (行が存在しないユーザに見せる初期 toggle 状態) */
+export const NOTIFICATION_PREFERENCE_DEFAULTS: ResolvedNotificationPreference = {
+  emailForHeartbeat: true,
+  emailForMention: true,
+  emailForInvite: true,
+  emailForSyncFailure: false,
+}
 
 export const notificationService = {
   /** workspace 内の自分宛通知一覧 (デフォルト 50 件、新しい順)。 */
@@ -62,6 +83,43 @@ export const notificationService = {
     return await withUserDb(user.id, async (tx) => {
       const n = await notificationRepository.markAllRead(tx, user.id, workspaceId)
       return ok(n)
+    })
+  },
+
+  /**
+   * 自分の通知設定 (email チャネル ON/OFF) を返す。行が無ければ default 値を埋めて返す。
+   * 行を作るかどうかは UI が「変更操作」したタイミングに任せる (lazy upsert)。
+   */
+  async getPreferences(): Promise<Result<ResolvedNotificationPreference>> {
+    const user = await requireUser()
+    return await withUserDb(user.id, async (tx) => {
+      const row = await notificationPreferenceRepository.findByUser(tx, user.id)
+      if (!row) return ok({ ...NOTIFICATION_PREFERENCE_DEFAULTS })
+      return ok({
+        emailForHeartbeat: row.emailForHeartbeat,
+        emailForMention: row.emailForMention,
+        emailForInvite: row.emailForInvite,
+        emailForSyncFailure: row.emailForSyncFailure,
+      })
+    })
+  },
+
+  /**
+   * 自分の通知設定を更新 (upsert)。少なくとも 1 フィールドが更新対象。
+   *
+   * 監査ログは取らない (個人設定で本人のみ閲覧、頻度高、過去 audit_log 方針との整合)。
+   */
+  async updatePreferences(
+    patch: NotificationPreferenceUpdate,
+  ): Promise<Result<NotificationPreference>> {
+    const keys = Object.keys(patch).filter(
+      (k) => patch[k as keyof NotificationPreferenceUpdate] !== undefined,
+    )
+    if (keys.length === 0) return err(new ValidationError('更新対象のフィールドがありません'))
+    const user = await requireUser()
+    return await withUserDb(user.id, async (tx) => {
+      const row = await notificationPreferenceRepository.upsert(tx, user.id, patch)
+      return ok(row)
     })
   },
 }

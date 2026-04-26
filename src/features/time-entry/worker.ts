@@ -19,6 +19,7 @@ import { timeEntries } from '@/lib/db/schema'
 import { adminDb } from '@/lib/db/scoped-client'
 import type { TimeEntrySyncJobData } from '@/lib/jobs/queue'
 
+import { notifySyncFailureEmail } from '@/features/email/notify'
 import { getMockCredentials } from '@/features/mock-timesheet/service'
 import { notificationRepository } from '@/features/notification/repository'
 import type { SyncFailurePayload } from '@/features/notification/schema'
@@ -124,6 +125,7 @@ async function processOne(
     })
     // sync-failure 通知 (best-effort: 失敗状態の commit を先に確定させてから別 Tx で発行。
     //   同 Tx に入れて notification 側が失敗すると failed/audit が roll back されかねない)
+    let inAppOk = false
     try {
       const payload: SyncFailurePayload = {
         source: 'time-entry',
@@ -138,11 +140,24 @@ async function processOne(
           payload: payload as unknown as Record<string, unknown>,
         })
       })
+      inAppOk = true
     } catch (notifyErr) {
       console.error(
         `[time-entry-sync] sync-failure notification emit failed entry=${entryId.slice(0, 8)}`,
         notifyErr,
       )
+    }
+
+    // email 配信は in-app 通知が出せた時のみ追従 (pref デフォルト OFF)。
+    // notify* は内部で try/catch する best-effort 設計
+    if (inAppOk) {
+      await notifySyncFailureEmail({
+        userId: entry.userId,
+        workspaceId: entry.workspaceId,
+        source: 'time-entry',
+        reason: errorMessage,
+        entryId,
+      })
     }
   }
 }

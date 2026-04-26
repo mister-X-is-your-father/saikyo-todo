@@ -14,6 +14,8 @@ export const env = createEnv({
     MAX_AGENT_INVOCATIONS_PER_HOUR: z.coerce.number().int().positive().default(20),
     LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    /** 通知メール内 deep link の絶対 URL ベース (例: 'https://todo.example.com')。未設定なら 'http://localhost:3001' */
+    APP_BASE_URL: z.string().url().default('http://localhost:3001'),
   },
   client: {
     NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
@@ -27,6 +29,7 @@ export const env = createEnv({
     MAX_AGENT_INVOCATIONS_PER_HOUR: process.env.MAX_AGENT_INVOCATIONS_PER_HOUR,
     LOG_LEVEL: process.env.LOG_LEVEL,
     NODE_ENV: process.env.NODE_ENV,
+    APP_BASE_URL: process.env.APP_BASE_URL,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   },
