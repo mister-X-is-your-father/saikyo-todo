@@ -26,6 +26,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { addDays, differenceInCalendarDays, format, isValid, parseISO } from 'date-fns'
 import { parseAsBoolean, parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs'
 
+import { computeProjectStats } from '@/features/gantt/project-stats'
 import type { Item } from '@/features/item/schema'
 
 import { type GanttBar, type GanttDepEdge, GanttDependencyArrows } from './gantt-dependency-arrows'
@@ -179,21 +180,8 @@ export function GanttView({
   const criticalCount = criticalSet.size
   const totalSpanDays = differenceInCalendarDays(range!.end, range!.start) + 1
 
-  // Phase 6.15 iter 51: baseline 比較 — slip (現在の dueDate が当初計画 baselineEndDate を
-  // 何日超過したか) を集計。slipDays > 0 = 遅延、< 0 = 前倒し。
-  let baselineCount = 0
-  let slipItemCount = 0
-  let totalSlipDays = 0
-  for (const x of withDates) {
-    const blEnd = toDate(x.item.baselineEndDate)
-    if (!blEnd) continue
-    baselineCount += 1
-    const slip = differenceInCalendarDays(x.due, blEnd)
-    if (slip > 0) {
-      slipItemCount += 1
-      totalSlipDays += slip
-    }
-  }
+  // Phase 6.15 iter 51/87: baseline 比較 — `computeProjectStats` 純粋関数で集計
+  const { baselineCount, slipItemCount, totalSlipDays } = computeProjectStats(withDates)
 
   function scrollToToday(behavior: ScrollBehavior = 'smooth') {
     const el = scrollRef.current
