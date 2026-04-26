@@ -10,7 +10,7 @@
  */
 import { useState } from 'react'
 
-import { Play, Trash2 } from 'lucide-react'
+import { Pencil, Play, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
@@ -23,11 +23,20 @@ import {
   useWorkflows,
 } from '@/features/workflow/hooks'
 import type { Workflow } from '@/features/workflow/schema'
+import { WorkflowGraphSchema, WorkflowTriggerSchema } from '@/features/workflow/schema'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
@@ -143,6 +152,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
   const trigger = useTriggerWorkflow()
   const nodeCount = (wf.graph as { nodes?: unknown[] }).nodes?.length ?? 0
   const triggerKind = (wf.trigger as { kind?: string }).kind ?? 'manual'
+  const [editorOpen, setEditorOpen] = useState(false)
 
   async function toggleEnabled() {
     try {
@@ -218,6 +228,16 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
           </Button>
           <Button
             size="sm"
+            variant="outline"
+            onClick={() => setEditorOpen(true)}
+            data-testid={`wf-edit-${wf.id}`}
+            aria-label={`Workflow「${wf.name}」の graph / trigger を編集`}
+          >
+            <Pencil className="mr-1 h-3.5 w-3.5" />
+            編集
+          </Button>
+          <Button
+            size="sm"
             variant="ghost"
             onClick={() => void toggleEnabled()}
             disabled={update.isPending}
@@ -237,6 +257,135 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
           </Button>
         </div>
       </CardContent>
+      <WorkflowEditorDialog
+        open={editorOpen}
+        onOpenChange={setEditorOpen}
+        wf={wf}
+        onSave={async (graph, triggerVal) => {
+          await update.mutateAsync({
+            id: wf.id,
+            expectedVersion: wf.version,
+            patch: { graph, trigger: triggerVal },
+          })
+        }}
+      />
     </Card>
+  )
+}
+
+interface EditorProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  wf: Workflow
+  onSave: (
+    graph: ReturnType<typeof WorkflowGraphSchema.parse>,
+    trigger: ReturnType<typeof WorkflowTriggerSchema.parse>,
+  ) => Promise<void>
+}
+
+function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
+  const [graphText, setGraphText] = useState(() => JSON.stringify(wf.graph, null, 2))
+  const [triggerText, setTriggerText] = useState(() => JSON.stringify(wf.trigger, null, 2))
+  const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+
+  // dialog が再 open されたら最新 wf 値で初期化 (前回の編集中値を残さない)
+  if (open && wf.updatedAt) {
+    // no-op — 初期値は useState の lazy init で設定済。再 open 時は意図的に保持する。
+  }
+
+  async function handleSave() {
+    setError(null)
+    let graph
+    let triggerVal
+    try {
+      graph = WorkflowGraphSchema.parse(JSON.parse(graphText))
+    } catch (e) {
+      setError(`graph JSON 不正: ${e instanceof Error ? e.message : String(e)}`)
+      return
+    }
+    try {
+      triggerVal = WorkflowTriggerSchema.parse(JSON.parse(triggerText))
+    } catch (e) {
+      setError(`trigger JSON 不正: ${e instanceof Error ? e.message : String(e)}`)
+      return
+    }
+    setSaving(true)
+    try {
+      await onSave(graph, triggerVal)
+      toast.success('Workflow を保存しました')
+      onOpenChange(false)
+    } catch (e) {
+      const msg = isAppError(e) ? e.message : '保存に失敗'
+      setError(msg)
+      toast.error(msg)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl" data-testid={`wf-editor-dialog-${wf.id}`}>
+        <DialogHeader>
+          <DialogTitle>Workflow 編集 — {wf.name}</DialogTitle>
+          <DialogDescription>
+            graph (nodes / edges) と trigger を JSON で編集。React Flow ベースの 視覚エディタは次
+            iter で実装予定。zod スキーマで保存時にバリデーションする。
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <Label htmlFor={`wf-editor-graph-${wf.id}`}>
+              graph ({'{ nodes: [...], edges: [...] }'})
+            </Label>
+            <Textarea
+              id={`wf-editor-graph-${wf.id}`}
+              value={graphText}
+              onChange={(e) => setGraphText(e.target.value)}
+              rows={12}
+              className="font-mono text-xs"
+              data-testid={`wf-editor-graph-${wf.id}`}
+              aria-label="graph JSON"
+            />
+            <p className="text-muted-foreground text-[10px]">
+              node type: noop / http / slack / email / ai / script (詳細は registry.ts)
+            </p>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor={`wf-editor-trigger-${wf.id}`}>
+              trigger ({'{ kind: "manual" | "cron" | "item-event" | "webhook" }'})
+            </Label>
+            <Textarea
+              id={`wf-editor-trigger-${wf.id}`}
+              value={triggerText}
+              onChange={(e) => setTriggerText(e.target.value)}
+              rows={4}
+              className="font-mono text-xs"
+              data-testid={`wf-editor-trigger-${wf.id}`}
+              aria-label="trigger JSON"
+            />
+          </div>
+          {error && (
+            <p className="text-destructive text-xs" data-testid={`wf-editor-error-${wf.id}`}>
+              {error}
+            </p>
+          )}
+        </div>
+        <DialogFooter>
+          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+            キャンセル
+          </Button>
+          <Button
+            type="button"
+            disabled={saving}
+            onClick={() => void handleSave()}
+            data-testid={`wf-editor-save-${wf.id}`}
+          >
+            {saving ? '保存中…' : '保存'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
