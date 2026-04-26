@@ -191,7 +191,15 @@ export function GanttView({
   }
 
   return (
-    <div ref={scrollRef} data-testid="gantt-view" className="overflow-auto rounded-lg border">
+    <div
+      ref={scrollRef}
+      data-testid="gantt-view"
+      className="overflow-auto rounded-lg border"
+      role="grid"
+      aria-label="Gantt チャート (item × 期間)"
+      aria-rowcount={withDates.length + 1 /* +1 = header row */}
+      aria-colcount={2 /* item column + timeline column */}
+    >
       {/* Project summary banner (Phase 6.15 iter 46 — TeamGantt/GanttPRO 風) */}
       <div
         data-testid="gantt-summary"
@@ -435,6 +443,8 @@ export function GanttView({
             <div
               key={item.id}
               data-testid={`gantt-row-${item.id}`}
+              role="row"
+              aria-rowindex={idx + 2 /* +1 (1-based) +1 (header is row 1) */}
               className="hover:bg-muted/50 flex border-b"
               style={{ height: ROW_PX }}
             >
