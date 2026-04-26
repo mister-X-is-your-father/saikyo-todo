@@ -85,6 +85,11 @@ export function TemplateItemsEditor({ templateId }: Props) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="flex-1"
+            aria-label="子 Item のタイトル"
+            required
+            aria-required="true"
+            minLength={1}
+            maxLength={500}
           />
           <input
             type="number"
@@ -92,6 +97,7 @@ export function TemplateItemsEditor({ templateId }: Props) {
             value={dueOffset}
             onChange={(e) => setDueOffset(e.target.value)}
             className="h-9 w-28 rounded-md border px-2 text-sm"
+            aria-label="期日 offset (日数 — 展開日 + N 日後を期日に設定)"
           />
         </div>
         <label className="flex items-center gap-1 text-sm">
