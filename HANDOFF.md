@@ -779,6 +779,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter12] /goals form の goal-title input に required なし → fix: required + aria-required + minLength + maxLength を追加。start/end date にも required + min={startDate} で end >= start を HTML 検証
 - ✅ [iter13] /pdca 軽探索 (nav 1953ms, 30/90 切替 OK) → 新規バグ無し
 - ✅ [iter13] /sprints form a11y: sprint-name (required + minLength + maxLength{100}) / sprint-start, sprint-end (required + min={startDate} で end >= start を HTML 検証) を追加
+- ✅ [iter14] /time-entries form: teDate / teCategory / teDescription / teMinutes に required + aria-required を追加。teDate に max=today / teDescription に maxLength=500 / 全項目に native 検証
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
 ## 6. Service 層を書くときの抽象

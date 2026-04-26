@@ -63,6 +63,9 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           type="date"
           value={workDate}
           onChange={(e) => setWorkDate(e.target.value)}
+          required
+          aria-required="true"
+          max={new Date().toISOString().slice(0, 10)}
         />
       </div>
       <div className="space-y-1">
@@ -74,6 +77,8 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           value={category}
           onChange={(e) => setCategory(e.target.value as TimeEntryCategoryKey)}
           className="h-9 rounded border px-2 text-sm"
+          required
+          aria-required="true"
         >
           {TIME_ENTRY_CATEGORIES.map((c) => (
             <option key={c.key} value={c.key}>
@@ -91,6 +96,10 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           placeholder="例: PR レビュー + フィードバック対応"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          required
+          aria-required="true"
+          minLength={1}
+          maxLength={500}
         />
       </div>
       <div className="space-y-1">
@@ -106,6 +115,8 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           value={durationMinutes}
           onChange={(e) => setDurationMinutes(Number(e.target.value))}
           className="w-24"
+          required
+          aria-required="true"
         />
       </div>
       <div className="flex items-end">
