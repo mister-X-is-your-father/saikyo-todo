@@ -21,7 +21,7 @@
  *     (Phase 6.15 iter 1 の computeCriticalPath を呼んだ結果を渡す想定)
  *   - workspace 横断 edges 取得 hook は次 iter (現状は呼び出し元から渡す)
  */
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { addDays, differenceInCalendarDays, format, isValid, parseISO } from 'date-fns'
 import { parseAsString, useQueryState } from 'nuqs'
@@ -64,10 +64,13 @@ export function GanttView({
   const [, setOpenItemId] = useQueryState('item', parseAsString)
   // Phase 6.15 iter 60: "今日にジャンプ" — outer scroll container を ref で持つ
   const scrollRef = useRef<HTMLDivElement | null>(null)
+  // Phase 6.15 iter 62: 完了済 (doneAt あり) を行から隠す toggle (TeamGantt 風 filter)
+  const [hideDone, setHideDone] = useState(false)
 
   const withDates = useMemo(
     () =>
       active
+        .filter((i) => (hideDone ? !i.doneAt : true))
         .map((i) => ({
           item: i,
           start: toDate(i.startDate),
@@ -78,7 +81,7 @@ export function GanttView({
         start: Date
         due: Date
       }[],
-    [active],
+    [active, hideDone],
   )
 
   const range = useMemo(() => {
@@ -222,12 +225,24 @@ export function GanttView({
             <span className="font-mono"> {totalSlipDays}</span> 日
           </span>
         )}
+        <label
+          data-testid="gantt-hide-done-toggle"
+          className="ml-auto flex items-center gap-1 text-xs"
+        >
+          <input
+            type="checkbox"
+            checked={hideDone}
+            onChange={(e) => setHideDone(e.target.checked)}
+            className="size-3.5 cursor-pointer accent-current"
+          />
+          完了済を隠す
+        </label>
         {todayX !== null && (
           <button
             type="button"
             data-testid="gantt-jump-today"
             onClick={() => scrollToToday('smooth')}
-            className="text-foreground hover:bg-muted ml-auto rounded border px-2 py-0.5 text-xs"
+            className="text-foreground hover:bg-muted rounded border px-2 py-0.5 text-xs"
             title="今日の縦線まで横スクロール"
           >
             今日へジャンプ

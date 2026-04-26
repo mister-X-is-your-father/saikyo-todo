@@ -839,6 +839,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter59] comment-thread の **編集 mode textarea** にも同 a11y セット (aria-label="コメント編集" / required / maxLength=10000) + `data-testid="comment-edit-input-<id>"` 付与でテスト fixture 化容易に
 - ✅ [iter60] **Gantt 「今日へジャンプ」button** (TeamGantt 風 navigation): summary banner 右端に `gantt-jump-today` button、click で outer scroll container を smooth scroll、today 線が中央に来る `(LABEL_COL_PX + todayX - viewport/2)`。Playwright で scrollLeft 0 → 279px 移動を確認
 - ✅ [iter61] **Gantt 初回 mount で today へ自動スクロール** (TeamGantt/GanttPRO default UX): useEffect + useRef で 1 回だけ instant scroll。長期間 Gantt でも開いた瞬間 today が viewport 中央に来る。range/totalDays の計算を early return より先に持ち上げて rules-of-hooks 準拠。Playwright で初回 scrollLeft=839px を確認
+- ✅ [iter62] **Gantt 「完了済を隠す」toggle** (TeamGantt 風 filter): summary banner に checkbox を配置、ON で `doneAt` あり item を withDates から除外して行数を圧縮。Playwright で done+todo の 2 件 workspace で toggle ON → 1 行に減ることを確認
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
