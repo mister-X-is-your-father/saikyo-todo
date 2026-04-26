@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { recordAudit } from '@/lib/audit'
 import { requireWorkspaceMember } from '@/lib/auth/guard'
 import { timeEntries } from '@/lib/db/schema'
-import { adminDb, withUserDb } from '@/lib/db/scoped-client'
+import { withUserDb } from '@/lib/db/scoped-client'
 import { NotFoundError, ValidationError } from '@/lib/errors'
 import { enqueueJob } from '@/lib/jobs/queue'
 import { err, ok, type Result } from '@/lib/result'
@@ -87,7 +87,7 @@ export const timeEntryService = {
 
     const { user } = await requireWorkspaceMember(workspaceId, 'member')
 
-    const result = await adminDb.transaction(async (tx) => {
+    const result = await withUserDb(user.id, async (tx) => {
       const current = await timeEntryRepository.findById(tx, id)
       if (!current) return err(new NotFoundError('time_entry が見つかりません'))
       if (current.workspaceId !== workspaceId) {

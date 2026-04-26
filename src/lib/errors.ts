@@ -3,14 +3,48 @@
  * 例外を投げないパスは `Result<T, AppError>` を返す。
  */
 
+/**
+ * Server Action 越しに Result<T, AppError> を返すとき、`cause` には ZodError や
+ * 一般の Error / Symbol / 関数を含む値が紛れ込む可能性がある。これを未加工で
+ * クライアント送信すると Next.js の RSC serializer が落ちて UI が crash するため、
+ * AppError 構築時に **serializable な形** (string or plain object) に正規化する。
+ */
+function normalizeCause(cause: unknown): unknown {
+  if (cause === undefined || cause === null) return undefined
+  // ZodError を含む Error 派生は string 化 (stack は落とす — 既に message に詰まっている)
+  if (cause instanceof Error) {
+    // ZodError は .issues を持つ — 構造化情報を残しておく
+    const issues = (cause as Error & { issues?: unknown }).issues
+    if (Array.isArray(issues)) {
+      return { name: cause.name, message: cause.message, issues }
+    }
+    return { name: cause.name, message: cause.message }
+  }
+  // primitive / plain object はそのまま (JSON.stringify が handle してくれる)
+  const t = typeof cause
+  if (t === 'string' || t === 'number' || t === 'boolean') return cause
+  if (t === 'object') {
+    try {
+      // 構造化複製で循環参照やクラスインスタンス由来の関数を検出 → 落ちたら string 化
+      JSON.stringify(cause)
+      return cause
+    } catch {
+      return String(cause)
+    }
+  }
+  return undefined
+}
+
 export class AppError extends Error {
+  public readonly cause?: unknown
   constructor(
     public readonly code: string,
     message: string,
-    public readonly cause?: unknown,
+    cause?: unknown,
   ) {
     super(message)
     this.name = this.constructor.name
+    this.cause = normalizeCause(cause)
   }
 }
 

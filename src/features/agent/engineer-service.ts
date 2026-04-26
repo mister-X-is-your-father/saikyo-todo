@@ -203,25 +203,30 @@ export const engineerService = {
           // push + gh pr create. 認証はホスト側 gh が持っている前提。
           await git(worktreeDir, ['push', '-u', 'origin', branchName])
           const prBody = buildPrBody(item.title, item.description, item.dod, ran.finalText)
-          const ghOut = await execFileP(
-            'gh',
-            [
-              'pr',
-              'create',
-              '--draft',
-              '--base',
-              baseBranch,
-              '--title',
-              `[engineer] ${item.title.slice(0, 80)}`,
-              '--body',
-              prBody,
-            ],
-            { cwd: worktreeDir },
-          ).catch((e: Error) => {
+          try {
+            const ghOut = await execFileP(
+              'gh',
+              [
+                'pr',
+                'create',
+                '--draft',
+                '--base',
+                baseBranch,
+                '--title',
+                `[engineer] ${item.title.slice(0, 80)}`,
+                '--body',
+                prBody,
+              ],
+              { cwd: worktreeDir },
+            )
+            const m = ghOut.stdout.match(/https?:\/\/\S+/)
+            prUrl = m ? m[0] : null
+          } catch (e) {
+            // gh pr create 失敗時、push 済みの remote branch を掃除して orphan を残さない。
+            // 失敗自体は ExternalServiceError として上に伝搬。
+            await git(worktreeDir, ['push', 'origin', '--delete', branchName]).catch(() => {})
             throw new ExternalServiceError('gh pr create', e)
-          })
-          const m = ghOut.stdout.match(/https?:\/\/\S+/)
-          prUrl = m ? m[0] : null
+          }
         }
       }
 

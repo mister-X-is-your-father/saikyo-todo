@@ -91,6 +91,9 @@
   - 実行前提: `pnpm exec supabase status` で Supabase 起動中
   - config: `vitest.config.ts` の `maxWorkers: 2` + `.env.local` 自動ロード
 - カバー対象: happy path + 権限 + 楽観ロック衝突 + バリデーション主要分岐 + audit_log
+- **失敗 path テスト必須** (`src/__tests__/architecture.test.ts` で検査):
+  mutation を含む service.ts には `ok).toBe(false)` / `toThrow` / `error.code` のいずれかを
+  含むテストが少なくとも 1 件必要 (規約自動検査済)
 - **新規テーブルを Service 層から書く時は RLS に INSERT policy を忘れない**
   (authenticated ロール + workspace_member 条件。過去に audit_log で踏んだ)
 - Component テストは書かない (shadcn / RHF に任せる)
@@ -121,12 +124,29 @@
 
 ## してはいけない
 
-- ❌ Component から service / repository を直接呼ぶ (Server Action 経由必須)
+- ❌ Component から service / repository を直接呼ぶ (Server Action 経由必須) — **eslint で機械検出**
+- ❌ Service / Action 層から `adminDb` を直接使う (RLS bypass) — **eslint で機械検出 / allow list 制**。
+  通常は `withUserDb(user.id, async (tx) => ...)` を使う。Worker / heartbeat / Pre-mortem 等の
+  「ws 横断 admin 操作」は `eslint.config.mjs` の `ignores` に明示追加して理由をコメント
+- ❌ Service Action で **item を adminDb で取得 → workspace member チェック** (情報漏洩)。
+  RLS 経由 (`withUserDb`) で取得 → 見えなければ NotFound。同時に `requireWorkspaceMember` を呼ぶ
 - ❌ Service から Drizzle 直接呼び (Repository 経由)
 - ❌ Repository から他 Repository 呼び (循環防止)
+- ❌ Repository から `requireUser` / `requireWorkspaceMember` (二重チェック禁止) — **architecture テストで検出**
 - ❌ UI に try/catch (Result 型で受ける)
+- ❌ Server Action 内で `throw` のみ (return Result が無い) — **architecture テストで検出**
 - ❌ サーバ状態を Zustand に複製
-- ❌ shadcn 生成物 (`src/components/ui/`) を編集
+- ❌ shadcn 生成物 (`src/components/ui/`) を編集 — **architecture テストで検出**
+- ❌ jsonb 列に streaming で部分書き込みして後で全置換する (Drizzle の `update().set({jsonb: {...}})` は
+  完全置換)。streaming text は別カラムに分離するか、最終 output に必ず含める
+- ❌ pg-boss の `singletonKey` を「同じ Item」の粒度で作る (multi-user 同時起動が silent skip)。
+  `${workspaceId}-${entityId}-${userId}-${timeBucket}` パターンで user 別 + 短時間バケット
+- ❌ `addEventListener` を `useEffect` 内で書いて cleanup の `removeEventListener` に渡す関数参照が
+  effect 再実行で別になる (cancelled flag を立てて hook 内でガードする)
+- ❌ Service Worker (`@serwist/next` 等) の `defaultCache` をそのまま使う (POST / Server Action /
+  `/auth/*` / `/api/*` を `NetworkOnly` で素通しする runtimeCaching を **先頭に** 追加)
+- ❌ `git status --porcelain` の出力を `trim().slice(3)` (status コードを潰す)。**先頭 trim 禁止**、
+  `l.length > 3 && l.slice(3).trim()` で 4 文字目以降だけ取る
 - ❌ `delete_*` ツールを Agent に渡す (MVP)
 - ❌ 物理削除 (`deleted_at` 使う)
 - ❌ `uuid[]` / `text[]` で関連を持つ (中間テーブル化済み)
@@ -138,3 +158,15 @@
 - まず `ARCHITECTURE.md` の該当章を読む
 - 既存の `features/item/` をコピペベースに
 - 規約自体を変えたいときは **先に ARCHITECTURE.md / 本書を更新** してから実装
+
+## 仕組みで弾いている違反 (新規実装前に把握しておくと早い)
+
+- **eslint** (`eslint.config.mjs`): `adminDb` import / Client Component から service / DB 直接呼び
+- **architecture テスト** (`src/__tests__/architecture.test.ts`):
+  Service Action の Result return / mutation の `recordAudit` 呼び出し / Repository の auth guard 呼び /
+  失敗 path テスト存在 / shadcn UI へのプロジェクト固有 import 混入
+- **vitest 規約テスト**: 414+ ケースで RLS / 権限 / 楽観ロック衝突を本物 Supabase で検証
+
+新規 Phase 実装前に `HANDOFF.md §5 の罠` を必ず読み返す。`§5.18` (Realtime setAuth) /
+`§5.19` (postgres-js 制約違反) / `§5.22` (SW POST 事故) / `§5.28` (git status path) /
+`§5.29` (Serwist + Turbopack) は特に踏みやすい。

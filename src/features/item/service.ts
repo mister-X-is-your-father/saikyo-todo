@@ -8,7 +8,7 @@ import { positionBetween } from '@/lib/db/fractional-position'
 import { moveSubtree } from '@/lib/db/ltree'
 import { fullPathOf } from '@/lib/db/ltree-path'
 import { workspaceMembers } from '@/lib/db/schema'
-import { adminDb, withUserDb } from '@/lib/db/scoped-client'
+import { withUserDb } from '@/lib/db/scoped-client'
 import { ConflictError, NotFoundError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 import { mutateWithGuard } from '@/lib/service-mutate'
@@ -347,7 +347,9 @@ export const itemService = {
 
       const userAssignees = assignees.filter((a) => a.actorType === 'user')
       if (userAssignees.length > 0) {
-        const memberRows = await adminDb
+        // workspace_members の RLS は「自分が member の ws」を全 member 返すので、
+        // scoped tx で十分 (adminDb 不要)。同じ tx を使うことでトランザクション境界も揃う。
+        const memberRows = await tx
           .select({ userId: workspaceMembers.userId })
           .from(workspaceMembers)
           .where(eq(workspaceMembers.workspaceId, before.workspaceId))

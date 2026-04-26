@@ -30,9 +30,19 @@ export interface TokenUsage {
   cacheReadTokens?: number | null
 }
 
+/**
+ * Anthropic Messages API の `model` field は実 ID (`claude-haiku-4-5-20251001`) を
+ * 返してくることがある。MODEL_PRICING のキーは family ID (`claude-haiku-4-5`) を
+ * 採用しているため、suffix の日付タグを取り除いて lookup する。
+ */
+export function normalizeModelId(model: string): string {
+  // 末尾に `-YYYYMMDD` (8 桁日付) があれば削る
+  return model.replace(/-\d{8}$/, '')
+}
+
 /** USD, 小数 6 桁で丸める。numeric(10,6) カラムに合わせた精度。 */
 export function calculateCostUsd(model: string, usage: TokenUsage): number {
-  const p = MODEL_PRICING[model]
+  const p = MODEL_PRICING[model] ?? MODEL_PRICING[normalizeModelId(model)]
   if (!p) return 0
   const cost =
     (usage.inputTokens / 1_000_000) * p.input +

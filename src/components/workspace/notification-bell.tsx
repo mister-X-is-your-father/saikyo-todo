@@ -163,8 +163,7 @@ function extractItemId(n: Notification): string | null {
     return (n.payload as HeartbeatPayload).itemId ?? null
   }
   if (n.type === 'mention') {
-    const p = n.payload as { itemId?: string }
-    return p.itemId ?? null
+    return (n.payload as MentionPayload).itemId ?? null
   }
   return null
 }
