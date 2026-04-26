@@ -19,13 +19,13 @@
 
 ## AI Agent 拡張
 
-- [ ] **Engineer Agent** (コード書き) + git worktree 隔離 + サンドボックス実行
+- [x] ~~**Engineer Agent** (コード書き) + git worktree 隔離 + サンドボックス実行~~ → **Phase 6.12 完了** (autoPr=false 既定 / claude CLI 経由 / 人間 review 必須)
 - [ ] **Reviewer Agent** (PR / Doc / Item 出力の相互レビュー)
-- [ ] PM Agent の **Pre-mortem** (リスク予測 / 過去遅延パターン照合)
-- [ ] PM Agent の **依存ブロック検出** (item_dependencies グラフ走査)
+- [x] ~~PM Agent の **Pre-mortem** (リスク予測 / 過去遅延パターン照合)~~ → **Phase 6.8 完了**
+- [x] ~~PM Agent の **依存ブロック検出** (item_dependencies グラフ走査)~~ → **Phase 6.10 完了** (Pre-mortem prompt に injected)
 - [ ] **二重承認** (MUST 追加 / 降格に PM Agent 承認必須)
 - [ ] Researcher の **Web 調査 tool** (web_fetch + サニタイズ)
-- [ ] Agent **キャンセルトークン** (実行中 invocation を中断)
+- [x] ~~Agent **キャンセルトークン** (実行中 invocation を中断)~~ → **Phase 6.7 完了**
 - [ ] Agent 出力 **承認待ち** モード (`auto_apply: false`)
 - [ ] **複数 AI モデル切替** (provider 抽象化)
 - [ ] **Vibe Kanban スタイル**: 同じ Item に複数 Engineer Agent 並列で結果比較
@@ -46,10 +46,10 @@
 
 ## 通知 / 配信
 
-- [ ] **メール通知** (Resend or SMTP) + react-email テンプレ
+- [x] ~~**メール通知** (Resend or SMTP) + react-email テンプレ~~ → **Phase 6.6 で mock outbox 完成**。実 SMTP/Resend は dispatcher.ts 1 ファイル差し替えで本番化可能
 - [ ] **Slack 通知** (incoming webhook)
 - [ ] 通知 **digest** (1 日まとめて配信)
-- [ ] **通知購読設定 UI** (`notification_preferences` の編集)
+- [x] ~~**通知購読設定 UI** (`notification_preferences` の編集)~~ → **Phase 6.6 完了** (NotificationPreferences Popover)
 - [ ] PM Agent Stand-up の **個人別 DM** + 購読 ON/OFF
 
 ## ビュー / UX
@@ -65,7 +65,7 @@
 - [ ] **タグ正規化** + autocomplete + tag rename / merge UI
 - [ ] **検索結果ハイライト** (snippet + マッチ語強調)
 - [ ] Workspace 切替 UI 改善
-- [ ] **キーボードショートカット一覧** モーダル
+- [x] ~~**キーボードショートカット一覧** モーダル~~ → **Phase 6.5 完了** (`?` 押下 / Command Palette)
 
 ## Plugin / 拡張
 
@@ -80,7 +80,7 @@
 - [ ] **監査ログの UI / 検索**
 - [ ] **ログ集約** (Loki + Grafana)
 - [ ] **Sentry 連携** (self-hosted)
-- [ ] AI コストの **workspace 月次上限** + 警告 / 自動停止
+- [x] ~~AI コストの **workspace 月次上限** + 警告 / 自動停止~~ → **Phase 6.9 完了** (BudgetPanel + checkBudget pre-flight)
 - [ ] **Uptime monitor**
 - [ ] DB バックアップの **オフサイト転送** (rclone)
 
@@ -93,8 +93,8 @@
 
 ## モバイル / オフライン
 
-- [ ] **モバイル対応** (PWA + レスポンシブ)
-- [ ] **オフライン同期** (Service Worker + IndexedDB)
+- [x] ~~**モバイル対応** (PWA + レスポンシブ)~~ → **Phase 6.11 完了** (manifest + sw.js + offline page + icon dynamic gen)。レスポンシブ調整は継続課題
+- [ ] **オフライン同期** (Service Worker + IndexedDB) — SW 土台はあるので IndexedDB cache を載せれば実装可
 
 ## i18n
 
