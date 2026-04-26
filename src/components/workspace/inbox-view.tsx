@@ -2,18 +2,12 @@
 
 import { parseAsString, useQueryState } from 'nuqs'
 
+import { priorityClass, priorityLabel } from '@/features/item/priority'
 import type { Item } from '@/features/item/schema'
 
 import { EmptyState } from '@/components/shared/async-states'
 import { ItemCheckbox } from '@/components/workspace/item-checkbox'
 import { StatusBadge } from '@/components/workspace/status-badge'
-
-const PRIO_DOT: Record<number, string> = {
-  1: 'bg-red-500',
-  2: 'bg-amber-500',
-  3: 'bg-blue-500',
-  4: 'bg-slate-400',
-}
 
 /**
  * Inbox = scheduledFor も dueDate も無く、done でない Item (未整理 backlog)。
@@ -56,8 +50,10 @@ export function InboxView({
         >
           <ItemCheckbox item={it} workspaceId={workspaceId} />
           <span
-            className={`inline-block h-2 w-2 shrink-0 rounded-full ${PRIO_DOT[it.priority ?? 4]}`}
+            className={`inline-block h-2 w-2 shrink-0 rounded-full ${priorityClass(it.priority)}`}
             title={`p${it.priority ?? 4}`}
+            role="img"
+            aria-label={priorityLabel(it.priority)}
           />
           <button
             type="button"

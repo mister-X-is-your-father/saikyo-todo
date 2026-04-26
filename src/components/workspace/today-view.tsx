@@ -2,6 +2,7 @@
 
 import { parseAsString, useQueryState } from 'nuqs'
 
+import { priorityClass, priorityLabel } from '@/features/item/priority'
 import type { Item } from '@/features/item/schema'
 import { buildTodayGroups } from '@/features/today/build-groups'
 
@@ -9,13 +10,6 @@ import { EmptyState } from '@/components/shared/async-states'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ItemCheckbox } from '@/components/workspace/item-checkbox'
 import { StatusBadge } from '@/components/workspace/status-badge'
-
-const PRIO_DOT: Record<number, string> = {
-  1: 'bg-red-500',
-  2: 'bg-amber-500',
-  3: 'bg-blue-500',
-  4: 'bg-slate-400',
-}
 
 function todayISO(): string {
   const d = new Date()
@@ -68,10 +62,10 @@ export function TodayView({
                   >
                     <ItemCheckbox item={it} workspaceId={workspaceId} />
                     <span
-                      className={`mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full ${
-                        PRIO_DOT[it.priority ?? 4]
-                      }`}
+                      className={`mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full ${priorityClass(it.priority)}`}
                       title={`p${it.priority ?? 4}`}
+                      role="img"
+                      aria-label={priorityLabel(it.priority)}
                     />
                     <div className="flex min-w-0 flex-1 items-center gap-2">
                       <button
