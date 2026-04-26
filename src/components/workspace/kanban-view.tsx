@@ -11,7 +11,7 @@
  * 注意: position は items 全体で共有の numeric lex (fractional-indexing) なので、
  *       別列間で drop した時は status だけ変えて position は据置き (MVP 簡易実装)。
  */
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import {
   closestCenter,
@@ -29,6 +29,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { parseAsString, useQueryState } from 'nuqs'
 import { toast } from 'sonner'
 
 import { uuidToLabel } from '@/lib/db/ltree-path'
@@ -40,7 +41,6 @@ import { useWorkspaceStatuses } from '@/features/workspace/hooks'
 
 import { ItemCheckbox } from './item-checkbox'
 import { ItemDecomposeButton } from './item-decompose-button'
-import { ItemEditDialog } from './item-edit-dialog'
 
 interface Props {
   workspaceId: string
@@ -48,11 +48,13 @@ interface Props {
   currentUserId?: string
 }
 
-export function KanbanView({ workspaceId, items, currentUserId }: Props) {
+export function KanbanView({ workspaceId, items }: Props) {
+  // Phase 6.15 iter 78: editing dialog state を URL `?item=` に統合 (Backlog iter77 と同パターン)。
+  // 親 items-board が同じ ?item= を見て ItemEditDialog を render するので Kanban 側は dialog を持たない。
+  const [, setOpenItemId] = useQueryState('item', parseAsString)
   const { data: statuses } = useWorkspaceStatuses(workspaceId)
   const updateStatus = useUpdateItemStatus(workspaceId)
   const reorder = useReorderItem(workspaceId)
-  const [editing, setEditing] = useState<Item | null>(null)
 
   const sensors = useSensors(
     // 5px 以上動いてから drag 開始 (click と区別するため)
@@ -158,15 +160,6 @@ export function KanbanView({ workspaceId, items, currentUserId }: Props) {
 
   return (
     <>
-      <ItemEditDialog
-        workspaceId={workspaceId}
-        item={editing}
-        open={editing !== null}
-        onOpenChange={(o) => {
-          if (!o) setEditing(null)
-        }}
-        currentUserId={currentUserId}
-      />
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <div
           className="grid gap-4"
@@ -182,7 +175,7 @@ export function KanbanView({ workspaceId, items, currentUserId }: Props) {
               color={s.color}
               items={itemsByStatus.get(s.key) ?? []}
               childCountByItemId={childCountByItemId}
-              onEdit={(item) => setEditing(item)}
+              onEdit={(item) => void setOpenItemId(item.id)}
             />
           ))}
         </div>
