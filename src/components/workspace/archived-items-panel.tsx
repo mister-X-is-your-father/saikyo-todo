@@ -8,6 +8,7 @@
  * 物理削除 (= 30 日 hard delete cron) は次フェーズ。
  */
 import { useMemo } from 'react'
+import Link from 'next/link'
 
 import { format, isValid, parseISO } from 'date-fns'
 import { toast } from 'sonner'
@@ -85,7 +86,13 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
             >
               <td className="max-w-[300px] truncate px-3 py-2">
                 {item.isMust && <span className="mr-1 text-xs text-red-500">⚠</span>}
-                {item.title}
+                <Link
+                  href={`/${workspaceId}?item=${item.id}`}
+                  className="text-primary hover:underline"
+                  data-testid={`archive-title-link-${item.id}`}
+                >
+                  {item.title}
+                </Link>
               </td>
               <td className="px-3 py-2 text-xs">{item.status}</td>
               <td className="px-3 py-2 text-xs">{fmt(item.dueDate)}</td>

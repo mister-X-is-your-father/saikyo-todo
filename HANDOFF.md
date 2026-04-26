@@ -804,8 +804,9 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter27] ItemEditDialog の DialogFooter に **archive / unarchive button** を追加 (archived 状態で動的切替、confirm 付き)。POST_MVP "アーカイブビュー" の一連のフロー完成: 一般 view → 編集 → アーカイブ → /archive → 復元
 - ✅ [iter28] Backlog view 30 items render (1.8s switch、新規バグ無し)
 - ✅ [iter28] **Reviewer Agent role 定義** (POST_MVP "Reviewer Agent" 着手)。AGENT_ROLES に 'reviewer' / DEFAULT_DISPLAY_NAMES / claude-flow-runner ROLE_CONFIG / system prompt (規約遵守 + 失敗 path + a11y + RLS チェック観点) を追加。tool bundle / service.run は次 iter
-- ⏳ [iter29] dark mode 探索: theme button selector で hit せず探索失敗 (iter21 で成功した selector が dark に切り替えた状態だと別の aria-label に変わる可能性) — 次 iter で別 selector で
+- ✅ [iter29→30] dark mode 探索: aria-label="テーマ切替" は ASCII 'theme' に hit しないだけだった。**iter30 で `[data-testid="theme-toggle"]`** で確実に特定 → toggle で isDark=true 確認 / 13 visible buttons / 0 finding
 - ✅ [iter29] **Slack 通知 dispatcher 着手** (POST_MVP "Slack 通知")。`src/features/slack/dispatcher.ts` で `SLACK_WEBHOOK_URL` 環境変数 (mock=console.log)、Email dispatcher と同じ I/F + 失敗時 `delivered:false` で best-effort。4 ケース test
+- ✅ [iter30] ArchivedItemsPanel の row title を `<Link href="/{ws}?item={id}">` で wrap → click で workspace に戻りつつ ItemEditDialog deep link で開く (data-testid="archive-title-link-<id>")
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
