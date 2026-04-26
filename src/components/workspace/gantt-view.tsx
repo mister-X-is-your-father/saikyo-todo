@@ -170,16 +170,54 @@ export function GanttView({
             Item
           </div>
           <div style={{ width: timelineWidth }} className="flex">
-            {days.map((d, i) => (
-              <div
-                key={i}
-                style={{ width: DAY_PX }}
-                className="text-muted-foreground shrink-0 border-r px-1 text-center text-xs"
-              >
-                {format(d, 'M/d')}
-              </div>
-            ))}
+            {days.map((d, i) => {
+              const dow = d.getDay() // 0=Sun / 6=Sat
+              const isWeekend = dow === 0 || dow === 6
+              return (
+                <div
+                  key={i}
+                  style={{ width: DAY_PX }}
+                  data-weekend={isWeekend ? 'true' : 'false'}
+                  className={
+                    'shrink-0 border-r px-1 text-center text-xs ' +
+                    (isWeekend ? 'text-muted-foreground bg-muted/40' : 'text-muted-foreground')
+                  }
+                >
+                  {format(d, 'M/d')}
+                </div>
+              )
+            })}
           </div>
+        </div>
+        {/* 週末縦帯 (Phase 6.15 iter 11 — TeamGantt の典型表現)。bar の下に薄い背景 */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute"
+          style={{
+            left: LABEL_COL_PX,
+            top: HEADER_PX,
+            width: timelineWidth,
+            height: totalHeight - HEADER_PX,
+          }}
+        >
+          {days.map((d, i) => {
+            const dow = d.getDay()
+            if (dow !== 0 && dow !== 6) return null
+            return (
+              <div
+                key={`weekend-${i}`}
+                data-testid={`gantt-weekend-${i}`}
+                className="absolute"
+                style={{
+                  left: i * DAY_PX,
+                  top: 0,
+                  width: DAY_PX,
+                  height: '100%',
+                  background: 'rgba(148, 163, 184, 0.10)', // slate-400 薄め
+                }}
+              />
+            )
+          })}
         </div>
 
         {/* Rows */}
