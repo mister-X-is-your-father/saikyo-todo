@@ -21,10 +21,10 @@
  *     (Phase 6.15 iter 1 の computeCriticalPath を呼んだ結果を渡す想定)
  *   - workspace 横断 edges 取得 hook は次 iter (現状は呼び出し元から渡す)
  */
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 import { addDays, differenceInCalendarDays, format, isValid, parseISO } from 'date-fns'
-import { parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs'
+import { parseAsBoolean, parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs'
 
 import type { Item } from '@/features/item/schema'
 
@@ -69,8 +69,9 @@ export function GanttView({
   const [, setOpenItemId] = useQueryState('item', parseAsString)
   // Phase 6.15 iter 60: "今日にジャンプ" — outer scroll container を ref で持つ
   const scrollRef = useRef<HTMLDivElement | null>(null)
-  // Phase 6.15 iter 62: 完了済 (doneAt あり) を行から隠す toggle (TeamGantt 風 filter)
-  const [hideDone, setHideDone] = useState(false)
+  // Phase 6.15 iter 62/75: 完了済 (doneAt あり) を行から隠す toggle (TeamGantt 風 filter)。
+  // iter 75 で nuqs URL state 化 (?hideDone=true が refresh 後も保持される)
+  const [hideDone, setHideDone] = useQueryState('hideDone', parseAsBoolean.withDefault(false))
   // Phase 6.15 iter 73-74: zoom (compact/normal/wide) — TeamGantt の day/week/month zoom 相当。
   // iter 74 で nuqs URL state 化 (?zoom=wide が refresh 後も保持される)
   const [zoom, setZoom] = useQueryState(
