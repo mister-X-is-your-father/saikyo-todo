@@ -3,6 +3,7 @@
 import { parseAsString, useQueryState } from 'nuqs'
 
 import type { Item } from '@/features/item/schema'
+import { buildTodayGroups } from '@/features/today/build-groups'
 
 import { EmptyState } from '@/components/shared/async-states'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,58 +22,8 @@ function todayISO(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-interface Group {
-  label: string
-  items: Item[]
-}
-
-/** YYYY-MM-DD 文字列を日数 offset (UTC ベース) で進める。 */
-function shiftISO(iso: string, days: number): string {
-  const d = new Date(`${iso}T00:00:00Z`)
-  d.setUTCDate(d.getUTCDate() + days)
-  return d.toISOString().slice(0, 10)
-}
-
-function buildGroups(items: Item[], today: string): Group[] {
-  // Phase 6.15 iter 83: Todoist 風の Today / Upcoming サブグループ化。
-  // 期限超過 / 今日 / 明日 / 今週内 (今日+2..+7) で分類。
-  const tomorrow = shiftISO(today, 1)
-  const weekEnd = shiftISO(today, 7)
-  const overdue: Item[] = []
-  const todayList: Item[] = []
-  const tomorrowList: Item[] = []
-  const weekList: Item[] = []
-  for (const it of items) {
-    if (it.doneAt) continue
-    const due = it.dueDate
-    const sched = it.scheduledFor
-    if (due && due < today) {
-      overdue.push(it)
-      continue
-    }
-    if (sched === today || due === today) {
-      todayList.push(it)
-      continue
-    }
-    if (due === tomorrow || sched === tomorrow) {
-      tomorrowList.push(it)
-      continue
-    }
-    // 今週内 (今日+2 〜 今日+7)
-    if (due && due > tomorrow && due <= weekEnd) {
-      weekList.push(it)
-    } else if (sched && sched > tomorrow && sched <= weekEnd) {
-      weekList.push(it)
-    }
-  }
-  const priSort = (a: Item, b: Item) => (a.priority ?? 4) - (b.priority ?? 4)
-  return [
-    { label: '期限超過', items: overdue.sort(priSort) },
-    { label: '今日', items: todayList.sort(priSort) },
-    { label: '明日', items: tomorrowList.sort(priSort) },
-    { label: '今週内', items: weekList.sort(priSort) },
-  ]
-}
+// Phase 6.15 iter 84: 純粋分類関数を `@/features/today/build-groups` に移動。
+// 単体テスト (build-groups.test.ts) で 4 group 仕様を検証。
 
 export function TodayView({
   workspaceId,
@@ -83,7 +34,7 @@ export function TodayView({
   currentUserId?: string
 }) {
   const today = todayISO()
-  const groups = buildGroups(items, today)
+  const groups = buildTodayGroups(items, today)
   const total = groups.reduce((sum, g) => sum + g.items.length, 0)
   // Phase 6.15 iter 63: title click で ItemEditDialog 開く (Gantt iter31 と同パターン)
   const [, setOpenItemId] = useQueryState('item', parseAsString)
