@@ -34,6 +34,24 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
     [text],
   )
 
+  /**
+   * preview chip 状態を SR 向け一文に集約 (aria-live で読み上げる対象)。
+   * "予定: 2026-04-28 / 優先度: 最優先 / タグ: 会議 / 担当: alice / MUST / AI 分解候補"
+   */
+  const previewSummary = useMemo(() => {
+    if (!preview || !preview.title) return ''
+    const parts: string[] = []
+    if (preview.scheduledFor) {
+      parts.push(`予定: ${preview.scheduledFor}${preview.dueTime ? ` ${preview.dueTime}` : ''}`)
+    }
+    if (preview.priority) parts.push(`優先度 p${preview.priority}`)
+    if (preview.tags.length > 0) parts.push(`タグ: ${preview.tags.join(', ')}`)
+    if (preview.assignees.length > 0) parts.push(`担当: ${preview.assignees.join(', ')}`)
+    if (preview.isMust) parts.push('MUST')
+    if (preview.decomposeHint) parts.push('AI 分解候補')
+    return parts.length > 0 ? parts.join(' / ') : 'なし'
+  }, [preview])
+
   async function submit() {
     if (!preview || !preview.title) return
     if (preview.isMust) {
@@ -70,6 +88,9 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
         <IMEInput
           id="quick-add-input"
           placeholder='例: "明日15時 p1 #会議 打ち合わせ準備"  (Enter で作成)'
+          aria-label="クイック追加 — タスクをすばやく作成 (Enter で確定、自然言語で日時・優先度・タグを指定可)"
+          aria-describedby="quick-add-preview quick-add-hint"
+          maxLength={500}
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => {
@@ -90,7 +111,14 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
         </Button>
       </div>
       {preview && preview.title && (
-        <div className="text-muted-foreground flex flex-wrap items-center gap-1 text-xs">
+        <div
+          id="quick-add-preview"
+          className="text-muted-foreground flex flex-wrap items-center gap-1 text-xs"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          aria-label={`解析結果: ${previewSummary}`}
+        >
           <span className="truncate font-mono">→ {preview.title}</span>
           {preview.scheduledFor && (
             <span className="rounded bg-blue-100 px-1.5 py-0.5 text-blue-700">
@@ -121,7 +149,7 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
           )}
         </div>
       )}
-      <p className="text-muted-foreground text-[11px]">
+      <p id="quick-add-hint" className="text-muted-foreground text-[11px]">
         キーワード: 明日/今日/明後日/来週X曜/HH:MM/p1-p4/#tag/@user/MUST。末尾 <code>?</code> で AI
         分解候補化。
       </p>
