@@ -810,6 +810,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter31] Gantt bar click で **ItemEditDialog 自動 open** (TeamGantt 典型 UX を補完)。nuqs `useQueryState('item')` で deep link、cursor:pointer、milestone ◇ も同様。bar 内 title click で詳細編集に直接遷移できるように
 - ✅ [iter32] iPhone 13 viewport (390x844) で Today 探索: body.scrollWidth=viewport で横スクロール無し / heading 表示 OK / 新規バグ無し
 - ✅ [iter32] heartbeat worker から `dispatchSlack` 並列呼び出し配線 (iter29 Slack dispatcher 実利用)。emailPending を flatMap で email + Slack 両方の Promise を並列実行。stage ごとに「7 日後/3 日後/1 日後/期限切れ」をテキスト化、linkUrl 付き
+- ✅ [iter33] @ メンション通知も `dispatchSlack` 並列配線 (comment/service.ts)。`*<by>* が *<itemTitle>* で @ メンションしました\n> <preview>` 形式で linkUrl 付き
+- ✅ [iter34] workspace **invite** 通知も `dispatchSlack` 並列配線。残: sync-failure / agent-result。/docs route は未実装 (404) を確認 → POST_MVP として記録
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 

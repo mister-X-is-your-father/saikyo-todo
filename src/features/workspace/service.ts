@@ -12,6 +12,7 @@ import { err, ok, type Result } from '@/lib/result'
 import { buildAppHref, notifyInviteEmail } from '@/features/email/notify'
 import { notificationRepository } from '@/features/notification/repository'
 import type { InvitePayload } from '@/features/notification/schema'
+import { dispatchSlack } from '@/features/slack/dispatcher'
 
 import {
   callCreateWorkspaceRpc,
@@ -165,14 +166,25 @@ export const workspaceService = {
 
     if (emailContext) {
       const ctx = emailContext as { workspaceName: string; invitedBy: string }
-      await notifyInviteEmail({
-        userId: input.userId,
-        workspaceId: input.workspaceId,
-        workspaceName: ctx.workspaceName,
-        invitedBy: ctx.invitedBy,
-        role,
-        href: buildAppHref({ workspaceId: input.workspaceId }),
-      })
+      // Phase 6.15 iter 34: Slack dispatch を email と並列に追加 (POST_MVP "Slack 通知")。
+      // best-effort: dispatchSlack は内部で握り潰すので Promise.all で十分。
+      await Promise.all([
+        notifyInviteEmail({
+          userId: input.userId,
+          workspaceId: input.workspaceId,
+          workspaceName: ctx.workspaceName,
+          invitedBy: ctx.invitedBy,
+          role,
+          href: buildAppHref({ workspaceId: input.workspaceId }),
+        }),
+        dispatchSlack({
+          workspaceId: input.workspaceId,
+          type: 'invite',
+          text: `*${ctx.invitedBy}* が *${ctx.workspaceName}* に新メンバー (role=${role}) を招待しました`,
+          linkUrl: buildAppHref({ workspaceId: input.workspaceId }),
+          linkLabel: 'workspace を開く',
+        }),
+      ])
     }
 
     return ok({ workspaceId: input.workspaceId, userId: input.userId, role })
