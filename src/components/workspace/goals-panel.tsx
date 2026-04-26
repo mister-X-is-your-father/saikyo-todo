@@ -101,6 +101,10 @@ export function GoalsPanel({ workspaceId }: Props) {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="例: 2026 Q2 — システム速度を体感半分に"
+                required
+                aria-required="true"
+                minLength={1}
+                maxLength={200}
               />
             </div>
             <div className="space-y-1">
@@ -110,6 +114,8 @@ export function GoalsPanel({ workspaceId }: Props) {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
+                required
+                aria-required="true"
               />
             </div>
             <div className="space-y-1">
@@ -119,6 +125,9 @@ export function GoalsPanel({ workspaceId }: Props) {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
+                required
+                aria-required="true"
+                min={startDate || undefined}
               />
             </div>
           </div>
