@@ -143,6 +143,22 @@ export function GanttView({
   const criticalCount = criticalSet.size
   const totalSpanDays = differenceInCalendarDays(range!.end, range!.start) + 1
 
+  // Phase 6.15 iter 51: baseline 比較 — slip (現在の dueDate が当初計画 baselineEndDate を
+  // 何日超過したか) を集計。slipDays > 0 = 遅延、< 0 = 前倒し。
+  let baselineCount = 0
+  let slipItemCount = 0
+  let totalSlipDays = 0
+  for (const x of withDates) {
+    const blEnd = toDate(x.item.baselineEndDate)
+    if (!blEnd) continue
+    baselineCount += 1
+    const slip = differenceInCalendarDays(x.due, blEnd)
+    if (slip > 0) {
+      slipItemCount += 1
+      totalSlipDays += slip
+    }
+  }
+
   return (
     <div data-testid="gantt-view" className="overflow-auto rounded-lg border">
       {/* Project summary banner (Phase 6.15 iter 46 — TeamGantt/GanttPRO 風) */}
@@ -164,6 +180,21 @@ export function GanttView({
         {criticalCount > 0 && (
           <span className="text-red-600 dark:text-red-400">
             critical path <span className="font-mono">{criticalCount}</span> 件
+          </span>
+        )}
+        {baselineCount > 0 && (
+          <span data-testid="gantt-summary-baseline">
+            baseline <span className="text-foreground font-mono">{baselineCount}</span> 件
+          </span>
+        )}
+        {slipItemCount > 0 && (
+          <span
+            data-testid="gantt-summary-slip"
+            className="text-amber-600 dark:text-amber-400"
+            title={`baseline より遅れている item の合計遅延日数`}
+          >
+            遅延 <span className="font-mono">{slipItemCount}</span> 件 / 計
+            <span className="font-mono"> {totalSlipDays}</span> 日
           </span>
         )}
       </div>
@@ -315,6 +346,15 @@ export function GanttView({
             : 0
           const baselineWidth =
             blStart && blEnd ? (differenceInCalendarDays(blEnd, blStart) + 1) * DAY_PX : 0
+          // Phase 6.15 iter 51: slip 日数 (現 due - baselineEnd)。tooltip / title に追記
+          const slipDays = blEnd ? differenceInCalendarDays(due, blEnd) : 0
+          const slipText = !blEnd
+            ? ''
+            : slipDays > 0
+              ? ` [遅延 +${slipDays}日]`
+              : slipDays < 0
+                ? ` [前倒し ${slipDays}日]`
+                : ' [計画通り]'
           return (
             <div
               key={item.id}
@@ -374,7 +414,7 @@ export function GanttView({
                         : '0 1px 2px rgba(0,0,0,0.18)',
                       cursor: 'pointer',
                     }}
-                    title={`${item.title} — ${format(start, 'yyyy-MM-dd')} (milestone)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}`}
+                    title={`${item.title} — ${format(start, 'yyyy-MM-dd')} (milestone)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}${slipText}`}
                     onClick={() => void setOpenItemId(item.id)}
                   />
                 ) : (
@@ -399,7 +439,7 @@ export function GanttView({
                       cursor: 'pointer',
                       textDecoration: isDone ? 'line-through' : undefined,
                     }}
-                    title={`${item.title} — ${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')} (${spanDays}日)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}`}
+                    title={`${item.title} — ${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')} (${spanDays}日)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}${slipText}`}
                     onClick={() => void setOpenItemId(item.id)}
                   >
                     {/* 短い bar (< 60px) では title 省略して d だけにする */}
