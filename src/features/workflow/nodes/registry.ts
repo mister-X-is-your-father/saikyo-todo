@@ -1,5 +1,5 @@
 /**
- * Phase 6.15 iter113-114: Workflow node 実行 registry。
+ * Phase 6.15 iter113-115: Workflow node 実行 registry。
  * 各 node 種別の executor を集約。Engine から `executors[type](ctx, config, input)` で呼ぶ。
  *
  * 実装済:
@@ -7,14 +7,15 @@
  *   - http: 任意 URL に fetch (timeout 10s、レスポンス body / status を output)
  *   - slack: dispatchSlack (best-effort 通知)
  *   - email: dispatchEmail (mock_email_outbox に write、本番は Resend へ差し替え)
+ *   - ai: Researcher Agent をカスタムプロンプトで起動 (Claude Max OAuth + claude CLI)
  *
  * 次 iter で追加予定:
- *   - ai: Researcher / Engineer / カスタムプロンプト
  *   - script: scripts/ 配下を invoke (whitelist)
  *   - branch / parallel: 制御フロー
  */
 import 'server-only'
 
+import { researcherService } from '@/features/agent/researcher-service'
 import { dispatchEmail } from '@/features/email/dispatcher'
 import { dispatchSlack } from '@/features/slack/dispatcher'
 
@@ -156,11 +157,57 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;')
 }
 
+/**
+ * ai node: Researcher Agent を任意プロンプトで起動。
+ * config:
+ *   { prompt: string, role?: 'researcher', targetItemId?: string }
+ *   prompt は user message として渡す。input が object なら JSON で末尾に append。
+ * output: { text, invocationId, costUsd, iterations, toolCalls }
+ *
+ * Claude Max OAuth + claude CLI 前提 (ANTHROPIC_API_KEY は使わない)。
+ * テスト環境で Claude CLI が無いと fail するので、CI / unit test では
+ * 実 LLM 呼び出しを伴うテストは別途 (e2e / verify-phase 系) に任せる。
+ */
+const aiExecutor: NodeExecutor = async (ctx, config) => {
+  const promptCfg = typeof config.prompt === 'string' ? config.prompt : ''
+  if (!promptCfg) throw new Error('ai node: config.prompt が未指定')
+  const targetItemId = typeof config.targetItemId === 'string' ? config.targetItemId : undefined
+
+  // 上流 input が非 null なら JSON 化して prompt に append (context 注入)
+  const ctxStr =
+    ctx.input == null
+      ? ''
+      : `\n\n--- 上流 node から受け取った context ---\n${JSON.stringify(ctx.input, null, 2)}`
+  const userMessage = `${promptCfg}${ctxStr}`
+
+  // workflow_run と紐付ける idempotencyKey (同一 run で同 node なら重複起動しない)
+  const idempotencyKey = `wf-${ctx.workflowRunId}-${ctx.nodeId}`
+
+  const r = await researcherService.run({
+    workspaceId: ctx.workspaceId,
+    userMessage,
+    idempotencyKey,
+    ...(targetItemId ? { targetItemId } : {}),
+  })
+  if (!r.ok) throw r.error
+  return {
+    output: {
+      text: r.value.text,
+      invocationId: r.value.invocationId,
+      costUsd: r.value.costUsd,
+      iterations: r.value.iterations,
+      toolCalls: r.value.toolCalls.length,
+    },
+    log: `ai: ${r.value.iterations} iter, $${r.value.costUsd.toFixed(4)}, tools=${r.value.toolCalls.length}`,
+  }
+}
+
 export const nodeExecutors: Record<string, NodeExecutor> = {
   noop: noopExecutor,
   http: httpExecutor,
   slack: slackExecutor,
   email: emailExecutor,
+  ai: aiExecutor,
 }
 
 /** 未実装 node 型は明示的に NotImplemented で fail させる */
@@ -169,7 +216,7 @@ export function getNodeExecutor(type: string): NodeExecutor {
   if (!exec) {
     return async () => {
       throw new Error(
-        `node type "${type}" is not yet implemented (iter114 までは noop / http / slack / email)`,
+        `node type "${type}" is not yet implemented (iter115 までは noop / http / slack / email / ai)`,
       )
     }
   }

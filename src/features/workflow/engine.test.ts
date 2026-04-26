@@ -181,6 +181,20 @@ describe('runWorkflow', () => {
     expect(out.notify?.delivered).toBe(false)
   })
 
+  it('ai node: prompt 未指定で fail (Claude CLI 起動前にバリデーション)', async () => {
+    const c = await workflowService.create({
+      workspaceId: wsId,
+      name: 'ai-bad',
+      graph: {
+        nodes: [{ id: 'a', type: 'ai', config: {} }],
+        edges: [],
+      },
+    })
+    if (!c.ok) throw c.error
+    const r = await runWorkflow({ workflowId: c.value.id, triggerKind: 'manual' })
+    expect(r.status).toBe('failed')
+  })
+
   it('email node: toEmail 未指定で fail', async () => {
     const c = await workflowService.create({
       workspaceId: wsId,
