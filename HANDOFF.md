@@ -863,6 +863,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter83] **Today view を 4 group 化** (Todoist Today/Upcoming 風): 既存の "期限超過" / "今日" に加え "明日" / "今週内 (今日+2..+7)" を追加。空 group は自動非表示 (g.items.length>0 ガード)。`shiftISO(iso, days)` で UTC ベース計算)
 - ✅ [iter84] iter83 の純粋分類関数を `src/features/today/build-groups.ts` に抽出 + **vitest 単体テスト 4 件追加**: 4 group 分類 / doneAt 除外 / priority 昇順 / scheduledFor も dueDate と同等扱い。+1 test file = 52 files / 445 tests PASS。Component 再 export で挙動変化なし
 - ✅ [iter85] Today group label に **日付 + 曜日** を埋め込み (Todoist Upcoming 風): "今日 (4/27 月)" / "明日 (4/28 火)" / "今週内 (4/29 水 〜 5/4 月)"。"明日って何日?" の認知コストを下げる。unit test +1 件 (label format assertion) = 446 PASS
+- ✅ [iter86] notification-bell の `formatNotificationBody` / `formatRelativeTime` を `src/features/notification/format.ts` に抽出 + **vitest 単体テスト 10 件追加**: heartbeat (overdue/7d) / mention (40 文字 truncate) / invite / sync-failure 各 type + 相対時刻 5 buckets。53 files / 456 tests PASS
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 

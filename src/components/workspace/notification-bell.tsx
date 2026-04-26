@@ -16,6 +16,7 @@ import { useState } from 'react'
 import { Bell, CheckCheck } from 'lucide-react'
 import { parseAsString, useQueryState } from 'nuqs'
 
+import { formatNotificationBody, formatRelativeTime } from '@/features/notification/format'
 import {
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
@@ -23,13 +24,7 @@ import {
   useUnreadNotificationCount,
 } from '@/features/notification/hooks'
 import { useNotificationsRealtime } from '@/features/notification/realtime'
-import type {
-  HeartbeatPayload,
-  InvitePayload,
-  MentionPayload,
-  Notification,
-  SyncFailurePayload,
-} from '@/features/notification/schema'
+import type { HeartbeatPayload, MentionPayload, Notification } from '@/features/notification/schema'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -130,7 +125,7 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                     onClick={() => handleNotificationClick(n)}
                     className="hover:bg-muted/60 flex w-full items-start gap-2 px-3 py-2 text-left"
                     data-testid="notification-item"
-                    aria-label={`${n.readAt ? '既読' : '未読'}通知: ${formatNotification(n)}`}
+                    aria-label={`${n.readAt ? '既読' : '未読'}通知: ${formatNotificationBody(n)}`}
                   >
                     <span
                       className={`mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full ${
@@ -139,7 +134,7 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                       aria-hidden
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs leading-snug">{formatNotification(n)}</p>
+                      <p className="text-xs leading-snug">{formatNotificationBody(n)}</p>
                       <p className="text-muted-foreground mt-0.5 text-[10px]">
                         {formatRelativeTime(n.createdAt)}
                       </p>
@@ -169,48 +164,5 @@ function extractItemId(n: Notification): string | null {
   return null
 }
 
-function formatNotification(n: Notification): string {
-  if (n.type === 'heartbeat') {
-    const p = n.payload as HeartbeatPayload
-    const stageLabel: Record<HeartbeatPayload['stage'], string> = {
-      '7d': '7 日後',
-      '3d': '3 日後',
-      '1d': '1 日後',
-      overdue: '期限切れ',
-    }
-    const label = stageLabel[p.stage] ?? p.stage
-    if (p.stage === 'overdue') {
-      return `MUST Item の期限を ${Math.abs(p.daysUntilDue)} 日超過しています (${p.dueDate})`
-    }
-    return `MUST Item の期限が ${label} に迫っています (${p.dueDate})`
-  }
-  if (n.type === 'mention') {
-    const p = n.payload as MentionPayload
-    const preview = (p.preview ?? '').slice(0, 40)
-    const ellipsis = (p.preview ?? '').length > 40 ? '…' : ''
-    return `${p.mentionedBy} があなたに言及しました: "${preview}${ellipsis}"`
-  }
-  if (n.type === 'invite') {
-    const p = n.payload as InvitePayload
-    return `Workspace「${p.workspaceName}」に招待されました (${p.role})`
-  }
-  if (n.type === 'sync-failure') {
-    const p = n.payload as SyncFailurePayload
-    return `${p.source} の同期に失敗: ${p.reason}`
-  }
-  return `${n.type}: ${JSON.stringify(n.payload)}`
-}
-
-function formatRelativeTime(dateInput: Date | string): string {
-  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput
-  const diffMs = Date.now() - date.getTime()
-  const sec = Math.floor(diffMs / 1000)
-  if (sec < 60) return 'たった今'
-  const min = Math.floor(sec / 60)
-  if (min < 60) return `${min} 分前`
-  const hour = Math.floor(min / 60)
-  if (hour < 24) return `${hour} 時間前`
-  const day = Math.floor(hour / 24)
-  if (day < 30) return `${day} 日前`
-  return date.toLocaleDateString('ja-JP')
-}
+// Phase 6.15 iter 86: フォーマット 2 関数を `@/features/notification/format` に抽出。
+// 単体テスト (format.test.ts) で各 type / 相対時刻 paths を検証。
