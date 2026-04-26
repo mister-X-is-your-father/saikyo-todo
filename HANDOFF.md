@@ -854,6 +854,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter74] **Gantt zoom を URL に永続化** (nuqs `parseAsStringLiteral([...]).withDefault('normal')`): `?zoom=wide` が URL に反映され reload 後も復元される。Playwright で URL 反映 + reload 後 select value=wide を直接確認 (TeamGantt 風の "view setting persisted" UX)
 - ✅ [iter75] **Gantt hideDone toggle も URL 永続化** (nuqs `parseAsBoolean.withDefault(false)`): `?hideDone=true` が反映 + reload 復元。useState を完全に外してすべての Gantt view 状態が URL ベース (zoom + hideDone + item)。共有 link で view setting を相手に渡せる
 - ✅ [iter76] **PDCA period (30/90) も URL 永続化** (nuqs `parseAsInteger.withDefault(30)`): `?pdcaDays=90` が反映 + reload 後も 90 日 button が aria-pressed のまま。Gantt と同パターンで view setting を URL に集約
+- ✅ [iter77] **BacklogView の dialog state を URL `?item=` に統合**: 旧 `useState<Item|null>(editing)` + 専用 `<ItemEditDialog>` を削除し、items-board 側の単一 dialog (URL 駆動) に集約。重複 rendering が無くなり、Backlog でも refresh / 共有 link で詳細 dialog が復元できる。Playwright で URL 反映 + dialog count=1 を直接確認
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 

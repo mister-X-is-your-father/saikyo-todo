@@ -35,6 +35,7 @@ import {
   type SortingState,
   useReactTable,
 } from '@tanstack/react-table'
+import { parseAsString, useQueryState } from 'nuqs'
 import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
@@ -47,7 +48,6 @@ import { Button } from '@/components/ui/button'
 import { BulkCheckbox, BulkHeaderCheckbox } from './bulk-action-bar'
 import { ItemCheckbox } from './item-checkbox'
 import { ItemDecomposeButton } from './item-decompose-button'
-import { ItemEditDialog } from './item-edit-dialog'
 import { ItemResearchButton } from './item-research-button'
 import { StatusBadge } from './status-badge'
 
@@ -161,11 +161,13 @@ function buildColumns(workspaceId: string, onEdit: (item: Item) => void): Column
   ]
 }
 
-export function BacklogView({ workspaceId, items, currentUserId }: Props) {
-  const [editing, setEditing] = useState<Item | null>(null)
+export function BacklogView({ workspaceId, items }: Props) {
+  // Phase 6.15 iter 77: ItemEditDialog の open 状態を items-board と同じく URL `?item=`
+  // で共有 (他 view と同パターン)。currentUserId は items-board 側 dialog で使われる。
+  const [, setOpenItemId] = useQueryState('item', parseAsString)
   const columns = useMemo(
-    () => buildColumns(workspaceId, (item) => setEditing(item)),
-    [workspaceId],
+    () => buildColumns(workspaceId, (item) => void setOpenItemId(item.id)),
+    [workspaceId, setOpenItemId],
   )
   // 初期は position ソート (手動並び替えを効かせる)。ユーザが他列 header を click した場合のみ再ソート。
   const [sorting, setSorting] = useState<SortingState>([])
@@ -225,17 +227,11 @@ export function BacklogView({ workspaceId, items, currentUserId }: Props) {
     }
   }
 
+  // 親の items-board が同じ ?item= を見て ItemEditDialog を開くので、Backlog 側では
+  // dialog を rendering しない (重複描画を避ける)。これで全 view 共通の URL 駆動 UX に揃う。
+
   return (
     <>
-      <ItemEditDialog
-        workspaceId={workspaceId}
-        item={editing}
-        open={editing !== null}
-        onOpenChange={(o) => {
-          if (!o) setEditing(null)
-        }}
-        currentUserId={currentUserId}
-      />
       <div data-testid="backlog-view" className="max-h-[600px] overflow-auto rounded-lg border">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <table className="w-full border-collapse text-sm">
