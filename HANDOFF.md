@@ -785,6 +785,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter16] Gantt: 月境界線追加 (TeamGantt 風) — 月が切り替わる位置に slate 半透明 1px 線 + 「M月」ラベル
 - ✅ [iter17] Kanban view: items=5 投入で MUST badge 2 件 / quickAdd 2 / checkbox 1 確認、新規バグ無し
 - ✅ [iter17] Gantt bar 内に item title 表示 (TeamGantt 風) — barWidth>=60px のみ truncate で。短い bar は d 数字のみ。title 属性に start→due + (critical) 詳細を含める
+- ✅ [iter18] Backlog view 詳細探索 (items=8 / rows=9 / sort header / bulk-action-bar 動作確認) → 新規バグ無し
+- ✅ [iter18] Gantt: spanDays=1 (1 日完結) を **milestone ◇ 菱形** で表示 (TeamGantt 風 18px rotate 45)。critical path 強調 / MUST 色は維持。data-milestone="true|false" で testable
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
 ## 6. Service 層を書くときの抽象

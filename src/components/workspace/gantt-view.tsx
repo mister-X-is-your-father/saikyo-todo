@@ -284,32 +284,55 @@ export function GanttView({
                 {item.isMust && <span className="ml-1 text-xs text-red-500">MUST</span>}
               </div>
               <div style={{ width: timelineWidth, position: 'relative', height: ROW_PX }}>
-                <div
-                  data-testid={`gantt-bar-${item.id}`}
-                  data-critical={criticalSet.has(item.id) ? 'true' : 'false'}
-                  className="absolute top-1 flex items-center gap-1 overflow-hidden rounded text-xs leading-6"
-                  style={{
-                    left: barLeft,
-                    width: barWidth,
-                    height: ROW_PX - 8,
-                    background: item.isMust ? 'rgba(239,68,68,0.8)' : 'rgba(59,130,246,0.8)',
-                    color: 'white',
-                    paddingLeft: 6,
-                    paddingRight: 6,
-                    // critical path 強調: 赤い太枠 (TeamGantt / GanttPRO 風)
-                    boxShadow: criticalSet.has(item.id) ? '0 0 0 2px rgb(220, 38, 38)' : undefined,
-                  }}
-                  title={`${item.title} — ${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')} (${spanDays}日)${criticalSet.has(item.id) ? ' [critical path]' : ''}`}
-                >
-                  {/* Gantt bar 内タイトル (Phase 6.15 iter 17 — TeamGantt 風)。
-                      短い bar (< 60px) では title 省略して d だけにする */}
-                  {barWidth >= 60 && (
-                    <span className="truncate font-medium" style={{ maxWidth: barWidth - 32 }}>
-                      {item.title}
-                    </span>
-                  )}
-                  <span className="ml-auto shrink-0 opacity-75">{spanDays}d</span>
-                </div>
+                {spanDays === 1 ? (
+                  // milestone (1 日完結) — TeamGantt 風 ◇ 菱形 (rotate 45)
+                  <div
+                    data-testid={`gantt-bar-${item.id}`}
+                    data-milestone="true"
+                    data-critical={criticalSet.has(item.id) ? 'true' : 'false'}
+                    className="absolute"
+                    style={{
+                      left: barLeft + (DAY_PX - 18) / 2,
+                      top: (ROW_PX - 18) / 2,
+                      width: 18,
+                      height: 18,
+                      background: item.isMust ? 'rgba(239,68,68,0.9)' : 'rgba(59,130,246,0.9)',
+                      transform: 'rotate(45deg)',
+                      boxShadow: criticalSet.has(item.id)
+                        ? '0 0 0 2px rgb(220, 38, 38)'
+                        : undefined,
+                    }}
+                    title={`${item.title} — ${format(start, 'yyyy-MM-dd')} (milestone)${criticalSet.has(item.id) ? ' [critical path]' : ''}`}
+                  />
+                ) : (
+                  <div
+                    data-testid={`gantt-bar-${item.id}`}
+                    data-milestone="false"
+                    data-critical={criticalSet.has(item.id) ? 'true' : 'false'}
+                    className="absolute top-1 flex items-center gap-1 overflow-hidden rounded text-xs leading-6"
+                    style={{
+                      left: barLeft,
+                      width: barWidth,
+                      height: ROW_PX - 8,
+                      background: item.isMust ? 'rgba(239,68,68,0.8)' : 'rgba(59,130,246,0.8)',
+                      color: 'white',
+                      paddingLeft: 6,
+                      paddingRight: 6,
+                      boxShadow: criticalSet.has(item.id)
+                        ? '0 0 0 2px rgb(220, 38, 38)'
+                        : undefined,
+                    }}
+                    title={`${item.title} — ${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')} (${spanDays}日)${criticalSet.has(item.id) ? ' [critical path]' : ''}`}
+                  >
+                    {/* 短い bar (< 60px) では title 省略して d だけにする */}
+                    {barWidth >= 60 && (
+                      <span className="truncate font-medium" style={{ maxWidth: barWidth - 32 }}>
+                        {item.title}
+                      </span>
+                    )}
+                    <span className="ml-auto shrink-0 opacity-75">{spanDays}d</span>
+                  </div>
+                )}
               </div>
             </div>
           )
