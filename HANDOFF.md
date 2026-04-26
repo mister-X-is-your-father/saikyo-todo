@@ -1,13 +1,12 @@
 # HANDOFF.md — 次セッション開始用ガイド
 
-> 最終更新: 2026-04-26 (**MVP + 稼働入力 + Phase 1-5.4 + 6.1 / 6.2 / 6.3 / 6.4 + TZ 別 cron 完了**)
+> 最終更新: 2026-04-26 (**Phase 6.5 / 6.6 / 6.7 / 6.8 / 6.9 完了**)
 >
-> - 進捗: MVP (8/8) → 稼働入力 → Phase 1 → 2 → 3 → 4 → 5.1 → 5.3 → 5.2 → 5.4 →
->   5.3 weekly cron → 6.1 (AI 分解 staging) → 6.2 (streaming + Realtime push) →
->   MUST Recovery 実配信検証 → **6.3 (通知 deep-link + 3 通知タイプ追加)** →
->   **6.4 (分解 fallback + 再分解 CTA)** → **TZ-aware cron** ✅
-> - 次の主戦場: **PWA / Service Worker** / **Email / Push 通知** /
->   **agent_prompts 動的読込** / **POST_MVP の他項目**
+> - 進捗: MVP → … → 6.1 staging → 6.2 streaming → 6.3 通知 deep-link →
+>   6.4 分解 CTA → TZ cron → **6.5 keybindings modal** → **6.6 email mock outbox** →
+>   **6.7 Agent キャンセル** → **6.8 PM Pre-mortem** → **6.9 AI コスト月次上限** ✅
+> - 次の主戦場: **PWA / Service Worker** / **依存ブロック検出 (Pre-mortem 強化)** /
+>   **Engineer Agent (PR 自動生成)** / **POST_MVP の他項目**
 > - 詳細プラン: `~/.claude/plans/todoist-ticktick-todo-ui-ux-sleepy-hamster.md`
 
 ## 0. 現状サマリ
@@ -17,7 +16,8 @@
 | 受け入れ基準   | **8/8** PASS (`scripts/verify-acceptance.ts`)                                                                                 |
 | MUST Recovery  | **6/6** PASS (`scripts/verify-must-recovery.ts`、live AI / claude CLI)                                                        |
 | Notif deeplink | **8/8** PASS (`scripts/verify-phase6_3-notification-deeplink.ts`)                                                             |
-| Vitest         | **367** PASS / 42 files                                                                                                       |
+| PM Premortem   | **4/5** PASS (`scripts/verify-pm-premortem.ts`、Doc 4944 chars / Watch List 投下は prompt 改善余地)                           |
+| Vitest         | **393** PASS / 46 files                                                                                                       |
 | E2E (local)    | **14** PASS / 2 skip (bulk-action-bar / backlog-dnd: dev mode 並列で QuickAdd 連続入力が flaky — §5.16; workers=4 で他は安定) |
 | pg-boss queues | **10** (+sprint-retro-tick) — tick 頻度は `*/15 * * * *` UTC + workspace 局所評価                                             |
 | views          | **6** (Today / Inbox / Kanban / Backlog / Gantt / Dashboard)                                                                  |
@@ -78,6 +78,71 @@ NODE_OPTIONS="--conditions=react-server" \
 - Kanban カード: hover で AI 分解ボタン + 子 Item 件数 badge
 - Item 検索: `useSearchItems` (fuse.js) + Command Palette `?` プレフィクス
 - Template instantiate 後の `agentRoleToInvoke='researcher'` chain は配線済
+
+### 2.21 Phase 6.9 — AI コスト workspace 月次上限 (2026-04-26)
+
+- **schema**: `workspace_settings.monthly_cost_limit_usd` (NULL=無制限) +
+  `cost_warn_threshold_ratio` (default 0.80)。migration `20260426050000_workspace_cost_limit.sql`
+- **BudgetExceededError** (code='BUDGET_EXCEEDED') を errors.ts に追加
+- **cost-budget.ts**:
+  - `getBudgetStatus`: 当月の cost_usd 合計 + limit / threshold / 比率を返す
+  - `checkBudget`: 超過なら err
+- **researcher / pm の pre-flight**: `run` の冒頭で `checkBudget` を呼び、超過なら起動拒否
+  (テスト互換のため invoker DI 経路は skip)
+- **Server Actions**: `getBudgetStatusAction` / `updateMonthlyCostLimitAction` (audit)
+- **BudgetPanel** UI を Dashboard に組み込み (バー + 警告閾値線 + 編集インライン)
+- **テスト**: `cost-budget.test.ts` 7 ケース
+
+### 2.20 Phase 6.8 — PM Pre-mortem (2026-04-26)
+
+- **目的**: Sprint 開始時に "失敗するとしたら何が?" を予測する Pre-mortem Doc を生成。
+  Retro が事後の振り返りなら Pre-mortem は事前の予防接種
+- **schema**: `sprints.premortem_generated_at` + partial index
+- **premortemService.runForSprint**: sprint + items を集計、PM に prompt を渡す。
+  成功時のみ marker をセット (失敗時は再試行可)
+- **buildPremortemUserMessage** (純粋関数): MUST 数 / DoD 未設定 / 期間日数を表示、
+  search_docs で過去 retro / recovery を引かせる手順を含む
+- **queue**: `sprint-premortem` を追加 + `SprintPremortemJobData` + worker
+- **トリガ**: `sprintService.changeStatus → 'active'` で `premortem_generated_at` 未設定なら enqueue
+- **UI**: SprintsPanel の planning / active カードに "Pre-mortem 生成" ボタン
+  (生成済なら "Pre-mortem 再生成" にラベル切替)
+- **テスト**: 7 ケース (pure 3 + service 4)
+- **検証**: `verify-pm-premortem.ts` 4/5 PASS (Doc 4944 chars / cost \$0.0525 / 77s。
+  Watch List item 自動投下は prompt 改善余地)
+
+### 2.19 Phase 6.7 — Agent キャンセルトークン (2026-04-26)
+
+- **目的**: 実行中の agent_invocation を中止できる仕組み。runaway / 不要な完走を防ぐ
+- **CancelledError** (code='CANCELLED') を errors.ts に追加
+- **ToolLoopInput.shouldAbort?**: 各 iteration の前に呼ばれる中止判定。true で `CancelledError` を throw
+- **researcherService.run / pmService.run**:
+  - 入力 invoker が DI されていなければ adminDb で `agent_invocations.status` を毎 iteration ポーリング
+  - cancelled に遷移していたら `CancelledError` → catch 経路で `status='cancelled' / finishedAt`
+    - `audit_log action='cancel'`
+  - shouldAbort も DI 可能 (テスト用)
+- **cancelInvocationAction** (Server Action): status を 'cancelled' に立てるだけ
+- **useCancelInvocation** hook
+- **UI**: DecomposeProposalsPanel header で Agent 実行中に "中止" ボタンを表示
+- **テスト**: tool-loop.test.ts +2 / researcher-service.test.ts +1
+
+### 2.18 Phase 6.6 — メール通知 mock outbox (2026-04-26)
+
+- **schema**: `mock_email_outbox` (workspace_id / user_id / type / subject / html / text / dispatched_at / error)
+  - `notification_preferences` (4 タイプの ON/OFF、自分の row のみ操作可能)
+- **dispatcher.ts**: `dispatchEmail(EmailToSend)` が `mock_email_outbox` に書く。
+  Resend / SMTP への切替は **このファイル 1 つの差し替えで済む**
+- **react-email** で 4 テンプレ (heartbeat / mention / invite / sync-failure) をレンダリング
+- **notify.ts**: 通知 generator の各サイトから best-effort で呼び出し
+  (heartbeat / comment service / workspace.addMember / time-entry worker)
+- **UI**: `NotificationPreferences` Popover (4 トグル) を workspace header に
+- 9 ケース追加テスト (dispatcher + templates)
+
+### 2.17 Phase 6.5 — keybindings help modal (2026-04-26)
+
+- `?` 押下で全 keybindings を表示する Modal (input フォーカス時はスキップ)。
+  Command Palette からも `ヘルプ: ショートカット一覧` で開ける
+- 単一の `KEYBINDINGS` registry を `src/lib/keybindings.ts` に集約
+- `verify-phase6_5-keybindings.ts` で `?` / Esc / palette 経路を検証
 
 ### 2.16 TZ-aware cron (2026-04-26)
 
