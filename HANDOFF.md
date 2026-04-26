@@ -86,6 +86,14 @@ NODE_OPTIONS="--conditions=react-server" \
 - Item 検索: `useSearchItems` (fuse.js) + Command Palette `?` プレフィクス
 - Template instantiate 後の `agentRoleToInvoke='researcher'` chain は配線済
 
+### 2.26 Phase 6.15 (loop iter 2) — Gantt 依存線 SVG オーバーレイ component (2026-04-26)
+
+`src/components/workspace/gantt-dependency-arrows.tsx` 純粋プレゼンテーション。
+親要素 position:relative に被せる absolute SVG。Manhattan L 字パス + 矢じり marker。
+critical path 上の edge は赤実線 / 通常 edge は slate 破線。`bars` (id, leftPx,
+rightPx, centerYPx, isCritical) と `edges` (fromId, toId) を受け取るだけで
+DB / hook 不参照。GanttView への統合は次 iter。
+
 ### 2.25 Phase 6.15 (loop iter 1) — Gantt critical path 純関数 (2026-04-26)
 
 TeamGantt / GanttPRO ベンチマーク gap close。`src/features/gantt/critical-path.ts`
