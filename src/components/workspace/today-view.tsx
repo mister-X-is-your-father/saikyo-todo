@@ -1,5 +1,7 @@
 'use client'
 
+import { parseAsString, useQueryState } from 'nuqs'
+
 import type { Item } from '@/features/item/schema'
 
 import { EmptyState } from '@/components/shared/async-states'
@@ -57,6 +59,8 @@ export function TodayView({
   const today = todayISO()
   const groups = buildGroups(items, today)
   const total = groups.reduce((sum, g) => sum + g.items.length, 0)
+  // Phase 6.15 iter 63: title click で ItemEditDialog 開く (Gantt iter31 と同パターン)
+  const [, setOpenItemId] = useQueryState('item', parseAsString)
 
   if (total === 0) {
     return (
@@ -93,7 +97,14 @@ export function TodayView({
                       title={`p${it.priority ?? 4}`}
                     />
                     <div className="flex min-w-0 flex-1 items-center gap-2">
-                      <span className="truncate font-medium">{it.title}</span>
+                      <button
+                        type="button"
+                        onClick={() => void setOpenItemId(it.id)}
+                        className="hover:text-primary truncate text-left font-medium hover:underline"
+                        data-testid={`today-title-${it.id}`}
+                      >
+                        {it.title}
+                      </button>
                       {it.isMust && (
                         <span className="shrink-0 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700">
                           MUST
