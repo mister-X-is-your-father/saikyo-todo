@@ -20,6 +20,7 @@ export type Workflow = typeof workflows.$inferSelect
  * - parallel: 並列分岐 (next iter)
  */
 export const NodeTypeSchema = z.enum([
+  'noop',
   'http',
   'ai',
   'slack',

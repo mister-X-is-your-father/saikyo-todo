@@ -72,6 +72,11 @@ const eslintConfig = defineConfig([
       // Workspace admin 操作 (member 追加 / seed / 通知発行)
       'src/features/workspace/service.ts',
       'src/features/workspace/seed-templates.ts',
+      // Workflow engine: cron / item-event / webhook 経由で起動するため
+      // user context を持たない場合がある (worker パターン)。RLS は engine 内で
+      // workspace member チェックを別途行うことで担保する。
+      'src/features/workflow/engine.ts',
+      'src/features/workflow/actions.ts',
       // テストとフィクスチャは無視
       '**/*.test.ts',
       '**/__tests__/**',
