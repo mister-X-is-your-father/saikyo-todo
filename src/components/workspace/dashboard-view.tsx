@@ -189,15 +189,33 @@ export function DashboardView({ workspaceId }: Props) {
           ) : (
             <div className="overflow-x-auto" data-testid="ai-cost-table">
               <table className="w-full text-sm">
+                <caption className="sr-only">
+                  AI Agent (Researcher / PM 等) の月次コストサマリ (月 / Role / 実行数 / 成功失敗
+                  内訳 / Input/Output トークン数 / Cost USD)
+                </caption>
                 <thead>
                   <tr className="text-muted-foreground border-b text-left text-xs">
-                    <th className="py-1.5 pr-3">月</th>
-                    <th className="py-1.5 pr-3">Role</th>
-                    <th className="py-1.5 pr-3 text-right">実行数</th>
-                    <th className="py-1.5 pr-3 text-right">成功/失敗</th>
-                    <th className="py-1.5 pr-3 text-right">Input</th>
-                    <th className="py-1.5 pr-3 text-right">Output</th>
-                    <th className="py-1.5 text-right">Cost (USD)</th>
+                    <th scope="col" className="py-1.5 pr-3">
+                      月
+                    </th>
+                    <th scope="col" className="py-1.5 pr-3">
+                      Role
+                    </th>
+                    <th scope="col" className="py-1.5 pr-3 text-right">
+                      実行数
+                    </th>
+                    <th scope="col" className="py-1.5 pr-3 text-right">
+                      成功/失敗
+                    </th>
+                    <th scope="col" className="py-1.5 pr-3 text-right">
+                      Input
+                    </th>
+                    <th scope="col" className="py-1.5 pr-3 text-right">
+                      Output
+                    </th>
+                    <th scope="col" className="py-1.5 text-right">
+                      Cost (USD)
+                    </th>
                   </tr>
                 </thead>
                 <tbody>

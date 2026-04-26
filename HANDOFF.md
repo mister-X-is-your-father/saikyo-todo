@@ -833,6 +833,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter53] **baseline クリア機能** (TeamGantt の baseline 取り直し用): `itemService.clearBaseline` + `clearItemBaselineAction` + `useClearItemBaseline` + ItemEditDialog の "baseline クリア" button (window.confirm で確認 → 3 列を NULL に戻す + audit `clear_baseline`)。失敗 path 2 件もテスト → 441 PASS (+2)。Playwright で実 DB クリア確認
 - ✅ [iter54] /archive table の a11y 補完: `<caption class="sr-only">` で表の用途を SR に説明 + 全 `<th>` に `scope="col"` を付与 (WCAG 1.3.1 — header と data cell の関係明示)
 - ✅ [iter55] /time-entries 表にも同 a11y パターン水平展開: caption + 6 `<th>` に scope="col" + 操作列の空 th に `<span class="sr-only">操作</span>` (空 header は読み飛ばされて列数が伝わらない問題対策)
+- ✅ [iter56] Dashboard ai-cost-table も同パターンで a11y 補完: caption + 7 `<th>` (月/Role/実行数/成功失敗/Input/Output/Cost) に `scope="col"` (iter54-55 と同じ WCAG 1.3.1 ベース)。recharts の width(-1) warning は別途記録
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
