@@ -306,7 +306,16 @@ function SprintCard({
                     {done} / {total} ({pct}%)
                   </span>
                 </div>
-                <div className="bg-muted relative h-1.5 w-full overflow-hidden rounded-full">
+                <div
+                  className="bg-muted relative h-1.5 w-full overflow-hidden rounded-full"
+                  role="progressbar"
+                  aria-label={`Sprint「${sprint.name}」完了率`}
+                  aria-valuenow={pct}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuetext={`${done}/${total} (${pct}%)${status === 'active' && !isOnTrack ? ' — 遅れ気味' : ''}`}
+                  data-testid={`sprint-progress-${sprint.id}`}
+                >
                   <div className="bg-primary h-full" style={{ width: `${pct}%` }} />
                   {/* ideal 線 (経過率) */}
                   {status === 'active' && (

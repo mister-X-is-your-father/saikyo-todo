@@ -213,7 +213,16 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     <span className="text-muted-foreground">全体進捗</span>
                     <span className="font-mono">{goalPct}%</span>
                   </div>
-                  <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
+                  <div
+                    className="bg-muted h-1.5 w-full overflow-hidden rounded-full"
+                    role="progressbar"
+                    aria-label={`Goal「${goal.title}」全体進捗`}
+                    aria-valuenow={goalPct}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuetext={`${goalPct}%`}
+                    data-testid={`goal-progress-${goal.id}`}
+                  >
                     <div className="bg-primary h-full" style={{ width: `${goalPct}%` }} />
                   </div>
                 </div>
