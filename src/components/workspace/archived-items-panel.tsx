@@ -68,13 +68,26 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
   return (
     <div className="overflow-hidden rounded-lg border" data-testid="archive-list">
       <table className="w-full border-collapse text-sm">
+        <caption className="sr-only">
+          アーカイブ済 Item 一覧 (タイトル / ステータス / 期限 / アーカイブ日時 / 復元操作)
+        </caption>
         <thead className="bg-muted">
           <tr>
-            <th className="px-3 py-2 text-left font-semibold">タイトル</th>
-            <th className="px-3 py-2 text-left font-semibold">ステータス</th>
-            <th className="px-3 py-2 text-left font-semibold">期限</th>
-            <th className="px-3 py-2 text-left font-semibold">アーカイブ日時</th>
-            <th className="px-3 py-2 text-right font-semibold">操作</th>
+            <th scope="col" className="px-3 py-2 text-left font-semibold">
+              タイトル
+            </th>
+            <th scope="col" className="px-3 py-2 text-left font-semibold">
+              ステータス
+            </th>
+            <th scope="col" className="px-3 py-2 text-left font-semibold">
+              期限
+            </th>
+            <th scope="col" className="px-3 py-2 text-left font-semibold">
+              アーカイブ日時
+            </th>
+            <th scope="col" className="px-3 py-2 text-right font-semibold">
+              操作
+            </th>
           </tr>
         </thead>
         <tbody>

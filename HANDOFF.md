@@ -831,6 +831,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter51] **Gantt slip 集計** (TeamGantt の "behind / ahead schedule" 風): summary banner に baseline 件数 + 遅延件数 + 合計遅延日数 (amber) を追加、bar tooltip にも `[遅延 +N日]` / `[前倒し N日]` / `[計画通り]` を付与。Playwright で 3 日遅延 item 投入 → "遅延 1 件 / 計 3 日" 表示確認
 - ✅ [iter52] **sync-failure 通知も Slack 並列配信** (POST_MVP "Slack 通知" 残: agent-result のみに): time-entry/worker.ts の email 配信 `await` を Promise.all で email + Slack 並列化、text に `*外部同期に失敗しました* (time-entry)\n> <reason>` + linkUrl を入れる
 - ✅ [iter53] **baseline クリア機能** (TeamGantt の baseline 取り直し用): `itemService.clearBaseline` + `clearItemBaselineAction` + `useClearItemBaseline` + ItemEditDialog の "baseline クリア" button (window.confirm で確認 → 3 列を NULL に戻す + audit `clear_baseline`)。失敗 path 2 件もテスト → 441 PASS (+2)。Playwright で実 DB クリア確認
+- ✅ [iter54] /archive table の a11y 補完: `<caption class="sr-only">` で表の用途を SR に説明 + 全 `<th>` に `scope="col"` を付与 (WCAG 1.3.1 — header と data cell の関係明示)
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
