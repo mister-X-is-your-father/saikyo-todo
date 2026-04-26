@@ -251,20 +251,40 @@ export function BacklogView({ workspaceId, items }: Props) {
                             ? 'descending'
                             : 'none'
                         : undefined
+                    const sortHandler = h.column.getCanSort()
+                      ? h.column.getToggleSortingHandler()
+                      : undefined
+                    const sortLabel =
+                      sorted === 'asc' ? '昇順' : sorted === 'desc' ? '降順' : '未ソート'
+                    const headerText = flexRender(h.column.columnDef.header, h.getContext())
                     return (
                       <th
                         key={h.id}
                         scope="col"
                         aria-sort={ariaSort}
-                        style={{ width: h.getSize() }}
-                        onClick={
-                          h.column.getCanSort() ? h.column.getToggleSortingHandler() : undefined
+                        tabIndex={h.column.getCanSort() ? 0 : undefined}
+                        aria-label={
+                          h.column.getCanSort()
+                            ? `列ソート (現在: ${sortLabel}) — Enter / Space で切替`
+                            : undefined
                         }
-                        className={`border-b px-3 py-2 text-left font-semibold ${
+                        style={{ width: h.getSize() }}
+                        onClick={sortHandler}
+                        onKeyDown={
+                          h.column.getCanSort()
+                            ? (e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault()
+                                  h.column.toggleSorting()
+                                }
+                              }
+                            : undefined
+                        }
+                        className={`focus-visible:ring-foreground border-b px-3 py-2 text-left font-semibold focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset ${
                           h.column.getCanSort() ? 'cursor-pointer' : ''
                         }`}
                       >
-                        {flexRender(h.column.columnDef.header, h.getContext())}
+                        {headerText}
                         {{ asc: ' ▲', desc: ' ▼' }[h.column.getIsSorted() as string] ?? ''}
                       </th>
                     )
