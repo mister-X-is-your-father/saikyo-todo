@@ -777,6 +777,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter11] /sprints 軽探索: 空状態でも form が見えていて submit が空時 disabled (正常)。新規バグ無し
 - ✅ [iter11] Gantt 週末色分け追加 (Sat/Sun cell の bg-muted/40 + body 縦帯薄灰色 = TeamGantt 風)
 - ✅ [iter12] /goals form の goal-title input に required なし → fix: required + aria-required + minLength + maxLength を追加。start/end date にも required + min={startDate} で end >= start を HTML 検証
+- ✅ [iter13] /pdca 軽探索 (nav 1953ms, 30/90 切替 OK) → 新規バグ無し
+- ✅ [iter13] /sprints form a11y: sprint-name (required + minLength + maxLength{100}) / sprint-start, sprint-end (required + min={startDate} で end >= start を HTML 検証) を追加
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
 ## 6. Service 層を書くときの抽象

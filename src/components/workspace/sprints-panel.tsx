@@ -146,6 +146,10 @@ export function SprintsPanel({ workspaceId }: Props) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="例: 2026 W18 Sprint"
+                required
+                aria-required="true"
+                minLength={1}
+                maxLength={100}
               />
             </div>
             <div className="space-y-1">
@@ -155,6 +159,8 @@ export function SprintsPanel({ workspaceId }: Props) {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
+                required
+                aria-required="true"
               />
             </div>
             <div className="space-y-1">
@@ -164,6 +170,9 @@ export function SprintsPanel({ workspaceId }: Props) {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
+                required
+                aria-required="true"
+                min={startDate || undefined}
               />
             </div>
           </div>
