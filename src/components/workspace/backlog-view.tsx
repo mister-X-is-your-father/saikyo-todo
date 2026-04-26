@@ -227,24 +227,40 @@ export function BacklogView({ workspaceId, items, currentUserId }: Props) {
       <div data-testid="backlog-view" className="max-h-[600px] overflow-auto rounded-lg border">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <table className="w-full border-collapse text-sm">
+            <caption className="sr-only">
+              バックログ一覧 (DnD で並び替え可能 / 列ヘッダ click で sort)
+            </caption>
             <thead className="bg-muted sticky top-0 z-10">
               {table.getHeaderGroups().map((hg) => (
                 <tr key={hg.id}>
-                  {hg.headers.map((h) => (
-                    <th
-                      key={h.id}
-                      style={{ width: h.getSize() }}
-                      onClick={
-                        h.column.getCanSort() ? h.column.getToggleSortingHandler() : undefined
-                      }
-                      className={`border-b px-3 py-2 text-left font-semibold ${
-                        h.column.getCanSort() ? 'cursor-pointer' : ''
-                      }`}
-                    >
-                      {flexRender(h.column.columnDef.header, h.getContext())}
-                      {{ asc: ' ▲', desc: ' ▼' }[h.column.getIsSorted() as string] ?? ''}
-                    </th>
-                  ))}
+                  {hg.headers.map((h) => {
+                    const sorted = h.column.getIsSorted() as 'asc' | 'desc' | false
+                    const ariaSort: 'ascending' | 'descending' | 'none' | undefined =
+                      h.column.getCanSort()
+                        ? sorted === 'asc'
+                          ? 'ascending'
+                          : sorted === 'desc'
+                            ? 'descending'
+                            : 'none'
+                        : undefined
+                    return (
+                      <th
+                        key={h.id}
+                        scope="col"
+                        aria-sort={ariaSort}
+                        style={{ width: h.getSize() }}
+                        onClick={
+                          h.column.getCanSort() ? h.column.getToggleSortingHandler() : undefined
+                        }
+                        className={`border-b px-3 py-2 text-left font-semibold ${
+                          h.column.getCanSort() ? 'cursor-pointer' : ''
+                        }`}
+                      >
+                        {flexRender(h.column.columnDef.header, h.getContext())}
+                        {{ asc: ' ▲', desc: ' ▼' }[h.column.getIsSorted() as string] ?? ''}
+                      </th>
+                    )
+                  })}
                 </tr>
               ))}
             </thead>
