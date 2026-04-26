@@ -1,12 +1,13 @@
 # HANDOFF.md — 次セッション開始用ガイド
 
-> 最終更新: 2026-04-26 (**MVP + 稼働入力 + Phase 1-5.4 + 6.1 + 6.2 + MUST Recovery live 検証 完了**)
+> 最終更新: 2026-04-26 (**MVP + 稼働入力 + Phase 1-5.4 + 6.1 / 6.2 / 6.3 / 6.4 + TZ 別 cron 完了**)
 >
 > - 進捗: MVP (8/8) → 稼働入力 → Phase 1 → 2 → 3 → 4 → 5.1 → 5.3 → 5.2 → 5.4 →
->   5.3 weekly cron → **6.1 (AI 分解 staging)** → **6.2 (streaming + Realtime push)** →
->   **MUST Recovery 実配信検証 ✅**
-> - 次の主戦場: **通知 → Item dialog 自動 open** / **AI 分解 UX 細部調整** /
->   **POST_MVP 候補 (TZ 別 cron / PWA / streaming のさらなる磨き)**
+>   5.3 weekly cron → 6.1 (AI 分解 staging) → 6.2 (streaming + Realtime push) →
+>   MUST Recovery 実配信検証 → **6.3 (通知 deep-link + 3 通知タイプ追加)** →
+>   **6.4 (分解 fallback + 再分解 CTA)** → **TZ-aware cron** ✅
+> - 次の主戦場: **PWA / Service Worker** / **Email / Push 通知** /
+>   **agent_prompts 動的読込** / **POST_MVP の他項目**
 > - 詳細プラン: `~/.claude/plans/todoist-ticktick-todo-ui-ux-sleepy-hamster.md`
 
 ## 0. 現状サマリ
@@ -15,11 +16,12 @@
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 受け入れ基準   | **8/8** PASS (`scripts/verify-acceptance.ts`)                                                                                 |
 | MUST Recovery  | **6/6** PASS (`scripts/verify-must-recovery.ts`、live AI / claude CLI)                                                        |
-| Vitest         | **343** PASS / 40 files                                                                                                       |
+| Notif deeplink | **8/8** PASS (`scripts/verify-phase6_3-notification-deeplink.ts`)                                                             |
+| Vitest         | **367** PASS / 42 files                                                                                                       |
 | E2E (local)    | **14** PASS / 2 skip (bulk-action-bar / backlog-dnd: dev mode 並列で QuickAdd 連続入力が flaky — §5.16; workers=4 で他は安定) |
-| pg-boss queues | **10** (+sprint-retro-tick)                                                                                                   |
+| pg-boss queues | **10** (+sprint-retro-tick) — tick 頻度は `*/15 * * * *` UTC + workspace 局所評価                                             |
 | views          | **6** (Today / Inbox / Kanban / Backlog / Gantt / Dashboard)                                                                  |
-| schema         | 32 テーブル (+agent_decompose_proposals)                                                                                      |
+| schema         | 32 テーブル (+agent_decompose_proposals; workspace_settings.timezone は既存)                                                  |
 
 AI 検証は Claude Code Max OAuth + MCP 経由なので `ANTHROPIC_API_KEY` 無しでも完走:
 
@@ -76,6 +78,58 @@ NODE_OPTIONS="--conditions=react-server" \
 - Kanban カード: hover で AI 分解ボタン + 子 Item 件数 badge
 - Item 検索: `useSearchItems` (fuse.js) + Command Palette `?` プレフィクス
 - Template instantiate 後の `agentRoleToInvoke='researcher'` chain は配線済
+
+### 2.16 TZ-aware cron (2026-04-26)
+
+- **背景**: `pm-standup-tick` / `sprint-retro-tick` が UTC 09:00 固定 (= JST 18:00) で
+  multi-TZ 対応していなかった
+- **schema**: `workspace_settings.timezone` (既存、default `'Asia/Tokyo'`) を活用 (新規 migration 不要)
+- **新モジュール**: `src/features/agent/cron-tz.ts` の純粋関数 `shouldFireForWorkspace`
+  ({ cronExpr, tz, now, lastFiredAt, firstRunLookbackMs })
+  - cron-parser v5 (CronExpressionParser) で localized expression を評価
+  - `prev()` を `now+1s` 基準で取り、firing instant も含む (epsilon hack)
+  - `lastFiredAt = null` のときは 24h lookback で初回判定
+- **tick 頻度**: 全 tick を `*/15 * * * *` UTC に変更。handler 内で workspace ごと localized 判定
+- **handlePmStandupTick**: 各 ws の `standup_cron` (default `'0 9 * * *'`) + `timezone` で
+  fire 判定 → fire する ws だけ enqueue。`lastFiredAt` は `agent_invocations` の最新 completed
+  PM invocation の `created_at` を採用
+- **handleSprintRetroTick**: hardcoded `'0 9 * * 1'` (毎週月曜) を ws 局所で評価
+- **handlePmStandup**: 重複防止判定の `dateKey` を ws timezone で算出 (`Intl.DateTimeFormat('en-CA')`)
+- **テスト**: `cron-tz.test.ts` 13 ケース (JST/EST/EDT/double-fire/lookback)
+- **検証**: vitest 367/367 + lint + typecheck クリーン
+
+### 2.15 Phase 6.4 — 分解 panel 仕上げ: fallback + 再分解 CTA (2026-04-26)
+
+- **0 件フォールバック**: invocation completed かつ pending=0 のとき
+  "提案が出ませんでした" メッセージ + 再分解ボタンを表示
+- **再分解 CTA** (panel header に追加):
+  - **追加分解**: 既存 pending を残したまま再 mutate (pending=0 のときは "再分解" にラベル変更)
+  - **やり直し**: rejectAll → 再 mutate (既存 pending あり時のみ)
+- Agent 実行中は全ボタン disabled (重複起動防止)
+- Toast: 再分解完了時に提案件数を表示
+
+### 2.14 Phase 6.3 — 通知 deep-link + mention/invite/sync-failure 通知タイプ (2026-04-26)
+
+**通知 → Item dialog 自動 open**:
+
+- items-board に `?item=<id>` URL param を追加 (nuqs `parseAsString`)
+- `DeepLinkedItemDialog` ラッパで paletteSelected と URL 由来を統一管理
+- NotificationBell click → `extractItemId(n)` で item-linked 通知だけ抽出 → `setOpenItemId(itemId)`
+- ESC で URL から `item` param が消える (close → onClose で setOpenItemId(null))
+- 検証: `verify-phase6_3-notification-deeplink.ts` 全項目 PASS
+
+**3 通知タイプ追加**:
+
+- schema: `MentionPayload` / `InvitePayload` / `SyncFailurePayload` (jsonb 形)
+- `notificationRepository.insert` helper を共通化
+- **mention**: `comment.create` 後に `extractMentionTokens(body)` で `@<displayName>` を抽出、
+  ws member だけ resolve して通知挿入 (CJK 対応のハンドロール scanner、self-mention 除外、
+  別 Tx で best-effort で comment 自体は失敗させない)
+- **invite**: `workspaceService.addMember` (admin gate) で member 挿入後に invite 通知
+- **sync-failure**: time-entry worker の sync 失敗時に user_id 宛に通知
+- NotificationBell `formatNotification` を 3 タイプ対応 (40 文字 preview / role / reason)
+- テスト: `comment/__tests__/mention-notification.test.ts` 12 ケース (parser 7 + flow 5)、
+  `time-entry/worker.test.ts` に sync-failure assertion を追加
 
 ### 2.13 Phase 6.2 — Anthropic streaming + Realtime push UI (2026-04-26)
 
