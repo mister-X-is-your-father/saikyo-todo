@@ -858,6 +858,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter78] **KanbanView も同パターン**で URL 統合: 専用 dialog 削除、`useQueryState('item')` 経由に変更。Playwright で URL 反映 / dialog 1 個 / reload 後も dialog 1 個 を確認。Today/Inbox/Kanban/Backlog/Gantt/Archive/Dashboard の 7 view すべて URL 駆動 dialog に揃った
 - ✅ [iter79] **Gantt bar 内 progress fill** (TeamGantt 風): in_progress=50% / todo=0% / done は opacity で表現。bar 内に半透明の黒 fill (`rgba(0,0,0,0.2)`) を `position:absolute inset-y-0 left-0 width:N%` で重ねる。tooltip にも `[進捗 50%]` を追記。Playwright で in_progress bar の fill 幅が 240→120px (50%) に正しくなることを直接確認
 - ✅ [iter80] Dashboard StatCard の **tone を SR 語彙化**: 旧 visual-only だった warning/danger border を `aria-label` に "(注意)" / "(要対応)" として加筆。`role="group"` + `data-testid="stat-card-<tone>"` も付与。Playwright で 期限超過 item 投入 → danger card の aria-label に "要対応" 含まれることを確認
+- ✅ [iter81] **/ (Workspace list) ページの a11y 補完**: section に aria-labelledby、ul に aria-label、各 Link に aria-label="<name> (slug: …, role: …) を開く"、装飾の "→" を aria-hidden 化。section heading id 紐付けで SR の領域認識が改善
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 

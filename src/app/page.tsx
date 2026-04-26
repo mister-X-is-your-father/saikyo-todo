@@ -52,16 +52,20 @@ export default async function HomePage() {
           </CardContent>
         </Card>
       ) : (
-        <section className="space-y-4">
+        <section className="space-y-4" aria-labelledby="workspaces-heading">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Workspace</h2>
+            <h2 id="workspaces-heading" className="text-xl font-semibold">
+              Workspace
+            </h2>
           </div>
-          <ul className="space-y-2">
+          <ul className="space-y-2" aria-label="参加している Workspace 一覧">
             {workspaces.map((ws) => (
               <li key={ws.id}>
                 <Link
                   href={`/${ws.id}`}
                   className="hover:bg-muted block rounded-lg border p-4 transition"
+                  aria-label={`${ws.name} (slug: ${ws.slug}, role: ${ws.role}) を開く`}
+                  data-testid={`workspace-link-${ws.id}`}
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -70,7 +74,9 @@ export default async function HomePage() {
                         /{ws.slug} · あなたの role: {ws.role}
                       </p>
                     </div>
-                    <span className="text-muted-foreground text-xs">→</span>
+                    <span className="text-muted-foreground text-xs" aria-hidden>
+                      →
+                    </span>
                   </div>
                 </Link>
               </li>
