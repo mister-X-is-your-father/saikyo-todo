@@ -15,6 +15,7 @@ import Fuse from 'fuse.js'
 import { unwrap } from '@/lib/result-unwrap'
 
 import {
+  archiveItemAction,
   bulkSoftDeleteItemAction,
   bulkUpdateItemStatusAction,
   createItemAction,
@@ -27,6 +28,7 @@ import {
   setItemTagsAction,
   softDeleteItemAction,
   toggleCompleteItemAction,
+  unarchiveItemAction,
   updateItemAction,
   updateItemStatusAction,
 } from './actions'
@@ -212,6 +214,28 @@ export function useSoftDeleteItem(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: SoftDeleteItemInput) => unwrap(await softDeleteItemAction(input)),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
+}
+
+export function useArchiveItem(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: { id: string; expectedVersion: number }) =>
+      unwrap(await archiveItemAction(input)),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
+}
+
+export function useUnarchiveItem(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: { id: string; expectedVersion: number }) =>
+      unwrap(await unarchiveItemAction(input)),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
     },

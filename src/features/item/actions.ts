@@ -32,6 +32,20 @@ export async function softDeleteItemAction(input: unknown): Promise<Result<Item>
   return await actionWrap(() => itemService.softDelete(input))
 }
 
+export async function archiveItemAction(input: {
+  id: string
+  expectedVersion: number
+}): Promise<Result<Item>> {
+  return await actionWrap(() => itemService.archive(input))
+}
+
+export async function unarchiveItemAction(input: {
+  id: string
+  expectedVersion: number
+}): Promise<Result<Item>> {
+  return await actionWrap(() => itemService.unarchive(input))
+}
+
 export async function moveItemAction(input: unknown): Promise<Result<Item>> {
   return await actionWrap(() => itemService.move(input))
 }

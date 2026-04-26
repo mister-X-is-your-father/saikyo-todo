@@ -3,14 +3,20 @@
 /**
  * アーカイブ済 items 一覧 panel (Phase 6.15 iter 23 — POST_MVP "アーカイブビュー")。
  *
- * useItems から `archivedAt !== null` の items を抽出して表に表示するだけのシンプル版。
- * 復元 / 物理削除 (= 30日 hard delete) は次フェーズ。
+ * useItems から `archivedAt !== null` の items を抽出して表に表示。
+ * iter 26 で **「復元」button** を追加 — useUnarchiveItem で archived_at を null に戻す。
+ * 物理削除 (= 30 日 hard delete cron) は次フェーズ。
  */
 import { useMemo } from 'react'
 
 import { format, isValid, parseISO } from 'date-fns'
+import { toast } from 'sonner'
 
-import { useItems } from '@/features/item/hooks'
+import { isAppError } from '@/lib/errors'
+
+import { useItems, useUnarchiveItem } from '@/features/item/hooks'
+
+import { Button } from '@/components/ui/button'
 
 interface Props {
   workspaceId: string
@@ -24,11 +30,21 @@ function fmt(v: Date | string | null | undefined): string {
 
 export function ArchivedItemsPanel({ workspaceId }: Props) {
   const { data: allItems, isLoading, error } = useItems(workspaceId)
+  const unarchive = useUnarchiveItem(workspaceId)
 
   const archived = useMemo(
     () => (allItems ?? []).filter((i) => i.archivedAt !== null && !i.deletedAt),
     [allItems],
   )
+
+  async function handleRestore(itemId: string, expectedVersion: number) {
+    try {
+      await unarchive.mutateAsync({ id: itemId, expectedVersion })
+      toast.success('アーカイブを復元しました')
+    } catch (e) {
+      toast.error(isAppError(e) ? e.message : '復元に失敗しました')
+    }
+  }
 
   if (isLoading) {
     return <p className="text-muted-foreground p-4 text-sm">読み込み中…</p>
@@ -57,6 +73,7 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
             <th className="px-3 py-2 text-left font-semibold">ステータス</th>
             <th className="px-3 py-2 text-left font-semibold">期限</th>
             <th className="px-3 py-2 text-left font-semibold">アーカイブ日時</th>
+            <th className="px-3 py-2 text-right font-semibold">操作</th>
           </tr>
         </thead>
         <tbody>
@@ -73,6 +90,18 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
               <td className="px-3 py-2 text-xs">{item.status}</td>
               <td className="px-3 py-2 text-xs">{fmt(item.dueDate)}</td>
               <td className="text-muted-foreground px-3 py-2 text-xs">{fmt(item.archivedAt)}</td>
+              <td className="px-3 py-2 text-right">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  data-testid={`archive-restore-${item.id}`}
+                  disabled={unarchive.isPending}
+                  onClick={() => void handleRestore(item.id, item.version)}
+                >
+                  {unarchive.isPending ? '復元中…' : '復元'}
+                </Button>
+              </td>
             </tr>
           ))}
         </tbody>

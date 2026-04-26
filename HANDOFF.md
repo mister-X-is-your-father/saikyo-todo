@@ -798,6 +798,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ❎ [iter24→25] /archive page items 0 は **誤検出**。iter25 で archived 1 件で rows=1 確認 ✓ (iter24 のスクリプトのタイミング issue or 起動順序問題、実装は正常)
 - ✅ [iter24] workspace root header に Archive ナビ link 追加 (page.tsx の pageActions に Templates の隣)
 - ✅ [iter25] itemService.archive / unarchive method 追加 + 4 ケース test (happy / 二重 archive / unarchive / unarchived の unarchive)。audit 'archive'/'unarchive' / 楽観ロック対応
+- ✅ [iter26] ItemEditDialog activity tab 軽探索 (open 900ms、新規バグ無し)
+- ✅ [iter26] archive/unarchive Server Action + useArchiveItem/useUnarchiveItem hook + ArchivedItemsPanel に「復元」button (POST_MVP "アーカイブビュー" 復元 機能完成)
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
