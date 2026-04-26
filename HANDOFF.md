@@ -807,6 +807,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter29→30] dark mode 探索: aria-label="テーマ切替" は ASCII 'theme' に hit しないだけだった。**iter30 で `[data-testid="theme-toggle"]`** で確実に特定 → toggle で isDark=true 確認 / 13 visible buttons / 0 finding
 - ✅ [iter29] **Slack 通知 dispatcher 着手** (POST_MVP "Slack 通知")。`src/features/slack/dispatcher.ts` で `SLACK_WEBHOOK_URL` 環境変数 (mock=console.log)、Email dispatcher と同じ I/F + 失敗時 `delivered:false` で best-effort。4 ケース test
 - ✅ [iter30] ArchivedItemsPanel の row title を `<Link href="/{ws}?item={id}">` で wrap → click で workspace に戻りつつ ItemEditDialog deep link で開く (data-testid="archive-title-link-<id>")
+- ✅ [iter31] Gantt bar click で **ItemEditDialog 自動 open** (TeamGantt 典型 UX を補完)。nuqs `useQueryState('item')` で deep link、cursor:pointer、milestone ◇ も同様。bar 内 title click で詳細編集に直接遷移できるように
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 

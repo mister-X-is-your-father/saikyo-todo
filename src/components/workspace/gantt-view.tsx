@@ -24,6 +24,7 @@
 import { useMemo } from 'react'
 
 import { addDays, differenceInCalendarDays, format, isValid, parseISO } from 'date-fns'
+import { parseAsString, useQueryState } from 'nuqs'
 
 import type { Item } from '@/features/item/schema'
 
@@ -56,6 +57,8 @@ export function GanttView({
 }: Omit<Props, 'workspaceId'> & { workspaceId?: string }) {
   const active = useMemo(() => items.filter((i) => !i.deletedAt), [items])
   const criticalSet = useMemo(() => new Set(criticalIds), [criticalIds])
+  // Phase 6.15 iter 31: bar click で ItemEditDialog (deep link 経由) を開く
+  const [, setOpenItemId] = useQueryState('item', parseAsString)
 
   const withDates = useMemo(
     () =>
@@ -316,8 +319,10 @@ export function GanttView({
                       boxShadow: criticalSet.has(item.id)
                         ? '0 0 0 2px rgb(220, 38, 38), 0 1px 2px rgba(0,0,0,0.18)'
                         : '0 1px 2px rgba(0,0,0,0.18)',
+                      cursor: 'pointer',
                     }}
                     title={`${item.title} — ${format(start, 'yyyy-MM-dd')} (milestone)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}`}
+                    onClick={() => void setOpenItemId(item.id)}
                   />
                 ) : (
                   <div
@@ -338,9 +343,11 @@ export function GanttView({
                       boxShadow: criticalSet.has(item.id)
                         ? '0 0 0 2px rgb(220, 38, 38), 0 1px 2px rgba(0,0,0,0.18)'
                         : '0 1px 2px rgba(0,0,0,0.18)',
+                      cursor: 'pointer',
                       textDecoration: isDone ? 'line-through' : undefined,
                     }}
                     title={`${item.title} — ${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')} (${spanDays}日)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}`}
+                    onClick={() => void setOpenItemId(item.id)}
                   >
                     {/* 短い bar (< 60px) では title 省略して d だけにする */}
                     {barWidth >= 60 && (
