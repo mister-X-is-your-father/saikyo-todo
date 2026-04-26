@@ -120,12 +120,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
         />
       </div>
       <div className="flex items-end">
-        <Button
-          type="button"
-          onClick={() => void handleSubmit()}
-          disabled={create.isPending}
-          data-testid="create-time-entry-submit"
-        >
+        <Button type="submit" disabled={create.isPending} data-testid="create-time-entry-submit">
           {create.isPending ? '...' : '記録'}
         </Button>
       </div>

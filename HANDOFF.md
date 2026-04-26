@@ -815,6 +815,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter35] /sprints 作成 form: goal textarea に `maxLength={500}` (schema 上限と整合) + 終了 < 開始 を runtime validation で toast.error → submit 阻止 (button onClick なので native HTML5 validation 効かず)
 - ✅ [iter36] /goals 作成 form: description textarea に `maxLength={2000}` (schema 上限) + 終了 < 開始 を runtime validation で toast.error → submit 阻止 (sprint と同パターン水平展開)
 - ✅ [iter37] /goals KR 追加 form a11y 強化: KR title に aria-label / required / minLength=1 / maxLength=300、mode select に aria-label、target/unit input に aria-label 付与 (unit は maxLength=20 も)
+- ✅ [iter38] /time-entries 作成 form: submit button が type="button" だったため Enter キーで submit 不可 → type="submit" に変更し冗長な onClick 削除 (form onSubmit に一本化、IMEInput は IME 確定中のみ Enter ガード)
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
