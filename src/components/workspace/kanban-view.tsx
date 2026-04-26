@@ -165,6 +165,8 @@ export function KanbanView({ workspaceId, items }: Props) {
           className="grid gap-4"
           style={{ gridTemplateColumns: `repeat(${statuses.length}, minmax(260px, 1fr))` }}
           data-testid="kanban-board"
+          role="group"
+          aria-label={`Kanban ボード (${statuses.length} 列)`}
         >
           {statuses.map((s) => (
             <KanbanColumn
@@ -204,17 +206,22 @@ function KanbanColumn({
   // 空カラムや、カード外へのドロップを受けるため列全体を droppable にする
   // (id は statusKey なので handleDragEnd の overIsStatus 分岐に入る)
   const { setNodeRef, isOver } = useDroppable({ id: statusKey })
+  const headingId = `kanban-col-heading-${statusKey}`
   return (
-    <div
+    <section
       ref={setNodeRef}
       className={`bg-card rounded-lg border p-3 ${isOver ? 'ring-primary ring-2' : ''}`}
       data-testid={`kanban-column-${statusKey}`}
+      aria-labelledby={headingId}
     >
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold" style={{ color }}>
+        <h3 id={headingId} className="text-sm font-semibold" style={{ color }}>
           {label}
+          <span className="sr-only"> ({items.length} 件)</span>
         </h3>
-        <span className="text-muted-foreground text-xs">{items.length}</span>
+        <span className="text-muted-foreground text-xs" aria-hidden="true">
+          {items.length}
+        </span>
       </div>
       <SortableContext
         id={statusKey}
@@ -239,7 +246,7 @@ function KanbanColumn({
           )}
         </div>
       </SortableContext>
-    </div>
+    </section>
   )
 }
 
