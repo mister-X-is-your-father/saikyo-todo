@@ -7,7 +7,37 @@ import type { Tx } from '@/lib/db/scoped-client'
 
 import type { Notification } from './schema'
 
+/**
+ * notifications.payload は jsonb。Drizzle 型は `unknown` 互換だが、generator 側では
+ * 厳密な payload interface (HeartbeatPayload / MentionPayload / ...) を渡したいので
+ * ここでは緩い `Record<string, unknown>` を受け付け、insert 側で as never する。
+ */
+export type NotificationInsertValues = {
+  userId: string
+  workspaceId: string
+  type: string
+  payload: Record<string, unknown>
+}
+
 export const notificationRepository = {
+  /**
+   * 通知を 1 件 INSERT する。RLS 上 INSERT policy はないので tx は admin / service_role
+   * 由来であること。created_at / id は default で埋まる。
+   */
+  async insert(tx: Tx, values: NotificationInsertValues): Promise<Notification> {
+    const [row] = await tx
+      .insert(notifications)
+      .values({
+        userId: values.userId,
+        workspaceId: values.workspaceId,
+        type: values.type,
+        payload: values.payload as never,
+      })
+      .returning()
+    if (!row) throw new Error('insertNotification returned no row')
+    return row as Notification
+  },
+
   async listForUser(
     tx: Tx,
     userId: string,

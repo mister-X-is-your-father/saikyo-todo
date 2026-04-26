@@ -48,6 +48,8 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
   const [must, setMust] = useQueryState('must', parseAsBoolean.withDefault(false))
   const [statusFilter, setStatusFilter] = useQueryState('status', parseAsString)
   const [sprintFilter, setSprintFilter] = useQueryState('sprint', parseAsString)
+  /** Notification click や Command Palette 検索からの deep link 用 URL param */
+  const [openItemId, setOpenItemId] = useQueryState('item', parseAsString)
   const [paletteSelected, setPaletteSelected] = useState<Item | null>(null)
 
   const { data, isLoading, error, refetch } = useItems(workspaceId)
@@ -155,14 +157,16 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         items={data ?? []}
         onSelectItem={(item) => setPaletteSelected(item)}
       />
-      <ItemEditDialog
+      <DeepLinkedItemDialog
+        items={data ?? []}
+        paletteSelected={paletteSelected}
+        openItemId={openItemId}
         workspaceId={workspaceId}
-        item={paletteSelected}
-        open={paletteSelected !== null}
-        onOpenChange={(o) => {
-          if (!o) setPaletteSelected(null)
-        }}
         currentUserId={currentUserId}
+        onClose={() => {
+          setPaletteSelected(null)
+          if (openItemId) void setOpenItemId(null)
+        }}
       />
 
       <Card>
@@ -289,5 +293,44 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
 
       <BulkActionBar workspaceId={workspaceId} />
     </div>
+  )
+}
+
+/**
+ * Deep link / Command Palette 経由で開く ItemEditDialog ラッパ。
+ *   - palette が item を選んだら paletteSelected が入る (props 経由)
+ *   - URL に ?item=<id> が付いていたら items から探して開く (notification click 経由)
+ *   - 両方 set のときは palette を優先 (より直近のユーザー操作)
+ */
+function DeepLinkedItemDialog({
+  items,
+  paletteSelected,
+  openItemId,
+  workspaceId,
+  currentUserId,
+  onClose,
+}: {
+  items: Item[]
+  paletteSelected: Item | null
+  openItemId: string | null
+  workspaceId: string
+  currentUserId: string
+  onClose: () => void
+}) {
+  const linkedItem = useMemo(
+    () => (openItemId ? (items.find((i) => i.id === openItemId) ?? null) : null),
+    [items, openItemId],
+  )
+  const target = paletteSelected ?? linkedItem
+  return (
+    <ItemEditDialog
+      workspaceId={workspaceId}
+      item={target}
+      open={target !== null}
+      onOpenChange={(o) => {
+        if (!o) onClose()
+      }}
+      currentUserId={currentUserId}
+    />
   )
 }

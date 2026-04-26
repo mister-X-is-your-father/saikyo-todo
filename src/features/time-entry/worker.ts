@@ -20,6 +20,8 @@ import { adminDb } from '@/lib/db/scoped-client'
 import type { TimeEntrySyncJobData } from '@/lib/jobs/queue'
 
 import { getMockCredentials } from '@/features/mock-timesheet/service'
+import { notificationRepository } from '@/features/notification/repository'
+import type { SyncFailurePayload } from '@/features/notification/schema'
 
 import {
   minutesToHoursDecimal,
@@ -120,5 +122,27 @@ async function processOne(
         after: { errorMessage },
       })
     })
+    // sync-failure 通知 (best-effort: 失敗状態の commit を先に確定させてから別 Tx で発行。
+    //   同 Tx に入れて notification 側が失敗すると failed/audit が roll back されかねない)
+    try {
+      const payload: SyncFailurePayload = {
+        source: 'time-entry',
+        reason: errorMessage,
+        entryId,
+      }
+      await adminDb.transaction(async (tx) => {
+        await notificationRepository.insert(tx, {
+          userId: entry.userId,
+          workspaceId: entry.workspaceId,
+          type: 'sync-failure',
+          payload: payload as unknown as Record<string, unknown>,
+        })
+      })
+    } catch (notifyErr) {
+      console.error(
+        `[time-entry-sync] sync-failure notification emit failed entry=${entryId.slice(0, 8)}`,
+        notifyErr,
+      )
+    }
   }
 }

@@ -11,7 +11,7 @@ import { and, eq } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
-import { auditLog, timeEntries } from '@/lib/db/schema'
+import { auditLog, notifications, timeEntries } from '@/lib/db/schema'
 import { adminDb } from '@/lib/db/scoped-client'
 
 import { createTestUserAndWorkspace, mockAuthGuards } from '@/test/fixtures'
@@ -77,7 +77,7 @@ describe('time-entry worker', () => {
     expect(audits.some((a) => a.action === 'sync_success')).toBe(true)
   })
 
-  it('失敗 driver: failed + error 記録 + sync_failed audit', async () => {
+  it('失敗 driver: failed + error 記録 + sync_failed audit + sync-failure 通知', async () => {
     const entryId = await makePendingEntry()
     const driver: TimesheetDriver = vi.fn(async () => {
       throw new Error('mock-timesheet タイムアウト')
@@ -96,6 +96,16 @@ describe('time-entry worker', () => {
       .from(auditLog)
       .where(and(eq(auditLog.targetType, 'time_entry'), eq(auditLog.targetId, entryId)))
     expect(audits.some((a) => a.action === 'sync_failed')).toBe(true)
+
+    // sync-failure 通知が time_entry の owner (= 本テストの test user) 宛に発火
+    const notifs = await adminDb
+      .select()
+      .from(notifications)
+      .where(and(eq(notifications.userId, userId), eq(notifications.type, 'sync-failure')))
+    const matched = notifs.find((n) => (n.payload as { entryId?: string })?.entryId === entryId)
+    expect(matched).toBeTruthy()
+    expect((matched?.payload as { source?: string }).source).toBe('time-entry')
+    expect((matched?.payload as { reason?: string }).reason).toMatch(/タイムアウト/)
   })
 
   it('既に synced の entry は driver を呼ばずスキップ', async () => {

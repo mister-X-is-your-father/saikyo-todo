@@ -14,6 +14,7 @@
 import { useState } from 'react'
 
 import { Bell, CheckCheck } from 'lucide-react'
+import { parseAsString, useQueryState } from 'nuqs'
 
 import {
   useMarkAllNotificationsRead,
@@ -22,7 +23,13 @@ import {
   useUnreadNotificationCount,
 } from '@/features/notification/hooks'
 import { useNotificationsRealtime } from '@/features/notification/realtime'
-import type { HeartbeatPayload, Notification } from '@/features/notification/schema'
+import type {
+  HeartbeatPayload,
+  InvitePayload,
+  MentionPayload,
+  Notification,
+  SyncFailurePayload,
+} from '@/features/notification/schema'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -42,6 +49,7 @@ interface Props {
 
 export function NotificationBell({ workspaceId, currentUserId, initialUnreadCount }: Props) {
   const [open, setOpen] = useState(false)
+  const [, setOpenItemId] = useQueryState('item', parseAsString)
 
   // Realtime: notifications テーブルの INSERT/UPDATE で count + list を invalidate
   useNotificationsRealtime(workspaceId, currentUserId)
@@ -55,6 +63,20 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
 
   const markRead = useMarkNotificationRead(workspaceId)
   const markAllRead = useMarkAllNotificationsRead(workspaceId)
+
+  /**
+   * 通知 click 時の挙動:
+   *   1. 未読なら既読化 (現状維持)
+   *   2. 通知が item に紐づくタイプ (heartbeat / mention 等) なら ?item=<id> に書く
+   *      → items-board の DeepLinkedItemDialog が拾って ItemEditDialog を開く
+   *   3. popover を閉じる
+   */
+  function handleNotificationClick(n: Notification) {
+    if (!n.readAt) markRead.mutate(n.id)
+    const itemId = extractItemId(n)
+    if (itemId) void setOpenItemId(itemId)
+    setOpen(false)
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -105,9 +127,7 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                 <li key={n.id}>
                   <button
                     type="button"
-                    onClick={() => {
-                      if (!n.readAt) markRead.mutate(n.id)
-                    }}
+                    onClick={() => handleNotificationClick(n)}
                     className="hover:bg-muted/60 flex w-full items-start gap-2 px-3 py-2 text-left"
                     data-testid="notification-item"
                   >
@@ -134,6 +154,21 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
   )
 }
 
+/**
+ * payload から itemId を取り出す。type が item に紐づく通知 (heartbeat / mention 等)
+ * のときだけ非 null を返す。invite / sync-failure など item に紐付かない type は null。
+ */
+function extractItemId(n: Notification): string | null {
+  if (n.type === 'heartbeat') {
+    return (n.payload as HeartbeatPayload).itemId ?? null
+  }
+  if (n.type === 'mention') {
+    const p = n.payload as { itemId?: string }
+    return p.itemId ?? null
+  }
+  return null
+}
+
 function formatNotification(n: Notification): string {
   if (n.type === 'heartbeat') {
     const p = n.payload as HeartbeatPayload
@@ -148,6 +183,20 @@ function formatNotification(n: Notification): string {
       return `MUST Item の期限を ${Math.abs(p.daysUntilDue)} 日超過しています (${p.dueDate})`
     }
     return `MUST Item の期限が ${label} に迫っています (${p.dueDate})`
+  }
+  if (n.type === 'mention') {
+    const p = n.payload as MentionPayload
+    const preview = (p.preview ?? '').slice(0, 40)
+    const ellipsis = (p.preview ?? '').length > 40 ? '…' : ''
+    return `${p.mentionedBy} があなたに言及しました: "${preview}${ellipsis}"`
+  }
+  if (n.type === 'invite') {
+    const p = n.payload as InvitePayload
+    return `Workspace「${p.workspaceName}」に招待されました (${p.role})`
+  }
+  if (n.type === 'sync-failure') {
+    const p = n.payload as SyncFailurePayload
+    return `${p.source} の同期に失敗: ${p.reason}`
   }
   return `${n.type}: ${JSON.stringify(n.payload)}`
 }
