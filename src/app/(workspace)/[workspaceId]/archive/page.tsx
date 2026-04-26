@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { requireWorkspaceMember } from '@/lib/auth/guard'
@@ -6,6 +7,7 @@ import { AuthError, PermissionError } from '@/lib/errors'
 import { notificationService } from '@/features/notification/service'
 
 import { ThemeToggle } from '@/components/shared/theme-toggle'
+import { Button } from '@/components/ui/button'
 import { ArchivedItemsPanel } from '@/components/workspace/archived-items-panel'
 import { NotificationBell } from '@/components/workspace/notification-bell'
 import { WorkspaceHeader } from '@/components/workspace/workspace-header'
@@ -36,6 +38,11 @@ export default async function ArchivePage({ params }: PageProps) {
         title="アーカイブ"
         role={role}
         subtitle={`アーカイブ済 Item · ${user.email ?? ''}`}
+        pageActions={
+          <Button variant="outline" asChild size="sm">
+            <Link href={`/${workspaceId}`}>← Workspace</Link>
+          </Button>
+        }
         utility={
           <>
             <ThemeToggle />

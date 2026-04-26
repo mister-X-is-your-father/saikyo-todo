@@ -847,6 +847,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter67] **Sprint 中止 button に確認 dialog**: archive button と同じく `window.confirm` で誤操作防止 (cancelled は revertable だが status 系の destructive 操作は確認するのが UX 的に標準)。`data-testid="sprint-cancel-<id>"` も付与。Playwright で dismiss=据え置き / accept=cancelled の両分岐を直接確認
 - ✅ [iter68] decompose-proposals の **「全て却下」button に確認 dialog**: 提案が 2 件以上ある場合のみ `window.confirm("pending な提案 N 件をまとめて却下しますか?")` を挟む (1 件なら個別却下と等価なので確認なし)。AI が 5-10 件提案する典型ケースで誤クリック防止
 - ✅ [iter69] dep-remove / notification-item の aria-label を具体化: dep-remove は `依存「<title>」を解除` (& title attr で hover tooltip)、notification-item は `<未読/既読>通知: <body>` を付与 (read 状態を SR にも明示。視覚は dot で示唆していたが aria-hidden だったため非視覚 user に伝わらなかった)
+- ✅ [iter70] navigation 整合: workspace home に **Time Entries** link 追加 (PDCA / Templates と並ぶ)、`/archive` ページの pageActions に **← Workspace** back link 追加 (Sprint/Goals/PDCA/Templates/TimeEntries と同パターン)。これで全 6 サブページに統一された戻り動線
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
