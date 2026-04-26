@@ -92,8 +92,19 @@ export function PdcaPanel({ workspaceId }: Props) {
         {/* PDCA 比率バー (1 行) */}
         {total > 0 && (
           <div className="space-y-1">
-            <div className="text-muted-foreground text-xs">分布</div>
-            <div className="flex h-2 w-full overflow-hidden rounded-full">
+            <div className="text-muted-foreground text-xs" id="pdca-dist-label">
+              分布
+            </div>
+            <div
+              className="flex h-2 w-full overflow-hidden rounded-full"
+              role="img"
+              aria-labelledby="pdca-dist-label"
+              aria-label={(() => {
+                const pct = (n: number) => Math.round((n / total) * 100)
+                return `分布 (合計 ${total}): Plan ${counts.plan} (${pct(counts.plan)}%) / Do ${counts.do} (${pct(counts.do)}%) / Check ${counts.check} (${pct(counts.check)}%) / Act ${counts.act} (${pct(counts.act)}%)`
+              })()}
+              data-testid="pdca-distribution-bar"
+            >
               <div
                 className="h-full"
                 style={{
@@ -101,6 +112,7 @@ export function PdcaPanel({ workspaceId }: Props) {
                   background: PDCA_COLORS.plan,
                 }}
                 title={`Plan ${counts.plan}`}
+                aria-hidden
               />
               <div
                 className="h-full"
@@ -109,6 +121,7 @@ export function PdcaPanel({ workspaceId }: Props) {
                   background: PDCA_COLORS.do,
                 }}
                 title={`Do ${counts.do}`}
+                aria-hidden
               />
               <div
                 className="h-full"
@@ -117,6 +130,7 @@ export function PdcaPanel({ workspaceId }: Props) {
                   background: PDCA_COLORS.check,
                 }}
                 title={`Check ${counts.check}`}
+                aria-hidden
               />
               <div
                 className="h-full"
@@ -125,6 +139,7 @@ export function PdcaPanel({ workspaceId }: Props) {
                   background: PDCA_COLORS.act,
                 }}
                 title={`Act ${counts.act}`}
+                aria-hidden
               />
             </div>
           </div>
