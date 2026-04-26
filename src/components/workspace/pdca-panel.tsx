@@ -51,12 +51,13 @@ export function PdcaPanel({ workspaceId }: Props) {
       <CardHeader>
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-base">PDCA ({days} 日間)</CardTitle>
-          <div className="flex gap-1">
+          <div className="flex gap-1" role="group" aria-label="集計期間">
             <Button
               size="sm"
               variant={days === 30 ? 'default' : 'outline'}
               onClick={() => setDays(30)}
               data-testid="pdca-period-30"
+              aria-pressed={days === 30}
             >
               30 日
             </Button>
@@ -65,6 +66,7 @@ export function PdcaPanel({ workspaceId }: Props) {
               variant={days === 90 ? 'default' : 'outline'}
               onClick={() => setDays(90)}
               data-testid="pdca-period-90"
+              aria-pressed={days === 90}
             >
               90 日
             </Button>
