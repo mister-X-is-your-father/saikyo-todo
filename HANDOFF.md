@@ -795,6 +795,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter22] ItemEditDialog editTitle / editDue / editDescription a11y: title required + maxLength=500 / due に min={startDate} で期限>=開始 / description に maxLength=10000
 - ✅ [iter23] Notification bell 探索: candidate 3 / unread badge=1 / popover 開く OK 新規バグ無し
 - ✅ [iter23] アーカイブビュー新規 page (/<wsId>/archive): ArchivedItemsPanel で archivedAt!=null の items を表に表示 (POST_MVP "アーカイブビュー" 着手)
+- ⏳ [iter24] /archive page: archived items 2 件投入したが visible 0 (useItems の Server Action serialize で archivedAt が string 化されている可能性 / または filter ロジックずれ) — 次 iter で listItemsAction の挙動と Item.archivedAt の serialize 結果を確認
+- ✅ [iter24] workspace root header に Archive ナビ link 追加 (page.tsx の pageActions に Templates の隣)
 - ✅ [iter19] Gantt: 行番号 (TeamGantt 風) を Item ラベル列の左に追加 (tabular-nums + text-right で全体把握しやすく)
 - ✅ [iter6] Gantt: GanttDependencyArrows を gantt-view.tsx に配線 + critical path 強調 (赤太枠 boxShadow) を統合 (iter1+iter2 の成果を view に反映)
 
