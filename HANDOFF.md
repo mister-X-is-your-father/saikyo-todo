@@ -86,6 +86,17 @@ NODE_OPTIONS="--conditions=react-server" \
 - Item 検索: `useSearchItems` (fuse.js) + Command Palette `?` プレフィクス
 - Template instantiate 後の `agentRoleToInvoke='researcher'` chain は配線済
 
+### 2.27 Phase 6.15 (loop iter 3) — Login form a11y (required 属性) (2026-04-26)
+
+Playwright 探索 (`scripts/explore-uiux-login-iter3.ts`) で発見:
+
+1. `[a11y] login email input に required 属性なし` → 修正
+2. `[a11y] login password input に required 属性なし` → 修正
+3. `[observation] signup リンク click で /login に居る` (要再検証、次 iter)
+
+email / password input に `required` を追加して HTML5 ブラウザ検証を効かせ、
+空送信で「Please fill out this field」を表示。Server Action を呼ばずに済む。
+
 ### 2.26 Phase 6.15 (loop iter 2) — Gantt 依存線 SVG オーバーレイ component (2026-04-26)
 
 `src/components/workspace/gantt-dependency-arrows.tsx` 純粋プレゼンテーション。
@@ -747,6 +758,13 @@ JWT が realtime client に渡っていないと、ステータスは SUBSCRIBED
 `fullTextHits` は WHERE 内で `word_similarity(q, content) > 0.2` を直接指定。
 GIN index は閾値依存なのでフル活用はできないが MVP 規模では問題なし。
 ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
+
+## 9. UI/UX バグログ (Playwright 探索 — Phase 6.15 loop)
+
+各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
+
+- ✅ [iter3] login: email/password input に required 属性なし → fix: `login-form.tsx` に required + aria-required + minLength=8
+- ⏳ [iter3] login: signup link click 後 url が /login のまま (要再検証 / 失敗 submit が混ざった可能性、次 iter で signup 画面探索時に確認)
 
 ## 6. Service 層を書くときの抽象
 

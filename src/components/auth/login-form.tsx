@@ -39,7 +39,14 @@ export function LoginForm() {
     <form method="post" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="email">メールアドレス</Label>
-        <IMEInput id="email" type="email" autoComplete="email" {...form.register('email')} />
+        <IMEInput
+          id="email"
+          type="email"
+          autoComplete="email"
+          required
+          aria-required="true"
+          {...form.register('email')}
+        />
         {form.formState.errors.email && (
           <p className="text-destructive text-xs">{form.formState.errors.email.message}</p>
         )}
@@ -50,6 +57,9 @@ export function LoginForm() {
           id="password"
           type="password"
           autoComplete="current-password"
+          required
+          aria-required="true"
+          minLength={8}
           {...form.register('password')}
         />
         {form.formState.errors.password && (
