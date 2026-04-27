@@ -18,6 +18,7 @@ import 'server-only'
 
 import { and, eq, isNull } from 'drizzle-orm'
 
+import { runFlowViaClaude } from '@/lib/agent/claude-flow-runner'
 import { streamingInvoker } from '@/lib/ai/invoke'
 import { calculateCostUsd } from '@/lib/ai/pricing'
 import { executeToolLoop, type ToolLoopInput } from '@/lib/ai/tool-loop'
@@ -402,6 +403,67 @@ export const researcherService = {
       ...(useStaging ? { toolMode: 'decompose' as const, decomposeParentItemId: item.id } : {}),
       ...(params.invoker ? { invoker: params.invoker } : {}),
     })
+  },
+
+  /**
+   * Phase 6.15 iter148: Claude Max OAuth + claude CLI 経由で Item を分解する。
+   * `runFlowViaClaude` で MCP server に RESEARCHER_TOOLS を公開して `create_item`
+   * を直接呼ばせるので、proposal staging 経路 (agent_decompose_proposals) は使わず、
+   * 子 Item が直接 items テーブルに書かれる (UX 差は `via=claude-cli` で記録)。
+   * env 必要なし。テストでは claude CLI 起動コストが大きいため smoke は v-acceptance に任せる。
+   */
+  async decomposeItemViaClaude(params: {
+    workspaceId: string
+    itemId: string
+    extraHint?: string
+    idempotencyKey: string
+  }): Promise<Result<ResearcherRunOutput>> {
+    if (!params.idempotencyKey) {
+      return err(new ValidationError('idempotencyKey は必須です'))
+    }
+    const item = await adminDb.transaction((tx) => itemRepository.findById(tx, params.itemId))
+    if (!item) return err(new NotFoundError('Item が見つかりません'))
+    if (item.workspaceId !== params.workspaceId) {
+      return err(new ValidationError('Item が指定 workspace に属していません'))
+    }
+    const userMessage = buildDecomposeUserMessage({
+      itemId: item.id,
+      title: item.title,
+      description: item.description ?? '',
+      isMust: item.isMust,
+      dod: item.dod,
+      extraHint: params.extraHint,
+      // staging=false: claude CLI 経路は MCP の RESEARCHER_TOOLS を使うため、
+      // staging mode (propose_child_item) は今のところ通らない。直接 create_item で書く。
+      staging: false,
+    })
+    try {
+      const out = await runFlowViaClaude({
+        workspaceId: params.workspaceId,
+        role: 'researcher',
+        userMessage,
+        // RESEARCHER_TOOLS の名前: 分解で必要十分な read + create_item セット
+        allowedToolNames: ['read_items', 'read_docs', 'search_items', 'search_docs', 'create_item'],
+        targetItemId: item.id,
+        idempotencyKey: params.idempotencyKey,
+      })
+      return ok({
+        invocationId: out.invocationId,
+        agentId: out.agentId,
+        text: out.finalText,
+        toolCalls: [],
+        iterations: out.numTurns,
+        usage: {
+          inputTokens: out.inputTokens,
+          outputTokens: out.outputTokens,
+          cacheCreationTokens: out.cacheCreationTokens,
+          cacheReadTokens: out.cacheReadTokens,
+        },
+        costUsd: out.totalCostUsd,
+      })
+    } catch (e) {
+      return err(new ExternalServiceError('claude-cli', e))
+    }
   },
 
   /**

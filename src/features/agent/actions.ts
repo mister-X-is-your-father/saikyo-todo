@@ -59,6 +59,34 @@ export async function decomposeItemAction(input: unknown): Promise<Result<Resear
 }
 
 /**
+ * Phase 6.15 iter148: Claude Max OAuth + claude CLI 経由で AI 分解する。
+ * `decomposeItemAction` は Anthropic SDK 直接利用 (env 必要) だったため、
+ * `.env.local` に ANTHROPIC_API_KEY が無い環境では失敗していた。本 action は
+ * claude CLI subprocess + MCP 経由なので env 不要 (Max プラン OAuth で認証)。
+ *
+ * Note: proposal staging は通らない (claude CLI MCP は RESEARCHER_TOOLS のみ
+ * 公開で、create_item を直接呼ばせるため)。staging が欲しい場合は
+ * `decomposeItemAction` を使う。UI 側の切替は次 iter で。
+ */
+export async function decomposeItemViaClaudeAction(
+  input: unknown,
+): Promise<Result<ResearcherRunOutput>> {
+  return await actionWrap(async () => {
+    const parsed = DecomposeItemActionInputSchema.safeParse(input)
+    if (!parsed.success) {
+      return err(new ValidationError('入力内容を確認してください', parsed.error))
+    }
+    await requireWorkspaceMember(parsed.data.workspaceId, 'member')
+    return await researcherService.decomposeItemViaClaude({
+      workspaceId: parsed.data.workspaceId,
+      itemId: parsed.data.itemId,
+      ...(parsed.data.extraHint ? { extraHint: parsed.data.extraHint } : {}),
+      idempotencyKey: parsed.data.idempotencyKey ?? randomUUID(),
+    })
+  })
+}
+
+/**
  * Phase 6.15 iter128: Goal を Researcher に分解させる action。
  * member 以上のみ。チームコンテキスト (workspace_settings.team_context) は service 側で inject。
  */
