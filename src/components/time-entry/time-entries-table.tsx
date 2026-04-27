@@ -14,20 +14,35 @@ import { Button } from '@/components/ui/button'
 function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
   if (status === 'synced') {
     return (
-      <Badge variant="outline" className="border-transparent bg-emerald-100 text-emerald-700">
+      <Badge
+        variant="outline"
+        className="border-transparent bg-emerald-100 text-emerald-700"
+        aria-label="外部同期: 完了"
+        data-testid="sync-badge"
+      >
         synced
       </Badge>
     )
   }
   if (status === 'failed') {
     return (
-      <Badge variant="outline" className="border-transparent bg-red-100 text-red-700">
+      <Badge
+        variant="outline"
+        className="border-transparent bg-red-100 text-red-700"
+        aria-label="外部同期: 失敗"
+        data-testid="sync-badge"
+      >
         failed
       </Badge>
     )
   }
   return (
-    <Badge variant="outline" className="border-transparent bg-slate-100 text-slate-700">
+    <Badge
+      variant="outline"
+      className="border-transparent bg-slate-100 text-slate-700"
+      aria-label="外部同期: 未実行"
+      data-testid="sync-badge"
+    >
       pending
     </Badge>
   )
@@ -100,6 +115,8 @@ export function TimeEntriesTable({
                   <div
                     className="text-muted-foreground mt-1 max-w-[220px] truncate text-[10px]"
                     title={e.syncError}
+                    aria-label={`同期エラー: ${e.syncError}`}
+                    data-testid={`sync-error-${e.id}`}
                   >
                     {e.syncError}
                   </div>
@@ -113,6 +130,9 @@ export function TimeEntriesTable({
                     disabled={sync.isPending}
                     onClick={() => handleSync(e.id)}
                     data-testid={`time-entry-sync-${e.id}`}
+                    aria-label={`「${e.description || '(無題)'}」(${e.workDate}) を${
+                      e.syncStatus === 'failed' ? '再' : ''
+                    }Sync`}
                   >
                     {e.syncStatus === 'failed' ? '再Sync' : 'Sync'}
                   </Button>
