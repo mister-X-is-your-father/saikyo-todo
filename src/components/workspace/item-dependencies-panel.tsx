@@ -137,7 +137,13 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
           >
             <option value="">Item を選択…</option>
             {candidates.map((c) => (
-              <option key={c.id} value={c.id}>
+              <option
+                key={c.id}
+                value={c.id}
+                aria-label={
+                  c.isMust ? `MUST: ${c.title} (${c.status})` : `${c.title} (${c.status})`
+                }
+              >
                 {c.isMust ? '⚠ ' : ''}
                 {c.title} [{c.status}]
               </option>
@@ -199,7 +205,11 @@ function Section({
                 {ref.status}
               </span>
               <span className="flex-1 truncate">
-                {ref.isMust ? '⚠ ' : ''}
+                {ref.isMust && (
+                  <span aria-label="MUST item" role="img" className="mr-1">
+                    <span aria-hidden="true">⚠</span>
+                  </span>
+                )}
                 {ref.title}
               </span>
               {ref.doneAt && <span className="text-[10px] text-emerald-600">完了済み</span>}
