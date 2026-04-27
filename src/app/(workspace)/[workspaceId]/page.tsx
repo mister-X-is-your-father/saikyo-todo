@@ -54,33 +54,40 @@ export default async function WorkspacePage({ params }: PageProps) {
           <>
             <HeartbeatButton workspaceId={workspaceId} />
             <StandupButton workspaceId={workspaceId} />
-            <Button variant="outline" asChild size="sm">
-              <Link href={`/${workspaceId}/goals`}>Goals</Link>
-            </Button>
-            <Button variant="outline" asChild size="sm">
-              <Link href={`/${workspaceId}/sprints`}>Sprints</Link>
-            </Button>
-            <Button variant="outline" asChild size="sm">
-              <Link href={`/${workspaceId}/pdca`}>PDCA</Link>
-            </Button>
-            <Button variant="outline" asChild size="sm">
-              <Link href={`/${workspaceId}/templates`}>Templates</Link>
-            </Button>
-            <Button variant="outline" asChild size="sm">
-              <Link href={`/${workspaceId}/workflows`}>Workflows</Link>
-            </Button>
-            <Button variant="outline" asChild size="sm">
-              <Link href={`/${workspaceId}/integrations`}>API 連携</Link>
-            </Button>
-            <Button variant="outline" asChild size="sm">
-              <Link href={`/${workspaceId}/time-entries`}>Time Entries</Link>
-            </Button>
-            <Button variant="outline" asChild size="sm">
-              <Link href={`/${workspaceId}/archive`}>Archive</Link>
-            </Button>
-            <Button variant="outline" asChild size="sm">
-              <Link href="/">← 一覧</Link>
-            </Button>
+            <nav
+              aria-label="ワークスペース内ナビゲーション"
+              className="flex flex-wrap items-center gap-2"
+            >
+              <Button variant="outline" asChild size="sm">
+                <Link href={`/${workspaceId}/goals`}>Goals</Link>
+              </Button>
+              <Button variant="outline" asChild size="sm">
+                <Link href={`/${workspaceId}/sprints`}>Sprints</Link>
+              </Button>
+              <Button variant="outline" asChild size="sm">
+                <Link href={`/${workspaceId}/pdca`}>PDCA</Link>
+              </Button>
+              <Button variant="outline" asChild size="sm">
+                <Link href={`/${workspaceId}/templates`}>Templates</Link>
+              </Button>
+              <Button variant="outline" asChild size="sm">
+                <Link href={`/${workspaceId}/workflows`}>Workflows</Link>
+              </Button>
+              <Button variant="outline" asChild size="sm">
+                <Link href={`/${workspaceId}/integrations`}>API 連携</Link>
+              </Button>
+              <Button variant="outline" asChild size="sm">
+                <Link href={`/${workspaceId}/time-entries`}>Time Entries</Link>
+              </Button>
+              <Button variant="outline" asChild size="sm">
+                <Link href={`/${workspaceId}/archive`}>Archive</Link>
+              </Button>
+              <Button variant="outline" asChild size="sm">
+                <Link href="/" aria-label="Workspace 一覧へ戻る">
+                  <span aria-hidden="true">← </span>一覧
+                </Link>
+              </Button>
+            </nav>
           </>
         }
         utility={
