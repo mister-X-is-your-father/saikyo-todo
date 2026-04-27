@@ -27,6 +27,7 @@ export const QUEUE_NAMES = [
   'template-cron-tick',
   'time-entry-sync',
   'engineer-run',
+  'workflow-cron-tick',
 ] as const
 export type QueueName = (typeof QUEUE_NAMES)[number]
 

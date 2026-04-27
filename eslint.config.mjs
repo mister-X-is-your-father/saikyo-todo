@@ -80,6 +80,8 @@ const eslintConfig = defineConfig([
       // Dispatcher: item-event 等の trigger を ws 横断で評価 + fire-and-forget で
       // runWorkflow を呼ぶ (user context を持たない、worker パターン同様)
       'src/features/workflow/dispatcher.ts',
+      // Cron worker: pg-boss `workflow-cron-tick` で 1 分おきに ws 横断スキャン
+      'src/features/workflow/cron-worker.ts',
       // External source pull worker + actions: cron / manual trigger 経由、ws 横断 admin 操作
       'src/features/external-source/worker.ts',
       'src/features/external-source/actions.ts',

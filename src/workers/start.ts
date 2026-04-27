@@ -56,6 +56,11 @@ async function main() {
   })
   await registerWorker('time-entry-sync', createTimeEntryWorker())
   await registerWorker('engineer-run', handleEngineerRun)
+  // Phase 6.15 iter155: workflow auto-trigger cron (毎分 tick)
+  const { handleWorkflowCronTick } = await import('@/features/workflow/cron-worker')
+  await registerWorker('workflow-cron-tick', async () => {
+    await handleWorkflowCronTick()
+  })
 
   // 定期スケジュール登録 (idempotent)。
   //
@@ -72,6 +77,9 @@ async function main() {
   await scheduleJob('pm-standup-tick', '*/15 * * * *', {})
   await scheduleJob('template-cron-tick', '*/15 * * * *', {})
   await scheduleJob('sprint-retro-tick', '*/15 * * * *', {})
+  // Workflow auto-trigger cron は workspace 設定の cron 表現を minute 単位で
+  // 評価する必要があるので毎分 tick する (handler 内で cron-parser 評価)。
+  await scheduleJob('workflow-cron-tick', '* * * * *', {})
 
   console.log(
     '[worker] ready. listening for: agent-run, doc-embed, researcher-decompose, pm-standup, pm-standup-tick, pm-recovery, sprint-retro, sprint-retro-tick, sprint-premortem, template-cron-tick, time-entry-sync, engineer-run',
