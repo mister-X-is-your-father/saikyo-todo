@@ -69,16 +69,20 @@ export function InstantiateForm({ workspaceId, template }: Props) {
     }
   }
 
+  const formLabelId = `instantiate-heading-${template.id}`
   return (
     <form
       className="space-y-3 rounded-md border p-3"
       data-testid="instantiate-form"
+      aria-labelledby={formLabelId}
       onSubmit={(e) => {
         e.preventDefault()
         void handleInstantiate()
       }}
     >
-      <div className="text-sm font-medium">この Template を展開</div>
+      <div id={formLabelId} className="text-sm font-medium">
+        Template「{template.name}」を展開
+      </div>
       <div>
         <Label htmlFor={`override-${template.id}`}>root Item タイトル (任意)</Label>
         <IMEInput
@@ -86,6 +90,8 @@ export function InstantiateForm({ workspaceId, template }: Props) {
           placeholder={template.name}
           value={override}
           onChange={(e) => setOverride(e.target.value)}
+          maxLength={500}
+          aria-label={`Template「${template.name}」展開時の root Item タイトル (省略時は「${template.name}」)`}
         />
       </div>
       {vars.length > 0 ? (
@@ -95,11 +101,15 @@ export function InstantiateForm({ workspaceId, template }: Props) {
           </div>
           {vars.map((v) => (
             <div key={v}>
-              <Label htmlFor={`var-${template.id}-${v}`}>{v}</Label>
+              <Label htmlFor={`var-${template.id}-${v}`}>変数: {v}</Label>
               <IMEInput
                 id={`var-${template.id}-${v}`}
                 value={values[v] ?? ''}
                 onChange={(e) => setValues({ ...values, [v]: e.target.value })}
+                required
+                aria-required="true"
+                aria-label={`Mustache 変数 ${v} の値`}
+                maxLength={500}
               />
             </div>
           ))}
@@ -107,7 +117,12 @@ export function InstantiateForm({ workspaceId, template }: Props) {
       ) : (
         <p className="text-muted-foreground text-xs">変数なし (そのまま展開)</p>
       )}
-      <Button type="submit" size="sm" disabled={mut.isPending}>
+      <Button
+        type="submit"
+        size="sm"
+        disabled={mut.isPending}
+        aria-label={`Template「${template.name}」を即実行 (Instantiate)`}
+      >
         {mut.isPending ? '展開中...' : '即実行 (Instantiate)'}
       </Button>
     </form>
