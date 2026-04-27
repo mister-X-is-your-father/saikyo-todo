@@ -458,11 +458,19 @@ function SourceImportHistory({ sourceId }: { sourceId: string }) {
           >
             {formatImportTime(r)}
           </time>
-          <span className="text-muted-foreground ml-auto tabular-nums">
+          <span
+            className="text-muted-foreground ml-auto tabular-nums"
+            aria-label={`fetched ${r.fetchedCount} / created ${r.createdCount} / updated ${r.updatedCount}`}
+          >
             f={r.fetchedCount} / c={r.createdCount} / u={r.updatedCount}
           </span>
           {r.error && (
-            <span className="text-destructive line-clamp-1 w-full text-[10px]" title={r.error}>
+            <span
+              className="text-destructive line-clamp-1 w-full text-[10px]"
+              title={r.error}
+              aria-label={`Pull エラー: ${r.error}`}
+              role="alert"
+            >
               {r.error}
             </span>
           )}
