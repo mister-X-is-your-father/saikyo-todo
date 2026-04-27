@@ -302,7 +302,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
                 : '手動で sync 実行 (各 node 10-60s timeout)'
             }
           >
-            <Play className="mr-1 h-3.5 w-3.5" />
+            <Play className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             {trigger.isPending ? '実行中…' : '実行'}
           </Button>
           <Button
@@ -312,7 +312,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             data-testid={`wf-edit-${wf.id}`}
             aria-label={`Workflow「${wf.name}」の graph / trigger を編集`}
           >
-            <Pencil className="mr-1 h-3.5 w-3.5" />
+            <Pencil className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             編集
           </Button>
           <Button
@@ -321,6 +321,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             onClick={() => void toggleEnabled()}
             disabled={update.isPending}
             data-testid={`wf-toggle-${wf.id}`}
+            aria-label={`Workflow「${wf.name}」を${wf.enabled ? '無効化' : '有効化'}`}
           >
             {wf.enabled ? '無効化' : '有効化'}
           </Button>
@@ -333,9 +334,9 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             data-testid={`wf-runs-toggle-${wf.id}`}
           >
             {runsOpen ? (
-              <ChevronDown className="mr-1 h-3.5 w-3.5" />
+              <ChevronDown className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             ) : (
-              <ChevronRight className="mr-1 h-3.5 w-3.5" />
+              <ChevronRight className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             )}
             履歴
           </Button>
@@ -347,7 +348,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             data-testid={`wf-delete-${wf.id}`}
             aria-label={`Workflow「${wf.name}」を削除`}
           >
-            <Trash2 className="h-3.5 w-3.5 text-red-500" />
+            <Trash2 className="h-3.5 w-3.5 text-red-500" aria-hidden="true" />
           </Button>
         </div>
         {runsOpen && (
@@ -634,9 +635,9 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
                 data-testid={`wf-run-toggle-${r.id}`}
               >
                 {isOpen ? (
-                  <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                  <ChevronDown className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 ) : (
-                  <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 )}
                 <RunStatusBadge status={r.status} />
                 <span className="text-muted-foreground">{r.triggerKind}</span>
@@ -670,7 +671,7 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
               title={`同じ input で再実行 (${formatRunTime(r)})`}
               data-testid={`wf-run-rerun-${r.id}`}
             >
-              <Play className="h-3 w-3" />再
+              <Play className="h-3 w-3" aria-hidden="true" />再
             </button>
           </li>
         )
