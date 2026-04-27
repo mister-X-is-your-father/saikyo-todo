@@ -13,6 +13,8 @@ import { ConflictError, NotFoundError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 import { mutateWithGuard } from '@/lib/service-mutate'
 
+import { dispatchItemEvent } from '@/features/workflow/dispatcher'
+
 import { type AssigneeRef, itemRepository } from './repository'
 import {
   CreateItemInputSchema,
@@ -34,7 +36,7 @@ export const itemService = {
 
     const { user } = await requireWorkspaceMember(workspaceId, 'member')
 
-    return await withUserDb(user.id, async (tx) => {
+    const r = await withUserDb(user.id, async (tx) => {
       // parentItemId が指定されたら parent_path = fullPathOf(parent) で配下に作成
       let parentPath: string | undefined
       if (rest.parentItemId) {
@@ -72,6 +74,14 @@ export const itemService = {
       })
       return ok(item)
     })
+    // Phase 6.15 iter153: item-event trigger 'create' を fire-and-forget で dispatch。
+    // tx 抜けた後 (= item commit 済) に発火させる。失敗しても item 作成は成功扱い。
+    if (r.ok) {
+      void dispatchItemEvent(workspaceId, 'create', r.value).catch((e: unknown) => {
+        console.warn('[item.create] dispatchItemEvent failed', e)
+      })
+    }
+    return r
   },
 
   async update(input: unknown): Promise<Result<Item>> {

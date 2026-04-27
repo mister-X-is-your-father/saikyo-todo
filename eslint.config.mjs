@@ -77,6 +77,9 @@ const eslintConfig = defineConfig([
       // workspace member チェックを別途行うことで担保する。
       'src/features/workflow/engine.ts',
       'src/features/workflow/actions.ts',
+      // Dispatcher: item-event 等の trigger を ws 横断で評価 + fire-and-forget で
+      // runWorkflow を呼ぶ (user context を持たない、worker パターン同様)
+      'src/features/workflow/dispatcher.ts',
       // External source pull worker + actions: cron / manual trigger 経由、ws 横断 admin 操作
       'src/features/external-source/worker.ts',
       'src/features/external-source/actions.ts',

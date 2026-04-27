@@ -13,10 +13,11 @@ import 'server-only'
 import { and, eq, isNull } from 'drizzle-orm'
 
 import { workflows } from '@/lib/db/schema'
-import type { Tx } from '@/lib/db/scoped-client'
+import { adminDb, type Tx } from '@/lib/db/scoped-client'
 
 import type { Item } from '@/features/item/schema'
 
+import { runWorkflow } from './engine'
 import type { Workflow } from './schema'
 
 export type ItemEventName = 'create' | 'update' | 'status_change' | 'complete'
@@ -82,4 +83,41 @@ export async function findItemEventMatchingWorkflows(
     if (w.trigger.event !== event) return false
     return itemMatchesFilter(item, w.trigger.filter)
   })
+}
+
+/**
+ * Phase 6.15 iter153: itemService の commit 後に呼ばれる fire-and-forget
+ * dispatcher。adminDb を使って matching workflow を検索 → 各 workflow に対して
+ * `void runWorkflow(...)` で非同期起動する (item mutation の応答時間に影響しない)。
+ *
+ * 失敗は console.warn のみ (item 操作自体は成功済なので呼び出し側に伝える必要なし)。
+ * 戻り値: 起動した workflow 数 (テスト用 / log 用)。
+ */
+export async function dispatchItemEvent(
+  workspaceId: string,
+  event: ItemEventName,
+  item: Item,
+): Promise<number> {
+  let matched: Workflow[] = []
+  try {
+    matched = await adminDb.transaction((tx) =>
+      findItemEventMatchingWorkflows(tx, workspaceId, event, item),
+    )
+  } catch (e) {
+    console.warn('[workflow.dispatchItemEvent] match failed', e)
+    return 0
+  }
+  for (const wf of matched) {
+    // fire-and-forget: 実 run は数秒〜数十秒かかるので await しない。
+    // 失敗は workflow_runs に status='failed' で記録され、UI の run 履歴で確認できる
+    // (iter137 node_run viewer 経由)。
+    void runWorkflow({
+      workflowId: wf.id,
+      triggerKind: 'item-event',
+      input: { event, itemId: item.id, workspaceId },
+    }).catch((e: unknown) => {
+      console.warn(`[workflow.dispatchItemEvent] runWorkflow failed for wf=${wf.id}`, e)
+    })
+  }
+  return matched.length
 }
