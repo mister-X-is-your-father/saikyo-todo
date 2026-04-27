@@ -27,14 +27,22 @@ const ACTION_LABEL: Record<string, string> = {
 export function ActivityLog({ itemId }: { itemId: string }) {
   const { data, isLoading, error } = useAuditByTargetItem(itemId)
   if (isLoading) {
-    return <p className="text-muted-foreground text-sm">読み込み中…</p>
+    return (
+      <p className="text-muted-foreground text-sm" role="status" aria-live="polite">
+        読み込み中…
+      </p>
+    )
   }
   if (error) {
-    return <p className="text-muted-foreground text-sm">Activity の取得に失敗しました</p>
+    return (
+      <p className="text-muted-foreground text-sm" role="alert">
+        Activity の取得に失敗しました
+      </p>
+    )
   }
   if (!data || data.length === 0) {
     return (
-      <p className="text-muted-foreground text-sm">
+      <p className="text-muted-foreground text-sm" role="status">
         Activity は admin 以上のみ閲覧できます。まだ記録がないか、権限が不足しています。
       </p>
     )
