@@ -307,12 +307,14 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="src-project-ids">project IDs (任意)</Label>
+                <Label htmlFor="src-project-ids">project IDs (1 件以上)</Label>
                 <IMEInput
                   id="src-project-ids"
                   value={projectIds}
                   onChange={(e) => setProjectIds(e.target.value)}
-                  placeholder="comma-separated (省略で全 project)"
+                  placeholder="comma-separated (例: proj-a, proj-b)"
+                  required
+                  aria-required="true"
                 />
               </div>
             </div>

@@ -1,9 +1,9 @@
 /**
- * Phase 6.15 iter123: External source pull worker。
+ * Phase 6.15 iter123 / iter132: External source pull worker。
  *
  * `pullSource(sourceId, triggerKind)` で:
  *   1. external_imports に "running" row を insert
- *   2. source.config に従い fetch (custom-rest のみ実装、yamory は次 iter)
+ *   2. source.config に従い fetch (custom-rest / yamory 両対応)
  *   3. itemsPath で配列取出 → 各要素を idPath / titlePath / duePath で抽出
  *   4. external_item_links を (sourceId, externalId) で lookup
  *      - 既存: lastPayload + lastSyncedAt のみ update (updatedCount++)
@@ -15,6 +15,8 @@
  *   - timeout 30s — workflow worker と同じ AbortController パターン
  *   - response body は 5MB cap (XL の API 防御)
  *   - workspace 横断 admin 操作なので adminDb を使う (cron / manual trigger 双方から呼ぶ)
+ *   - yamory: token は Authorization: Bearer header に乗せる。エラー文字列に
+ *     token を含めない (error message は status のみ転記)
  */
 import 'server-only'
 
@@ -74,8 +76,10 @@ export async function pullSource(
       created = r.created
       updated = r.updated
     } else if (src.kind === 'yamory') {
-      // 次 iter で実装。とりあえず明示的に NotImplemented で fail。
-      throw new Error('yamory pull は未実装 (次 iter)')
+      const r = await pullYamory(src)
+      fetched = r.fetched
+      created = r.created
+      updated = r.updated
     } else {
       throw new Error(`未知の source.kind: ${src.kind}`)
     }
@@ -125,27 +129,10 @@ async function pullCustomRest(src: typeof externalSources.$inferSelect): Promise
     duePath?: string
   }
 
-  // fetch with timeout
-  const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS)
-  let body: unknown
-  try {
-    const res = await fetch(cfg.url, {
-      method: cfg.method ?? 'GET',
-      headers: cfg.headers ?? {},
-      signal: ctrl.signal,
-    })
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status} from ${cfg.url}`)
-    }
-    const text = await res.text()
-    if (text.length > MAX_BODY_BYTES) {
-      throw new Error(`response body ${text.length}B が ${MAX_BODY_BYTES}B 上限を超過`)
-    }
-    body = JSON.parse(text)
-  } finally {
-    clearTimeout(timer)
-  }
+  const body = await fetchJson(cfg.url, {
+    method: cfg.method ?? 'GET',
+    headers: cfg.headers ?? {},
+  })
 
   // itemsPath で配列を取り出す (省略時は body 自体を array とみなす)
   const arr = cfg.itemsPath ? getByPath(body, cfg.itemsPath) : body
@@ -155,20 +142,132 @@ async function pullCustomRest(src: typeof externalSources.$inferSelect): Promise
     )
   }
 
+  const stats = await upsertItems(src, arr, {
+    idPath: cfg.idPath,
+    titlePath: cfg.titlePath,
+    duePath: cfg.duePath,
+  })
+  return { fetched: arr.length, ...stats }
+}
+
+const YAMORY_DEFAULT_BASE_URL = 'https://api.yamory.io'
+const YAMORY_DEFAULT_ENDPOINT = '/v3/{projectId}/vulnerabilities'
+const YAMORY_DEFAULT_ITEMS_PATH = 'items'
+const YAMORY_DEFAULT_ID_PATH = 'id'
+const YAMORY_DEFAULT_TITLE_PATH = 'title'
+const YAMORY_DEFAULT_DUE_PATH = 'due_date'
+
+async function pullYamory(src: typeof externalSources.$inferSelect): Promise<PullStats> {
+  const cfg = src.config as {
+    token: string
+    projectIds?: string[]
+    baseUrl?: string
+    endpointTemplate?: string
+    itemsPath?: string
+    idPath?: string
+    titlePath?: string
+    duePath?: string
+  }
+
+  if (!cfg.token) throw new Error('yamory: token が未設定')
+  const projectIds = cfg.projectIds ?? []
+  if (projectIds.length === 0) {
+    throw new Error('yamory: projectIds が 1 件以上必要 (config.projectIds)')
+  }
+
+  const baseUrl = (cfg.baseUrl ?? YAMORY_DEFAULT_BASE_URL).replace(/\/$/, '')
+  const endpointTemplate = cfg.endpointTemplate ?? YAMORY_DEFAULT_ENDPOINT
+  const paths = {
+    idPath: cfg.idPath ?? YAMORY_DEFAULT_ID_PATH,
+    titlePath: cfg.titlePath ?? YAMORY_DEFAULT_TITLE_PATH,
+    duePath: cfg.duePath ?? YAMORY_DEFAULT_DUE_PATH,
+  }
+  const itemsPath = cfg.itemsPath ?? YAMORY_DEFAULT_ITEMS_PATH
+
+  let fetched = 0
   let created = 0
   let updated = 0
 
-  // 各要素を upsert
+  for (const projectId of projectIds) {
+    if (!projectId || typeof projectId !== 'string') continue
+    // {projectId} は templating だけなので URL encode して injection を防ぐ
+    const url = baseUrl + endpointTemplate.replace('{projectId}', encodeURIComponent(projectId))
+    let body: unknown
+    try {
+      body = await fetchJson(url, {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          authorization: `Bearer ${cfg.token}`,
+        },
+      })
+    } catch (e) {
+      // yamory: 1 project が落ちても他の project の取込は続けたいが、エラー把握のため
+      // 最初の失敗で全体を fail させる (custom-rest と同じ挙動)。token を error msg に
+      // 漏らさないよう、status 文字列のみ伝播。
+      const msg = e instanceof Error ? e.message : String(e)
+      throw new Error(`yamory project ${projectId}: ${msg}`)
+    }
+
+    const arr = getByPath(body, itemsPath)
+    if (!Array.isArray(arr)) {
+      throw new Error(
+        `yamory project ${projectId}: itemsPath="${itemsPath}" が array ではない (got ${typeof arr})`,
+      )
+    }
+
+    fetched += arr.length
+    const stats = await upsertItems(src, arr, paths)
+    created += stats.created
+    updated += stats.updated
+  }
+
+  return { fetched, created, updated }
+}
+
+/** タイムアウト + サイズ上限付きで JSON を取得する */
+async function fetchJson(url: string, init: RequestInit): Promise<unknown> {
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS)
+  try {
+    const res = await fetch(url, { ...init, signal: ctrl.signal })
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status} from ${url}`)
+    }
+    const text = await res.text()
+    if (text.length > MAX_BODY_BYTES) {
+      throw new Error(`response body ${text.length}B が ${MAX_BODY_BYTES}B 上限を超過`)
+    }
+    return JSON.parse(text)
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+interface ExtractPaths {
+  idPath: string
+  titlePath: string
+  duePath?: string
+}
+
+/** 配列の各要素を items に upsert + external_item_links を作成/更新する。 */
+async function upsertItems(
+  src: typeof externalSources.$inferSelect,
+  arr: unknown[],
+  paths: ExtractPaths,
+): Promise<{ created: number; updated: number }> {
+  let created = 0
+  let updated = 0
+
   for (const raw of arr) {
     if (raw == null || typeof raw !== 'object') continue
-    const externalId = String(getByPath(raw, cfg.idPath) ?? '').trim()
-    const title = String(getByPath(raw, cfg.titlePath) ?? '').trim()
+    const externalId = String(getByPath(raw, paths.idPath) ?? '').trim()
+    const title = String(getByPath(raw, paths.titlePath) ?? '').trim()
     if (!externalId || !title) continue
 
-    const dueStr = cfg.duePath ? getByPath(raw, cfg.duePath) : null
+    const dueStr = paths.duePath ? getByPath(raw, paths.duePath) : null
     const dueDate = isIsoDate(dueStr) ? (dueStr as string).slice(0, 10) : null
 
-    // 既存 link を検索
     const [existing] = await adminDb
       .select({ id: externalItemLinks.id, itemId: externalItemLinks.itemId })
       .from(externalItemLinks)
@@ -178,14 +277,12 @@ async function pullCustomRest(src: typeof externalSources.$inferSelect): Promise
       .limit(1)
 
     if (existing) {
-      // update lastPayload + lastSyncedAt のみ (item 本体の更新は次 iter で field map 化する)
       await adminDb
         .update(externalItemLinks)
         .set({ lastPayload: raw as never, lastSyncedAt: new Date() })
         .where(eq(externalItemLinks.id, existing.id))
       updated++
     } else {
-      // 新規 item 作成
       const [newItem] = await adminDb
         .insert(items)
         .values({
@@ -193,7 +290,7 @@ async function pullCustomRest(src: typeof externalSources.$inferSelect): Promise
           title: title.slice(0, 500),
           status: 'todo',
           dueDate,
-          createdByActorType: 'agent', // pull = agent (system) 起源
+          createdByActorType: 'agent',
           createdByActorId: src.createdByActorId,
         })
         .returning({ id: items.id })
@@ -210,7 +307,7 @@ async function pullCustomRest(src: typeof externalSources.$inferSelect): Promise
     }
   }
 
-  return { fetched: arr.length, created, updated }
+  return { created, updated }
 }
 
 /** dot-separated path lookup (例: "data.items" / "user.id") */

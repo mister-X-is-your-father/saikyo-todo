@@ -11,7 +11,19 @@ export type ExternalImport = typeof externalImports.$inferSelect
  */
 export const YamoryConfigSchema = z.object({
   token: z.string().min(1),
-  projectIds: z.array(z.string()).optional(),
+  projectIds: z.array(z.string().min(1)).optional(),
+  /** API base (default https://api.yamory.io)。社内 proxy / 検証環境向けに上書き可能 */
+  baseUrl: z.string().url().optional(),
+  /** {projectId} 置換テンプレート (default /v3/{projectId}/vulnerabilities) */
+  endpointTemplate: z.string().min(1).optional(),
+  /** response から item 配列を取り出す dot-path (default items) */
+  itemsPath: z.string().min(1).optional(),
+  /** id field (default id) */
+  idPath: z.string().min(1).optional(),
+  /** title field (default title) */
+  titlePath: z.string().min(1).optional(),
+  /** due date field (default due_date)。ISO 8601 (yyyy-mm-dd…) を期待 */
+  duePath: z.string().min(1).optional(),
 })
 
 export const CustomRestConfigSchema = z.object({

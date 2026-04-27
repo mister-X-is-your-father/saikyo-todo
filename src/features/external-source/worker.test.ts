@@ -138,7 +138,7 @@ describe('pullSource (custom-rest)', () => {
     await expect(pullSource(src.id, 'manual')).rejects.toThrow(/disabled/)
   })
 
-  it('yamory kind は未実装で failed', async () => {
+  it('yamory: projectIds 未設定で failed', async () => {
     const [src] = await adminDb
       .insert(externalSources)
       .values({
@@ -153,7 +153,97 @@ describe('pullSource (custom-rest)', () => {
       .returning()
     const r = await pullSource(src!.id, 'manual')
     expect(r.status).toBe('failed')
-    expect(r.error).toMatch(/yamory/)
+    expect(r.error).toMatch(/projectIds/)
+  })
+
+  it('yamory: token Bearer + 各 projectId を fetch して item を作成', async () => {
+    const [src] = await adminDb
+      .insert(externalSources)
+      .values({
+        workspaceId: wsId,
+        name: 'yamory team',
+        kind: 'yamory',
+        config: {
+          token: 'tok_secret',
+          projectIds: ['proj1', 'proj2'],
+          baseUrl: 'https://yamory.example',
+        } as never,
+        enabled: true,
+        createdByActorType: 'user',
+        createdByActorId: userId,
+      })
+      .returning()
+
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            items: [{ id: 'v-1', title: 'CVE-2025-0001', due_date: '2026-05-01' }],
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            items: [
+              { id: 'v-2', title: 'CVE-2025-0002' },
+              { id: 'v-3', title: 'CVE-2025-0003' },
+            ],
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        ),
+      )
+
+    const r = await pullSource(src!.id, 'manual')
+    expect(r.status).toBe('succeeded')
+    expect(r.fetched).toBe(3)
+    expect(r.created).toBe(3)
+    expect(r.updated).toBe(0)
+
+    // URL に projectId が埋め込まれ、Authorization header が付与されている
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
+    const [url1, init1] = fetchSpy.mock.calls[0]!
+    expect(url1).toBe('https://yamory.example/v3/proj1/vulnerabilities')
+    expect((init1 as RequestInit).headers as Record<string, string>).toMatchObject({
+      authorization: 'Bearer tok_secret',
+    })
+    const [url2] = fetchSpy.mock.calls[1]!
+    expect(url2).toBe('https://yamory.example/v3/proj2/vulnerabilities')
+
+    // due_date が item に反映されている
+    const created = await adminDb.select().from(items).where(eq(items.workspaceId, wsId))
+    const v1 = created.find((i) => i.title === 'CVE-2025-0001')
+    expect(v1).toBeDefined()
+    expect(v1?.dueDate).toBe('2026-05-01')
+  })
+
+  it('yamory: 1 project が 401 → 全体 failed (token は error message に出さない)', async () => {
+    const [src] = await adminDb
+      .insert(externalSources)
+      .values({
+        workspaceId: wsId,
+        name: 'yamory bad',
+        kind: 'yamory',
+        config: { token: 'tok_secret', projectIds: ['p1'] } as never,
+        enabled: true,
+        createdByActorType: 'user',
+        createdByActorId: userId,
+      })
+      .returning()
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: 'unauthorized' }), {
+        status: 401,
+        headers: { 'content-type': 'application/json' },
+      }),
+    )
+
+    const r = await pullSource(src!.id, 'manual')
+    expect(r.status).toBe('failed')
+    expect(r.error).toMatch(/HTTP 401/)
+    expect(r.error).not.toMatch(/tok_secret/)
   })
 
   it('item は workspace 内に作成される', async () => {
