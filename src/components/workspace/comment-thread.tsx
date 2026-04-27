@@ -194,6 +194,7 @@ function CommentItem({
                   setEditing(true)
                 }}
                 data-testid={`comment-edit-${comment.id}`}
+                aria-label={`コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を編集`}
               >
                 編集
               </button>
@@ -202,6 +203,7 @@ function CommentItem({
                 className="hover:text-destructive text-muted-foreground text-xs"
                 onClick={handleDelete}
                 data-testid={`comment-delete-${comment.id}`}
+                aria-label={`コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を削除`}
               >
                 削除
               </button>
