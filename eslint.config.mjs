@@ -77,8 +77,9 @@ const eslintConfig = defineConfig([
       // workspace member チェックを別途行うことで担保する。
       'src/features/workflow/engine.ts',
       'src/features/workflow/actions.ts',
-      // External source pull worker: cron / manual trigger 経由、ws 横断 admin 操作
+      // External source pull worker + actions: cron / manual trigger 経由、ws 横断 admin 操作
       'src/features/external-source/worker.ts',
+      'src/features/external-source/actions.ts',
       // テストとフィクスチャは無視
       '**/*.test.ts',
       '**/__tests__/**',
