@@ -7,6 +7,7 @@ import { unwrap } from '@/lib/result-unwrap'
 import {
   createSourceAction,
   deleteSourceAction,
+  listSourceImportsAction,
   listSourcesAction,
   triggerSourcePullAction,
   updateSourceAction,
@@ -16,6 +17,15 @@ import type { CreateSourceInput, UpdateSourceInput } from './schema'
 export const externalSourceKeys = {
   all: ['external-sources'] as const,
   list: (workspaceId: string) => [...externalSourceKeys.all, 'list', workspaceId] as const,
+  imports: (sourceId: string) => [...externalSourceKeys.all, 'imports', sourceId] as const,
+}
+
+export function useSourceImports(sourceId: string, opts: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: externalSourceKeys.imports(sourceId),
+    queryFn: async () => unwrap(await listSourceImportsAction(sourceId, 5)),
+    enabled: opts.enabled !== false && Boolean(sourceId),
+  })
 }
 
 export function useExternalSources(workspaceId: string) {
@@ -60,9 +70,10 @@ export function useTriggerSourcePull(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (sourceId: string) => unwrap(await triggerSourcePullAction(sourceId)),
-    onSuccess: () => {
-      // pull 後 item が増えるので items list も invalidate
+    onSuccess: (_, sourceId) => {
+      // pull 後 item が増えるので items list / imports 履歴も invalidate
       qc.invalidateQueries({ queryKey: externalSourceKeys.list(workspaceId) })
+      qc.invalidateQueries({ queryKey: externalSourceKeys.imports(sourceId) })
       qc.invalidateQueries({ queryKey: ['items'] })
     },
   })

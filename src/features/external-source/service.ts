@@ -11,7 +11,12 @@ import { ConflictError, NotFoundError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 
 import { externalSourceRepository } from './repository'
-import { CreateSourceInputSchema, type ExternalSource, UpdateSourceInputSchema } from './schema'
+import {
+  CreateSourceInputSchema,
+  type ExternalImport,
+  type ExternalSource,
+  UpdateSourceInputSchema,
+} from './schema'
 
 export const externalSourceService = {
   async create(input: unknown): Promise<Result<ExternalSource>> {
@@ -105,6 +110,19 @@ export const externalSourceService = {
         before,
       })
       return ok({ id })
+    })
+  },
+
+  /** Phase 6.15 iter126: source の直近 import 履歴 (member 以上) */
+  async listRecentImports(sourceId: string, limit = 5): Promise<Result<ExternalImport[]>> {
+    if (!sourceId) return err(new ValidationError('sourceId 必須'))
+    const user = await requireUser()
+    return await withUserDb(user.id, async (tx) => {
+      const src = await externalSourceRepository.findById(tx, sourceId)
+      if (!src) return err(new NotFoundError('Source が見つかりません'))
+      await requireWorkspaceMember(src.workspaceId, 'viewer')
+      const rows = await externalSourceRepository.listRecentImports(tx, sourceId, limit)
+      return ok(rows)
     })
   },
 }

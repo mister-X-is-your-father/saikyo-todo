@@ -1,8 +1,9 @@
 import { z } from 'zod'
 
-import { externalSources } from '@/lib/db/schema'
+import { externalImports, externalSources } from '@/lib/db/schema'
 
 export type ExternalSource = typeof externalSources.$inferSelect
+export type ExternalImport = typeof externalImports.$inferSelect
 
 /**
  * Phase 6.15 iter120: 取込元 kind 別 config の zod スキーマ。

@@ -2,10 +2,10 @@ import 'server-only'
 
 import { and, desc, eq, isNull } from 'drizzle-orm'
 
-import { externalSources } from '@/lib/db/schema'
+import { externalImports, externalSources } from '@/lib/db/schema'
 import type { Tx } from '@/lib/db/scoped-client'
 
-import type { ExternalSource } from './schema'
+import type { ExternalImport, ExternalSource } from './schema'
 
 export const externalSourceRepository = {
   async insert(tx: Tx, values: typeof externalSources.$inferInsert): Promise<ExternalSource> {
@@ -52,5 +52,15 @@ export const externalSourceRepository = {
       .where(and(eq(externalSources.id, id), isNull(externalSources.deletedAt)))
       .returning({ id: externalSources.id })
     return Boolean(row)
+  },
+
+  /** Phase 6.15 iter126: 直近 N 件の import (pull) 履歴 */
+  async listRecentImports(tx: Tx, sourceId: string, limit = 5): Promise<ExternalImport[]> {
+    return await tx
+      .select()
+      .from(externalImports)
+      .where(eq(externalImports.sourceId, sourceId))
+      .orderBy(desc(externalImports.createdAt))
+      .limit(limit)
   },
 }

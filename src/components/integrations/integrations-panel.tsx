@@ -8,7 +8,7 @@
  */
 import { useState } from 'react'
 
-import { Play, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronRight, Play, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
@@ -17,10 +17,11 @@ import {
   useCreateExternalSource,
   useDeleteExternalSource,
   useExternalSources,
+  useSourceImports,
   useTriggerSourcePull,
   useUpdateExternalSource,
 } from '@/features/external-source/hooks'
-import type { ExternalSource } from '@/features/external-source/schema'
+import type { ExternalImport, ExternalSource } from '@/features/external-source/schema'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { IMEInput } from '@/components/shared/ime-input'
@@ -67,6 +68,7 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
   const update = useUpdateExternalSource(workspaceId)
   const del = useDeleteExternalSource(workspaceId)
   const trigger = useTriggerSourcePull(workspaceId)
+  const [importsOpen, setImportsOpen] = useState(false)
 
   async function toggleEnabled() {
     try {
@@ -140,6 +142,21 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
           <Button
             size="sm"
             variant="ghost"
+            onClick={() => setImportsOpen((v) => !v)}
+            aria-expanded={importsOpen}
+            aria-controls={`src-imports-${src.id}`}
+            data-testid={`src-imports-toggle-${src.id}`}
+          >
+            {importsOpen ? (
+              <ChevronDown className="mr-1 h-3.5 w-3.5" />
+            ) : (
+              <ChevronRight className="mr-1 h-3.5 w-3.5" />
+            )}
+            履歴
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
             onClick={() => void handleDelete()}
             disabled={del.isPending}
             data-testid={`src-delete-${src.id}`}
@@ -148,6 +165,11 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             <Trash2 className="h-3.5 w-3.5 text-red-500" />
           </Button>
         </div>
+        {importsOpen && (
+          <div id={`src-imports-${src.id}`} className="mt-3" data-testid={`src-imports-${src.id}`}>
+            <SourceImportHistory sourceId={src.id} />
+          </div>
+        )}
       </CardContent>
     </Card>
   )
@@ -378,4 +400,90 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
       </CardContent>
     </Card>
   )
+}
+
+/**
+ * Phase 6.15 iter126: Source の直近 5 件 import (pull) 履歴。
+ * status / triggerKind / 開始時刻 / fetched/created/updated を表示。
+ */
+function SourceImportHistory({ sourceId }: { sourceId: string }) {
+  const q = useSourceImports(sourceId)
+  if (q.isLoading) {
+    return <p className="text-muted-foreground text-xs">読み込み中…</p>
+  }
+  if (q.error) {
+    return <p className="text-destructive text-xs">履歴の取得に失敗</p>
+  }
+  const imports = q.data ?? []
+  if (imports.length === 0) {
+    return <p className="text-muted-foreground text-xs">まだ Pull 履歴がありません</p>
+  }
+  return (
+    <ul
+      className="divide-y rounded border text-xs"
+      data-testid={`src-imports-list-${sourceId}`}
+      aria-label="直近の Pull 履歴 (最新 5 件)"
+    >
+      {imports.map((r) => (
+        <li
+          key={r.id}
+          className="flex flex-wrap items-center gap-2 px-2 py-1.5"
+          data-testid={`src-import-row-${r.id}`}
+        >
+          <ImportStatusBadge status={r.status} />
+          <span className="text-muted-foreground">{r.triggerKind}</span>
+          <time
+            className="text-muted-foreground tabular-nums"
+            dateTime={r.startedAt instanceof Date ? r.startedAt.toISOString() : (r.startedAt ?? '')}
+          >
+            {formatImportTime(r)}
+          </time>
+          <span className="text-muted-foreground ml-auto tabular-nums">
+            f={r.fetchedCount} / c={r.createdCount} / u={r.updatedCount}
+          </span>
+          {r.error && (
+            <span className="text-destructive line-clamp-1 w-full text-[10px]" title={r.error}>
+              {r.error}
+            </span>
+          )}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function ImportStatusBadge({ status }: { status: string }) {
+  const cls =
+    status === 'succeeded'
+      ? 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300'
+      : status === 'failed'
+        ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
+        : status === 'running'
+          ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
+          : 'bg-muted text-muted-foreground'
+  const label =
+    status === 'succeeded'
+      ? '成功'
+      : status === 'failed'
+        ? '失敗'
+        : status === 'running'
+          ? '実行中'
+          : status === 'queued'
+            ? '待機'
+            : status
+  return (
+    <span
+      className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${cls}`}
+      aria-label={`Pull ステータス: ${label}`}
+    >
+      {label}
+    </span>
+  )
+}
+
+function formatImportTime(r: ExternalImport): string {
+  const t = r.startedAt ?? r.createdAt
+  if (!t) return '—'
+  const d = t instanceof Date ? t : new Date(t)
+  return d.toLocaleString('ja-JP')
 }

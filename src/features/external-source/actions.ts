@@ -9,7 +9,7 @@ import { adminDb } from '@/lib/db/scoped-client'
 import { ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 
-import type { ExternalSource } from './schema'
+import type { ExternalImport, ExternalSource } from './schema'
 import { externalSourceService } from './service'
 import { type PullResult, pullSource } from './worker'
 
@@ -27,6 +27,13 @@ export async function listSourcesAction(workspaceId: string): Promise<Result<Ext
 
 export async function deleteSourceAction(id: string): Promise<Result<{ id: string }>> {
   return await actionWrap(() => externalSourceService.softDelete(id))
+}
+
+export async function listSourceImportsAction(
+  sourceId: string,
+  limit = 5,
+): Promise<Result<ExternalImport[]>> {
+  return await actionWrap(() => externalSourceService.listRecentImports(sourceId, limit))
 }
 
 /**
