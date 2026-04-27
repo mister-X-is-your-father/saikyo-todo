@@ -90,6 +90,24 @@ export const researcherService = {
       if (!budget.ok) return err(budget.error)
     }
 
+    // Phase 6.15 iter142: ANTHROPIC_API_KEY 未設定検出。Researcher は Anthropic
+    // SDK 直接呼び出しを使うため (engineer のような claude CLI 経由ではない、
+    // custom tool 定義の互換性問題)、env 未設定だと "Anthropic の呼び出しに
+    // 失敗しました" という曖昧 toast に倒れていた。ユーザに具体的対処を伝える。
+    // テスト経路 (input.invoker DI) では env 不要なのでスキップ。
+    // 予算チェックの後に置く: 既存テスト「budget 超過で BudgetExceededError」が
+    // env 検出に先取られない順序にする。
+    if (!input.invoker) {
+      const apiKey = process.env.ANTHROPIC_API_KEY
+      if (!apiKey || apiKey.trim().length === 0) {
+        return err(
+          new ValidationError(
+            'AI 分解には ANTHROPIC_API_KEY が必要です。.env.local に Anthropic API key を設定してサーバーを再起動してください (Claude Max OAuth + claude CLI 経由の verify スクリプトでは API key 不要)。',
+          ),
+        )
+      }
+    }
+
     const agent: Agent = await agentService.ensureAgent(input.workspaceId, 'researcher')
 
     // 1. 過去メモリ (user/assistant のみ) を Anthropic messages に変換
