@@ -57,9 +57,13 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
   return (
     <div className="space-y-4" data-testid="comment-thread">
       {isLoading ? (
-        <p className="text-muted-foreground text-sm">読み込み中…</p>
+        <p className="text-muted-foreground text-sm" role="status" aria-live="polite">
+          読み込み中…
+        </p>
       ) : (comments?.length ?? 0) === 0 ? (
-        <p className="text-muted-foreground text-sm">まだコメントはありません</p>
+        <p className="text-muted-foreground text-sm" role="status">
+          まだコメントはありません
+        </p>
       ) : (
         <ul className="space-y-3">
           {comments!.map((c) => (
@@ -146,14 +150,25 @@ function CommentItem({
         <span className="font-medium">
           {authorName}
           {comment.authorActorType === 'agent' && (
-            <span className="bg-primary/10 text-primary ml-2 rounded px-1.5 py-0.5 text-[10px]">
+            <span
+              className="bg-primary/10 text-primary ml-2 rounded px-1.5 py-0.5 text-[10px]"
+              role="img"
+              aria-label="AI Agent による投稿"
+            >
               AI
             </span>
           )}
         </span>
-        <span className="text-muted-foreground">
+        <time
+          className="text-muted-foreground"
+          dateTime={
+            comment.createdAt instanceof Date
+              ? comment.createdAt.toISOString()
+              : new Date(comment.createdAt).toISOString()
+          }
+        >
           {new Date(comment.createdAt).toLocaleString('ja-JP')}
-        </span>
+        </time>
       </div>
       {editing ? (
         <div className="space-y-2">
