@@ -393,7 +393,13 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
       >
         <div className="flex items-center gap-1.5">
           {proposal.isMust && (
-            <span className="rounded bg-red-100 px-1 py-0.5 text-[10px] text-red-700">MUST</span>
+            <span
+              className="rounded bg-red-100 px-1 py-0.5 text-[10px] text-red-700"
+              role="img"
+              aria-label="MUST 提案"
+            >
+              MUST
+            </span>
           )}
           <span className="truncate font-medium">{proposal.title}</span>
         </div>
@@ -412,6 +418,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
           onClick={() => void handleAccept()}
           data-testid={`proposal-${proposal.id}-accept`}
           title="採用 → 子タスクとして追加"
+          aria-label={`「${proposal.title}」を採用して子タスクとして追加`}
         >
           ✓ 採用
         </Button>
@@ -423,8 +430,9 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
           onClick={() => void handleReject()}
           data-testid={`proposal-${proposal.id}-reject`}
           title="却下"
+          aria-label={`「${proposal.title}」を却下`}
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="h-3.5 w-3.5" aria-hidden="true" />
         </Button>
       </div>
     </li>
