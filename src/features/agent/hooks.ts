@@ -14,7 +14,12 @@ import { unwrap } from '@/lib/result-unwrap'
 import { proposalKeys } from '@/features/decompose-proposal/hooks'
 import { itemKeys } from '@/features/item/hooks'
 
-import { cancelInvocationAction, decomposeItemAction, researchItemAction } from './actions'
+import {
+  cancelInvocationAction,
+  decomposeGoalAction,
+  decomposeItemAction,
+  researchItemAction,
+} from './actions'
 
 export interface DecomposeItemVariables {
   workspaceId: string
@@ -41,6 +46,35 @@ export function useDecomposeItem(workspaceId: string) {
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
       // pending 提案が増えるので proposals も refetch
       void qc.invalidateQueries({ queryKey: proposalKeys.pendingByParent(vars.itemId) })
+    },
+  })
+}
+
+/**
+ * Phase 6.15 iter130: Goal を Researcher で分解する hook。
+ * 5〜10 件の Item が root 直下に作られるので items 全体を invalidate。
+ */
+export interface DecomposeGoalVariables {
+  workspaceId: string
+  goalId: string
+  extraHint?: string
+  idempotencyKey?: string
+}
+
+export function useDecomposeGoal(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (vars: DecomposeGoalVariables) =>
+      unwrap(
+        await decomposeGoalAction({
+          workspaceId: vars.workspaceId,
+          goalId: vars.goalId,
+          extraHint: vars.extraHint,
+          idempotencyKey: vars.idempotencyKey,
+        }),
+      ),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
     },
   })
 }

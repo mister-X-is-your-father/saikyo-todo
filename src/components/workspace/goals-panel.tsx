@@ -8,11 +8,12 @@
  */
 import { useState } from 'react'
 
-import { ChevronDown, ChevronRight, Plus } from 'lucide-react'
+import { ChevronDown, ChevronRight, Plus, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
 
+import { useDecomposeGoal } from '@/features/agent/hooks'
 import {
   useCreateGoal,
   useCreateKeyResult,
@@ -187,6 +188,22 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
   const status = goal.status as GoalStatus
   const progress = useGoalProgress(open ? goal.id : null)
   const goalPct = progress.data ? Math.round(progress.data.pct * 100) : null
+  const decompose = useDecomposeGoal(workspaceId)
+
+  async function handleDecompose() {
+    if (
+      !window.confirm(`Goal「${goal.title}」を AI が 5〜10 件の Item に分解します。よろしいですか?`)
+    )
+      return
+    try {
+      const r = await decompose.mutateAsync({ workspaceId, goalId: goal.id })
+      toast.success(
+        `分解完了: ${r.iterations} iter, $${r.costUsd.toFixed(4)}, ${r.toolCalls.length} tool call`,
+      )
+    } catch (e) {
+      toast.error(isAppError(e) ? e.message : 'AI 分解に失敗')
+    }
+  }
 
   return (
     <li data-testid={`goal-card-${goal.id}`}>
@@ -241,6 +258,24 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
         </CardHeader>
         {open && (
           <CardContent className="space-y-3 pt-0">
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => void handleDecompose()}
+                disabled={decompose.isPending || status !== 'active'}
+                data-testid={`goal-decompose-${goal.id}`}
+                title={
+                  status !== 'active'
+                    ? 'active な Goal のみ分解可能'
+                    : 'AI が Goal + KR + チームコンテキストから 5〜10 件の Item を作成'
+                }
+              >
+                <Sparkles className="mr-1 h-3.5 w-3.5" />
+                {decompose.isPending ? 'AI 分解中…' : 'AI 分解'}
+              </Button>
+            </div>
             <KeyResultList goalId={goal.id} workspaceId={workspaceId} />
           </CardContent>
         )}
