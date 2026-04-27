@@ -426,6 +426,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
  */
 function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
   const q = useWorkflowRuns(workflowId)
+  const trigger = useTriggerWorkflow()
   const [expandedRunId, setExpandedRunId] = useState<string | null>(null)
   if (q.isLoading) {
     return <p className="text-muted-foreground text-xs">読み込み中…</p>
@@ -437,6 +438,18 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
   if (runs.length === 0) {
     return <p className="text-muted-foreground text-xs">まだ実行履歴がありません</p>
   }
+  async function handleRerun(r: WorkflowRun) {
+    try {
+      const res = await trigger.mutateAsync({ workflowId: r.workflowId, input: r.input })
+      if (res.status === 'succeeded') {
+        toast.success(`再実行成功 (run ${res.runId.slice(0, 8)})`)
+      } else {
+        toast.error(`再実行失敗: ${res.error ?? 'unknown'}`)
+      }
+    } catch (e) {
+      toast.error(isAppError(e) ? e.message : '再実行に失敗')
+    }
+  }
   return (
     <ul
       className="divide-y rounded border text-xs"
@@ -446,39 +459,55 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
       {runs.map((r) => {
         const isOpen = expandedRunId === r.id
         return (
-          <li key={r.id} data-testid={`wf-run-row-${r.id}`}>
+          <li key={r.id} className="flex items-stretch" data-testid={`wf-run-row-${r.id}`}>
+            <div className="flex-1">
+              <button
+                type="button"
+                className="hover:bg-muted/50 flex w-full items-center gap-2 px-2 py-1.5 text-left"
+                onClick={() => setExpandedRunId(isOpen ? null : r.id)}
+                aria-expanded={isOpen}
+                aria-controls={`wf-run-nodes-${r.id}`}
+                data-testid={`wf-run-toggle-${r.id}`}
+              >
+                {isOpen ? (
+                  <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+                )}
+                <RunStatusBadge status={r.status} />
+                <span className="text-muted-foreground">{r.triggerKind}</span>
+                <time
+                  className="text-muted-foreground tabular-nums"
+                  dateTime={
+                    r.startedAt instanceof Date ? r.startedAt.toISOString() : (r.startedAt ?? '')
+                  }
+                >
+                  {formatRunTime(r)}
+                </time>
+                <span className="text-muted-foreground ml-auto tabular-nums">
+                  {formatRunDuration(r)}
+                </span>
+              </button>
+              {isOpen && (
+                <div id={`wf-run-nodes-${r.id}`} className="bg-muted/20 border-t px-2 py-2">
+                  <WorkflowNodeRunsList runId={r.id} />
+                </div>
+              )}
+            </div>
             <button
               type="button"
-              className="hover:bg-muted/50 flex w-full items-center gap-2 px-2 py-1.5 text-left"
-              onClick={() => setExpandedRunId(isOpen ? null : r.id)}
-              aria-expanded={isOpen}
-              aria-controls={`wf-run-nodes-${r.id}`}
-              data-testid={`wf-run-toggle-${r.id}`}
+              className="hover:bg-muted/50 text-muted-foreground hover:text-foreground flex shrink-0 items-center gap-1 border-l px-2 disabled:opacity-50"
+              disabled={trigger.isPending}
+              onClick={(e) => {
+                e.stopPropagation()
+                void handleRerun(r)
+              }}
+              aria-label={`実行 ${r.id.slice(0, 8)} を同じ input で再実行`}
+              title={`同じ input で再実行 (${formatRunTime(r)})`}
+              data-testid={`wf-run-rerun-${r.id}`}
             >
-              {isOpen ? (
-                <ChevronDown className="h-3.5 w-3.5 shrink-0" />
-              ) : (
-                <ChevronRight className="h-3.5 w-3.5 shrink-0" />
-              )}
-              <RunStatusBadge status={r.status} />
-              <span className="text-muted-foreground">{r.triggerKind}</span>
-              <time
-                className="text-muted-foreground tabular-nums"
-                dateTime={
-                  r.startedAt instanceof Date ? r.startedAt.toISOString() : (r.startedAt ?? '')
-                }
-              >
-                {formatRunTime(r)}
-              </time>
-              <span className="text-muted-foreground ml-auto tabular-nums">
-                {formatRunDuration(r)}
-              </span>
+              <Play className="h-3 w-3" />再
             </button>
-            {isOpen && (
-              <div id={`wf-run-nodes-${r.id}`} className="bg-muted/20 border-t px-2 py-2">
-                <WorkflowNodeRunsList runId={r.id} />
-              </div>
-            )}
           </li>
         )
       })}
