@@ -43,6 +43,8 @@ export function HeartbeatButton({ workspaceId }: Props) {
       disabled={scan.isPending}
       onClick={() => void run()}
       data-testid="heartbeat-btn"
+      title="MUST item を 7d / 3d / 1d / overdue 段階でスキャンして通知を作成"
+      aria-label="Heartbeat: MUST item の期限スキャンを手動実行"
     >
       {scan.isPending ? 'スキャン中…' : 'Heartbeat'}
     </Button>
