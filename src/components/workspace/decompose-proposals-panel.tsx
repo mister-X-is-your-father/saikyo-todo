@@ -201,6 +201,11 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               onClick={() => void handleRedecompose({ clearExisting: false })}
               data-testid="proposals-redecompose"
               title="既存の提案を残したまま追加で分解"
+              aria-label={
+                list.length > 0
+                  ? `既存の保留中 ${list.length} 件を残して追加で AI 分解`
+                  : 'AI 分解を再実行'
+              }
             >
               <RotateCw className="h-3.5 w-3.5" aria-hidden="true" />
               {list.length > 0 ? '追加分解' : '再分解'}
@@ -214,6 +219,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                 onClick={() => void handleRedecompose({ clearExisting: true })}
                 data-testid="proposals-redecompose-fresh"
                 title="既存提案を全て却下してから再分解"
+                aria-label={`保留中の ${list.length} 件を全て却下してから AI 分解をやり直し`}
               >
                 やり直し
               </Button>
