@@ -20,6 +20,7 @@ import {
   useDeleteWorkflow,
   useTriggerWorkflow,
   useUpdateWorkflow,
+  useWorkflowNodeRuns,
   useWorkflowRuns,
   useWorkflows,
 } from '@/features/workflow/hooks'
@@ -419,9 +420,13 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
 /**
  * Phase 6.15 iter120: Workflow の直近 5 件の run 履歴。
  * status / triggerKind / 開始時刻 / duration を tabular-nums で表示。
+ *
+ * Phase 6.15 iter137: 各 run 行を expander にして node_runs (input / output /
+ * error / duration) を disclosure で展開表示。失敗 run の原因を画面で追える。
  */
 function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
   const q = useWorkflowRuns(workflowId)
+  const [expandedRunId, setExpandedRunId] = useState<string | null>(null)
   if (q.isLoading) {
     return <p className="text-muted-foreground text-xs">読み込み中…</p>
   }
@@ -438,21 +443,95 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
       data-testid={`wf-runs-list-${workflowId}`}
       aria-label="直近の実行履歴 (最新 5 件)"
     >
-      {runs.map((r) => (
+      {runs.map((r) => {
+        const isOpen = expandedRunId === r.id
+        return (
+          <li key={r.id} data-testid={`wf-run-row-${r.id}`}>
+            <button
+              type="button"
+              className="hover:bg-muted/50 flex w-full items-center gap-2 px-2 py-1.5 text-left"
+              onClick={() => setExpandedRunId(isOpen ? null : r.id)}
+              aria-expanded={isOpen}
+              aria-controls={`wf-run-nodes-${r.id}`}
+              data-testid={`wf-run-toggle-${r.id}`}
+            >
+              {isOpen ? (
+                <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+              )}
+              <RunStatusBadge status={r.status} />
+              <span className="text-muted-foreground">{r.triggerKind}</span>
+              <time
+                className="text-muted-foreground tabular-nums"
+                dateTime={
+                  r.startedAt instanceof Date ? r.startedAt.toISOString() : (r.startedAt ?? '')
+                }
+              >
+                {formatRunTime(r)}
+              </time>
+              <span className="text-muted-foreground ml-auto tabular-nums">
+                {formatRunDuration(r)}
+              </span>
+            </button>
+            {isOpen && (
+              <div id={`wf-run-nodes-${r.id}`} className="bg-muted/20 border-t px-2 py-2">
+                <WorkflowNodeRunsList runId={r.id} />
+              </div>
+            )}
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+/**
+ * Phase 6.15 iter137: 1 run の各 node の input/output/error/duration を行ごとに表示。
+ * 失敗 run なら error が赤字で <pre>、output は <details> の中で確認できる。
+ */
+function WorkflowNodeRunsList({ runId }: { runId: string }) {
+  const q = useWorkflowNodeRuns(runId, { enabled: true })
+  if (q.isLoading)
+    return <p className="text-muted-foreground text-[11px]">node 詳細を読み込み中…</p>
+  if (q.error) return <p className="text-destructive text-[11px]">node 詳細の取得に失敗</p>
+  const rows = q.data ?? []
+  if (rows.length === 0) {
+    return <p className="text-muted-foreground text-[11px]">node 実行履歴がありません</p>
+  }
+  return (
+    <ul className="space-y-1.5" data-testid={`wf-node-runs-${runId}`}>
+      {rows.map((nr) => (
         <li
-          key={r.id}
-          className="flex items-center gap-2 px-2 py-1.5"
-          data-testid={`wf-run-row-${r.id}`}
+          key={nr.id}
+          className="bg-background space-y-1 rounded border p-1.5"
+          data-testid={`wf-node-run-${nr.id}`}
         >
-          <RunStatusBadge status={r.status} />
-          <span className="text-muted-foreground">{r.triggerKind}</span>
-          <time
-            className="text-muted-foreground tabular-nums"
-            dateTime={r.startedAt instanceof Date ? r.startedAt.toISOString() : (r.startedAt ?? '')}
-          >
-            {formatRunTime(r)}
-          </time>
-          <span className="text-muted-foreground ml-auto tabular-nums">{formatRunDuration(r)}</span>
+          <div className="flex items-center gap-2 text-[11px]">
+            <RunStatusBadge status={nr.status} />
+            <span className="font-mono">{nr.nodeId}</span>
+            <span className="text-muted-foreground">({nr.nodeType})</span>
+            <span className="text-muted-foreground ml-auto tabular-nums">
+              {nr.durationMs != null ? `${nr.durationMs}ms` : '—'}
+            </span>
+          </div>
+          {nr.error && (
+            <pre
+              className="overflow-x-auto rounded bg-red-50 px-2 py-1 text-[10px] whitespace-pre-wrap text-red-700 dark:bg-red-950 dark:text-red-300"
+              data-testid={`wf-node-run-error-${nr.id}`}
+              aria-label={`node ${nr.nodeId} のエラー`}
+            >
+              {nr.error}
+            </pre>
+          )}
+          {nr.output != null && (
+            <details className="text-[10px]">
+              <summary className="text-muted-foreground cursor-pointer">output (jsonb)</summary>
+              <pre className="bg-muted/30 mt-1 overflow-x-auto rounded px-2 py-1 whitespace-pre-wrap">
+                {JSON.stringify(nr.output, null, 2)}
+              </pre>
+            </details>
+          )}
         </li>
       ))}
     </ul>

@@ -10,7 +10,7 @@ import { ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 
 import { runWorkflow } from './engine'
-import type { Workflow, WorkflowRun } from './schema'
+import type { Workflow, WorkflowNodeRun, WorkflowRun } from './schema'
 import { workflowService } from './service'
 
 export async function createWorkflowAction(input: unknown): Promise<Result<Workflow>> {
@@ -34,6 +34,12 @@ export async function listWorkflowRunsAction(
   limit = 5,
 ): Promise<Result<WorkflowRun[]>> {
   return await actionWrap(() => workflowService.listRecentRuns(workflowId, limit))
+}
+
+export async function listWorkflowNodeRunsAction(
+  runId: string,
+): Promise<Result<WorkflowNodeRun[]>> {
+  return await actionWrap(() => workflowService.listNodeRuns(runId))
 }
 
 /**

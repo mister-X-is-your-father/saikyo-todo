@@ -7,6 +7,7 @@ import { unwrap } from '@/lib/result-unwrap'
 import {
   createWorkflowAction,
   deleteWorkflowAction,
+  listWorkflowNodeRunsAction,
   listWorkflowRunsAction,
   listWorkflowsAction,
   triggerWorkflowAction,
@@ -18,6 +19,7 @@ export const workflowKeys = {
   all: ['workflows'] as const,
   list: (workspaceId: string) => [...workflowKeys.all, 'list', workspaceId] as const,
   runs: (workflowId: string) => [...workflowKeys.all, 'runs', workflowId] as const,
+  nodeRuns: (runId: string) => [...workflowKeys.all, 'nodeRuns', runId] as const,
 }
 
 export function useWorkflows(workspaceId: string) {
@@ -63,6 +65,18 @@ export function useWorkflowRuns(workflowId: string, opts: { enabled?: boolean } 
     queryKey: workflowKeys.runs(workflowId),
     queryFn: async () => unwrap(await listWorkflowRunsAction(workflowId, 5)),
     enabled: opts.enabled !== false && Boolean(workflowId),
+  })
+}
+
+/**
+ * Phase 6.15 iter137: 1 run の node_runs 詳細 (各 node の input/output/error/duration)。
+ * disclosure 開閉に応じて enabled を切替えて使う。
+ */
+export function useWorkflowNodeRuns(runId: string, opts: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: workflowKeys.nodeRuns(runId),
+    queryFn: async () => unwrap(await listWorkflowNodeRunsAction(runId)),
+    enabled: opts.enabled !== false && Boolean(runId),
   })
 }
 

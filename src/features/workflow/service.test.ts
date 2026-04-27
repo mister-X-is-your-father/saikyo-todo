@@ -104,4 +104,18 @@ describe('workflowService', () => {
     if (r.ok) return
     expect(r.error).toBeInstanceOf(NotFoundError)
   })
+
+  it('listNodeRuns: 存在しない runId は NotFoundError', async () => {
+    const r = await workflowService.listNodeRuns('00000000-0000-0000-0000-000000000000')
+    expect(r.ok).toBe(false)
+    if (r.ok) return
+    expect(r.error).toBeInstanceOf(NotFoundError)
+  })
+
+  it('listNodeRuns: runId 空は ValidationError', async () => {
+    const r = await workflowService.listNodeRuns('')
+    expect(r.ok).toBe(false)
+    if (r.ok) return
+    expect(r.error.message).toMatch(/runId/)
+  })
 })

@@ -16,6 +16,7 @@ import {
   CreateWorkflowInputSchema,
   UpdateWorkflowInputSchema,
   type Workflow,
+  type WorkflowNodeRun,
   type WorkflowRun,
 } from './schema'
 
@@ -123,6 +124,24 @@ export const workflowService = {
       if (!wf) return err(new NotFoundError('Workflow が見つかりません'))
       await requireWorkspaceMember(wf.workspaceId, 'viewer')
       const rows = await workflowRepository.listRecentRuns(tx, workflowId, limit)
+      return ok(rows)
+    })
+  },
+
+  /**
+   * Phase 6.15 iter137: 1 run の node 単位ログ (各 node の input/output/error/duration)。
+   * run → workflow → workspace の順に lookup して viewer 権限を確認する。
+   */
+  async listNodeRuns(runId: string): Promise<Result<WorkflowNodeRun[]>> {
+    if (!runId) return err(new ValidationError('runId 必須'))
+    const user = await requireUser()
+    return await withUserDb(user.id, async (tx) => {
+      const run = await workflowRepository.findRunById(tx, runId)
+      if (!run) return err(new NotFoundError('Run が見つかりません'))
+      const wf = await workflowRepository.findById(tx, run.workflowId)
+      if (!wf) return err(new NotFoundError('Workflow が見つかりません'))
+      await requireWorkspaceMember(wf.workspaceId, 'viewer')
+      const rows = await workflowRepository.listNodeRuns(tx, runId)
       return ok(rows)
     })
   },

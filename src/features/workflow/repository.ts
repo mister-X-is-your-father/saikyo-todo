@@ -1,11 +1,11 @@
 import 'server-only'
 
-import { and, desc, eq, isNull } from 'drizzle-orm'
+import { and, asc, desc, eq, isNull } from 'drizzle-orm'
 
-import { workflowRuns, workflows } from '@/lib/db/schema'
+import { workflowNodeRuns, workflowRuns, workflows } from '@/lib/db/schema'
 import type { Tx } from '@/lib/db/scoped-client'
 
-import type { Workflow, WorkflowRun } from './schema'
+import type { Workflow, WorkflowNodeRun, WorkflowRun } from './schema'
 
 export const workflowRepository = {
   async insert(tx: Tx, values: typeof workflows.$inferInsert): Promise<Workflow> {
@@ -54,6 +54,20 @@ export const workflowRepository = {
       .where(eq(workflowRuns.workflowId, workflowId))
       .orderBy(desc(workflowRuns.createdAt))
       .limit(limit)
+  },
+
+  /** Phase 6.15 iter137: 1 run の node_runs を作成順 (engine の topological 実行順) で */
+  async findRunById(tx: Tx, runId: string): Promise<WorkflowRun | null> {
+    const rows = await tx.select().from(workflowRuns).where(eq(workflowRuns.id, runId)).limit(1)
+    return rows[0] ?? null
+  },
+
+  async listNodeRuns(tx: Tx, runId: string): Promise<WorkflowNodeRun[]> {
+    return await tx
+      .select()
+      .from(workflowNodeRuns)
+      .where(eq(workflowNodeRuns.workflowRunId, runId))
+      .orderBy(asc(workflowNodeRuns.createdAt))
   },
 
   async softDelete(tx: Tx, id: string): Promise<boolean> {
