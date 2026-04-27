@@ -383,6 +383,65 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
             <Label htmlFor={`wf-editor-trigger-${wf.id}`}>
               trigger ({'{ kind: "manual" | "cron" | "item-event" | "webhook" }'})
             </Label>
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label="trigger プリセット">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setTriggerText(JSON.stringify({ kind: 'manual' }, null, 2))}
+                data-testid={`wf-trigger-preset-manual-${wf.id}`}
+                title="手動 trigger 専用 (実行 button から起動)"
+              >
+                manual
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  setTriggerText(JSON.stringify({ kind: 'cron', cron: '0 9 * * *' }, null, 2))
+                }
+                data-testid={`wf-trigger-preset-cron-${wf.id}`}
+                title="cron trigger (例: 毎日 09:00)"
+              >
+                cron
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  setTriggerText(
+                    JSON.stringify({ kind: 'item-event', event: 'create', filter: {} }, null, 2),
+                  )
+                }
+                data-testid={`wf-trigger-preset-item-event-${wf.id}`}
+                title="item-event (create / update / status_change / complete)"
+              >
+                item-event
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  setTriggerText(
+                    JSON.stringify(
+                      {
+                        kind: 'webhook',
+                        secret: crypto.randomUUID().replace(/-/g, '').slice(0, 24),
+                      },
+                      null,
+                      2,
+                    ),
+                  )
+                }
+                data-testid={`wf-trigger-preset-webhook-${wf.id}`}
+                title="webhook trigger (POST /api/workflows/webhook/<secret>)"
+              >
+                webhook
+              </Button>
+            </div>
             <Textarea
               id={`wf-editor-trigger-${wf.id}`}
               value={triggerText}
@@ -392,6 +451,10 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
               data-testid={`wf-editor-trigger-${wf.id}`}
               aria-label="trigger JSON"
             />
+            <p className="text-muted-foreground text-[10px]">
+              プリセット button で typical な JSON を流し込めます (cron は毎日 09:00、 webhook は
+              random secret、item-event は create + 空 filter)。
+            </p>
           </div>
           {error && (
             <p className="text-destructive text-xs" data-testid={`wf-editor-error-${wf.id}`}>
