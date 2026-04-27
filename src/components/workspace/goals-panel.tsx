@@ -21,6 +21,7 @@ import {
   useGoalProgress,
   useGoals,
   useKeyResults,
+  useUpdateGoal,
 } from '@/features/okr/hooks'
 import type { Goal, GoalStatus, ProgressMode } from '@/features/okr/schema'
 
@@ -192,6 +193,25 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
   const progress = useGoalProgress(open ? goal.id : null)
   const goalPct = progress.data ? Math.round(progress.data.pct * 100) : null
   const decompose = useDecomposeGoal(workspaceId)
+  const update = useUpdateGoal(workspaceId)
+
+  async function changeStatus(next: GoalStatus) {
+    if (
+      next === 'archived' &&
+      !window.confirm(`Goal「${goal.title}」をアーカイブしますか?\n(後から「active 化」で復帰可能)`)
+    )
+      return
+    try {
+      await update.mutateAsync({
+        id: goal.id,
+        expectedVersion: goal.version,
+        patch: { status: next },
+      })
+      toast.success(`Goal を「${STATUS_LABEL[next]}」に変更しました`)
+    } catch (e) {
+      toast.error(isAppError(e) ? e.message : 'status 変更に失敗')
+    }
+  }
 
   async function handleDecompose() {
     if (
@@ -261,7 +281,72 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
         </CardHeader>
         {open && (
           <CardContent className="space-y-3 pt-0">
-            <div className="flex justify-end">
+            <div className="flex flex-wrap items-center justify-end gap-1.5">
+              {status === 'active' && (
+                <>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void changeStatus('completed')}
+                    disabled={update.isPending}
+                    data-testid={`goal-complete-${goal.id}`}
+                    aria-label={`Goal「${goal.title}」を完了`}
+                  >
+                    完了
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => void changeStatus('archived')}
+                    disabled={update.isPending}
+                    data-testid={`goal-archive-${goal.id}`}
+                    aria-label={`Goal「${goal.title}」をアーカイブ`}
+                  >
+                    アーカイブ
+                  </Button>
+                </>
+              )}
+              {status === 'completed' && (
+                <>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void changeStatus('active')}
+                    disabled={update.isPending}
+                    data-testid={`goal-reactivate-${goal.id}`}
+                    aria-label={`Goal「${goal.title}」を active に戻す`}
+                  >
+                    active に戻す
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => void changeStatus('archived')}
+                    disabled={update.isPending}
+                    data-testid={`goal-archive-${goal.id}`}
+                    aria-label={`Goal「${goal.title}」をアーカイブ`}
+                  >
+                    アーカイブ
+                  </Button>
+                </>
+              )}
+              {status === 'archived' && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void changeStatus('active')}
+                  disabled={update.isPending}
+                  data-testid={`goal-reactivate-${goal.id}`}
+                  aria-label={`Goal「${goal.title}」を active に戻す`}
+                >
+                  active に戻す
+                </Button>
+              )}
               <Button
                 type="button"
                 size="sm"
