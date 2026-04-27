@@ -97,6 +97,29 @@ const DecomposeGoalActionInputSchema = z.object({
   idempotencyKey: z.string().optional(),
 })
 
+/**
+ * Phase 6.15 iter149: Goal を Claude Max OAuth + claude CLI 経由で分解する。
+ * env 不要。`decomposeGoalAction` (SDK 直接利用) との違いは researcher-service の
+ * decomposeGoal vs decomposeGoalViaClaude のコメントを参照。
+ */
+export async function decomposeGoalViaClaudeAction(
+  input: unknown,
+): Promise<Result<ResearcherRunOutput>> {
+  return await actionWrap(async () => {
+    const parsed = DecomposeGoalActionInputSchema.safeParse(input)
+    if (!parsed.success) {
+      return err(new ValidationError('入力内容を確認してください', parsed.error))
+    }
+    await requireWorkspaceMember(parsed.data.workspaceId, 'member')
+    return await researcherService.decomposeGoalViaClaude({
+      workspaceId: parsed.data.workspaceId,
+      goalId: parsed.data.goalId,
+      ...(parsed.data.extraHint ? { extraHint: parsed.data.extraHint } : {}),
+      idempotencyKey: parsed.data.idempotencyKey ?? randomUUID(),
+    })
+  })
+}
+
 export async function decomposeGoalAction(input: unknown): Promise<Result<ResearcherRunOutput>> {
   return await actionWrap(async () => {
     const parsed = DecomposeGoalActionInputSchema.safeParse(input)

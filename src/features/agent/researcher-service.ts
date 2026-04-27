@@ -556,6 +556,79 @@ export const researcherService = {
       ...(params.invoker ? { invoker: params.invoker } : {}),
     })
   },
+
+  /**
+   * Phase 6.15 iter149: Goal を Claude Max OAuth + claude CLI 経由で分解する。
+   * decomposeItemViaClaude と同じく env 不要。Goal + KR + チームコンテキストを
+   * prompt に inject、MCP server に RESEARCHER_TOOLS を公開して create_item で
+   * 子 Item を直接作成させる。
+   */
+  async decomposeGoalViaClaude(params: {
+    workspaceId: string
+    goalId: string
+    extraHint?: string
+    idempotencyKey: string
+  }): Promise<Result<ResearcherRunOutput>> {
+    if (!params.idempotencyKey) {
+      return err(new ValidationError('idempotencyKey は必須です'))
+    }
+    const ctx = await adminDb.transaction(async (tx) => {
+      const [goal] = await tx
+        .select()
+        .from(goals)
+        .where(and(eq(goals.id, params.goalId), isNull(goals.deletedAt)))
+        .limit(1)
+      if (!goal) return null
+      const krs = await tx.select().from(keyResults).where(eq(keyResults.goalId, goal.id))
+      const [ws] = await tx
+        .select({ teamContext: workspaceSettings.teamContext })
+        .from(workspaceSettings)
+        .where(eq(workspaceSettings.workspaceId, goal.workspaceId))
+        .limit(1)
+      return { goal, krs, teamContext: ws?.teamContext ?? '' }
+    })
+    if (!ctx) return err(new NotFoundError('Goal が見つかりません'))
+    if (ctx.goal.workspaceId !== params.workspaceId) {
+      return err(new ValidationError('Goal が指定 workspace に属していません'))
+    }
+
+    const userMessage = buildDecomposeGoalUserMessage({
+      goalId: ctx.goal.id,
+      title: ctx.goal.title,
+      description: ctx.goal.description ?? '',
+      period: ctx.goal.period,
+      startDate: ctx.goal.startDate,
+      endDate: ctx.goal.endDate,
+      keyResults: ctx.krs.map((k) => ({ title: k.title, mode: k.progressMode })),
+      teamContext: ctx.teamContext,
+      ...(params.extraHint ? { extraHint: params.extraHint } : {}),
+    })
+    try {
+      const out = await runFlowViaClaude({
+        workspaceId: params.workspaceId,
+        role: 'researcher',
+        userMessage,
+        allowedToolNames: ['read_items', 'read_docs', 'search_items', 'search_docs', 'create_item'],
+        idempotencyKey: params.idempotencyKey,
+      })
+      return ok({
+        invocationId: out.invocationId,
+        agentId: out.agentId,
+        text: out.finalText,
+        toolCalls: [],
+        iterations: out.numTurns,
+        usage: {
+          inputTokens: out.inputTokens,
+          outputTokens: out.outputTokens,
+          cacheCreationTokens: out.cacheCreationTokens,
+          cacheReadTokens: out.cacheReadTokens,
+        },
+        costUsd: out.totalCostUsd,
+      })
+    } catch (e) {
+      return err(new ExternalServiceError('claude-cli', e))
+    }
+  },
 }
 
 /**

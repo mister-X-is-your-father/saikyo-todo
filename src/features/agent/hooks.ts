@@ -17,7 +17,9 @@ import { itemKeys } from '@/features/item/hooks'
 import {
   cancelInvocationAction,
   decomposeGoalAction,
+  decomposeGoalViaClaudeAction,
   decomposeItemAction,
+  decomposeItemViaClaudeAction,
   researchItemAction,
 } from './actions'
 
@@ -28,7 +30,33 @@ export interface DecomposeItemVariables {
   idempotencyKey?: string
 }
 
+/**
+ * Phase 6.15 iter149: AI 分解は Claude Max OAuth + claude CLI 経由 (env 不要)
+ * を default に切替。proposal staging は通らないため `create_item` で子 Item が
+ * 直接作られる UX に変わる (staging が必要な時は decomposeItemAction を直接呼ぶ)。
+ */
 export function useDecomposeItem(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (vars: DecomposeItemVariables) =>
+      unwrap(
+        await decomposeItemViaClaudeAction({
+          workspaceId: vars.workspaceId,
+          itemId: vars.itemId,
+          extraHint: vars.extraHint,
+          idempotencyKey: vars.idempotencyKey,
+        }),
+      ),
+    onSuccess: (_data, vars) => {
+      // CLI 経路は staging を通らないので items 直接 + proposals 両方 invalidate
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+      void qc.invalidateQueries({ queryKey: proposalKeys.pendingByParent(vars.itemId) })
+    },
+  })
+}
+
+/** SDK 直接利用 (proposal staging) で分解する旧経路。env (ANTHROPIC_API_KEY) 必須。 */
+export function useDecomposeItemViaSDK(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (vars: DecomposeItemVariables) =>
@@ -41,10 +69,7 @@ export function useDecomposeItem(workspaceId: string) {
         }),
       ),
     onSuccess: (_data, vars) => {
-      // staging mode 既定なので items 直接は変わらないが、後方互換 (staging=false) で
-      // 直接書く時のために両方 invalidate する。
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
-      // pending 提案が増えるので proposals も refetch
       void qc.invalidateQueries({ queryKey: proposalKeys.pendingByParent(vars.itemId) })
     },
   })
@@ -61,7 +86,29 @@ export interface DecomposeGoalVariables {
   idempotencyKey?: string
 }
 
+/**
+ * Phase 6.15 iter149: Goal AI 分解も CLI 経路 (env 不要) を default に切替。
+ */
 export function useDecomposeGoal(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (vars: DecomposeGoalVariables) =>
+      unwrap(
+        await decomposeGoalViaClaudeAction({
+          workspaceId: vars.workspaceId,
+          goalId: vars.goalId,
+          extraHint: vars.extraHint,
+          idempotencyKey: vars.idempotencyKey,
+        }),
+      ),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
+}
+
+/** SDK 直接利用の旧経路 (env 必須)。テスト / fallback 用に残置。 */
+export function useDecomposeGoalViaSDK(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (vars: DecomposeGoalVariables) =>
