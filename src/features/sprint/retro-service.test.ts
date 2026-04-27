@@ -287,6 +287,9 @@ describe('handleSprintRetroTick (weekly cron)', () => {
       .single()
     if (sA.error) throw sA.error
     // 2. completed + retro 生成済 → skip
+    //    retro_generated_at は worker の `last_fired_at` (=最新 retro 生成時刻) に
+    //    流用されるので、now (test の発火時刻) と被らないよう過去日 (-7d) を入れる。
+    //    でないと cron が「今しがた発火済」と判定されこの workspace 全体が skip される。
     const sB = await ac
       .from('sprints')
       .insert({
@@ -295,7 +298,9 @@ describe('handleSprintRetroTick (weekly cron)', () => {
         start_date: '2026-04-12',
         end_date: '2026-04-18',
         status: 'completed',
-        retro_generated_at: new Date().toISOString(),
+        retro_generated_at: new Date(
+          new Date('2026-04-27T00:00:00Z').getTime() - 7 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
         created_by_actor_type: 'user',
         created_by_actor_id: userId,
       })
