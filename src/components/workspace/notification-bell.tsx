@@ -81,15 +81,18 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
           variant="ghost"
           size="icon"
           aria-label={`通知 (未読 ${unreadCount} 件)`}
+          aria-expanded={open}
+          aria-haspopup="dialog"
           className="relative"
           data-testid="notification-bell"
         >
-          <Bell className="h-4 w-4" />
+          <Bell className="h-4 w-4" aria-hidden="true" />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
               className="absolute -top-1 -right-1 h-4 min-w-4 justify-center rounded-full px-1 text-[10px] leading-none"
               data-testid="notification-bell-badge"
+              aria-hidden="true"
             >
               {unreadCount > 99 ? '99+' : unreadCount}
             </Badge>
@@ -106,16 +109,25 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
             disabled={unreadCount === 0 || markAllRead.isPending}
             onClick={() => markAllRead.mutate()}
             data-testid="notification-mark-all-read"
+            aria-label={`未読 ${unreadCount} 件をすべて既読にする`}
           >
-            <CheckCheck className="mr-1 h-3.5 w-3.5" />
+            <CheckCheck className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             全て既読
           </Button>
         </div>
         <div className="max-h-96 overflow-y-auto">
           {isLoading ? (
-            <div className="text-muted-foreground p-4 text-center text-xs">読み込み中…</div>
+            <div
+              className="text-muted-foreground p-4 text-center text-xs"
+              role="status"
+              aria-live="polite"
+            >
+              読み込み中…
+            </div>
           ) : notifications.length === 0 ? (
-            <div className="text-muted-foreground p-4 text-center text-xs">通知はありません</div>
+            <div className="text-muted-foreground p-4 text-center text-xs" role="status">
+              通知はありません
+            </div>
           ) : (
             <ul className="divide-y">
               {notifications.map((n) => (
@@ -135,9 +147,16 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                     />
                     <div className="min-w-0 flex-1">
                       <p className="text-xs leading-snug">{formatNotificationBody(n)}</p>
-                      <p className="text-muted-foreground mt-0.5 text-[10px]">
+                      <time
+                        className="text-muted-foreground mt-0.5 block text-[10px]"
+                        dateTime={
+                          n.createdAt instanceof Date
+                            ? n.createdAt.toISOString()
+                            : new Date(n.createdAt).toISOString()
+                        }
+                      >
                         {formatRelativeTime(n.createdAt)}
-                      </p>
+                      </time>
                     </div>
                   </button>
                 </li>
