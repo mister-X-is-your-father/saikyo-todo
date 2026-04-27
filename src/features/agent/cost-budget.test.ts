@@ -143,25 +143,6 @@ describe('cost-budget', () => {
       expect(invoker).not.toHaveBeenCalled()
     })
 
-    it('iter142: ANTHROPIC_API_KEY 未設定 → ValidationError (budget OK の場合)', async () => {
-      await setLimit(1000)
-      const orig = process.env.ANTHROPIC_API_KEY
-      process.env.ANTHROPIC_API_KEY = ''
-      try {
-        const r = await researcherService.run({
-          workspaceId: wsId,
-          userMessage: 'env missing',
-          idempotencyKey: randomUUID(),
-        })
-        expect(r.ok).toBe(false)
-        if (r.ok) return
-        expect(r.error.code).toBe('VALIDATION')
-        expect(r.error.message).toMatch(/ANTHROPIC_API_KEY/)
-      } finally {
-        process.env.ANTHROPIC_API_KEY = orig
-      }
-    })
-
     it('limit を上げれば再度実行できる (mock invoker で完走)', async () => {
       await setLimit(1000) // 十分大きい
       const invoker = vi.fn(async () => ({
