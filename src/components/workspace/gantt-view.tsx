@@ -452,7 +452,8 @@ export function GanttView({
               data-testid={`gantt-row-${item.id}`}
               role="row"
               aria-rowindex={idx + 2 /* +1 (1-based) +1 (header is row 1) */}
-              className="hover:bg-muted/50 flex border-b"
+              onClick={() => void setOpenItemId(item.id)}
+              className="hover:bg-muted/50 flex cursor-pointer border-b"
               style={{ height: ROW_PX }}
             >
               <div
