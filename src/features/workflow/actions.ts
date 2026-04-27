@@ -10,7 +10,7 @@ import { ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 
 import { runWorkflow } from './engine'
-import type { Workflow } from './schema'
+import type { Workflow, WorkflowRun } from './schema'
 import { workflowService } from './service'
 
 export async function createWorkflowAction(input: unknown): Promise<Result<Workflow>> {
@@ -27,6 +27,13 @@ export async function listWorkflowsAction(workspaceId: string): Promise<Result<W
 
 export async function deleteWorkflowAction(id: string): Promise<Result<{ id: string }>> {
   return await actionWrap(() => workflowService.softDelete(id))
+}
+
+export async function listWorkflowRunsAction(
+  workflowId: string,
+  limit = 5,
+): Promise<Result<WorkflowRun[]>> {
+  return await actionWrap(() => workflowService.listRecentRuns(workflowId, limit))
 }
 
 /**

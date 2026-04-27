@@ -5,9 +5,10 @@
  */
 import { z } from 'zod'
 
-import { workflows } from '@/lib/db/schema'
+import { workflowRuns, workflows } from '@/lib/db/schema'
 
 export type Workflow = typeof workflows.$inferSelect
+export type WorkflowRun = typeof workflowRuns.$inferSelect
 
 /**
  * 実装予定 node 種別。次 iter で実装するごとに有効化していく。

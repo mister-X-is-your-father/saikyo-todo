@@ -2,10 +2,10 @@ import 'server-only'
 
 import { and, desc, eq, isNull } from 'drizzle-orm'
 
-import { workflows } from '@/lib/db/schema'
+import { workflowRuns, workflows } from '@/lib/db/schema'
 import type { Tx } from '@/lib/db/scoped-client'
 
-import type { Workflow } from './schema'
+import type { Workflow, WorkflowRun } from './schema'
 
 export const workflowRepository = {
   async insert(tx: Tx, values: typeof workflows.$inferInsert): Promise<Workflow> {
@@ -44,6 +44,16 @@ export const workflowRepository = {
       .where(and(eq(workflows.id, id), eq(workflows.version, expectedVersion)))
       .returning()
     return row ?? null
+  },
+
+  /** Phase 6.15 iter120: 直近 N 件の run を作成日降順で */
+  async listRecentRuns(tx: Tx, workflowId: string, limit = 5): Promise<WorkflowRun[]> {
+    return await tx
+      .select()
+      .from(workflowRuns)
+      .where(eq(workflowRuns.workflowId, workflowId))
+      .orderBy(desc(workflowRuns.createdAt))
+      .limit(limit)
   },
 
   async softDelete(tx: Tx, id: string): Promise<boolean> {

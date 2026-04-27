@@ -7,6 +7,7 @@ import { unwrap } from '@/lib/result-unwrap'
 import {
   createWorkflowAction,
   deleteWorkflowAction,
+  listWorkflowRunsAction,
   listWorkflowsAction,
   triggerWorkflowAction,
   updateWorkflowAction,
@@ -16,6 +17,7 @@ import type { CreateWorkflowInput, UpdateWorkflowInput } from './schema'
 export const workflowKeys = {
   all: ['workflows'] as const,
   list: (workspaceId: string) => [...workflowKeys.all, 'list', workspaceId] as const,
+  runs: (workflowId: string) => [...workflowKeys.all, 'runs', workflowId] as const,
 }
 
 export function useWorkflows(workspaceId: string) {
@@ -56,9 +58,21 @@ export function useDeleteWorkflow(workspaceId: string) {
   })
 }
 
+export function useWorkflowRuns(workflowId: string, opts: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: workflowKeys.runs(workflowId),
+    queryFn: async () => unwrap(await listWorkflowRunsAction(workflowId, 5)),
+    enabled: opts.enabled !== false && Boolean(workflowId),
+  })
+}
+
 export function useTriggerWorkflow() {
+  const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: { workflowId: string; input?: unknown }) =>
       unwrap(await triggerWorkflowAction(input)),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: workflowKeys.runs(vars.workflowId) })
+    },
   })
 }

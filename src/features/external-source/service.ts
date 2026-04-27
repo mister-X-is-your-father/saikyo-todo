@@ -1,7 +1,6 @@
 /**
- * Phase 6.15 iter112: Workflow CRUD service。
- * 実行 engine (executor) と各 node 型は次 iter で実装する。
- * 現時点は定義の保存 / 一覧 / 編集 / 論理削除のみ。
+ * Phase 6.15 iter120: 外部 API 取込元の CRUD service。
+ * 取込 worker (実際に fetch して item を作る部分) は次 iter で実装。
  */
 import 'server-only'
 
@@ -11,29 +10,24 @@ import { withUserDb } from '@/lib/db/scoped-client'
 import { ConflictError, NotFoundError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 
-import { workflowRepository } from './repository'
-import {
-  CreateWorkflowInputSchema,
-  UpdateWorkflowInputSchema,
-  type Workflow,
-  type WorkflowRun,
-} from './schema'
+import { externalSourceRepository } from './repository'
+import { CreateSourceInputSchema, type ExternalSource, UpdateSourceInputSchema } from './schema'
 
-export const workflowService = {
-  async create(input: unknown): Promise<Result<Workflow>> {
-    const parsed = CreateWorkflowInputSchema.safeParse(input)
+export const externalSourceService = {
+  async create(input: unknown): Promise<Result<ExternalSource>> {
+    const parsed = CreateSourceInputSchema.safeParse(input)
     if (!parsed.success) return err(new ValidationError('入力内容を確認', parsed.error))
     const data = parsed.data
 
     const user = await requireUser()
     await requireWorkspaceMember(data.workspaceId, 'member')
     return await withUserDb(user.id, async (tx) => {
-      const created = await workflowRepository.insert(tx, {
+      const created = await externalSourceRepository.insert(tx, {
         workspaceId: data.workspaceId,
         name: data.name,
-        description: data.description,
-        graph: data.graph,
-        trigger: data.trigger,
+        kind: data.kind,
+        config: data.config,
+        scheduleCron: data.scheduleCron,
         createdByActorType: 'user',
         createdByActorId: user.id,
       })
@@ -41,7 +35,7 @@ export const workflowService = {
         workspaceId: data.workspaceId,
         actorType: 'user',
         actorId: user.id,
-        targetType: 'workflow',
+        targetType: 'external_source',
         targetId: created.id,
         action: 'create',
         after: created,
@@ -50,18 +44,18 @@ export const workflowService = {
     })
   },
 
-  async update(input: unknown): Promise<Result<Workflow>> {
-    const parsed = UpdateWorkflowInputSchema.safeParse(input)
+  async update(input: unknown): Promise<Result<ExternalSource>> {
+    const parsed = UpdateSourceInputSchema.safeParse(input)
     if (!parsed.success) return err(new ValidationError('入力内容を確認', parsed.error))
     const data = parsed.data
 
     const user = await requireUser()
     return await withUserDb(user.id, async (tx) => {
-      const before = await workflowRepository.findById(tx, data.id)
-      if (!before) return err(new NotFoundError('Workflow が見つかりません'))
+      const before = await externalSourceRepository.findById(tx, data.id)
+      if (!before) return err(new NotFoundError('External source が見つかりません'))
       await requireWorkspaceMember(before.workspaceId, 'member')
 
-      const updated = await workflowRepository.updateWithLock(
+      const updated = await externalSourceRepository.updateWithLock(
         tx,
         data.id,
         data.expectedVersion,
@@ -72,7 +66,7 @@ export const workflowService = {
         workspaceId: before.workspaceId,
         actorType: 'user',
         actorId: user.id,
-        targetType: 'workflow',
+        targetType: 'external_source',
         targetId: updated.id,
         action: 'update',
         before,
@@ -82,12 +76,12 @@ export const workflowService = {
     })
   },
 
-  async list(workspaceId: string): Promise<Result<Workflow[]>> {
+  async list(workspaceId: string): Promise<Result<ExternalSource[]>> {
     if (!workspaceId) return err(new ValidationError('workspaceId 必須'))
     const user = await requireUser()
     await requireWorkspaceMember(workspaceId, 'viewer')
     return await withUserDb(user.id, async (tx) => {
-      const rows = await workflowRepository.listByWorkspace(tx, workspaceId)
+      const rows = await externalSourceRepository.listByWorkspace(tx, workspaceId)
       return ok(rows)
     })
   },
@@ -96,34 +90,21 @@ export const workflowService = {
     if (!id) return err(new ValidationError('id 必須'))
     const user = await requireUser()
     return await withUserDb(user.id, async (tx) => {
-      const before = await workflowRepository.findById(tx, id)
-      if (!before) return err(new NotFoundError('Workflow が見つかりません'))
+      const before = await externalSourceRepository.findById(tx, id)
+      if (!before) return err(new NotFoundError('External source が見つかりません'))
       await requireWorkspaceMember(before.workspaceId, 'member')
-      const ok_ = await workflowRepository.softDelete(tx, id)
-      if (!ok_) return err(new NotFoundError('Workflow が見つかりません'))
+      const ok_ = await externalSourceRepository.softDelete(tx, id)
+      if (!ok_) return err(new NotFoundError('External source が見つかりません'))
       await recordAudit(tx, {
         workspaceId: before.workspaceId,
         actorType: 'user',
         actorId: user.id,
-        targetType: 'workflow',
+        targetType: 'external_source',
         targetId: id,
         action: 'delete',
         before,
       })
       return ok({ id })
-    })
-  },
-
-  /** Phase 6.15 iter120: workflow の直近 run 履歴 (member 以上) */
-  async listRecentRuns(workflowId: string, limit = 5): Promise<Result<WorkflowRun[]>> {
-    if (!workflowId) return err(new ValidationError('workflowId 必須'))
-    const user = await requireUser()
-    return await withUserDb(user.id, async (tx) => {
-      const wf = await workflowRepository.findById(tx, workflowId)
-      if (!wf) return err(new NotFoundError('Workflow が見つかりません'))
-      await requireWorkspaceMember(wf.workspaceId, 'viewer')
-      const rows = await workflowRepository.listRecentRuns(tx, workflowId, limit)
-      return ok(rows)
     })
   },
 }

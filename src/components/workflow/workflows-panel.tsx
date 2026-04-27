@@ -10,7 +10,7 @@
  */
 import { useState } from 'react'
 
-import { Pencil, Play, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronRight, Pencil, Play, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
@@ -20,9 +20,10 @@ import {
   useDeleteWorkflow,
   useTriggerWorkflow,
   useUpdateWorkflow,
+  useWorkflowRuns,
   useWorkflows,
 } from '@/features/workflow/hooks'
-import type { Workflow } from '@/features/workflow/schema'
+import type { Workflow, WorkflowRun } from '@/features/workflow/schema'
 import { WorkflowGraphSchema, WorkflowTriggerSchema } from '@/features/workflow/schema'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
@@ -153,6 +154,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
   const nodeCount = (wf.graph as { nodes?: unknown[] }).nodes?.length ?? 0
   const triggerKind = (wf.trigger as { kind?: string }).kind ?? 'manual'
   const [editorOpen, setEditorOpen] = useState(false)
+  const [runsOpen, setRunsOpen] = useState(false)
 
   async function toggleEnabled() {
     try {
@@ -248,6 +250,21 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
           <Button
             size="sm"
             variant="ghost"
+            onClick={() => setRunsOpen((v) => !v)}
+            aria-expanded={runsOpen}
+            aria-controls={`wf-runs-${wf.id}`}
+            data-testid={`wf-runs-toggle-${wf.id}`}
+          >
+            {runsOpen ? (
+              <ChevronDown className="mr-1 h-3.5 w-3.5" />
+            ) : (
+              <ChevronRight className="mr-1 h-3.5 w-3.5" />
+            )}
+            履歴
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
             onClick={() => void handleDelete()}
             disabled={del.isPending}
             data-testid={`wf-delete-${wf.id}`}
@@ -256,6 +273,11 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             <Trash2 className="h-3.5 w-3.5 text-red-500" />
           </Button>
         </div>
+        {runsOpen && (
+          <div id={`wf-runs-${wf.id}`} className="mt-3" data-testid={`wf-runs-${wf.id}`}>
+            <WorkflowRunHistory workflowId={wf.id} />
+          </div>
+        )}
       </CardContent>
       <WorkflowEditorDialog
         open={editorOpen}
@@ -388,4 +410,95 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
       </DialogContent>
     </Dialog>
   )
+}
+
+/**
+ * Phase 6.15 iter120: Workflow の直近 5 件の run 履歴。
+ * status / triggerKind / 開始時刻 / duration を tabular-nums で表示。
+ */
+function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
+  const q = useWorkflowRuns(workflowId)
+  if (q.isLoading) {
+    return <p className="text-muted-foreground text-xs">読み込み中…</p>
+  }
+  if (q.error) {
+    return <p className="text-destructive text-xs">履歴の取得に失敗</p>
+  }
+  const runs = q.data ?? []
+  if (runs.length === 0) {
+    return <p className="text-muted-foreground text-xs">まだ実行履歴がありません</p>
+  }
+  return (
+    <ul
+      className="divide-y rounded border text-xs"
+      data-testid={`wf-runs-list-${workflowId}`}
+      aria-label="直近の実行履歴 (最新 5 件)"
+    >
+      {runs.map((r) => (
+        <li
+          key={r.id}
+          className="flex items-center gap-2 px-2 py-1.5"
+          data-testid={`wf-run-row-${r.id}`}
+        >
+          <RunStatusBadge status={r.status} />
+          <span className="text-muted-foreground">{r.triggerKind}</span>
+          <time
+            className="text-muted-foreground tabular-nums"
+            dateTime={r.startedAt instanceof Date ? r.startedAt.toISOString() : (r.startedAt ?? '')}
+          >
+            {formatRunTime(r)}
+          </time>
+          <span className="text-muted-foreground ml-auto tabular-nums">{formatRunDuration(r)}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function RunStatusBadge({ status }: { status: string }) {
+  const cls =
+    status === 'succeeded'
+      ? 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300'
+      : status === 'failed'
+        ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
+        : status === 'running'
+          ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
+          : 'bg-muted text-muted-foreground'
+  const label =
+    status === 'succeeded'
+      ? '成功'
+      : status === 'failed'
+        ? '失敗'
+        : status === 'running'
+          ? '実行中'
+          : status === 'queued'
+            ? '待機'
+            : status === 'cancelled'
+              ? '中止'
+              : status
+  return (
+    <span
+      className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${cls}`}
+      aria-label={`実行ステータス: ${label}`}
+    >
+      {label}
+    </span>
+  )
+}
+
+function formatRunTime(r: WorkflowRun): string {
+  const t = r.startedAt ?? r.createdAt
+  if (!t) return '—'
+  const d = t instanceof Date ? t : new Date(t)
+  return d.toLocaleString('ja-JP')
+}
+
+function formatRunDuration(r: WorkflowRun): string {
+  if (!r.startedAt || !r.finishedAt) return '—'
+  const s = r.startedAt instanceof Date ? r.startedAt : new Date(r.startedAt)
+  const e = r.finishedAt instanceof Date ? r.finishedAt : new Date(r.finishedAt)
+  const ms = e.getTime() - s.getTime()
+  if (ms < 1000) return `${ms}ms`
+  if (ms < 60_000) return `${(ms / 1000).toFixed(1)}s`
+  return `${(ms / 60_000).toFixed(1)}m`
 }
