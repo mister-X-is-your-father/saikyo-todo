@@ -45,10 +45,12 @@ export function LoginForm() {
           autoComplete="email"
           required
           aria-required="true"
+          aria-invalid={Boolean(form.formState.errors.email)}
+          aria-describedby={form.formState.errors.email ? 'email-error' : undefined}
           {...form.register('email')}
         />
         {form.formState.errors.email && (
-          <p className="text-destructive text-xs" role="alert">
+          <p id="email-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.email.message}
           </p>
         )}
@@ -62,10 +64,12 @@ export function LoginForm() {
           required
           aria-required="true"
           minLength={8}
+          aria-invalid={Boolean(form.formState.errors.password)}
+          aria-describedby={form.formState.errors.password ? 'password-error' : undefined}
           {...form.register('password')}
         />
         {form.formState.errors.password && (
-          <p className="text-destructive text-xs" role="alert">
+          <p id="password-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.password.message}
           </p>
         )}

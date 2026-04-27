@@ -46,10 +46,12 @@ export function CreateWorkspaceForm() {
           aria-required="true"
           minLength={1}
           maxLength={50}
+          aria-invalid={Boolean(form.formState.errors.name)}
+          aria-describedby={form.formState.errors.name ? 'ws-name-error' : undefined}
           {...form.register('name')}
         />
         {form.formState.errors.name && (
-          <p className="text-destructive text-xs" role="alert">
+          <p id="ws-name-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.name.message}
           </p>
         )}
@@ -67,10 +69,12 @@ export function CreateWorkspaceForm() {
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}
+          aria-invalid={Boolean(form.formState.errors.slug)}
+          aria-describedby={form.formState.errors.slug ? 'ws-slug-error' : undefined}
           {...form.register('slug')}
         />
         {form.formState.errors.slug && (
-          <p className="text-destructive text-xs" role="alert">
+          <p id="ws-slug-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.slug.message}
           </p>
         )}

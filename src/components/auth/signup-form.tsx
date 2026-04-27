@@ -45,10 +45,12 @@ export function SignupForm() {
           required
           aria-required="true"
           minLength={1}
+          aria-invalid={Boolean(form.formState.errors.displayName)}
+          aria-describedby={form.formState.errors.displayName ? 'displayName-error' : undefined}
           {...form.register('displayName')}
         />
         {form.formState.errors.displayName && (
-          <p className="text-destructive text-xs" role="alert">
+          <p id="displayName-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.displayName.message}
           </p>
         )}
@@ -61,10 +63,12 @@ export function SignupForm() {
           autoComplete="email"
           required
           aria-required="true"
+          aria-invalid={Boolean(form.formState.errors.email)}
+          aria-describedby={form.formState.errors.email ? 'signup-email-error' : undefined}
           {...form.register('email')}
         />
         {form.formState.errors.email && (
-          <p className="text-destructive text-xs" role="alert">
+          <p id="signup-email-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.email.message}
           </p>
         )}
@@ -78,10 +82,12 @@ export function SignupForm() {
           required
           aria-required="true"
           minLength={8}
+          aria-invalid={Boolean(form.formState.errors.password)}
+          aria-describedby={form.formState.errors.password ? 'signup-password-error' : undefined}
           {...form.register('password')}
         />
         {form.formState.errors.password && (
-          <p className="text-destructive text-xs" role="alert">
+          <p id="signup-password-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.password.message}
           </p>
         )}
