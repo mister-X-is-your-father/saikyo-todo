@@ -241,7 +241,11 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
               aria-label={`Goal「${goal.title}」の KR ${open ? '一覧を閉じる' : '一覧を開く'}`}
               data-testid={`goal-toggle-${goal.id}`}
             >
-              {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              {open ? (
+                <ChevronDown className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <ChevronRight className="h-4 w-4" aria-hidden="true" />
+              )}
             </button>
             <div className="min-w-0 flex-1">
               <CardTitle className="truncate text-base">{goal.title}</CardTitle>
@@ -359,8 +363,9 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     ? 'active な Goal のみ分解可能'
                     : 'AI が Goal + KR + チームコンテキストから 5〜10 件の Item を作成'
                 }
+                aria-label={`Goal「${goal.title}」を AI 分解 (5〜10 件の Item を作成)`}
               >
-                <Sparkles className="mr-1 h-3.5 w-3.5" />
+                <Sparkles className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                 {decompose.isPending ? 'AI 分解中…' : 'AI 分解'}
               </Button>
             </div>
@@ -555,7 +560,7 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
             disabled={!krTitle.trim() || create.isPending}
             data-testid={`kr-add-btn-${goalId}`}
           >
-            <Plus className="mr-1 h-3.5 w-3.5" />
+            <Plus className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             KR 追加
           </Button>
         </div>
