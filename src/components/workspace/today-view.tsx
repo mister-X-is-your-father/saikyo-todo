@@ -57,7 +57,8 @@ export function TodayView({
                 {g.items.map((it) => (
                   <div
                     key={it.id}
-                    className="hover:bg-muted/50 flex items-start gap-2 rounded p-1.5"
+                    onClick={() => void setOpenItemId(it.id)}
+                    className="hover:bg-muted/50 flex cursor-pointer items-start gap-2 rounded p-1.5"
                     data-testid={`today-row-${it.id}`}
                   >
                     <ItemCheckbox item={it} workspaceId={workspaceId} />
@@ -70,7 +71,10 @@ export function TodayView({
                     <div className="flex min-w-0 flex-1 items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => void setOpenItemId(it.id)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          void setOpenItemId(it.id)
+                        }}
                         className="hover:text-primary truncate text-left font-medium hover:underline"
                         data-testid={`today-title-${it.id}`}
                       >

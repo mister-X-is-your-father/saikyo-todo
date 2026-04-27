@@ -202,13 +202,17 @@ export function DashboardView({ workspaceId }: Props) {
                 return (
                   <li
                     key={item.id}
-                    className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 py-2"
+                    onClick={() => void setOpenItemId(item.id)}
+                    className="hover:bg-muted/50 grid cursor-pointer grid-cols-[1fr_auto_auto_auto] items-center gap-4 rounded py-2"
                     data-testid="must-item-row"
                   >
                     <div className="flex min-w-0 flex-col">
                       <button
                         type="button"
-                        onClick={() => void setOpenItemId(item.id)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          void setOpenItemId(item.id)
+                        }}
                         className="hover:text-primary truncate text-left font-medium hover:underline"
                         data-testid={`dashboard-must-title-${item.id}`}
                       >

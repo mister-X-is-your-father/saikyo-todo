@@ -185,7 +185,8 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
               {filtered.map((it) => (
                 <li
                   key={it.id}
-                  className="hover:bg-muted/50 flex items-center gap-2 rounded px-2 py-1.5"
+                  onClick={() => void setOpenItemId(it.id)}
+                  className="hover:bg-muted/50 flex cursor-pointer items-center gap-2 rounded px-2 py-1.5"
                   data-testid={`period-row-${period}-${it.id}`}
                 >
                   <ItemCheckbox item={it} workspaceId={workspaceId} />
@@ -196,7 +197,10 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
                   />
                   <button
                     type="button"
-                    onClick={() => void setOpenItemId(it.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      void setOpenItemId(it.id)
+                    }}
                     className="hover:text-primary truncate text-left text-sm font-medium hover:underline"
                     data-testid={`period-title-${period}-${it.id}`}
                   >

@@ -45,7 +45,8 @@ export function InboxView({
       {inbox.map((it) => (
         <div
           key={it.id}
-          className="hover:bg-muted/50 flex items-center gap-2 rounded px-2 py-1.5"
+          onClick={() => void setOpenItemId(it.id)}
+          className="hover:bg-muted/50 flex cursor-pointer items-center gap-2 rounded px-2 py-1.5"
           data-testid={`inbox-row-${it.id}`}
         >
           <ItemCheckbox item={it} workspaceId={workspaceId} />
@@ -57,7 +58,10 @@ export function InboxView({
           />
           <button
             type="button"
-            onClick={() => void setOpenItemId(it.id)}
+            onClick={(e) => {
+              e.stopPropagation()
+              void setOpenItemId(it.id)
+            }}
             className="hover:text-primary truncate text-left font-medium hover:underline"
             data-testid={`inbox-title-${it.id}`}
           >
