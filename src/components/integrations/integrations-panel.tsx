@@ -130,8 +130,9 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             disabled={!src.enabled || trigger.isPending}
             data-testid={`src-pull-${src.id}`}
             title="手動 pull (sync 実行、30s timeout)"
+            aria-label={`Source「${src.name}」を手動 Pull`}
           >
-            <Play className="mr-1 h-3.5 w-3.5" />
+            <Play className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             {trigger.isPending ? 'Pull 中…' : 'Pull'}
           </Button>
           <Button
@@ -140,6 +141,7 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             onClick={() => void toggleEnabled()}
             disabled={update.isPending}
             data-testid={`src-toggle-${src.id}`}
+            aria-label={`Source「${src.name}」を${src.enabled ? '無効化' : '有効化'}`}
           >
             {src.enabled ? '無効化' : '有効化'}
           </Button>
@@ -152,9 +154,9 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             data-testid={`src-imports-toggle-${src.id}`}
           >
             {importsOpen ? (
-              <ChevronDown className="mr-1 h-3.5 w-3.5" />
+              <ChevronDown className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             ) : (
-              <ChevronRight className="mr-1 h-3.5 w-3.5" />
+              <ChevronRight className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             )}
             履歴
           </Button>
@@ -166,7 +168,7 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             data-testid={`src-delete-${src.id}`}
             aria-label={`Source「${src.name}」を削除`}
           >
-            <Trash2 className="h-3.5 w-3.5 text-red-500" />
+            <Trash2 className="h-3.5 w-3.5 text-red-500" aria-hidden="true" />
           </Button>
         </div>
         {importsOpen && (
@@ -415,14 +417,26 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
 function SourceImportHistory({ sourceId }: { sourceId: string }) {
   const q = useSourceImports(sourceId)
   if (q.isLoading) {
-    return <p className="text-muted-foreground text-xs">読み込み中…</p>
+    return (
+      <p className="text-muted-foreground text-xs" role="status" aria-live="polite">
+        読み込み中…
+      </p>
+    )
   }
   if (q.error) {
-    return <p className="text-destructive text-xs">履歴の取得に失敗</p>
+    return (
+      <p className="text-destructive text-xs" role="alert">
+        履歴の取得に失敗
+      </p>
+    )
   }
   const imports = q.data ?? []
   if (imports.length === 0) {
-    return <p className="text-muted-foreground text-xs">まだ Pull 履歴がありません</p>
+    return (
+      <p className="text-muted-foreground text-xs" role="status">
+        まだ Pull 履歴がありません
+      </p>
+    )
   }
   return (
     <ul
