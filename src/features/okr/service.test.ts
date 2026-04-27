@@ -231,4 +231,49 @@ describe('okrService — Goal CRUD + KR + progress', () => {
       await other.cleanup()
     }
   })
+
+  it('softDeleteKeyResult: list から消える + audit に delete', async () => {
+    const g = await okrService.createGoal({
+      workspaceId: wsId,
+      title: 'KR delete target',
+      period: 'quarterly',
+      startDate: '2026-04-01',
+      endDate: '2026-06-30',
+      idempotencyKey: crypto.randomUUID(),
+    })
+    if (!g.ok) throw g.error
+    const kr = await okrService.createKeyResult({
+      goalId: g.value.id,
+      title: 'KR-to-delete',
+      progressMode: 'items',
+      weight: 1,
+      idempotencyKey: crypto.randomUUID(),
+    })
+    if (!kr.ok) throw kr.error
+    const r = await okrService.softDeleteKeyResult(kr.value.id)
+    expect(r.ok).toBe(true)
+    const list = await okrService.listKeyResults(g.value.id)
+    if (!list.ok) throw list.error
+    expect(list.value.find((k) => k.id === kr.value.id)).toBeUndefined()
+
+    // audit_log に delete record があるか
+    const ac = adminClient()
+    const { data: audits } = await ac
+      .from('audit_log')
+      .select('action, target_id')
+      .eq('workspace_id', wsId)
+      .eq('target_type', 'key_result')
+      .eq('action', 'delete')
+    expect(audits?.some((a) => a.target_id === kr.value.id)).toBe(true)
+  })
+
+  it('softDeleteKeyResult: 不在 id は NotFoundError', async () => {
+    const r = await okrService.softDeleteKeyResult('00000000-0000-0000-0000-000000000000')
+    expect(r.ok).toBe(false)
+  })
+
+  it('softDeleteKeyResult: id 空は ValidationError', async () => {
+    const r = await okrService.softDeleteKeyResult('')
+    expect(r.ok).toBe(false)
+  })
 })

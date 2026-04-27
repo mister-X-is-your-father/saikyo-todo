@@ -101,6 +101,16 @@ export const keyResultRepository = {
     return (row ?? null) as KeyResult | null
   },
 
+  /** Phase 6.15 iter141: KR の soft delete (key_results.deleted_at)。 */
+  async softDeleteKeyResult(tx: Tx, id: string): Promise<KeyResult | null> {
+    const [row] = await tx
+      .update(keyResults)
+      .set({ deletedAt: new Date() })
+      .where(and(eq(keyResults.id, id), isNull(keyResults.deletedAt)))
+      .returning()
+    return (row ?? null) as KeyResult | null
+  },
+
   /** KR に紐付いた items の done 比 (mode='items' 用集計)。 */
   async itemProgress(tx: Tx, keyResultId: string): Promise<{ total: number; done: number }> {
     const rows = await tx

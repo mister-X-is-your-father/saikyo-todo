@@ -192,6 +192,34 @@ export const okrService = {
     })
   },
 
+  /**
+   * Phase 6.15 iter141: KR の soft delete。前段として goal を引いて
+   * workspace member ('member' 以上) を要求。audit_log にも記録する。
+   */
+  async softDeleteKeyResult(id: string): Promise<Result<{ id: string }>> {
+    if (!id) return err(new ValidationError('id 必須'))
+    const user = await requireUser()
+    return await withUserDb(user.id, async (tx) => {
+      const before = await keyResultRepository.findById(tx, id)
+      if (!before) return err(new NotFoundError('KeyResult が見つかりません'))
+      const goal = await goalRepository.findById(tx, before.goalId)
+      if (!goal) return err(new NotFoundError('親 Goal が見つかりません'))
+      await requireWorkspaceMember(goal.workspaceId, 'member')
+      const deleted = await keyResultRepository.softDeleteKeyResult(tx, id)
+      if (!deleted) return err(new NotFoundError('KeyResult が見つかりません'))
+      await recordAudit(tx, {
+        workspaceId: goal.workspaceId,
+        actorType: 'user',
+        actorId: user.id,
+        targetType: 'key_result',
+        targetId: id,
+        action: 'delete',
+        before,
+      })
+      return ok({ id })
+    })
+  },
+
   async listAllKeyResultsByWorkspace(
     workspaceId: string,
   ): Promise<Result<Array<KeyResult & { goalTitle: string; goalStatus: string }>>> {

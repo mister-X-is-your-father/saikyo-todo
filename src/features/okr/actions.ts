@@ -28,6 +28,9 @@ export async function createKeyResultAction(input: unknown): Promise<Result<KeyR
 export async function updateKeyResultAction(input: unknown): Promise<Result<KeyResult>> {
   return await actionWrap(() => okrService.updateKeyResult(input))
 }
+export async function deleteKeyResultAction(id: string): Promise<Result<{ id: string }>> {
+  return await actionWrap(() => okrService.softDeleteKeyResult(id))
+}
 export async function listKeyResultsAction(goalId: string): Promise<Result<KeyResult[]>> {
   try {
     return await okrService.listKeyResults(goalId)

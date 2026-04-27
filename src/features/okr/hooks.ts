@@ -10,6 +10,7 @@ import {
   assignItemToKeyResultAction,
   createGoalAction,
   createKeyResultAction,
+  deleteKeyResultAction,
   goalProgressAction,
   listAllKeyResultsByWorkspaceAction,
   listGoalsAction,
@@ -104,6 +105,17 @@ export function useUpdateKeyResult(goalId: string, workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: UpdateKeyResultInput) => unwrap(await updateKeyResultAction(input)),
+    onSuccess: () => {
+      invalidateKrScope(qc, goalId)
+      invalidateGoalScope(qc, workspaceId)
+    },
+  })
+}
+
+export function useDeleteKeyResult(goalId: string, workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => unwrap(await deleteKeyResultAction(id)),
     onSuccess: () => {
       invalidateKrScope(qc, goalId)
       invalidateGoalScope(qc, workspaceId)

@@ -17,6 +17,7 @@ import { useDecomposeGoal } from '@/features/agent/hooks'
 import {
   useCreateGoal,
   useCreateKeyResult,
+  useDeleteKeyResult,
   useGoalProgress,
   useGoals,
   useKeyResults,
@@ -290,6 +291,22 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
   const list = useKeyResults(goalId)
   const progress = useGoalProgress(goalId)
   const create = useCreateKeyResult(goalId, workspaceId)
+  const remove = useDeleteKeyResult(goalId, workspaceId)
+
+  async function handleDelete(krId: string, title: string) {
+    if (
+      !window.confirm(
+        `KR「${title}」を削除しますか?\n(soft delete: deleted_at に記録、復元は DB 直接)`,
+      )
+    )
+      return
+    try {
+      await remove.mutateAsync(krId)
+      toast.success('KR を削除しました')
+    } catch (e) {
+      toast.error(isAppError(e) ? e.message : 'KR 削除に失敗')
+    }
+  }
 
   const [krTitle, setKrTitle] = useState('')
   const [mode, setMode] = useState<ProgressMode>('items')
@@ -357,7 +374,20 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
                       )}
                     </div>
                   </div>
-                  <span className="font-mono text-xs">{pct}%</span>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span className="font-mono text-xs">{pct}%</span>
+                    <button
+                      type="button"
+                      onClick={() => void handleDelete(kr.id, kr.title)}
+                      disabled={remove.isPending}
+                      aria-label={`KR「${kr.title}」を削除`}
+                      title="KR を削除 (soft delete)"
+                      data-testid={`kr-delete-${kr.id}`}
+                      className="text-muted-foreground hover:text-destructive text-xs disabled:opacity-50"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
                 <div
                   className="bg-muted h-1 w-full overflow-hidden rounded-full"
