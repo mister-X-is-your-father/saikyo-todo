@@ -42,6 +42,78 @@ import {
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
+/**
+ * Phase 6.15 iter157: graph editor の node プリセット定義。
+ * 各 type の skeleton config (registry.ts の executor が読む典型値) を持っており、
+ * + button で graph.nodes に append される。id は既存と被らない n1 / n2 / ... に自動採番。
+ */
+interface NodePreset {
+  type: 'noop' | 'http' | 'ai' | 'slack' | 'email' | 'script'
+  title: string
+  config: Record<string, unknown>
+}
+const NODE_PRESETS: NodePreset[] = [
+  { type: 'noop', title: 'noop (passthrough — debug 用)', config: {} },
+  {
+    type: 'http',
+    title: 'http (任意 URL に fetch)',
+    config: { url: 'https://example.com', method: 'GET' },
+  },
+  {
+    type: 'ai',
+    title: 'ai (Researcher Agent カスタムプロンプト)',
+    config: { prompt: 'タスクをこなしてください' },
+  },
+  {
+    type: 'slack',
+    title: 'slack (workspace webhook へ通知)',
+    config: { text: 'Workflow 完了しました' },
+  },
+  {
+    type: 'email',
+    title: 'email (mock_email_outbox に投入、本番は dispatcher で実送信)',
+    config: { to: 'team@example.com', subject: '通知', body: 'Workflow 完了' },
+  },
+  {
+    type: 'script',
+    title: 'script (scripts/ 配下の .ts を tsx で実行)',
+    config: { name: 'verify-acceptance.ts', args: [] },
+  },
+]
+
+/**
+ * graphText (JSON) に preset の skeleton node を append する。
+ * 既存の id とぶつからないよう n1 / n2 / ... の連番から空きを探す。
+ * parse 失敗 / unknown shape のときは現状のテキストをそのまま返す (UI 側で error 表示)。
+ */
+export function appendNodePreset(graphText: string, preset: NodePreset): string {
+  let parsed: { nodes?: unknown[]; edges?: unknown[] } | null = null
+  try {
+    parsed = JSON.parse(graphText) as { nodes?: unknown[]; edges?: unknown[] }
+  } catch {
+    return graphText
+  }
+  if (!parsed || typeof parsed !== 'object') return graphText
+  const nodes = Array.isArray(parsed.nodes) ? [...parsed.nodes] : []
+  const edges = Array.isArray(parsed.edges) ? [...parsed.edges] : []
+  const existingIds = new Set(
+    nodes
+      .filter(
+        (n): n is { id: string } => Boolean(n) && typeof (n as { id: unknown }).id === 'string',
+      )
+      .map((n) => n.id),
+  )
+  let n = 1
+  while (existingIds.has(`n${n}`)) n += 1
+  const newNode = {
+    id: `n${n}`,
+    type: preset.type,
+    label: `${preset.type} ${n}`,
+    config: preset.config,
+  }
+  return JSON.stringify({ ...parsed, nodes: [...nodes, newNode], edges }, null, 2)
+}
+
 interface Props {
   workspaceId: string
 }
@@ -366,6 +438,22 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
             <Label htmlFor={`wf-editor-graph-${wf.id}`}>
               graph ({'{ nodes: [...], edges: [...] }'})
             </Label>
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label="node 追加プリセット">
+              {NODE_PRESETS.map((preset) => (
+                <Button
+                  key={preset.type}
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setGraphText(appendNodePreset(graphText, preset))}
+                  data-testid={`wf-node-preset-${preset.type}-${wf.id}`}
+                  title={preset.title}
+                  aria-label={`${preset.type} node を追加`}
+                >
+                  + {preset.type}
+                </Button>
+              ))}
+            </div>
             <Textarea
               id={`wf-editor-graph-${wf.id}`}
               value={graphText}
@@ -376,7 +464,8 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
               aria-label="graph JSON"
             />
             <p className="text-muted-foreground text-[10px]">
-              node type: noop / http / slack / email / ai / script (詳細は registry.ts)
+              プリセット button で skeleton node を JSON に追加できます (id は自動 unique 化、 node
+              type 詳細は registry.ts)
             </p>
           </div>
           <div className="space-y-1">
