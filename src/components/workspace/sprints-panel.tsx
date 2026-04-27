@@ -490,6 +490,7 @@ function SprintCard({
                 onClick={() => setEditing(true)}
                 data-testid={`sprint-period-edit-btn-${sprint.id}`}
                 title="期間を編集"
+                aria-label={`Sprint「${sprint.name}」の期間を編集`}
               >
                 <CalendarRange className="mr-1 h-3.5 w-3.5" />
                 期間
@@ -502,6 +503,7 @@ function SprintCard({
                 disabled={changing}
                 onClick={() => onStatusChange('active')}
                 data-testid={`sprint-activate-${sprint.id}`}
+                aria-label={`Sprint「${sprint.name}」を稼働開始`}
               >
                 <Play className="mr-1 h-3.5 w-3.5" />
                 稼働開始
@@ -515,6 +517,7 @@ function SprintCard({
                   disabled={changing}
                   onClick={() => onStatusChange('completed')}
                   data-testid={`sprint-complete-${sprint.id}`}
+                  aria-label={`Sprint「${sprint.name}」を完了`}
                 >
                   <CheckCircle className="mr-1 h-3.5 w-3.5" />
                   完了
@@ -524,6 +527,7 @@ function SprintCard({
                   variant="outline"
                   disabled={changing}
                   onClick={() => onStatusChange('planning')}
+                  aria-label={`Sprint「${sprint.name}」を計画に戻す`}
                 >
                   <Pause className="mr-1 h-3.5 w-3.5" />
                   計画に戻す
@@ -545,6 +549,7 @@ function SprintCard({
                   onStatusChange('cancelled')
                 }}
                 data-testid={`sprint-cancel-${sprint.id}`}
+                aria-label={`Sprint「${sprint.name}」を中止`}
               >
                 <X className="mr-1 h-3.5 w-3.5" />
                 中止
@@ -558,6 +563,7 @@ function SprintCard({
                 onClick={onRunRetro}
                 data-testid={`sprint-retro-${sprint.id}`}
                 title="PM Agent が完了/未完 items を要約して Retro Doc を生成"
+                aria-label={`Sprint「${sprint.name}」の振り返りを生成`}
               >
                 <Sparkles className="mr-1 h-3.5 w-3.5" />
                 {retroPending ? '振り返り生成中…' : '振り返り生成'}
@@ -571,6 +577,9 @@ function SprintCard({
                 onClick={onRunPremortem}
                 data-testid={`sprint-premortem-${sprint.id}`}
                 title="PM Agent が想定リスクと早期警報を Pre-mortem Doc にまとめる"
+                aria-label={`Sprint「${sprint.name}」の Pre-mortem を${
+                  sprint.premortemGeneratedAt ? '再生成' : '生成'
+                }`}
               >
                 <Sparkles className="mr-1 h-3.5 w-3.5" />
                 {premortemPending
