@@ -581,14 +581,26 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
   const trigger = useTriggerWorkflow()
   const [expandedRunId, setExpandedRunId] = useState<string | null>(null)
   if (q.isLoading) {
-    return <p className="text-muted-foreground text-xs">読み込み中…</p>
+    return (
+      <p className="text-muted-foreground text-xs" role="status" aria-live="polite">
+        読み込み中…
+      </p>
+    )
   }
   if (q.error) {
-    return <p className="text-destructive text-xs">履歴の取得に失敗</p>
+    return (
+      <p className="text-destructive text-xs" role="alert">
+        履歴の取得に失敗
+      </p>
+    )
   }
   const runs = q.data ?? []
   if (runs.length === 0) {
-    return <p className="text-muted-foreground text-xs">まだ実行履歴がありません</p>
+    return (
+      <p className="text-muted-foreground text-xs" role="status">
+        まだ実行履歴がありません
+      </p>
+    )
   }
   async function handleRerun(r: WorkflowRun) {
     try {
@@ -674,11 +686,24 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
 function WorkflowNodeRunsList({ runId }: { runId: string }) {
   const q = useWorkflowNodeRuns(runId, { enabled: true })
   if (q.isLoading)
-    return <p className="text-muted-foreground text-[11px]">node 詳細を読み込み中…</p>
-  if (q.error) return <p className="text-destructive text-[11px]">node 詳細の取得に失敗</p>
+    return (
+      <p className="text-muted-foreground text-[11px]" role="status" aria-live="polite">
+        node 詳細を読み込み中…
+      </p>
+    )
+  if (q.error)
+    return (
+      <p className="text-destructive text-[11px]" role="alert">
+        node 詳細の取得に失敗
+      </p>
+    )
   const rows = q.data ?? []
   if (rows.length === 0) {
-    return <p className="text-muted-foreground text-[11px]">node 実行履歴がありません</p>
+    return (
+      <p className="text-muted-foreground text-[11px]" role="status">
+        node 実行履歴がありません
+      </p>
+    )
   }
   return (
     <ul className="space-y-1.5" data-testid={`wf-node-runs-${runId}`}>
