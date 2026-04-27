@@ -48,7 +48,11 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
   }
 
   if (isLoading) {
-    return <p className="text-muted-foreground p-4 text-sm">読み込み中…</p>
+    return (
+      <p className="text-muted-foreground p-4 text-sm" role="status" aria-live="polite">
+        読み込み中…
+      </p>
+    )
   }
   if (error) {
     return <p className="text-destructive p-4 text-sm">アーカイブ一覧の取得に失敗しました</p>

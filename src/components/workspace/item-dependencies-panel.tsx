@@ -78,7 +78,12 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
     }
   }
 
-  if (isLoading) return <p className="text-muted-foreground text-xs">読み込み中…</p>
+  if (isLoading)
+    return (
+      <p className="text-muted-foreground text-xs" role="status" aria-live="polite">
+        読み込み中…
+      </p>
+    )
 
   const blockedBy = data?.blockedBy ?? []
   const blocking = data?.blocking ?? []

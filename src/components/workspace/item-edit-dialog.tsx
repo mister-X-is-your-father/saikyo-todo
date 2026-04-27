@@ -561,9 +561,13 @@ function SubtasksPanel({ workspaceId, parent }: { workspaceId: string; parent: I
       <div className="space-y-2">
         <h3 className="text-sm font-semibold">既存の子タスク ({children.length})</h3>
         {items.isLoading ? (
-          <p className="text-muted-foreground text-xs">読み込み中…</p>
+          <p className="text-muted-foreground text-xs" role="status" aria-live="polite">
+            読み込み中…
+          </p>
         ) : children.length === 0 ? (
-          <p className="text-muted-foreground text-xs">まだ子タスクがありません</p>
+          <p className="text-muted-foreground text-xs" role="status">
+            まだ子タスクがありません
+          </p>
         ) : (
           <ul className="space-y-1" data-testid="subtasks-list">
             {children.map((c) => (
