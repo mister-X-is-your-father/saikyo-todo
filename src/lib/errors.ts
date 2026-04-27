@@ -45,6 +45,30 @@ export class AppError extends Error {
     super(message)
     this.name = this.constructor.name
     this.cause = normalizeCause(cause)
+    // Phase 6.15 iter145: Server Action 越しに JSON.stringify される時、
+    // Error.prototype.message は non-enumerable なので落ちる
+    // (`{}` になり、client 側 unwrap で message=undefined → toast が
+    // fallback に倒れる)。enumerable 化して wire 経由で確実に届ける。
+    Object.defineProperty(this, 'message', {
+      value: message,
+      enumerable: true,
+      writable: true,
+      configurable: true,
+    })
+  }
+
+  /**
+   * Phase 6.15 iter145: Server Action 越しの直列化を保証する toJSON。
+   * Next.js RSC / `react-server-dom-webpack` が enumerable 自前 prop しか
+   * 拾わない仕様なので、明示的に code / message / name / cause を返す。
+   */
+  toJSON(): { code: string; message: string; name: string; cause?: unknown } {
+    return {
+      code: this.code,
+      message: this.message,
+      name: this.name,
+      ...(this.cause !== undefined ? { cause: this.cause } : {}),
+    }
   }
 }
 
