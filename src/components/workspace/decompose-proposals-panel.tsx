@@ -158,7 +158,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               data-testid="agent-cancel"
               title="実行中の Agent を中止"
             >
-              <X className="mr-1 h-3.5 w-3.5" />
+              <X className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
               中止
             </Button>
           </div>
@@ -174,6 +174,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                   disabled={accept.isPending || rejectAll.isPending || decompose.isPending}
                   onClick={() => void handleAcceptAll()}
                   data-testid="proposals-accept-all"
+                  aria-label={`保留中の提案 ${list.length} 件をすべて採用`}
                 >
                   全て採用
                 </Button>
@@ -184,6 +185,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                   disabled={rejectAll.isPending || accept.isPending || decompose.isPending}
                   onClick={() => void handleRejectAll()}
                   data-testid="proposals-reject-all"
+                  aria-label={`保留中の提案 ${list.length} 件をすべて却下`}
                 >
                   全て却下
                 </Button>
@@ -200,7 +202,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               data-testid="proposals-redecompose"
               title="既存の提案を残したまま追加で分解"
             >
-              <RotateCw className="h-3.5 w-3.5" />
+              <RotateCw className="h-3.5 w-3.5" aria-hidden="true" />
               {list.length > 0 ? '追加分解' : '再分解'}
             </Button>
             {list.length > 0 && (
