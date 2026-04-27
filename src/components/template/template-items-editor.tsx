@@ -62,9 +62,16 @@ export function TemplateItemsEditor({ templateId }: Props) {
     }
   }
 
-  async function handleRemove(id: string) {
+  async function handleRemove(id: string, title: string) {
+    if (
+      !window.confirm(
+        `Template item「${title}」を削除しますか?\n(template に紐づいた今後の展開には影響しないが、過去 instance はそのまま)`,
+      )
+    )
+      return
     try {
       await removeMut.mutateAsync({ id })
+      toast.success('削除しました')
     } catch (e) {
       toast.error(isAppError(e) ? e.message : '削除に失敗しました')
     }
@@ -110,6 +117,9 @@ export function TemplateItemsEditor({ templateId }: Props) {
             value={dod}
             onChange={(e) => setDod(e.target.value)}
             rows={2}
+            aria-label="DoD (Definition of Done) — MUST item の完了条件"
+            required
+            aria-required="true"
           />
         ) : null}
         <Button type="submit" size="sm" disabled={addMut.isPending || !title.trim()}>
@@ -136,18 +146,29 @@ export function TemplateItemsEditor({ templateId }: Props) {
             >
               <span className="flex-1 truncate">{it.title}</span>
               {it.isMust ? (
-                <span className="rounded bg-red-500/10 px-1.5 text-xs text-red-600">MUST</span>
+                <span
+                  className="rounded bg-red-500/10 px-1.5 text-xs text-red-600"
+                  role="img"
+                  aria-label="MUST item"
+                >
+                  MUST
+                </span>
               ) : null}
               {it.dueOffsetDays != null ? (
-                <span className="text-muted-foreground text-xs">+{it.dueOffsetDays}日</span>
+                <span
+                  className="text-muted-foreground text-xs"
+                  aria-label={`期日 offset +${it.dueOffsetDays} 日`}
+                >
+                  +{it.dueOffsetDays}日
+                </span>
               ) : null}
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handleRemove(it.id)}
-                aria-label={`${it.title} を削除`}
+                onClick={() => handleRemove(it.id, it.title)}
+                aria-label={`Template item「${it.title}」を削除`}
               >
-                <Trash2 className="h-4 w-4 text-red-500" />
+                <Trash2 className="h-4 w-4 text-red-500" aria-hidden="true" />
               </Button>
             </li>
           ))}
