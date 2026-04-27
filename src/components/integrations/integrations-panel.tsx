@@ -37,7 +37,11 @@ export function IntegrationsPanel({ workspaceId }: Props) {
   const list = useExternalSources(workspaceId)
 
   return (
-    <div className="space-y-6" data-testid="integrations-panel">
+    <section
+      className="space-y-6"
+      data-testid="integrations-panel"
+      aria-label="API 連携 source 一覧と新規作成"
+    >
       <CreateSourceForm workspaceId={workspaceId} />
       {list.isLoading ? (
         <Loading />
@@ -60,7 +64,7 @@ export function IntegrationsPanel({ workspaceId }: Props) {
           ))}
         </ul>
       )}
-    </div>
+    </section>
   )
 }
 

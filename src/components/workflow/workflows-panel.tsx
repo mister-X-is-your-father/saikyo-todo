@@ -71,7 +71,11 @@ export function WorkflowsPanel({ workspaceId }: Props) {
   }
 
   return (
-    <div className="space-y-6" data-testid="workflows-panel">
+    <section
+      className="space-y-6"
+      data-testid="workflows-panel"
+      aria-label="Workflow 一覧と新規作成"
+    >
       <Card>
         <CardHeader>
           <CardTitle className="text-base">新規 Workflow</CardTitle>
@@ -143,7 +147,7 @@ export function WorkflowsPanel({ workspaceId }: Props) {
           ))}
         </ul>
       )}
-    </div>
+    </section>
   )
 }
 
