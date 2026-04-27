@@ -68,11 +68,13 @@ export function BulkActionBar({ workspaceId }: Props) {
     <div
       className="bg-background fixed bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-lg border px-4 py-2 shadow-lg"
       data-testid="bulk-action-bar"
+      role="region"
+      aria-label={`一括操作 (${count} 件選択中)`}
     >
       <span className="text-sm font-medium" data-testid="bulk-count">
         {count} 件選択中
       </span>
-      <div className="bg-border mx-1 h-5 w-px" />
+      <div className="bg-border mx-1 h-5 w-px" aria-hidden="true" />
       {(statuses ?? []).map((s) => (
         <Button
           key={s.key}
@@ -81,6 +83,7 @@ export function BulkActionBar({ workspaceId }: Props) {
           disabled={bulkStatus.isPending}
           onClick={() => void handleStatus(s.key)}
           data-testid={`bulk-status-${s.key}`}
+          aria-label={`選択 ${count} 件を「${s.label}」に変更`}
         >
           {s.label} に
         </Button>
@@ -91,10 +94,17 @@ export function BulkActionBar({ workspaceId }: Props) {
         disabled={bulkDelete.isPending}
         onClick={() => void handleDelete()}
         data-testid="bulk-delete"
+        aria-label={`選択 ${count} 件を soft delete`}
       >
         削除
       </Button>
-      <Button size="sm" variant="ghost" onClick={() => clear()} data-testid="bulk-clear">
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={() => clear()}
+        data-testid="bulk-clear"
+        aria-label="選択を解除"
+      >
         解除
       </Button>
     </div>
