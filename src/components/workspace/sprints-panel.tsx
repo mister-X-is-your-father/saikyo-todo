@@ -492,7 +492,7 @@ function SprintCard({
                 title="期間を編集"
                 aria-label={`Sprint「${sprint.name}」の期間を編集`}
               >
-                <CalendarRange className="mr-1 h-3.5 w-3.5" />
+                <CalendarRange className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                 期間
               </Button>
             )}
@@ -505,7 +505,7 @@ function SprintCard({
                 data-testid={`sprint-activate-${sprint.id}`}
                 aria-label={`Sprint「${sprint.name}」を稼働開始`}
               >
-                <Play className="mr-1 h-3.5 w-3.5" />
+                <Play className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                 稼働開始
               </Button>
             )}
@@ -519,7 +519,7 @@ function SprintCard({
                   data-testid={`sprint-complete-${sprint.id}`}
                   aria-label={`Sprint「${sprint.name}」を完了`}
                 >
-                  <CheckCircle className="mr-1 h-3.5 w-3.5" />
+                  <CheckCircle className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                   完了
                 </Button>
                 <Button
@@ -529,7 +529,7 @@ function SprintCard({
                   onClick={() => onStatusChange('planning')}
                   aria-label={`Sprint「${sprint.name}」を計画に戻す`}
                 >
-                  <Pause className="mr-1 h-3.5 w-3.5" />
+                  <Pause className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                   計画に戻す
                 </Button>
               </>
@@ -551,7 +551,7 @@ function SprintCard({
                 data-testid={`sprint-cancel-${sprint.id}`}
                 aria-label={`Sprint「${sprint.name}」を中止`}
               >
-                <X className="mr-1 h-3.5 w-3.5" />
+                <X className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                 中止
               </Button>
             )}
@@ -565,7 +565,7 @@ function SprintCard({
                 title="PM Agent が完了/未完 items を要約して Retro Doc を生成"
                 aria-label={`Sprint「${sprint.name}」の振り返りを生成`}
               >
-                <Sparkles className="mr-1 h-3.5 w-3.5" />
+                <Sparkles className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                 {retroPending ? '振り返り生成中…' : '振り返り生成'}
               </Button>
             )}
@@ -581,7 +581,7 @@ function SprintCard({
                   sprint.premortemGeneratedAt ? '再生成' : '生成'
                 }`}
               >
-                <Sparkles className="mr-1 h-3.5 w-3.5" />
+                <Sparkles className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                 {premortemPending
                   ? 'Pre-mortem 生成中…'
                   : sprint.premortemGeneratedAt
