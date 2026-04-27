@@ -44,6 +44,7 @@ export function ItemResearchButton({ workspaceId, item }: Props) {
         void run()
       }}
       data-testid={`research-btn-${item.id}`}
+      aria-label={`「${item.title}」を AI 調査して Doc を作成`}
     >
       {research.isPending ? '調査中…' : 'AI 調査'}
     </Button>
