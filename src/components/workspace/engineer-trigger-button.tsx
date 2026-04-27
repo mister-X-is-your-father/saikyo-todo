@@ -74,8 +74,17 @@ export function EngineerTriggerButton({ item }: Props) {
         disabled={trigger.isPending}
         onClick={() => void handleClick()}
         data-testid="engineer-trigger-btn"
+        aria-label={`Engineer Agent に「${item.title}」を実装させる${
+          autoPr ? ' (PR 自動起票)' : ''
+        }`}
       >
-        {trigger.isPending ? '起動中…' : '🛠 Engineer に実装させる'}
+        {trigger.isPending ? (
+          '起動中…'
+        ) : (
+          <>
+            <span aria-hidden="true">🛠 </span>Engineer に実装させる
+          </>
+        )}
       </Button>
     </div>
   )

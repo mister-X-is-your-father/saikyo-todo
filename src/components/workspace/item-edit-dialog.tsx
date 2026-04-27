@@ -210,7 +210,9 @@ function ItemEditDialogInner({
           <TabsContent value="base" className="mt-4 space-y-4">
             <div className="bg-primary/5 flex items-start justify-between gap-3 rounded-lg border p-3">
               <div className="min-w-0">
-                <div className="text-sm font-semibold">🧠 AI で分解</div>
+                <div className="text-sm font-semibold">
+                  <span aria-hidden="true">🧠 </span>AI で分解
+                </div>
                 <p className="text-muted-foreground text-xs">
                   Researcher がこの Item を具体的な子タスクに分解します (数秒〜30s)。
                 </p>
@@ -220,7 +222,9 @@ function ItemEditDialogInner({
 
             <div className="flex items-start justify-between gap-3 rounded-lg border border-dashed p-3">
               <div className="min-w-0">
-                <div className="text-sm font-semibold">🛠 Engineer に実装させる</div>
+                <div className="text-sm font-semibold">
+                  <span aria-hidden="true">🛠 </span>Engineer に実装させる
+                </div>
                 <p className="text-muted-foreground text-xs">
                   Claude (Engineer) が git worktree でコードを書き、commit / PR を作ります。 人間
                   review 必須。
