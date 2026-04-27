@@ -11,6 +11,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import Fuse from 'fuse.js'
 
+import { priorityClass, priorityLabel } from '@/features/item/priority'
 import type { Item } from '@/features/item/schema'
 
 import {
@@ -100,9 +101,23 @@ export function CommandPalette({ commands, items, onSelectItem }: CommandPalette
                   }}
                   data-testid={`palette-item-${item.id}`}
                 >
+                  <span
+                    className={`mr-2 inline-block h-2 w-2 shrink-0 rounded-full ${priorityClass(item.priority)}`}
+                    role="img"
+                    aria-label={priorityLabel(item.priority)}
+                  />
                   <span className="truncate">{item.title}</span>
+                  {item.dueDate && (
+                    <span className="text-muted-foreground ml-2 shrink-0 text-[10px] tabular-nums">
+                      {item.dueDate}
+                    </span>
+                  )}
                   {item.isMust && (
-                    <span className="ml-auto rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-medium text-red-700">
+                    <span
+                      className="ml-auto rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-medium text-red-700"
+                      role="img"
+                      aria-label="MUST タスク"
+                    >
                       MUST
                     </span>
                   )}
