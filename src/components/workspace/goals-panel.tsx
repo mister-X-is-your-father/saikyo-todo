@@ -31,6 +31,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { TeamContextEditor } from '@/components/workspace/team-context-editor'
 
 interface Props {
   workspaceId: string
@@ -93,6 +94,7 @@ export function GoalsPanel({ workspaceId }: Props) {
 
   return (
     <div className="space-y-6">
+      <TeamContextEditor workspaceId={workspaceId} />
       <Card>
         <CardHeader>
           <CardTitle className="text-base">新規 Goal (Objective)</CardTitle>

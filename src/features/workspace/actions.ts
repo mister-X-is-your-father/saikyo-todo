@@ -35,3 +35,20 @@ export async function listWorkspaceMembersAction(
     throw e
   }
 }
+
+/**
+ * Phase 6.15 iter131: チームコンテキスト (workspace_settings.team_context) 取得 / 更新。
+ * AI 経由 (Researcher / Goal 分解) のプロンプトに inject される workspace 共通方針。
+ */
+export async function getTeamContextAction(
+  workspaceId: string,
+): Promise<Result<{ teamContext: string }>> {
+  return await actionWrap(() => workspaceService.getTeamContext(workspaceId))
+}
+
+export async function updateTeamContextAction(input: {
+  workspaceId: string
+  teamContext: string
+}): Promise<Result<{ teamContext: string }>> {
+  return await actionWrap(() => workspaceService.updateTeamContext(input))
+}

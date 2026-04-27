@@ -4,7 +4,7 @@ import { and, eq } from 'drizzle-orm'
 
 import { recordAudit } from '@/lib/audit'
 import { requireUser, requireWorkspaceMember } from '@/lib/auth/guard'
-import { profiles, workspaceMembers, workspaces } from '@/lib/db/schema'
+import { profiles, workspaceMembers, workspaces, workspaceSettings } from '@/lib/db/schema'
 import { adminDb, withUserDb } from '@/lib/db/scoped-client'
 import { ConflictError, NotFoundError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
@@ -188,5 +188,68 @@ export const workspaceService = {
     }
 
     return ok({ workspaceId: input.workspaceId, userId: input.userId, role })
+  },
+
+  /**
+   * Phase 6.15 iter131: チームコンテキストを取得 (member 以上)。
+   * 行が無い workspace は空文字を返す。
+   */
+  async getTeamContext(workspaceId: string): Promise<Result<{ teamContext: string }>> {
+    if (!workspaceId) return err(new ValidationError('workspaceId 必須'))
+    const user = await requireUser()
+    await requireWorkspaceMember(workspaceId, 'viewer')
+    return await withUserDb(user.id, async (tx) => {
+      const rows = await tx
+        .select({ teamContext: workspaceSettings.teamContext })
+        .from(workspaceSettings)
+        .where(eq(workspaceSettings.workspaceId, workspaceId))
+        .limit(1)
+      return ok({ teamContext: rows[0]?.teamContext ?? '' })
+    })
+  },
+
+  /**
+   * Phase 6.15 iter131: チームコンテキストを更新 (admin 以上)。
+   * 行が無ければ insert (= upsert)。max 4000 chars (DB CHECK と整合)。
+   */
+  async updateTeamContext(input: {
+    workspaceId: string
+    teamContext: string
+  }): Promise<Result<{ teamContext: string }>> {
+    if (!input.workspaceId) return err(new ValidationError('workspaceId 必須'))
+    if (typeof input.teamContext !== 'string') return err(new ValidationError('teamContext 必須'))
+    if (input.teamContext.length > 4000)
+      return err(new ValidationError('teamContext は 4000 文字以下にしてください'))
+
+    const user = await requireUser()
+    await requireWorkspaceMember(input.workspaceId, 'admin')
+    await adminDb.transaction(async (tx) => {
+      const [before] = await tx
+        .select({ teamContext: workspaceSettings.teamContext })
+        .from(workspaceSettings)
+        .where(eq(workspaceSettings.workspaceId, input.workspaceId))
+        .limit(1)
+      const updated = await tx
+        .update(workspaceSettings)
+        .set({ teamContext: input.teamContext })
+        .where(eq(workspaceSettings.workspaceId, input.workspaceId))
+        .returning({ workspaceId: workspaceSettings.workspaceId })
+      if (updated.length === 0) {
+        await tx
+          .insert(workspaceSettings)
+          .values({ workspaceId: input.workspaceId, teamContext: input.teamContext })
+      }
+      await recordAudit(tx, {
+        workspaceId: input.workspaceId,
+        actorType: 'user',
+        actorId: user.id,
+        targetType: 'workspace_settings',
+        targetId: input.workspaceId,
+        action: 'update_team_context',
+        before: { teamContext: before?.teamContext ?? '' },
+        after: { teamContext: input.teamContext },
+      })
+    })
+    return ok({ teamContext: input.teamContext })
   },
 }
