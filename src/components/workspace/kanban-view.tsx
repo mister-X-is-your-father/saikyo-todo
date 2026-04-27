@@ -290,6 +290,7 @@ function KanbanCard({
       style={style}
       {...attributes}
       {...listeners}
+      onClick={() => onEdit(item)}
       className="bg-background group cursor-grab rounded border p-2 text-sm shadow-sm active:cursor-grabbing"
       data-testid={`kanban-card-${item.id}`}
     >

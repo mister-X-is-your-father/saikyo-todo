@@ -149,7 +149,10 @@ function buildColumns(workspaceId: string, onEdit: (item: Item) => void): Column
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onEdit(row.original)}
+            onClick={(e) => {
+              e.stopPropagation()
+              onEdit(row.original)
+            }}
             data-testid={`backlog-edit-${row.original.id}`}
           >
             編集
@@ -305,7 +308,12 @@ export function BacklogView({ workspaceId, items }: Props) {
                 disabled={!dndEnabled}
               >
                 {rows.map((row) => (
-                  <BacklogRow key={row.original.id} row={row} dndEnabled={dndEnabled} />
+                  <BacklogRow
+                    key={row.original.id}
+                    row={row}
+                    dndEnabled={dndEnabled}
+                    onEdit={(item) => void setOpenItemId(item.id)}
+                  />
                 ))}
               </SortableContext>
               {rows.length === 0 && (
@@ -328,7 +336,15 @@ export function BacklogView({ workspaceId, items }: Props) {
   )
 }
 
-function BacklogRow({ row, dndEnabled }: { row: Row<Item>; dndEnabled: boolean }) {
+function BacklogRow({
+  row,
+  dndEnabled,
+  onEdit,
+}: {
+  row: Row<Item>
+  dndEnabled: boolean
+  onEdit: (item: Item) => void
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: row.original.id,
     disabled: !dndEnabled,
@@ -343,7 +359,8 @@ function BacklogRow({ row, dndEnabled }: { row: Row<Item>; dndEnabled: boolean }
       ref={setNodeRef}
       style={style}
       data-testid={`backlog-row-${row.original.id}`}
-      className="hover:bg-muted/50 border-b"
+      onClick={() => onEdit(row.original)}
+      className="hover:bg-muted/50 cursor-pointer border-b"
     >
       {row.getVisibleCells().map((cell) => (
         <td
