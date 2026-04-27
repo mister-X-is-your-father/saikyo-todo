@@ -88,7 +88,7 @@ export const itemService = {
     const parsed = UpdateItemInputSchema.safeParse(input)
     if (!parsed.success) return err(new ValidationError('入力内容を確認してください', parsed.error))
 
-    return await mutateWithGuard<Item>({
+    const r = await mutateWithGuard<Item>({
       findById: (tx, id) => itemRepository.findById(tx, id),
       id: parsed.data.id,
       notFoundMessage: NOT_FOUND,
@@ -116,13 +116,19 @@ export const itemService = {
         return ok(updated)
       },
     })
+    if (r.ok) {
+      void dispatchItemEvent(r.value.workspaceId, 'update', r.value).catch((e: unknown) => {
+        console.warn('[item.update] dispatchItemEvent failed', e)
+      })
+    }
+    return r
   },
 
   async updateStatus(input: unknown): Promise<Result<Item>> {
     const parsed = UpdateStatusInputSchema.safeParse(input)
     if (!parsed.success) return err(new ValidationError('入力内容を確認してください', parsed.error))
 
-    return await mutateWithGuard<Item>({
+    const r = await mutateWithGuard<Item>({
       findById: (tx, id) => itemRepository.findById(tx, id),
       id: parsed.data.id,
       notFoundMessage: NOT_FOUND,
@@ -163,6 +169,12 @@ export const itemService = {
         return ok(updated)
       },
     })
+    if (r.ok) {
+      void dispatchItemEvent(r.value.workspaceId, 'status_change', r.value).catch((e: unknown) => {
+        console.warn('[item.updateStatus] dispatchItemEvent failed', e)
+      })
+    }
+    return r
   },
 
   /**
@@ -174,7 +186,7 @@ export const itemService = {
     expectedVersion: number
     complete: boolean
   }): Promise<Result<Item>> {
-    return await mutateWithGuard<Item>({
+    const r = await mutateWithGuard<Item>({
       findById: (tx, id) => itemRepository.findById(tx, id),
       id: input.id,
       notFoundMessage: NOT_FOUND,
@@ -203,6 +215,13 @@ export const itemService = {
         return ok(updated)
       },
     })
+    // complete のみ event 発火 (uncomplete は item-event 仕様に無い)
+    if (r.ok && input.complete) {
+      void dispatchItemEvent(r.value.workspaceId, 'complete', r.value).catch((e: unknown) => {
+        console.warn('[item.toggleComplete] dispatchItemEvent failed', e)
+      })
+    }
+    return r
   },
 
   async move(input: unknown): Promise<Result<Item>> {
