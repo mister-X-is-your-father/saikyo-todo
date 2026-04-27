@@ -49,7 +49,9 @@ export function CreateWorkspaceForm() {
           {...form.register('name')}
         />
         {form.formState.errors.name && (
-          <p className="text-destructive text-xs">{form.formState.errors.name.message}</p>
+          <p className="text-destructive text-xs" role="alert">
+            {form.formState.errors.name.message}
+          </p>
         )}
       </div>
       <div className="space-y-2">
@@ -68,7 +70,9 @@ export function CreateWorkspaceForm() {
           {...form.register('slug')}
         />
         {form.formState.errors.slug && (
-          <p className="text-destructive text-xs">{form.formState.errors.slug.message}</p>
+          <p className="text-destructive text-xs" role="alert">
+            {form.formState.errors.slug.message}
+          </p>
         )}
       </div>
       <Button type="submit" className="w-full" disabled={isPending}>

@@ -48,7 +48,9 @@ export function LoginForm() {
           {...form.register('email')}
         />
         {form.formState.errors.email && (
-          <p className="text-destructive text-xs">{form.formState.errors.email.message}</p>
+          <p className="text-destructive text-xs" role="alert">
+            {form.formState.errors.email.message}
+          </p>
         )}
       </div>
       <div className="space-y-2">
@@ -63,7 +65,9 @@ export function LoginForm() {
           {...form.register('password')}
         />
         {form.formState.errors.password && (
-          <p className="text-destructive text-xs">{form.formState.errors.password.message}</p>
+          <p className="text-destructive text-xs" role="alert">
+            {form.formState.errors.password.message}
+          </p>
         )}
       </div>
       <Button type="submit" className="w-full" disabled={isPending}>
