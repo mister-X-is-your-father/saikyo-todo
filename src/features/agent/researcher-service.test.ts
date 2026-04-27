@@ -30,6 +30,7 @@ vi.mock('@/lib/jobs/queue', () => ({
 
 import { agentMemoryService } from './memory-service'
 import {
+  buildDecomposeGoalUserMessage,
   buildDecomposeUserMessage,
   buildResearchUserMessage,
   researcherService,
@@ -763,6 +764,50 @@ describe('researcherService.run', () => {
       expect(msg).toContain('desc')
       expect(msg).toContain('search_docs')
       expect(msg).toContain('create_doc')
+    })
+  })
+
+  describe('buildDecomposeGoalUserMessage (pure, iter128)', () => {
+    it('Goal / KR / チームコンテキスト全て含む', () => {
+      const msg = buildDecomposeGoalUserMessage({
+        goalId: 'g-1',
+        title: 'p95 < 200ms',
+        description: 'API 全体の p95 を改善する',
+        period: 'quarterly',
+        startDate: '2026-04-01',
+        endDate: '2026-06-30',
+        keyResults: [
+          { title: 'top10 endpoint p95 改善', mode: 'manual' },
+          { title: 'DB query 削減', mode: 'items' },
+        ],
+        teamContext: 'チーム方針: TDD。MUST は PR 必須。',
+        extraHint: 'まず調査タスクを 1 件入れて',
+      })
+      expect(msg).toContain('p95 < 200ms')
+      expect(msg).toContain('quarterly')
+      expect(msg).toContain('2026-04-01')
+      expect(msg).toContain('top10 endpoint p95 改善')
+      expect(msg).toContain('チーム方針: TDD')
+      expect(msg).toContain('まず調査タスクを 1 件入れて')
+      expect(msg).toContain('create_item')
+      expect(msg).toMatch(/5.?10/)
+    })
+
+    it('teamContext / extraHint が空でも崩れない', () => {
+      const msg = buildDecomposeGoalUserMessage({
+        goalId: 'g',
+        title: 't',
+        description: '',
+        period: 'annual',
+        startDate: '2026-01-01',
+        endDate: '2026-12-31',
+        keyResults: [],
+        teamContext: '',
+      })
+      expect(msg).toContain('t')
+      expect(msg).toContain('annual')
+      expect(msg).not.toContain('チームコンテキスト')
+      expect(msg).not.toContain('追加指示')
     })
   })
 })

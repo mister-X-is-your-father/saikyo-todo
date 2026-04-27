@@ -16,10 +16,13 @@
  */
 import 'server-only'
 
+import { and, eq, isNull } from 'drizzle-orm'
+
 import { streamingInvoker } from '@/lib/ai/invoke'
 import { calculateCostUsd } from '@/lib/ai/pricing'
 import { executeToolLoop, type ToolLoopInput } from '@/lib/ai/tool-loop'
 import { recordAudit } from '@/lib/audit'
+import { goals, keyResults, workspaceSettings } from '@/lib/db/schema'
 import { adminDb } from '@/lib/db/scoped-client'
 import { CancelledError, ExternalServiceError, NotFoundError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
@@ -428,6 +431,61 @@ export const researcherService = {
       ...(params.invoker ? { invoker: params.invoker } : {}),
     })
   },
+
+  /**
+   * Phase 6.15 iter128: Goal を読み、KR ごとに Item を作って分解する。
+   * チームコンテキスト (workspace_settings.team_context) を prompt に inject する。
+   * staging は使わず、Researcher が直接 create_item で root 直下に items を作る。
+   */
+  async decomposeGoal(params: {
+    workspaceId: string
+    goalId: string
+    extraHint?: string
+    idempotencyKey: string
+    invoker?: ToolLoopInput['invoker']
+  }): Promise<Result<ResearcherRunOutput>> {
+    if (!params.idempotencyKey) {
+      return err(new ValidationError('idempotencyKey は必須です'))
+    }
+    const ctx = await adminDb.transaction(async (tx) => {
+      const [goal] = await tx
+        .select()
+        .from(goals)
+        .where(and(eq(goals.id, params.goalId), isNull(goals.deletedAt)))
+        .limit(1)
+      if (!goal) return null
+      const krs = await tx.select().from(keyResults).where(eq(keyResults.goalId, goal.id))
+      const [ws] = await tx
+        .select({ teamContext: workspaceSettings.teamContext })
+        .from(workspaceSettings)
+        .where(eq(workspaceSettings.workspaceId, goal.workspaceId))
+        .limit(1)
+      return { goal, krs, teamContext: ws?.teamContext ?? '' }
+    })
+    if (!ctx) return err(new NotFoundError('Goal が見つかりません'))
+    if (ctx.goal.workspaceId !== params.workspaceId) {
+      return err(new ValidationError('Goal が指定 workspace に属していません'))
+    }
+
+    const userMessage = buildDecomposeGoalUserMessage({
+      goalId: ctx.goal.id,
+      title: ctx.goal.title,
+      description: ctx.goal.description ?? '',
+      period: ctx.goal.period,
+      startDate: ctx.goal.startDate,
+      endDate: ctx.goal.endDate,
+      keyResults: ctx.krs.map((k) => ({ title: k.title, mode: k.progressMode })),
+      teamContext: ctx.teamContext,
+      ...(params.extraHint ? { extraHint: params.extraHint } : {}),
+    })
+
+    return await researcherService.run({
+      workspaceId: params.workspaceId,
+      userMessage,
+      idempotencyKey: params.idempotencyKey,
+      ...(params.invoker ? { invoker: params.invoker } : {}),
+    })
+  },
 }
 
 /**
@@ -485,6 +543,63 @@ export function buildDecomposeUserMessage(params: {
   }
   lines.push('3. 親が MUST でない子は isMust=false でよい。子の dod は可能なら記載する')
   lines.push('4. 最後に作った子タスクのタイトル一覧と意図を簡潔に日本語でまとめる')
+  return lines.join('\n')
+}
+
+/**
+ * Phase 6.15 iter128: Goal を Item に分解する user prompt。
+ * - Goal title / description / period / KR 一覧 + チームコンテキストを inject
+ * - Researcher は create_item で root 直下に items を作る (parentItemId なし)
+ * - KR と紐付けたい場合は description に "KR: <title>" と書くよう誘導 (現状 create_item に
+ *   keyResultId 引数が無いため、ユーザが UI で後からリンクする想定)
+ */
+export function buildDecomposeGoalUserMessage(params: {
+  goalId: string
+  title: string
+  description: string
+  period: string
+  startDate: string
+  endDate: string
+  keyResults: Array<{ title: string; mode: string }>
+  teamContext: string
+  extraHint?: string
+}): string {
+  const lines: string[] = []
+  lines.push('以下の Goal を達成するための実行 Item を 5〜10 件に分解してください。')
+  lines.push('')
+  lines.push(`- Goal id: ${params.goalId}`)
+  lines.push(`- Goal タイトル: ${params.title}`)
+  if (params.description.trim()) {
+    lines.push('- Goal 説明:')
+    lines.push(params.description.trim())
+  }
+  lines.push(`- 期間: ${params.period} (${params.startDate} 〜 ${params.endDate})`)
+  if (params.keyResults.length > 0) {
+    lines.push('- Key Results:')
+    for (const kr of params.keyResults) {
+      lines.push(`  * ${kr.title} [mode: ${kr.mode}]`)
+    }
+  }
+  if (params.teamContext.trim()) {
+    lines.push('')
+    lines.push('## チームコンテキスト (workspace 共通方針)')
+    lines.push(params.teamContext.trim())
+  }
+  if (params.extraHint && params.extraHint.trim()) {
+    lines.push('')
+    lines.push('## 追加指示')
+    lines.push(params.extraHint.trim())
+  }
+  lines.push('')
+  lines.push('手順:')
+  lines.push('1. 必要に応じて search_docs で過去の関連方針を確認 (要らなければ省略)')
+  lines.push(
+    '2. create_item を 5〜10 回呼び、各 Item を作る。parentItemId は渡さない (root 直下)。' +
+      '対応する KR があれば description に "KR: <KR タイトル>" を含める',
+  )
+  lines.push('3. dueDate は Goal の期間内に分散させる (期日を均等に配置するイメージ)')
+  lines.push('4. 重要な item は isMust=true + dod を記載する')
+  lines.push('5. 最後に作った Item のタイトル一覧と分解の意図を簡潔に日本語でまとめる')
   return lines.join('\n')
 }
 

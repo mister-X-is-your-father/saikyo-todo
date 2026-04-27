@@ -58,6 +58,34 @@ export async function decomposeItemAction(input: unknown): Promise<Result<Resear
   })
 }
 
+/**
+ * Phase 6.15 iter128: Goal を Researcher に分解させる action。
+ * member 以上のみ。チームコンテキスト (workspace_settings.team_context) は service 側で inject。
+ */
+const DecomposeGoalActionInputSchema = z.object({
+  workspaceId: z.string().uuid(),
+  goalId: z.string().uuid(),
+  extraHint: z.string().max(2000).optional(),
+  idempotencyKey: z.string().optional(),
+})
+
+export async function decomposeGoalAction(input: unknown): Promise<Result<ResearcherRunOutput>> {
+  return await actionWrap(async () => {
+    const parsed = DecomposeGoalActionInputSchema.safeParse(input)
+    if (!parsed.success) {
+      return err(new ValidationError('入力内容を確認してください', parsed.error))
+    }
+    await requireWorkspaceMember(parsed.data.workspaceId, 'member')
+
+    return await researcherService.decomposeGoal({
+      workspaceId: parsed.data.workspaceId,
+      goalId: parsed.data.goalId,
+      ...(parsed.data.extraHint ? { extraHint: parsed.data.extraHint } : {}),
+      idempotencyKey: parsed.data.idempotencyKey ?? randomUUID(),
+    })
+  })
+}
+
 export async function researchItemAction(input: unknown): Promise<Result<ResearcherRunOutput>> {
   return await actionWrap(async () => {
     const parsed = DecomposeItemActionInputSchema.safeParse(input)

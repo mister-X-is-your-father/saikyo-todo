@@ -91,6 +91,12 @@ export const workspaceSettings = pgTable('workspace_settings', {
    */
   sprintDefaultStartDow: smallint('sprint_default_start_dow').notNull().default(1),
   sprintDefaultLengthDays: smallint('sprint_default_length_days').notNull().default(14),
+  /**
+   * Phase 6.15 iter128: チームコンテキスト (free text, max 4000 chars)。
+   * AI 経由のプロンプト (Researcher / Goals 分解 / Engineer) 末尾に常時 inject。
+   * 例: "チームの方針: TDD。MUST タスクは PR 必須。"
+   */
+  teamContext: text('team_context').notNull().default(''),
   ...timestamps,
 })
 
