@@ -82,8 +82,18 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
           disabled={disabled}
           data-testid="tag-picker-trigger"
           className="h-8 justify-start gap-2"
+          aria-label={
+            selectedLabels.length === 0
+              ? 'タグを選択 (現在なし)'
+              : `タグを選択 (現在 ${selectedLabels.length} 件: ${selectedLabels
+                  .filter((t): t is NonNullable<typeof t> => Boolean(t))
+                  .map((t) => t.name)
+                  .join(', ')})`
+          }
+          aria-expanded={open}
+          aria-haspopup="listbox"
         >
-          <TagIcon className="size-4" />
+          <TagIcon className="size-4" aria-hidden="true" />
           {selectedLabels.length === 0 ? (
             <span className="text-muted-foreground">タグなし</span>
           ) : (
@@ -122,10 +132,12 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
                   >
                     <CheckIcon
                       className={cn('mr-2 size-4', checked ? 'opacity-100' : 'opacity-0')}
+                      aria-hidden="true"
                     />
                     <span
                       className="mr-2 inline-block size-3 rounded-full"
                       style={{ backgroundColor: t.color }}
+                      aria-hidden="true"
                     />
                     {t.name}
                   </CommandItem>
@@ -141,7 +153,7 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
                   }}
                   data-testid="tag-create-new"
                 >
-                  <PlusIcon className="mr-2 size-4" />「{query.trim()}」を作成
+                  <PlusIcon className="mr-2 size-4" aria-hidden="true" />「{query.trim()}」を作成
                 </CommandItem>
               </CommandGroup>
             )}

@@ -77,8 +77,15 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
           disabled={disabled}
           data-testid="assignee-picker-trigger"
           className="h-8 justify-start gap-2"
+          aria-label={
+            selectedLabels.length === 0
+              ? 'アサインを選択 (現在未アサイン)'
+              : `アサインを選択 (現在 ${selectedLabels.length} 件: ${selectedLabels.join(', ')})`
+          }
+          aria-expanded={open}
+          aria-haspopup="listbox"
         >
-          <UserIcon className="size-4" />
+          <UserIcon className="size-4" aria-hidden="true" />
           {selectedLabels.length === 0 ? (
             <span className="text-muted-foreground">未アサイン</span>
           ) : (
@@ -106,6 +113,7 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
                   >
                     <CheckIcon
                       className={cn('mr-2 size-4', checked ? 'opacity-100' : 'opacity-0')}
+                      aria-hidden="true"
                     />
                     {label}
                   </CommandItem>
