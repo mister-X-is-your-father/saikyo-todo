@@ -51,6 +51,7 @@ import { BulkCheckbox, BulkHeaderCheckbox } from './bulk-action-bar'
 import { ItemCheckbox } from './item-checkbox'
 import { ItemDecomposeButton } from './item-decompose-button'
 import { ItemResearchButton } from './item-research-button'
+import { MustBadge } from './must-badge'
 import { StartTimerButton } from './start-timer-button'
 import { StatusBadge } from './status-badge'
 
@@ -121,12 +122,7 @@ function buildColumns(
       accessorKey: 'isMust',
       header: 'MUST',
       size: 70,
-      cell: ({ getValue }) =>
-        getValue() ? (
-          <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-medium text-red-700">
-            MUST
-          </span>
-        ) : null,
+      cell: ({ getValue }) => (getValue() ? <MustBadge /> : null),
     },
     {
       accessorKey: 'dueDate',
