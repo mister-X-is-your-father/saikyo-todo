@@ -22,6 +22,7 @@
  *  - description / DoD は本関数では出さない (token 節約)。詳細は別 prompt で
  */
 
+import { type DueProximityKind, getDueProximity } from './due-proximity'
 import { extractEstimateMinutes } from './estimate'
 import type { Item } from './schema'
 import { computeUrgency } from './urgency'
@@ -66,22 +67,25 @@ function clampPriority(p: number): 1 | 2 | 3 | 4 {
   return 4
 }
 
+/**
+ * iter310 refactor: dueDate parsing / diffDays / kind 分類は due-proximity.ts (iter287)
+ * に集約済 → 重複した parseIso + threshold 比較を削除し、kind で switch する形に置換。
+ * 動作変更ゼロ (期限切れ / 今日 / 明日 / 今週内 / 今後 / なし の 6 mode label は同一)。
+ */
+const DUE_PROMPT_LABEL: Record<DueProximityKind, string> = {
+  overdue: '期限切れ',
+  today: '今日',
+  tomorrow: '明日',
+  thisWeek: '今週内',
+  later: '今後',
+  noDate: 'なし',
+}
+
 function formatDueLabel(dueDate: string | null | undefined, today: Date): string {
-  if (!dueDate) return 'なし'
-  const todayBase = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-  const m = dueDate.match(/^(\d{4})-(\d{2})-(\d{2})/)
-  if (!m) return 'なし'
-  const y = Number(m[1])
-  const mo = Number(m[2])
-  const d = Number(m[3])
-  if (mo < 1 || mo > 12 || d < 1 || d > 31) return 'なし'
-  const due = new Date(y, mo - 1, d)
-  const diff = Math.round((due.getTime() - todayBase.getTime()) / (24 * 60 * 60 * 1000))
-  if (diff < 0) return `期限切れ(${diff}d)`
-  if (diff === 0) return '今日(0d)'
-  if (diff === 1) return '明日(+1d)'
-  if (diff <= 6) return `今週内(+${diff}d)`
-  return `今後(+${diff}d)`
+  const { kind, diffDays } = getDueProximity(dueDate, today)
+  if (kind === 'noDate') return DUE_PROMPT_LABEL.noDate
+  const sign = diffDays !== undefined && diffDays > 0 ? '+' : ''
+  return `${DUE_PROMPT_LABEL[kind]}(${sign}${diffDays}d)`
 }
 
 function formatEstimate(minutes: number | undefined): string {
