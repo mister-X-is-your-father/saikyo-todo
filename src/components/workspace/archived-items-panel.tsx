@@ -18,6 +18,7 @@ import { isAppError } from '@/lib/errors'
 import { useItems, useUnarchiveItem } from '@/features/item/hooks'
 
 import { Button } from '@/components/ui/button'
+import { MustBadge } from '@/components/workspace/must-badge'
 
 interface Props {
   workspaceId: string
@@ -102,16 +103,7 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
               className="hover:bg-muted/50 border-t"
             >
               <td className="max-w-[300px] truncate px-3 py-2">
-                {item.isMust && (
-                  <span
-                    className="mr-1 text-xs text-red-500"
-                    role="img"
-                    aria-label="MUST item"
-                    title="MUST"
-                  >
-                    ⚠
-                  </span>
-                )}
+                {item.isMust && <MustBadge className="mr-1" iconOnly />}
                 <Link
                   href={`/${workspaceId}?item=${item.id}`}
                   className="text-primary hover:underline"
