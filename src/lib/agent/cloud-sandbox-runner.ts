@@ -1,79 +1,138 @@
 /**
- * Phase 6.15 iter 239 — Engineer / Researcher を e2b cloud sandbox 経由で実行する runner skeleton。
+ * Phase 6.15 iter 240 — Engineer / Researcher を e2b cloud sandbox 経由で実行する runner。
  *
  * 目的: ローカル PC (subprocess + git worktree) の不安定さ (sleep / OOM /
  * 突然 reboot) を排除し、cloud microVM で 24/7 安定実行する。フル自動 (α)
  * モードでは sandbox が完走後に直接 main に push & merge する。
  *
- * 実行フロー (full vision、本 file は skeleton):
- *   1. Sandbox.create({ template: 'saikyo-engineer' }) で microVM 起動
- *      (template には docker / supabase CLI / playwright / claude CLI 同梱)
- *   2. ENV 注入: GITHUB_TOKEN, CLAUDE_CREDENTIALS_B64 (~/.claude/.credentials.json
- *      の base64), workspaceId, itemId, prompt
- *   3. sandbox.commands.run('git clone … && cd repo && pnpm install')
- *   4. sandbox.commands.run('claude … <prompt>') — agent 本実行
- *   5. sandbox.commands.run('pnpm typecheck && pnpm lint && pnpm test')
- *      失敗時は revert
- *   6. (autoMerge=true) sandbox.commands.run('git push origin main')
- *      または PR draft 作成
- *   7. agent_invocations にステータス書き込み、sandbox.kill()
+ * 段階実装 (FEEDBACK_QUEUE.md 参照):
+ *   - iter 239: skeleton (型 + 関数 signature)
+ *   - **iter 240 (本 commit): Sandbox.create + hello world 実行 + log capture** ←
+ *   - iter 241: git clone + claude CLI (Max OAuth credentials を base64 で env 注入)
+ *   - iter 242: pnpm typecheck / lint / test verify (custom template に DiD + supabase)
+ *   - iter 243: autoMergeToMain で main 直 push (フル自動 α)
  *
- * 現段階 (iter 239): SDK 初期化と関数 signature のみ。実際の sandbox 起動・
- * 認証・docker template は次 iter 以降で段階追加。
+ * 環境変数:
+ *   - E2B_API_KEY: e2b.dev の API key (https://e2b.dev/dashboard)
  *
- * 関連 issue: FEEDBACK_QUEUE.md の「Claude on Web (リモートサンドボックス)」項。
+ * NOTE: E2B_API_KEY 未設定時は ConfigurationError を投げる。caller は
+ *   CLOUD_SANDBOX_ENABLED フラグで上位 dispatch を制御する想定。
  */
+import { Sandbox } from 'e2b'
+
+import { AppError } from '@/lib/errors'
 
 export interface CloudSandboxInput {
   /** 識別用 — agent_invocations.id 等 */
   invocationId: string
   workspaceId: string
   itemId: string
-  /** Engineer / Researcher の prompt 本文 (claude CLI に渡す) */
+  /** Engineer / Researcher の prompt 本文 (claude CLI に渡す)。iter 241 以降で使用 */
   prompt: string
-  /** 完走後 main に直接 push するか (フル自動 = true)。false なら Draft PR 作成 */
+  /** 完走後 main に直接 push するか (フル自動 = true)。iter 243 で実装 */
   autoMergeToMain: boolean
   /** 1 sandbox の最大実行時間 (秒)。default 1800 (30 分) */
   timeoutSec?: number
+  /**
+   * 起動後に実行するシェルスクリプト (sandbox 内 bash)。
+   * iter 240 ではこの引数で hello world / 任意の検証コマンドを流せる。
+   * 未指定なら "echo iter240 hello from cloud sandbox" を実行。
+   */
+  script?: string
 }
 
 export interface CloudSandboxOutput {
-  /** sandbox から得た最終 commit SHA */
-  commitSha?: string
-  /** push 成功したか (autoMergeToMain=true 時) */
-  pushed: boolean
-  /** 各 verify step の合否 (typecheck / lint / test) */
-  verify: {
-    typecheck: boolean
-    lint: boolean
-    test: boolean
-    e2e?: boolean
-  }
-  /** sandbox 内の stdout / stderr ダイジェスト (先頭 / 末尾各 4 KiB) */
+  /** sandbox id (e2b 側の識別子)。debug / kill 用 */
+  sandboxId: string
+  /** script の exit code (0 = 成功) */
+  exitCode: number
+  /** stdout / stderr の先頭 / 末尾 4 KiB を保持 (Item.description などに残す) */
   logsHead: string
   logsTail: string
+  /** 実行時間 (ms) — 起動 + script 実行 + kill の総合計 */
+  durationMs: number
   /** sandbox 終了理由 */
-  exitReason: 'completed' | 'timeout' | 'verify-failed' | 'sandbox-error'
-  /** 失敗時のエラー文 (取得できれば) */
+  exitReason: 'completed' | 'timeout' | 'sandbox-error'
   errorMessage?: string
 }
 
+const LOG_HEAD_TAIL_BYTES = 4 * 1024
+
+/** ConfigurationError は env 未設定など caller 側のミス。retry しても直らない。 */
+class CloudSandboxConfigError extends AppError {
+  constructor(message: string, cause?: unknown) {
+    super('cloud-sandbox-config-error', message, cause)
+  }
+}
+
 /**
- * **WIP**: e2b SDK の `Sandbox` を使って実行する。
+ * Cloud sandbox で 1 ラウンド実行する。
  *
- * 現状: 未実装。SDK は `pnpm add e2b` 済 (iter 239)。次 iter 以降で:
- *   - E2B_API_KEY を env から読む
- *   - `Sandbox.create({ template, envs })`
- *   - commands.run の結果を集約
- *   - timeout / kill / log capture
- *   - agent_invocations へ書き戻し (この関数の caller 側責務)
+ * iter 240 時点では以下を行う:
+ *   1. Sandbox.create で microVM を起動 (default template)
+ *   2. input.script (or hello world) を bash で実行
+ *   3. stdout / stderr を head/tail 形式で集約
+ *   4. sandbox.kill() でリソース解放
+ *
+ * iter 241 以降で git clone / claude CLI / verify / merge を上に積む。
  */
 export async function runViaCloudSandbox(input: CloudSandboxInput): Promise<CloudSandboxOutput> {
-  // Phase 6.15 iter 239 placeholder.
-  // 実装は段階的: iter 240 で Sandbox.create + hello world、iter 241 で git clone
-  // + claude CLI 配線、iter 242 で verify steps、iter 243 で push/merge。
-  throw new Error(
-    `cloud-sandbox-runner.runViaCloudSandbox is not implemented yet (iter 239 skeleton, ` +
-      `received invocationId=${input.invocationId}). See FEEDBACK_QUEUE.md for the full plan.`,
-  )
+  const apiKey = process.env.E2B_API_KEY
+  if (!apiKey) {
+    throw new CloudSandboxConfigError(
+      'E2B_API_KEY env が未設定です。https://e2b.dev/dashboard で取得して .env.local に追加してください。',
+    )
+  }
+  const timeoutSec = input.timeoutSec ?? 1800
+  const script =
+    input.script ?? `echo "iter240 hello from cloud sandbox (invocation=${input.invocationId})"`
+  const startedAt = Date.now()
+
+  let sandbox: Sandbox | null = null
+  try {
+    sandbox = await Sandbox.create({
+      apiKey,
+      timeoutMs: timeoutSec * 1000,
+      envs: {
+        SAIKYO_INVOCATION_ID: input.invocationId,
+        SAIKYO_WORKSPACE_ID: input.workspaceId,
+        SAIKYO_ITEM_ID: input.itemId,
+      },
+    })
+    const sandboxId = sandbox.sandboxId
+    const result = await sandbox.commands.run(script, { timeoutMs: timeoutSec * 1000 })
+    const stdout = result.stdout ?? ''
+    const stderr = result.stderr ?? ''
+    const combined = stdout + (stderr ? `\n--- STDERR ---\n${stderr}` : '')
+    return {
+      sandboxId,
+      exitCode: result.exitCode ?? 0,
+      logsHead: combined.slice(0, LOG_HEAD_TAIL_BYTES),
+      logsTail:
+        combined.length > LOG_HEAD_TAIL_BYTES * 2 ? combined.slice(-LOG_HEAD_TAIL_BYTES) : '',
+      durationMs: Date.now() - startedAt,
+      exitReason: 'completed',
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return {
+      sandboxId: sandbox?.sandboxId ?? '',
+      exitCode: -1,
+      logsHead: '',
+      logsTail: '',
+      durationMs: Date.now() - startedAt,
+      exitReason: message.toLowerCase().includes('timeout') ? 'timeout' : 'sandbox-error',
+      errorMessage: message,
+    }
+  } finally {
+    if (sandbox) {
+      try {
+        await sandbox.kill()
+      } catch {
+        // sandbox 既に死んでいる場合は無視
+      }
+    }
+  }
 }
+
+export { CloudSandboxConfigError }
