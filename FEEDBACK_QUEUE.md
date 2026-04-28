@@ -28,8 +28,12 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
     - iter 241: git clone + claude CLI (Max OAuth credentials を base64 で env 注入) — `cadbc5b`
     - iter 242: verify steps (typecheck / lint / test) — `e09e0ef`
     - iter 243: autoMergeToMain で main 直 push (フル自動 α) — 本 iter
-  - **残タスク** (別 entry にすべき):
-    - [ ] Engineer worker (`engineer-runner.ts`) 側を新 runner に切替える dispatcher 配線
+  - **残タスク**:
+    - [x] iter 244: `cloud-engineer-adapter.ts` で env 解決 + runClaudeOnRepo の呼出
+          を集約 (`runEngineerInCloudSandbox`)、test 4 件追加。Engineer service と
+          cloud-sandbox-runner の橋渡しが揃った
+    - [ ] engineer-worker / engineer-service 側で `SAIKYO_ENGINEER_USE_CLOUD_SANDBOX`
+          flag を見て adapter にディスパッチする実配線
     - [ ] Custom e2b template (DiD + supabase CLI + playwright) で Service test / e2e
           も sandbox 内で完結
     - [ ] E2B_API_KEY を取得して `.env.local` に設定 + 本番 docker-compose に通す
