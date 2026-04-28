@@ -191,8 +191,23 @@ function CommentItem({
           <Textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
+            onKeyDown={(e) => {
+              // Phase 6.15 iter 229: 編集 textarea でも Cmd/Ctrl+Enter で保存、
+              // Esc で編集モードを抜ける (radix Dialog 内に居ても Esc は dialog
+              // 全体を閉じてしまうので、編集中だけ stopPropagation で止める)。
+              if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                if (!body.trim() || update.isPending) return
+                e.preventDefault()
+                void handleSave()
+              } else if (e.key === 'Escape' && !e.nativeEvent.isComposing) {
+                e.preventDefault()
+                e.stopPropagation()
+                setEditing(false)
+                setBody(comment.body)
+              }
+            }}
             rows={3}
-            aria-label="コメント編集"
+            aria-label="コメント編集 (Cmd/Ctrl+Enter で保存、Esc で編集破棄)"
             required
             aria-required="true"
             maxLength={10_000}
