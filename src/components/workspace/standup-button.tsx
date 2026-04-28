@@ -45,7 +45,11 @@ export function StandupButton({ workspaceId }: Props) {
       onClick={() => void run()}
       data-testid="pm-standup-btn"
       title="PM Agent が in_progress / overdue / yesterday-done を要約して Stand-up Doc を生成"
-      aria-label="PM Stand-up: 朝会サマリー Doc を生成"
+      aria-label={
+        standup.isPending
+          ? 'PM Stand-up を実行中…'
+          : 'PM Stand-up: 朝会サマリー Doc を生成 (PM Agent が in_progress / overdue / yesterday-done を要約)'
+      }
     >
       {standup.isPending ? 'Stand-up 実行中…' : 'PM Stand-up'}
     </Button>
