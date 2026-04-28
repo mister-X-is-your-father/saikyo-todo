@@ -43,7 +43,9 @@ export function EmptyState({
   className,
 }: {
   title: string
-  description?: string
+  // iter273: 一般ユーザ向けに <code> + 例文を埋めた JSX を渡せるように ReactNode に
+  // 広げた。文字列も従来どおり OK (代入互換)。
+  description?: ReactNode
   action?: ReactNode
   icon?: ReactNode
   className?: string

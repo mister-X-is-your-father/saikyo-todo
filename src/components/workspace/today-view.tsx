@@ -134,7 +134,17 @@ export function TodayView({
           </span>
         }
         title="今日のタスクはありません"
-        description="scheduled_for / dueDate を設定すると Today に出てきます"
+        // iter273 basics: 旧説明はスキーマ用語 (scheduled_for / dueDate) で
+        // 一般ユーザに不親切だった → 自然言語入力例で置き換え。Today/Backlog の
+        // 両方を満たす予定 (scheduledFor) 設定の手順をクイック追加例で示す。
+        description={
+          <span>
+            QuickAdd で <code className="bg-muted rounded px-1 text-[11px]">明日 資料準備</code> /{' '}
+            <code className="bg-muted rounded px-1 text-[11px]">tomorrow 9am review</code> /{' '}
+            <code className="bg-muted rounded px-1 text-[11px]">3/15 リリース</code>{' '}
+            のように日付を含めるとここに表示されます
+          </span>
+        }
         action={
           <button
             type="button"
