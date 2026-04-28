@@ -14,7 +14,9 @@ export default function LoginPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl">ログイン</CardTitle>
+        <CardTitle role="heading" aria-level={1} className="text-2xl">
+          ログイン
+        </CardTitle>
         <CardDescription>最強TODO へようこそ</CardDescription>
       </CardHeader>
       <CardContent>

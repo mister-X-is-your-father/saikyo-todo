@@ -14,7 +14,9 @@ export default function SignupPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl">サインアップ</CardTitle>
+        <CardTitle role="heading" aria-level={1} className="text-2xl">
+          サインアップ
+        </CardTitle>
         <CardDescription>アカウントを作成して始めましょう</CardDescription>
       </CardHeader>
       <CardContent>
