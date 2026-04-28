@@ -12,8 +12,10 @@
  *   4. JA: `今週末` (今週土曜) / `月末` (当月最終日)
  *   5. JA: `(日月火水木金土)曜` 単独 (次の同曜日; 今日が同曜日なら +7)
  *   6. EN: `monday` / `mon` 単独 (同上)
- *   7. ISO: `YYYY-MM-DD`
- *   8. 相対: `+3d` / `+2w`
+ *   7. EN 月名 絶対日付: `Apr 30` / `April 30` / `30 Apr` / `Apr 30, 2026`
+ *      (年省略時は今年、ただし当日より前の月日なら来年に繰り上げ — Todoist 互換)
+ *   8. ISO: `YYYY-MM-DD`
+ *   9. 相対: `+3d` / `+2w`
  */
 
 const WEEKDAY_JA: Record<string, number> = {
@@ -60,6 +62,39 @@ const WEEKDAY_EN: Record<string, number> = {
 const WEEKDAY_EN_PATTERN =
   '(?:sun|sunday|mon|monday|tue|tues|tuesday|wed|weds|wednesday|thu|thur|thurs|thursday|fri|friday|sat|saturday)'
 
+/**
+ * iter256 basics: 英語月名 (短縮 / フル) → 0-index 月 (Jan=0)。Todoist の "Apr 30"
+ * / "30 Apr" / "April 30, 2026" 互換。lookup は lower-case 化してから引く。
+ */
+const MONTH_EN: Record<string, number> = {
+  jan: 0,
+  january: 0,
+  feb: 1,
+  february: 1,
+  mar: 2,
+  march: 2,
+  apr: 3,
+  april: 3,
+  may: 4,
+  jun: 5,
+  june: 5,
+  jul: 6,
+  july: 6,
+  aug: 7,
+  august: 7,
+  sep: 8,
+  sept: 8,
+  september: 8,
+  oct: 9,
+  october: 9,
+  nov: 10,
+  november: 10,
+  dec: 11,
+  december: 11,
+}
+const MONTH_EN_PATTERN =
+  '(?:january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sept|sep|oct|nov|dec)'
+
 export function isoDate(d: Date): string {
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, '0')
@@ -79,6 +114,27 @@ export function nextWeekday(base: Date, weekday: number): Date {
   let delta = (weekday - cur + 7) % 7
   if (delta === 0) delta = 7
   return addDays(base, delta)
+}
+
+/**
+ * iter256 basics: 月日のみ指定 (年省略) で次の出現日を返す。Todoist 互換 ——
+ * 今年の同月日が過去なら翌年に繰り上げ、未来なら今年。当日 (==base) は今年扱い。
+ *
+ * 例: base=2026-04-25 で month=2 (Mar) day=10 → 2027-03-10、month=11 (Dec) day=1
+ *     → 2026-12-01、month=3 (Apr) day=25 → 2026-04-25 (当日扱い)。
+ *
+ * 31 日が無い月 (Apr 31 等) は JS Date が翌月 1 日に巻き戻すため、明示的に
+ * `month+1, 0` で月末を上限に丸める (`Feb 30` → `Feb 28/29`)。
+ */
+export function rollForwardMonthDay(base: Date, month: number, day: number): Date {
+  const lastDayThisYear = new Date(base.getFullYear(), month + 1, 0).getDate()
+  const safeDay = Math.min(day, lastDayThisYear)
+  const candidate = new Date(base.getFullYear(), month, safeDay)
+  if (candidate.getTime() < base.getTime()) {
+    const lastDayNextYear = new Date(base.getFullYear() + 1, month + 1, 0).getDate()
+    return new Date(base.getFullYear() + 1, month, Math.min(day, lastDayNextYear))
+  }
+  return candidate
 }
 
 export interface ParsedDate {
@@ -152,13 +208,47 @@ export function parseDateFromText(text: string, today: Date): ParsedDate | null 
     }
   }
 
-  // 7. ISO YYYY-MM-DD
+  // 7. EN 月名 絶対日付 (Phase 6.15 iter 256)
+  //    Todoist 互換: `Apr 30` / `April 30` / `30 Apr` / `Apr 30, 2026`。
+  //    年は省略可 — 省略時は今年で、過去なら来年に繰り上げる。
+  //    "Month Day" を先に試して "Day Month" にフォールバック (両方マッチ可能な
+  //    入力では Month Day を優先 — Todoist UI 表示と揃える)。
+  const monthDay = text.match(
+    new RegExp(`(^|\\s)(${MONTH_EN_PATTERN})\\s+(\\d{1,2})(?:(?:,\\s*|\\s+)(\\d{4}))?(\\s|$)`, 'i'),
+  )
+  if (monthDay) {
+    const m = MONTH_EN[monthDay[2]!.toLowerCase()]!
+    const d = Number(monthDay[3])
+    const yearStr = monthDay[4]
+    if (d >= 1 && d <= 31) {
+      const date = yearStr
+        ? new Date(Number(yearStr), m, Math.min(d, new Date(Number(yearStr), m + 1, 0).getDate()))
+        : rollForwardMonthDay(base, m, d)
+      return { date, matched: monthDay[0] }
+    }
+  }
+  const dayMonth = text.match(
+    new RegExp(`(^|\\s)(\\d{1,2})\\s+(${MONTH_EN_PATTERN})(?:(?:,\\s*|\\s+)(\\d{4}))?(\\s|$)`, 'i'),
+  )
+  if (dayMonth) {
+    const d = Number(dayMonth[2])
+    const m = MONTH_EN[dayMonth[3]!.toLowerCase()]!
+    const yearStr = dayMonth[4]
+    if (d >= 1 && d <= 31) {
+      const date = yearStr
+        ? new Date(Number(yearStr), m, Math.min(d, new Date(Number(yearStr), m + 1, 0).getDate()))
+        : rollForwardMonthDay(base, m, d)
+      return { date, matched: dayMonth[0] }
+    }
+  }
+
+  // 8. ISO YYYY-MM-DD
   const iso = text.match(/(^|\s)(\d{4}-\d{2}-\d{2})(\s|$)/)
   if (iso) {
     return { date: new Date(iso[2]!), matched: iso[0] }
   }
 
-  // 8. 相対 +Nd / +Nw (Phase 6.15 iter 230)
+  // 9. 相対 +Nd / +Nw (Phase 6.15 iter 230)
   const rel = text.match(/(^|\s)\+(\d{1,3})([dw])(\s|$)/)
   if (rel) {
     const n = Number(rel[2])

@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { addDays, isoDate, nextWeekday, parseDateFromText } from './date-tokens'
+import {
+  addDays,
+  isoDate,
+  nextWeekday,
+  parseDateFromText,
+  rollForwardMonthDay,
+} from './date-tokens'
 
 // iter255 refactor: nl-parse.ts から date-token 抽出を切り出した際の補強。
 // 既存の nl-parse.test.ts (parseQuickAdd 経由) は同じ関数を踏むので、ここでは
@@ -67,6 +73,69 @@ describe('parseDateFromText (pure helper)', () => {
     const r = parseDateFromText('今日 来週月曜 mixed', SAT)
     expect(isoDate(r!.date)).toBe('2026-04-25')
     expect(r!.matched).toMatch(/今日/)
+  })
+
+  // iter256 basics: 英語月名 絶対日付 (Apr 30 / 30 Apr / April 30, 2026)
+  describe('EN 月名 絶対日付', () => {
+    it('Month Day (Apr 30) — 当年で未来なら今年', () => {
+      // base=2026-04-25 → Apr 30 はまだ未来 (5 日後)
+      expect(isoDate(parseDateFromText('Apr 30 release', SAT)!.date)).toBe('2026-04-30')
+      expect(isoDate(parseDateFromText('April 30 milestone', SAT)!.date)).toBe('2026-04-30')
+    })
+
+    it('Day Month (30 Apr) も EU 風で受理', () => {
+      expect(isoDate(parseDateFromText('30 Apr deadline', SAT)!.date)).toBe('2026-04-30')
+    })
+
+    it('明示年付き Apr 30, 2027', () => {
+      expect(isoDate(parseDateFromText('Apr 30, 2027 release', SAT)!.date)).toBe('2027-04-30')
+      // カンマ無しスペース 2 個もOK
+      expect(isoDate(parseDateFromText('Apr 30 2027 release', SAT)!.date)).toBe('2027-04-30')
+    })
+
+    it('過去日 (Mar 10) は来年に繰り上げ — Todoist 互換', () => {
+      // base=2026-04-25 → Mar 10 は過去 → 2027-03-10
+      expect(isoDate(parseDateFromText('Mar 10 review', SAT)!.date)).toBe('2027-03-10')
+    })
+
+    it('当日 (Apr 25) は当日扱い — 今年', () => {
+      expect(isoDate(parseDateFromText('Apr 25 standup', SAT)!.date)).toBe('2026-04-25')
+    })
+
+    it('case-insensitive: APRIL / april / Apr 全部 OK', () => {
+      expect(isoDate(parseDateFromText('APRIL 30 a', SAT)!.date)).toBe('2026-04-30')
+      expect(isoDate(parseDateFromText('april 30 a', SAT)!.date)).toBe('2026-04-30')
+    })
+
+    it('存在しない日 (Feb 30) は月末に丸める', () => {
+      // 2026 は閏年でない → Feb 末 = 28 日
+      expect(isoDate(parseDateFromText('Feb 30 retro', SAT)!.date)).toBe('2027-02-28')
+    })
+
+    it('matched は ISO YYYY-MM-DD より優先 (パターン 7 が 8 より上)', () => {
+      // ISO は普通 4 桁年 → MMM DD と被らない。混在させて MMM DD が勝つことを確認
+      const r = parseDateFromText('Apr 30 2026-12-31', SAT)
+      expect(isoDate(r!.date)).toBe('2026-04-30')
+    })
+
+    it('数字だけ (30 単独) や月名だけ (Apr 単独) は無視 (誤検出防止)', () => {
+      expect(parseDateFromText('30 buy bread', SAT)).toBeNull()
+      // "Apr" 単独だけだと weekday/その他に該当しないので EN 月名にも該当しない (要 Day)
+      expect(parseDateFromText('Apr meeting', SAT)).toBeNull()
+    })
+  })
+})
+
+describe('rollForwardMonthDay', () => {
+  it('未来は今年, 過去は来年', () => {
+    expect(isoDate(rollForwardMonthDay(SAT, 4, 1))).toBe('2026-05-01') // May 1 = 未来
+    expect(isoDate(rollForwardMonthDay(SAT, 0, 15))).toBe('2027-01-15') // Jan 15 = 過去
+    expect(isoDate(rollForwardMonthDay(SAT, 3, 25))).toBe('2026-04-25') // 当日
+  })
+
+  it('Feb 30 は当該年の月末 (閏年 / 平年で挙動差なし — 30 > 29/28 のため)', () => {
+    // 2026 (平年) → Feb 28
+    expect(isoDate(rollForwardMonthDay(SAT, 1, 30))).toBe('2027-02-28')
   })
 })
 
