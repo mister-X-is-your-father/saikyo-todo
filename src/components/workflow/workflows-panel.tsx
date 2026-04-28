@@ -337,7 +337,11 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             onClick={() => void toggleEnabled()}
             disabled={update.isPending}
             data-testid={`wf-toggle-${wf.id}`}
-            aria-label={`Workflow「${wf.name}」を${wf.enabled ? '無効化' : '有効化'}`}
+            aria-label={
+              update.isPending
+                ? `Workflow「${wf.name}」の状態を更新中…`
+                : `Workflow「${wf.name}」を${wf.enabled ? '無効化' : '有効化'}`
+            }
           >
             {wf.enabled ? '無効化' : '有効化'}
           </Button>
@@ -362,7 +366,9 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             onClick={() => void handleDelete()}
             disabled={del.isPending}
             data-testid={`wf-delete-${wf.id}`}
-            aria-label={`Workflow「${wf.name}」を削除`}
+            aria-label={
+              del.isPending ? `Workflow「${wf.name}」を削除中…` : `Workflow「${wf.name}」を削除`
+            }
           >
             <Trash2 className="h-3.5 w-3.5 text-red-500" aria-hidden="true" />
           </Button>
@@ -577,6 +583,11 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
             disabled={saving}
             onClick={() => void handleSave()}
             data-testid={`wf-editor-save-${wf.id}`}
+            aria-label={
+              saving
+                ? `Workflow「${wf.name}」の編集を保存中…`
+                : `Workflow「${wf.name}」の graph / trigger を保存`
+            }
           >
             {saving ? '保存中…' : '保存'}
           </Button>
