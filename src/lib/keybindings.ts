@@ -49,6 +49,21 @@ export const KEYBINDINGS: Keybinding[] = [
   },
   { combo: 'Esc', description: 'Today: カーソル選択を解除 (ダイアログ未表示時)', group: 'Today' },
 
+  // --- 子タスク (Item 編集ダイアログ「子タスク」タブ内) ---
+  // iter290 P0 (queue: subtask gap d/4) で追加。SubtaskTreeNode の <li> に focus
+  // が当たっている時のみ動作。前 sibling が無ければ Alt+→ disabled / 既に root
+  // なら Alt+← disabled (button aria-label に reason 文言)。
+  {
+    combo: 'Alt+→',
+    description: '子タスク: 1 段インデント (前 sibling の子になる)',
+    group: '子タスク',
+  },
+  {
+    combo: 'Alt+←',
+    description: '子タスク: 1 段アウトデント (祖父の子になる、root へも戻せる)',
+    group: '子タスク',
+  },
+
   // --- グローバル ---
   { combo: 'Cmd+K / Ctrl+K', description: 'コマンドパレットを開く', group: 'グローバル' },
   { combo: '?', description: 'このショートカット一覧を開く', group: 'グローバル' },
