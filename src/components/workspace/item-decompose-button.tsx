@@ -54,7 +54,13 @@ export function ItemDecomposeButton({ workspaceId, item }: Props) {
         void run()
       }}
       data-testid={`decompose-btn-${item.id}`}
-      aria-label={`「${item.title}」を AI 分解 (子タスクを 3〜5 件作成)`}
+      aria-label={
+        item.status === 'done'
+          ? `「${item.title}」は完了済のため AI 分解不可`
+          : decompose.isPending
+            ? `「${item.title}」を AI 分解中…`
+            : `「${item.title}」を AI 分解 (子タスクを 3〜5 件作成)`
+      }
     >
       {decompose.isPending ? '分解中…' : 'AI 分解'}
     </Button>
