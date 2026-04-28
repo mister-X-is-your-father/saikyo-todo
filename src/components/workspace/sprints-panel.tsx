@@ -260,6 +260,13 @@ export function SprintsPanel({ workspaceId }: Props) {
                 type="submit"
                 disabled={!name.trim() || createMut.isPending}
                 data-testid="sprint-create-btn"
+                aria-label={
+                  !name.trim()
+                    ? 'Sprint を作成するには名前を入力してください'
+                    : createMut.isPending
+                      ? 'Sprint を作成中…'
+                      : 'Sprint を新規作成'
+                }
               >
                 {createMut.isPending ? '作成中…' : '作成'}
               </Button>

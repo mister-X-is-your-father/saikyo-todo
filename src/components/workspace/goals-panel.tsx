@@ -162,6 +162,13 @@ export function GoalsPanel({ workspaceId }: Props) {
                 type="submit"
                 disabled={!title.trim() || createMut.isPending}
                 data-testid="goal-create-btn"
+                aria-label={
+                  !title.trim()
+                    ? 'Goal を作成するにはタイトルを入力してください'
+                    : createMut.isPending
+                      ? 'Goal を作成中…'
+                      : 'Goal を新規作成'
+                }
               >
                 {createMut.isPending ? '作成中…' : '作成'}
               </Button>
@@ -569,6 +576,13 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
             size="sm"
             disabled={!krTitle.trim() || create.isPending}
             data-testid={`kr-add-btn-${goalId}`}
+            aria-label={
+              !krTitle.trim()
+                ? 'Key Result を追加するにはタイトルを入力してください'
+                : create.isPending
+                  ? 'Key Result を追加中…'
+                  : 'Key Result をこの Goal に追加'
+            }
           >
             <Plus className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             KR 追加
