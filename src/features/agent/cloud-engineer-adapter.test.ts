@@ -13,6 +13,7 @@ const KEYS = [
   'SAIKYO_ENGINEER_GIT_AUTHOR_NAME',
   'SAIKYO_ENGINEER_GIT_AUTHOR_EMAIL',
   'CLAUDE_CREDENTIALS_PATH',
+  'SAIKYO_ENGINEER_TEMPLATE',
 ] as const
 
 describe('cloud-engineer-adapter (iter 244)', () => {
@@ -59,6 +60,53 @@ describe('cloud-engineer-adapter (iter 244)', () => {
       expect(e.code).toBe('cloud-engineer-env-error')
       expect(e.message).toContain('SAIKYO_ENGINEER')
     }
+  })
+})
+
+describe('loadEnvForCloudEngineer template (iter 246)', () => {
+  const original: Record<string, string | undefined> = {}
+  let tmpCredFile = ''
+
+  beforeEach(async () => {
+    for (const k of KEYS) {
+      original[k] = process.env[k]
+      delete process.env[k]
+    }
+    // 必須 env を min 集めて template だけ別 assert する
+    process.env.SAIKYO_ENGINEER_GIT_REPO_URL = 'https://github.com/o/r.git'
+    process.env.SAIKYO_ENGINEER_GITHUB_TOKEN = 'ghp_xxx'
+    // 一時的な credentials ファイルを作る
+    const { writeFile, mkdtemp } = await import('node:fs/promises')
+    const { tmpdir } = await import('node:os')
+    const { join } = await import('node:path')
+    const dir = await mkdtemp(join(tmpdir(), 'saikyo-cred-iter246-'))
+    tmpCredFile = join(dir, 'credentials.json')
+    await writeFile(tmpCredFile, '{"x":"y"}')
+    process.env.CLAUDE_CREDENTIALS_PATH = tmpCredFile
+  })
+
+  afterEach(() => {
+    for (const k of KEYS) {
+      if (original[k] === undefined) delete process.env[k]
+      else process.env[k] = original[k]
+    }
+  })
+
+  it('SAIKYO_ENGINEER_TEMPLATE 未設定 → template=undefined (default base 使用)', async () => {
+    const env = await loadEnvForCloudEngineer()
+    expect(env.template).toBeUndefined()
+  })
+
+  it("SAIKYO_ENGINEER_TEMPLATE='saikyo-engineer' → template='saikyo-engineer'", async () => {
+    process.env.SAIKYO_ENGINEER_TEMPLATE = 'saikyo-engineer'
+    const env = await loadEnvForCloudEngineer()
+    expect(env.template).toBe('saikyo-engineer')
+  })
+
+  it('SAIKYO_ENGINEER_TEMPLATE が空文字 → template=undefined (空 string で潜り込まない)', async () => {
+    process.env.SAIKYO_ENGINEER_TEMPLATE = ''
+    const env = await loadEnvForCloudEngineer()
+    expect(env.template).toBeUndefined()
   })
 })
 

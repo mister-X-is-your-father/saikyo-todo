@@ -1,0 +1,21 @@
+# saikyo-engineer e2b template config (iter 246)
+#
+# Build & upload:
+#   $ cd e2b/saikyo-engineer
+#   $ e2b template build
+#
+# template_id は `e2b template build` 後に上書きされる (placeholder の <TBD>)。
+# 後で saikyo-todo 側 .env.local / runner では template name 'saikyo-engineer' を
+# 指定するだけでよい。
+
+template_id = "<TBD-after-first-build>"
+dockerfile = "Dockerfile"
+template_name = "saikyo-engineer"
+
+# Cold start 時に sandbox 起動直後に走らせる command。default の bash を使う。
+start_cmd = ""
+
+# CPU / Memory 推奨。pnpm install + typecheck で 2 vCPU / 2GB はほしい。
+# e2b の price tier に合わせて運用時に調整。
+cpu_count = 2
+memory_mb = 2048

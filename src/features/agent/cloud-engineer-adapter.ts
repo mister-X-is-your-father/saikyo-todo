@@ -42,6 +42,8 @@ export interface CloudEngineerEnv {
   /** commit author */
   gitAuthorName: string
   gitAuthorEmail: string
+  /** iter 246: e2b custom template 名 (`saikyo-engineer` 等)。未指定なら default base */
+  template: string | undefined
 }
 
 /**
@@ -86,6 +88,7 @@ export async function loadEnvForCloudEngineer(): Promise<CloudEngineerEnv> {
     )
   }
 
+  const template = process.env.SAIKYO_ENGINEER_TEMPLATE
   return {
     gitRepoUrl: gitRepoUrl!,
     gitRef,
@@ -93,6 +96,7 @@ export async function loadEnvForCloudEngineer(): Promise<CloudEngineerEnv> {
     claudeCredentialsB64,
     gitAuthorName,
     gitAuthorEmail,
+    template: template && template.length > 0 ? template : undefined,
   }
 }
 
@@ -136,6 +140,7 @@ export async function runEngineerInCloudSandbox(input: CloudEngineerInput) {
       `engineer: auto-commit from cloud sandbox (item=${input.itemId.slice(0, 8)})`,
     gitAuthorName: env.gitAuthorName,
     gitAuthorEmail: env.gitAuthorEmail,
+    template: env.template,
   })
 }
 

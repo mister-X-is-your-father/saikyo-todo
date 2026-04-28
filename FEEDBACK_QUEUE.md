@@ -36,8 +36,11 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
           (pure 関数、env 1 個を厳格 match) で `'cloud' | 'local'` 判定、cloud 路で
           adminDb から item 取得 → buildUserMessage → runEngineerInCloudSandbox。
           test 5 件追加 (env 値 'true' / 'TRUE' / '1' / 'false' / 未設定 を assert)
-    - [ ] Custom e2b template (DiD + supabase CLI + playwright) で Service test / e2e
-          も sandbox 内で完結
+    - [x] iter 246: Custom e2b template scaffolding (`e2b/saikyo-engineer/Dockerfile` +
+          `e2b.toml` + `README.md`) を追加。Node + git + pnpm + supabase CLI +
+          Playwright Chromium を baked-in。`runViaCloudSandbox` / `runClaudeOnRepo`
+          に `template?: string` を追加、adapter は `SAIKYO_ENGINEER_TEMPLATE` env で
+          切替。残: 実 build / template_id 確定 / 動作確認 (operator 作業)
     - [ ] E2B_API_KEY を取得して `.env.local` に設定 + 本番 docker-compose に通す
     - [ ] CLAUDE.md 「autoPr 明示 opt-in」ルールと矛盾するので運用ルール更新
           (Engineer cloud sandbox は autoMergeToMain を default true にする)

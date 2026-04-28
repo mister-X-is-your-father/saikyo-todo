@@ -39,6 +39,13 @@ export interface CloudSandboxInput {
    * 未指定なら "echo iter240 hello from cloud sandbox" を実行。
    */
   script?: string
+  /**
+   * iter 246: 使用する e2b template。default はライブラリ default ('base' 相当、
+   * Node + git のみ)。`saikyo-engineer` を指定すると DiD + supabase CLI +
+   * playwright + pnpm 同梱の custom template を使う (`e2b/saikyo-engineer/`
+   * の Dockerfile を build / upload してから設定する)。
+   */
+  template?: string
 }
 
 export interface CloudSandboxOutput {
@@ -90,7 +97,7 @@ export async function runViaCloudSandbox(input: CloudSandboxInput): Promise<Clou
 
   let sandbox: Sandbox | null = null
   try {
-    sandbox = await Sandbox.create({
+    const opts = {
       apiKey,
       timeoutMs: timeoutSec * 1000,
       envs: {
@@ -98,7 +105,10 @@ export async function runViaCloudSandbox(input: CloudSandboxInput): Promise<Clou
         SAIKYO_WORKSPACE_ID: input.workspaceId,
         SAIKYO_ITEM_ID: input.itemId,
       },
-    })
+    }
+    sandbox = input.template
+      ? await Sandbox.create(input.template, opts)
+      : await Sandbox.create(opts)
     const sandboxId = sandbox.sandboxId
     const result = await sandbox.commands.run(script, { timeoutMs: timeoutSec * 1000 })
     const stdout = result.stdout ?? ''
@@ -177,6 +187,8 @@ export interface RunClaudeOnRepoInput {
   /** commit author 設定 (default は sandbox の git user.name / email) */
   gitAuthorName?: string
   gitAuthorEmail?: string
+  /** iter 246: e2b template 名 (custom template `saikyo-engineer` 等) */
+  template?: string
 }
 
 /**
@@ -316,7 +328,7 @@ export async function runClaudeOnRepo(input: RunClaudeOnRepoInput): Promise<Clou
 
   let sandbox: Sandbox | null = null
   try {
-    sandbox = await Sandbox.create({
+    const opts = {
       apiKey,
       timeoutMs: timeoutSec * 1000,
       envs: {
@@ -326,7 +338,10 @@ export async function runClaudeOnRepo(input: RunClaudeOnRepoInput): Promise<Clou
         CLAUDE_CREDENTIALS_B64: input.claudeCredentialsB64,
         GITHUB_TOKEN: input.githubToken,
       },
-    })
+    }
+    sandbox = input.template
+      ? await Sandbox.create(input.template, opts)
+      : await Sandbox.create(opts)
     const sandboxId = sandbox.sandboxId
     const result = await sandbox.commands.run(script, { timeoutMs: timeoutSec * 1000 })
     const stdout = result.stdout ?? ''
