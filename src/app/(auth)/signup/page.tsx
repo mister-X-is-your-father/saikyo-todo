@@ -12,9 +12,9 @@ import {
 
 export default function SignupPage() {
   return (
-    <Card>
+    <Card role="region" aria-labelledby="signup-heading">
       <CardHeader>
-        <CardTitle role="heading" aria-level={1} className="text-2xl">
+        <CardTitle id="signup-heading" role="heading" aria-level={1} className="text-2xl">
           サインアップ
         </CardTitle>
         <CardDescription>アカウントを作成して始めましょう</CardDescription>

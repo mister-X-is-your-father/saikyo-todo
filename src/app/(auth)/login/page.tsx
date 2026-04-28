@@ -12,9 +12,9 @@ import {
 
 export default function LoginPage() {
   return (
-    <Card>
+    <Card role="region" aria-labelledby="login-heading">
       <CardHeader>
-        <CardTitle role="heading" aria-level={1} className="text-2xl">
+        <CardTitle id="login-heading" role="heading" aria-level={1} className="text-2xl">
           ログイン
         </CardTitle>
         <CardDescription>最強TODO へようこそ</CardDescription>
