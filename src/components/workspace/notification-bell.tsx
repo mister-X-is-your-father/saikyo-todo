@@ -13,7 +13,7 @@
  */
 import { useState } from 'react'
 
-import { Bell, CheckCheck } from 'lucide-react'
+import { AlarmClock, AlertCircle, AtSign, Bell, CheckCheck, UserPlus } from 'lucide-react'
 import { parseAsString, useQueryState } from 'nuqs'
 
 import { formatNotificationBody, formatRelativeTime } from '@/features/notification/format'
@@ -25,10 +25,23 @@ import {
 } from '@/features/notification/hooks'
 import { useNotificationsRealtime } from '@/features/notification/realtime'
 import type { HeartbeatPayload, MentionPayload, Notification } from '@/features/notification/schema'
+import {
+  getNotificationTypeVisual,
+  type NotificationIconKey,
+} from '@/features/notification/type-visual'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+
+/** type-visual の iconKey から Lucide component に map (status-visual と同パターン)。 */
+const TYPE_ICON: Record<NotificationIconKey, typeof Bell> = {
+  alarm: AlarmClock,
+  'at-sign': AtSign,
+  'user-plus': UserPlus,
+  'alert-circle': AlertCircle,
+  bell: Bell,
+}
 
 interface Props {
   workspaceId: string
@@ -136,37 +149,53 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
             </div>
           ) : (
             <ul className="divide-y">
-              {notifications.map((n) => (
-                <li key={n.id}>
-                  <button
-                    type="button"
-                    onClick={() => handleNotificationClick(n)}
-                    className="hover:bg-muted/60 flex w-full items-start gap-2 px-3 py-2 text-left"
-                    data-testid="notification-item"
-                    aria-label={`${n.readAt ? '既読' : '未読'}通知: ${formatNotificationBody(n)}`}
-                  >
-                    <span
-                      className={`mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full ${
-                        n.readAt ? 'bg-transparent' : 'bg-primary'
-                      }`}
-                      aria-hidden
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs leading-snug">{formatNotificationBody(n)}</p>
-                      <time
-                        className="text-muted-foreground mt-0.5 block text-[10px]"
-                        dateTime={
-                          n.createdAt instanceof Date
-                            ? n.createdAt.toISOString()
-                            : new Date(n.createdAt).toISOString()
-                        }
+              {notifications.map((n) => {
+                const visual = getNotificationTypeVisual(n.type)
+                const Icon = TYPE_ICON[visual.iconKey]
+                return (
+                  <li key={n.id}>
+                    <button
+                      type="button"
+                      onClick={() => handleNotificationClick(n)}
+                      className="hover:bg-muted/60 flex w-full items-start gap-2 px-3 py-2 text-left"
+                      data-testid="notification-item"
+                      data-notification-type={n.type}
+                      aria-label={`${n.readAt ? '既読' : '未読'}${visual.label}通知: ${formatNotificationBody(n)}`}
+                    >
+                      <span
+                        className={`mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full ring-1 ring-inset ${visual.bgClass} ${visual.textClass} ${visual.ringClass}`}
+                        role="img"
+                        aria-label={visual.label}
+                        data-testid={`notification-type-icon-${n.type}`}
                       >
-                        {formatRelativeTime(n.createdAt)}
-                      </time>
-                    </div>
-                  </button>
-                </li>
-              ))}
+                        <Icon className="h-3 w-3" aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs leading-snug">
+                          {!n.readAt && (
+                            <span
+                              className="bg-primary mr-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full align-middle"
+                              role="img"
+                              aria-label="未読"
+                            />
+                          )}
+                          {formatNotificationBody(n)}
+                        </p>
+                        <time
+                          className="text-muted-foreground mt-0.5 block text-[10px]"
+                          dateTime={
+                            n.createdAt instanceof Date
+                              ? n.createdAt.toISOString()
+                              : new Date(n.createdAt).toISOString()
+                          }
+                        >
+                          {formatRelativeTime(n.createdAt)}
+                        </time>
+                      </div>
+                    </button>
+                  </li>
+                )
+              })}
             </ul>
           )}
         </div>
