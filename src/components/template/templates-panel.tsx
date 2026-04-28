@@ -191,9 +191,14 @@ export function TemplatesPanel({ workspaceId }: Props) {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDelete(t)}
-                    aria-label={`${t.name} を削除`}
+                    disabled={deleteMut.isPending}
+                    aria-label={
+                      deleteMut.isPending
+                        ? `Template「${t.name}」を削除中…`
+                        : `Template「${t.name}」を削除`
+                    }
                   >
-                    <Trash2 className="h-4 w-4 text-red-500" />
+                    <Trash2 className="h-4 w-4 text-red-500" aria-hidden="true" />
                   </Button>
                 </CardHeader>
                 {expandedId === t.id ? (

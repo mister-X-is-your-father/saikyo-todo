@@ -694,7 +694,11 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
                 e.stopPropagation()
                 void handleRerun(r)
               }}
-              aria-label={`実行 ${r.id.slice(0, 8)} を同じ input で再実行`}
+              aria-label={
+                trigger.isPending
+                  ? `実行 ${r.id.slice(0, 8)} を再実行中…`
+                  : `実行 ${r.id.slice(0, 8)} を同じ input で再実行`
+              }
               title={`同じ input で再実行 (${formatRunTime(r)})`}
               data-testid={`wf-run-rerun-${r.id}`}
             >
