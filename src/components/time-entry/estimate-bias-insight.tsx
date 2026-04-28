@@ -26,6 +26,11 @@ import {
   suggestCalibratedEstimates,
 } from '@/features/time-entry/bias-calibration'
 import { buildItemDescriptionLookup, selectBiasSamples } from '@/features/time-entry/bias-selector'
+import {
+  computeBiasTrend,
+  formatBiasTrendJa,
+  splitSamplesByDate,
+} from '@/features/time-entry/bias-trend'
 import { useTimeEntries } from '@/features/time-entry/hooks'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -65,6 +70,21 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
     const lookup = buildItemDescriptionLookup(itemsQ.data as Item[])
     const byCategory = computeBiasByCategory(entriesQ.data, lookup)
     return formatTopSkewedCategoryJa(byCategory)
+  }, [entriesQ.data, itemsQ.data])
+
+  // iter272: 14 日 split で「先期間 (15-28 日前) → 直近 (14 日以内)」の見積精度
+  // 変化を判定。各期間 3 件以上で improving / worsening / stable / inconclusive を判定し、
+  // inconclusive (= 学習中で判定不能) は出さない (UI 静か)。
+  const trendLine = useMemo(() => {
+    if (!entriesQ.data || !itemsQ.data) return null
+    const lookup = buildItemDescriptionLookup(itemsQ.data as Item[])
+    const splitDate = new Date()
+    splitDate.setDate(splitDate.getDate() - 14)
+    const splitISO = `${splitDate.getFullYear()}-${String(splitDate.getMonth() + 1).padStart(2, '0')}-${String(splitDate.getDate()).padStart(2, '0')}`
+    const { recent, prior } = splitSamplesByDate(entriesQ.data, lookup, splitISO)
+    const trend = computeBiasTrend(computeEstimateBias(recent), computeEstimateBias(prior))
+    if (trend.direction === 'inconclusive') return null
+    return formatBiasTrendJa(trend)
   }, [entriesQ.data, itemsQ.data])
 
   // どちらかが loading 中 → 小さい placeholder (主 panel を妨げない)
@@ -111,6 +131,11 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
             data-testid="estimate-bias-top-skew"
           >
             <span className="text-foreground/70 font-medium">カテゴリ別:</span> {topSkewLine}
+          </p>
+        )}
+        {trendLine && (
+          <p className="text-muted-foreground mt-1 text-[11px]" data-testid="estimate-bias-trend">
+            {trendLine}
           </p>
         )}
         <dl
