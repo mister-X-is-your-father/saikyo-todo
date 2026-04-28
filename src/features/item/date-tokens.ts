@@ -9,13 +9,15 @@
  *   1. JA: `今日` / `明日` / `明後日`、EN: `today` / `tonight` / `tomorrow` / `tmr` / `tmrw` / `tomo`
  *   2. JA: `来週(日月火水木金土)曜?`
  *   3. EN: `next monday` / `next mon` 等 (略形含む)
- *   4. JA: `今週末` (今週土曜) / `月末` (当月最終日)
+ *   4. JA: `今週末` (今週土曜) / `来週末` (+1 週) / `月末` (当月最終日)
+ *      EN alias: `this weekend` / `next weekend` / `end of month` / `eom`
  *   5. JA: `(日月火水木金土)曜` 単独 (次の同曜日; 今日が同曜日なら +7)
  *   6. EN: `monday` / `mon` 単独 (同上)
  *   7. EN 月名 絶対日付: `Apr 30` / `April 30` / `30 Apr` / `Apr 30, 2026`
  *      (年省略時は今年、ただし当日より前の月日なら来年に繰り上げ — Todoist 互換)
  *   8. ISO: `YYYY-MM-DD`
- *   9. 相対: `+3d` / `+2w`
+ *   9. M/D スラッシュ: `3/15` / `12/31` / `3/15/2027` / `3/15/27` (US convention)
+ *  10. 相対: `+3d` / `+2w`
  */
 
 const WEEKDAY_JA: Record<string, number> = {
@@ -179,13 +181,22 @@ export function parseDateFromText(text: string, today: Date): ParsedDate | null 
 
   // 4. 今週末 = 今週土曜 (今日含む) / 月末 = 当月最終日
   // Phase 6.15 iter 233 で導入。Todoist の "this weekend" / "end of month" 相当。
-  const weekendMatch = text.match(/(^|\s)今週末(\s|$)/)
+  // iter256: EN alias `this weekend` / `next weekend` / `end of month` / `eom` を併設。
+  const weekendMatch = text.match(/(^|\s)(今週末|this\s+weekend)(\s|$)/i)
   if (weekendMatch) {
     const cur = base.getDay()
     const delta = (6 - cur + 7) % 7
     return { date: addDays(base, delta), matched: weekendMatch[0] }
   }
-  const endOfMonth = text.match(/(^|\s)月末(\s|$)/)
+  const nextWeekendMatch = text.match(/(^|\s)(来週末|next\s+weekend)(\s|$)/i)
+  if (nextWeekendMatch) {
+    // 「次の土曜のさらに次の土曜」 — `this weekend` の +7 日。
+    // Todoist は `next weekend` を「来週の土曜」として扱うので互換させる。
+    const cur = base.getDay()
+    const delta = ((6 - cur + 7) % 7) + 7
+    return { date: addDays(base, delta), matched: nextWeekendMatch[0] }
+  }
+  const endOfMonth = text.match(/(^|\s)(月末|end\s+of\s+month|eom)(\s|$)/i)
   if (endOfMonth) {
     return {
       date: new Date(base.getFullYear(), base.getMonth() + 1, 0),
@@ -248,7 +259,33 @@ export function parseDateFromText(text: string, today: Date): ParsedDate | null 
     return { date: new Date(iso[2]!), matched: iso[0] }
   }
 
-  // 9. 相対 +Nd / +Nw (Phase 6.15 iter 230)
+  // 9. M/D スラッシュ形式 (Todoist / Things 互換 — US convention)。
+  //    `3/15` / `12/31` / `3/15/2027` / `3/15/27` を受理。
+  //    年省略時は MMM DD と同じ "未来なら今年、過去なら来年" ルール。
+  //    2-digit 年は 2000 + N (Y2K pivot)。月/日が範囲外なら拒否 (誤検出防止)。
+  const slashMd = text.match(/(^|\s)(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?(\s|$)/)
+  if (slashMd) {
+    const m = Number(slashMd[2]) - 1
+    const d = Number(slashMd[3])
+    const yearStr = slashMd[4]
+    if (m >= 0 && m < 12 && d >= 1 && d <= 31) {
+      const year = yearStr
+        ? yearStr.length === 2
+          ? 2000 + Number(yearStr)
+          : Number(yearStr)
+        : null
+      let date: Date
+      if (year !== null) {
+        const lastDay = new Date(year, m + 1, 0).getDate()
+        date = new Date(year, m, Math.min(d, lastDay))
+      } else {
+        date = rollForwardMonthDay(base, m, d)
+      }
+      return { date, matched: slashMd[0] }
+    }
+  }
+
+  // 10. 相対 +Nd / +Nw (Phase 6.15 iter 230)
   const rel = text.match(/(^|\s)\+(\d{1,3})([dw])(\s|$)/)
   if (rel) {
     const n = Number(rel[2])

@@ -126,6 +126,84 @@ describe('parseDateFromText (pure helper)', () => {
   })
 })
 
+// iter256 basics: 英語 weekend alias (this weekend / next weekend)
+describe('weekend EN alias', () => {
+  // SAT = 2026-04-25 (土)。this weekend = 当日 (Sat=6 → delta 0)、next weekend = +7 = 2026-05-02
+  it('this weekend (Sat 当日なら今日)', () => {
+    expect(isoDate(parseDateFromText('this weekend cleanup', SAT)!.date)).toBe('2026-04-25')
+    expect(isoDate(parseDateFromText('THIS WEEKEND a', SAT)!.date)).toBe('2026-04-25')
+  })
+
+  it('next weekend は this weekend の +7 日', () => {
+    // SAT+7 = 2026-05-02
+    expect(isoDate(parseDateFromText('next weekend trip', SAT)!.date)).toBe('2026-05-02')
+    expect(isoDate(parseDateFromText('NEXT WEEKEND a', SAT)!.date)).toBe('2026-05-02')
+  })
+
+  it('来週末 は next weekend と同義 (JA alias)', () => {
+    expect(isoDate(parseDateFromText('来週末 旅行', SAT)!.date)).toBe('2026-05-02')
+  })
+
+  it('木曜日 base での this weekend は +2 (次の土曜)', () => {
+    const THU = new Date(2026, 3, 23) // Thu 2026-04-23
+    expect(isoDate(parseDateFromText('this weekend a', THU)!.date)).toBe('2026-04-25')
+    expect(isoDate(parseDateFromText('next weekend a', THU)!.date)).toBe('2026-05-02')
+  })
+
+  it('end of month / eom も alias (= 月末)', () => {
+    expect(isoDate(parseDateFromText('end of month review', SAT)!.date)).toBe('2026-04-30')
+    expect(isoDate(parseDateFromText('eom report', SAT)!.date)).toBe('2026-04-30')
+    expect(isoDate(parseDateFromText('EOM report', SAT)!.date)).toBe('2026-04-30')
+  })
+
+  it('weekend だけ (this/next 接頭辞なし) は誤検出を起こさない', () => {
+    // bare "weekend" は曜日でも何でもないので無視 (parseDateFromText が null)
+    expect(parseDateFromText('weekend cleanup', SAT)).toBeNull()
+  })
+})
+
+// iter256 basics: M/D スラッシュ形式 (US convention)
+describe('M/D スラッシュ形式', () => {
+  it('未来の M/D は今年扱い', () => {
+    expect(isoDate(parseDateFromText('5/15 release', SAT)!.date)).toBe('2026-05-15')
+    expect(isoDate(parseDateFromText('12/31 holiday', SAT)!.date)).toBe('2026-12-31')
+  })
+
+  it('過去の M/D は来年に繰り上げ', () => {
+    // SAT=2026-04-25 → 3/10 は過去 → 2027-03-10
+    expect(isoDate(parseDateFromText('3/10 retro', SAT)!.date)).toBe('2027-03-10')
+  })
+
+  it('当日 M/D は当日扱い', () => {
+    expect(isoDate(parseDateFromText('4/25 standup', SAT)!.date)).toBe('2026-04-25')
+  })
+
+  it('明示年 (M/D/YYYY)', () => {
+    expect(isoDate(parseDateFromText('3/15/2028 release', SAT)!.date)).toBe('2028-03-15')
+  })
+
+  it('2-digit 年 (M/D/YY) は 20YY と解釈', () => {
+    expect(isoDate(parseDateFromText('3/15/27 release', SAT)!.date)).toBe('2027-03-15')
+  })
+
+  it('範囲外 (13/1, 0/15, 5/32) は無視', () => {
+    expect(parseDateFromText('13/1 invalid', SAT)).toBeNull()
+    expect(parseDateFromText('0/15 invalid', SAT)).toBeNull()
+    expect(parseDateFromText('5/32 invalid', SAT)).toBeNull()
+  })
+
+  it('Feb 30 系 (2/30) は当該年の月末に丸める', () => {
+    // 2026 平年 → Feb 末 = 28、しかし 2/30 なら未来は無いので来年 → 2027-02-28
+    expect(isoDate(parseDateFromText('2/30 retro', SAT)!.date)).toBe('2027-02-28')
+  })
+
+  it('ISO YYYY-MM-DD は 9 より前の 8 で消費される (混在時)', () => {
+    // ISO の方が上 (パターン 8) なので 4 桁年付きの ISO が勝つ
+    const r = parseDateFromText('2026-12-31 5/15', SAT)
+    expect(isoDate(r!.date)).toBe('2026-12-31')
+  })
+})
+
 describe('rollForwardMonthDay', () => {
   it('未来は今年, 過去は来年', () => {
     expect(isoDate(rollForwardMonthDay(SAT, 4, 1))).toBe('2026-05-01') // May 1 = 未来
