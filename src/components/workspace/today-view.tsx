@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { parseAsString, useQueryState } from 'nuqs'
 import { toast } from 'sonner'
 
+import { todayISO } from '@/lib/date/iso'
 import { isAppError } from '@/lib/errors'
 import { moveCursor } from '@/lib/keyboard/list-cursor'
 
@@ -19,11 +20,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ItemCheckbox } from '@/components/workspace/item-checkbox'
 import { StartTimerButton } from '@/components/workspace/start-timer-button'
 import { StatusBadge } from '@/components/workspace/status-badge'
-
-function todayISO(): string {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
 
 // Phase 6.15 iter 84: 純粋分類関数を `@/features/today/build-groups` に移動。
 // 単体テスト (build-groups.test.ts) で 4 group 仕様を検証。

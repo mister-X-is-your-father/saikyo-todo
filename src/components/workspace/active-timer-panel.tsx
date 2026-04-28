@@ -22,6 +22,7 @@ import { Pause, Play, Square } from 'lucide-react'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 
+import { todayISO } from '@/lib/date/iso'
 import { isAppError } from '@/lib/errors'
 import { formatElapsed, formatVariance, useActiveTimerStore } from '@/lib/stores/active-timer'
 
@@ -33,11 +34,6 @@ import { Button } from '@/components/ui/button'
 
 interface Props {
   workspaceId: string
-}
-
-function todayISO(): string {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 export function ActiveTimerPanel({ workspaceId }: Props) {

@@ -11,6 +11,7 @@ import { useState } from 'react'
 import { ChevronDown, ChevronRight, Plus, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { isoDaysFromNow, todayISO } from '@/lib/date/iso'
 import { isAppError } from '@/lib/errors'
 
 import { useDecomposeGoal } from '@/features/agent/hooks'
@@ -49,16 +50,6 @@ const STATUS_COLOR: Record<GoalStatus, 'default' | 'secondary' | 'outline'> = {
   active: 'default',
   completed: 'secondary',
   archived: 'outline',
-}
-
-function todayISO(): string {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-function isoDaysFromNow(days: number): string {
-  const d = new Date()
-  d.setDate(d.getDate() + days)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 export function GoalsPanel({ workspaceId }: Props) {
