@@ -289,14 +289,35 @@ function ItemEditDialogInner({
                   data-testid="edit-item-sprint"
                 >
                   <option value="">未割当</option>
-                  {(sprintsList.data ?? [])
-                    .filter((s) => s.status === 'active' || s.status === 'planning')
-                    .map((sp) => (
-                      <option key={sp.id} value={sp.id}>
-                        {sp.status === 'active' ? '★ ' : ''}
-                        {sp.name}
-                      </option>
-                    ))}
+                  {(() => {
+                    const filtered = (sprintsList.data ?? []).filter(
+                      (s) => s.status === 'active' || s.status === 'planning',
+                    )
+                    const active = filtered.filter((s) => s.status === 'active')
+                    const planning = filtered.filter((s) => s.status === 'planning')
+                    return (
+                      <>
+                        {active.length > 0 && (
+                          <optgroup label="稼働中">
+                            {active.map((sp) => (
+                              <option key={sp.id} value={sp.id}>
+                                {sp.name}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                        {planning.length > 0 && (
+                          <optgroup label="計画中">
+                            {planning.map((sp) => (
+                              <option key={sp.id} value={sp.id}>
+                                {sp.name}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                      </>
+                    )
+                  })()}
                 </select>
               </div>
               <div className="space-y-1.5">
