@@ -3,10 +3,16 @@ import { describe, expect, it } from 'vitest'
 import {
   compareUrgency,
   computeUrgency,
+  countItemsByUrgencyTier,
   explainUrgency,
   formatUrgencyExplanation,
+  formatUrgencyTierCounts,
+  groupItemsByUrgencyTier,
   selectTopUrgentItems,
   type UrgencyFields,
+  type UrgencyTier,
+  urgencyTier,
+  urgencyTierLabel,
 } from './urgency'
 
 const TODAY = new Date(2026, 3, 27) // Mon 2026-04-27
@@ -283,5 +289,167 @@ describe('formatUrgencyExplanation', () => {
   it('done/archive は専用 sentinel 文字列', () => {
     const e = explainUrgency(item({ priority: 1, doneAt: new Date() }), TODAY)
     expect(formatUrgencyExplanation(e)).toBe('urgency 0 (完了済 / archive)')
+  })
+})
+
+// ----------------------------------------------------------------------
+// iter294 ai-automation: urgencyTier + group/count/format
+// ----------------------------------------------------------------------
+
+describe('urgencyTier — score → bucket', () => {
+  it('score >= 100 は critical (緊急)', () => {
+    expect(urgencyTier(100)).toBe<UrgencyTier>('critical')
+    expect(urgencyTier(180)).toBe<UrgencyTier>('critical') // p1+overdue+must の最大値
+    expect(urgencyTier(150)).toBe<UrgencyTier>('critical') // p1+overdue
+  })
+
+  it('50 ≤ score < 100 は high (高)', () => {
+    expect(urgencyTier(50)).toBe<UrgencyTier>('high')
+    expect(urgencyTier(70)).toBe<UrgencyTier>('high') // p2 単独
+    expect(urgencyTier(90)).toBe<UrgencyTier>('high') // p3+overdue
+    expect(urgencyTier(99)).toBe<UrgencyTier>('high')
+  })
+
+  it('20 ≤ score < 50 は medium (中)', () => {
+    expect(urgencyTier(20)).toBe<UrgencyTier>('medium')
+    expect(urgencyTier(40)).toBe<UrgencyTier>('medium') // p3 単独
+    expect(urgencyTier(45)).toBe<UrgencyTier>('medium') // p4+today
+    expect(urgencyTier(49)).toBe<UrgencyTier>('medium')
+  })
+
+  it('0 < score < 20 は low (低)', () => {
+    expect(urgencyTier(1)).toBe<UrgencyTier>('low')
+    expect(urgencyTier(10)).toBe<UrgencyTier>('low') // p4 単独
+    expect(urgencyTier(19)).toBe<UrgencyTier>('low')
+  })
+
+  it('score = 0 / 負値 / NaN / Infinity は none (対象外)', () => {
+    expect(urgencyTier(0)).toBe<UrgencyTier>('none')
+    expect(urgencyTier(-5)).toBe<UrgencyTier>('none')
+    expect(urgencyTier(Number.NaN)).toBe<UrgencyTier>('none')
+    expect(urgencyTier(Number.POSITIVE_INFINITY)).toBe<UrgencyTier>('none')
+    expect(urgencyTier(Number.NEGATIVE_INFINITY)).toBe<UrgencyTier>('none')
+  })
+
+  it('境界 (100/50/20) は上位 tier に属する (= 大なりイコール側)', () => {
+    expect(urgencyTier(99)).toBe<UrgencyTier>('high')
+    expect(urgencyTier(100)).toBe<UrgencyTier>('critical')
+    expect(urgencyTier(49)).toBe<UrgencyTier>('medium')
+    expect(urgencyTier(50)).toBe<UrgencyTier>('high')
+    expect(urgencyTier(19)).toBe<UrgencyTier>('low')
+    expect(urgencyTier(20)).toBe<UrgencyTier>('medium')
+  })
+})
+
+describe('urgencyTierLabel', () => {
+  it('5 tier の日本語短ラベルを返す', () => {
+    expect(urgencyTierLabel('critical')).toBe('緊急')
+    expect(urgencyTierLabel('high')).toBe('高')
+    expect(urgencyTierLabel('medium')).toBe('中')
+    expect(urgencyTierLabel('low')).toBe('低')
+    expect(urgencyTierLabel('none')).toBe('対象外')
+  })
+})
+
+describe('groupItemsByUrgencyTier', () => {
+  it('各 tier に正しく振り分ける (computeUrgency 経由)', () => {
+    const items = [
+      item({ priority: 1 }), // 100 → critical
+      item({ priority: 2 }), // 70 → high
+      item({ priority: 3 }), // 40 → medium
+      item({ priority: 4 }), // 10 → low
+      item({ priority: 1, doneAt: new Date('2026-04-26') }), // 0 → none
+      item({ priority: 2, archivedAt: new Date('2026-04-26') }), // 0 → none
+    ]
+    const groups = groupItemsByUrgencyTier(items, TODAY)
+    expect(groups.critical.map((i) => i.priority)).toEqual([1])
+    expect(groups.high.map((i) => i.priority)).toEqual([2])
+    expect(groups.medium.map((i) => i.priority)).toEqual([3])
+    expect(groups.low.map((i) => i.priority)).toEqual([4])
+    expect(groups.none).toHaveLength(2)
+  })
+
+  it('空配列 → 全 tier 空配列で初期化されている', () => {
+    const groups = groupItemsByUrgencyTier([], TODAY)
+    expect(groups.critical).toEqual([])
+    expect(groups.high).toEqual([])
+    expect(groups.medium).toEqual([])
+    expect(groups.low).toEqual([])
+    expect(groups.none).toEqual([])
+  })
+
+  it('元配列順を保つ stable group 化 (同 tier 内)', () => {
+    const A = item({ priority: 1 })
+    const B = item({ priority: 1, isMust: true }) // 130 → critical
+    const C = item({ priority: 1, dueDate: '2026-04-27' }) // 135 → critical
+    const groups = groupItemsByUrgencyTier([A, B, C], TODAY)
+    expect(groups.critical[0]).toBe(A)
+    expect(groups.critical[1]).toBe(B)
+    expect(groups.critical[2]).toBe(C)
+  })
+
+  it('proximity bonus で tier 上昇 (p4+overdue+must = 90 → high)', () => {
+    const items = [
+      item({ priority: 4, dueDate: '2026-04-26', isMust: true }), // 10+50+30=90 → high
+      item({ priority: 4, dueDate: '2026-04-27' }), // 10+35=45 → medium
+    ]
+    const groups = groupItemsByUrgencyTier(items, TODAY)
+    expect(groups.high).toHaveLength(1)
+    expect(groups.medium).toHaveLength(1)
+  })
+})
+
+describe('countItemsByUrgencyTier', () => {
+  it('tier 別件数を返す (group の個数版)', () => {
+    const items = [
+      item({ priority: 1 }), // critical
+      item({ priority: 1 }), // critical
+      item({ priority: 2 }), // high
+      item({ priority: 4 }), // low
+      item({ priority: 4, doneAt: new Date('2026-04-26') }), // none
+    ]
+    expect(countItemsByUrgencyTier(items, TODAY)).toEqual({
+      critical: 2,
+      high: 1,
+      medium: 0,
+      low: 1,
+      none: 1,
+    })
+  })
+
+  it('空配列 → 全 tier 0', () => {
+    expect(countItemsByUrgencyTier([], TODAY)).toEqual({
+      critical: 0,
+      high: 0,
+      medium: 0,
+      low: 0,
+      none: 0,
+    })
+  })
+})
+
+describe('formatUrgencyTierCounts', () => {
+  it('件数 0 の tier は省略し、tier 順で連結', () => {
+    expect(formatUrgencyTierCounts({ critical: 2, high: 1, medium: 0, low: 4, none: 8 })).toBe(
+      '緊急 2 / 高 1 / 低 4 / 対象外 8',
+    )
+  })
+
+  it('全 0 → "0 件"', () => {
+    expect(formatUrgencyTierCounts({ critical: 0, high: 0, medium: 0, low: 0, none: 0 })).toBe(
+      '0 件',
+    )
+  })
+
+  it('単一 tier のみでも順序を保つ', () => {
+    expect(formatUrgencyTierCounts({ critical: 0, high: 0, medium: 5, low: 0, none: 0 })).toBe(
+      '中 5',
+    )
+  })
+
+  it('tier 順は critical → high → medium → low → none', () => {
+    expect(formatUrgencyTierCounts({ critical: 1, high: 0, medium: 0, low: 0, none: 1 })).toBe(
+      '緊急 1 / 対象外 1',
+    )
   })
 })

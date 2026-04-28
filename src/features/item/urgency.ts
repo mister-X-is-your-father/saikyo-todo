@@ -169,3 +169,108 @@ export function selectTopUrgentItems<T extends UrgencyFields>(
   })
   return enriched.slice(0, n).map((e) => e.it)
 }
+
+/**
+ * iter294 ai-automation: urgency 数値を「tier (緊急 / 高 / 中 / 低 / 対象外)」
+ * に粗粒度分類する pure helper + group/count/format。
+ *
+ * iter287 (`getDueProximity`) / iter289 (`groupItemsByDueProximity` 等) と同じ
+ * 「数値 → bucket → 集計 → 文字列」 substrate を urgency 軸でも揃える。
+ * iter292-A (`explainUrgency` / `formatUrgencyExplanation`) は item 単独の
+ * 内訳を文字列化するのに対し、本 iter は **item 群を tier 別に集計する** 軸。
+ * iter292-B (`groupItemsByPriority` / `countItemsByPriority` 等) は priority
+ * のみで tier 化するのに対し、本 helper は priority + dueDate + MUST を全部
+ * 加味した urgency score 由来で tier 化するので「期限切れの p3 が緊急に上がる」
+ * のような proximity 由来の格上げが反映される。
+ *
+ * AI 朝 brief / pm-agent prompt が `緊急 2 / 高 5 / 中 12 / 低 30 / 対象外 8`
+ * のような 1 行 summary を 1 関数 (`formatUrgencyTierCounts`) で出せる。UI 側
+ * でも item チップ / dashboard widget が同じ tier 文字列を流用できる。
+ *
+ * tier 境界 (computeUrgency の score を踏まえた heuristic):
+ *  - `critical` (緊急)  … score ≥ 100。p1 単独 / p2+overdue / p1+today / p3+overdue+must
+ *  - `high`     (高)    … 50 ≤ score < 100。p2 / p3+today / p3+overdue / p4+overdue+must
+ *  - `medium`   (中)    … 20 ≤ score < 50。p3 / p4+today / p4+thisWeek+must (50 は high 側)
+ *  - `low`      (低)    … 0 < score < 20。p4 単独 (=10)
+ *  - `none`    (対象外) … score ≤ 0 or NaN/Infinity。done/archive 済と同じ扱い
+ */
+export type UrgencyTier = 'critical' | 'high' | 'medium' | 'low' | 'none'
+
+const TIER_ORDER: readonly UrgencyTier[] = ['critical', 'high', 'medium', 'low', 'none'] as const
+
+const TIER_LABEL: Record<UrgencyTier, string> = {
+  critical: '緊急',
+  high: '高',
+  medium: '中',
+  low: '低',
+  none: '対象外',
+}
+
+/** score (= computeUrgency の戻り値) を tier に分類。NaN/Infinity/負値 fail-soft で 'none'。 */
+export function urgencyTier(score: number): UrgencyTier {
+  if (!Number.isFinite(score) || score <= 0) return 'none'
+  if (score >= 100) return 'critical'
+  if (score >= 50) return 'high'
+  if (score >= 20) return 'medium'
+  return 'low'
+}
+
+/** UI / prompt 用の日本語短ラベル ('緊急' / '高' / '中' / '低' / '対象外')。 */
+export function urgencyTierLabel(tier: UrgencyTier): string {
+  return TIER_LABEL[tier]
+}
+
+export type UrgencyTierGroups<T> = Record<UrgencyTier, T[]>
+
+/**
+ * items を urgency tier 別の配列に振り分ける (元配列順で stable)。
+ * 各 tier は必ず空配列で初期化されるので `groups.critical.length` のような
+ * undefined チェック不要のアクセスができる。done/archive 済は 'none' に集まる。
+ */
+export function groupItemsByUrgencyTier<T extends UrgencyFields>(
+  items: readonly T[],
+  today: Date = new Date(),
+): UrgencyTierGroups<T> {
+  const groups: UrgencyTierGroups<T> = {
+    critical: [],
+    high: [],
+    medium: [],
+    low: [],
+    none: [],
+  }
+  for (const it of items) {
+    groups[urgencyTier(computeUrgency(it, today))].push(it)
+  }
+  return groups
+}
+
+/** items を tier 別の件数に圧縮 (group せず数だけ欲しい AI prompt 用)。 */
+export function countItemsByUrgencyTier<T extends UrgencyFields>(
+  items: readonly T[],
+  today: Date = new Date(),
+): Record<UrgencyTier, number> {
+  const counts: Record<UrgencyTier, number> = {
+    critical: 0,
+    high: 0,
+    medium: 0,
+    low: 0,
+    none: 0,
+  }
+  for (const it of items) {
+    counts[urgencyTier(computeUrgency(it, today))] += 1
+  }
+  return counts
+}
+
+/**
+ * AI prompt 行 / dashboard chip 用の 1 行 summary。件数 0 の tier は省略、
+ * tier 順 (critical → high → medium → low → none) を保つ。全 0 なら '0 件'。
+ */
+export function formatUrgencyTierCounts(counts: Record<UrgencyTier, number>): string {
+  const parts: string[] = []
+  for (const t of TIER_ORDER) {
+    const n = counts[t]
+    if (n > 0) parts.push(`${TIER_LABEL[t]} ${n}`)
+  }
+  return parts.length === 0 ? '0 件' : parts.join(' / ')
+}
