@@ -71,3 +71,29 @@ function parseIsoDate(iso: string): Date | null {
 export function compareUrgency<T extends UrgencyFields>(today: Date = new Date()) {
   return (a: T, b: T) => computeUrgency(b, today) - computeUrgency(a, today)
 }
+
+/**
+ * iter284 ai-automation: AI 朝 brief / pm-agent / dashboard widget が
+ * 「次にやるべき N 件」を取り出すための便利 helper。
+ *
+ * 仕様:
+ *  - urgency=0 (= done / archive 済) は除外
+ *  - 高 urgency が先頭、上限 `n` 件に切り詰め
+ *  - 同 urgency の中での順序は元配列順を保つ (stable sort)
+ */
+export function selectTopUrgentItems<T extends UrgencyFields>(
+  items: readonly T[],
+  n: number,
+  today: Date = new Date(),
+): T[] {
+  if (n <= 0) return []
+  // 元配列に urgency を詰めて、urgency=0 を弾いてから sort + slice
+  const enriched = items
+    .map((it, i) => ({ it, i, u: computeUrgency(it, today) }))
+    .filter((e) => e.u > 0)
+  enriched.sort((a, b) => {
+    if (b.u !== a.u) return b.u - a.u
+    return a.i - b.i // tie breaker: 元順
+  })
+  return enriched.slice(0, n).map((e) => e.it)
+}

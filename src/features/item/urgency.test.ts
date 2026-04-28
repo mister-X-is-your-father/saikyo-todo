@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { compareUrgency, computeUrgency, type UrgencyFields } from './urgency'
+import { compareUrgency, computeUrgency, selectTopUrgentItems, type UrgencyFields } from './urgency'
 
 const TODAY = new Date(2026, 3, 27) // Mon 2026-04-27
 
@@ -129,5 +129,58 @@ describe('compareUrgency — sort comparator', () => {
     expect(computeUrgency(sorted[0]!, TODAY)).toBe(100)
     expect(computeUrgency(sorted[1]!, TODAY)).toBe(10)
     expect(computeUrgency(sorted[2]!, TODAY)).toBe(0)
+  })
+})
+
+describe('selectTopUrgentItems', () => {
+  it('上位 N 件を urgency 降順で返す', () => {
+    const items = [
+      item({ priority: 4 }), // 10
+      item({ priority: 1, dueDate: '2026-04-25', isMust: true }), // 180
+      item({ priority: 2 }), // 70
+      item({ priority: 3 }), // 40
+    ]
+    const top = selectTopUrgentItems(items, 2, TODAY)
+    expect(top).toHaveLength(2)
+    expect(computeUrgency(top[0]!, TODAY)).toBe(180)
+    expect(computeUrgency(top[1]!, TODAY)).toBe(70)
+  })
+
+  it('done / archive (urgency=0) は除外', () => {
+    const items = [
+      item({ priority: 1 }), // 100
+      item({ priority: 1, doneAt: new Date('2026-04-26') }), // 0 — 除外
+      item({ priority: 4 }), // 10
+    ]
+    expect(selectTopUrgentItems(items, 5, TODAY)).toHaveLength(2)
+  })
+
+  it('n=0 / 負 → 空配列', () => {
+    const items = [item({ priority: 1 })]
+    expect(selectTopUrgentItems(items, 0, TODAY)).toEqual([])
+    expect(selectTopUrgentItems(items, -3, TODAY)).toEqual([])
+  })
+
+  it('n が件数より大きくても全件返す (足りない時は短く)', () => {
+    const items = [item({ priority: 1 }), item({ priority: 4 })]
+    expect(selectTopUrgentItems(items, 100, TODAY)).toHaveLength(2)
+  })
+
+  it('同 urgency は元配列順を保つ (stable)', () => {
+    const A = item({ priority: 4 })
+    const B = item({ priority: 4 })
+    const C = item({ priority: 4 })
+    const top = selectTopUrgentItems([A, B, C], 3, TODAY)
+    expect(top[0]).toBe(A)
+    expect(top[1]).toBe(B)
+    expect(top[2]).toBe(C)
+  })
+
+  it('全 done なら空配列', () => {
+    const items = [
+      item({ priority: 1, doneAt: new Date('2026-04-26') }),
+      item({ priority: 2, archivedAt: new Date('2026-04-26') }),
+    ]
+    expect(selectTopUrgentItems(items, 5, TODAY)).toEqual([])
   })
 })
