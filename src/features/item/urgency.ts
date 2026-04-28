@@ -73,6 +73,78 @@ export function compareUrgency<T extends UrgencyFields>(today: Date = new Date()
 }
 
 /**
+ * iter292 ai-automation: urgency score の内訳 (factor 一覧) を返す pure helper。
+ *
+ * AI brief / pm-agent prompt が「この Item が urgent な理由」を文字列化したり、
+ * UI tooltip が「p1 priority +100 / 期限切れ +50 / MUST +30 = 180」のような
+ * 内訳を表示するための substrate。今までは `computeUrgency` が合計値しか返さず、
+ * 「なぜ urgent なのか」は caller が再計算する必要があった。
+ *
+ * 戻り値は `{ score, factors }`:
+ *   - `score` = `computeUrgency(item, today)` と完全一致 (合計値)
+ *   - `factors` = `{ label, bonus }[]` の配列。bonus が 0 の factor は省略
+ *     (= 「+0 のものは並べない」)。done/archive は score=0、factors=[{label: '完了済', bonus: 0}] 等
+ *     のような sentinel ではなく、空配列 + score=0 で表現。
+ *
+ * label は日本語で、UI / prompt 双方で読める短ラベル:
+ *   - `p1 priority` / `p2 priority` / `p3 priority` / `p4 priority` (priority weight)
+ *   - `期限切れ` / `期限当日` / `期限明日` / `期限今週内` (due proximity)
+ *   - `MUST` (isMust)
+ */
+export interface UrgencyFactor {
+  label: string
+  bonus: number
+}
+
+export interface UrgencyExplanation {
+  score: number
+  factors: UrgencyFactor[]
+}
+
+const PRIORITY_LABEL: Record<number, string> = {
+  1: 'p1 priority',
+  2: 'p2 priority',
+  3: 'p3 priority',
+  4: 'p4 priority',
+}
+
+export function explainUrgency(item: UrgencyFields, today: Date = new Date()): UrgencyExplanation {
+  if (item.doneAt || item.archivedAt) return { score: 0, factors: [] }
+
+  const factors: UrgencyFactor[] = []
+  const baseLabel = PRIORITY_LABEL[item.priority] ?? 'p4 priority'
+  const baseBonus = PRIORITY_WEIGHTS[item.priority] ?? 10
+  factors.push({ label: baseLabel, bonus: baseBonus })
+
+  const dueBonus = dueProximityBonus(item.dueDate, today)
+  if (dueBonus > 0) {
+    factors.push({ label: dueProximityLabelFor(dueBonus), bonus: dueBonus })
+  }
+
+  if (item.isMust) {
+    factors.push({ label: 'MUST', bonus: 30 })
+  }
+
+  const score = factors.reduce((sum, f) => sum + f.bonus, 0)
+  return { score, factors }
+}
+
+function dueProximityLabelFor(bonus: number): string {
+  if (bonus === 50) return '期限切れ'
+  if (bonus === 35) return '期限当日'
+  if (bonus === 20) return '期限明日'
+  if (bonus === 10) return '期限今週内'
+  return '期限今後'
+}
+
+/** AI prompt 行 / UI tooltip 用の "p1 priority +100 / 期限切れ +50 / MUST +30" 形式。 */
+export function formatUrgencyExplanation(explanation: UrgencyExplanation): string {
+  if (explanation.factors.length === 0) return 'urgency 0 (完了済 / archive)'
+  const parts = explanation.factors.map((f) => `${f.label} +${f.bonus}`)
+  return `${parts.join(' / ')} = ${explanation.score}`
+}
+
+/**
  * iter284 ai-automation: AI 朝 brief / pm-agent / dashboard widget が
  * 「次にやるべき N 件」を取り出すための便利 helper。
  *

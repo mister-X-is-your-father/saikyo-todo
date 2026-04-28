@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { compareUrgency, computeUrgency, selectTopUrgentItems, type UrgencyFields } from './urgency'
+import {
+  compareUrgency,
+  computeUrgency,
+  explainUrgency,
+  formatUrgencyExplanation,
+  selectTopUrgentItems,
+  type UrgencyFields,
+} from './urgency'
 
 const TODAY = new Date(2026, 3, 27) // Mon 2026-04-27
 
@@ -182,5 +189,99 @@ describe('selectTopUrgentItems', () => {
       item({ priority: 2, archivedAt: new Date('2026-04-26') }),
     ]
     expect(selectTopUrgentItems(items, 5, TODAY)).toEqual([])
+  })
+})
+
+describe('explainUrgency', () => {
+  it('p1 のみ (期限なし MUST なし) → 1 factor, score=100', () => {
+    const e = explainUrgency(item({ priority: 1 }), TODAY)
+    expect(e.score).toBe(100)
+    expect(e.factors).toEqual([{ label: 'p1 priority', bonus: 100 }])
+  })
+
+  it('p3 + 期限切れ → 2 factors, score=90', () => {
+    const e = explainUrgency(item({ priority: 3, dueDate: '2026-04-26' }), TODAY)
+    expect(e.score).toBe(90)
+    expect(e.factors).toEqual([
+      { label: 'p3 priority', bonus: 40 },
+      { label: '期限切れ', bonus: 50 },
+    ])
+  })
+
+  it('p1 + 期限当日 + MUST → 3 factors, score=180 (max)', () => {
+    const e = explainUrgency(item({ priority: 1, dueDate: '2026-04-27', isMust: true }), TODAY)
+    expect(e.score).toBe(165)
+    expect(e.factors).toEqual([
+      { label: 'p1 priority', bonus: 100 },
+      { label: '期限当日', bonus: 35 },
+      { label: 'MUST', bonus: 30 },
+    ])
+  })
+
+  it('p2 + 期限明日', () => {
+    const e = explainUrgency(item({ priority: 2, dueDate: '2026-04-28' }), TODAY)
+    expect(e.score).toBe(90)
+    expect(e.factors).toEqual([
+      { label: 'p2 priority', bonus: 70 },
+      { label: '期限明日', bonus: 20 },
+    ])
+  })
+
+  it('p4 + 期限今週内 (+3d)', () => {
+    const e = explainUrgency(item({ priority: 4, dueDate: '2026-04-30' }), TODAY)
+    expect(e.score).toBe(20)
+    expect(e.factors).toEqual([
+      { label: 'p4 priority', bonus: 10 },
+      { label: '期限今週内', bonus: 10 },
+    ])
+  })
+
+  it('期限が遠い (+8d) は due bonus を含めない', () => {
+    const e = explainUrgency(item({ priority: 2, dueDate: '2026-05-05' }), TODAY)
+    expect(e.score).toBe(70)
+    expect(e.factors).toEqual([{ label: 'p2 priority', bonus: 70 }])
+  })
+
+  it('done 済 → score=0 / factors=[]', () => {
+    const e = explainUrgency(
+      item({ priority: 1, dueDate: '2026-04-26', isMust: true, doneAt: new Date() }),
+      TODAY,
+    )
+    expect(e.score).toBe(0)
+    expect(e.factors).toEqual([])
+  })
+
+  it('archive 済 → score=0 / factors=[]', () => {
+    const e = explainUrgency(item({ priority: 1, archivedAt: new Date('2026-04-25') }), TODAY)
+    expect(e.score).toBe(0)
+    expect(e.factors).toEqual([])
+  })
+
+  it('不正 priority は p4 weight にフォールバック (computeUrgency と同じ)', () => {
+    const e = explainUrgency(item({ priority: 99 }), TODAY)
+    expect(e.score).toBe(10)
+    expect(e.factors).toEqual([{ label: 'p4 priority', bonus: 10 }])
+  })
+
+  it('score は computeUrgency と完全一致 (sanity)', () => {
+    const sample = item({ priority: 2, dueDate: '2026-04-26', isMust: true })
+    expect(explainUrgency(sample, TODAY).score).toBe(computeUrgency(sample, TODAY))
+  })
+})
+
+describe('formatUrgencyExplanation', () => {
+  it('複数 factor を " / " 区切り + 合計値', () => {
+    const e = explainUrgency(item({ priority: 1, dueDate: '2026-04-27', isMust: true }), TODAY)
+    expect(formatUrgencyExplanation(e)).toBe('p1 priority +100 / 期限当日 +35 / MUST +30 = 165')
+  })
+
+  it('1 factor のみ', () => {
+    const e = explainUrgency(item({ priority: 4 }), TODAY)
+    expect(formatUrgencyExplanation(e)).toBe('p4 priority +10 = 10')
+  })
+
+  it('done/archive は専用 sentinel 文字列', () => {
+    const e = explainUrgency(item({ priority: 1, doneAt: new Date() }), TODAY)
+    expect(formatUrgencyExplanation(e)).toBe('urgency 0 (完了済 / archive)')
   })
 })
