@@ -874,6 +874,48 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter89] **Gantt に role="grid" + aria-rowcount/aria-rowindex** (WAI-ARIA 1.2 grid pattern): outer に role=grid + aria-rowcount={N+1}、各 row に role=row + aria-rowindex (header=1, data=2..)。SR で「行 N 件中 i 番目」が伝わる。Playwright で role=grid / rowcount=3 / 各行 rowindex 2,3 を直接確認
 - ✅ [iter90] **PDCA DailyBars に list semantics**: 旧 `title` 属性 (mouse hover 専用) では SR から完了件数が見えなかった → outer に `role="list" aria-label="日次完了 throughput (N 日分)"`、各日 cell に `role="listitem" aria-label="<date>: 完了 N 件"`。Playwright で 30 listitem + first aria-label 形式を直接確認
 - ✅ [iter91] **Goal/Sprint 進捗バーに role="progressbar"** (WAI-ARIA progressbar pattern): aria-valuenow/min/max + aria-valuetext (sprint は "N/M (X%)" + 遅れ気味 marker)、aria-label。Playwright で sprint progressbar の role / valuetext を確認
+- ✅ [iter256] **QuickAdd に EN 月名 / weekend EN alias / M/D 形式 / friendly 日付表示 (basics, 3 commits)**:
+  iter256 = 6%5=1 で base track basics。`scripts/autonomous/judge.sh` 出力の interrupt
+  signals (TODO=18 / any-leak=2) は前 iter で「誤検出 — Todoist 商品名 / status='todo'
+  enum / autonomous helper の自己言及」と切り分け済 (HANDOFF iter255) なので無視し、
+  本道 basics 3 連射。3 commit いずれも date-tokens.ts への純粋拡張で副作用ゼロ、
+  `pnpm typecheck` / `pnpm lint` 緑 (warning baseline 1 のみ、新規 0)。
+  date-tokens.test.ts は 26→48 件 (+22)、nl-parse.test.ts 74 件は無変更で全 PASS。
+  - **commit 1 (`e3965b4`)**: EN 月名絶対日付 — `Apr 30` / `April 30` / `30 Apr` /
+    `Apr 30, 2027` を受理。`MONTH_EN` dict + `MONTH_EN_PATTERN` (longest-first
+    alternation) を追加し、Month-Day → Day-Month の順で 2 regex を試す。年省略時は
+    `rollForwardMonthDay(base, m, d)` で「未来なら今年、過去なら来年に繰り上げ、当日
+    は今年扱い」 — Todoist の "the next occurrence" semantics と一致。`Feb 30` のような
+    存在しない日は `month+1, 0` の月末 trick で当該月末に丸める。test 8 + helper test 2
+    = 10 件追加。
+  - **commit 2 (`d3913f2`)**: weekend EN alias + M/D スラッシュ形式 — 既存 `今週末` /
+    `月末` に EN alias `this weekend` / `end of month` / `eom` を併設、新規 `next
+    weekend` (= `来週末` JA alias 同義、+7 日) を追加。さらに `3/15` / `12/31` /
+    `3/15/2027` / `3/15/27` の M/D[/YY[YY]] US-convention を受理 (2-digit 年は 20YY
+    pivot、範囲外は誤検出防止のため拒否、2/30 は月末丸め)。test 14 件追加。
+  - **commit 3 (`6c0d1a1`)**: QuickAdd preview chip の日付表示を friendly に。
+    `formatFriendlyDate(iso, today, locale='ja'|'en')` pure 関数を追加。当日 / 翌日 /
+    翌々日 / 昨日 を専用ラベル化、同年内は `4/30 (木)` / `Thu Apr 30`、別年は
+    `2027-04-30 (金)` / `Fri Apr 30 2027`。chip に `title=ISO` + `aria-label=予定 ISO`
+    を保持して SR / hover には正確な日付を残す (視覚 friendly + 音声 ISO の両立)。
+    test 8 件追加。
+  - 結果: QuickAdd で `apr 30 deadline` / `next weekend trip` / `5/15 release` /
+    `eom report` が動き、preview chip も `今日` / `明日` / `5/1 (金)` で表示。
+    国際チーム (EN 入力) と日本チーム (JA 入力) のどちらでも Todoist 並みの quick-add
+    UX が揃った。
+  - 次 iter257 = 7%5=2 → **ai-automation track**。候補:
+    (a) 過去 30 日 estimate vs actual の bias グラフ (timer Stop 結果 → /time-entries
+    に集計可視化、HANDOFF iter255 末から繰越し)
+    (b) AI チャット panel: 全タスクを context にした相談 UI (大型、複数 iter)
+    (c) AI 朝の brief: 「今日のおすすめ順」を AI が生成
+    iter260 (10%5=0) で次の refactor 機会 — その頃には workflows-panel.tsx 847 行 /
+    item-edit-dialog.tsx 831 行が依然候補。
+  - 候補で時間切れ未着手:
+    - `Apr 30th` ordinal suffix / `the 30th` 単独 / `M-D` ハイフン形式 (next iter で 1 commit)
+    - ItemEditDialog / Today view / Backlog view / Gantt view の日付表示も
+      `formatFriendlyDate` に揃える (いまは QuickAdd preview だけ — 横展開 1 commit)
+    - 自己観察ノート: detect-patterns で large file 19 件は変わらず累積中。iter260
+      refactor で workflows-panel.tsx 分割を最有力候補に。
 - ✅ [iter255 — nl-parse refactor 担] **nl-parse.ts を pure helper 3 module に分割 (refactor, 2 commits)**:
   iter255 = 5%5=0 で base track refactor。`detect-patterns.sh` 結果は TODO=18 / any-leak=1 /
   large-files=19 だが、TODO/any-leak はいずれも誤検出 (Todoist 商品名 / status="todo" enum
