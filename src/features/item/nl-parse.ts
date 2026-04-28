@@ -2,9 +2,9 @@
  * 自然言語クイック追加パーサ (pure)。
  *
  * 入力例:
- *   "明日15時 p1 #会議 @tanaka MUST 買い物"
- *   "来週月曜 API レビュー"
- *   "今日 18:00 資料レビュー #doc"
+ *   "明日15時 p1 #会議 @tanaka MUST 買い物 1時間"
+ *   "来週月曜 API レビュー 2h"
+ *   "今日 18:00 資料レビュー #doc 30分"
  *
  * 出力:
  *   - title: 残ったテキスト
@@ -14,6 +14,7 @@
  *   - assignee hints (@xxx) — id 解決は呼び出し側で
  *   - isMust (MUST キーワード)
  *   - decomposeHint: 末尾 '?' — Researcher decompose フラグ
+ *   - estimateMinutes: 工数推定 (30m/1h/1.5h/1h30m/30分/1時間/1時間30分)
  */
 
 export interface ParsedQuickAdd {
@@ -26,6 +27,13 @@ export interface ParsedQuickAdd {
   assignees: string[]
   isMust: boolean
   decomposeHint: boolean
+  /**
+   * 推定作業時間 (分単位、整数)。`30m` / `1h` / `1.5h` / `1h30m` / `30分` /
+   * `1時間` / `1時間30分` を抽出。1分未満や上限超 (60h=3600分) は捨てる。
+   * timer Stop 時の actual と比較した variance 計算に使う想定 (description に
+   * 注記して保存)。
+   */
+  estimateMinutes?: number
 }
 
 export interface ParseOptions {
@@ -110,6 +118,35 @@ export function parseQuickAdd(input: string, opts: ParseOptions): ParsedQuickAdd
   // assignees @xxx
   out.assignees = Array.from(text.matchAll(/(^|\s)@(\S+)/g)).map((m) => m[2]!)
   text = text.replace(/(^|\s)@\S+/g, ' ').trim()
+
+  // 工数推定 (時刻より先に処理して `1時間` を `1時` と取り違えないため)。
+  // JA: `30分` / `1時間` / `1時間30分` (時間と分の連結のみ; 単独「秒」は無視)
+  // EN: `30m` / `30min` / `30mins` / `1h` / `1.5h` / `2h30m` / `2H30MIN`
+  // 上限 60 時間 (3600 分)、0 分は無視。範囲外は token を消さず title に残す。
+  const consumeEstimate = (match: RegExpMatchArray, minutes: number): void => {
+    if (minutes > 0 && minutes <= 3600) {
+      out.estimateMinutes = minutes
+      text = text.replace(match[0], ' ').trim()
+    }
+  }
+  const estJa = text.match(/(^|\s)(\d{1,3})時間(?:(\d{1,2})分)?(\s|$)/)
+  if (estJa) {
+    consumeEstimate(estJa, Number(estJa[2]) * 60 + Number(estJa[3] ?? '0'))
+  } else {
+    const estJaMin = text.match(/(^|\s)(\d{1,3})分(\s|$)/)
+    if (estJaMin) consumeEstimate(estJaMin, Number(estJaMin[2]))
+  }
+  if (out.estimateMinutes === undefined) {
+    const estEn = text.match(/(^|\s)(\d+(?:\.\d+)?)h(?:(\d{1,2})m(?:in)?s?)?(\s|$)/i)
+    if (estEn) {
+      const hours = Number(estEn[2])
+      const mins = Number(estEn[3] ?? '0')
+      consumeEstimate(estEn, Math.round(hours * 60) + mins)
+    } else {
+      const estEnMin = text.match(/(^|\s)(\d{1,3})m(?:in)?s?(\s|$)/i)
+      if (estEnMin) consumeEstimate(estEnMin, Number(estEnMin[2]))
+    }
+  }
 
   // 時刻 HH:MM / HH時(MM分)?
   const timeCol = text.match(/(^|\s)(\d{1,2}):(\d{2})(\s|$)/)
@@ -204,4 +241,16 @@ export function parseQuickAdd(input: string, opts: ParseOptions): ParsedQuickAdd
   // 余計なスペースを畳む
   out.title = text.replace(/\s+/g, ' ').trim()
   return out
+}
+
+/**
+ * 推定分数を日本語の人間表記に整形する (chip / description / aria-label 共有)。
+ * 0 や負値は空文字。`90` → `1時間30分` / `60` → `1時間` / `45` → `45分`。
+ */
+export function formatEstimate(minutes: number | undefined): string {
+  if (!minutes || minutes <= 0) return ''
+  if (minutes < 60) return `${minutes}分`
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  return m === 0 ? `${h}時間` : `${h}時間${m}分`
 }

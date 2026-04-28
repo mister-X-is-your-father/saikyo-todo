@@ -8,7 +8,7 @@ import { isAppError } from '@/lib/errors'
 
 import { useDecomposeItem } from '@/features/agent/hooks'
 import { useCreateItem } from '@/features/item/hooks'
-import { parseQuickAdd } from '@/features/item/nl-parse'
+import { formatEstimate, parseQuickAdd } from '@/features/item/nl-parse'
 
 import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
@@ -49,6 +49,7 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
     if (preview.priority) parts.push(`優先度 p${preview.priority}`)
     if (preview.tags.length > 0) parts.push(`タグ: ${preview.tags.join(', ')}`)
     if (preview.assignees.length > 0) parts.push(`担当: ${preview.assignees.join(', ')}`)
+    if (preview.estimateMinutes) parts.push(`見積: ${formatEstimate(preview.estimateMinutes)}`)
     if (preview.isMust) parts.push('MUST')
     if (preview.decomposeHint) parts.push('AI 分解候補')
     return parts.length > 0 ? parts.join(' / ') : 'なし'
@@ -62,10 +63,16 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
       return
     }
     try {
+      // iter254: 見積 (estimateMinutes) があれば description に注記する。
+      // schema に estimate 専用列がまだ無いので、description プレフィクスで保存
+      // → 後続 iter で timer Stop 時の actual と比較する variance UX に使う。
+      const description = preview.estimateMinutes
+        ? `見積: ${formatEstimate(preview.estimateMinutes)}`
+        : ''
       const created = await create.mutateAsync({
         workspaceId,
         title: preview.title,
-        description: '',
+        description,
         status: 'todo',
         priority: preview.priority ?? 4,
         isMust: false,
@@ -109,8 +116,8 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
       <div className="flex gap-2">
         <IMEInput
           id="quick-add-input"
-          placeholder='例: "明日15時 p1 #会議 打ち合わせ準備"  (Enter で作成)'
-          aria-label="クイック追加 — タスクをすばやく作成 (Enter で確定、自然言語で日時・優先度・タグを指定可)"
+          placeholder='例: "明日15時 p1 #会議 1時間 打ち合わせ準備"  (Enter で作成)'
+          aria-label="クイック追加 — タスクをすばやく作成 (Enter で確定、自然言語で日時・優先度・タグ・見積時間を指定可)"
           aria-describedby="quick-add-preview quick-add-hint"
           maxLength={500}
           value={text}
@@ -172,6 +179,16 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
               @{a}
             </span>
           ))}
+          {preview.estimateMinutes && (
+            <span
+              className="rounded bg-cyan-100 px-1.5 py-0.5 text-cyan-700"
+              data-testid="quick-add-estimate"
+              aria-label={`見積 ${formatEstimate(preview.estimateMinutes)}`}
+            >
+              <span aria-hidden="true">🕐 </span>
+              {formatEstimate(preview.estimateMinutes)}
+            </span>
+          )}
           {preview.isMust && (
             <>
               <span className="rounded bg-red-100 px-1.5 py-0.5 font-medium text-red-700">
@@ -195,7 +212,8 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
       )}
       <p id="quick-add-hint" className="text-muted-foreground text-[11px]">
         キーワード: 明日/今日/明後日/来週X曜/今週末/月末/+Nd (N 日後)/+Nw (N
-        週後)/HH:MM/p1-p4/#tag/@user/MUST。 末尾 <code>?</code> で AI 分解候補化。
+        週後)/HH:MM/p1-p4/#tag/@user/MUST/見積 (30分・1時間・1時間30分・30m・1.5h・2h30m)。 末尾{' '}
+        <code>?</code> で AI 分解候補化。
       </p>
     </div>
   )

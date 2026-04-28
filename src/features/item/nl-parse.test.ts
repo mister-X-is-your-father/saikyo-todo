@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { parseQuickAdd } from './nl-parse'
+import { formatEstimate, parseQuickAdd } from './nl-parse'
 
 const TODAY = new Date(2026, 3, 25) // Sat 2026-04-25
 
@@ -190,5 +190,107 @@ describe('parseQuickAdd', () => {
     const r = parseQuickAdd('月末 締め', { today: TODAY })
     expect(r.scheduledFor).toBe('2026-04-30')
     expect(r.title).toBe('締め')
+  })
+
+  // iter254 ai-automation: 工数推定 (estimate) — TickTick / Todoist Pro の time estimate 相当。
+  // timer (iter247-250) との variance 計算を狙う。
+  describe('estimateMinutes', () => {
+    it('30分 (JA)', () => {
+      const r = parseQuickAdd('明日 30分 レビュー', { today: TODAY })
+      expect(r.estimateMinutes).toBe(30)
+      expect(r.title).toBe('レビュー')
+      expect(r.scheduledFor).toBe('2026-04-26')
+    })
+
+    it('1時間 (JA, 端数 0)', () => {
+      const r = parseQuickAdd('1時間 設計', { today: TODAY })
+      expect(r.estimateMinutes).toBe(60)
+      expect(r.title).toBe('設計')
+    })
+
+    it('1時間30分 (JA, 連結)', () => {
+      const r = parseQuickAdd('1時間30分 ドキュメント', { today: TODAY })
+      expect(r.estimateMinutes).toBe(90)
+      expect(r.title).toBe('ドキュメント')
+    })
+
+    it('30m (EN, 短縮)', () => {
+      const r = parseQuickAdd('30m メール返信', { today: TODAY })
+      expect(r.estimateMinutes).toBe(30)
+      expect(r.title).toBe('メール返信')
+    })
+
+    it('2h30m (EN, 連結)', () => {
+      const r = parseQuickAdd('2h30m 設計レビュー', { today: TODAY })
+      expect(r.estimateMinutes).toBe(150)
+      expect(r.title).toBe('設計レビュー')
+    })
+
+    it('1.5h (EN, 小数)', () => {
+      const r = parseQuickAdd('1.5h ペアプロ', { today: TODAY })
+      expect(r.estimateMinutes).toBe(90)
+      expect(r.title).toBe('ペアプロ')
+    })
+
+    it('45min (EN, mins/min も許容)', () => {
+      const r = parseQuickAdd('45min スタンドアップ', { today: TODAY })
+      expect(r.estimateMinutes).toBe(45)
+      expect(r.title).toBe('スタンドアップ')
+    })
+
+    it('15時 を時刻として扱い、estimate にしない (時間 ではないので)', () => {
+      // `15時` は HH:00 の時刻、estimate の `15時間` とは別物
+      const r = parseQuickAdd('明日 15時 会議', { today: TODAY })
+      expect(r.estimateMinutes).toBeUndefined()
+      expect(r.dueTime).toBe('15:00')
+      expect(r.title).toBe('会議')
+    })
+
+    it('1時間 と 15時 が同居 (estimate + 時刻 両方)', () => {
+      const r = parseQuickAdd('明日 15時 1時間 会議', { today: TODAY })
+      expect(r.dueTime).toBe('15:00')
+      expect(r.estimateMinutes).toBe(60)
+      expect(r.title).toBe('会議')
+    })
+
+    it('上限 60h を超えるものは捨てる (誤入力ガード)', () => {
+      const r = parseQuickAdd('100時間 大量タスク', { today: TODAY })
+      expect(r.estimateMinutes).toBeUndefined()
+      // タイトルにそのまま残る
+      expect(r.title).toContain('100時間')
+    })
+
+    it('0分 は捨てる', () => {
+      const r = parseQuickAdd('0分 タスク', { today: TODAY })
+      expect(r.estimateMinutes).toBeUndefined()
+    })
+
+    it('title 中の 30m 風文字列は単独 token じゃないので拾わない', () => {
+      const r = parseQuickAdd('cost30m discount', { today: TODAY })
+      expect(r.estimateMinutes).toBeUndefined()
+      expect(r.title).toBe('cost30m discount')
+    })
+  })
+
+  describe('formatEstimate', () => {
+    it('undefined / 0 / 負値は空文字', () => {
+      expect(formatEstimate(undefined)).toBe('')
+      expect(formatEstimate(0)).toBe('')
+      expect(formatEstimate(-10)).toBe('')
+    })
+    it('60 未満は X分', () => {
+      expect(formatEstimate(15)).toBe('15分')
+      expect(formatEstimate(59)).toBe('59分')
+    })
+    it('60 ちょうどは 1時間', () => {
+      expect(formatEstimate(60)).toBe('1時間')
+    })
+    it('時 + 分 のフルフォーマット', () => {
+      expect(formatEstimate(90)).toBe('1時間30分')
+      expect(formatEstimate(150)).toBe('2時間30分')
+    })
+    it('120 は 2時間 (端数なし)', () => {
+      expect(formatEstimate(120)).toBe('2時間')
+    })
   })
 })
