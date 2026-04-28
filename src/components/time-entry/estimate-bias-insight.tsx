@@ -18,6 +18,10 @@ import { useItems } from '@/features/item/hooks'
 import type { Item } from '@/features/item/schema'
 import { computeEstimateBias } from '@/features/time-entry/bias'
 import {
+  computeBiasByCategory,
+  formatTopSkewedCategoryJa,
+} from '@/features/time-entry/bias-by-category'
+import {
   formatCalibratedEstimateJa,
   suggestCalibratedEstimates,
 } from '@/features/time-entry/bias-calibration'
@@ -51,6 +55,16 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
     const lookup = buildItemDescriptionLookup(itemsQ.data as Item[])
     const samples = selectBiasSamples(entriesQ.data, lookup)
     return computeEstimateBias(samples)
+  }, [entriesQ.data, itemsQ.data])
+
+  // iter269: category 別の top-skew (例: dev 1.40× 過小) を 1 行で表示。
+  // 全体 calibration では塗りつぶされる「dev だけ過小、meeting は問題なし」みたいな
+  // 偏りを見せる。1 件も歪み category がなければ null で行ごと非表示。
+  const topSkewLine = useMemo(() => {
+    if (!entriesQ.data || !itemsQ.data) return null
+    const lookup = buildItemDescriptionLookup(itemsQ.data as Item[])
+    const byCategory = computeBiasByCategory(entriesQ.data, lookup)
+    return formatTopSkewedCategoryJa(byCategory)
   }, [entriesQ.data, itemsQ.data])
 
   // どちらかが loading 中 → 小さい placeholder (主 panel を妨げない)
@@ -91,6 +105,14 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
         <p className="text-sm" data-testid="estimate-bias-summary">
           {report.summary}
         </p>
+        {topSkewLine && (
+          <p
+            className="text-muted-foreground mt-1 text-[11px]"
+            data-testid="estimate-bias-top-skew"
+          >
+            <span className="text-foreground/70 font-medium">カテゴリ別:</span> {topSkewLine}
+          </p>
+        )}
         <dl
           className="text-muted-foreground mt-2 grid grid-cols-3 gap-2 text-[11px]"
           aria-label="見積バイアス内訳"
