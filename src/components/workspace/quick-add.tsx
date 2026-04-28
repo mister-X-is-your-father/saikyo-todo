@@ -7,8 +7,9 @@ import { toast } from 'sonner'
 import { isAppError } from '@/lib/errors'
 
 import { useDecomposeItem } from '@/features/agent/hooks'
+import { formatEstimate } from '@/features/item/estimate'
 import { useCreateItem } from '@/features/item/hooks'
-import { formatEstimate, parseQuickAdd } from '@/features/item/nl-parse'
+import { parseQuickAdd } from '@/features/item/nl-parse'
 
 import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'

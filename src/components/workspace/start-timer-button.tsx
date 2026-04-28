@@ -19,7 +19,7 @@ import { toast } from 'sonner'
 
 import { formatElapsed, useActiveTimerStore } from '@/lib/stores/active-timer'
 
-import { extractEstimateMinutes } from '@/features/item/nl-parse'
+import { extractEstimateMinutes } from '@/features/item/estimate'
 import type { Item } from '@/features/item/schema'
 
 import { Button } from '@/components/ui/button'
