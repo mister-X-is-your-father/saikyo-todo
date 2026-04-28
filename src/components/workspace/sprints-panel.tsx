@@ -514,7 +514,11 @@ function SprintCard({
                 disabled={changing}
                 onClick={() => onStatusChange('active')}
                 data-testid={`sprint-activate-${sprint.id}`}
-                aria-label={`Sprint「${sprint.name}」を稼働開始`}
+                aria-label={
+                  changing
+                    ? `Sprint「${sprint.name}」のステータスを変更中…`
+                    : `Sprint「${sprint.name}」を稼働開始`
+                }
               >
                 <Play className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                 稼働開始
@@ -528,7 +532,11 @@ function SprintCard({
                   disabled={changing}
                   onClick={() => onStatusChange('completed')}
                   data-testid={`sprint-complete-${sprint.id}`}
-                  aria-label={`Sprint「${sprint.name}」を完了`}
+                  aria-label={
+                    changing
+                      ? `Sprint「${sprint.name}」のステータスを変更中…`
+                      : `Sprint「${sprint.name}」を完了`
+                  }
                 >
                   <CheckCircle className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                   完了
@@ -538,7 +546,11 @@ function SprintCard({
                   variant="outline"
                   disabled={changing}
                   onClick={() => onStatusChange('planning')}
-                  aria-label={`Sprint「${sprint.name}」を計画に戻す`}
+                  aria-label={
+                    changing
+                      ? `Sprint「${sprint.name}」のステータスを変更中…`
+                      : `Sprint「${sprint.name}」を計画に戻す`
+                  }
                 >
                   <Pause className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                   計画に戻す
@@ -560,7 +572,9 @@ function SprintCard({
                   onStatusChange('cancelled')
                 }}
                 data-testid={`sprint-cancel-${sprint.id}`}
-                aria-label={`Sprint「${sprint.name}」を中止`}
+                aria-label={
+                  changing ? `Sprint「${sprint.name}」を中止中…` : `Sprint「${sprint.name}」を中止`
+                }
               >
                 <X className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                 中止
