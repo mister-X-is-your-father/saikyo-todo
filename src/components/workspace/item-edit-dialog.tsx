@@ -521,6 +521,13 @@ function ItemEditDialogInner({
                   ? `現在の baseline: ${item.baselineStartDate} → ${item.baselineEndDate}`
                   : 'startDate / dueDate を当初計画として保存'
               }
+              aria-label={
+                setBaseline.isPending
+                  ? `「${item.title}」のベースラインを記録中…`
+                  : item.baselineStartDate
+                    ? `「${item.title}」のベースラインを現在の startDate / dueDate に更新 (旧 baseline: ${item.baselineStartDate} → ${item.baselineEndDate})`
+                    : `「${item.title}」の startDate / dueDate を当初計画 (baseline) として保存`
+              }
             >
               {setBaseline.isPending
                 ? '記録中…'
@@ -549,6 +556,11 @@ function ItemEditDialogInner({
               data-testid="item-edit-clear-baseline"
               className="text-muted-foreground"
               title="baseline 列を NULL に戻す"
+              aria-label={
+                clearBaseline.isPending
+                  ? `「${item.title}」のベースラインをクリア中…`
+                  : `「${item.title}」のベースライン (${item.baselineStartDate} → ${item.baselineEndDate}) をクリア`
+              }
             >
               {clearBaseline.isPending ? 'クリア中…' : 'baseline クリア'}
             </Button>
