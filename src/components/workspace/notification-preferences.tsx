@@ -9,8 +9,20 @@
  *
  * 通知設定は user 単位 (workspace 横断)。MVP 期は in-app チャネルは常時 ON のため、
  * email チャネルの 4 フラグだけを管理する。
+ *
+ * iter306 basics: 各 toggle 行に通知 type と同 graphical pattern (icon + 色 chip)
+ * を加える。`getNotificationTypeVisual` (iter296 並走 type-visual.ts) を流用、
+ * notification-bell の row と同じ視覚言語で「設定 ↔ 実際の通知」が紐づく。
  */
-import { type LucideIcon, Settings } from 'lucide-react'
+import {
+  AlarmClock,
+  AlertCircle,
+  AtSign,
+  Bell,
+  type LucideIcon,
+  Settings,
+  UserPlus,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
@@ -20,13 +32,32 @@ import {
   useUpdateNotificationPreferences,
 } from '@/features/notification/hooks'
 import type { NotificationPreferenceUpdate } from '@/features/notification/repository'
+import {
+  getNotificationTypeVisual,
+  type NotificationIconKey,
+} from '@/features/notification/type-visual'
 
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
+/**
+ * iter296 並走 (notification-bell) と同 mapping。toggle 行の type chip に使う。
+ * 共通化候補だが notification-bell.tsx と内容が同じ 5 行 map で、現時点で
+ * 集約してもリスク (race) が高いので各 component で同じ shape を保持。
+ */
+const TYPE_ICON: Record<NotificationIconKey, LucideIcon> = {
+  alarm: AlarmClock,
+  'at-sign': AtSign,
+  'user-plus': UserPlus,
+  'alert-circle': AlertCircle,
+  bell: Bell,
+}
+
 interface ToggleSpec {
   key: keyof NotificationPreferenceUpdate
+  /** notification.type と同 vocabulary (`type-visual` で逆引き)。 */
+  type: 'heartbeat' | 'mention' | 'invite' | 'sync-failure'
   label: string
   description: string
 }
@@ -34,21 +65,25 @@ interface ToggleSpec {
 const TOGGLES: ToggleSpec[] = [
   {
     key: 'emailForHeartbeat',
+    type: 'heartbeat',
     label: 'MUST 期日接近 (Heartbeat)',
     description: '7 日 / 3 日 / 1 日前 / 期限切れの MUST Item をメール通知',
   },
   {
     key: 'emailForMention',
+    type: 'mention',
     label: 'コメント言及 (Mention)',
     description: '@user 言及されたときにメール通知',
   },
   {
     key: 'emailForInvite',
+    type: 'invite',
     label: 'ワークスペース招待 (Invite)',
     description: 'ワークスペースに追加されたときにメール通知',
   },
   {
     key: 'emailForSyncFailure',
+    type: 'sync-failure',
     label: '外部同期失敗 (Sync Failure)',
     description: 'Time entry など外部同期が失敗したときにメール通知 (デフォルト OFF)',
   },
@@ -90,8 +125,10 @@ export function NotificationPreferencesButton({ Icon = Settings }: { Icon?: Luci
         <ul className="divide-y">
           {TOGGLES.map((spec) => {
             const checked = data ? Boolean(data[spec.key]) : false
+            const visual = getNotificationTypeVisual(spec.type)
+            const TypeIcon = TYPE_ICON[visual.iconKey]
             return (
-              <li key={spec.key} className="px-3 py-2">
+              <li key={spec.key} className="px-3 py-2" data-notification-type={spec.type}>
                 <Label
                   htmlFor={`pref-${spec.key}`}
                   className="flex cursor-pointer items-start gap-3 text-xs leading-snug"
@@ -105,6 +142,13 @@ export function NotificationPreferencesButton({ Icon = Settings }: { Icon?: Luci
                     onChange={(e) => void setFlag(spec.key, e.target.checked)}
                     data-testid={`pref-toggle-${spec.key}`}
                   />
+                  <span
+                    className={`mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded ring-1 ring-inset ${visual.bgClass} ${visual.textClass} ${visual.ringClass}`}
+                    role="img"
+                    aria-label={`${visual.label}通知`}
+                  >
+                    <TypeIcon className="size-3" aria-hidden="true" />
+                  </span>
                   <span className="min-w-0 flex-1">
                     <span className="block font-medium">{spec.label}</span>
                     <span className="text-muted-foreground mt-0.5 block text-[10px]">
