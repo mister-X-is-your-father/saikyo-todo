@@ -64,8 +64,12 @@ mode, pausedAt, accumulatedMs }` + 右下 fixed panel + Item 行 / Dialog
           start/pause/resume/stop/elapsedMs を Date.now() ベースで実装、persist
           middleware で reload 跨ぎ継続、test 13 件 (585→598 全パス)。MVP は
           stopwatch path のみ (Pomodoro は Scope C で別途)
-    - [ ] 次 iter: floating panel UI (右下 fixed) + Item 行 / Dialog から Start
-          button + Stop で `time_entries` への auto insert
+    - [x] iter 248: floating panel UI (`active-timer-panel.tsx`) + workspace page
+          に mount。Pause / Resume / Stop button、Stop で `time_entries` に auto
+          insert (`category='dev'`、`durationMinutes=Math.max(1, round(ms/60000))`、
+          `description=「タスク: <title>」`)。1s 間隔で再 render (running 中のみ)
+    - [ ] 次 iter: Item 行 / ItemEditDialog から `Start timer` button (現状は
+          まだ Start triggers が無いので panel が出ない)
     - [ ] Scope B (Document PiP) は次の次以降
 
 ### 2026-04-28 (iter238 後)

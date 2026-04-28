@@ -11,6 +11,7 @@ import { findMyWorkspaces } from '@/features/workspace/repository'
 import { GlobalShortcuts } from '@/components/shared/global-shortcuts'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { Button } from '@/components/ui/button'
+import { ActiveTimerPanel } from '@/components/workspace/active-timer-panel'
 import { HeartbeatButton } from '@/components/workspace/heartbeat-button'
 import { ItemsBoard } from '@/components/workspace/items-board'
 import { NotificationBell } from '@/components/workspace/notification-bell'
@@ -105,6 +106,7 @@ export default async function WorkspacePage({ params }: PageProps) {
 
       <GlobalShortcuts workspaceId={workspaceId} />
       <ItemsBoard workspaceId={workspaceId} currentUserId={user.id} />
+      <ActiveTimerPanel workspaceId={workspaceId} />
     </main>
   )
 }
