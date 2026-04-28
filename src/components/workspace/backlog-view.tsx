@@ -41,6 +41,7 @@ import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
 
+import { formatFriendlyDate } from '@/features/item/date-tokens'
 import { useReorderItem } from '@/features/item/hooks'
 import type { Item } from '@/features/item/schema'
 
@@ -59,7 +60,11 @@ interface Props {
   currentUserId?: string
 }
 
-function buildColumns(workspaceId: string, onEdit: (item: Item) => void): ColumnDef<Item>[] {
+function buildColumns(
+  workspaceId: string,
+  onEdit: (item: Item) => void,
+  today: Date,
+): ColumnDef<Item>[] {
   return [
     {
       id: 'drag',
@@ -127,7 +132,17 @@ function buildColumns(workspaceId: string, onEdit: (item: Item) => void): Column
       accessorKey: 'dueDate',
       header: '期限',
       size: 110,
-      cell: ({ getValue }) => (getValue() as string | null) ?? '—',
+      // iter261 basics: ISO `2026-04-30` を `今日` / `明日` / `4/30 (木)` に整形。
+      // 元 ISO は title / aria-label に残し SR と hover で正確な日付を保持。
+      cell: ({ getValue }) => {
+        const v = getValue() as string | null
+        if (!v) return '—'
+        return (
+          <span title={v} aria-label={`期限 ${v}`}>
+            {formatFriendlyDate(v, today)}
+          </span>
+        )
+      },
     },
     {
       accessorKey: 'updatedAt',
@@ -175,9 +190,15 @@ export function BacklogView({ workspaceId, items }: Props) {
   // Phase 6.15 iter 77: ItemEditDialog の open 状態を items-board と同じく URL `?item=`
   // で共有 (他 view と同パターン)。currentUserId は items-board 側 dialog で使われる。
   const [, setOpenItemId] = useQueryState('item', parseAsString)
+  // iter261 basics: dueDate 表示用のカレンダー基準日 (時分秒は無視)。1 render
+  // 内で固定するために useMemo (TZ 依存だが UI 側 expectation なので OK)。
+  const today = useMemo(() => {
+    const d = new Date()
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+  }, [])
   const columns = useMemo(
-    () => buildColumns(workspaceId, (item) => void setOpenItemId(item.id)),
-    [workspaceId, setOpenItemId],
+    () => buildColumns(workspaceId, (item) => void setOpenItemId(item.id), today),
+    [workspaceId, setOpenItemId, today],
   )
   // 初期は position ソート (手動並び替えを効かせる)。ユーザが他列 header を click した場合のみ再ソート。
   const [sorting, setSorting] = useState<SortingState>([])

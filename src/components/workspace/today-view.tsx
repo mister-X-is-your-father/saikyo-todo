@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { isAppError } from '@/lib/errors'
 import { moveCursor } from '@/lib/keyboard/list-cursor'
 
+import { formatFriendlyDate } from '@/features/item/date-tokens'
 import { useToggleCompleteItem } from '@/features/item/hooks'
 import { priorityClass, priorityLabel } from '@/features/item/priority'
 import type { Item } from '@/features/item/schema'
@@ -36,6 +37,12 @@ export function TodayView({
   currentUserId?: string
 }) {
   const today = todayISO()
+  // iter261 basics: dueDate を formatFriendlyDate で「明日 / 4/30 (木)」表示にするため、
+  // 比較基準の Date object も用意 (todayISO は string で fixed すれば render 安定)。
+  const todayDate = useMemo(() => {
+    const d = new Date()
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+  }, [])
   const groups = buildTodayGroups(items, today)
   const total = groups.reduce((sum, g) => sum + g.items.length, 0)
   // Phase 6.15 iter 63: title click で ItemEditDialog 開く (Gantt iter31 と同パターン)
@@ -207,7 +214,13 @@ export function TodayView({
                           <span className="tabular-nums">{it.dueTime.slice(0, 5)}</span>
                         )}
                         {it.dueDate && it.dueDate !== today && (
-                          <span className="text-red-600">期限 {it.dueDate}</span>
+                          <span
+                            className="text-red-600"
+                            title={it.dueDate}
+                            aria-label={`期限 ${it.dueDate}`}
+                          >
+                            期限 {formatFriendlyDate(it.dueDate, todayDate)}
+                          </span>
                         )}
                         <StatusBadge status={it.status} />
                         <span onClick={(e) => e.stopPropagation()}>
