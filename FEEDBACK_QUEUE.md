@@ -15,6 +15,36 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ## 未処理 (新しい順)
 
+### 2026-04-28 (iter257 中) — サブタスク graphical 表示 ★★★ P0 最優先 ★★★
+
+- [ ] **サブタスクを 1, 2, 3 番号付きで graphical に、依存があれば順番表示、チャンク (まとまり) で grouped、Kanban / List メニューから開ける** — 分類: 実装要望 (大、**P0 最優先・真剣依頼**)
+  - **ユーザ強調**: 「**真剣に実装頼んだ**」 — 次 iter で **本 entry を最優先消化**、ラフな実装は許容しない、main 級品質で複数 iter にわたって完遂すること
+  - 原文: 「サブタスクめっちゃグラフィカルに 1 2 3 みたいにして依存とかあれば順番表示して、チャンクをまとめてほしい。看板メニューやリストメニューからそういったのが表示できる。で、めっちゃグラフィカルに今の各タスクのステータスがわかる」
+  - 仮解釈:
+    - (1) サブタスクの **「順序付き番号 (1, 2, 3...)」** 表示。現在の subtasks-panel は flat list なので、`fractional_position` or 依存 graph topological sort 順を視覚化
+    - (2) **依存** (`item_dependencies` テーブル) があれば順序ノードでつないで「親→次→次」の流れを線で表示 (mini Gantt or DAG graph)
+    - (3) **チャンク (まとまり)** で grouped — 同じ DoD / 同じ tag / 同じ assignee 等で自動 cluster しつつ、子タスク群を box で囲む
+    - (4) **Kanban カード / Backlog 行** から「サブタスク graph を開く」ボタンで disclosure or modal で graphical view
+    - (5) 各ノードに **status (todo / doing / done / blocked)** が色 + icon で一目瞭然
+  - 既存資産:
+    - `item_dependencies` table + `useWorkspaceBlocksDependencies` hook (iter7-8 で Gantt に配線)
+    - `gantt-view.tsx` の `GanttDependencyArrows` (SVG 線描画)
+    - `subtasks-panel.tsx` (iter255 で抽出した list panel)
+    - React Flow は未導入だが Workflow editor 候補で名前は出ている (HANDOFF iter112-118 系)
+  - 設計案 (3 scope):
+    - **A**: 既存 subtasks-panel に「順序番号 + status 色」の column を追加 (5-30 行、最小構成)
+    - **B**: 新 component `SubtaskFlowView` を作って React Flow ベースの DAG 表示。Kanban カードの右上「⊞ flow」 button で modal 開く
+    - **C**: チャンク (auto-cluster) を含むフル graphical view。クラスタリングロジック (tag/DoD/assignee 共通でグルーピング) + box 描画
+  - **要追加質問**:
+    - (a) 「依存の順番表示」は Gantt 風 (時間軸あり) と DAG 風 (時間軸無し、矢印のみ) どちら?
+    - (b) 「チャンク」は AI 自動 cluster? それとも手動グルーピング (既存 tag) のみ?
+    - (c) Kanban カード上の表示は **icon のみ + click で modal** か、**カード内に縮小版 graph を埋込** どちら?
+    - (d) status の graphical 表現は色だけで十分? icon (○●◐) も併用?
+  - スコープ: 大 (React Flow 導入 or 自前 SVG layout、依存 graph + cluster + status の 3 軸)。複数 iter で段階実装が現実的:
+    - iter X: A (subtasks-panel に番号 + status 色)
+    - iter X+2: B (React Flow DAG modal、Kanban カード button)
+    - iter X+4: C (チャンク auto-cluster) — POST_MVP 寄り
+
 ### 2026-04-28 (iter238 後 — その 3)
 
 - [x] **「Claude on Web (ネット上のサンドボックス)」runner 本体** — iter239-243 完了
