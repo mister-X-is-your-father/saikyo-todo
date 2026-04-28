@@ -106,7 +106,7 @@ export function DashboardView({ workspaceId }: Props) {
           className="flex items-start gap-3 rounded-lg border border-red-500/50 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300"
           data-testid="wip-warning"
         >
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
           <div>
             <div className="font-semibold">WIP 上限超過</div>
             <div className="text-xs">
@@ -118,7 +118,7 @@ export function DashboardView({ workspaceId }: Props) {
       ) : null}
 
       {/* Burndown */}
-      <Card>
+      <Card role="region" aria-label="MUST Item の バーンダウン グラフ (直近 14 日)">
         <CardHeader>
           <CardTitle className="text-base">バーンダウン (14 日)</CardTitle>
         </CardHeader>
@@ -176,10 +176,10 @@ export function DashboardView({ workspaceId }: Props) {
        */}
 
       {/* MUST 一覧 */}
-      <Card>
+      <Card role="region" aria-label={`MUST Item 一覧 ${s.items.length} 件`}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Flame className="h-4 w-4 text-red-500" />
+            <Flame className="h-4 w-4 text-red-500" aria-hidden="true" />
             MUST Item 一覧
           </CardTitle>
         </CardHeader>
