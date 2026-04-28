@@ -33,6 +33,21 @@ export function InboxView({
       <EmptyState
         title="Inbox は空です"
         description="日付が未設定のタスクがここに溜まります。定期的に仕分けを。"
+        action={
+          <button
+            type="button"
+            className="text-primary hover:bg-muted mt-2 rounded border px-3 py-1.5 text-xs hover:underline"
+            data-testid="inbox-empty-quick-add"
+            aria-label="クイック追加入力欄にフォーカス (q キーでも可)"
+            onClick={() => {
+              const el = document.getElementById('quick-add-input') as HTMLInputElement | null
+              el?.focus()
+              el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }}
+          >
+            クイック追加にフォーカス (キー: q)
+          </button>
+        }
       />
     )
   }

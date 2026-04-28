@@ -358,7 +358,25 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
       ) : view === 'monthly' ? (
         <PersonalPeriodView workspaceId={workspaceId} items={filtered} period="month" />
       ) : (data?.length ?? 0) === 0 ? (
-        <EmptyState title="まだ Item がありません" description="上のフォームから作成してください" />
+        <EmptyState
+          title="まだ Item がありません"
+          description="上のフォームから作成してください"
+          action={
+            <button
+              type="button"
+              className="text-primary hover:bg-muted mt-2 rounded border px-3 py-1.5 text-xs hover:underline"
+              data-testid="board-empty-quick-add"
+              aria-label="クイック追加入力欄にフォーカス (q キーでも可)"
+              onClick={() => {
+                const el = document.getElementById('quick-add-input') as HTMLInputElement | null
+                el?.focus()
+                el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }}
+            >
+              クイック追加にフォーカス (キー: q)
+            </button>
+          }
+        />
       ) : view === 'backlog' ? (
         <BacklogView workspaceId={workspaceId} items={filtered} currentUserId={currentUserId} />
       ) : view === 'gantt' ? (
