@@ -36,7 +36,12 @@ export function SignupForm() {
   }
 
   return (
-    <form method="post" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <form
+      method="post"
+      onSubmit={form.handleSubmit(onSubmit)}
+      aria-busy={isPending}
+      className="space-y-4"
+    >
       <div className="space-y-2">
         <Label htmlFor="displayName">表示名</Label>
         <IMEInput
