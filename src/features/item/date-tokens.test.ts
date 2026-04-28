@@ -107,6 +107,28 @@ describe('parseDateFromText (pure helper)', () => {
     expect(isoDate(parseDateFromText('+2w retrospective', SAT)!.date)).toBe('2026-05-09')
   })
 
+  // iter273 basics: 自然語の相対日付
+  it('EN `in N days` (Todoist 互換)', () => {
+    expect(isoDate(parseDateFromText('in 3 days follow up', SAT)!.date)).toBe('2026-04-28')
+    expect(isoDate(parseDateFromText('in 1 day reminder', SAT)!.date)).toBe('2026-04-26')
+    expect(isoDate(parseDateFromText('IN 7 DAYS retro', SAT)!.date)).toBe('2026-05-02')
+  })
+
+  it('EN `in N weeks` も同義', () => {
+    expect(isoDate(parseDateFromText('in 2 weeks retrospective', SAT)!.date)).toBe('2026-05-09')
+    expect(isoDate(parseDateFromText('in 1 week ping', SAT)!.date)).toBe('2026-05-02')
+  })
+
+  it('JA `N 日後` / `N週間後` / `N週後`', () => {
+    expect(isoDate(parseDateFromText('3日後 follow', SAT)!.date)).toBe('2026-04-28')
+    expect(isoDate(parseDateFromText('2週間後 retro', SAT)!.date)).toBe('2026-05-09')
+    expect(isoDate(parseDateFromText('1週後 ping', SAT)!.date)).toBe('2026-05-02')
+  })
+
+  it('JA 全角スペースが入っても許容 (`3 日後`)', () => {
+    expect(isoDate(parseDateFromText('3 日後 ping', SAT)!.date)).toBe('2026-04-28')
+  })
+
   it('matched は前後 word boundary を含み replace で安全に消せる', () => {
     const text = '会議 明日 議事録'
     const r = parseDateFromText(text, SAT)

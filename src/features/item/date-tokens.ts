@@ -386,5 +386,25 @@ export function parseDateFromText(text: string, today: Date): ParsedDate | null 
     return { date: addDays(base, days), matched: rel[0] }
   }
 
+  // 11. EN 自然語: `in N days` / `in N weeks` (Todoist 互換、+Nd と等価)
+  //     iter273 basics: スマートフォン音声入力等で `+3d` よりも自然な表現を吸収。
+  //     `day` / `days` / `week` / `weeks` 両対応、N=0 (=today) は許可しないので `\d{1,3}` で 1+。
+  const inN = text.match(/(^|\s)in\s+(\d{1,3})\s+(day|days|week|weeks)(\s|$)/i)
+  if (inN) {
+    const n = Number(inN[2])
+    const unit = inN[3]!.toLowerCase()
+    const days = unit.startsWith('week') ? n * 7 : n
+    return { date: addDays(base, days), matched: inN[0] }
+  }
+
+  // 12. JA 自然語: `N 日後` / `N 週間後` / `N週後` (`+Nd` の natural form)。
+  const afterJa = text.match(/(^|\s)(\d{1,3})\s*(日後|週間後|週後)(\s|$)/)
+  if (afterJa) {
+    const n = Number(afterJa[2])
+    const unit = afterJa[3]!
+    const days = unit === '日後' ? n : n * 7
+    return { date: addDays(base, days), matched: afterJa[0] }
+  }
+
   return null
 }
