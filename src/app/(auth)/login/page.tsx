@@ -33,6 +33,7 @@ export default function LoginPage() {
           href="/signup"
           className="text-primary relative z-10 underline-offset-4 hover:underline"
           data-testid="signup-link"
+          aria-label="アカウントをお持ちでない方はこちらでサインアップ"
         >
           サインアップ
         </Link>

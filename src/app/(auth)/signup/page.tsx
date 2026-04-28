@@ -29,7 +29,11 @@ export default function SignupPage() {
       </CardContent>
       <CardFooter className="flex justify-between text-sm">
         <span className="text-muted-foreground">アカウントあり?</span>
-        <Link href="/login" className="text-primary underline-offset-4 hover:underline">
+        <Link
+          href="/login"
+          className="text-primary underline-offset-4 hover:underline"
+          aria-label="既にアカウントをお持ちの方はこちらでログイン"
+        >
           ログイン
         </Link>
       </CardFooter>
