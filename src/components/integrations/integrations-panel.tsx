@@ -147,7 +147,11 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             onClick={() => void toggleEnabled()}
             disabled={update.isPending}
             data-testid={`src-toggle-${src.id}`}
-            aria-label={`Source「${src.name}」を${src.enabled ? '無効化' : '有効化'}`}
+            aria-label={
+              update.isPending
+                ? `Source「${src.name}」の状態を更新中…`
+                : `Source「${src.name}」を${src.enabled ? '無効化' : '有効化'}`
+            }
           >
             {src.enabled ? '無効化' : '有効化'}
           </Button>
@@ -172,7 +176,9 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             onClick={() => void handleDelete()}
             disabled={del.isPending}
             data-testid={`src-delete-${src.id}`}
-            aria-label={`Source「${src.name}」を削除`}
+            aria-label={
+              del.isPending ? `Source「${src.name}」を削除中…` : `Source「${src.name}」を削除`
+            }
           >
             <Trash2 className="h-3.5 w-3.5 text-red-500" aria-hidden="true" />
           </Button>
