@@ -48,6 +48,16 @@ export const itemService = {
         }
         parentPath = fullPathOf({ id: parent.id, parentPath: parent.parentPath })
       }
+      // position は sibling の最大値の後ろ (末尾追加) を計算する。
+      // 旧仕様は DB default 'a0' を使っていたため bulk 追加時に全 child が同じ
+      // position になり、numbered 表示や DnD 並び替えで挿入順依存になっていた。
+      // (FEEDBACK_QUEUE.md: subtask-graph e2e で発覚)
+      const maxPos = await itemRepository.findMaxPositionAmongSiblings(
+        tx,
+        workspaceId,
+        parentPath ?? null,
+      )
+      const newPosition = positionBetween(maxPos, null)
       const item = await itemRepository.insert(tx, {
         workspaceId,
         title: rest.title,
@@ -60,6 +70,7 @@ export const itemService = {
         priority: rest.priority,
         isMust: rest.isMust,
         dod: rest.dod ?? null,
+        position: newPosition,
         ...(parentPath !== undefined ? { parentPath } : {}),
         createdByActorType: 'user',
         createdByActorId: user.id,

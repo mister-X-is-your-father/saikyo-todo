@@ -76,6 +76,35 @@ export const itemRepository = {
     return await this.updateWithLock(tx, id, expectedVersion, { deletedAt: new Date() })
   },
 
+  /**
+   * sibling (同 workspace + 同 parentPath) の max(position) を返す。空なら null。
+   * 新規 child 作成時の position 計算に使う (positionBetween(maxPos, null) で末尾追加)。
+   *
+   * `items.parent_path` は LTREE notNull default `''` で、root 階層は空 ltree
+   * (NULL ではない)。呼び出し側は root なら `''` を渡すこと。null は内部で `''`
+   * に正規化する (歴史的経緯への安全弁)。
+   */
+  async findMaxPositionAmongSiblings(
+    tx: Tx,
+    workspaceId: string,
+    parentPath: string | null,
+  ): Promise<string | null> {
+    const normalizedPath = parentPath ?? ''
+    const [row] = await tx
+      .select({ position: items.position })
+      .from(items)
+      .where(
+        and(
+          eq(items.workspaceId, workspaceId),
+          eq(items.parentPath, normalizedPath),
+          isNull(items.deletedAt),
+        ),
+      )
+      .orderBy(desc(items.position))
+      .limit(1)
+    return row?.position ?? null
+  },
+
   /** workspace_statuses.type を返す。存在しない key なら null。 */
   async findStatusType(
     tx: Tx,

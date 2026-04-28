@@ -94,6 +94,29 @@ describe('itemService', () => {
         .eq('target_id', item.id)
       expect(audits?.some((a) => a.action === 'create' && a.target_type === 'item')).toBe(true)
     })
+
+    // FEEDBACK_QUEUE.md: subtask-graph e2e で発見した position bug の regression test。
+    // 旧仕様は service.create が position を計算せず DB default 'a0' のまま insert
+    // していたため、bulk 追加時に全 child が同じ position になっていた。
+    it('連続 create で position が異なる (sibling 末尾追加で fractional indexing 進行)', async () => {
+      // root 階層に 2 件続けて作る
+      const a = await createItem({ title: 'pos-a' })
+      const b = await createItem({ title: 'pos-b' })
+      expect(a.position).not.toBe(b.position)
+      // fractional indexing は lex sort で a < b になる (末尾追加なので)
+      expect(a.position.localeCompare(b.position)).toBeLessThan(0)
+    })
+
+    it('child item も同 parent の sibling 末尾追加で position が異なる', async () => {
+      const parent = await createItem({ title: 'pos-parent' })
+      const c1 = await createItem({ title: 'pos-c1', parentItemId: parent.id })
+      const c2 = await createItem({ title: 'pos-c2', parentItemId: parent.id })
+      const c3 = await createItem({ title: 'pos-c3', parentItemId: parent.id })
+      expect(c1.position).not.toBe(c2.position)
+      expect(c2.position).not.toBe(c3.position)
+      expect(c1.position.localeCompare(c2.position)).toBeLessThan(0)
+      expect(c2.position.localeCompare(c3.position)).toBeLessThan(0)
+    })
   })
 
   describe('update', () => {
