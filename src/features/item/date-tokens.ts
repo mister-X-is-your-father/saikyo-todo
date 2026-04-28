@@ -144,6 +144,66 @@ export interface ParsedDate {
   matched: string
 }
 
+const WEEKDAY_LABEL_JA = ['日', '月', '火', '水', '木', '金', '土']
+const WEEKDAY_LABEL_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+/**
+ * iter256 basics: ISO 日付を「今日 / 明日 / 明後日 / 4/30 (木) / 2027-04-30 (木)」の
+ * ような人間に優しい表記に整形する pure 関数。QuickAdd preview chip / Item 行で使う。
+ *
+ * - 当日 / +1 / +2 は 今日 / 明日 / 明後日 (JA) または Today / Tomorrow / Day after (EN)
+ * - 同年内は `M/D (曜)` (JA) または `Mon Apr 30` (EN)
+ * - 別年は `YYYY-MM-DD (曜)` (JA) または `Apr 30 2027 (Mon)` (EN)
+ *
+ * locale は `'ja' | 'en'` のみ。デフォルトは 'ja'。`today` はカレンダー日のみ
+ * (時分秒は無視) で比較するので呼び出し側で normalize しなくてよい。
+ *
+ * 不正 ISO (`new Date(iso)` が NaN) は元の `iso` 文字列をそのまま返す (fail-safe)。
+ */
+export function formatFriendlyDate(iso: string, today: Date, locale: 'ja' | 'en' = 'ja'): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  const baseToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const baseTarget = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+  const diffDays = Math.round((baseTarget.getTime() - baseToday.getTime()) / (24 * 60 * 60 * 1000))
+
+  if (locale === 'en') {
+    if (diffDays === 0) return 'Today'
+    if (diffDays === 1) return 'Tomorrow'
+    if (diffDays === -1) return 'Yesterday'
+    const wd = WEEKDAY_LABEL_EN[d.getDay()]!
+    const monthShort = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ][d.getMonth()]!
+    if (d.getFullYear() === baseToday.getFullYear()) {
+      return `${wd} ${monthShort} ${d.getDate()}`
+    }
+    return `${wd} ${monthShort} ${d.getDate()} ${d.getFullYear()}`
+  }
+
+  // JA
+  if (diffDays === 0) return '今日'
+  if (diffDays === 1) return '明日'
+  if (diffDays === 2) return '明後日'
+  if (diffDays === -1) return '昨日'
+  const wd = WEEKDAY_LABEL_JA[d.getDay()]!
+  if (d.getFullYear() === baseToday.getFullYear()) {
+    return `${d.getMonth() + 1}/${d.getDate()} (${wd})`
+  }
+  return `${iso} (${wd})`
+}
+
 /**
  * `today` 基準で最初に見つかった日付トークンを返す。マッチしなければ null。
  *

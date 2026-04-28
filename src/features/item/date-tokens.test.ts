@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   addDays,
+  formatFriendlyDate,
   isoDate,
   nextWeekday,
   parseDateFromText,
@@ -201,6 +202,52 @@ describe('M/D スラッシュ形式', () => {
     // ISO の方が上 (パターン 8) なので 4 桁年付きの ISO が勝つ
     const r = parseDateFromText('2026-12-31 5/15', SAT)
     expect(isoDate(r!.date)).toBe('2026-12-31')
+  })
+})
+
+// iter256 basics: friendly date formatter (preview chip / Item 行表示用)
+describe('formatFriendlyDate', () => {
+  // SAT = 2026-04-25 (Sat)
+  it('JA: 当日 / 翌日 / 翌々日 / 昨日 を専用ラベル化', () => {
+    expect(formatFriendlyDate('2026-04-25', SAT)).toBe('今日')
+    expect(formatFriendlyDate('2026-04-26', SAT)).toBe('明日')
+    expect(formatFriendlyDate('2026-04-27', SAT)).toBe('明後日')
+    expect(formatFriendlyDate('2026-04-24', SAT)).toBe('昨日')
+  })
+
+  it('JA: 同年は M/D (曜) 形式', () => {
+    expect(formatFriendlyDate('2026-05-01', SAT)).toBe('5/1 (金)')
+    expect(formatFriendlyDate('2026-12-31', SAT)).toBe('12/31 (木)')
+  })
+
+  it('JA: 別年は YYYY-MM-DD (曜) で年を残す', () => {
+    expect(formatFriendlyDate('2027-04-30', SAT)).toBe('2027-04-30 (金)')
+    expect(formatFriendlyDate('2025-12-31', SAT)).toBe('2025-12-31 (水)')
+  })
+
+  it('EN: Today / Tomorrow / Yesterday', () => {
+    expect(formatFriendlyDate('2026-04-25', SAT, 'en')).toBe('Today')
+    expect(formatFriendlyDate('2026-04-26', SAT, 'en')).toBe('Tomorrow')
+    expect(formatFriendlyDate('2026-04-24', SAT, 'en')).toBe('Yesterday')
+  })
+
+  it('EN: 同年は "Wed Apr 30" 形式', () => {
+    expect(formatFriendlyDate('2026-04-30', SAT, 'en')).toBe('Thu Apr 30')
+    expect(formatFriendlyDate('2026-12-31', SAT, 'en')).toBe('Thu Dec 31')
+  })
+
+  it('EN: 別年は year を末尾に', () => {
+    expect(formatFriendlyDate('2027-04-30', SAT, 'en')).toBe('Fri Apr 30 2027')
+  })
+
+  it('不正 ISO は元の文字列をそのまま返す (fail-safe)', () => {
+    expect(formatFriendlyDate('not-a-date', SAT)).toBe('not-a-date')
+  })
+
+  it('today に時分秒があっても結果に影響しない', () => {
+    const todayWithTime = new Date(2026, 3, 25, 23, 59, 59)
+    expect(formatFriendlyDate('2026-04-25', todayWithTime)).toBe('今日')
+    expect(formatFriendlyDate('2026-04-26', todayWithTime)).toBe('明日')
   })
 })
 

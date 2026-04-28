@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { isAppError } from '@/lib/errors'
 
 import { useDecomposeItem } from '@/features/agent/hooks'
+import { formatFriendlyDate } from '@/features/item/date-tokens'
 import { formatEstimate } from '@/features/item/estimate'
 import { useCreateItem } from '@/features/item/hooks'
 import { parseQuickAdd } from '@/features/item/nl-parse'
@@ -160,8 +161,12 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
         >
           <span className="truncate font-mono">→ {preview.title}</span>
           {preview.scheduledFor && (
-            <span className="rounded bg-blue-100 px-1.5 py-0.5 text-blue-700">
-              {preview.scheduledFor}
+            <span
+              className="rounded bg-blue-100 px-1.5 py-0.5 text-blue-700"
+              title={preview.scheduledFor}
+              aria-label={`予定 ${preview.scheduledFor}${preview.dueTime ? ` ${preview.dueTime}` : ''}`}
+            >
+              {formatFriendlyDate(preview.scheduledFor, new Date())}
               {preview.dueTime ? ` ${preview.dueTime}` : ''}
             </span>
           )}
