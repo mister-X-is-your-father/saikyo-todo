@@ -52,6 +52,37 @@ describe('parseDateFromText (pure helper)', () => {
     expect(isoDate(parseDateFromText('月末 締め', SAT)!.date)).toBe('2026-04-30')
   })
 
+  // iter278 basics: EOD / EOW alias
+  it('EOD / 今日中 → 今日 (date は base)', () => {
+    expect(isoDate(parseDateFromText('eod ping', SAT)!.date)).toBe('2026-04-25')
+    expect(isoDate(parseDateFromText('end of day ping', SAT)!.date)).toBe('2026-04-25')
+    expect(isoDate(parseDateFromText('今日中 ping', SAT)!.date)).toBe('2026-04-25')
+    expect(isoDate(parseDateFromText('今日まで ping', SAT)!.date)).toBe('2026-04-25')
+  })
+
+  it('EOW / 今週中 → 直近の金曜 (Sat 当日なら来週金曜)', () => {
+    // SAT = 2026-04-25 (土曜) → 来週金曜 5/1
+    expect(isoDate(parseDateFromText('eow review', SAT)!.date)).toBe('2026-05-01')
+    expect(isoDate(parseDateFromText('end of week review', SAT)!.date)).toBe('2026-05-01')
+    expect(isoDate(parseDateFromText('今週中 review', SAT)!.date)).toBe('2026-05-01')
+    expect(isoDate(parseDateFromText('今週金曜まで review', SAT)!.date)).toBe('2026-05-01')
+  })
+
+  it('EOW (Mon → 当週金曜)', () => {
+    const MON = new Date(2026, 3, 27) // Mon 2026-04-27
+    expect(isoDate(parseDateFromText('eow review', MON)!.date)).toBe('2026-05-01')
+  })
+
+  it('EOW (Fri 当日 → today)', () => {
+    const FRI = new Date(2026, 4, 1) // Fri 2026-05-01
+    expect(isoDate(parseDateFromText('eow review', FRI)!.date)).toBe('2026-05-01')
+  })
+
+  it('EOW (Sun → 次の金曜)', () => {
+    const SUN = new Date(2026, 3, 26) // Sun 2026-04-26
+    expect(isoDate(parseDateFromText('eow review', SUN)!.date)).toBe('2026-05-01')
+  })
+
   // iter271 basics: 月初 / 来月 / 来月末 alias
   it('月初 = 当月 1 日 (今日 4/25 → 来月初 5/1 に倒す)', () => {
     // SAT は 4/25。月初 4/1 は過去なので来月 5/1 に倒す

@@ -256,6 +256,21 @@ export function parseDateFromText(text: string, today: Date): ParsedDate | null 
     const delta = ((6 - cur + 7) % 7) + 7
     return { date: addDays(base, delta), matched: nextWeekendMatch[0] }
   }
+  // EOD / EOW alias (iter278 basics)。EOD は today、EOW は今週金曜 (土日なら来週金曜)。
+  // 「業務日終わり」感の "by EOD" / "今日中" / "今週中" を Todoist 互換で受理。
+  const eodMatch = text.match(/(^|\s)(今日中|今日まで|eod|end\s+of\s+day)(\s|$)/i)
+  if (eodMatch) {
+    return { date: base, matched: eodMatch[0] }
+  }
+  const eowMatch = text.match(/(^|\s)(今週中|今週金曜まで|eow|end\s+of\s+week)(\s|$)/i)
+  if (eowMatch) {
+    // 「業務週の終わり = 直近の金曜」(Sat/Sun は来週金曜にロールフォワード)。
+    // (5 - cur + 7) % 7 は全曜日で正しく回る (Fri=0, Sat=6, Sun=5, Mon=4, ...)。
+    const cur = base.getDay()
+    const delta = (5 - cur + 7) % 7
+    return { date: addDays(base, delta), matched: eowMatch[0] }
+  }
+
   // 来月末 / 来月初 は単独の `来月` より先に試す (substring 衝突回避)。
   // iter271 basics: 月単位の繰返しタスク向けに「来月末で支払い」「来月初で1on1」等を吸収。
   const endOfNextMonth = text.match(/(^|\s)(来月末|end\s+of\s+next\s+month|eonm)(\s|$)/i)
