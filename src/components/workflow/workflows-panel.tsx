@@ -301,6 +301,15 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
                 ? 'node が無い workflow は実行不可'
                 : '手動で sync 実行 (各 node 10-60s timeout)'
             }
+            aria-label={
+              !wf.enabled
+                ? `Workflow「${wf.name}」は無効化中のため実行不可`
+                : nodeCount === 0
+                  ? `Workflow「${wf.name}」は node が無いため実行不可`
+                  : trigger.isPending
+                    ? `Workflow「${wf.name}」を実行中…`
+                    : `Workflow「${wf.name}」を手動で sync 実行 (各 node 10-60s timeout)`
+            }
           >
             <Play className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             {trigger.isPending ? '実行中…' : '実行'}
