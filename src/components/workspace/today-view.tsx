@@ -36,7 +36,12 @@ export function TodayView({
   if (total === 0) {
     return (
       <EmptyState
-        title="今日のタスクはありません 🎉"
+        icon={
+          <span aria-hidden="true" className="text-3xl">
+            🎉
+          </span>
+        }
+        title="今日のタスクはありません"
         description="scheduled_for / dueDate を設定すると Today に出てきます"
       />
     )

@@ -145,7 +145,9 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
             <span className="rounded bg-red-100 px-1.5 py-0.5 font-medium text-red-700">MUST</span>
           )}
           {preview.decomposeHint && (
-            <span className="rounded bg-violet-100 px-1.5 py-0.5 text-violet-700">🧠 AI 分解</span>
+            <span className="rounded bg-violet-100 px-1.5 py-0.5 text-violet-700">
+              <span aria-hidden="true">🧠 </span>AI 分解
+            </span>
           )}
         </div>
       )}
