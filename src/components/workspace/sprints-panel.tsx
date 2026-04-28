@@ -26,6 +26,16 @@ import {
   useUpdateSprintDefaults,
 } from '@/features/sprint/hooks'
 import type { Sprint, SprintStatus } from '@/features/sprint/schema'
+import {
+  addDaysISO,
+  dayOfWeekJa,
+  daysBetween,
+  DOW_JA,
+  formatDateJa,
+  isoDaysFromNow,
+  nextDowISO,
+  todayISO,
+} from '@/features/sprint/sprint-date-helpers'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { IMEInput } from '@/components/shared/ime-input'
@@ -54,60 +64,8 @@ const STATUS_COLOR: Record<SprintStatus, 'secondary' | 'default' | 'destructive'
   cancelled: 'destructive',
 }
 
-const DOW_JA = ['日', '月', '火', '水', '木', '金', '土'] as const
-
-/** "2026-04-27" → "月" */
-function dayOfWeekJa(iso: string): string {
-  // ISO date を UTC ベースで読み、curtain time zone のずれを排除
-  const [y, m, d] = iso.split('-').map(Number)
-  if (!y || !m || !d) return ''
-  const dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay()
-  return DOW_JA[dow] ?? ''
-}
-
-/** "2026-04-27" → "2026-04-27 (月)" */
-function formatDateJa(iso: string): string {
-  const dow = dayOfWeekJa(iso)
-  return dow ? `${iso} (${dow})` : iso
-}
-
-function todayISO(): string {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
-/**
- * Phase 6.15 iter 106: 今日以降で曜日 (0=日, 1=月, …, 6=土) と一致する直近日を返す。
- * 今日がその曜日なら今日を返す (= 即時 Sprint 起動可能)。
- */
-function nextDowISO(targetDow: number): string {
-  const d = new Date()
-  const cur = d.getDay()
-  const delta = (targetDow - cur + 7) % 7
-  d.setDate(d.getDate() + delta)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
-function addDaysISO(iso: string, days: number): string {
-  const [y, m, d] = iso.split('-').map(Number)
-  const dt = new Date(Date.UTC(y!, m! - 1, d!))
-  dt.setUTCDate(dt.getUTCDate() + days)
-  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}`
-}
-
-function isoDaysFromNow(days: number): string {
-  const d = new Date()
-  d.setDate(d.getDate() + days)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
-function daysBetween(fromISO: string, toISO: string): number {
-  const [fy, fm, fd] = fromISO.split('-').map(Number)
-  const [ty, tm, td] = toISO.split('-').map(Number)
-  const from = Date.UTC(fy!, fm! - 1, fd!)
-  const to = Date.UTC(ty!, tm! - 1, td!)
-  return Math.round((to - from) / (24 * 60 * 60 * 1000))
-}
+// iter265 refactor: 6 個の純粋日付ヘルパを `@/features/sprint/sprint-date-helpers`
+// に抽出し、テスト 21 件を追加。本ファイルは UI 専念。
 
 export function SprintsPanel({ workspaceId }: Props) {
   const list = useSprints(workspaceId)
