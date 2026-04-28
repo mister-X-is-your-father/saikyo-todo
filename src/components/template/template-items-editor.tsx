@@ -122,7 +122,18 @@ export function TemplateItemsEditor({ templateId }: Props) {
             aria-required="true"
           />
         ) : null}
-        <Button type="submit" size="sm" disabled={addMut.isPending || !title.trim()}>
+        <Button
+          type="submit"
+          size="sm"
+          disabled={addMut.isPending || !title.trim()}
+          aria-label={
+            !title.trim()
+              ? '子 Item を追加するにはタイトルを入力してください'
+              : addMut.isPending
+                ? '子 Item を追加中…'
+                : '子 Item を Template に追加'
+          }
+        >
           + 追加
         </Button>
       </form>

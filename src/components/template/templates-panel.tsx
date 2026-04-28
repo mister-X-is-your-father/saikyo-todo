@@ -136,7 +136,17 @@ export function TemplatesPanel({ workspaceId }: Props) {
                 />
               </div>
             ) : null}
-            <Button type="submit" disabled={createMut.isPending || !name.trim()}>
+            <Button
+              type="submit"
+              disabled={createMut.isPending || !name.trim()}
+              aria-label={
+                !name.trim()
+                  ? 'Template を作成するには名前を入力してください'
+                  : createMut.isPending
+                    ? 'Template を作成中…'
+                    : 'Template を新規作成'
+              }
+            >
               作成
             </Button>
           </form>

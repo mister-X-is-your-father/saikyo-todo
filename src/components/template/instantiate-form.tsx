@@ -121,7 +121,11 @@ export function InstantiateForm({ workspaceId, template }: Props) {
         type="submit"
         size="sm"
         disabled={mut.isPending}
-        aria-label={`Template「${template.name}」を即実行 (Instantiate)`}
+        aria-label={
+          mut.isPending
+            ? `Template「${template.name}」を展開中…`
+            : `Template「${template.name}」を即実行 (Instantiate)`
+        }
       >
         {mut.isPending ? '展開中...' : '即実行 (Instantiate)'}
       </Button>
