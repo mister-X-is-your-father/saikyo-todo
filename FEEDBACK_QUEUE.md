@@ -15,6 +15,17 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ## 未処理 (新しい順)
 
+### 🔥 次 iter で即実装 (P0 最優先、track 判定より優先) 🔥
+
+**subtask gap (d) インデント / アウトデント button** が未実装で残っている。
+詳細仕様は本ファイル末尾近くの「(d) インデント (→/← button + Alt+→/←)」 entry
+参照。`src/components/workspace/subtasks-panel.tsx` 内に helper 3 つ + button + hook
+配線で 1 commit 完結 (50-80 行)。期待 commit message:
+`feat(item): subtask に indent/outdent button + Alt+←/→ keyboard (queue: subtask gap d/4)`
+
+**次 iter は basics/ai-automation/refactor の通常 track 判定を上書きして本 entry
+を最優先消化すること** (ユーザ「真剣に実装頼んだ」+ 「op2 (cloud に委任)」確定済)。
+
 ### 2026-04-28 (iter257 中) — サブタスク graphical 表示 ★★★ P0 最優先 ★★★
 
 - 🚧 **サブタスクを 1, 2, 3 番号付きで graphical に、依存があれば順番表示、チャンク (まとまり) で grouped、Kanban / List メニューから開ける** — 分類: 実装要望 (大、**P0 最優先・真剣依頼**)
