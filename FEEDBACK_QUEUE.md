@@ -47,7 +47,7 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ### 2026-04-28 (iter238 後 — その 2)
 
-- [ ] **TickTick 風 タスクタイマー + デスクトップアプリ風常駐ポップアップ** — 分類: 実装要望 (大)
+- 🚧 **TickTick 風 タスクタイマー + デスクトップアプリ風常駐ポップアップ** — 分類: 実装要望 (大、進行中)
   - 原文: 「ticktick みたいに測れるようにして。また、そのデスクトップアプリ
     みたいに常にポップアップで表示するタイマー機能つけたい」
   - 設計案 3 scope: - **A** In-page 常駐タイマー (Zustand `activeTimer = { itemId, startedAt,
@@ -59,6 +59,14 @@ mode, pausedAt, accumulatedMs }` + 右下 fixed panel + Item 行 / Dialog
     - (a) Pomodoro 派 vs ストップウォッチ派、どちらを MVP に? 両対応も可能
     - (b) Scope B の PiP は Chrome/Edge only で OK? Safari は in-page floating で十分?
   - 既存 `time_entries` テーブル流用 (`durationMinutes` 整数、秒は Math.round で丸め)
+  - 進捗:
+    - [x] iter 247: Scope A core (Zustand store `active-timer.ts` + `formatElapsed`)。
+          start/pause/resume/stop/elapsedMs を Date.now() ベースで実装、persist
+          middleware で reload 跨ぎ継続、test 13 件 (585→598 全パス)。MVP は
+          stopwatch path のみ (Pomodoro は Scope C で別途)
+    - [ ] 次 iter: floating panel UI (右下 fixed) + Item 行 / Dialog から Start
+          button + Stop で `time_entries` への auto insert
+    - [ ] Scope B (Document PiP) は次の次以降
 
 ### 2026-04-28 (iter238 後)
 
