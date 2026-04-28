@@ -325,7 +325,16 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
               </option>
             ))}
           </select>
-          <span className="text-muted-foreground text-xs">{filtered.length} 件</span>
+          <span
+            className="text-muted-foreground text-xs"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            aria-label={`現在のフィルタ条件で ${filtered.length} 件`}
+            data-testid="filter-count"
+          >
+            {filtered.length} 件
+          </span>
         </div>
       </div>
 
