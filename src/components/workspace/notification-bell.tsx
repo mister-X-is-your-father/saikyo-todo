@@ -109,7 +109,13 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
             disabled={unreadCount === 0 || markAllRead.isPending}
             onClick={() => markAllRead.mutate()}
             data-testid="notification-mark-all-read"
-            aria-label={`未読 ${unreadCount} 件をすべて既読にする`}
+            aria-label={
+              unreadCount === 0
+                ? '未読通知がないため既読化不要'
+                : markAllRead.isPending
+                  ? `未読 ${unreadCount} 件を既読化中…`
+                  : `未読 ${unreadCount} 件をすべて既読にする`
+            }
           >
             <CheckCheck className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             全て既読

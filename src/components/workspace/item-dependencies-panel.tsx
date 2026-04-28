@@ -155,6 +155,13 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
             disabled={!pickId || add.isPending}
             onClick={() => void handleAdd()}
             data-testid="dep-add-btn"
+            aria-label={
+              !pickId
+                ? '依存を追加するには対象 Item を選択してください'
+                : add.isPending
+                  ? '依存を追加中…'
+                  : '選択した Item を依存先として追加'
+            }
           >
             {add.isPending ? '追加中…' : '追加'}
           </Button>
