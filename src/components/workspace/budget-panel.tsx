@@ -142,7 +142,13 @@ export function BudgetPanel({ workspaceId }: Props) {
             <span className="text-muted-foreground">
               警告: {Math.round(s.warnThreshold * 100)}% で警告 (UI バー)
             </span>
-            <Button size="sm" variant="ghost" onClick={startEdit} data-testid="budget-edit-btn">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={startEdit}
+              data-testid="budget-edit-btn"
+              aria-label="AI 月次コスト上限と警告閾値の編集モードを開く"
+            >
               上限を変更
             </Button>
           </div>
@@ -192,6 +198,11 @@ export function BudgetPanel({ workspaceId }: Props) {
                 onClick={() => void saveEdit()}
                 disabled={update.isPending}
                 data-testid="budget-save-btn"
+                aria-label={
+                  update.isPending
+                    ? 'AI 月次コスト上限を保存中…'
+                    : 'AI 月次コスト上限と警告閾値を保存'
+                }
               >
                 {update.isPending ? '保存中…' : '保存'}
               </Button>
