@@ -26,6 +26,13 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
     - [x] done item の title が `text-muted-foreground` で muted (視覚 delight)。
     - [ ] **scope B**: React Flow ベース DAG modal (Kanban カードの「⊞ flow」 button から開く) — 4 件選択肢を提示中、ユーザ判断待ち
     - [ ] **scope C**: チャンク (auto-cluster) を含むフル graphical view — POST_MVP 寄り
+    - **2026-04-28 追加 ユーザ指摘 (subtask 機能 gap)**:
+      - [ ] **完了 checkbox** — 各 subtask 行に `ItemCheckbox` を置いてワンクリック完了 (既存 `useToggleCompleteItem` 利用、5-10 行)
+      - [ ] **再帰表示** — 孫タスク (subtask の subtask) を indent 付き tree 表示。展開/折り畳み toggle (30-50 行)
+      - [ ] **DnD 並べ替え** — @dnd-kit (既存 deps) で row reorder。`itemService.reorder` 既存利用 (80-150 行)
+      - [ ] **インデント (Tab / Shift+Tab)** — Tab で「直前 sibling の child に移動」、Shift+Tab で「親の sibling に昇格」。`itemService.move` 既存利用 (30-50 行)
+      - 原文: 「サブタスクってどうやって完了するのか。並べ替えやインデントもできないし。サブタスクのサブタスクの・・・みたいな定義もできない」
+      - 対応順: 完了 checkbox → 再帰表示 → DnD → indent (1 つずつ独立 commit)
   - **e2e で発見した別件 bug (修正済)**:
     - [x] **bulk add で全 child の position が `'a0'`** — `itemService.create` が position を計算せず DB default のまま insert していたバグ。`945739f` で `repository.findMaxPositionAmongSiblings` を追加し、`service.create` で `positionBetween(maxPos, null)` を計算して insert に明示渡すよう修正。test 2 件追加 (root sibling / child sibling)、30/30 PASS。`parent_path` は ltree notNull default `''` (root も空 ltree、NULL ではない) を踏まえた実装。
 
