@@ -160,6 +160,54 @@ S12c="$TMP_BASE/s12c.state"
 SAIKYO_LOOP_STATE="$S12c" bash "$RUNNER" start --mode=autonomous --deadline=30m > /dev/null
 assert_contains "T12c-30" "$(cat "$S12c")" "DEADLINE_MIN=30"
 
+# ---------- T13: spawn-iter は state 無しで exit 2 ----------
+echo "T13: spawn-iter without state → exit 2"
+S13="$TMP_BASE/s13.state"
+assert_exit "T13-spawn-no-state" 2 env SAIKYO_LOOP_STATE="$S13" bash "$RUNNER" spawn-iter
+
+# ---------- T14: probe-claude は claude CLI 不在で exit 1 ----------
+echo "T14: probe-claude with bogus CLAUDE_BIN → exit 1"
+assert_exit "T14-probe-no-cli" 1 env CLAUDE_BIN=this-is-not-a-real-binary-xyz bash "$RUNNER" probe-claude
+
+# ---------- T15: 不正 subcommand で exit 1 ----------
+echo "T15: unknown subcommand → exit 1"
+assert_exit "T15-unknown-cmd" 1 bash "$RUNNER" no-such-command
+
+# ---------- T16: acquire-lock は引数チェック ----------
+echo "T16: acquire-lock without --mode → exit 1"
+assert_exit "T16-lock-no-mode" 1 bash "$RUNNER" acquire-lock --ttl-min=60
+
+echo "T16b: acquire-lock without --ttl-min → exit 1"
+assert_exit "T16b-lock-no-ttl" 1 bash "$RUNNER" acquire-lock --mode=autonomous
+
+# ---------- T17: ITER_COUNT が state file に入る ----------
+echo "T17: start writes ITER_COUNT=0"
+S17="$TMP_BASE/s17.state"
+SAIKYO_LOOP_STATE="$S17" bash "$RUNNER" start --mode=autonomous --deadline=2h > /dev/null
+assert_contains "T17-iter-count" "$(cat "$S17")" "ITER_COUNT=0"
+
+# check も ITER_COUNT を返す
+out17=$(SAIKYO_LOOP_STATE="$S17" bash "$RUNNER" check)
+assert_contains "T17-check-iter" "$out17" "ITER_COUNT=0"
+
+# JSON も
+out17b=$(SAIKYO_LOOP_STATE="$S17" bash "$RUNNER" check --json)
+assert_contains "T17-json-iter" "$out17b" '"iterCount":0'
+
+# ---------- T18: 2h deadline → last_order = 105 (= 1h45min) ----------
+echo "T18: deadline=2h gives last_order=105min (1h45min)"
+S18="$TMP_BASE/s18.state"
+SAIKYO_LOOP_STATE="$S18" bash "$RUNNER" start --mode=autonomous --deadline=2h > /dev/null
+assert_contains "T18-deadline" "$(cat "$S18")" "DEADLINE_MIN=120"
+assert_contains "T18-last-order" "$(cat "$S18")" "LAST_ORDER_MIN=105"
+
+# ---------- T19: 8h deadline → last_order = 465 (= 7h45min) ----------
+echo "T19: deadline=8h gives last_order=465min (7h45min)"
+S19="$TMP_BASE/s19.state"
+SAIKYO_LOOP_STATE="$S19" bash "$RUNNER" start --mode=playwright --deadline=8h > /dev/null
+assert_contains "T19-deadline" "$(cat "$S19")" "DEADLINE_MIN=480"
+assert_contains "T19-last-order" "$(cat "$S19")" "LAST_ORDER_MIN=465"
+
 echo
 echo "=========================================="
 echo " Result: PASS=$PASS  FAIL=$FAIL"

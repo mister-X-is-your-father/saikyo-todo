@@ -1,155 +1,142 @@
-# autonomous loop spec — saikyo-todo
+# autonomous loop spec — saikyo-todo (v2: subprocess + lock)
 
-cloud trigger 起動 1 回内で **複数 iter を loop で回し**、各 iter ごとに
-**1 commit を即 push** する仕様。cloud CCR の hard timeout (推測 60-90 min) で
-殺される可能性があるため、push 頻度を上げて「途中で死んでも push 済は安全」
-を担保する。
+cloud trigger 起動 1 回 = **bash がオーケストレートする**。Subprocess Claude (= 各 iter) は loop の存在を知らず、1 iter 完遂で exit する。outer agent (CCR session) は薄い shell で `loop-runner.sh main` を呼ぶだけ。
 
-## 起動 (trigger prompt から呼ばれる)
+## v2 設計の核
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ trigger fire → outer Claude (CCR session) starts        │
+│                ↓                                        │
+│   bash scripts/autonomous/loop-runner.sh main \         │
+│     --mode=autonomous --deadline=2h                     │
+│                ↓                                        │
+│   ┌── acquire-lock (git CAS race)──────────────────┐    │
+│   │   既存 valid lock → exit 0 (skip this fire)    │    │
+│   │   stale → take over                            │    │
+│   │   push 失敗 → 別 agent 先取 → exit 0            │    │
+│   └────────────────────────────────────────────────┘    │
+│                ↓                                        │
+│   start state file                                      │
+│                ↓                                        │
+│   loop:                                                 │
+│     check                                               │
+│     OVER_LAST_ORDER=1 || REMAINING_MIN<25 → break      │
+│     spawn-iter:                                         │
+│       claude --print < iter-instruction-MODE.md         │
+│       (subprocess = fresh context = effectively /clear) │
+│                ↓                                        │
+│   trap EXIT: finalize + release-lock                    │
+└─────────────────────────────────────────────────────────┘
+```
+
+## 起動 (trigger prompt から)
 
 ```bash
 # autonomous (cron 0 */2 * * * = 12 起動/日)
-bash scripts/autonomous/loop-runner.sh start --mode=autonomous --deadline=1h45m
+bash scripts/autonomous/loop-runner.sh main --mode=autonomous --deadline=2h
+# (deadline 2h = 120min, last_order = 1h45min, lock TTL = 150min)
 
-# playwright (cron 30 0,8,16 * * * = 3 起動/日)
-bash scripts/autonomous/loop-runner.sh start --mode=playwright --deadline=7h45m
+# playwright (cron 30 0,8,16 * * * = 3 起動/日、setup 別途)
+bash scripts/autonomous/loop-runner.sh main --mode=playwright --deadline=8h
+# (deadline 8h = 480min, last_order = 7h45min, lock TTL = 510min)
 ```
 
-`deadline` は「1 起動あたりの上限稼働時間」、ラストオーダー (新規 iter 着手禁止) は
-`deadline - 15 min` (`LAST_ORDER_BUFFER_MIN` で上書き可)。
+## /clear が物理的に呼べない問題への解 (subprocess 隔離)
 
-## 1 iter の流れ (agent が回す)
+cloud CCR では agent は Agent SDK セッションで動く。`/clear` は Claude CLI の対話モード機能で、CCR 内では呼ぶ手段が無い (Skill tool でも built-in CLI command は不可)。
 
-```
-[ループ先頭]
-1. bash scripts/autonomous/loop-runner.sh check で残り時間取得
-   - OVER_LAST_ORDER=1 → ループ終了 (5. へ)
-   - REMAINING_MIN < 20 → ループ終了 (cloud timeout 余裕を持って退場)
-   - それ以外 → 2. へ
+解: **subprocess `claude --print`** を毎 iter spawn することで context を完全リセット。outer agent は bash 出力 (短い) しか保持せず、全 iter 分の累積を防ぐ。Subprocess Claude は 1 iter 完了すると exit、次 iter は別 process。
 
-2. 自己観察 + iter 番号判定
-   - git log --oneline -10 / HANDOFF.md §6 (or §9 = playwright) を読む
-   - 直近 iter 番号 + 1
-   - autonomous: iter % 5 で track (basics/ai-automation/refactor、tooling/refactor 割り込み判定)
-   - playwright: 経路 A=MCP / 経路 B=script を選ぶ (iter 内併用 OK)
+## 並列実行への解 (git lock)
 
-3. 1 commit を完成させる
-   - autonomous: 30-150 行 / 3-6 ファイル / typecheck+lint clean / 純粋 unit test 1-2 件
-   - playwright: 5-30 行 / a11y polish のみ / 機能追加禁止
-   - shadcn UI (src/components/ui/) は編集禁止
-   - commit message:
-     - autonomous: feat|fix|refactor|chore(<phase>): <一言> [iter<N> <track> 1/1]
-     - playwright: fix(<phase>): <一言> — <画面> a11y/UX gap [playwright-iter<N> 1/1]
+CCR は同 trigger の重複 fire を block しない。autonomous が 2h 越えると次 fire と被る可能性。
 
-4. **即 push** (まとめて push しない)
-   bash scripts/autonomous/push-main.sh
-   # 失敗 (non-fast-forward) なら fetch + rebase + 再 push、それでも無理なら gh pr で merge
-   # push 完了確認: git fetch origin && git log origin/main --oneline -3 で
-   # HEAD top に自分の commit が乗っているか
+解: repo 内 `.autonomous-lock` ファイル + git CAS race。
+- `acquire-lock`: pull → 既存 lock check → 我々の lock を commit + push
+- push が non-fast-forward で失敗 = **別 agent が atomically 先取** = 我々は cleanly exit
+- TTL (deadline + 30min margin) で stale lock を自動回収
+- `release-lock` (release): EXIT trap 経由で finalize 時に呼ばれる
 
-5. HANDOFF.md に 1 行追記 + commit + push
-   - autonomous: §6 に `[iter<N>] <一言>` を 1 行
-   - playwright: §9 に `[playwright-iter<N> 1/1] <画面>: <bug> → <修正>` を 1 行
-   - これも独立 commit として push (history に残る)
+## subcommand 一覧
 
-6. ループ先頭に戻る
-```
+| subcommand | 役割 |
+|---|---|
+| `main --mode=X --deadline=DUR` | 全部入りオーケストレータ (trigger からはこれだけ) |
+| `probe-claude` | cloud env で claude CLI / OAuth 動作確認 |
+| `start --mode=X --deadline=DUR` | state file 作成 (main の中で呼ばれる) |
+| `check [--json]` | 残り時間 KV (ELAPSED_MIN / REMAINING_MIN / OVER_LAST_ORDER 等) |
+| `acquire-lock --mode=X --ttl-min=N` | git lock 取得 (main の中で) |
+| `release-lock` | git lock 解除 (main の trap で) |
+| `spawn-iter` | subprocess `claude --print` を 1 回 spawn |
+| `finalize` | state file 削除 (idempotent) |
 
-## 終了
+## iter-instruction (subprocess Claude が読む)
+
+Subprocess Claude には outer の存在は隠されている。1 iter の完成を指示するだけ:
+
+- `scripts/autonomous/iter-instruction-autonomous.md` — autonomous 1 iter spec
+- `scripts/autonomous/iter-instruction-playwright.md` — playwright 1 iter spec
+
+これら instruction は **「ループするな」「1 commit + 1 handoff meta = 2 commit で exit せよ」** を強調。Subprocess は `loop-runner.sh start/finalize/acquire-lock/release-lock` を呼んではいけない (outer の専権)。
+
+## Subprocess Claude の制約
 
 ```bash
-bash scripts/autonomous/loop-runner.sh finalize
+claude --print --max-turns 120 --allowed-tools "Bash,Read,Write,Edit,Glob,Grep" < iter-instruction-MODE.md
 ```
 
-`finalize` は state file を消すだけ (idempotent)。死亡時に呼ばれなくても次起動で
-`start` するときに上書きされるので問題なし。
+playwright モードは `--allowed-tools` に `mcp__playwright__*` も追加。
+
+OAuth credential は `~/.claude/.credentials.json` (cloud sandbox に存在前提)、または `ANTHROPIC_API_KEY` env var fallback。outer の credential が subprocess に継承される。
 
 ## やってはいけない
 
-- 1 iter で複数 commit を作って **まとめて push** (細かく immediate push が原則)
-- 「今の commit を諦めず deadline 越えてでも push する」 (cloud timeout で殺されるリスク)
-- `finalize` を忘れる (本質的に問題ないが、loop 開始時の state リーク防止のため呼ぶ)
-- `OVER_LAST_ORDER=1` を無視して新規 iter に着手する
-- HANDOFF.md 更新を後回しにする (next iter が「自己観察」で読むので必ず最新に保つ)
+- subprocess 内で `loop-runner.sh main / start / finalize / acquire-lock / release-lock` を呼ぶ (outer の専権)
+- subprocess 内で再帰的に `claude --print` を呼ぶ (再帰課金)
+- subprocess で **複数 commit を 1 iter に詰め込む** (1 commit + 1 meta = 2 commit が上限)
+- typecheck / lint 落ちのまま commit (subprocess は exit 1 で抜ける)
 - shadcn UI / POST_MVP / CLAUDE / ARCHITECTURE / REQUIREMENTS / HANDOFF の勝手な削除
-- ANTHROPIC_API_KEY 直接利用 (Claude Max OAuth + claude CLI のみ)
+- ANTHROPIC_API_KEY 直接利用 (Claude Max OAuth が前提)
+- main 以外を最終 push 先にすること
+- `git push --force` (lock CAS が成立しなくなる)
+- lock TTL を短くしすぎる (deadline 越えで殺された場合に stale lock が残らないよう、deadline + 30min margin が default)
 
-## モード別 詳細仕様
+## モード別補足
 
-### autonomous モード
+### autonomous
+- track 判定 (iter % 5): 1,3=basics / 2,4=ai-automation / 0=refactor
+- 割り込み: tooling (cold start / 同一作業 3 連続) / refactor (lint warning ≥10 / hotspot / TODO累積 / any leak / 巨大 file)
+- UX 卓越 a-g を commit body に該当部のみ記載 (4 個以下に抑える)
+- cloud env 制約: dev server / supabase / Playwright 起動 不可
 
-トラック判定 (iter 番号 % 5):
-- 1, 3 → basics (TickTick / Todoist parity)
-- 2, 4 → ai-automation (AI / MCP / 自動化)
-- 0 → refactor
-
-割り込み (発動なら通常トラックを次 iter に持ち越し):
-- tooling: 同じ作業 3 iter 連続 / cold start (scripts/autonomous/ 空) / detect-patterns で重い作業検出
-- refactor: lint warning ≥ 10 / 同一 file が直近 10 iter で 5 回変更 / TODO/FIXME 累積 ≥ 5 件 / any leak / 巨大 file 出現
-
-UX 卓越基準 (a-g、commit body に該当部を 1 行ずつ記載):
-- a 発見可能性、b アクセシビリティ、c 状態網羅 (loading/error/empty/success)、
-- d 速度感 (optimistic)、e 細部 delight、f レスポンシブ (320px〜4K)、g 一貫性 (shadcn)
-
-cloud env 制約:
-- dev server / Supabase / Playwright 実起動は **使えない** (ローカル依存)
-- コード変更 + lint/typecheck + 個別 unit test (`pnpm test --run path/to/file`) のみ
-- `pnpm test` 通し実行は重すぎるので skip
-
-### playwright モード
-
-setup (5-7 分):
-```bash
-npm install -g pnpm@10.13.1 || corepack enable
-pnpm install --frozen-lockfile --prefer-offline
-npx playwright install --with-deps chromium
-supabase start || echo '[supabase fail] login screen only mode'
-pnpm db:reset || true
-nohup pnpm dev > /tmp/nextdev.log 2>&1 &
-for i in {1..30}; do curl -fsS http://localhost:3001/login -o /dev/null && break; sleep 2; done
-```
-
-2 経路を併用:
-- **経路 A (MCP)**: `mcp__playwright__browser_navigate` 等で対話的探索 (allowed_tools に `mcp__playwright__*`、`.mcp.json` で auto-spawn)
-- **経路 B (script)**: `scripts/lib/explore-uiux-runner.ts` HOF + `pnpm tsx scripts/explore-uiux-<画面>-iter<N>.ts`
-
-選び方:
-- 未知の画面探索 → 経路 A
-- 修正前後の verify codify → 経路 B
-- MCP で見つけた bug は **修正後 verify を script に codify** (再現性確保、次 iter が同 bug 再発見しないように)
-
-修正対象 (a11y / UX polish のみ、機能追加禁止):
-- aria-label / aria-describedby / aria-hidden 漏れ
-- visible text と aria-label の衝突 (×, >> 等)
-- disabled button の理由不明 (sr-only / title)
-- loading / empty / error 4 状態の表示不備
-- focus トラップ漏れ / Tab 順序逆転
-- color contrast 不足
-- IME 中 Enter 誤送信
-- empty input で submit 可能
-- `<div onClick>` (キーボード不可)
-- click-target < 44x44px
-- placeholder のみで label 無し
-- 色のみで意味伝達
-
-setup 失敗時は何も commit せず HANDOFF.md §9 に
-`[playwright-iter<N>] setup 失敗 / 候補 bug: ...` を 1 行記録して終了。
-
-## main 直行 push 補助
-
-`scripts/autonomous/push-main.sh` が 3 段 fallback (fast push → fetch+rebase → gh PR) を
-内部で持つ。各 iter の push はこれを呼べば良い。
-
-## state file
-
-- 既定: `/tmp/saikyo-loop.state`
-- 上書き: `SAIKYO_LOOP_STATE=/path/to/state` env で
-- 中身: `MODE=` / `START_TS=` / `DEADLINE_MIN=` / `LAST_ORDER_MIN=` (KV)
+### playwright
+- setup (pnpm dev / chromium / supabase) は trigger prompt で 1 回実行 (loop 開始前)
+- 経路 A (MCP) と 経路 B (script) を併用、A → B codify 推奨
+- 機能追加禁止、a11y / UX polish のみ (5-30 行)
+- HANDOFF §9 に各 iter 1 行記録
 
 ## ローカル test
 
 ```bash
-bash scripts/autonomous/loop-runner.test.sh
+bash scripts/autonomous/loop-runner.test.sh   # 28 ケース
+bash scripts/autonomous/loop-runner.sh probe-claude  # claude CLI 動作確認
 ```
 
-28 ケース (start/check/finalize/parse_duration/不正入力 等) が PASS することを確認。
+cloud env 統合 test は `probe-claude` を最初の commit で push して trigger fire → 結果を log で確認。
+
+## state file / lock file
+
+- state: `/tmp/saikyo-loop.state` (cloud sandbox は ephemeral なので問題なし)
+- lock: `<repo>/.autonomous-lock` (git に commit + push される、across-fire visibility)
+
+state は KV (`MODE=` `START_TS=` `DEADLINE_MIN=` `LAST_ORDER_MIN=` `ITER_COUNT=`)。
+lock は KV (`MODE=` `STARTED_AT=` `STARTED_TS=` `EXPIRES_TS=` `SESSION=`)。
+
+## 失敗時のリカバリ
+
+- subprocess が exit 1 (typecheck/lint fail 等) → outer が次 iter を spawn (3 連続失敗で abort)
+- cloud session timeout → trap EXIT が呼ばれず lock が stale 状態で残る
+  → 次 fire が `EXPIRES_TS < now` を検知して take over (TTL = deadline + 30min)
+- git push 競合 → main の 3 段 fallback (`scripts/autonomous/push-main.sh`) で吸収
+- lock 取得 push 失敗 → 別 agent 先取と判断、cleanly exit (skip this fire)
