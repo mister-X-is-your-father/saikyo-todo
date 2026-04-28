@@ -321,16 +321,27 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
               </option>
             ))}
           </select>
-          <span
-            className="text-muted-foreground text-xs"
-            role="status"
-            aria-live="polite"
-            aria-atomic="true"
-            aria-label={`現在のフィルタ条件で ${filtered.length} 件`}
-            data-testid="filter-count"
-          >
-            {filtered.length} 件
-          </span>
+          {(() => {
+            // iter296 basics: フィルタ active 時は 「フィルタ後 / 全体」 の比率を出して
+            // 「何件除外されたか」を一目で把握できるようにする (Linear / Notion 風)
+            const totalActive = (data ?? []).filter((i) => !i.deletedAt).length
+            const filterActive = must || Boolean(statusFilter) || Boolean(sprintFilter)
+            const label = filterActive
+              ? `現在のフィルタ条件で ${filtered.length} 件 (全 ${totalActive} 件中)`
+              : `Item 全 ${filtered.length} 件`
+            return (
+              <span
+                className="text-muted-foreground text-xs"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+                aria-label={label}
+                data-testid="filter-count"
+              >
+                {filterActive ? `${filtered.length} / ${totalActive} 件` : `${filtered.length} 件`}
+              </span>
+            )
+          })()}
         </div>
       </div>
 
