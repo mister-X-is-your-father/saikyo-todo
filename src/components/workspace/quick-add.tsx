@@ -220,7 +220,8 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
         キーワード:
         明日/今日/明後日/来週X曜/今週末/来週末/月末/today/tomorrow/tmrw/monday..sunday/next
         monday/this weekend/next weekend/end of month (eom)/Apr 30 (英語月名)/30 Apr/Apr 30,
-        2027/3/15 (M/D US 形式)/+Nd (N 日後)/+Nw (N 週後)/HH:MM/p1-p4/#tag/@user/MUST/見積
+        2027/Apr 30th (序数)/3/15 or 3-15 (M/D・M-D)/+Nd (N 日後)/+Nw (N 週後)/HH:MM/9am・2pm
+        (AM/PM)/朝・昼・夕方・夜/morning・noon・afternoon・evening・night・midnight/p1-p4/#tag/@user/MUST/見積
         (30分・1時間・1時間30分・30m・1.5h・2h30m)。 末尾 <code>?</code> で AI 分解候補化。
       </p>
     </div>

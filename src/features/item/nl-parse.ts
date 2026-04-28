@@ -19,6 +19,7 @@
 
 import { isoDate, parseDateFromText } from './date-tokens'
 import { parseEstimateFromText } from './estimate'
+import { parseTimeFromText } from './time-tokens'
 
 // estimate / 表示ヘルパは `./estimate` に同居。後方互換のため re-export。
 export { extractEstimateMinutes, formatEstimate } from './estimate'
@@ -101,21 +102,12 @@ export function parseQuickAdd(input: string, opts: ParseOptions): ParsedQuickAdd
     text = text.replace(est.matched, ' ').trim()
   }
 
-  // 時刻 HH:MM / HH時(MM分)?
-  const timeCol = text.match(/(^|\s)(\d{1,2}):(\d{2})(\s|$)/)
-  if (timeCol) {
-    const hh = String(timeCol[2]).padStart(2, '0')
-    const mm = timeCol[3]!
-    out.dueTime = `${hh}:${mm}`
-    text = text.replace(timeCol[0], ' ').trim()
-  } else {
-    const timeJa = text.match(/(^|\s)(\d{1,2})時(?:(\d{1,2})分?)?(\s|$)/)
-    if (timeJa) {
-      const hh = String(timeJa[2]).padStart(2, '0')
-      const mm = String(timeJa[3] ?? '0').padStart(2, '0')
-      out.dueTime = `${hh}:${mm}`
-      text = text.replace(timeJa[0], ' ').trim()
-    }
+  // 時刻 — colon / AM/PM / JA HH時 / JA alias / EN alias を 1 関数に集約 (iter266)。
+  // 詳細パターンは `./time-tokens.ts` の parseTimeFromText を参照。
+  const timeResult = parseTimeFromText(text)
+  if (timeResult) {
+    out.dueTime = timeResult.time
+    text = text.replace(timeResult.matched, ' ').trim()
   }
 
   // 日付: 今日 / 明日 / 明後日 / today / tomorrow / 来週X曜 / next monday /
