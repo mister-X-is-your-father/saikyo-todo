@@ -57,6 +57,7 @@
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "drizzle-zod": "^0.8.3",
+    "e2b": "^2.19.2",
     "fractional-indexing": "^3.2.0",
     "framer-motion": "^12.38.0",
     "fuse.js": "^7.3.0",
