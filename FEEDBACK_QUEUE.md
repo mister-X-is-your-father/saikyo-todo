@@ -76,19 +76,10 @@ mode, pausedAt, accumulatedMs }` + 右下 fixed panel + Item 行 / Dialog
 
 ### 2026-04-28 (iter238 後)
 
-- [ ] **タスク分解の UX 設計議論** — 分類: 設計議論 → 実装要望
-  - 原文: 「タスク分解は、子タスクとして分解するイメージ。一応選べる。子タスクかどうか。で許可を求める。それでタスク確定しない。」
-  - 仮解釈: AI 分解の結果を即「子タスクとして create_item」しているが、
-    本来は (1) staging proposal で出して、(2) ユーザが「これは子タスクとして
-    取り込む / 取り込まない」を 1 件ずつ判定し、(3) 承認 click で初めて
-    create_item する設計を期待。現状 `decomposeItemViaClaude` は staging を通らず直接
-    create するので、ここに分岐を入れる必要がある。
-  - 仮対応: `useDecomposeItem` を staging path (`useDecomposeItemViaSDK`) に
-    切替えるか、CLI 経路でも propose_child_item tool を優先するよう
-    Researcher の prompt を調整する。POST_MVP の二重承認と被るので scope 注意。
-  - **要追加質問**: 「子タスクとしてではなく『関連する別 Item』として作りたい
-    ケース」も選択肢に含めるか? Yes なら proposal row に「子 / 関連 / スキップ」
-    の 3-way picker が必要。
+- [x] **タスク分解の UX 設計議論** — iter251 完了
+  - 原文: 「タスク分解は、子タスクとして分解するイメージ。一応選べる。子タスくかどうか。で許可を求める。それでタスク確定しない。」
+  - 対応: `decomposeItemViaClaude` (CLI 経路) を `staging:true` + `propose_child_item` に切替。MCP server が `DECOMPOSE_PARENT_ITEM_ID` env を受けたら `DECOMPOSE_TOOLS` を使う staging mode で起動するよう拡張。
+  - **残未決**: 「子 / 関連 / スキップ」3-way picker は設計議論が必要 (ユーザ確認待ち)。
 
 - [ ] **他製品の楽観ロック / 同時編集 UX を深堀り** — 分類: 設計調査
   - 原文: 「他の製品とかどう工夫してるんだろ？」(iter238 banner 実装の流れで)
