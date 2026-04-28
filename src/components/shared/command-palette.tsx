@@ -6,11 +6,17 @@
  * 2 モード:
  *   - 通常: commands を表示 (plugin 登録 action 含む)
  *   - `?` プレフィクス: items を fuse.js で fuzzy 検索、選択で onSelectItem
+ *
+ * iter313 basics: item 検索結果の row を app 共通 graphical pattern に統一
+ * (StatusBadge / formatFriendlyDate)。raw ISO `2026-04-30` → `4/30 (木)` /
+ * `明日` 等、status icon を追加。FEEDBACK_QUEUE「もっとグラフィカル / 意味の
+ * あるデザイン」候補の続編。
  */
 import { useEffect, useMemo, useState } from 'react'
 
 import Fuse from 'fuse.js'
 
+import { formatFriendlyDate } from '@/features/item/date-tokens'
 import { priorityClass, priorityLabel } from '@/features/item/priority'
 import type { Item } from '@/features/item/schema'
 
@@ -24,6 +30,7 @@ import {
   CommandSeparator,
 } from '@/components/ui/command'
 import { MustBadge } from '@/components/workspace/must-badge'
+import { StatusBadge } from '@/components/workspace/status-badge'
 
 export interface PaletteCommand {
   id: string
@@ -42,6 +49,11 @@ export interface CommandPaletteProps {
 export function CommandPalette({ commands, items, onSelectItem }: CommandPaletteProps) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
+
+  // iter263 と同パターン: dueDate を formatFriendlyDate で表示する基準日。
+  // 各 render で再計算 (cost 無視できる程度、深夜跨ぎでも正しい今日に追従)。
+  const todayRef = new Date()
+  const today = new Date(todayRef.getFullYear(), todayRef.getMonth(), todayRef.getDate())
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -107,10 +119,18 @@ export function CommandPalette({ commands, items, onSelectItem }: CommandPalette
                     role="img"
                     aria-label={priorityLabel(item.priority)}
                   />
+                  <StatusBadge
+                    status={item.status}
+                    className="mr-1.5 shrink-0 text-[10px]"
+                    iconOnly
+                  />
                   <span className="truncate">{item.title}</span>
                   {item.dueDate && (
-                    <span className="text-muted-foreground ml-2 shrink-0 text-[10px] tabular-nums">
-                      {item.dueDate}
+                    <span
+                      className="text-muted-foreground ml-2 shrink-0 text-[10px] tabular-nums"
+                      title={`期限 ${item.dueDate}`}
+                    >
+                      {formatFriendlyDate(item.dueDate, today)}
                     </span>
                   )}
                   {item.isMust && <MustBadge className="ml-auto" />}
