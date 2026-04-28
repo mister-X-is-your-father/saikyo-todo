@@ -20,8 +20,13 @@ export const metadata: Metadata = {
 
 export default function OfflinePage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
-      <h1 className="text-2xl font-bold">オフラインです</h1>
+    <main
+      aria-labelledby="offline-heading"
+      className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center"
+    >
+      <h1 id="offline-heading" className="text-2xl font-bold">
+        オフラインです
+      </h1>
       <p className="text-muted-foreground max-w-md text-sm">
         ネットワーク接続が切れています。再接続後にもう一度お試しください。
       </p>
