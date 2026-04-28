@@ -878,6 +878,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter89] **Gantt に role="grid" + aria-rowcount/aria-rowindex** (WAI-ARIA 1.2 grid pattern): outer に role=grid + aria-rowcount={N+1}、各 row に role=row + aria-rowindex (header=1, data=2..)。SR で「行 N 件中 i 番目」が伝わる。Playwright で role=grid / rowcount=3 / 各行 rowindex 2,3 を直接確認
 - ✅ [iter90] **PDCA DailyBars に list semantics**: 旧 `title` 属性 (mouse hover 専用) では SR から完了件数が見えなかった → outer に `role="list" aria-label="日次完了 throughput (N 日分)"`、各日 cell に `role="listitem" aria-label="<date>: 完了 N 件"`。Playwright で 30 listitem + first aria-label 形式を直接確認
 - ✅ [iter91] **Goal/Sprint 進捗バーに role="progressbar"** (WAI-ARIA progressbar pattern): aria-valuenow/min/max + aria-valuetext (sprint は "N/M (X%)" + 遅れ気味 marker)、aria-label。Playwright で sprint progressbar の role / valuetext を確認
+- ✅ [iter257] **estimate vs actual bias 集計の純粋ヘルパ (ai-automation, 1 commit)**: `src/features/time-entry/bias.ts` に `computeEstimateBias(samples)` を新設。median/mean ratio + under/on/over counts + calibrationFactor (0.05 刻み丸め, [0.5,3.0] clamp) + tendency 5 区分 (on-track/underestimating/overestimating/mixed/unknown) + JA summary を返す。tolerance/bias 区分は既存 `formatVariance` (active-timer.ts) と一致させ (10% / 最低 1 分)、estimateMinutes が null/0 の sample は ratio 集計から除外 (totalCount は維持)。AI brief / pm-agent / dashboard が「あなたは見積を 1.30× 過小評価しがち」系 insight を出すための data substrate。vitest 13 件 (空/不足/null 除外/on-track/under/over/mixed/median 奇偶/丸め/clamp/tolerance/summary 形式)。typecheck/lint 緑 (warning baseline 1)。次 iter258 = 8%5=3 → basics 復帰。本ヘルパを呼び出す server action / hooks / dashboard panel は次 ai-automation iter (iter259 or iter262) で。
 - ✅ [iter256] **QuickAdd に EN 月名 / weekend EN alias / M/D 形式 / friendly 日付表示 (basics, 3 commits)**:
   iter256 = 6%5=1 で base track basics。`scripts/autonomous/judge.sh` 出力の interrupt
   signals (TODO=18 / any-leak=2) は前 iter で「誤検出 — Todoist 商品名 / status='todo'
@@ -894,7 +895,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
     = 10 件追加。
   - **commit 2 (`d3913f2`)**: weekend EN alias + M/D スラッシュ形式 — 既存 `今週末` /
     `月末` に EN alias `this weekend` / `end of month` / `eom` を併設、新規 `next
-    weekend` (= `来週末` JA alias 同義、+7 日) を追加。さらに `3/15` / `12/31` /
+weekend` (= `来週末` JA alias 同義、+7 日) を追加。さらに `3/15` / `12/31` /
     `3/15/2027` / `3/15/27` の M/D[/YY[YY]] US-convention を受理 (2-digit 年は 20YY
     pivot、範囲外は誤検出防止のため拒否、2/30 は月末丸め)。test 14 件追加。
   - **commit 3 (`6c0d1a1`)**: QuickAdd preview chip の日付表示を friendly に。
