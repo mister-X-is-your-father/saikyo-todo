@@ -21,6 +21,7 @@ import {
   useTriggerSourcePull,
   useUpdateExternalSource,
 } from '@/features/external-source/hooks'
+import { importStatusBadgeClass, importStatusLabel } from '@/features/external-source/import-status'
 import type { ExternalImport, ExternalSource } from '@/features/external-source/schema'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
@@ -515,24 +516,8 @@ function SourceImportHistory({ sourceId }: { sourceId: string }) {
 }
 
 function ImportStatusBadge({ status }: { status: string }) {
-  const cls =
-    status === 'succeeded'
-      ? 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300'
-      : status === 'failed'
-        ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
-        : status === 'running'
-          ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
-          : 'bg-muted text-muted-foreground'
-  const label =
-    status === 'succeeded'
-      ? '成功'
-      : status === 'failed'
-        ? '失敗'
-        : status === 'running'
-          ? '実行中'
-          : status === 'queued'
-            ? '待機'
-            : status
+  const label = importStatusLabel(status)
+  const cls = importStatusBadgeClass(status)
   return (
     <span
       className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${cls}`}
