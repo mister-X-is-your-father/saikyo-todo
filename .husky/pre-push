@@ -1,1 +1,6 @@
-pnpm typecheck && pnpm lint && pnpm test
+pnpm typecheck && pnpm lint
+# pnpm test requires a running Supabase instance (SUPABASE_SERVICE_ROLE_KEY).
+# Skip automatically when not set (cloud / CI without DB).
+if [ -n "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
+  pnpm test
+fi
