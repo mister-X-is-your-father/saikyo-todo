@@ -54,6 +54,21 @@ export function IntegrationsPanel({ workspaceId }: Props) {
         <EmptyState
           title="外部 API 連携がありません"
           description="上の form から Yamory / カスタム REST を Source として登録すると、定期 / 手動で Item を pull できます。"
+          action={
+            <button
+              type="button"
+              className="text-primary hover:bg-muted mt-2 rounded border px-3 py-1.5 text-xs hover:underline"
+              data-testid="integrations-empty-create"
+              aria-label="Source 作成フォームの『名前』入力欄にフォーカス"
+              onClick={() => {
+                const el = document.getElementById('src-name') as HTMLInputElement | null
+                el?.focus()
+                el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }}
+            >
+              作成フォームへ
+            </button>
+          }
         />
       ) : (
         <ul className="space-y-3" data-testid="sources-list">

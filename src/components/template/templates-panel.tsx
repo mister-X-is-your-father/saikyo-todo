@@ -161,7 +161,25 @@ export function TemplatesPanel({ workspaceId }: Props) {
           onRetry={() => void list.refetch()}
         />
       ) : (list.data?.length ?? 0) === 0 ? (
-        <EmptyState title="Template がありません" description="上のフォームから作成してください" />
+        <EmptyState
+          title="Template がありません"
+          description="上のフォームから作成してください"
+          action={
+            <button
+              type="button"
+              className="text-primary hover:bg-muted mt-2 rounded border px-3 py-1.5 text-xs hover:underline"
+              data-testid="templates-empty-create"
+              aria-label="Template 作成フォームの『名前』入力欄にフォーカス"
+              onClick={() => {
+                const el = document.getElementById('tmpl-name') as HTMLInputElement | null
+                el?.focus()
+                el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }}
+            >
+              作成フォームへ
+            </button>
+          }
+        />
       ) : (
         <ul className="space-y-3">
           {list.data!.map((t) => (

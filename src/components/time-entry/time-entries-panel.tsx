@@ -43,6 +43,21 @@ export function TimeEntriesPanel({ workspaceId }: { workspaceId: string }) {
             <EmptyState
               title="まだ記録がありません"
               description="上のフォームから作成してください"
+              action={
+                <button
+                  type="button"
+                  className="text-primary hover:bg-muted mt-2 rounded border px-3 py-1.5 text-xs hover:underline"
+                  data-testid="time-entries-empty-create"
+                  aria-label="稼働記録 作成フォームの『勤務日』入力欄にフォーカス"
+                  onClick={() => {
+                    const el = document.getElementById('teDate') as HTMLInputElement | null
+                    el?.focus()
+                    el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                  }}
+                >
+                  作成フォームへ
+                </button>
+              }
             />
           ) : (
             <TimeEntriesTable workspaceId={workspaceId} entries={q.data ?? []} />
