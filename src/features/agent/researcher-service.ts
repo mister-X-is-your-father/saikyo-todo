@@ -433,19 +433,23 @@ export const researcherService = {
       isMust: item.isMust,
       dod: item.dod,
       extraHint: params.extraHint,
-      // staging=false: claude CLI 経路は MCP の RESEARCHER_TOOLS を使うため、
-      // staging mode (propose_child_item) は今のところ通らない。直接 create_item で書く。
-      staging: false,
+      staging: true,
     })
     try {
       const out = await runFlowViaClaude({
         workspaceId: params.workspaceId,
         role: 'researcher',
         userMessage,
-        // RESEARCHER_TOOLS の名前: 分解で必要十分な read + create_item セット
-        allowedToolNames: ['read_items', 'read_docs', 'search_items', 'search_docs', 'create_item'],
+        allowedToolNames: [
+          'read_items',
+          'read_docs',
+          'search_items',
+          'search_docs',
+          'propose_child_item',
+        ],
         targetItemId: item.id,
         idempotencyKey: params.idempotencyKey,
+        decomposeParentItemId: item.id,
       })
       return ok({
         invocationId: out.invocationId,

@@ -31,9 +31,9 @@ export interface DecomposeItemVariables {
 }
 
 /**
- * Phase 6.15 iter149: AI 分解は Claude Max OAuth + claude CLI 経由 (env 不要)
- * を default に切替。proposal staging は通らないため `create_item` で子 Item が
- * 直接作られる UX に変わる (staging が必要な時は decomposeItemAction を直接呼ぶ)。
+ * AI 分解は Claude Max OAuth + claude CLI 経由 (env 不要)。
+ * staging mode (propose_child_item → agent_decompose_proposals) を使うので、
+ * 子タスクは items に直接作成されず UI の承認パネルで確認 → 採用の 2 step になる。
  */
 export function useDecomposeItem(workspaceId: string) {
   const qc = useQueryClient()
@@ -48,7 +48,6 @@ export function useDecomposeItem(workspaceId: string) {
         }),
       ),
     onSuccess: (_data, vars) => {
-      // CLI 経路は staging を通らないので items 直接 + proposals 両方 invalidate
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
       void qc.invalidateQueries({ queryKey: proposalKeys.pendingByParent(vars.itemId) })
     },

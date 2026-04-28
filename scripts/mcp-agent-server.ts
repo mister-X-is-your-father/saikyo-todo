@@ -3,10 +3,12 @@
  * claude CLI から `--mcp-config` で起動されると、アプリの DB に対して直接書き込める。
  *
  * context は env vars で受け取る:
- *   - WORKSPACE_ID   : ctx.workspaceId
- *   - AGENT_ID       : ctx.agentId
- *   - AGENT_ROLE     : ctx.agentRole ('researcher' | 'pm')
- *   - TOOL_WHITELIST : カンマ区切りで公開するツール名 (省略時は全 Researcher tools)
+ *   - WORKSPACE_ID              : ctx.workspaceId
+ *   - AGENT_ID                  : ctx.agentId
+ *   - AGENT_ROLE                : ctx.agentRole ('researcher' | 'pm')
+ *   - TOOL_WHITELIST            : カンマ区切りで公開するツール名 (省略時は全 Researcher tools)
+ *   - DECOMPOSE_PARENT_ITEM_ID  : セット時は DECOMPOSE_TOOLS (staging mode) を使う
+ *   - AGENT_INVOCATION_ID       : propose_child_item の staging 行に紐付ける invocation id
  *
  * MCP protocol 上のツール名は Anthropic Messages API と同じ (create_item 等)。
  * 入出力は JSON 文字列 (ハンドラの戻り値をそのまま MCP TextContent として返す)。
@@ -17,7 +19,12 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js'
 
-import { PM_TOOLS, RESEARCHER_TOOLS, type ToolContext } from '@/features/agent/tools'
+import {
+  DECOMPOSE_TOOLS,
+  PM_TOOLS,
+  RESEARCHER_TOOLS,
+  type ToolContext,
+} from '@/features/agent/tools'
 
 function requireEnv(name: string): string {
   const v = process.env[name]
@@ -30,10 +37,15 @@ if (agentRoleRaw !== 'researcher' && agentRoleRaw !== 'pm') {
   throw new Error(`AGENT_ROLE must be 'researcher' or 'pm', got: ${agentRoleRaw}`)
 }
 
+const decomposeParentItemId = process.env.DECOMPOSE_PARENT_ITEM_ID || undefined
+const agentInvocationId = process.env.AGENT_INVOCATION_ID || undefined
+
 const ctx: ToolContext = {
   workspaceId: requireEnv('WORKSPACE_ID'),
   agentId: requireEnv('AGENT_ID'),
   agentRole: agentRoleRaw,
+  decomposeParentItemId,
+  agentInvocationId,
 }
 
 const whitelist = (process.env.TOOL_WHITELIST ?? '')
@@ -41,8 +53,13 @@ const whitelist = (process.env.TOOL_WHITELIST ?? '')
   .map((s) => s.trim())
   .filter(Boolean)
 
-const roleTools = ctx.agentRole === 'pm' ? PM_TOOLS : RESEARCHER_TOOLS
-const factories = roleTools.filter(
+// staging mode (DECOMPOSE_PARENT_ITEM_ID 有り) は propose_child_item ツールセットを使う
+const baseToolSet = decomposeParentItemId
+  ? DECOMPOSE_TOOLS
+  : ctx.agentRole === 'pm'
+    ? PM_TOOLS
+    : RESEARCHER_TOOLS
+const factories = baseToolSet.filter(
   (f) => whitelist.length === 0 || whitelist.includes(f.definition.name),
 )
 const handlers = Object.fromEntries(factories.map((f) => [f.definition.name, f.build(ctx)]))

@@ -29,6 +29,8 @@ export interface ClaudeFlowInput {
   allowedToolNames: string[]
   targetItemId?: string | null
   idempotencyKey?: string
+  /** セット時: MCP server を staging mode (DECOMPOSE_TOOLS) で起動し propose_child_item を有効化 */
+  decomposeParentItemId?: string
 }
 
 export interface ClaudeFlowOutput {
@@ -130,6 +132,8 @@ export async function runFlowViaClaude(input: ClaudeFlowInput): Promise<ClaudeFl
       userMessage: input.userMessage,
       allowedToolNames: input.allowedToolNames,
       model: role.model,
+      decomposeParentItemId: input.decomposeParentItemId,
+      agentInvocationId: invocation.id,
     })
 
     const costStr = result.totalCostUsd.toFixed(6)
@@ -208,6 +212,8 @@ interface SpawnInput {
   userMessage: string
   allowedToolNames: string[]
   model: string
+  decomposeParentItemId?: string
+  agentInvocationId?: string
 }
 
 interface SpawnResult {
@@ -243,6 +249,10 @@ async function spawnClaude(input: SpawnInput): Promise<SpawnResult> {
           AGENT_ID: input.agentId,
           AGENT_ROLE: input.role,
           TOOL_WHITELIST: input.allowedToolNames.join(','),
+          ...(input.decomposeParentItemId
+            ? { DECOMPOSE_PARENT_ITEM_ID: input.decomposeParentItemId }
+            : {}),
+          ...(input.agentInvocationId ? { AGENT_INVOCATION_ID: input.agentInvocationId } : {}),
         },
       },
     },
