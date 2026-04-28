@@ -52,7 +52,7 @@ export function TodayView({
       {groups.map(
         (g) =>
           g.items.length > 0 && (
-            <Card key={g.label}>
+            <Card key={g.label} role="region" aria-label={`${g.label} ${g.items.length} 件`}>
               <CardHeader className="pb-2">
                 <CardTitle className={`text-base ${g.label === '期限超過' ? 'text-red-600' : ''}`}>
                   {g.label} ({g.items.length})
