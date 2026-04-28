@@ -24,6 +24,11 @@ describe('dayOfWeekJa', () => {
     expect(dayOfWeekJa('not-a-date')).toBe('')
     expect(dayOfWeekJa('')).toBe('')
     expect(dayOfWeekJa('2026-04')).toBe('')
+    // iter265b 強化: 範囲外も検出
+    expect(dayOfWeekJa('2026-13-01')).toBe('')
+    expect(dayOfWeekJa('2026-04-32')).toBe('')
+    expect(dayOfWeekJa('0500-04-27')).toBe('')
+    expect(dayOfWeekJa('2026/04/27')).toBe('')
   })
 })
 
@@ -61,6 +66,12 @@ describe('addDaysISO', () => {
   it('+13 (Sprint 期間 14 日の終了日)', () => {
     expect(addDaysISO('2026-04-27', 13)).toBe('2026-05-10')
   })
+
+  it('不正 ISO はそのまま返す (iter265b fail-soft)', () => {
+    expect(addDaysISO('garbage', 5)).toBe('garbage')
+    expect(addDaysISO('2026-13-99', 1)).toBe('2026-13-99')
+    expect(addDaysISO('', 1)).toBe('')
+  })
 })
 
 describe('daysBetween', () => {
@@ -87,6 +98,12 @@ describe('daysBetween', () => {
   it('年跨ぎ (12-25 → 1-5 = 11 日)', () => {
     expect(daysBetween('2026-12-25', '2027-01-05')).toBe(11)
   })
+
+  it('不正 ISO は 0 (iter265b fail-soft)', () => {
+    expect(daysBetween('garbage', '2026-04-27')).toBe(0)
+    expect(daysBetween('2026-04-27', 'garbage')).toBe(0)
+    expect(daysBetween('2026-13-99', '2026-12-31')).toBe(0)
+  })
 })
 
 describe('todayISO / isoDaysFromNow', () => {
@@ -104,6 +121,23 @@ describe('todayISO / isoDaysFromNow', () => {
 
   it('isoDaysFromNow(13) は今日+13 日 (Sprint 期間 14 日の終了日候補)', () => {
     expect(isoDaysFromNow(13)).toBe(addDaysISO(todayISO(), 13))
+  })
+
+  // iter265b 強化: now 引数化で決定論テスト
+  it('todayISO(now) は now のローカル日付を返す', () => {
+    const fixed = new Date(2026, 3, 27, 9, 0, 0)
+    expect(todayISO(fixed)).toBe('2026-04-27')
+  })
+
+  it('todayISO は 1 桁月/日も 0 padding', () => {
+    expect(todayISO(new Date(2026, 0, 5, 0, 0, 0))).toBe('2026-01-05')
+  })
+
+  it('isoDaysFromNow(days, now) は now ベースの相対 ISO', () => {
+    const fixed = new Date(2026, 3, 27, 9, 0, 0)
+    expect(isoDaysFromNow(0, fixed)).toBe('2026-04-27')
+    expect(isoDaysFromNow(7, fixed)).toBe('2026-05-04')
+    expect(isoDaysFromNow(-1, fixed)).toBe('2026-04-26')
   })
 })
 
@@ -124,5 +158,29 @@ describe('nextDowISO', () => {
     for (let dow = 0; dow < 7; dow++) {
       expect(dayOfWeekJa(nextDowISO(dow))).toBe(DOW_NAMES[dow])
     }
+  })
+
+  // iter265b 強化: now 引数化で決定論テスト
+  it('今日 (月) で target=月 → 今日 (即時起動)', () => {
+    const mon = new Date(2026, 3, 27, 9, 0, 0)
+    expect(nextDowISO(1, mon)).toBe('2026-04-27')
+  })
+
+  it('今日 (月) で target=金 → 4 日後', () => {
+    const mon = new Date(2026, 3, 27, 9, 0, 0)
+    expect(nextDowISO(5, mon)).toBe('2026-05-01')
+  })
+
+  it('今日 (土) で target=日 → 翌日', () => {
+    const sat = new Date(2026, 4, 2, 9, 0, 0) // 2026-05-02 sat
+    expect(nextDowISO(0, sat)).toBe('2026-05-03')
+  })
+
+  it('範囲外 dow (-1 / 7 / 1.5 / NaN) は今日にフォールバック', () => {
+    const mon = new Date(2026, 3, 27, 9, 0, 0)
+    expect(nextDowISO(-1, mon)).toBe('2026-04-27')
+    expect(nextDowISO(7, mon)).toBe('2026-04-27')
+    expect(nextDowISO(1.5, mon)).toBe('2026-04-27')
+    expect(nextDowISO(Number.NaN, mon)).toBe('2026-04-27')
   })
 })
