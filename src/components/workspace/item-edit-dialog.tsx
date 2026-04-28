@@ -331,13 +331,25 @@ function ItemEditDialogInner({
                   data-testid="edit-item-kr"
                 >
                   <option value="">未割当</option>
-                  {(krsList.data ?? [])
-                    .filter((k) => k.goalStatus === 'active')
-                    .map((kr) => (
-                      <option key={kr.id} value={kr.id}>
-                        [{kr.goalTitle}] {kr.title}
-                      </option>
-                    ))}
+                  {(() => {
+                    type Kr = NonNullable<typeof krsList.data>[number]
+                    const filtered = (krsList.data ?? []).filter((k) => k.goalStatus === 'active')
+                    const byGoal = new Map<string, Kr[]>()
+                    for (const kr of filtered) {
+                      const arr = byGoal.get(kr.goalTitle) ?? []
+                      arr.push(kr)
+                      byGoal.set(kr.goalTitle, arr)
+                    }
+                    return Array.from(byGoal.entries()).map(([goalTitle, krs]) => (
+                      <optgroup key={goalTitle} label={`Goal: ${goalTitle}`}>
+                        {krs.map((kr) => (
+                          <option key={kr.id} value={kr.id}>
+                            {kr.title}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))
+                  })()}
                 </select>
               </div>
             </div>
