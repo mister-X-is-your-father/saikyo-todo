@@ -159,6 +159,37 @@
 - 既存の `features/item/` をコピペベースに
 - 規約自体を変えたいときは **先に ARCHITECTURE.md / 本書を更新** してから実装
 
+## autonomous loop 補助スクリプト (`scripts/autonomous/`)
+
+iter254 で導入。autonomous loop の冒頭・最後で叩くと、暗算していた判定が
+0.1〜10s で出るようになる。集計ロジックの正解は `src/lib/autonomous/*.ts` に
+pure 関数として固定 (vitest 24 件)。bash と TS が乖離したら test が落ちる。
+
+| script                                  | 役割                                                     | 速度  |
+| --------------------------------------- | -------------------------------------------------------- | ----- |
+| `scripts/autonomous/judge.sh`           | 直近 iter / 次 iter / base track / 割り込み signal       | <0.1s |
+| `scripts/autonomous/detect-patterns.sh` | lint warn / TODO / any leak / hotspot / 巨大 file 詳細値 | 1-10s |
+| `scripts/autonomous/push-main.sh`       | HEAD を origin/main に直 push (rebase fallback 込み)     | 数秒  |
+
+### 推奨フロー (毎 iter)
+
+```bash
+# 1. iter 冒頭 — 現在地を 1 画面で把握
+bash scripts/autonomous/judge.sh
+
+# 2. リファクタ条件の詳細値が欲しいとき
+bash scripts/autonomous/detect-patterns.sh --no-lint  # 1s 以内
+bash scripts/autonomous/detect-patterns.sh             # lint 込み (~10s)
+
+# 3. iter 最後 — main 直行 push
+bash scripts/autonomous/push-main.sh           # 本実行
+bash scripts/autonomous/push-main.sh --dry-run # 何が起きるか確認のみ
+```
+
+判定規約 (% 5 マップ / iter 抽出 regex / 巨大 file 閾値 / hotspot 閾値) を
+変えたいときは **先に `src/lib/autonomous/*.test.ts` を直して TS 側を更新**
+してから bash 側を追従させる。逆順だと test がガードしない。
+
 ## 仕組みで弾いている違反 (新規実装前に把握しておくと早い)
 
 - **eslint** (`eslint.config.mjs`): `adminDb` import / Client Component から service / DB 直接呼び
