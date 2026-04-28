@@ -40,6 +40,7 @@ export function LoginForm() {
       method="post"
       onSubmit={form.handleSubmit(onSubmit)}
       aria-busy={isPending}
+      noValidate
       className="space-y-4"
     >
       <div className="space-y-2">
