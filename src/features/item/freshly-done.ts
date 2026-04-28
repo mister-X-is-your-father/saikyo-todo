@@ -14,6 +14,7 @@
  * 0 件 sentinel `'完了 0 件 (直近 N 日)'`、title 欠落 `(無題)` fallback で
  * `formatStaleItemsSummary` と一貫した出力スタイル。
  */
+import { parseDateOrNull } from '@/lib/date/iso'
 
 /** 完了抽出に必要な Item の structural subset。 */
 export interface FreshlyDoneItemFields {
@@ -40,7 +41,7 @@ export function selectFreshlyDoneItems<T extends FreshlyDoneItemFields>(
   today: Date | string = new Date(),
 ): FreshlyDoneItemEntry<T>[] {
   const thresholdDays = options.thresholdDays ?? 7
-  const todayDate = toDate(today)
+  const todayDate = parseDateOrNull(today)
   if (!todayDate) return []
   if (thresholdDays < 0) return []
 
@@ -49,7 +50,7 @@ export function selectFreshlyDoneItems<T extends FreshlyDoneItemFields>(
     const it = items[i]
     if (!it) continue
     if (it.archivedAt) continue
-    const doneAt = toDate(it.doneAt)
+    const doneAt = parseDateOrNull(it.doneAt)
     if (!doneAt) continue
     const diffMs = todayDate.getTime() - doneAt.getTime()
     if (diffMs < 0) continue // 未来完了 (時計ズレ等) は除外
@@ -86,9 +87,4 @@ export function formatFreshlyDoneSummary<T extends FreshlyDoneItemFields>(
   return `完了 ${entries.length}: ${parts.join(' / ')}`
 }
 
-function toDate(input: Date | string | null | undefined): Date | null {
-  if (!input) return null
-  if (input instanceof Date) return Number.isFinite(input.getTime()) ? input : null
-  const d = new Date(input)
-  return Number.isFinite(d.getTime()) ? d : null
-}
+// iter305 refactor: parseDateOrNull (lib/date/iso) に集約。

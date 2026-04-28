@@ -19,6 +19,7 @@
  *  - 不正 doneAt は除外 (fail-soft)、windowDays<=0 は空 result
  *  - archive 済 / deletedAt の done item は集計に含める (= 一度完了したものは消えない)
  */
+import { parseDateOrNull } from '@/lib/date/iso'
 
 export interface VelocityFields {
   doneAt: Date | string | null | undefined
@@ -55,7 +56,7 @@ export function computeVelocity<T extends VelocityFields>(
   if (windowDays <= 0) {
     return { byDay: [], total: 0, avgPerDay: 0, trend: 'flat' }
   }
-  const todayDate = toLocalMidnight(toDate(today))
+  const todayDate = toLocalMidnight(parseDateOrNull(today))
   if (!todayDate) {
     return { byDay: [], total: 0, avgPerDay: 0, trend: 'flat' }
   }
@@ -71,7 +72,7 @@ export function computeVelocity<T extends VelocityFields>(
   }
 
   for (const it of items) {
-    const done = toDate(it.doneAt)
+    const done = parseDateOrNull(it.doneAt)
     if (!done) continue
     const local = toLocalMidnight(done)
     if (!local) continue
@@ -123,12 +124,7 @@ export function formatVelocitySummary(summary: VelocitySummary, windowDays = 7):
   return `直近 ${windowDays} 日 velocity: ${summary.total} 件 (${avg} 件/日、傾向 ${trendLabel[summary.trend]})`
 }
 
-function toDate(input: Date | string | null | undefined): Date | null {
-  if (!input) return null
-  if (input instanceof Date) return Number.isFinite(input.getTime()) ? input : null
-  const d = new Date(input)
-  return Number.isFinite(d.getTime()) ? d : null
-}
+// iter305 refactor: parseDateOrNull (lib/date/iso) に集約 (3 callsite 重複削除)。
 
 function toLocalMidnight(d: Date | null): Date | null {
   if (!d) return null

@@ -26,6 +26,8 @@
  *  - gapPct = pct - elapsedPct (符号付き、負=遅れ / 正=先行)。
  */
 
+import { formatNonZeroCounts } from '@/lib/format-counts'
+
 import { daysBetween, todayISO } from '@/features/sprint/sprint-date-helpers'
 
 export type GoalHealthTier = 'achieved' | 'on-track' | 'at-risk' | 'behind' | 'idle'
@@ -162,10 +164,5 @@ export function countGoalsByHealth(
  * 全 0 なら '0 件'。
  */
 export function formatGoalHealthCounts(counts: Record<GoalHealthTier, number>): string {
-  const parts: string[] = []
-  for (const t of TIER_ORDER) {
-    const n = counts[t]
-    if (n > 0) parts.push(`${TIER_LABEL[t]} ${n}`)
-  }
-  return parts.length === 0 ? '0 件' : parts.join(' / ')
+  return formatNonZeroCounts(counts, TIER_ORDER, TIER_LABEL)
 }

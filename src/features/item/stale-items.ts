@@ -15,6 +15,7 @@
  *
  * 戻り値は 古い順 (= 最も放置されている item が先頭) に並ぶ。同時刻は元配列順で stable。
  */
+import { parseDateOrNull } from '@/lib/date/iso'
 
 /** stale 判定に必要な Item の structural subset。 */
 export interface StaleItemFields {
@@ -52,7 +53,7 @@ export function selectStaleItems<T extends StaleItemFields>(
 ): StaleItemEntry<T>[] {
   const thresholdDays = options.thresholdDays ?? 7
   const excludeStatuses = options.excludeStatuses ?? DEFAULT_EXCLUDE_STATUSES
-  const todayDate = toDate(today)
+  const todayDate = parseDateOrNull(today)
   if (!todayDate) return []
 
   const enriched: { entry: StaleItemEntry<T>; index: number }[] = []
@@ -61,7 +62,7 @@ export function selectStaleItems<T extends StaleItemFields>(
     if (!it) continue
     if (it.doneAt || it.archivedAt) continue
     if (excludeStatuses.includes(it.status)) continue
-    const updatedAt = toDate(it.updatedAt)
+    const updatedAt = parseDateOrNull(it.updatedAt)
     if (!updatedAt) continue
     const diffMs = todayDate.getTime() - updatedAt.getTime()
     if (diffMs < 0) continue // 未来更新 (時計ズレ等) は除外
@@ -92,10 +93,4 @@ export function formatStaleItemsSummary<T extends StaleItemFields>(
   return `stale ${entries.length}: ${parts.join(' / ')}`
 }
 
-function toDate(input: Date | string | null | undefined): Date | null {
-  if (!input) return null
-  if (input instanceof Date) return Number.isFinite(input.getTime()) ? input : null
-  // ISO 'YYYY-MM-DD' / RFC3339 datetime のどちらも Date constructor で解釈可能
-  const d = new Date(input)
-  return Number.isFinite(d.getTime()) ? d : null
-}
+// iter305 refactor: parseDateOrNull (lib/date/iso) に集約。

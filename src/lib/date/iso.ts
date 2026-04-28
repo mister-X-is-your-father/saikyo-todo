@@ -39,3 +39,23 @@ export function isoDaysFromNow(days: number, now: Date = new Date()): string {
   d.setDate(d.getDate() + days)
   return formatLocal(d)
 }
+
+/**
+ * iter305 refactor: Date / ISO 文字列 / null / undefined / 不正値を Date | null に
+ * 正規化する fail-soft parser。velocity / freshly-done / stale-items で 3 callsite
+ * 同一実装が重複していたので集約。
+ *
+ * 仕様:
+ *  - null / undefined / 空文字 → null
+ *  - Date instance → そのまま (但し `Number.isFinite(getTime())` を満たさない不正 Date は null)
+ *  - 文字列 → `new Date(input)` で parse、不正値は null (RFC3339 / `YYYY-MM-DD` どちらも OK)
+ *
+ * caller がすべて同じ defensive 振る舞いを得られるので「不正 doneAt は除外」「未指定は除外」
+ * が 1 か所のロジックに集約される。
+ */
+export function parseDateOrNull(input: Date | string | null | undefined): Date | null {
+  if (!input) return null
+  if (input instanceof Date) return Number.isFinite(input.getTime()) ? input : null
+  const d = new Date(input)
+  return Number.isFinite(d.getTime()) ? d : null
+}

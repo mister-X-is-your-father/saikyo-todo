@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { isoDaysFromNow, todayISO } from './iso'
+import { isoDaysFromNow, parseDateOrNull, todayISO } from './iso'
 
 describe('todayISO', () => {
   it('Date を YYYY-MM-DD ローカル化', () => {
@@ -37,5 +37,39 @@ describe('isoDaysFromNow', () => {
 
   it('省略時は現在時刻 — 形式のみ検証', () => {
     expect(isoDaysFromNow(0)).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+})
+
+describe('parseDateOrNull', () => {
+  it('null / undefined / 空文字 は null', () => {
+    expect(parseDateOrNull(null)).toBe(null)
+    expect(parseDateOrNull(undefined)).toBe(null)
+    expect(parseDateOrNull('')).toBe(null)
+  })
+
+  it('Date instance は inert で返す (Number.isFinite チェック)', () => {
+    const d = new Date(2026, 3, 27)
+    expect(parseDateOrNull(d)).toBe(d)
+  })
+
+  it('不正 Date instance (NaN time) は null', () => {
+    expect(parseDateOrNull(new Date('garbage'))).toBe(null)
+  })
+
+  it('YYYY-MM-DD 文字列を parse', () => {
+    const r = parseDateOrNull('2026-04-27')
+    expect(r).not.toBeNull()
+    expect(r?.toISOString().slice(0, 10)).toBe('2026-04-27')
+  })
+
+  it('RFC3339 datetime も parse', () => {
+    const r = parseDateOrNull('2026-04-27T15:30:00Z')
+    expect(r).not.toBeNull()
+    expect(r?.getUTCHours()).toBe(15)
+  })
+
+  it('不正値文字列は null (fail-soft)', () => {
+    expect(parseDateOrNull('not-a-date')).toBe(null)
+    expect(parseDateOrNull('2026-99-99')).toBe(null)
   })
 })
