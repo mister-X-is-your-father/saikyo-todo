@@ -869,6 +869,44 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter89] **Gantt に role="grid" + aria-rowcount/aria-rowindex** (WAI-ARIA 1.2 grid pattern): outer に role=grid + aria-rowcount={N+1}、各 row に role=row + aria-rowindex (header=1, data=2..)。SR で「行 N 件中 i 番目」が伝わる。Playwright で role=grid / rowcount=3 / 各行 rowindex 2,3 を直接確認
 - ✅ [iter90] **PDCA DailyBars に list semantics**: 旧 `title` 属性 (mouse hover 専用) では SR から完了件数が見えなかった → outer に `role="list" aria-label="日次完了 throughput (N 日分)"`、各日 cell に `role="listitem" aria-label="<date>: 完了 N 件"`。Playwright で 30 listitem + first aria-label 形式を直接確認
 - ✅ [iter91] **Goal/Sprint 進捗バーに role="progressbar"** (WAI-ARIA progressbar pattern): aria-valuenow/min/max + aria-valuetext (sprint は "N/M (X%)" + 遅れ気味 marker)、aria-label。Playwright で sprint progressbar の role / valuetext を確認
+- ✅ [iter254 — 並走 ai-automation 担] **NL parser 工数推定 + 英語キーワード + timer variance 連携 (ai-automation, 3 commits)**:
+  別 Claude が iter254 を tooling cold-start interrupt で消化していたのとは別に、
+  並走で ai-automation 本道を 3 commit 進めた。target は QuickAdd → timer の連結強化。
+  - **commit 1 (`c70aeff`)**: nl-parse に `estimateMinutes` を追加 (`30分` / `1時間` /
+    `1時間30分` (JA) と `30m` / `30min` / `1h` / `1.5h` / `2h30m` (EN))。時刻
+    `15時` との衝突回避のため estimate を時刻パースより前に処理。上限 60h。
+    QuickAdd 側で 🕐 chip + previewSummary + placeholder + hint を更新、見積
+    がある場合 description プレフィクス `見積: 1時間30分` で保存。`formatEstimate(min)`
+    helper export。test 16 件追加 (estimateMinutes 11 + formatEstimate 5 = 46 件)。
+  - **commit 2 (`b74c2f2`)**: nl-parse に英語キーワード追加 (`today` / `tomorrow` /
+    `tmrw` / `tmr` / `tomo` / `tonight` / `mon..sun` フル+短縮 / `next monday`)。
+    `WEEKDAY_EN` dict + `WEEKDAY_EN_PATTERN`。Todoist 互換で「monday も next monday
+    も次の該当曜日 (今日が同曜日なら +7)」。word boundary ガードで `Monthly retro` を
+    誤拾いしない。test 16 件追加 (62 件全 PASS)。
+  - **commit 3 (`40e203e`)**: timer Stop 時の actual vs estimate variance toast。
+    `extractEstimateMinutes(description)` で QuickAdd の `見積: ...` プレフィクスを
+    復元、`ActiveTimerStore.estimateMinutes` を新フィールド (persist 対象) に追加、
+    `start({...,estimateMinutes})` / `stop()` 戻り値を拡張。`formatVariance(actual,
+    est)` で「予定 30分 / 実測 32分 (+2分、ほぼ見積通り)」を整形 (±10% / 最低 1 分の
+    tolerance、bias=under/on/over/unknown)。bias=over → toast.warning、それ以外 →
+    success。`StartTimerButton` が item.description から estimate を抽出して
+    start に渡す + 起動 toast に「見積 30分」表示。`ActiveTimerPanel` header に
+    常時 chip + Stop toast に variance message。test 8 件追加 (extractEstimateMinutes
+    12 + store estimate 1 + formatVariance 7 = 95 件全 PASS)。
+  - 全 commit typecheck / lint 緑 (warning baseline 1 件)。tooling 並走分 (judge.sh /
+    detect-patterns.sh / push-main.sh) はそのまま残し、本 ai-automation 進捗と
+    両立させる。
+  - 次 iter255 = 5%5=0 → **refactor track**。候補:
+    (a) description プレフィクス方式から `items.estimate_minutes` 列への migration
+        (ALTER TABLE + drizzle-zod schema + QuickAdd / dialog 移行 +
+        extractEstimateMinutes deprecate)
+    (b) lint warning 0 化 (TanStack Table の useMemo 不要化対応)
+    (c) detect-patterns で見えた hotspot file 分割 (`workflows-panel.tsx` 847 行 /
+        `item-edit-dialog.tsx` 831 行)
+    iter255 開始時に `scripts/autonomous/judge.sh` + `detect-patterns.sh` を叩いて
+    数値で優先度を確定する。
+  - 候補で時間切れ未着手: 英語の絶対日付 (`Apr 30` / `30 Apr`) / `weekend` 英 alias /
+    過去 30 日 estimate vs actual の bias グラフ → iter256 (ai-automation) で消化候補。
 - ✅ [iter254] **autonomous loop 補助スクリプト 3 種を新設 (tooling — cold-start interrupt)**: 本来は ai-automation 順だったが「`scripts/autonomous/` に script が 1 つも無い」という cold-start interrupt 条件が満たされていたため tooling track に切替。3 commit を main 級で積んだ。**(1) `scripts/autonomous/judge.sh`** + `src/lib/autonomous/iter-info.ts` (pure 関数 `parseIterFromGitLog` / `decideBaseTrack` / `buildJudgeReport` / `formatJudgeReport`、vitest 13 件) — autonomous loop 冒頭で叩くと「直近 iter / 次 iter / base track / 割り込み signal」が <0.1s で出る。bash と TS の規約乖離は test が ガード。**(2) `scripts/autonomous/detect-patterns.sh`** + `src/lib/autonomous/patterns.ts` (`parseHotspots` / `findLargeFiles` / `parseLintWarnings` / `evaluateRefactorTriggers`、vitest 11 件) — リファクタ割り込み 5 軸 (lint warning / TODO/FIXME / 直近 any leak / hotspot top 5 / 巨大 file) を 1 画面に。今 iter で TODO=18 / any-leak=3 / hotspot=2 / large=19 を初検出 — 直近の pace が refactor 負債を積もらせ気味なサインを数値化。**(3) `scripts/autonomous/push-main.sh`** — main プロンプトの 3 段 fallback (fast push → fetch+rebase → 確認) を script 化、`--dry-run` で副作用なしの確認も可能。CLAUDE.md に「autonomous loop 補助スクリプト」節 (表 + 推奨フロー + 「TS test を先に書く」ルール) を追記し、次 iter の自分が見落とさない導線を確保。typecheck / lint 緑、autonomous helper 計 24 vitest tests 全パス。次 iter255 = ai-automation track 復帰 (本来予定だった分を消化)。詳細値が分かったので iter255 以降は detect-patterns で見えた refactor サイン (large file 19 件、特に workflows-panel.tsx 847 行 / item-edit-dialog.tsx 831 行) を将来の refactor iter で吸収する候補として記録。
 - ✅ [iter253] **Today view に Vim/TickTick 風キーボードカーソル (basics)**: `src/lib/keyboard/list-cursor.ts` (純粋関数 `moveCursor` + 8 unit tests = 全 PASS) を新設し、TodayView に group 横断 flat list ベースの行カーソル + key handler を配線。`j` / `↓` で次、`k` / `↑` で前、`Enter` / `e` で `setOpenItemId(cursor)` (ItemEditDialog 自動 open)、`x` / `Space` で `useToggleCompleteItem` を叩き完了切替、`Esc` でカーソル解除。IME / input / textarea / Cmd/Ctrl/Alt 修飾子はガード済 (既存 `global-shortcuts.tsx` と同パターン)。選択行は `aria-current=true` + `data-cursor=true` + `ring-2 ring-primary bg-muted` で視覚化、上部に操作ヒント `<p aria-live=polite>` を表示。flat list から Item が消えた (完了/フィルタ削除) 場合の `selectedId` は state を直接書き換えず derive で `null` 化し React 19 の `set-state-in-effect` lint を回避。`src/lib/keybindings.ts` に「Today」group を 5 行追加 (j/k/Enter+e/x+Space/Esc)、`KeybindingsHelpModal` がそのまま自動描画。typecheck / lint 緑 (warning baseline 1 件のみ、新規 0)。次 iter254 = ai-automation track。
 - ✅ [iter252] **楽観ロック競合 自動 retry (queue: 同時編集深堀り / 自動 retry on conflict)**: `item-edit-dialog.tsx` の `handleSave` で ConflictError (`code === 'CONFLICT'`) をキャッチした際、単なるエラー toast だけでなく最新版で 1 回自動リトライ (Linear / Notion 風)。`qc.refetchQueries` で items cache を強制 refetch → `getQueriesData` で当該 Item の最新 version を取得 → 同 patch で再 mutate。retry 成功時は「バージョン競合を自動解決」toast + onOpenChange(false)。retry も失敗した場合のみエラー toast (2 重競合は稀だが安全に fallback)。`useQueryClient` + `itemKeys` を追加 import。typecheck / lint 緑。
