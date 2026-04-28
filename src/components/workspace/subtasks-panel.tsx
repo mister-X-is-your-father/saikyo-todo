@@ -14,7 +14,6 @@
  */
 import { useState } from 'react'
 
-import { Ban, CheckCircle2, Circle, HelpCircle, PlayCircle, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { fullPathOf } from '@/lib/db/ltree-path'
@@ -26,17 +25,8 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 
 import { DecomposeProposalsPanel } from './decompose-proposals-panel'
-import { getSubtaskStatusConfig, type SubtaskIconKey } from './subtask-status'
+import { StatusBadge } from './status-badge'
 import { parseBulkSubtaskTitles } from './subtasks-panel-helpers'
-
-const STATUS_ICONS: Record<SubtaskIconKey, typeof Circle> = {
-  circle: Circle,
-  progress: PlayCircle,
-  done: CheckCircle2,
-  cancel: XCircle,
-  block: Ban,
-  unknown: HelpCircle,
-}
 
 interface Props {
   workspaceId: string
@@ -110,8 +100,6 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
             aria-label={`子タスク 全 ${children.length} 件`}
           >
             {children.map((c, idx) => {
-              const cfg = getSubtaskStatusConfig(c.status)
-              const StatusIcon = STATUS_ICONS[cfg.iconKey]
               const isDone = c.status === 'done'
               return (
                 <li
@@ -126,15 +114,11 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
                   >
                     {idx + 1}
                   </span>
-                  <span
-                    className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] ring-1 ring-inset ${cfg.bgClass} ${cfg.textClass} ${cfg.ringClass}`}
-                    role="img"
-                    aria-label={`ステータス: ${cfg.label}`}
+                  <StatusBadge
+                    status={c.status}
+                    className="text-[10px]"
                     data-testid={`subtask-status-${c.id}`}
-                  >
-                    <StatusIcon className="h-3 w-3" aria-hidden="true" />
-                    <span className="hidden sm:inline">{cfg.label}</span>
-                  </span>
+                  />
                   <span className={`flex-1 truncate ${isDone ? 'text-muted-foreground' : ''}`}>
                     {c.title}
                   </span>
