@@ -306,7 +306,11 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     onClick={() => void changeStatus('completed')}
                     disabled={update.isPending}
                     data-testid={`goal-complete-${goal.id}`}
-                    aria-label={`Goal「${goal.title}」を完了`}
+                    aria-label={
+                      update.isPending
+                        ? `Goal「${goal.title}」のステータスを更新中…`
+                        : `Goal「${goal.title}」を完了`
+                    }
                   >
                     完了
                   </Button>
@@ -317,7 +321,11 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     onClick={() => void changeStatus('archived')}
                     disabled={update.isPending}
                     data-testid={`goal-archive-${goal.id}`}
-                    aria-label={`Goal「${goal.title}」をアーカイブ`}
+                    aria-label={
+                      update.isPending
+                        ? `Goal「${goal.title}」のステータスを更新中…`
+                        : `Goal「${goal.title}」をアーカイブ`
+                    }
                   >
                     アーカイブ
                   </Button>
@@ -332,7 +340,11 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     onClick={() => void changeStatus('active')}
                     disabled={update.isPending}
                     data-testid={`goal-reactivate-${goal.id}`}
-                    aria-label={`Goal「${goal.title}」を active に戻す`}
+                    aria-label={
+                      update.isPending
+                        ? `Goal「${goal.title}」のステータスを更新中…`
+                        : `Goal「${goal.title}」を active に戻す`
+                    }
                   >
                     active に戻す
                   </Button>
@@ -343,7 +355,11 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     onClick={() => void changeStatus('archived')}
                     disabled={update.isPending}
                     data-testid={`goal-archive-${goal.id}`}
-                    aria-label={`Goal「${goal.title}」をアーカイブ`}
+                    aria-label={
+                      update.isPending
+                        ? `Goal「${goal.title}」のステータスを更新中…`
+                        : `Goal「${goal.title}」をアーカイブ`
+                    }
                   >
                     アーカイブ
                   </Button>
@@ -357,7 +373,11 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                   onClick={() => void changeStatus('active')}
                   disabled={update.isPending}
                   data-testid={`goal-reactivate-${goal.id}`}
-                  aria-label={`Goal「${goal.title}」を active に戻す`}
+                  aria-label={
+                    update.isPending
+                      ? `Goal「${goal.title}」のステータスを更新中…`
+                      : `Goal「${goal.title}」を active に戻す`
+                  }
                 >
                   active に戻す
                 </Button>
