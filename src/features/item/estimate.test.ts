@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  countItemsByEffortBucket,
   extractEstimateMinutes,
+  formatEffortBucketCounts,
   formatEstimate,
   formatItemEstimateSummary,
+  groupItemsByEffortBucket,
   parseEstimateFromText,
   summarizeItemEstimates,
 } from './estimate'
@@ -179,5 +182,105 @@ describe('formatItemEstimateSummary', () => {
         count: 1,
       }),
     ).toBe('合計 0分 / 1 件')
+  })
+})
+
+describe('groupItemsByEffortBucket', () => {
+  it('description の見積に応じて bucket 振り分け', () => {
+    const items = [
+      { id: 'a', description: '見積: 15分\n本文' }, // quick
+      { id: 'b', description: '見積: 1時間\n本文' }, // medium
+      { id: 'c', description: '見積: 4時間\n本文' }, // large
+      { id: 'd', description: '見積: 12時間\n本文' }, // xlarge
+      { id: 'e', description: '見積なし' }, // unknown
+      { id: 'f', description: null }, // unknown
+    ]
+    const groups = groupItemsByEffortBucket(items)
+    expect(groups.quick.map((i) => i.id)).toEqual(['a'])
+    expect(groups.medium.map((i) => i.id)).toEqual(['b'])
+    expect(groups.large.map((i) => i.id)).toEqual(['c'])
+    expect(groups.xlarge.map((i) => i.id)).toEqual(['d'])
+    expect(groups.unknown.map((i) => i.id)).toEqual(['e', 'f'])
+  })
+
+  it('境界: 30 分は medium、2 時間は large、7時間59分 は large、8時間 は xlarge', () => {
+    const items = [
+      { id: 'a', description: '見積: 29分' },
+      { id: 'b', description: '見積: 30分' },
+      { id: 'c', description: '見積: 1時間59分' },
+      { id: 'd', description: '見積: 2時間' },
+      { id: 'e', description: '見積: 7時間59分' },
+      { id: 'f', description: '見積: 8時間' },
+    ]
+    const groups = groupItemsByEffortBucket(items)
+    expect(groups.quick.map((i) => i.id)).toEqual(['a'])
+    expect(groups.medium.map((i) => i.id)).toEqual(['b', 'c'])
+    expect(groups.large.map((i) => i.id)).toEqual(['d', 'e'])
+    expect(groups.xlarge.map((i) => i.id)).toEqual(['f'])
+  })
+
+  it('空配列でも 5 つの bucket が空配列で初期化', () => {
+    const groups = groupItemsByEffortBucket([])
+    expect(groups.quick).toEqual([])
+    expect(groups.medium).toEqual([])
+    expect(groups.large).toEqual([])
+    expect(groups.xlarge).toEqual([])
+    expect(groups.unknown).toEqual([])
+  })
+})
+
+describe('countItemsByEffortBucket', () => {
+  it('bucket 別件数集計', () => {
+    const items = [
+      { description: '見積: 5分' },
+      { description: '見積: 15分' },
+      { description: '見積: 1時間' },
+      { description: '見積: 5時間' },
+      { description: '見積: 1時間' },
+      { description: null },
+    ]
+    expect(countItemsByEffortBucket(items)).toEqual({
+      quick: 2,
+      medium: 2,
+      large: 1,
+      xlarge: 0,
+      unknown: 1,
+    })
+  })
+
+  it('空配列は全 0', () => {
+    expect(countItemsByEffortBucket([])).toEqual({
+      quick: 0,
+      medium: 0,
+      large: 0,
+      xlarge: 0,
+      unknown: 0,
+    })
+  })
+})
+
+describe('formatEffortBucketCounts', () => {
+  it('bucket 順 (quick → medium → large → xlarge → unknown) で並ぶ + 0 件は省略', () => {
+    expect(
+      formatEffortBucketCounts({
+        quick: 5,
+        medium: 3,
+        large: 0,
+        xlarge: 1,
+        unknown: 2,
+      }),
+    ).toBe('<30m 5 / 30m-2h 3 / 1d+ 1 / 見積なし 2')
+  })
+
+  it('全 0 件は "0 件"', () => {
+    expect(
+      formatEffortBucketCounts({
+        quick: 0,
+        medium: 0,
+        large: 0,
+        xlarge: 0,
+        unknown: 0,
+      }),
+    ).toBe('0 件')
   })
 })

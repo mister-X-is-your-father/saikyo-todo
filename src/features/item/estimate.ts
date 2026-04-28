@@ -9,6 +9,7 @@
  *
  * 受理レンジは 1 分以上、上限 60 時間 (3600 分)。範囲外は `null` / `undefined`。
  */
+import { formatNonZeroCounts } from '@/lib/format-counts'
 
 const ESTIMATE_MAX_MINUTES = 3600
 
@@ -157,4 +158,87 @@ export function formatItemEstimateSummary(s: ItemEstimateSummary): string {
   const total = formatEstimate(s.totalMinutes) || '0分'
   if (s.withoutEstimateCount === 0) return `合計 ${total} / ${s.count} 件`
   return `合計 ${total} / ${s.count} 件 (うち ${s.withoutEstimateCount} 件は見積なし)`
+}
+
+/**
+ * iter309 ai-automation: items を見積サイズ別の bucket に振り分ける。
+ *
+ * iter287 (due-proximity) / iter292 (priority) / iter294 (status) / iter294 並走
+ * (urgency-tier) と対称な「効率の意味付け」substrate。AI brief / pm-agent /
+ * dashboard widget が `quick 5 / medium 10 / large 3 / xlarge 1 / unknown 8`
+ * のような effort 分布を 1 関数で出せる。
+ *
+ * bucket (PR sizing と同 vocabulary):
+ *  - `quick`   見積 < 30m       (skim 系、5 分集中で片付く tier)
+ *  - `medium`  30m..< 2h        (1 集中で完結)
+ *  - `large`   2h..< 8h (= 1d)  (半日仕事、deep work tier)
+ *  - `xlarge`  >= 8h            (1 日以上、分解候補)
+ *  - `unknown` description から minutes を取れない (見積なし)
+ *
+ * 順序: 元配列順 stable。各 bucket は必ず空配列で初期化。
+ */
+export type EffortBucket = 'quick' | 'medium' | 'large' | 'xlarge' | 'unknown'
+
+export type EffortBucketGroups<T> = Record<EffortBucket, T[]>
+
+const EFFORT_ORDER: readonly EffortBucket[] = [
+  'quick',
+  'medium',
+  'large',
+  'xlarge',
+  'unknown',
+] as const
+
+const EFFORT_LABEL: Record<EffortBucket, string> = {
+  quick: '<30m',
+  medium: '30m-2h',
+  large: '2h-1d',
+  xlarge: '1d+',
+  unknown: '見積なし',
+}
+
+function classifyEffort(minutes: number | undefined): EffortBucket {
+  if (minutes === undefined || minutes <= 0) return 'unknown'
+  if (minutes < 30) return 'quick'
+  if (minutes < 120) return 'medium'
+  if (minutes < 480) return 'large'
+  return 'xlarge'
+}
+
+export function groupItemsByEffortBucket<T extends { description: string | null | undefined }>(
+  items: readonly T[],
+): EffortBucketGroups<T> {
+  const groups: EffortBucketGroups<T> = {
+    quick: [],
+    medium: [],
+    large: [],
+    xlarge: [],
+    unknown: [],
+  }
+  for (const it of items) {
+    const m = extractEstimateMinutes(it.description)
+    groups[classifyEffort(m)].push(it)
+  }
+  return groups
+}
+
+export function countItemsByEffortBucket(
+  items: readonly { description: string | null | undefined }[],
+): Record<EffortBucket, number> {
+  const counts: Record<EffortBucket, number> = {
+    quick: 0,
+    medium: 0,
+    large: 0,
+    xlarge: 0,
+    unknown: 0,
+  }
+  for (const it of items) {
+    const m = extractEstimateMinutes(it.description)
+    counts[classifyEffort(m)] += 1
+  }
+  return counts
+}
+
+export function formatEffortBucketCounts(counts: Record<EffortBucket, number>): string {
+  return formatNonZeroCounts(counts, EFFORT_ORDER, EFFORT_LABEL)
 }
