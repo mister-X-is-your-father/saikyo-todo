@@ -176,7 +176,22 @@ export function GoalsPanel({ workspaceId }: Props) {
       ) : !list.data || list.data.length === 0 ? (
         <EmptyState
           title="Goal がありません"
-          description="上のフォームから作成できます"
+          // iter286 basics: 旧 "上のフォームから作成できます" は単なる行動指示で
+          // OKR (Objective + Key Results) が何かが見えなかった → 用途例 +
+          // 期間目安 (典型は四半期) を示す。Today (iter273) / Inbox (iter276) /
+          // Workflows (iter281) / Sprints (iter283) と同パターンで 5 view 目。
+          description={
+            <span>
+              中期 (典型は <code className="bg-muted rounded px-1 text-[11px]">3 ヶ月</code>)
+              の到達目標 (Objective) と、それを測る数値 (Key Result) を 1〜5 件紐付ける 箱です。 例:{' '}
+              <code className="bg-muted rounded px-1 text-[11px]">
+                2026 Q2 システム速度を体感半分に
+              </code>{' '}
+              / Key Result は{' '}
+              <code className="bg-muted rounded px-1 text-[11px]">P95 レイテンシ 200ms 以下</code>。
+              KR は items 連動 (linked items の done 比) でも手動 (current/target) でも測れます。
+            </span>
+          }
           action={
             <button
               type="button"
