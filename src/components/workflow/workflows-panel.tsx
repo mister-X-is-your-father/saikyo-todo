@@ -471,7 +471,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                   onClick={() => setGraphText(appendNodePreset(graphText, preset))}
                   data-testid={`wf-node-preset-${preset.type}-${wf.id}`}
                   title={preset.title}
-                  aria-label={`${preset.type} node を追加`}
+                  aria-label={`graph に ${preset.title} の skeleton node を追加`}
                 >
                   + {preset.type}
                 </Button>
@@ -503,6 +503,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                 onClick={() => setTriggerText(JSON.stringify({ kind: 'manual' }, null, 2))}
                 data-testid={`wf-trigger-preset-manual-${wf.id}`}
                 title="手動 trigger 専用 (実行 button から起動)"
+                aria-label="trigger を manual (手動実行のみ) に切替"
               >
                 manual
               </Button>
@@ -515,6 +516,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                 }
                 data-testid={`wf-trigger-preset-cron-${wf.id}`}
                 title="cron trigger (例: 毎日 09:00)"
+                aria-label="trigger を cron (毎日 09:00 等) に切替"
               >
                 cron
               </Button>
@@ -529,6 +531,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                 }
                 data-testid={`wf-trigger-preset-item-event-${wf.id}`}
                 title="item-event (create / update / status_change / complete)"
+                aria-label="trigger を item-event (create / update / status_change / complete) に切替"
               >
                 item-event
               </Button>
@@ -550,6 +553,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                 }
                 data-testid={`wf-trigger-preset-webhook-${wf.id}`}
                 title="webhook trigger (POST /api/workflows/webhook/<secret>)"
+                aria-label="trigger を webhook (POST /api/workflows/webhook/<secret>) に切替"
               >
                 webhook
               </Button>
