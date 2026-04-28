@@ -26,7 +26,12 @@ import { useEffect, useMemo, useRef } from 'react'
 import { addDays, differenceInCalendarDays, format, isValid, parseISO } from 'date-fns'
 import { parseAsBoolean, parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs'
 
-import { computeGanttRange, computeTodayX, computeTotalDays } from '@/features/gantt/gantt-range'
+import {
+  computeGanttRange,
+  computeMonthBoundaries,
+  computeTodayX,
+  computeTotalDays,
+} from '@/features/gantt/gantt-range'
 import { computeProjectStats, formatSlipText } from '@/features/gantt/project-stats'
 import type { Item } from '@/features/item/schema'
 
@@ -156,13 +161,9 @@ export function GanttView({
 
   const totalHeight = HEADER_PX + withDates.length * ROW_PX
 
-  // 月境界線 (TeamGantt 風)。日 i の day が前日と異なる月に変わるとき縦線
-  const monthBoundaryDays: number[] = []
-  for (let i = 1; i < days.length; i++) {
-    if (days[i]!.getMonth() !== days[i - 1]!.getMonth()) {
-      monthBoundaryDays.push(i)
-    }
-  }
+  // 月境界線 (TeamGantt 風)。day i の day が前日と異なる月に変わる index を pure
+  // helper (`computeMonthBoundaries`) で算出。iter310 で gantt-range.ts に集約済。
+  const monthBoundaryDays = computeMonthBoundaries(days)
 
   const criticalCount = criticalSet.size
   const totalSpanDays = differenceInCalendarDays(range!.end, range!.start) + 1

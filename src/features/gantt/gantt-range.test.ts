@@ -5,7 +5,12 @@
 import { addDays, differenceInCalendarDays } from 'date-fns'
 import { describe, expect, it } from 'vitest'
 
-import { computeGanttRange, computeTodayX, computeTotalDays } from './gantt-range'
+import {
+  computeGanttRange,
+  computeMonthBoundaries,
+  computeTodayX,
+  computeTotalDays,
+} from './gantt-range'
 
 const D = (y: number, m: number, d: number) => new Date(y, m - 1, d)
 
@@ -121,5 +126,42 @@ describe('computeGanttRange と computeTotalDays の組み合わせ (元 inline 
     // 元 inline と一致確認: range.start = 4/4, range.end = 4/21, totalDays = 18
     expect(differenceInCalendarDays(range.end, range.start) + 1).toBe(totalDays)
     expect(addDays(range.start, totalDays - 1).getTime()).toBe(range.end.getTime())
+  })
+})
+
+describe('computeMonthBoundaries', () => {
+  function range(start: Date, count: number): Date[] {
+    return Array.from({ length: count }, (_, i) => addDays(start, i))
+  }
+
+  it('全日同月は境界なし', () => {
+    const days = range(D(2026, 4, 5), 10) // 4/5 〜 4/14
+    expect(computeMonthBoundaries(days)).toEqual([])
+  })
+
+  it('月跨ぎ 1 回は境界 1 個 (新月の day index)', () => {
+    // 4/29 〜 5/3 (5 日、index 2 が 5/1 = 月跨ぎ)
+    const days = range(D(2026, 4, 29), 5)
+    expect(computeMonthBoundaries(days)).toEqual([2])
+  })
+
+  it('月跨ぎ 2 回 (5 月 → 6 月 → 7 月)', () => {
+    // 5/30 〜 7/2 (34 日、index 2 = 6/1, index 32 = 7/1)
+    const days = range(D(2026, 5, 30), 34)
+    expect(computeMonthBoundaries(days)).toEqual([2, 32])
+  })
+
+  it('年跨ぎ (12 月 → 1 月) も境界に入る', () => {
+    // 12/30 2025 〜 1/3 2026 (5 日、index 2 が 1/1)
+    const days = range(D(2025, 12, 30), 5)
+    expect(computeMonthBoundaries(days)).toEqual([2])
+  })
+
+  it('空配列は空配列', () => {
+    expect(computeMonthBoundaries([])).toEqual([])
+  })
+
+  it('1 件は境界なし (前日比較が無いので)', () => {
+    expect(computeMonthBoundaries([D(2026, 4, 15)])).toEqual([])
   })
 })

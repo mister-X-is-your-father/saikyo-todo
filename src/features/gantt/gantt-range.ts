@@ -66,3 +66,25 @@ export function computeTodayX(range: GanttRange | null, today: Date, dayPx: numb
   const hourFraction = (today.getHours() * 60 + today.getMinutes()) / (24 * 60)
   return (dayOffset + hourFraction) * dayPx
 }
+
+/**
+ * iter310 refactor: gantt-view.tsx 内 inline で書かれていた「月境界 day index」
+ * 計算を pure 関数化。
+ *
+ * `days` (= range.start から 1 日刻みの Date 配列) を走査し、前日と月が変わる
+ * index を返す。caller 側はこれを timeline 上で `i * dayPx` に縦線を描く
+ * (TeamGantt 風 month boundary)。
+ *
+ * - days が空 / 1 件 → 空配列 (境界なし)
+ * - 月をまたぐたびに index を 1 個追加、最大で `days.length - 1` 個
+ * - 年跨ぎ (12 月 → 1 月) も別月として境界に入る (getMonth は 0-11)
+ */
+export function computeMonthBoundaries(days: readonly Date[]): number[] {
+  const boundaries: number[] = []
+  for (let i = 1; i < days.length; i++) {
+    if (days[i]!.getMonth() !== days[i - 1]!.getMonth()) {
+      boundaries.push(i)
+    }
+  }
+  return boundaries
+}
