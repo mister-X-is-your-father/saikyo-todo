@@ -29,6 +29,7 @@ import type { ItemDependencyType } from '@/features/item-dependency/schema'
 
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { MustBadge } from '@/components/workspace/must-badge'
 
 interface Props {
   workspaceId: string
@@ -221,11 +222,7 @@ function Section({
                 {ref.status}
               </span>
               <span className="flex-1 truncate">
-                {ref.isMust && (
-                  <span aria-label="MUST item" role="img" className="mr-1">
-                    <span aria-hidden="true">⚠</span>
-                  </span>
-                )}
+                {ref.isMust && <MustBadge className="mr-1" iconOnly />}
                 {ref.title}
               </span>
               {ref.doneAt && <span className="text-[10px] text-emerald-600">完了済み</span>}
