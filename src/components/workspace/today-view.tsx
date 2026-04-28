@@ -81,7 +81,11 @@ export function TodayView({
                         {it.title}
                       </button>
                       {it.isMust && (
-                        <span className="shrink-0 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700">
+                        <span
+                          className="shrink-0 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700"
+                          role="img"
+                          aria-label="MUST item"
+                        >
                           MUST
                         </span>
                       )}

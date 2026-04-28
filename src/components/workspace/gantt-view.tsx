@@ -468,7 +468,15 @@ export function GanttView({
                   {idx + 1}
                 </span>
                 <span className="truncate">{item.title}</span>
-                {item.isMust && <span className="ml-1 shrink-0 text-xs text-red-500">MUST</span>}
+                {item.isMust && (
+                  <span
+                    className="ml-1 shrink-0 text-xs text-red-500"
+                    role="img"
+                    aria-label="MUST item"
+                  >
+                    MUST
+                  </span>
+                )}
               </div>
               <div style={{ width: timelineWidth, position: 'relative', height: ROW_PX }}>
                 {hasBaseline && (
