@@ -768,6 +768,10 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [playwright-iter256 2/3] /login と /signup に programmatic heading (h1) 一切無し — shadcn `<CardTitle>` が `<div data-slot="card-title">` 実装で role=heading を持たないのが原因。shadcn 編集禁止のため fix: 両 `page.tsx` の CardTitle 使用箇所に `role="heading" aria-level={1}` のみ追加 (DOM はそのまま div、ARIA tree のみ heading 化)。Playwright で `aria-level=1=0→1` 確認。
 - ✅ [playwright-iter256 3/3] /~offline (PWA SW network fallback) は h1 + 説明 2 段落のみで interactive element 0、ユーザは URL バー手動操作 / ブラウザ更新ボタン頼みだった → fix: `OfflineRetryButton` (client island、`location.reload()` トリガ + aria-label) と `<Link href="/">` (server-rendered + `buttonVariants({variant:'outline'})`) の 2 button row を追加。`force-static` / Server Action 不使用の原則は維持。Playwright で `link=0,button=0 → link=1,button=1` 確認。
 - 経路メモ (iter256): 主に script 経路 (B) を使用。MCP server (`@playwright/mcp`) は `chrome` system 実行ファイル不在 (`/opt/google/chrome/chrome` not found) で起動不可、cloud env では `npx playwright install chromium` で入る Chromium binary を直接使う script 経路の方が確実。次 iter で MCP を使う場合は `@playwright/mcp` の `--executable-path` あたりの override を検討。
+- ✅ [playwright-iter257 1/3] /login email input に `inputMode="email"` / `spellCheck=false` / `autoCapitalize="none"` 不在 → mobile キーボードで `@` 即押せず、autocorrect 誤変換 / 先頭大文字化の risk。`type="email"` だけでは iOS / Android の挙動が一貫しない。fix: `login-form.tsx` の IMEInput に 3 attr 追加 (3 行)。Playwright で `inputmode=email / spellcheck=false / autocapitalize=none` 出力確認。
+- ✅ [playwright-iter257 2/3] /signup email input にも同 3 attr 不在 (signup は誤入力が復旧不能なため login 以上に影響大) → fix: `signup-form.tsx` の IMEInput に同パターン展開 (3 行)。Playwright で /signup の email も 3 attr 出力確認。
+- ✅ [playwright-iter257 3/3] shadcn `<Card>` (= `<div data-slot="card">`) が SR の region/landmark 一覧に出ない (iter256 で heading aria-level=1 は付けたが Card 全体は無名 div のまま) → fix: 各 page で `<Card role="region" aria-labelledby="login-heading|signup-heading">` + 既存 CardTitle に `id` を付与。shadcn Card は `...props` を div に spread する実装 (`src/components/ui/card.tsx:18`) なので prop 追加で動作 (shadcn 編集禁止ルール内)。Playwright で `card[aria-labelledby]=0→1` / `heading id=null→login-heading|signup-heading` を確認、検証 assertion も `scripts/explore-uiux-auth-deep-iter257.ts` に codify。
+- 経路メモ (iter257): 主に script 経路 (B)。`scripts/explore-uiux-auth-deep-iter257.ts` 1 ファイルで 3 fix 全部の before/after を assert。`pnpm tsx scripts/explore-uiux-auth-deep-iter257.ts` で warning=0 が現状の合格状態。残 bug 候補: (1) /~offline の heading に id + Card 化 / (2) auth layout に skip-to-main link / (3) login/signup の "アカウント未作成?" "サインアップ" link に aria-label を補強 (現状は visible text のみで context 不明)。
 - ✅ [iter3] login: email/password input に required 属性なし → fix: `login-form.tsx` に required + aria-required + minLength=8
 - ✅ [iter4] login: signup link plain click が dev overlay で hit-test 失敗していた → fix: `login/page.tsx` の Link / CardFooter に `relative z-10` を付与 (force:true なら遷移するが本来不要のはず → dev devtools overlay が遮ってた)
 - ✅ [iter5] signup: displayName / email / password に required + aria-required + minLength を追加 (signup-form.tsx)
@@ -985,7 +989,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
     だった訳ではない (255 % 5 = 0 で refactor 規定通り) ので「割り込み消化予定」は無し。
     HANDOFF.md iter254 末尾に記録された候補から優先順位 (basics 寄りで再選定):
     (a) NL parser に英語の絶対日付 `Apr 30` / `30 Apr` / `weekend` 英 alias 追加 — 並走
-        nl-parse 担が新設した `date-tokens.ts` に追記する形で実装容易
+    nl-parse 担が新設した `date-tokens.ts` に追記する形で実装容易
     (b) Today / Backlog のキーボードショートカット拡張 (1-4 で priority, # で tag picker)
     (c) フィルタ・ソート保存 (Smart List 風) — Backlog の URL state を nuqs で persist
   - 候補にあったが時間切れ未着手:
@@ -1003,7 +1007,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
     分割を進めていた (commits `6a78675` / `7ef6fc8`)。両者の変更領域は完全に分離
     (こちら: `src/lib/autonomous/` + `src/components/workspace/item-edit-dialog.tsx` +
     `src/features/item/{service.ts,must-dod.ts}`、向こう: `src/features/item/{nl-parse.ts,
-    estimate.ts,date-tokens.ts}`)。HANDOFF だけ衝突したので rebase で両者の entry を
+estimate.ts,date-tokens.ts}`)。HANDOFF だけ衝突したので rebase で両者の entry を
     残した形で main 統合済み。
 
 - ✅ [iter254 — 並走 ai-automation 担] **NL parser 工数推定 + 英語キーワード + timer variance 連携 (ai-automation, 3 commits)**:
