@@ -74,7 +74,7 @@ function buildColumns(workspaceId: string, onEdit: (item: Item) => void): Column
       ),
       size: 28,
       enableSorting: false,
-      cell: ({ row }) => <BulkCheckbox itemId={row.original.id} />,
+      cell: ({ row }) => <BulkCheckbox itemId={row.original.id} itemTitle={row.original.title} />,
     },
     {
       id: 'checkbox',

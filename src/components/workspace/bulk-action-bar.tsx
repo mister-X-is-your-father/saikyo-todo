@@ -119,15 +119,19 @@ export function BulkActionBar({ workspaceId }: Props) {
   )
 }
 
-/** 行ごとの選択 checkbox。 */
-export function BulkCheckbox({ itemId }: { itemId: string }) {
+/** 行ごとの選択 checkbox。itemTitle を受け取れば SR に「N番目を選択」ではなく
+ * 「『〜』を一括操作対象に追加 / 解除」を読み上げて識別性を上げる。 */
+export function BulkCheckbox({ itemId, itemTitle }: { itemId: string; itemTitle?: string }) {
   const selected = useBulkSelectionStore((s) => s.selected)
   const toggle = useBulkSelectionStore((s) => s.toggle)
   const checked = selected.has(itemId)
+  const label = itemTitle
+    ? `「${itemTitle}」を一括操作の${checked ? '対象から外す' : '対象に追加'}`
+    : `この行を一括操作の${checked ? '対象から外す' : '対象に追加'}`
   return (
     <input
       type="checkbox"
-      aria-label="選択"
+      aria-label={label}
       checked={checked}
       onChange={() => toggle(itemId)}
       onClick={(e) => e.stopPropagation()}
@@ -145,7 +149,11 @@ export function BulkHeaderCheckbox({ rowIds }: { rowIds: string[] }) {
   return (
     <input
       type="checkbox"
-      aria-label="全選択"
+      aria-label={
+        allSelected
+          ? `現ページ ${rowIds.length} 行をすべて選択中。クリックで全解除`
+          : `現ページ ${rowIds.length} 行をすべて一括操作の対象にする`
+      }
       checked={allSelected}
       onChange={(e) => {
         if (e.target.checked) setMany(rowIds)
