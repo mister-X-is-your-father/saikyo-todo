@@ -190,6 +190,13 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                 type="submit"
                 disabled={!name.trim() || create.isPending}
                 data-testid="wf-create-btn"
+                aria-label={
+                  !name.trim()
+                    ? 'Workflow を作成するには名前を入力してください'
+                    : create.isPending
+                      ? 'Workflow を作成中…'
+                      : 'Workflow を新規作成'
+                }
               >
                 {create.isPending ? '作成中…' : '作成'}
               </Button>

@@ -95,6 +95,13 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
             disabled={create.isPending || !body.trim()}
             size="sm"
             data-testid="comment-post"
+            aria-label={
+              !body.trim()
+                ? 'コメントを投稿するには本文を入力してください'
+                : create.isPending
+                  ? 'コメントを投稿中…'
+                  : 'コメントを投稿 (@user で言及・通知)'
+            }
           >
             {create.isPending ? '送信中…' : '投稿'}
           </Button>
