@@ -150,7 +150,19 @@ export function WorkflowsPanel({ workspaceId }: Props) {
       ) : (list.data ?? []).length === 0 ? (
         <EmptyState
           title="Workflow がありません"
-          description="上のフォームから作成してください"
+          // iter281 basics: 旧説明 (`上のフォームから作成してください`) は単なる行動指示で
+          // Workflow が何ができるかが見えなかった → ユースケース 3 種 (item 作成 → Slack 通知、
+          // 朝の brief 生成、毎日 reminder) を <code> chip で示し、最小ビルド (1 noop ノード)
+          // から育てる粒度を伝える。Today (iter273) / Inbox (iter276) と同パターン。
+          description={
+            <span>
+              用途例:{' '}
+              <code className="bg-muted rounded px-1 text-[11px]">item 作成 → Slack 通知</code> /{' '}
+              <code className="bg-muted rounded px-1 text-[11px]">朝の brief 生成</code> /{' '}
+              <code className="bg-muted rounded px-1 text-[11px]">毎日 reminder</code>。 まず空
+              graph で作成し、後から graph editor で node / edge を追加します。
+            </span>
+          }
           action={
             <button
               type="button"
