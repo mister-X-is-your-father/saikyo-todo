@@ -457,6 +457,11 @@ function ItemEditDialogInner({
               }}
               data-testid="item-edit-unarchive"
               className="mr-auto"
+              aria-label={
+                unarchive.isPending
+                  ? `「${item.title}」をアーカイブから復元中…`
+                  : `「${item.title}」をアーカイブから復元`
+              }
             >
               {unarchive.isPending ? '復元中…' : 'アーカイブ復元'}
             </Button>
@@ -480,6 +485,11 @@ function ItemEditDialogInner({
               }}
               data-testid="item-edit-archive"
               className="text-muted-foreground mr-auto"
+              aria-label={
+                archive.isPending
+                  ? `「${item.title}」をアーカイブ中…`
+                  : `「${item.title}」をアーカイブ (後で復元可能)`
+              }
             >
               {archive.isPending ? 'アーカイブ中…' : 'アーカイブ'}
             </Button>
@@ -550,6 +560,13 @@ function ItemEditDialogInner({
             onClick={handleSave}
             disabled={update.isPending || !title.trim()}
             data-testid="item-edit-save"
+            aria-label={
+              !title.trim()
+                ? '保存するにはタイトルを入力してください'
+                : update.isPending
+                  ? `「${item.title}」を保存中…`
+                  : `「${item.title}」を保存 (楽観ロックで version が進む)`
+            }
           >
             {update.isPending ? '保存中...' : '保存'}
           </Button>
