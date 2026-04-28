@@ -14,6 +14,7 @@ import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
 
+import { isInvalidDateRange } from '@/features/item/date-range'
 import {
   useChangeSprintStatus,
   useCreateSprint,
@@ -118,7 +119,7 @@ export function SprintsPanel({ workspaceId }: Props) {
   async function handleCreate() {
     const n = name.trim()
     if (!n) return
-    if (startDate && endDate && endDate < startDate) {
+    if (isInvalidDateRange(startDate, endDate)) {
       toast.error('終了日は開始日以降にしてください')
       return
     }
@@ -394,7 +395,7 @@ function SprintCard({
               className="space-y-2 rounded border border-dashed p-2"
               onSubmit={async (e) => {
                 e.preventDefault()
-                if (editStart > editEnd) {
+                if (isInvalidDateRange(editStart, editEnd)) {
                   toast.error('終了日は開始日以降にしてください')
                   return
                 }

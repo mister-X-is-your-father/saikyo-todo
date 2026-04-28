@@ -15,6 +15,7 @@ import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
 
+import { isInvalidDateRange } from '@/features/item/date-range'
 import { formatFriendlyDate } from '@/features/item/date-tokens'
 import {
   itemKeys,
@@ -130,7 +131,7 @@ function ItemEditDialogInner({
       toast.error('MUST には DoD が必要です')
       return
     }
-    if (startDate && dueDate && startDate > dueDate) {
+    if (isInvalidDateRange(startDate, dueDate)) {
       toast.error('期限は開始日以降にしてください')
       return
     }

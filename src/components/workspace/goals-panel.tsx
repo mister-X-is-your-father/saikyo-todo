@@ -14,6 +14,7 @@ import { toast } from 'sonner'
 import { isAppError } from '@/lib/errors'
 
 import { useDecomposeGoal } from '@/features/agent/hooks'
+import { isInvalidDateRange } from '@/features/item/date-range'
 import {
   useCreateGoal,
   useCreateKeyResult,
@@ -72,7 +73,7 @@ export function GoalsPanel({ workspaceId }: Props) {
   async function handleCreate() {
     const t = title.trim()
     if (!t) return
-    if (startDate && endDate && endDate < startDate) {
+    if (isInvalidDateRange(startDate, endDate)) {
       toast.error('終了日は開始日以降にしてください')
       return
     }
