@@ -215,6 +215,7 @@ function CommentItem({
                   setBody(comment.body)
                   setEditing(true)
                 }}
+                disabled={softDelete.isPending}
                 data-testid={`comment-edit-${comment.id}`}
                 aria-label={`コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を編集`}
               >
@@ -222,10 +223,15 @@ function CommentItem({
               </button>
               <button
                 type="button"
-                className="hover:text-destructive text-muted-foreground text-xs"
+                className="hover:text-destructive text-muted-foreground text-xs disabled:opacity-50"
                 onClick={handleDelete}
+                disabled={softDelete.isPending}
                 data-testid={`comment-delete-${comment.id}`}
-                aria-label={`コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を削除`}
+                aria-label={
+                  softDelete.isPending
+                    ? `コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を削除中…`
+                    : `コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を削除`
+                }
               >
                 削除
               </button>

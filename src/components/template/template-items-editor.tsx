@@ -177,7 +177,12 @@ export function TemplateItemsEditor({ templateId }: Props) {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleRemove(it.id, it.title)}
-                aria-label={`Template item「${it.title}」を削除`}
+                disabled={removeMut.isPending}
+                aria-label={
+                  removeMut.isPending
+                    ? `Template item「${it.title}」を削除中…`
+                    : `Template item「${it.title}」を削除`
+                }
               >
                 <Trash2 className="h-4 w-4 text-red-500" aria-hidden="true" />
               </Button>
