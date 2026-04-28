@@ -22,6 +22,7 @@
  * 上限なし (priority + due + must で最大 100+50+30=180)、最低は 0。
  * sort 用に `compareUrgency(a, b)` も提供 (高 → 低)。
  */
+import { type DueProximityKind, getDueProximity } from './due-proximity'
 import type { Item } from './schema'
 
 /** Item から urgency 計算に必要なフィールドだけ抜き出した structural subset */
@@ -34,37 +35,39 @@ const PRIORITY_WEIGHTS: Record<number, number> = {
   4: 10,
 }
 
+/**
+ * iter295 refactor: dueProximity bonus の閾値を `getDueProximity` の kind に
+ * 集約。今までは urgency.ts 内で diffDays を再計算 + parseIsoDate を重複定義
+ * していたが、due-proximity.ts に同じ thresholds (overdue<0 / today=0 / tomorrow=1
+ * / thisWeek<=6 / later) があるので kind→bonus のテーブル lookup に置換 (動作変更ゼロ)。
+ */
+const DUE_PROXIMITY_BONUS: Record<DueProximityKind, number> = {
+  overdue: 50,
+  today: 35,
+  tomorrow: 20,
+  thisWeek: 10,
+  later: 0,
+  noDate: 0,
+}
+
+const DUE_PROXIMITY_LABEL: Record<DueProximityKind, string> = {
+  overdue: '期限切れ',
+  today: '期限当日',
+  tomorrow: '期限明日',
+  thisWeek: '期限今週内',
+  later: '期限今後',
+  noDate: '期限未設定',
+}
+
 export function computeUrgency(item: UrgencyFields, today: Date = new Date()): number {
   if (item.doneAt || item.archivedAt) return 0
 
   const base = PRIORITY_WEIGHTS[item.priority] ?? 10
-  const due = dueProximityBonus(item.dueDate, today)
+  const { kind } = getDueProximity(item.dueDate, today)
+  const due = DUE_PROXIMITY_BONUS[kind]
   const must = item.isMust ? 30 : 0
 
   return base + due + must
-}
-
-function dueProximityBonus(dueDate: string | null | undefined, today: Date): number {
-  if (!dueDate) return 0
-  const todayBase = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-  const dueBase = parseIsoDate(dueDate)
-  if (!dueBase) return 0
-  const diffDays = Math.round((dueBase.getTime() - todayBase.getTime()) / (24 * 60 * 60 * 1000))
-  if (diffDays < 0) return 50 // overdue
-  if (diffDays === 0) return 35 // today
-  if (diffDays === 1) return 20 // tomorrow
-  if (diffDays <= 6) return 10 // this week
-  return 0
-}
-
-function parseIsoDate(iso: string): Date | null {
-  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/)
-  if (!m) return null
-  const y = Number(m[1])
-  const mo = Number(m[2])
-  const d = Number(m[3])
-  if (mo < 1 || mo > 12 || d < 1 || d > 31) return null
-  return new Date(y, mo - 1, d)
 }
 
 /** sort 用 (高 urgency が先頭)。Array.prototype.sort の comparator に渡せる。 */
@@ -116,9 +119,10 @@ export function explainUrgency(item: UrgencyFields, today: Date = new Date()): U
   const baseBonus = PRIORITY_WEIGHTS[item.priority] ?? 10
   factors.push({ label: baseLabel, bonus: baseBonus })
 
-  const dueBonus = dueProximityBonus(item.dueDate, today)
+  const { kind } = getDueProximity(item.dueDate, today)
+  const dueBonus = DUE_PROXIMITY_BONUS[kind]
   if (dueBonus > 0) {
-    factors.push({ label: dueProximityLabelFor(dueBonus), bonus: dueBonus })
+    factors.push({ label: DUE_PROXIMITY_LABEL[kind], bonus: dueBonus })
   }
 
   if (item.isMust) {
@@ -127,14 +131,6 @@ export function explainUrgency(item: UrgencyFields, today: Date = new Date()): U
 
   const score = factors.reduce((sum, f) => sum + f.bonus, 0)
   return { score, factors }
-}
-
-function dueProximityLabelFor(bonus: number): string {
-  if (bonus === 50) return '期限切れ'
-  if (bonus === 35) return '期限当日'
-  if (bonus === 20) return '期限明日'
-  if (bonus === 10) return '期限今週内'
-  return '期限今後'
 }
 
 /** AI prompt 行 / UI tooltip 用の "p1 priority +100 / 期限切れ +50 / MUST +30" 形式。 */
