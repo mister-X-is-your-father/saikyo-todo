@@ -58,7 +58,7 @@ export function LoginForm() {
           autoFocus
           required
           aria-required="true"
-          aria-invalid={Boolean(form.formState.errors.email)}
+          aria-invalid={form.formState.errors.email ? true : undefined}
           aria-describedby={form.formState.errors.email ? 'email-error' : undefined}
           {...form.register('email')}
         />
@@ -77,7 +77,7 @@ export function LoginForm() {
           required
           aria-required="true"
           minLength={8}
-          aria-invalid={Boolean(form.formState.errors.password)}
+          aria-invalid={form.formState.errors.password ? true : undefined}
           aria-describedby={form.formState.errors.password ? 'password-error' : undefined}
           {...form.register('password')}
         />

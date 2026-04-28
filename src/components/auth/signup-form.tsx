@@ -56,7 +56,7 @@ export function SignupForm() {
           aria-required="true"
           minLength={1}
           maxLength={50}
-          aria-invalid={Boolean(form.formState.errors.displayName)}
+          aria-invalid={form.formState.errors.displayName ? true : undefined}
           aria-describedby={form.formState.errors.displayName ? 'displayName-error' : undefined}
           {...form.register('displayName')}
         />
@@ -77,7 +77,7 @@ export function SignupForm() {
           autoCapitalize="none"
           required
           aria-required="true"
-          aria-invalid={Boolean(form.formState.errors.email)}
+          aria-invalid={form.formState.errors.email ? true : undefined}
           aria-describedby={form.formState.errors.email ? 'signup-email-error' : undefined}
           {...form.register('email')}
         />
@@ -96,7 +96,7 @@ export function SignupForm() {
           required
           aria-required="true"
           minLength={8}
-          aria-invalid={Boolean(form.formState.errors.password)}
+          aria-invalid={form.formState.errors.password ? true : undefined}
           aria-describedby={
             form.formState.errors.password
               ? 'signup-password-hint signup-password-error'
