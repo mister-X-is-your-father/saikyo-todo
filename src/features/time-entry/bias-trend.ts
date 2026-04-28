@@ -1,0 +1,88 @@
+/**
+ * iter269 ai-automation: 見積 bias の時系列トレンド (改善 / 悪化 / 安定) を判定する
+ * pure ヘルパ。
+ *
+ * iter257 (workspace 全体集計) と iter264 (3 行 brief) はその時点のスナップショット
+ * しか見ていなかった。同じ ratio が並んでいても「先月 1.5× → 今月 1.2×」と
+ * 「先月 1.0× → 今月 1.2×」では意味が違うので、2 期間の `EstimateBiasReport` を
+ * 比べて「改善 / 悪化 / 安定 / 判定不能」を返せるようにする。
+ *
+ * 朝 brief / pm-agent / dashboard widget が「先週は精度が良くなりました
+ * (1.50× → 1.20×)」のような前向きフィードバックを出す substrate。
+ *
+ * - `splitSamplesByDate(entries, splitISO)`: workDate < splitISO を prior、それ以降を
+ *   recent に振り分け
+ * - `computeBiasTrend(recent, prior)`: factor の絶対距離が縮まれば improving、
+ *   広がれば worsening、変化が小さければ stable、どちらかが unknown なら inconclusive
+ * - `formatBiasTrendJa(trend)`: 1 行 JA 文面 (4 種類 + null 防衛)
+ */
+import type { BiasSample, EstimateBiasReport } from './bias'
+import { type ItemDescriptionLookup, selectBiasSamples } from './bias-selector'
+import type { TimeEntry } from './schema'
+
+export type BiasTrendDirection = 'improving' | 'worsening' | 'stable' | 'inconclusive'
+
+export interface BiasTrend {
+  direction: BiasTrendDirection
+  /** prior 期間の calibrationFactor (null = sample 不足 / 計算不能) */
+  priorFactor: number | null
+  /** recent 期間の calibrationFactor */
+  recentFactor: number | null
+  /** factor の 1.0 からの絶対距離の差 (prior - recent)。正なら改善 */
+  distanceDelta: number | null
+}
+
+const STABLE_DELTA_THRESHOLD = 0.05
+
+/** TimeEntry を workDate (`YYYY-MM-DD`) で 2 期間に分割し、それぞれ BiasSample[] を返す。 */
+export function splitSamplesByDate(
+  entries: readonly TimeEntry[],
+  lookup: ItemDescriptionLookup,
+  splitISO: string,
+): { recent: BiasSample[]; prior: BiasSample[] } {
+  const recent: TimeEntry[] = []
+  const prior: TimeEntry[] = []
+  for (const e of entries) {
+    if (e.workDate >= splitISO) recent.push(e)
+    else prior.push(e)
+  }
+  return {
+    recent: selectBiasSamples(recent, lookup),
+    prior: selectBiasSamples(prior, lookup),
+  }
+}
+
+export function computeBiasTrend(recent: EstimateBiasReport, prior: EstimateBiasReport): BiasTrend {
+  const priorFactor = prior.calibrationFactor
+  const recentFactor = recent.calibrationFactor
+
+  if (priorFactor === null || recentFactor === null) {
+    return { direction: 'inconclusive', priorFactor, recentFactor, distanceDelta: null }
+  }
+
+  const priorDistance = Math.abs(priorFactor - 1)
+  const recentDistance = Math.abs(recentFactor - 1)
+  const delta = priorDistance - recentDistance // 正 = 改善 (1.0 に近付いた)
+
+  let direction: BiasTrendDirection
+  if (Math.abs(delta) < STABLE_DELTA_THRESHOLD) direction = 'stable'
+  else if (delta > 0) direction = 'improving'
+  else direction = 'worsening'
+
+  return { direction, priorFactor, recentFactor, distanceDelta: delta }
+}
+
+export function formatBiasTrendJa(trend: BiasTrend): string {
+  if (trend.direction === 'inconclusive') {
+    return '見積精度の変化: データ不足で判定不能 (各期間 3 件以上のサンプルが必要)'
+  }
+  const p = trend.priorFactor!.toFixed(2)
+  const r = trend.recentFactor!.toFixed(2)
+  if (trend.direction === 'stable') {
+    return `見積精度の変化: 安定 (${p}× → ${r}×)`
+  }
+  if (trend.direction === 'improving') {
+    return `見積精度の変化: 改善 (${p}× → ${r}×)`
+  }
+  return `見積精度の変化: 悪化 (${p}× → ${r}×)`
+}
