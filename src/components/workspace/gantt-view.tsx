@@ -275,6 +275,7 @@ export function GanttView({
             onClick={() => scrollToToday('smooth')}
             className="text-foreground hover:bg-muted rounded border px-2 py-0.5 text-xs"
             title="今日の縦線まで横スクロール"
+            aria-label="Gantt timeline を今日の縦線まで横スクロール"
           >
             今日へジャンプ
           </button>
