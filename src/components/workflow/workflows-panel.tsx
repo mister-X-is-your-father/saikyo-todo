@@ -589,9 +589,14 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
   }
   const runs = q.data ?? []
   if (runs.length === 0) {
+    // iter298 basics: 旧「まだ実行履歴がありません」だけでは「どう動かすのか」が
+    // 伝わらなかった → 上の `▶ 実行` button で 1 回起動 / cron schedule で自動起動
+    // の 2 経路を示す。失敗 / 成功 / 各 node の duration が下に並ぶことも示唆。
     return (
       <p className="text-muted-foreground text-xs" role="status">
-        まだ実行履歴がありません
+        まだ実行履歴がありません。 上の <code className="bg-muted rounded px-1">▶ 実行</code> button
+        で手動起動、または schedule (cron) を設定すると自動起動。 各 run の状態 (queued / running /
+        succeeded / failed) と node 別 duration がここに並びます。
       </p>
     )
   }
