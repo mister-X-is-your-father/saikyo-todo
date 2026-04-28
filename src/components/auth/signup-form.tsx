@@ -87,7 +87,7 @@ export function SignupForm() {
         )}
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">パスワード (8 文字以上)</Label>
+        <Label htmlFor="password">パスワード</Label>
         <IMEInput
           id="password"
           type="password"
@@ -96,9 +96,16 @@ export function SignupForm() {
           aria-required="true"
           minLength={8}
           aria-invalid={Boolean(form.formState.errors.password)}
-          aria-describedby={form.formState.errors.password ? 'signup-password-error' : undefined}
+          aria-describedby={
+            form.formState.errors.password
+              ? 'signup-password-hint signup-password-error'
+              : 'signup-password-hint'
+          }
           {...form.register('password')}
         />
+        <p id="signup-password-hint" className="text-muted-foreground text-xs">
+          8 文字以上
+        </p>
         {form.formState.errors.password && (
           <p id="signup-password-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.password.message}
