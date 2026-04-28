@@ -19,6 +19,7 @@ export function LoginForm() {
   const [isPending, startTransition] = useTransition()
   const form = useForm<LoginInput>({
     resolver: zodResolver(LoginInputSchema),
+    mode: 'onTouched',
     defaultValues: { email: '', password: '' },
   })
 
