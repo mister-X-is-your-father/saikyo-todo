@@ -42,6 +42,7 @@ import { toast } from 'sonner'
 import { isAppError } from '@/lib/errors'
 
 import { formatFriendlyDate } from '@/features/item/date-tokens'
+import { formatItemEstimateSummary, summarizeItemEstimates } from '@/features/item/estimate'
 import { useReorderItem } from '@/features/item/hooks'
 import type { Item } from '@/features/item/schema'
 
@@ -262,8 +263,25 @@ export function BacklogView({ workspaceId, items }: Props) {
   // 親の items-board が同じ ?item= を見て ItemEditDialog を開くので、Backlog 側では
   // dialog を rendering しない (重複描画を避ける)。これで全 view 共通の URL 駆動 UX に揃う。
 
+  // iter311 basics: 表示中 items の見積合計を上部に summary chip で出す (FEEDBACK_QUEUE
+  // graphical 波及)。done/archive 済も含めた「Backlog で見えてる行」全体の集計。
+  const estimateSummary = useMemo(
+    () => formatItemEstimateSummary(summarizeItemEstimates(data)),
+    [data],
+  )
+
   return (
     <>
+      <div className="mb-2 flex items-center gap-2">
+        <span
+          className="bg-muted text-muted-foreground inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs"
+          data-testid="backlog-estimate-summary"
+          aria-label={`Backlog 見積サマリ: ${estimateSummary}`}
+        >
+          <span aria-hidden="true">⏱</span>
+          <span>{estimateSummary}</span>
+        </span>
+      </div>
       <div data-testid="backlog-view" className="max-h-[600px] overflow-auto rounded-lg border">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <table className="w-full border-collapse text-sm">
