@@ -26,7 +26,10 @@ export function TimeEntriesPanel({ workspaceId }: { workspaceId: string }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">一覧 {q.data ? `(${q.data.length} 件)` : ''}</CardTitle>
+          <CardTitle className="text-base">
+            <span aria-hidden="true">一覧 {q.data ? `(${q.data.length} 件)` : ''}</span>
+            <span className="sr-only">{q.data ? `一覧 ${q.data.length} 件` : '一覧'}</span>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {q.isLoading ? (

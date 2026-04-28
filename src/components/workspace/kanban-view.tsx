@@ -233,7 +233,7 @@ function KanbanColumn({
       <div className="mb-3 flex shrink-0 items-center justify-between">
         <h3 id={headingId} className="text-sm font-semibold" style={{ color }}>
           {label}
-          <span className="sr-only"> ({items.length} 件)</span>
+          <span className="sr-only">{` ${items.length} 件`}</span>
         </h3>
         <span className="text-muted-foreground text-xs" aria-hidden="true">
           {items.length}
