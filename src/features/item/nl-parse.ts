@@ -57,6 +57,33 @@ const WEEKDAY_JA: Record<string, number> = {
   土曜: 6,
 }
 
+/**
+ * iter254 ai-automation: 英語キーワード対応 (国際チーム / Todoist 互換)。
+ * weekday は短縮 / フル両方を受ける。lookup は lower-case 化してから引く。
+ */
+const WEEKDAY_EN: Record<string, number> = {
+  sun: 0,
+  sunday: 0,
+  mon: 1,
+  monday: 1,
+  tue: 2,
+  tues: 2,
+  tuesday: 2,
+  wed: 3,
+  weds: 3,
+  wednesday: 3,
+  thu: 4,
+  thur: 4,
+  thurs: 4,
+  thursday: 4,
+  fri: 5,
+  friday: 5,
+  sat: 6,
+  saturday: 6,
+}
+const WEEKDAY_EN_PATTERN =
+  '(?:sun|sunday|mon|monday|tue|tues|tuesday|wed|weds|wednesday|thu|thur|thurs|thursday|fri|friday|sat|saturday)'
+
 function isoDate(d: Date): string {
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, '0')
@@ -165,19 +192,27 @@ export function parseQuickAdd(input: string, opts: ParseOptions): ParsedQuickAdd
     }
   }
 
-  // 日付: 今日 / 明日 / 明後日 / 来週X曜 / X曜 / YYYY-MM-DD
+  // 日付: 今日 / 明日 / 明後日 / today / tomorrow / 来週X曜 / next monday /
+  //       X曜 / monday / YYYY-MM-DD
+  // iter254 ai-automation: 英語キーワード `today` / `tomorrow` / `tmr` / `tmrw`
+  // / `tonight` / `mon..sun` / `next monday..sunday` を Todoist 互換で追加。
+  // case-insensitive で word boundary (^|\s) ... (\s|$) に限定。
   const today = new Date(opts.today.getFullYear(), opts.today.getMonth(), opts.today.getDate())
   let date: Date | null = null
 
-  if (/(^|\s)今日(\s|$)/.test(text)) {
+  const todayRe = /(^|\s)(今日|today|tonight)(\s|$)/i
+  const tomorrowRe = /(^|\s)(明日|tomorrow|tmrw|tmr|tomo)(\s|$)/i
+  const dayAfterRe = /(^|\s)明後日(\s|$)/
+
+  if (todayRe.test(text)) {
     date = today
-    text = text.replace(/(^|\s)今日(\s|$)/, ' ').trim()
-  } else if (/(^|\s)明日(\s|$)/.test(text)) {
+    text = text.replace(todayRe, ' ').trim()
+  } else if (tomorrowRe.test(text)) {
     date = addDays(today, 1)
-    text = text.replace(/(^|\s)明日(\s|$)/, ' ').trim()
-  } else if (/(^|\s)明後日(\s|$)/.test(text)) {
+    text = text.replace(tomorrowRe, ' ').trim()
+  } else if (dayAfterRe.test(text)) {
     date = addDays(today, 2)
-    text = text.replace(/(^|\s)明後日(\s|$)/, ' ').trim()
+    text = text.replace(dayAfterRe, ' ').trim()
   }
 
   if (!date) {
@@ -185,6 +220,16 @@ export function parseQuickAdd(input: string, opts: ParseOptions): ParsedQuickAdd
     if (nextWeek) {
       date = addDays(nextWeekday(today, WEEKDAY_JA[nextWeek[2]!]!), 0)
       text = text.replace(nextWeek[0], ' ').trim()
+    }
+  }
+
+  // iter254: `next monday` / `next mon` (Todoist 互換)。「次の同曜日」は
+  // nextWeekday の delta=0→7 ロジックに任せる (= JA の 来週X曜 と同じ挙動)。
+  if (!date) {
+    const nextEn = text.match(new RegExp(`(^|\\s)next\\s+(${WEEKDAY_EN_PATTERN})(\\s|$)`, 'i'))
+    if (nextEn) {
+      date = nextWeekday(today, WEEKDAY_EN[nextEn[2]!.toLowerCase()]!)
+      text = text.replace(nextEn[0], ' ').trim()
     }
   }
 
@@ -208,6 +253,16 @@ export function parseQuickAdd(input: string, opts: ParseOptions): ParsedQuickAdd
     if (wd) {
       date = nextWeekday(today, WEEKDAY_JA[wd[2]!]!)
       text = text.replace(wd[0], ' ').trim()
+    }
+  }
+
+  // iter254: 単体の英語 weekday (`monday` / `mon`)。`next` 接頭辞は上で消費済みなので
+  // ここに来るのは「next なし、単独」のケース。挙動は JA と同じく次の該当曜日。
+  if (!date) {
+    const wdEn = text.match(new RegExp(`(^|\\s)(${WEEKDAY_EN_PATTERN})(\\s|$)`, 'i'))
+    if (wdEn) {
+      date = nextWeekday(today, WEEKDAY_EN[wdEn[2]!.toLowerCase()]!)
+      text = text.replace(wdEn[0], ' ').trim()
     }
   }
 

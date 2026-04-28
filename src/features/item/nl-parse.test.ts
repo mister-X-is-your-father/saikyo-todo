@@ -272,6 +272,107 @@ describe('parseQuickAdd', () => {
     })
   })
 
+  // iter254 ai-automation: 英語キーワード対応 (Todoist 互換、国際チーム)。
+  describe('English keywords', () => {
+    it('today', () => {
+      const r = parseQuickAdd('today review docs', { today: TODAY })
+      expect(r.scheduledFor).toBe('2026-04-25')
+      expect(r.title).toBe('review docs')
+    })
+
+    it('today (case insensitive)', () => {
+      const r = parseQuickAdd('TODAY review', { today: TODAY })
+      expect(r.scheduledFor).toBe('2026-04-25')
+    })
+
+    it('tonight = today', () => {
+      const r = parseQuickAdd('tonight ship demo', { today: TODAY })
+      expect(r.scheduledFor).toBe('2026-04-25')
+      expect(r.title).toBe('ship demo')
+    })
+
+    it('tomorrow', () => {
+      const r = parseQuickAdd('tomorrow ship fix', { today: TODAY })
+      expect(r.scheduledFor).toBe('2026-04-26')
+      expect(r.title).toBe('ship fix')
+    })
+
+    it('tmrw / tmr / tomo (短縮)', () => {
+      expect(parseQuickAdd('tmrw call', { today: TODAY }).scheduledFor).toBe('2026-04-26')
+      expect(parseQuickAdd('tmr call', { today: TODAY }).scheduledFor).toBe('2026-04-26')
+      expect(parseQuickAdd('tomo call', { today: TODAY }).scheduledFor).toBe('2026-04-26')
+    })
+
+    it('weekday short (mon)', () => {
+      // TODAY = Sat 2026-04-25 → next mon = 2026-04-27
+      const r = parseQuickAdd('mon API review', { today: TODAY })
+      expect(r.scheduledFor).toBe('2026-04-27')
+      expect(r.title).toBe('API review')
+    })
+
+    it('weekday full (monday)', () => {
+      const r = parseQuickAdd('monday standup', { today: TODAY })
+      expect(r.scheduledFor).toBe('2026-04-27')
+      expect(r.title).toBe('standup')
+    })
+
+    it('weekday (friday) - 次の金曜', () => {
+      // TODAY = Sat 2026-04-25 → next fri = 2026-05-01
+      const r = parseQuickAdd('friday deploy', { today: TODAY })
+      expect(r.scheduledFor).toBe('2026-05-01')
+    })
+
+    it('next monday (= monday と同じ; 次の月曜)', () => {
+      const r = parseQuickAdd('next monday review', { today: TODAY })
+      expect(r.scheduledFor).toBe('2026-04-27')
+      expect(r.title).toBe('review')
+    })
+
+    it('next mon (短縮)', () => {
+      const r = parseQuickAdd('next mon ship', { today: TODAY })
+      expect(r.scheduledFor).toBe('2026-04-27')
+    })
+
+    it('英語 + estimate + priority 全部乗せ', () => {
+      const r = parseQuickAdd('tomorrow 1h p1 #design API review', { today: TODAY })
+      expect(r.scheduledFor).toBe('2026-04-26')
+      expect(r.estimateMinutes).toBe(60)
+      expect(r.priority).toBe(1)
+      expect(r.tags).toEqual(['design'])
+      expect(r.title).toBe('API review')
+    })
+
+    it('Monthly (mon を含むが word boundary 外) は誤認しない', () => {
+      const r = parseQuickAdd('Monthly retro', { today: TODAY })
+      expect(r.scheduledFor).toBeUndefined()
+      expect(r.title).toBe('Monthly retro')
+    })
+
+    it('thursday も拾う', () => {
+      // TODAY = Sat 2026-04-25 → next thursday = 2026-04-30
+      const r = parseQuickAdd('thursday review', { today: TODAY })
+      expect(r.scheduledFor).toBe('2026-04-30')
+    })
+
+    it('thur (短縮) も拾う', () => {
+      const r = parseQuickAdd('thur design', { today: TODAY })
+      expect(r.scheduledFor).toBe('2026-04-30')
+    })
+
+    it('tuesday も拾う (TODAY=Sat → 次の Tue = 2026-04-28)', () => {
+      const r = parseQuickAdd('tuesday lunch', { today: TODAY })
+      expect(r.scheduledFor).toBe('2026-04-28')
+    })
+
+    it('英語 weekday と JA `今日` が混在 → 先勝ち (今日)', () => {
+      const r = parseQuickAdd('今日 monday hybrid', { today: TODAY })
+      expect(r.scheduledFor).toBe('2026-04-25')
+      // `今日` が先に消費 → date 確定後は weekday 検出を skip するので
+      // `monday` は title に残る (一貫性: 1 入力 1 日付)
+      expect(r.title).toBe('monday hybrid')
+    })
+  })
+
   describe('formatEstimate', () => {
     it('undefined / 0 / 負値は空文字', () => {
       expect(formatEstimate(undefined)).toBe('')

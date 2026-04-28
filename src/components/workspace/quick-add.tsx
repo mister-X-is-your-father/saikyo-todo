@@ -211,9 +211,9 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
         </div>
       )}
       <p id="quick-add-hint" className="text-muted-foreground text-[11px]">
-        キーワード: 明日/今日/明後日/来週X曜/今週末/月末/+Nd (N 日後)/+Nw (N
-        週後)/HH:MM/p1-p4/#tag/@user/MUST/見積 (30分・1時間・1時間30分・30m・1.5h・2h30m)。 末尾{' '}
-        <code>?</code> で AI 分解候補化。
+        キーワード: 明日/今日/明後日/来週X曜/今週末/月末/today/tomorrow/tmrw/monday..sunday/next
+        monday/+Nd (N 日後)/+Nw (N 週後)/HH:MM/p1-p4/#tag/@user/MUST/見積
+        (30分・1時間・1時間30分・30m・1.5h・2h30m)。 末尾 <code>?</code> で AI 分解候補化。
       </p>
     </div>
   )
