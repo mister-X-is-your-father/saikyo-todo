@@ -15,6 +15,7 @@ import { toast } from 'sonner'
 import { isAppError } from '@/lib/errors'
 
 import { isInvalidDateRange } from '@/features/item/date-range'
+import { computeSprintBurndown } from '@/features/sprint/burndown'
 import {
   useChangeSprintStatus,
   useCreateSprint,
@@ -30,7 +31,6 @@ import type { Sprint, SprintStatus } from '@/features/sprint/schema'
 import {
   addDaysISO,
   dayOfWeekJa,
-  daysBetween,
   DOW_JA,
   formatDateJa,
   isoDaysFromNow,
@@ -319,16 +319,15 @@ function SprintCard({
   const progress = useSprintProgress(showProgress ? sprint.id : null)
   const total = progress.data?.total ?? 0
   const done = progress.data?.done ?? 0
-  const pct = total === 0 ? 0 : Math.round((done / total) * 100)
-
-  // 期間の経過 / 残日数 (簡易 Burndown 代替)
-  const today = todayISO()
-  const totalDays = Math.max(1, daysBetween(sprint.startDate, sprint.endDate) + 1) // 両端含む
-  const elapsedDays = Math.max(0, Math.min(totalDays, daysBetween(sprint.startDate, today) + 1))
-  const remainingDays = Math.max(0, daysBetween(today, sprint.endDate))
-  const elapsedPct = Math.round((elapsedDays / totalDays) * 100)
-  // ideal な完了 % (時間経過 vs 完了率) — burndown の "ideal line" 相当
-  const isOnTrack = total === 0 ? true : pct >= elapsedPct - 10 // 10% 余裕
+  // iter285 refactor: pure helper `computeSprintBurndown` に集約 (テスト 11 件)
+  const burndown = computeSprintBurndown({
+    startDate: sprint.startDate,
+    endDate: sprint.endDate,
+    total,
+    done,
+  })
+  const pct = burndown.completionPct
+  const { totalDays, elapsedDays, remainingDays, elapsedPct, isOnTrack } = burndown
 
   return (
     <li data-testid={`sprint-card-${sprint.id}`}>
