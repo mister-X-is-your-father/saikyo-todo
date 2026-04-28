@@ -112,4 +112,42 @@ describe('buildClaudeRunScript (iter 241)', () => {
       }),
     ).rejects.toBeInstanceOf(CloudSandboxConfigError)
   })
+
+  // iter 242: verify mode
+  it('verify=none で typecheck / lint / pnpm install を含まない', () => {
+    const script = buildClaudeRunScript({
+      gitRepoUrl: 'https://github.com/o/r.git',
+      gitRef: 'main',
+      prompt: 'x',
+      verify: 'none',
+    })
+    expect(script).not.toContain('pnpm typecheck')
+    expect(script).not.toContain('pnpm lint')
+    expect(script).not.toContain('pnpm install')
+  })
+
+  it('verify=fast (default) で typecheck + lint を含み、pnpm test は含まない', () => {
+    const script = buildClaudeRunScript({
+      gitRepoUrl: 'https://github.com/o/r.git',
+      gitRef: 'main',
+      prompt: 'x',
+      // default = 'fast'
+    })
+    expect(script).toContain('pnpm install --frozen-lockfile')
+    expect(script).toContain('pnpm typecheck')
+    expect(script).toContain('pnpm lint')
+    expect(script).not.toContain('pnpm test')
+  })
+
+  it('verify=full で typecheck + lint + pnpm test を含む', () => {
+    const script = buildClaudeRunScript({
+      gitRepoUrl: 'https://github.com/o/r.git',
+      gitRef: 'main',
+      prompt: 'x',
+      verify: 'full',
+    })
+    expect(script).toContain('pnpm typecheck')
+    expect(script).toContain('pnpm lint')
+    expect(script).toContain('pnpm test')
+  })
 })

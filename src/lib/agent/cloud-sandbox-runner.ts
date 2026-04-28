@@ -159,14 +159,26 @@ export interface RunClaudeOnRepoInput {
   claudeCredentialsB64: string
   /** Sandbox 内で 1 ラウンド最大実行時間 (秒)。default 1800 */
   timeoutSec?: number
+  /**
+   * iter 242: claude 実行後の verify モード。
+   *   - 'none': verify を一切行わない (iter 241 と同じ)
+   *   - 'fast': pnpm install + typecheck + lint (e2e / supabase 不要、最速)
+   *   - 'full': fast + pnpm test (vitest 単体、実 Supabase は default template だと無理)
+   * default 'fast'。失敗すると set -e で script 全体が exit 非ゼロになる。
+   */
+  verify?: 'none' | 'fast' | 'full'
 }
 
 /**
  * sandbox 内で実行する bash スクリプトを純粋関数で生成する。
  *
- * ステップ: (1) `~/.claude/.credentials.json` を base64 から復元 → (2) claude CLI を
- * 軽量 install (`npm i -g @anthropic-ai/claude-code`) → (3) git clone (token 埋込) →
- * (4) `claude --print` で prompt 実行。失敗時は exit code 非ゼロ。
+ * ステップ:
+ *   (1) `~/.claude/.credentials.json` を base64 から復元
+ *   (2) claude CLI を軽量 install (`npm i -g @anthropic-ai/claude-code`)
+ *   (3) git clone (token 埋込) + checkout
+ *   (4) `claude --print` で prompt 実行
+ *   (5) git status --porcelain で変更概要ログ
+ *   (6) iter 242: verify=fast/full なら pnpm install + typecheck + lint (+ test)
  *
  * 注意: `set -euo pipefail` で 1 step でも落ちたら中断。tokens は env 経由で渡し
  * stdout に出ないよう printenv は避ける。git URL の token は `git remote -v` には残る
@@ -176,12 +188,15 @@ export function buildClaudeRunScript(args: {
   gitRepoUrl: string
   gitRef: string
   prompt: string
+  verify?: 'none' | 'fast' | 'full'
 }): string {
   // 改行 / クォート安全のため prompt は base64 → tmpfile 経由 で claude に渡す
   const promptB64 = Buffer.from(args.prompt, 'utf8').toString('base64')
   const ref = args.gitRef
   const repoUrl = args.gitRepoUrl
-  return [
+  const verify = args.verify ?? 'fast'
+
+  const lines = [
     '#!/usr/bin/env bash',
     'set -euo pipefail',
     '',
@@ -206,7 +221,27 @@ export function buildClaudeRunScript(args: {
     '# 5) Show resulting git status (diff summary) for caller log',
     'git status --porcelain',
     '',
-  ].join('\n')
+  ]
+
+  if (verify !== 'none') {
+    lines.push(
+      '# 6) Verify (iter 242): pnpm install + typecheck + lint (+ test on full)',
+      'corepack enable >/dev/null 2>&1 || true',
+      'corepack prepare pnpm@latest --activate >/dev/null 2>&1 || npm install -g pnpm',
+      'pnpm install --frozen-lockfile',
+      'pnpm typecheck',
+      'pnpm lint',
+    )
+    if (verify === 'full') {
+      lines.push(
+        '# full: vitest 単体 (実 Supabase が要る Service test は default template だと skip される想定)',
+        'pnpm test',
+      )
+    }
+    lines.push('')
+  }
+
+  return lines.join('\n')
 }
 
 /**
@@ -223,6 +258,7 @@ export async function runClaudeOnRepo(input: RunClaudeOnRepoInput): Promise<Clou
     gitRepoUrl: input.gitRepoUrl,
     gitRef: input.gitRef ?? 'main',
     prompt: input.prompt,
+    verify: input.verify,
   })
   const startedAt = Date.now()
 
