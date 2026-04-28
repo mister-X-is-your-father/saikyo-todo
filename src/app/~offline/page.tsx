@@ -5,6 +5,7 @@
  * このページに fall back させる。**完全静的・Server Action 呼び出し禁止**
  * (cookie / DB アクセスをするとオフライン時に死ぬため)。
  */
+import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { buttonVariants } from '@/components/ui/button'
@@ -12,6 +13,10 @@ import { buttonVariants } from '@/components/ui/button'
 import { OfflineRetryButton } from './retry-button'
 
 export const dynamic = 'force-static'
+
+export const metadata: Metadata = {
+  title: 'オフライン | 最強TODO',
+}
 
 export default function OfflinePage() {
   return (

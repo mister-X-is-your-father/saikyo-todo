@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { LoginForm } from '@/components/auth/login-form'
@@ -9,6 +10,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+
+export const metadata: Metadata = {
+  title: 'ログイン | 最強TODO',
+}
 
 export default function LoginPage() {
   return (

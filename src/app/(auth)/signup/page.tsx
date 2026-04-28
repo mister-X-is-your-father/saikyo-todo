@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { SignupForm } from '@/components/auth/signup-form'
@@ -9,6 +10,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+
+export const metadata: Metadata = {
+  title: 'サインアップ | 最強TODO',
+}
 
 export default function SignupPage() {
   return (
