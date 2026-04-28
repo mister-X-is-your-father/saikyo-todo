@@ -874,7 +874,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter89] **Gantt に role="grid" + aria-rowcount/aria-rowindex** (WAI-ARIA 1.2 grid pattern): outer に role=grid + aria-rowcount={N+1}、各 row に role=row + aria-rowindex (header=1, data=2..)。SR で「行 N 件中 i 番目」が伝わる。Playwright で role=grid / rowcount=3 / 各行 rowindex 2,3 を直接確認
 - ✅ [iter90] **PDCA DailyBars に list semantics**: 旧 `title` 属性 (mouse hover 専用) では SR から完了件数が見えなかった → outer に `role="list" aria-label="日次完了 throughput (N 日分)"`、各日 cell に `role="listitem" aria-label="<date>: 完了 N 件"`。Playwright で 30 listitem + first aria-label 形式を直接確認
 - ✅ [iter91] **Goal/Sprint 進捗バーに role="progressbar"** (WAI-ARIA progressbar pattern): aria-valuenow/min/max + aria-valuetext (sprint は "N/M (X%)" + 遅れ気味 marker)、aria-label。Playwright で sprint progressbar の role / valuetext を確認
-- ✅ [iter255] **nl-parse.ts を pure helper 3 module に分割 (refactor, 2 commits)**:
+- ✅ [iter255 — nl-parse refactor 担] **nl-parse.ts を pure helper 3 module に分割 (refactor, 2 commits)**:
   iter255 = 5%5=0 で base track refactor。`detect-patterns.sh` 結果は TODO=18 / any-leak=1 /
   large-files=19 だが、TODO/any-leak はいずれも誤検出 (Todoist 商品名 / status="todo" enum
   / autonomous helper の自己言及) 寄りで、純粋な refactor 余地は iter254 で
@@ -905,6 +905,65 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
     なっているはず。
   - 候補で時間切れ未着手: 時刻 (HH:MM / HH時) 抽出の time-tokens.ts 分離 (commit 1+2 と
     同パターン、~50 行 → ~30 行) → 次 refactor iter で。
+
+- ✅ [iter255 — detect-patterns / SubtasksPanel / MUST+DoD 担] **refactor track 3 commits**:
+  iter255 は `(255 % 5 == 0)` で refactor 規定。`bash scripts/autonomous/judge.sh` で
+  TODO=18 / any-leak=1 が割り込み signal として点いていたが、調べると 18 件中 17 件が
+  製品名 `最強TODO` / status enum `'todo'` / 説明文の偽陽性、any-leak 1 件は自分自身の
+  identifier `recent-any-leak`。signal が機能していないと割り込み判定が壊れるので、
+  refactor の最初を「detector 自身の偽陽性除去」から開始。3 commit 全て main 級で push。
+  - **commit 1 (`06e72cb`)**: `src/lib/autonomous/patterns.ts` に `isActionableCodeTodo` /
+    `parseCodeTodos` / `parseAnyLeaks` を追加し、bash 側 (`judge.sh` / `detect-patterns.sh`)
+    を同等 regex に書き換え。TODO 検出は「コメント文脈 (`//` / `/*` / JSDoc `* `) +
+    actionable 接尾 (`:` か `(`)」の AND、any-leak は構文限定 6 種 (`: any` / `as any` /
+    `as unknown as` / `<any>` / `,any>` / `@ts-(expect-error|ignore)`) に分割。
+    `src/lib/autonomous/` を pathspec exclude (検出器自身の test fixture が住む領域)。
+    結果: TODO_COUNT 18→0 / ANY_LEAK 2→0、test 13 件追加 (40 件)。bash の `set -euo pipefail`
+    - `git grep` no-match exit=1 罠は `{ ... || true; }` で吸収。今後の判定 noise が消えた。
+  - **commit 2 (`17ebd6f`)**: `item-edit-dialog.tsx` (831 行) から `SubtasksPanel` (130 行) +
+    pure helper `parseBulkSubtaskTitles` を分離。`subtasks-panel.tsx` (UI, 161 行) と
+    `subtasks-panel-helpers.ts` (pure, 24 行) の 2 file 構成。UI 直接 import は
+    `@/features/item/hooks → server-only env` で vitest 落ちるため、helper を別 file に
+    分けて test 6 件追加 (workflows-panel と同パターン)。bulk 件数表示の重複 3 ヶ所を
+    `pendingTitleCount` 変数に集約 — 件数の drift 防止。`item-edit-dialog.tsx` 831→688 行
+    (-17%)、不要になった `useItems` / `useCreateItem` / `fullPathOf` /
+    `DecomposeProposalsPanel` import を削除。動作変更ゼロ。
+  - **commit 3 (`d484950`)**: `item/service.ts` 内に 4 ヶ所散らばっていた MUST+DoD invariant
+    判定式 (`if (x.isMust && (!x.dod || x.dod.trim() === ''))` 系) を pure helper
+    `violatesMustDodInvariant` に集約。新 file `src/features/item/must-dod.ts` (35 行) +
+    test 12 件 (isMust=false 5 ケース / isMust=true 7 ケース、null/undefined/空文字/空白のみ
+    全網羅)。置換箇所: `update` / `updateStatus` / `toggleComplete` / `bulkUpdateStatus` の
+    4 箇所。schema.ts は zod context API が違うので今回は触らず — 次 refactor iter で同 helper
+    に寄せる候補として残す。型は `MustDodFields = { isMust: boolean; dod?: string | null }`
+    の structural typing で Item / before / updated / zod 入力 v すべてを受け止める。
+  - 検証: typecheck / lint 緑 (warning baseline 1 件 = TanStack Table、新規 0)。
+    pure test 計 18 件追加 (40+13+6+12 - 元 24 = 47 → 65)。
+    cloud env で skip される実 Supabase test は従来通り (本 iter で挙動変更なし)。
+  - **次 iter256 = basics track** (256 % 5 == 1)。本来 iter255 が ai-automation
+    だった訳ではない (255 % 5 = 0 で refactor 規定通り) ので「割り込み消化予定」は無し。
+    HANDOFF.md iter254 末尾に記録された候補から優先順位 (basics 寄りで再選定):
+    (a) NL parser に英語の絶対日付 `Apr 30` / `30 Apr` / `weekend` 英 alias 追加 — 並走
+        nl-parse 担が新設した `date-tokens.ts` に追記する形で実装容易
+    (b) Today / Backlog のキーボードショートカット拡張 (1-4 で priority, # で tag picker)
+    (c) フィルタ・ソート保存 (Smart List 風) — Backlog の URL state を nuqs で persist
+  - 候補にあったが時間切れ未着手:
+    (1) workflows-panel.tsx (847 行) の React Flow 部 / JSON edit 部の分割 — 次 refactor iter
+    (2) `bulkUpdateStatus` / `bulkSoftDelete` の重複骨格 (auth → withUserDb → loop → audit)
+    を higher-order helper に抽出 (約 80 行縮小可能)
+    (3) schema.ts superRefine の MUST+DoD 判定を `violatesMustDodInvariant` に寄せる
+  - **自己観察ノート**: iter255 冒頭で `bash scripts/autonomous/judge.sh` を叩いて
+    TODO=18 / any-leak=1 を見たが、その値が 1 iter 前 (iter254) も同じだったことに
+    HANDOFF を読み直して気付いた。「signal の偽陽性が連続 2 iter で同じ」=「detector を
+    直すべきサイン」。今後 judge 出力の signal が前 iter と同値で連続したら detector 改良を
+    検討する。これは次の tooling iter で `judge.sh` に「前 iter と同 signal が連続」検知を
+    入れる候補 (HANDOFF 参照しながら 1 行差分で済む)。
+  - **並走 (nl-parse refactor 担) との非衝突**: 別 Claude が同じ iter255 で nl-parse
+    分割を進めていた (commits `6a78675` / `7ef6fc8`)。両者の変更領域は完全に分離
+    (こちら: `src/lib/autonomous/` + `src/components/workspace/item-edit-dialog.tsx` +
+    `src/features/item/{service.ts,must-dod.ts}`、向こう: `src/features/item/{nl-parse.ts,
+    estimate.ts,date-tokens.ts}`)。HANDOFF だけ衝突したので rebase で両者の entry を
+    残した形で main 統合済み。
+
 - ✅ [iter254 — 並走 ai-automation 担] **NL parser 工数推定 + 英語キーワード + timer variance 連携 (ai-automation, 3 commits)**:
   別 Claude が iter254 を tooling cold-start interrupt で消化していたのとは別に、
   並走で ai-automation 本道を 3 commit 進めた。target は QuickAdd → timer の連結強化。
