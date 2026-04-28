@@ -11,6 +11,7 @@
  * `blocked`) を直接ハンドル。workspace カスタム status 等の未知 key は `unknown`
  * config に fallback (落ちない、label="不明")。
  */
+import { formatNonZeroCounts } from '@/lib/format-counts'
 
 export type StatusIconKey = 'circle' | 'progress' | 'done' | 'cancel' | 'block' | 'unknown'
 
@@ -176,10 +177,5 @@ const SHORT_LABEL: Record<StatusKey, string> = {
  * 順序は実用視認順 (todo → 進行中 → blocked → 完了 → キャンセル → 不明)。
  */
 export function formatStatusCounts(counts: Record<StatusKey, number>): string {
-  const parts: string[] = []
-  for (const k of STATUS_ORDER) {
-    const n = counts[k]
-    if (n > 0) parts.push(`${SHORT_LABEL[k]} ${n}`)
-  }
-  return parts.length === 0 ? '0 件' : parts.join(' / ')
+  return formatNonZeroCounts(counts, STATUS_ORDER, SHORT_LABEL)
 }

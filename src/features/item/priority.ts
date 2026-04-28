@@ -5,6 +5,7 @@
  * SR 用の日本語ラベル `priorityLabel` も同梱 (アクセシビリティ強化のため
  * dot に aria-label として付与する想定)。
  */
+import { formatNonZeroCounts } from '@/lib/format-counts'
 
 export const PRIO_DOT_CLASS: Record<number, string> = {
   1: 'bg-red-500',
@@ -75,10 +76,5 @@ export function countItemsByPriority(
 
 /** AI prompt 行 / dashboard chip 用の 1 行 summary (件数 0 の bucket は省略)。 */
 export function formatPriorityCounts(counts: Record<PriorityKey, number>): string {
-  const parts: string[] = []
-  for (const k of PRIORITY_ORDER) {
-    const n = counts[k]
-    if (n > 0) parts.push(`${LABELS[k]} ${n}`)
-  }
-  return parts.length === 0 ? '0 件' : parts.join(' / ')
+  return formatNonZeroCounts(counts, PRIORITY_ORDER, LABELS)
 }

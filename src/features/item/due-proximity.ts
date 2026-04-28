@@ -23,6 +23,7 @@
  *  - 不正 ISO は `noDate` と同じ扱い (fail-soft)
  *  - `diffDays` は overdue で負、noDate で undefined
  */
+import { formatNonZeroCounts } from '@/lib/format-counts'
 
 export type DueProximityKind = 'overdue' | 'today' | 'tomorrow' | 'thisWeek' | 'later' | 'noDate'
 
@@ -136,12 +137,7 @@ export function countItemsByDueProximity(
 
 /** AI prompt 行 / dashboard chip 用の 1 行 summary (件数 0 の bucket は省略)。 */
 export function formatDueProximityCounts(counts: Record<DueProximityKind, number>): string {
-  const parts: string[] = []
-  for (const k of KIND_ORDER) {
-    const n = counts[k]
-    if (n > 0) parts.push(`${LABEL[k]} ${n}`)
-  }
-  return parts.length === 0 ? '0 件' : parts.join(' / ')
+  return formatNonZeroCounts(counts, KIND_ORDER, LABEL)
 }
 
 function toLocalMidnight(d: Date): Date {

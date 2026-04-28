@@ -22,6 +22,8 @@
  * 上限なし (priority + due + must で最大 100+50+30=180)、最低は 0。
  * sort 用に `compareUrgency(a, b)` も提供 (高 → 低)。
  */
+import { formatNonZeroCounts } from '@/lib/format-counts'
+
 import { type DueProximityKind, getDueProximity } from './due-proximity'
 import type { Item } from './schema'
 
@@ -263,10 +265,5 @@ export function countItemsByUrgencyTier<T extends UrgencyFields>(
  * tier 順 (critical → high → medium → low → none) を保つ。全 0 なら '0 件'。
  */
 export function formatUrgencyTierCounts(counts: Record<UrgencyTier, number>): string {
-  const parts: string[] = []
-  for (const t of TIER_ORDER) {
-    const n = counts[t]
-    if (n > 0) parts.push(`${TIER_LABEL[t]} ${n}`)
-  }
-  return parts.length === 0 ? '0 件' : parts.join(' / ')
+  return formatNonZeroCounts(counts, TIER_ORDER, TIER_LABEL)
 }
