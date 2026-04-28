@@ -2,10 +2,15 @@
  * Phase 6.15 iter157: graph editor の node preset append 関数 unit test。
  * UI 側 (component) は project policy で書かないが、append ロジックは pure
  * function なので単体検証する。
+ *
+ * iter260: workflows-panel.tsx (847 行) から `node-presets.ts` に分離。
+ * 元 test は `src/components/workflow/workflows-panel.test.ts` に居たが、
+ * 共配置 + 名称合わせで本ファイル名に変更し import を新 module に更新。
+ * (component test に依存しなくなり、server-only import 連鎖を踏まなくなる副次効果)
  */
 import { describe, expect, it } from 'vitest'
 
-import { appendNodePreset } from './workflows-panel'
+import { appendNodePreset } from './node-presets'
 
 const HTTP_PRESET = {
   type: 'http' as const,

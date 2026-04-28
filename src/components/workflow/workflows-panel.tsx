@@ -15,6 +15,7 @@ import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
 
+import { formatRunDuration, formatRunTime } from '@/features/workflow/format'
 import {
   useCreateWorkflow,
   useDeleteWorkflow,
@@ -24,6 +25,7 @@ import {
   useWorkflowRuns,
   useWorkflows,
 } from '@/features/workflow/hooks'
+import { appendNodePreset, NODE_PRESETS } from '@/features/workflow/node-presets'
 import type { Workflow, WorkflowRun } from '@/features/workflow/schema'
 import { WorkflowGraphSchema, WorkflowTriggerSchema } from '@/features/workflow/schema'
 
@@ -41,78 +43,6 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-
-/**
- * Phase 6.15 iter157: graph editor の node プリセット定義。
- * 各 type の skeleton config (registry.ts の executor が読む典型値) を持っており、
- * + button で graph.nodes に append される。id は既存と被らない n1 / n2 / ... に自動採番。
- */
-interface NodePreset {
-  type: 'noop' | 'http' | 'ai' | 'slack' | 'email' | 'script'
-  title: string
-  config: Record<string, unknown>
-}
-const NODE_PRESETS: NodePreset[] = [
-  { type: 'noop', title: 'noop (passthrough — debug 用)', config: {} },
-  {
-    type: 'http',
-    title: 'http (任意 URL に fetch)',
-    config: { url: 'https://example.com', method: 'GET' },
-  },
-  {
-    type: 'ai',
-    title: 'ai (Researcher Agent カスタムプロンプト)',
-    config: { prompt: 'タスクをこなしてください' },
-  },
-  {
-    type: 'slack',
-    title: 'slack (workspace webhook へ通知)',
-    config: { text: 'Workflow 完了しました' },
-  },
-  {
-    type: 'email',
-    title: 'email (mock_email_outbox に投入、本番は dispatcher で実送信)',
-    config: { to: 'team@example.com', subject: '通知', body: 'Workflow 完了' },
-  },
-  {
-    type: 'script',
-    title: 'script (scripts/ 配下の .ts を tsx で実行)',
-    config: { name: 'verify-acceptance.ts', args: [] },
-  },
-]
-
-/**
- * graphText (JSON) に preset の skeleton node を append する。
- * 既存の id とぶつからないよう n1 / n2 / ... の連番から空きを探す。
- * parse 失敗 / unknown shape のときは現状のテキストをそのまま返す (UI 側で error 表示)。
- */
-export function appendNodePreset(graphText: string, preset: NodePreset): string {
-  let parsed: { nodes?: unknown[]; edges?: unknown[] } | null = null
-  try {
-    parsed = JSON.parse(graphText) as { nodes?: unknown[]; edges?: unknown[] }
-  } catch {
-    return graphText
-  }
-  if (!parsed || typeof parsed !== 'object') return graphText
-  const nodes = Array.isArray(parsed.nodes) ? [...parsed.nodes] : []
-  const edges = Array.isArray(parsed.edges) ? [...parsed.edges] : []
-  const existingIds = new Set(
-    nodes
-      .filter(
-        (n): n is { id: string } => Boolean(n) && typeof (n as { id: unknown }).id === 'string',
-      )
-      .map((n) => n.id),
-  )
-  let n = 1
-  while (existingIds.has(`n${n}`)) n += 1
-  const newNode = {
-    id: `n${n}`,
-    type: preset.type,
-    label: `${preset.type} ${n}`,
-    config: preset.config,
-  }
-  return JSON.stringify({ ...parsed, nodes: [...nodes, newNode], edges }, null, 2)
-}
 
 interface Props {
   workspaceId: string
@@ -827,21 +757,4 @@ function RunStatusBadge({ status }: { status: string }) {
       {label}
     </span>
   )
-}
-
-function formatRunTime(r: WorkflowRun): string {
-  const t = r.startedAt ?? r.createdAt
-  if (!t) return '—'
-  const d = t instanceof Date ? t : new Date(t)
-  return d.toLocaleString('ja-JP')
-}
-
-function formatRunDuration(r: WorkflowRun): string {
-  if (!r.startedAt || !r.finishedAt) return '—'
-  const s = r.startedAt instanceof Date ? r.startedAt : new Date(r.startedAt)
-  const e = r.finishedAt instanceof Date ? r.finishedAt : new Date(r.finishedAt)
-  const ms = e.getTime() - s.getTime()
-  if (ms < 1000) return `${ms}ms`
-  if (ms < 60_000) return `${(ms / 1000).toFixed(1)}s`
-  return `${(ms / 60_000).toFixed(1)}m`
 }
