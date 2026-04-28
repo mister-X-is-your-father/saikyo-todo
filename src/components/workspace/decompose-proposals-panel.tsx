@@ -157,6 +157,11 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               onClick={() => void handleCancel()}
               data-testid="agent-cancel"
               title="実行中の Agent を中止"
+              aria-label={
+                cancel.isPending
+                  ? '実行中の Agent を中止中…'
+                  : '実行中の Agent を中止 (Researcher / 分解処理を停止)'
+              }
             >
               <X className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
               中止
@@ -174,7 +179,11 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                   disabled={accept.isPending || rejectAll.isPending || decompose.isPending}
                   onClick={() => void handleAcceptAll()}
                   data-testid="proposals-accept-all"
-                  aria-label={`保留中の提案 ${list.length} 件をすべて採用`}
+                  aria-label={
+                    accept.isPending
+                      ? `保留中の提案 ${list.length} 件を採用中…`
+                      : `保留中の提案 ${list.length} 件をすべて採用`
+                  }
                 >
                   全て採用
                 </Button>
@@ -185,7 +194,11 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                   disabled={rejectAll.isPending || accept.isPending || decompose.isPending}
                   onClick={() => void handleRejectAll()}
                   data-testid="proposals-reject-all"
-                  aria-label={`保留中の提案 ${list.length} 件をすべて却下`}
+                  aria-label={
+                    rejectAll.isPending
+                      ? `保留中の提案 ${list.length} 件を却下中…`
+                      : `保留中の提案 ${list.length} 件をすべて却下`
+                  }
                 >
                   全て却下
                 </Button>
