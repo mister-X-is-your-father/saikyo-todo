@@ -168,7 +168,7 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card role="region" aria-label={`${PERIOD_LABEL[period]}の Item ${filtered.length} 件`}>
         <CardHeader className="pb-2">
           <CardTitle className="text-base">
             {PERIOD_LABEL[period]}の Item ({filtered.length})

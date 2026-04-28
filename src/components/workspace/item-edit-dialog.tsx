@@ -616,8 +616,11 @@ function SubtasksPanel({ workspaceId, parent }: { workspaceId: string; parent: I
     <div className="space-y-4" data-testid="subtasks-panel">
       <DecomposeProposalsPanel workspaceId={workspaceId} parentItemId={parent.id} />
 
-      <div className="space-y-2">
-        <h3 className="text-sm font-semibold">既存の子タスク ({children.length})</h3>
+      <div className="space-y-2" role="region" aria-labelledby="subtasks-existing-heading">
+        <h3 id="subtasks-existing-heading" className="text-sm font-semibold">
+          <span className="sr-only">{`既存の子タスク ${children.length} 件`}</span>
+          <span aria-hidden="true">既存の子タスク ({children.length})</span>
+        </h3>
         {items.isLoading ? (
           <p className="text-muted-foreground text-xs" role="status" aria-live="polite">
             読み込み中…
