@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import { CloudSandboxConfigError, runViaCloudSandbox } from './cloud-sandbox-runner'
+import {
+  buildClaudeRunScript,
+  CloudSandboxConfigError,
+  runClaudeOnRepo,
+  runViaCloudSandbox,
+} from './cloud-sandbox-runner'
 
 describe('cloud-sandbox-runner', () => {
   const ORIGINAL_API_KEY = process.env.E2B_API_KEY
@@ -46,4 +51,65 @@ describe('cloud-sandbox-runner', () => {
 
   // 実 sandbox 起動テストは E2B_API_KEY 必須なので CI / live でのみ。
   // ここでは env validation path だけ。実装は iter 241+ で integration test を追加。
+})
+
+describe('buildClaudeRunScript (iter 241)', () => {
+  it('credentials 復元 / claude CLI install / git clone / claude --print の 4 step を含む', () => {
+    const script = buildClaudeRunScript({
+      gitRepoUrl: 'https://github.com/owner/repo.git',
+      gitRef: 'main',
+      prompt: 'fix the bug',
+    })
+    expect(script).toContain('set -euo pipefail')
+    expect(script).toContain('CLAUDE_CREDENTIALS_B64')
+    expect(script).toContain('npm install -g @anthropic-ai/claude-code')
+    expect(script).toContain('git clone')
+    expect(script).toContain('claude --print')
+  })
+
+  it('GITHUB_TOKEN を git URL に oauth2 形式で埋め込む', () => {
+    const script = buildClaudeRunScript({
+      gitRepoUrl: 'https://github.com/owner/repo.git',
+      gitRef: 'main',
+      prompt: 'x',
+    })
+    expect(script).toContain('https://oauth2:$GITHUB_TOKEN@github.com/owner/repo.git')
+  })
+
+  it('prompt は base64 経由で渡され、改行 / クォート / 日本語に安全', () => {
+    const tricky = '日本語 + "double" + \'single\' + 改\n行'
+    const script = buildClaudeRunScript({
+      gitRepoUrl: 'https://github.com/owner/repo.git',
+      gitRef: 'main',
+      prompt: tricky,
+    })
+    const expected = Buffer.from(tricky, 'utf8').toString('base64')
+    expect(script).toContain(expected)
+    // 生 prompt が直接入って quote バグらないこと
+    expect(script).not.toContain(tricky)
+  })
+
+  it('指定 ref で checkout する', () => {
+    const script = buildClaudeRunScript({
+      gitRepoUrl: 'https://github.com/o/r.git',
+      gitRef: 'feature/xyz',
+      prompt: 'p',
+    })
+    expect(script).toContain('git checkout "feature/xyz"')
+  })
+
+  it('runClaudeOnRepo も E2B_API_KEY 未設定で CloudSandboxConfigError', async () => {
+    await expect(
+      runClaudeOnRepo({
+        invocationId: 'i-1',
+        workspaceId: 'w-1',
+        itemId: 'it-1',
+        gitRepoUrl: 'https://github.com/o/r.git',
+        gitRef: 'main',
+        githubToken: 'gh_xxx',
+        prompt: 'p',
+        claudeCredentialsB64: 'eyJ4Ijoid'.repeat(10),
+      }),
+    ).rejects.toBeInstanceOf(CloudSandboxConfigError)
+  })
 })
