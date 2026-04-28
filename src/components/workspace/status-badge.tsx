@@ -26,7 +26,11 @@ export function statusLabel(key: string): string {
 export function StatusBadge({ status, className }: { status: string; className?: string }) {
   const p = STATUS_PRESETS[status] ?? { label: status, className: 'bg-muted' }
   return (
-    <Badge variant="outline" className={`${p.className} border-transparent ${className ?? ''}`}>
+    <Badge
+      variant="outline"
+      className={`${p.className} border-transparent ${className ?? ''}`}
+      aria-label={`ステータス: ${p.label}`}
+    >
       {p.label}
     </Badge>
   )
