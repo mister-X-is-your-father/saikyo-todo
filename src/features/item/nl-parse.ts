@@ -167,6 +167,19 @@ export function parseQuickAdd(input: string, opts: ParseOptions): ParsedQuickAdd
     }
   }
 
+  // Phase 6.15 iter 230: Todoist 風の相対日付 "+3d" (3 日後) / "+2w" (2 週後)。
+  // ASCII '+' のみ受ける (数値は半角)、w は 7 日換算。先頭または空白の後から始まる
+  // ものに限定 (title 中の '+' との誤認を防ぐ)。
+  if (!date) {
+    const rel = text.match(/(^|\s)\+(\d{1,3})([dw])(\s|$)/)
+    if (rel) {
+      const n = Number(rel[2])
+      const days = rel[3] === 'w' ? n * 7 : n
+      date = addDays(today, days)
+      text = text.replace(rel[0], ' ').trim()
+    }
+  }
+
   if (date) {
     out.scheduledFor = isoDate(date)
     // dueDate も埋める (Today ビュー / overdue 判定に使える)

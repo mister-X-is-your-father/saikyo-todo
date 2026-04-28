@@ -138,4 +138,35 @@ describe('parseQuickAdd', () => {
     expect(r.priority).toBeUndefined()
     expect(r.title).toBe('supp note')
   })
+
+  // Phase 6.15 iter 230: Todoist 風の相対日付 +Nd / +Nw
+  it('+3d (3 日後)', () => {
+    const r = parseQuickAdd('+3d レビュー', { today: TODAY })
+    expect(r.scheduledFor).toBe('2026-04-28')
+    expect(r.title).toBe('レビュー')
+  })
+
+  it('+2w (2 週後 = 14 日後)', () => {
+    const r = parseQuickAdd('+2w 出荷', { today: TODAY })
+    expect(r.scheduledFor).toBe('2026-05-09')
+    expect(r.title).toBe('出荷')
+  })
+
+  it('+1d は明日と同じ日付', () => {
+    const r = parseQuickAdd('+1d 提出', { today: TODAY })
+    expect(r.scheduledFor).toBe('2026-04-26')
+  })
+
+  it('title 中の +X は date として誤認しない (空白で区切られない)', () => {
+    const r = parseQuickAdd('cost+3dollars', { today: TODAY })
+    expect(r.scheduledFor).toBeUndefined()
+    expect(r.title).toBe('cost+3dollars')
+  })
+
+  it('既に日付トークンがあれば +Nd は無視される (先勝ち)', () => {
+    const r = parseQuickAdd('明日 +3d レビュー', { today: TODAY })
+    // 「明日」が先に消費されるので +3d は title に残る
+    expect(r.scheduledFor).toBe('2026-04-26')
+    expect(r.title).toBe('+3d レビュー')
+  })
 })
