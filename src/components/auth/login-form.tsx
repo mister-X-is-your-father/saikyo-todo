@@ -28,6 +28,7 @@ export function LoginForm() {
       const result = await loginAction(values)
       if (!result.ok) {
         toast.error(result.error.message)
+        form.setFocus('password')
         return
       }
       toast.success('ログインしました')
