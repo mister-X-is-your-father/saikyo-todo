@@ -14,11 +14,29 @@
  */
 import { useState } from 'react'
 
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { GripVertical } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { fullPathOf } from '@/lib/db/ltree-path'
+import { isAppError } from '@/lib/errors'
 
-import { useCreateItem, useItems } from '@/features/item/hooks'
+import { useCreateItem, useItems, useReorderItem } from '@/features/item/hooks'
 import type { Item } from '@/features/item/schema'
 
 import { Button } from '@/components/ui/button'
@@ -40,13 +58,16 @@ const MAX_TREE_DEPTH = 6
 /**
  * 1 件の subtask + その子孫を再帰描画する node component。
  *
- * 視覚的グルーピング (queue: タスクでのグルーピングもっとわかりやすく):
+ * 視覚的グルーピング:
  *   - **子を持つ node** = 「group container」として描画 (淡い slate 背景 + ring +
- *     角丸)。中に親 row + 子 ol を入れ、「このタスクの中に子タスクが入ってる」
- *     ことを視覚で伝える
+ *     角丸)。中に親 row + 子 ol を入れ、子タスクが内側に居るのを視覚で伝える
  *   - **leaf node** (子無し) = 通常 border row のみ
  *
- * 各深さで番号は 1 から再開 (深さで一意性を担保するため `data-depth` を持つ)。
+ * DnD (本 iter で追加):
+ *   - 各 row に GripVertical の drag handle を付与、`useSortable` で sortable 化
+ *   - 同 parent 内 sibling の reorder のみ対応 (cross-parent move = indent は別 iter)
+ *   - 各深さの `<ol>` が独立した SortableContext なので、SortableContext を跨いだ
+ *     drop は親 (SubtasksPanel の DndContext) の onDragEnd で同 parent 確認 + 拒否
  */
 function SubtaskTreeNode({
   item,
@@ -69,7 +90,17 @@ function SubtaskTreeNode({
   const hasChildren = grandchildren.length > 0
   const overDepth = depth + 1 >= MAX_TREE_DEPTH
 
-  /** 親 row 自体の描画。group container 内では border 不要 (親 wrapper が ring 持つ)。 */
+  // DnD: row 自体を sortable に。drag handle のみが pointer hold/drag を起動。
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+  })
+  const sortableStyle = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  }
+
+  /** 親 row 自体の描画。group container 内では bg-card で wrapper の slate と差別化。 */
   const headerRow = (
     <div
       className={`flex items-center gap-2 px-2 py-1.5 text-sm ${
@@ -77,6 +108,16 @@ function SubtaskTreeNode({
       }`}
       data-testid={`subtask-header-${item.id}`}
     >
+      <button
+        type="button"
+        className="text-muted-foreground hover:text-foreground -ml-1 cursor-grab touch-none active:cursor-grabbing"
+        aria-label={`「${item.title}」をドラッグで並び替え`}
+        data-testid={`subtask-drag-${item.id}`}
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4" aria-hidden="true" />
+      </button>
       <ItemCheckbox item={item} workspaceId={workspaceId} />
       <span
         className="bg-muted text-muted-foreground inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[11px] tabular-nums ring-1 ring-inset ring-slate-200"
@@ -118,7 +159,13 @@ function SubtaskTreeNode({
   )
 
   return (
-    <li className="space-y-1" data-testid={`subtask-${item.id}`} data-depth={depth}>
+    <li
+      ref={setNodeRef}
+      style={sortableStyle}
+      className="space-y-1"
+      data-testid={`subtask-${item.id}`}
+      data-depth={depth}
+    >
       {hasChildren ? (
         <div
           className="space-y-2 rounded-lg bg-slate-50/60 p-1.5 ring-1 ring-slate-200 dark:bg-slate-900/30 dark:ring-slate-800"
@@ -128,22 +175,27 @@ function SubtaskTreeNode({
         >
           {headerRow}
           {!overDepth && (
-            <ol
-              className="ml-4 space-y-1 border-l-2 border-slate-300 pl-3 dark:border-slate-700"
-              data-testid={`subtask-children-${item.id}`}
-              aria-label={`「${item.title}」の子タスク ${grandchildren.length} 件`}
+            <SortableContext
+              items={grandchildren.map((g) => g.id)}
+              strategy={verticalListSortingStrategy}
             >
-              {grandchildren.map((g, gIdx) => (
-                <SubtaskTreeNode
-                  key={g.id}
-                  item={g}
-                  index={gIdx}
-                  depth={depth + 1}
-                  allItems={allItems}
-                  workspaceId={workspaceId}
-                />
-              ))}
-            </ol>
+              <ol
+                className="ml-4 space-y-1 border-l-2 border-slate-300 pl-3 dark:border-slate-700"
+                data-testid={`subtask-children-${item.id}`}
+                aria-label={`「${item.title}」の子タスク ${grandchildren.length} 件`}
+              >
+                {grandchildren.map((g, gIdx) => (
+                  <SubtaskTreeNode
+                    key={g.id}
+                    item={g}
+                    index={gIdx}
+                    depth={depth + 1}
+                    allItems={allItems}
+                    workspaceId={workspaceId}
+                  />
+                ))}
+              </ol>
+            </SortableContext>
           )}
           {overDepth && (
             <p className="ml-4 text-[10px] text-amber-700" role="status">
@@ -161,6 +213,7 @@ function SubtaskTreeNode({
 export function SubtasksPanel({ workspaceId, parent }: Props) {
   const items = useItems(workspaceId)
   const create = useCreateItem(workspaceId)
+  const reorder = useReorderItem(workspaceId)
   const [bulkText, setBulkText] = useState('')
 
   const parentFullPath = fullPathOf({ id: parent.id, parentPath: parent.parentPath })
@@ -178,6 +231,49 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
       i.parentPath !== parent.parentPath &&
       (i.parentPath === parentFullPath || i.parentPath.startsWith(`${parentFullPath}.`)),
   ).length
+
+  // DnD: backlog-view と同じ sensor 設定 (mouse 5px / touch 250ms 長押し)
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
+  )
+
+  /**
+   * drag end ハンドラ。同 parent_path 内のみ reorder 可、cross-parent は拒否
+   * (= cross-parent move は次 iter の indent/outdent で対応予定)。
+   */
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const activeItem = allItems.find((i) => i.id === String(active.id))
+    const overItem = allItems.find((i) => i.id === String(over.id))
+    if (!activeItem || !overItem) return
+    if (activeItem.parentPath !== overItem.parentPath) {
+      toast.warning('親をまたぐ移動は別操作 (Tab / Shift+Tab) で対応予定')
+      return
+    }
+    // 同 parent の siblings をソート → arrayMove → 前後を計算 → reorder action
+    const siblings = allItems
+      .filter((i) => !i.deletedAt && i.parentPath === activeItem.parentPath)
+      .sort((a, b) => a.position.localeCompare(b.position))
+    const srcIdx = siblings.findIndex((s) => s.id === activeItem.id)
+    const dstIdx = siblings.findIndex((s) => s.id === overItem.id)
+    if (srcIdx < 0 || dstIdx < 0) return
+    const next = arrayMove(siblings, srcIdx, dstIdx)
+    const newIdx = next.findIndex((s) => s.id === activeItem.id)
+    const prev = newIdx > 0 ? next[newIdx - 1] : null
+    const nextSib = newIdx < next.length - 1 ? next[newIdx + 1] : null
+    try {
+      await reorder.mutateAsync({
+        id: activeItem.id,
+        expectedVersion: activeItem.version,
+        prevSiblingId: prev?.id ?? null,
+        nextSiblingId: nextSib?.id ?? null,
+      })
+    } catch (e) {
+      toast.error(isAppError(e) ? e.message : '並び替えに失敗')
+    }
+  }
 
   async function handleBulkAdd() {
     const titles = parseBulkSubtaskTitles(bulkText)
@@ -239,22 +335,29 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
             まだ子タスクがありません
           </p>
         ) : (
-          <ol
-            className="space-y-1"
-            data-testid="subtasks-list"
-            aria-label={`子タスク 全 ${children.length} 件 (子孫含め ${totalDescendants} 件)`}
-          >
-            {children.map((c, idx) => (
-              <SubtaskTreeNode
-                key={c.id}
-                item={c}
-                index={idx}
-                depth={0}
-                allItems={allItems}
-                workspaceId={workspaceId}
-              />
-            ))}
-          </ol>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext
+              items={children.map((c) => c.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <ol
+                className="space-y-1"
+                data-testid="subtasks-list"
+                aria-label={`子タスク 全 ${children.length} 件 (子孫含め ${totalDescendants} 件)`}
+              >
+                {children.map((c, idx) => (
+                  <SubtaskTreeNode
+                    key={c.id}
+                    item={c}
+                    index={idx}
+                    depth={0}
+                    allItems={allItems}
+                    workspaceId={workspaceId}
+                  />
+                ))}
+              </ol>
+            </SortableContext>
+          </DndContext>
         )}
       </div>
 
