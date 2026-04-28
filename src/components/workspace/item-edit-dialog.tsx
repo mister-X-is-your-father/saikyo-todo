@@ -15,6 +15,7 @@ import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
 
+import { formatFriendlyDate } from '@/features/item/date-tokens'
 import {
   itemKeys,
   useArchiveItem,
@@ -617,7 +618,9 @@ function ItemEditDialogInner({
               className="text-muted-foreground"
               title={
                 item.baselineStartDate
-                  ? `現在の baseline: ${item.baselineStartDate} → ${item.baselineEndDate}`
+                  ? // iter268 basics: title は hover 用なので friendly 表示。aria-label
+                    // 側 (SR) は ISO のままで日付の precision を保つ。
+                    `現在の baseline: ${formatFriendlyDate(item.baselineStartDate, new Date())} → ${formatFriendlyDate(item.baselineEndDate!, new Date())}`
                   : 'startDate / dueDate を当初計画として保存'
               }
               aria-label={
