@@ -52,6 +52,52 @@ describe('parseDateFromText (pure helper)', () => {
     expect(isoDate(parseDateFromText('月末 締め', SAT)!.date)).toBe('2026-04-30')
   })
 
+  // iter271 basics: 月初 / 来月 / 来月末 alias
+  it('月初 = 当月 1 日 (今日 4/25 → 来月初 5/1 に倒す)', () => {
+    // SAT は 4/25。月初 4/1 は過去なので来月 5/1 に倒す
+    expect(isoDate(parseDateFromText('月初 集計', SAT)!.date)).toBe('2026-05-01')
+  })
+
+  it('月初 (1 日当日なら今日)', () => {
+    const FIRST = new Date(2026, 4, 1) // Fri 2026-05-01
+    expect(isoDate(parseDateFromText('月初 集計', FIRST)!.date)).toBe('2026-05-01')
+  })
+
+  it('SOM EN alias は同じ', () => {
+    expect(isoDate(parseDateFromText('start of month report', SAT)!.date)).toBe('2026-05-01')
+    expect(isoDate(parseDateFromText('som report', SAT)!.date)).toBe('2026-05-01')
+  })
+
+  it('来月 = 来月 1 日 (Todoist の next month と揃え)', () => {
+    expect(isoDate(parseDateFromText('来月 1on1', SAT)!.date)).toBe('2026-05-01')
+  })
+
+  it('来月初 EN alias', () => {
+    expect(isoDate(parseDateFromText('start of next month review', SAT)!.date)).toBe('2026-05-01')
+    expect(isoDate(parseDateFromText('sonm review', SAT)!.date)).toBe('2026-05-01')
+  })
+
+  it('来月末 = 来月最終日 (4 月から見ると 5/31)', () => {
+    expect(isoDate(parseDateFromText('来月末 支払', SAT)!.date)).toBe('2026-05-31')
+  })
+
+  it('来月末 EN alias', () => {
+    expect(isoDate(parseDateFromText('end of next month payment', SAT)!.date)).toBe('2026-05-31')
+    expect(isoDate(parseDateFromText('eonm payment', SAT)!.date)).toBe('2026-05-31')
+  })
+
+  it('来月末 と 月末 の優先順 (substring 衝突回避)', () => {
+    // "来月末" は "月末" を含むが substring マッチで先に消費される
+    expect(isoDate(parseDateFromText('来月末 締め', SAT)!.date)).toBe('2026-05-31')
+    expect(isoDate(parseDateFromText('月末 締め', SAT)!.date)).toBe('2026-04-30')
+  })
+
+  it('12 月月末 → 翌 1/31 (来月末)', () => {
+    const DEC = new Date(2026, 11, 15) // Tue 2026-12-15
+    expect(isoDate(parseDateFromText('来月末 締め', DEC)!.date)).toBe('2027-01-31')
+    expect(isoDate(parseDateFromText('来月 1on1', DEC)!.date)).toBe('2027-01-01')
+  })
+
   it('ISO YYYY-MM-DD', () => {
     expect(isoDate(parseDateFromText('2026-12-31 release', SAT)!.date)).toBe('2026-12-31')
   })

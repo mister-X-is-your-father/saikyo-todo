@@ -256,6 +256,29 @@ export function parseDateFromText(text: string, today: Date): ParsedDate | null 
     const delta = ((6 - cur + 7) % 7) + 7
     return { date: addDays(base, delta), matched: nextWeekendMatch[0] }
   }
+  // 来月末 / 来月初 は単独の `来月` より先に試す (substring 衝突回避)。
+  // iter271 basics: 月単位の繰返しタスク向けに「来月末で支払い」「来月初で1on1」等を吸収。
+  const endOfNextMonth = text.match(/(^|\s)(来月末|end\s+of\s+next\s+month|eonm)(\s|$)/i)
+  if (endOfNextMonth) {
+    return {
+      date: new Date(base.getFullYear(), base.getMonth() + 2, 0),
+      matched: endOfNextMonth[0],
+    }
+  }
+  const startOfNextMonth = text.match(/(^|\s)(来月初|start\s+of\s+next\s+month|sonm|来月)(\s|$)/i)
+  if (startOfNextMonth) {
+    return {
+      date: new Date(base.getFullYear(), base.getMonth() + 1, 1),
+      matched: startOfNextMonth[0],
+    }
+  }
+  const startOfMonth = text.match(/(^|\s)(月初|start\s+of\s+month|som)(\s|$)/i)
+  if (startOfMonth) {
+    // 今月 1 日が今日以前なら来月初 (Todoist の `today or later` 発想に揃える)
+    const candidate = new Date(base.getFullYear(), base.getMonth(), 1)
+    const date = candidate < base ? new Date(base.getFullYear(), base.getMonth() + 1, 1) : candidate
+    return { date, matched: startOfMonth[0] }
+  }
   const endOfMonth = text.match(/(^|\s)(月末|end\s+of\s+month|eom)(\s|$)/i)
   if (endOfMonth) {
     return {
