@@ -81,12 +81,14 @@ mode, pausedAt, accumulatedMs }` + 右下 fixed panel + Item 行 / Dialog
   - 対応: `decomposeItemViaClaude` (CLI 経路) を `staging:true` + `propose_child_item` に切替。MCP server が `DECOMPOSE_PARENT_ITEM_ID` env を受けたら `DECOMPOSE_TOOLS` を使う staging mode で起動するよう拡張。
   - **残未決**: 「子 / 関連 / スキップ」3-way picker は設計議論が必要 (ユーザ確認待ち)。
 
-- [ ] **他製品の楽観ロック / 同時編集 UX を深堀り** — 分類: 設計調査
+- 🚧 **他製品の楽観ロック / 同時編集 UX を深堀り** — 分類: 設計調査 (進行中)
   - 原文: 「他の製品とかどう工夫してるんだろ？」(iter238 banner 実装の流れで)
-  - 仮対応: iter238 で Linear / Asana 風の「他の人が編集中」 banner は実装済み。
-    残タスクは「field 単位 merge picker」「Realtime presence (誰が今開いている
-    か avatar 表示)」「自動 retry on conflict」あたりを iter で順に。
-  - **要追加質問**: 優先度どう? presence avatar は派手だが安全とは別軸。
+  - 進捗:
+    - [x] iter238: Linear / Asana 風「他の人が編集中」banner (externallyChanged 検出)
+    - [x] iter252: 自動 retry on conflict — ConflictError 時に refetch → 最新 version で再 mutate (Linear / Notion 風)
+    - [ ] field 単位 merge picker — 同一 field を両者が編集した場合の diff 表示 (設計中)
+    - [ ] Realtime presence avatar — 誰が今 dialog を開いているか (設計中)
+  - **要追加質問**: presence avatar は派手だが安全とは別軸。優先度どう?
 
 ---
 

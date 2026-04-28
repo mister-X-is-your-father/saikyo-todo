@@ -10,12 +10,14 @@
  */
 import { useEffect, useState } from 'react'
 
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { fullPathOf } from '@/lib/db/ltree-path'
 import { isAppError } from '@/lib/errors'
 
 import {
+  itemKeys,
   useArchiveItem,
   useClearItemBaseline,
   useCreateItem,
@@ -109,6 +111,7 @@ function ItemEditDialogInner({
   const [initialVersion, setInitialVersion] = useState(item.version)
   const externallyChanged = item.version !== initialVersion
 
+  const qc = useQueryClient()
   const update = useUpdateItem(workspaceId)
   const archive = useArchiveItem(workspaceId)
   const unarchive = useUnarchiveItem(workspaceId)
@@ -133,22 +136,38 @@ function ItemEditDialogInner({
       toast.error('期限は開始日以降にしてください')
       return
     }
+    const patch = {
+      title: title.trim(),
+      description,
+      startDate: startDate || null,
+      dueDate: dueDate || null,
+      isMust,
+      dod: isMust ? dod.trim() : null,
+    }
     try {
-      await update.mutateAsync({
-        id: item.id,
-        expectedVersion: item.version,
-        patch: {
-          title: title.trim(),
-          description,
-          startDate: startDate || null,
-          dueDate: dueDate || null,
-          isMust,
-          dod: isMust ? dod.trim() : null,
-        },
-      })
+      await update.mutateAsync({ id: item.id, expectedVersion: item.version, patch })
       toast.success('Item を更新しました')
       onOpenChange(false)
     } catch (e) {
+      // 楽観ロック競合: サーバ最新版を取得して 1 回自動リトライ (Linear / Notion 風)
+      if (isAppError(e) && e.code === 'CONFLICT') {
+        try {
+          await qc.refetchQueries({ queryKey: [...itemKeys.all, workspaceId] })
+          const fresh = qc
+            .getQueriesData<Item[]>({ queryKey: [...itemKeys.all, workspaceId] })
+            .flatMap(([, items]) => items ?? [])
+            .find((it) => it.id === item.id)
+          if (fresh) {
+            await update.mutateAsync({ id: item.id, expectedVersion: fresh.version, patch })
+            setInitialVersion(fresh.version)
+            toast.success('Item を更新しました（バージョン競合を自動解決）')
+            onOpenChange(false)
+            return
+          }
+        } catch {
+          // retry も失敗 → fallthrough
+        }
+      }
       toast.error(isAppError(e) ? e.message : '更新に失敗しました')
     }
   }
