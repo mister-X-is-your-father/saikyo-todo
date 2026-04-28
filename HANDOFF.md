@@ -869,6 +869,37 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 - ✅ [iter89] **Gantt に role="grid" + aria-rowcount/aria-rowindex** (WAI-ARIA 1.2 grid pattern): outer に role=grid + aria-rowcount={N+1}、各 row に role=row + aria-rowindex (header=1, data=2..)。SR で「行 N 件中 i 番目」が伝わる。Playwright で role=grid / rowcount=3 / 各行 rowindex 2,3 を直接確認
 - ✅ [iter90] **PDCA DailyBars に list semantics**: 旧 `title` 属性 (mouse hover 専用) では SR から完了件数が見えなかった → outer に `role="list" aria-label="日次完了 throughput (N 日分)"`、各日 cell に `role="listitem" aria-label="<date>: 完了 N 件"`。Playwright で 30 listitem + first aria-label 形式を直接確認
 - ✅ [iter91] **Goal/Sprint 進捗バーに role="progressbar"** (WAI-ARIA progressbar pattern): aria-valuenow/min/max + aria-valuetext (sprint は "N/M (X%)" + 遅れ気味 marker)、aria-label。Playwright で sprint progressbar の role / valuetext を確認
+- ✅ [iter255] **nl-parse.ts を pure helper 3 module に分割 (refactor, 2 commits)**:
+  iter255 = 5%5=0 で base track refactor。`detect-patterns.sh` 結果は TODO=18 / any-leak=1 /
+  large-files=19 だが、TODO/any-leak はいずれも誤検出 (Todoist 商品名 / status="todo" enum
+  / autonomous helper の自己言及) 寄りで、純粋な refactor 余地は iter254 で
+  ai-automation 担が肥大化させた `nl-parse.ts` (348 行) にあった。
+  - **commit 1 (`6a78675`)**: 工数推定を `src/features/item/estimate.ts` に分離。
+    `parseEstimateFromText(text): { minutes, matched } | null` を新規 export し、
+    nl-parse の inline `consumeEstimate` 25 行 + 4 match 分岐を 1 関数に集約。
+    `formatEstimate` / `extractEstimateMinutes` も同居。call site (quick-add /
+    start-timer-button) は estimate.ts 直接 import に更新、nl-parse は後方互換の
+    re-export だけ残す。estimate.test.ts 14 件追加 (parseEstimateFromText 単体契約 +
+    format→extract round-trip 3 件)。
+  - **commit 2 (`7ef6fc8`)**: 日付トークン抽出を `src/features/item/date-tokens.ts` に分離。
+    `parseDateFromText(text, today): { date, matched } | null` で 8 パターン (今日/明日/
+    明後日 → 来週X曜 → next mon → 今週末/月末 → JA/EN weekday → ISO → +Nd/+Nw) を
+    "上から先勝ち" で集約。WEEKDAY_JA/EN テーブル + isoDate / addDays / nextWeekday
+    helper も同居 export。nl-parse の inline date 検出 ~95 行が 1 呼び出しに減った。
+    date-tokens.test.ts 15 件追加。
+  - 結果: nl-parse.ts 348 → 135 行 (-213, -61%)。estimate.ts 102 行 + date-tokens.ts 170 行 =
+    総 407 行 (純増 59 行は docstring + 関数境界コスト、許容範囲)。
+    既存 76 件 nl-parse.test.ts は re-export 経由で全て green を維持 = 動作変更ゼロの証拠。
+    typecheck / lint 緑 (warning baseline 1 件のみ、新規 0)。3 ファイル合計 101 件全 PASS。
+  - 次 iter256 = 6%5=1 → **basics track**。候補 (HANDOFF iter254 末から繰越し):
+    (a) 英語の絶対日付 (`Apr 30` / `30 Apr` / `3/15`) を date-tokens.ts に追加 (今や置き場所
+    が明確)、(b) `weekend` 英 alias (`this weekend` / `next weekend`)、(c) 過去 30 日
+    estimate vs actual の bias グラフ (timer Stop 結果 → /time-entries に集計可視化)。
+    iter257 = ai-automation 復帰。iter260 (10%5=0) で次の refactor 機会 — その頃には
+    workflows-panel.tsx / item-edit-dialog.tsx 等の 800+ 行 component の分割が候補に
+    なっているはず。
+  - 候補で時間切れ未着手: 時刻 (HH:MM / HH時) 抽出の time-tokens.ts 分離 (commit 1+2 と
+    同パターン、~50 行 → ~30 行) → 次 refactor iter で。
 - ✅ [iter254 — 並走 ai-automation 担] **NL parser 工数推定 + 英語キーワード + timer variance 連携 (ai-automation, 3 commits)**:
   別 Claude が iter254 を tooling cold-start interrupt で消化していたのとは別に、
   並走で ai-automation 本道を 3 commit 進めた。target は QuickAdd → timer の連結強化。
@@ -887,7 +918,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
     `extractEstimateMinutes(description)` で QuickAdd の `見積: ...` プレフィクスを
     復元、`ActiveTimerStore.estimateMinutes` を新フィールド (persist 対象) に追加、
     `start({...,estimateMinutes})` / `stop()` 戻り値を拡張。`formatVariance(actual,
-    est)` で「予定 30分 / 実測 32分 (+2分、ほぼ見積通り)」を整形 (±10% / 最低 1 分の
+est)` で「予定 30分 / 実測 32分 (+2分、ほぼ見積通り)」を整形 (±10% / 最低 1 分の
     tolerance、bias=under/on/over/unknown)。bias=over → toast.warning、それ以外 →
     success。`StartTimerButton` が item.description から estimate を抽出して
     start に渡す + 起動 toast に「見積 30分」表示。`ActiveTimerPanel` header に
@@ -898,11 +929,11 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
     両立させる。
   - 次 iter255 = 5%5=0 → **refactor track**。候補:
     (a) description プレフィクス方式から `items.estimate_minutes` 列への migration
-        (ALTER TABLE + drizzle-zod schema + QuickAdd / dialog 移行 +
-        extractEstimateMinutes deprecate)
+    (ALTER TABLE + drizzle-zod schema + QuickAdd / dialog 移行 +
+    extractEstimateMinutes deprecate)
     (b) lint warning 0 化 (TanStack Table の useMemo 不要化対応)
     (c) detect-patterns で見えた hotspot file 分割 (`workflows-panel.tsx` 847 行 /
-        `item-edit-dialog.tsx` 831 行)
+    `item-edit-dialog.tsx` 831 行)
     iter255 開始時に `scripts/autonomous/judge.sh` + `detect-patterns.sh` を叩いて
     数値で優先度を確定する。
   - 候補で時間切れ未着手: 英語の絶対日付 (`Apr 30` / `30 Apr`) / `weekend` 英 alias /
