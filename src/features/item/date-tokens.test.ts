@@ -125,6 +125,83 @@ describe('parseDateFromText (pure helper)', () => {
       expect(parseDateFromText('Apr meeting', SAT)).toBeNull()
     })
   })
+
+  // iter258 basics: ordinal suffix (Apr 30th / 1st / 2nd / 3rd)
+  describe('EN 月名 + ordinal suffix', () => {
+    it('Month Day ordinal: Apr 30th / May 1st', () => {
+      expect(isoDate(parseDateFromText('Apr 30th release', SAT)!.date)).toBe('2026-04-30')
+      // base SAT=2026-04-25 → May 1 はまだ未来 (今年)
+      expect(isoDate(parseDateFromText('May 1st kickoff', SAT)!.date)).toBe('2026-05-01')
+    })
+
+    it('全 4 種の ordinal (st/nd/rd/th) を受理', () => {
+      // base=2026-04-25 → 5/1=未来, 5/2=未来, 5/3=未来, 5/4=未来
+      expect(isoDate(parseDateFromText('May 1st a', SAT)!.date)).toBe('2026-05-01')
+      expect(isoDate(parseDateFromText('May 2nd a', SAT)!.date)).toBe('2026-05-02')
+      expect(isoDate(parseDateFromText('May 3rd a', SAT)!.date)).toBe('2026-05-03')
+      expect(isoDate(parseDateFromText('May 4th a', SAT)!.date)).toBe('2026-05-04')
+    })
+
+    it('Day Month ordinal: 30th Apr / 1st May', () => {
+      expect(isoDate(parseDateFromText('30th Apr deadline', SAT)!.date)).toBe('2026-04-30')
+      expect(isoDate(parseDateFromText('1st May kickoff', SAT)!.date)).toBe('2026-05-01')
+    })
+
+    it('明示年 + ordinal: Apr 30th, 2027 / 30th Apr 2027', () => {
+      expect(isoDate(parseDateFromText('Apr 30th, 2027 a', SAT)!.date)).toBe('2027-04-30')
+      expect(isoDate(parseDateFromText('30th Apr 2027 a', SAT)!.date)).toBe('2027-04-30')
+    })
+
+    it('case-insensitive: 30TH / 1ST も OK', () => {
+      expect(isoDate(parseDateFromText('Apr 30TH release', SAT)!.date)).toBe('2026-04-30')
+      expect(isoDate(parseDateFromText('1ST May a', SAT)!.date)).toBe('2026-05-01')
+    })
+  })
+
+  // iter258 basics: M-D ハイフン形式 (GitHub / 業務メモ慣習)
+  describe('M-D ハイフン形式', () => {
+    it('未来の M-D は今年扱い', () => {
+      expect(isoDate(parseDateFromText('5-15 release', SAT)!.date)).toBe('2026-05-15')
+      expect(isoDate(parseDateFromText('12-31 holiday', SAT)!.date)).toBe('2026-12-31')
+    })
+
+    it('過去の M-D は来年に繰り上げ', () => {
+      // SAT=2026-04-25 → 3-10 は過去 → 2027-03-10
+      expect(isoDate(parseDateFromText('3-10 retro', SAT)!.date)).toBe('2027-03-10')
+    })
+
+    it('明示年 (M-D-YYYY)', () => {
+      expect(isoDate(parseDateFromText('3-15-2028 release', SAT)!.date)).toBe('2028-03-15')
+    })
+
+    it('2-digit 年 (M-D-YY) は 20YY と解釈', () => {
+      expect(isoDate(parseDateFromText('3-15-27 release', SAT)!.date)).toBe('2027-03-15')
+    })
+
+    it('範囲外 (13-1, 0-15, 5-32) は無視 — slash と同じ拒否ルール', () => {
+      expect(parseDateFromText('13-1 invalid', SAT)).toBeNull()
+      expect(parseDateFromText('0-15 invalid', SAT)).toBeNull()
+      expect(parseDateFromText('5-32 invalid', SAT)).toBeNull()
+    })
+
+    it('Feb 30 系 (2-30) は当該年の月末に丸める', () => {
+      expect(isoDate(parseDateFromText('2-30 retro', SAT)!.date)).toBe('2027-02-28')
+    })
+
+    it('ISO (2026-04-30) はパターン 8 で先取りされる — M-D に流れない', () => {
+      expect(isoDate(parseDateFromText('2026-04-30 release', SAT)!.date)).toBe('2026-04-30')
+    })
+
+    it('+3d は M-D と衝突しない (+ 接頭辞で boundary 不成立)', () => {
+      expect(isoDate(parseDateFromText('+3d a', SAT)!.date)).toBe('2026-04-28')
+    })
+
+    it('slash と hyphen は混在 OK (M/D-YY 等の異形は受理しない)', () => {
+      // 区切り 1 文字目と 2 文字目は同じである必要はない (regex 仕様上)、Todoist UI は
+      // 区切りの一致を強制しないので許容。誤検出が増えたら絞ればよい。
+      expect(isoDate(parseDateFromText('3-15/2027 release', SAT)!.date)).toBe('2027-03-15')
+    })
+  })
 })
 
 // iter256 basics: 英語 weekend alias (this weekend / next weekend)

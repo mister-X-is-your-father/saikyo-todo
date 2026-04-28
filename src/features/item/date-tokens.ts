@@ -279,13 +279,17 @@ export function parseDateFromText(text: string, today: Date): ParsedDate | null 
     }
   }
 
-  // 7. EN 月名 絶対日付 (Phase 6.15 iter 256)
-  //    Todoist 互換: `Apr 30` / `April 30` / `30 Apr` / `Apr 30, 2026`。
+  // 7. EN 月名 絶対日付 (Phase 6.15 iter 256, ordinal は iter 258)
+  //    Todoist 互換: `Apr 30` / `April 30` / `30 Apr` / `Apr 30, 2026` /
+  //    iter258 で ordinal suffix `Apr 30th` / `30th Apr` / `April 1st` も受理。
   //    年は省略可 — 省略時は今年で、過去なら来年に繰り上げる。
   //    "Month Day" を先に試して "Day Month" にフォールバック (両方マッチ可能な
   //    入力では Month Day を優先 — Todoist UI 表示と揃える)。
   const monthDay = text.match(
-    new RegExp(`(^|\\s)(${MONTH_EN_PATTERN})\\s+(\\d{1,2})(?:(?:,\\s*|\\s+)(\\d{4}))?(\\s|$)`, 'i'),
+    new RegExp(
+      `(^|\\s)(${MONTH_EN_PATTERN})\\s+(\\d{1,2})(?:st|nd|rd|th)?(?:(?:,\\s*|\\s+)(\\d{4}))?(\\s|$)`,
+      'i',
+    ),
   )
   if (monthDay) {
     const m = MONTH_EN[monthDay[2]!.toLowerCase()]!
@@ -299,7 +303,10 @@ export function parseDateFromText(text: string, today: Date): ParsedDate | null 
     }
   }
   const dayMonth = text.match(
-    new RegExp(`(^|\\s)(\\d{1,2})\\s+(${MONTH_EN_PATTERN})(?:(?:,\\s*|\\s+)(\\d{4}))?(\\s|$)`, 'i'),
+    new RegExp(
+      `(^|\\s)(\\d{1,2})(?:st|nd|rd|th)?\\s+(${MONTH_EN_PATTERN})(?:(?:,\\s*|\\s+)(\\d{4}))?(\\s|$)`,
+      'i',
+    ),
   )
   if (dayMonth) {
     const d = Number(dayMonth[2])
@@ -319,11 +326,14 @@ export function parseDateFromText(text: string, today: Date): ParsedDate | null 
     return { date: new Date(iso[2]!), matched: iso[0] }
   }
 
-  // 9. M/D スラッシュ形式 (Todoist / Things 互換 — US convention)。
-  //    `3/15` / `12/31` / `3/15/2027` / `3/15/27` を受理。
+  // 9. M/D スラッシュ / M-D ハイフン形式 (Todoist / Things 互換 — US convention)。
+  //    `3/15` / `12/31` / `3/15/2027` / `3/15/27` (iter256) +
+  //    `3-15` / `12-31` / `3-15-2027` / `3-15-27` (iter258, GitHub / 業務メモ慣習)。
+  //    ISO `YYYY-MM-DD` (パターン 8) はここまでで消費済 — `\d{1,2}` は最大 2 桁
+  //    なので `2027-03-15` の `27-03` 部分にはマッチしない (前方が `0` で boundary 不成立)。
   //    年省略時は MMM DD と同じ "未来なら今年、過去なら来年" ルール。
   //    2-digit 年は 2000 + N (Y2K pivot)。月/日が範囲外なら拒否 (誤検出防止)。
-  const slashMd = text.match(/(^|\s)(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?(\s|$)/)
+  const slashMd = text.match(/(^|\s)(\d{1,2})[/-](\d{1,2})(?:[/-](\d{2,4}))?(\s|$)/)
   if (slashMd) {
     const m = Number(slashMd[2]) - 1
     const d = Number(slashMd[3])
