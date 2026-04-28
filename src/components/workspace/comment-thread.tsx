@@ -79,12 +79,21 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
       )}
       <div className="space-y-2">
         <Textarea
-          placeholder="コメントを入力… (@user で言及・通知)"
+          placeholder="コメントを入力… (@user で言及・通知。Cmd/Ctrl+Enter で投稿)"
           value={body}
           onChange={(e) => setBody(e.target.value)}
+          onKeyDown={(e) => {
+            // Phase 6.15 iter 228: Cmd/Ctrl+Enter で投稿 (Slack / GitHub / Notion 標準)。
+            // IME 変換中 (compositionend 前) は無視。空 / pending 時は no-op。
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && !e.nativeEvent.isComposing) {
+              if (!body.trim() || create.isPending) return
+              e.preventDefault()
+              void handlePost()
+            }
+          }}
           rows={3}
           data-testid="comment-input"
-          aria-label="コメント本文"
+          aria-label="コメント本文 (Cmd/Ctrl+Enter で投稿)"
           maxLength={10_000}
           required
           aria-required="true"
@@ -100,7 +109,7 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
                 ? 'コメントを投稿するには本文を入力してください'
                 : create.isPending
                   ? 'コメントを投稿中…'
-                  : 'コメントを投稿 (@user で言及・通知)'
+                  : 'コメントを投稿 (Cmd/Ctrl+Enter でも可、@user で言及・通知)'
             }
           >
             {create.isPending ? '送信中…' : '投稿'}
