@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 
 import { DecomposeProposalsPanel } from './decompose-proposals-panel'
+import { ItemCheckbox } from './item-checkbox'
 import { StatusBadge } from './status-badge'
 import { parseBulkSubtaskTitles } from './subtasks-panel-helpers'
 
@@ -107,6 +108,7 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
                   className="flex items-center gap-2 rounded border px-2 py-1.5 text-sm"
                   data-testid={`subtask-${c.id}`}
                 >
+                  <ItemCheckbox item={c} workspaceId={workspaceId} />
                   <span
                     className="bg-muted text-muted-foreground inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[11px] tabular-nums ring-1 ring-inset ring-slate-200"
                     aria-label={`${idx + 1} 番目`}
@@ -119,7 +121,9 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
                     className="text-[10px]"
                     data-testid={`subtask-status-${c.id}`}
                   />
-                  <span className={`flex-1 truncate ${isDone ? 'text-muted-foreground' : ''}`}>
+                  <span
+                    className={`flex-1 truncate ${isDone ? 'text-muted-foreground line-through' : ''}`}
+                  >
                     {c.title}
                   </span>
                   {c.isMust && (
