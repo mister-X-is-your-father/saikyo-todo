@@ -40,7 +40,7 @@ export default function OfflinePage() {
         className="flex flex-wrap items-center justify-center gap-2 pt-2"
       >
         <OfflineRetryButton />
-        <Link href="/" className={buttonVariants({ variant: 'outline' })} aria-label="ホームに戻る">
+        <Link href="/" className={buttonVariants({ variant: 'outline' })}>
           ホームに戻る
         </Link>
       </div>
