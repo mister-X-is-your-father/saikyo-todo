@@ -367,7 +367,13 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     ? 'active な Goal のみ分解可能'
                     : 'AI が Goal + KR + チームコンテキストから 5〜10 件の Item を作成'
                 }
-                aria-label={`Goal「${goal.title}」を AI 分解 (5〜10 件の Item を作成)`}
+                aria-label={
+                  status !== 'active'
+                    ? `Goal「${goal.title}」は active でないため AI 分解不可`
+                    : decompose.isPending
+                      ? `Goal「${goal.title}」を AI 分解中…`
+                      : `Goal「${goal.title}」を AI 分解 (5〜10 件の Item を作成)`
+                }
               >
                 <Sparkles className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                 {decompose.isPending ? 'AI 分解中…' : 'AI 分解'}

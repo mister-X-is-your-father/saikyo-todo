@@ -130,7 +130,13 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             disabled={!src.enabled || trigger.isPending}
             data-testid={`src-pull-${src.id}`}
             title="手動 pull (sync 実行、30s timeout)"
-            aria-label={`Source「${src.name}」を手動 Pull`}
+            aria-label={
+              !src.enabled
+                ? `Source「${src.name}」は無効化中のため Pull 不可`
+                : trigger.isPending
+                  ? `Source「${src.name}」を Pull 中…`
+                  : `Source「${src.name}」を手動 Pull (sync 実行、30s timeout)`
+            }
           >
             <Play className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             {trigger.isPending ? 'Pull 中…' : 'Pull'}
