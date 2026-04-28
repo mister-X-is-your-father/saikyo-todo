@@ -169,4 +169,26 @@ describe('parseQuickAdd', () => {
     expect(r.scheduledFor).toBe('2026-04-26')
     expect(r.title).toBe('+3d レビュー')
   })
+
+  // Phase 6.15 iter 233: 今週末 / 月末
+  it('今週末 (土曜) — 今日が土曜なら今日を返す', () => {
+    // TODAY = Sat 2026-04-25
+    const r = parseQuickAdd('今週末 棚卸し', { today: TODAY })
+    expect(r.scheduledFor).toBe('2026-04-25')
+    expect(r.title).toBe('棚卸し')
+  })
+
+  it('今週末 (水曜から見ると) = 今週土曜', () => {
+    // 2026-04-22 (Wed) からの今週末 = 2026-04-25 (Sat)
+    const r = parseQuickAdd('今週末 飲み会', { today: new Date(2026, 3, 22) })
+    expect(r.scheduledFor).toBe('2026-04-25')
+    expect(r.title).toBe('飲み会')
+  })
+
+  it('月末 = 当月最終日', () => {
+    // TODAY = 2026-04-25, 4 月の月末 = 2026-04-30
+    const r = parseQuickAdd('月末 締め', { today: TODAY })
+    expect(r.scheduledFor).toBe('2026-04-30')
+    expect(r.title).toBe('締め')
+  })
 })

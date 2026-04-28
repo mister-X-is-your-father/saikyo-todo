@@ -151,6 +151,21 @@ export function parseQuickAdd(input: string, opts: ParseOptions): ParsedQuickAdd
     }
   }
 
+  // Phase 6.15 iter 233: 「今週末」 = 今週土曜 (今日が土曜なら来週土曜にせず今日)。
+  // 「月末」 = 当月の最終日。Todoist の "this weekend" / "end of month" 相当。
+  if (!date) {
+    if (/(^|\s)今週末(\s|$)/.test(text)) {
+      const cur = today.getDay() // 0=Sun..6=Sat
+      const delta = (6 - cur + 7) % 7 // 次の (今日含む) 土曜
+      date = addDays(today, delta)
+      text = text.replace(/(^|\s)今週末(\s|$)/, ' ').trim()
+    } else if (/(^|\s)月末(\s|$)/.test(text)) {
+      // 当月最終日 (next month の 0 日 = current month 末日)
+      date = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+      text = text.replace(/(^|\s)月末(\s|$)/, ' ').trim()
+    }
+  }
+
   if (!date) {
     const wd = text.match(/(^|\s)(日|月|火|水|木|金|土)曜(\s|$)/)
     if (wd) {
