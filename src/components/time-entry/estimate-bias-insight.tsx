@@ -1,0 +1,125 @@
+'use client'
+
+/**
+ * iter259 ai-automation: 過去 N 件の time_entry + item.description を結合して
+ * 見積精度 (bias) を JA 1 行 summary + counts + calibration factor で表示する
+ * 軽量 insight カード。TimeEntries panel に常駐させる。
+ *
+ * - データ取得は既存 `useTimeEntries` + `useItems` を流用 (新 server action 無し)。
+ * - 集計は pure helper `selectBiasSamples` → `computeEstimateBias` の 2 段。
+ * - sample 不足 (estimate 付き <3 件) は `unknown` 扱いで「見積データが少なく…」
+ *   と表示 (ユーザに「見積行を書く」促し効果)。
+ * - error 時は silent (時間記録 panel の主機能を妨げない)、loading 時は
+ *   小さい placeholder を出してレイアウト跳ねを防ぐ。
+ */
+import { useMemo } from 'react'
+
+import { useItems } from '@/features/item/hooks'
+import type { Item } from '@/features/item/schema'
+import { computeEstimateBias } from '@/features/time-entry/bias'
+import { buildItemDescriptionLookup, selectBiasSamples } from '@/features/time-entry/bias-selector'
+import { useTimeEntries } from '@/features/time-entry/hooks'
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+const TENDENCY_LABEL: Record<ReturnType<typeof computeEstimateBias>['tendency'], string> = {
+  'on-track': '見積精度 良好',
+  underestimating: '見積を低く見積りがち',
+  overestimating: '見積を高く見積りがち',
+  mixed: '見積精度にばらつき',
+  unknown: '見積データ 不足',
+}
+
+const TENDENCY_TONE: Record<ReturnType<typeof computeEstimateBias>['tendency'], string> = {
+  'on-track': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  underestimating: 'bg-amber-50 text-amber-700 border-amber-200',
+  overestimating: 'bg-sky-50 text-sky-700 border-sky-200',
+  mixed: 'bg-violet-50 text-violet-700 border-violet-200',
+  unknown: 'bg-muted text-muted-foreground border-border',
+}
+
+export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
+  const entriesQ = useTimeEntries(workspaceId)
+  const itemsQ = useItems(workspaceId)
+
+  const report = useMemo(() => {
+    if (!entriesQ.data || !itemsQ.data) return null
+    const lookup = buildItemDescriptionLookup(itemsQ.data as Item[])
+    const samples = selectBiasSamples(entriesQ.data, lookup)
+    return computeEstimateBias(samples)
+  }, [entriesQ.data, itemsQ.data])
+
+  // どちらかが loading 中 → 小さい placeholder (主 panel を妨げない)
+  if (entriesQ.isLoading || itemsQ.isLoading) {
+    return (
+      <Card aria-busy="true" data-testid="estimate-bias-insight-loading">
+        <CardHeader>
+          <CardTitle className="text-base">見積精度 (直近)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground text-xs">集計中...</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // error 時は silent (sub-feature なので主機能を妨げない)
+  if (!report || entriesQ.error || itemsQ.error) return null
+
+  const label = TENDENCY_LABEL[report.tendency]
+  const tone = TENDENCY_TONE[report.tendency]
+
+  return (
+    <Card data-testid="estimate-bias-insight">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <span>見積精度 (直近)</span>
+          <span
+            className={`rounded border px-2 py-0.5 text-[11px] ${tone}`}
+            data-testid="estimate-bias-tendency"
+            aria-label={`傾向: ${label}`}
+          >
+            {label}
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm" data-testid="estimate-bias-summary">
+          {report.summary}
+        </p>
+        <dl
+          className="text-muted-foreground mt-2 grid grid-cols-3 gap-2 text-[11px]"
+          aria-label="見積バイアス内訳"
+        >
+          <div>
+            <dt>見積内 (under)</dt>
+            <dd className="text-foreground tabular-nums" data-testid="estimate-bias-under">
+              {report.underCount}
+            </dd>
+          </div>
+          <div>
+            <dt>±10%以内 (on)</dt>
+            <dd className="text-foreground tabular-nums" data-testid="estimate-bias-on">
+              {report.onCount}
+            </dd>
+          </div>
+          <div>
+            <dt>超過 (over)</dt>
+            <dd className="text-foreground tabular-nums" data-testid="estimate-bias-over">
+              {report.overCount}
+            </dd>
+          </div>
+        </dl>
+        {report.calibrationFactor !== null && (
+          <p
+            className="text-muted-foreground mt-2 text-[11px]"
+            data-testid="estimate-bias-calibration"
+          >
+            calibration: 実測/見積の中央値 ≈ {report.calibrationFactor.toFixed(2)}× (
+            {report.withEstimateCount}/{report.totalCount} 件)
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  )
+}

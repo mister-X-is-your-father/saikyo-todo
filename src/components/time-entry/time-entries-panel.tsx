@@ -8,6 +8,7 @@ import { EmptyState, ErrorState, Loading } from '@/components/shared/async-state
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 import { CreateTimeEntryForm } from './create-time-entry-form'
+import { EstimateBiasInsight } from './estimate-bias-insight'
 import { TimeEntriesTable } from './time-entries-table'
 
 export function TimeEntriesPanel({ workspaceId }: { workspaceId: string }) {
@@ -15,6 +16,7 @@ export function TimeEntriesPanel({ workspaceId }: { workspaceId: string }) {
 
   return (
     <div className="space-y-4">
+      <EstimateBiasInsight workspaceId={workspaceId} />
       <Card>
         <CardHeader>
           <CardTitle className="text-base">新規 稼働記録</CardTitle>
