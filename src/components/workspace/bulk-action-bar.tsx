@@ -83,7 +83,11 @@ export function BulkActionBar({ workspaceId }: Props) {
           disabled={bulkStatus.isPending}
           onClick={() => void handleStatus(s.key)}
           data-testid={`bulk-status-${s.key}`}
-          aria-label={`選択 ${count} 件を「${s.label}」に変更`}
+          aria-label={
+            bulkStatus.isPending
+              ? `選択 ${count} 件のステータスを変更中…`
+              : `選択 ${count} 件を「${s.label}」に変更`
+          }
         >
           {s.label} に
         </Button>
@@ -94,7 +98,11 @@ export function BulkActionBar({ workspaceId }: Props) {
         disabled={bulkDelete.isPending}
         onClick={() => void handleDelete()}
         data-testid="bulk-delete"
-        aria-label={`選択 ${count} 件を soft delete`}
+        aria-label={
+          bulkDelete.isPending
+            ? `選択 ${count} 件を soft delete 中…`
+            : `選択 ${count} 件を soft delete`
+        }
       >
         削除
       </Button>
