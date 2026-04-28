@@ -36,6 +36,7 @@ import { toast } from 'sonner'
 import { uuidToLabel } from '@/lib/db/ltree-path'
 import { isAppError } from '@/lib/errors'
 
+import { formatFriendlyDate } from '@/features/item/date-tokens'
 import { useReorderItem, useUpdateItemStatus } from '@/features/item/hooks'
 import type { Item } from '@/features/item/schema'
 import { useWorkspaceStatuses } from '@/features/workspace/hooks'
@@ -288,6 +289,13 @@ function KanbanCard({
     transition,
     opacity: isDragging ? 0.5 : 1,
   }
+  // iter263 basics: dueDate / startDate を formatFriendlyDate で表示するための基準日。
+  // useMemo の cost より「カードごとに Date.now を毎 render evaluate」する方が
+  // 視覚的に紛らわしい (renders 跨ぎでカレンダー越境ぎりぎりの bug 余地)。
+  const today = useMemo(() => {
+    const d = new Date()
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+  }, [])
   return (
     <div
       ref={setNodeRef}
@@ -343,10 +351,17 @@ function KanbanCard({
         </div>
       </div>
       {(item.startDate || item.dueDate) && (
-        <div className="text-muted-foreground mt-1 text-[11px]">
-          {item.startDate ? `開始: ${item.startDate}` : ''}
+        <div
+          className="text-muted-foreground mt-1 text-[11px]"
+          // iter263 basics: ISO 生表示 → formatFriendlyDate で「明日 / 4/30 (木)」化。
+          // 元 ISO は親 div の title に残し、SR と hover で正確な日付保持。
+          title={`${item.startDate ? `開始 ${item.startDate}` : ''}${
+            item.startDate && item.dueDate ? ' / ' : ''
+          }${item.dueDate ? `期限 ${item.dueDate}` : ''}`}
+        >
+          {item.startDate ? `開始: ${formatFriendlyDate(item.startDate, today)}` : ''}
           {item.startDate && item.dueDate ? ' / ' : ''}
-          {item.dueDate ? `期限: ${item.dueDate}` : ''}
+          {item.dueDate ? `期限: ${formatFriendlyDate(item.dueDate, today)}` : ''}
         </div>
       )}
       <div className="mt-2 flex items-center justify-between gap-2">
