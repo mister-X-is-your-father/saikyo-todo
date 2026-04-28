@@ -100,6 +100,14 @@ function ItemEditDialogInner({
   const [isMust, setIsMust] = useState(item.isMust)
   const [dod, setDod] = useState(item.dod ?? '')
 
+  // Phase 6.15 iter 238: 楽観ロック Conflict UX 改善 (Linear / Asana 風 banner)。
+  // dialog open 時の version を state で保持し、Realtime で item.version が server 側
+  // で進んだら banner を表示。「最新を読み込み」 button で local 編集 state を破棄して
+  // server の最新値で再 sync。dialog 自体は item.id を key にしているので新規 mount
+  // 時は再初期化される。
+  const [initialVersion, setInitialVersion] = useState(item.version)
+  const externallyChanged = item.version !== initialVersion
+
   const update = useUpdateItem(workspaceId)
   const archive = useArchiveItem(workspaceId)
   const unarchive = useUnarchiveItem(workspaceId)
@@ -206,6 +214,49 @@ function ItemEditDialogInner({
             になります。
           </DialogDescription>
         </DialogHeader>
+
+        {externallyChanged && (
+          <div
+            role="alert"
+            className="flex items-start gap-2 rounded border border-amber-500/50 bg-amber-500/10 p-2 text-xs text-amber-800 dark:text-amber-200"
+            data-testid="item-edit-external-change-banner"
+          >
+            <span className="mt-0.5" aria-hidden="true">
+              ⚠
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="font-semibold">他の人がこの Item を編集しました</div>
+              <div className="text-[11px]">
+                version {initialVersion} → {item.version}。このまま保存すると Conflict
+                エラーになります。
+              </div>
+            </div>
+            <button
+              type="button"
+              className="shrink-0 rounded border border-amber-600/50 px-2 py-1 text-[11px] font-medium hover:bg-amber-600/20"
+              data-testid="item-edit-reload"
+              aria-label="自分の編集内容を破棄してサーバの最新値を読み込み直す"
+              onClick={() => {
+                if (
+                  !window.confirm(
+                    '自分の編集内容を破棄して最新値を読み込みますか?\n(保存していない変更は失われます)',
+                  )
+                )
+                  return
+                // local state を server snapshot で上書き
+                setInitialVersion(item.version)
+                setTitle(item.title)
+                setDescription(item.description ?? '')
+                setStartDate(item.startDate ?? '')
+                setDueDate(item.dueDate ?? '')
+                setIsMust(item.isMust)
+                setDod(item.dod ?? '')
+              }}
+            >
+              最新を読み込み
+            </button>
+          </div>
+        )}
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
           <TabsList className="w-full">
