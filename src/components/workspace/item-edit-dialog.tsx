@@ -355,8 +355,8 @@ function ItemEditDialogInner({
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>担当者</Label>
+              <div className="space-y-1.5" role="group" aria-labelledby="edit-assignees-label">
+                <Label id="edit-assignees-label">担当者</Label>
                 <AssigneePicker
                   workspaceId={workspaceId}
                   value={assignees ?? []}
@@ -364,8 +364,8 @@ function ItemEditDialogInner({
                   disabled={setAssignees.isPending}
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label>タグ</Label>
+              <div className="space-y-1.5" role="group" aria-labelledby="edit-tags-label">
+                <Label id="edit-tags-label">タグ</Label>
                 <TagPicker
                   workspaceId={workspaceId}
                   value={tagIds ?? []}
