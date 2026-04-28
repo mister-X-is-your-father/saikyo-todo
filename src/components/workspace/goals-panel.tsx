@@ -8,7 +8,16 @@
  */
 import { useState } from 'react'
 
-import { ChevronDown, ChevronRight, Plus, Sparkles } from 'lucide-react'
+import {
+  AlertTriangle,
+  CheckCircle,
+  ChevronDown,
+  ChevronRight,
+  Hourglass,
+  Plus,
+  Sparkles,
+  TrendingUp,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 import { isoDaysFromNow, todayISO } from '@/lib/date/iso'
@@ -16,6 +25,7 @@ import { isAppError } from '@/lib/errors'
 
 import { useDecomposeGoal } from '@/features/agent/hooks'
 import { isInvalidDateRange } from '@/features/item/date-range'
+import { computeGoalHealth, type GoalHealthTier } from '@/features/okr/goal-health'
 import {
   useCreateGoal,
   useCreateKeyResult,
@@ -50,6 +60,24 @@ const STATUS_COLOR: Record<GoalStatus, 'default' | 'secondary' | 'outline'> = {
   active: 'default',
   completed: 'secondary',
   archived: 'outline',
+}
+
+// iter301 basics: Goal progress bar の tier 別 tone (色 + icon) を意味付け。
+// iter299 並走 `e0a4d20` で goal-health.ts の AI substrate を整備済、本 iter で UI bind。
+const TIER_BAR_CLASS: Record<GoalHealthTier, string> = {
+  achieved: 'bg-emerald-500',
+  'on-track': 'bg-blue-500',
+  'at-risk': 'bg-amber-500',
+  behind: 'bg-red-500',
+  idle: 'bg-primary',
+}
+
+const TIER_ICON_CLASS: Record<GoalHealthTier, string> = {
+  achieved: 'text-emerald-600',
+  'on-track': 'text-blue-600',
+  'at-risk': 'text-amber-600',
+  behind: 'text-red-600',
+  idle: 'text-muted-foreground',
 }
 
 export function GoalsPanel({ workspaceId }: Props) {
@@ -224,6 +252,25 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
   const status = goal.status as GoalStatus
   const progress = useGoalProgress(open ? goal.id : null)
   const goalPct = progress.data ? Math.round(progress.data.pct * 100) : null
+  // iter301 basics: progress 取得済の時のみ health 計算 (open 時のみ取得される)
+  const health = progress.data
+    ? computeGoalHealth({
+        pct: progress.data.pct,
+        startDate: goal.startDate,
+        endDate: goal.endDate,
+      })
+    : null
+  const tier = health?.tier ?? 'idle'
+  const ToneIcon =
+    tier === 'achieved'
+      ? CheckCircle
+      : tier === 'on-track'
+        ? TrendingUp
+        : tier === 'at-risk'
+          ? Hourglass
+          : tier === 'behind'
+            ? AlertTriangle
+            : null
   const decompose = useDecomposeGoal(workspaceId)
   const update = useUpdateGoal(workspaceId)
 
@@ -287,20 +334,43 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
               {goalPct !== null && (
                 <div className="mt-1.5 space-y-0.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">全体進捗</span>
-                    <span className="font-mono">{goalPct}%</span>
+                    <span className="text-muted-foreground inline-flex items-center gap-1">
+                      {ToneIcon && (
+                        <ToneIcon
+                          aria-hidden="true"
+                          className={`h-3.5 w-3.5 ${TIER_ICON_CLASS[tier]}`}
+                        />
+                      )}
+                      <span>全体進捗</span>
+                      {health && <span className="sr-only">({health.label})</span>}
+                    </span>
+                    <span
+                      className={`font-mono ${
+                        tier === 'behind'
+                          ? 'text-destructive'
+                          : tier === 'achieved'
+                            ? 'text-emerald-700'
+                            : ''
+                      }`}
+                    >
+                      {goalPct}%
+                    </span>
                   </div>
                   <div
                     className="bg-muted h-1.5 w-full overflow-hidden rounded-full"
                     role="progressbar"
-                    aria-label={`Goal「${goal.title}」全体進捗`}
+                    aria-label={`Goal「${goal.title}」全体進捗${health ? ` (${health.label})` : ''}`}
                     aria-valuenow={goalPct}
                     aria-valuemin={0}
                     aria-valuemax={100}
-                    aria-valuetext={`${goalPct}%`}
+                    aria-valuetext={`${goalPct}%${health ? ` — ${health.label}` : ''}`}
                     data-testid={`goal-progress-${goal.id}`}
+                    data-tier={tier}
                   >
-                    <div className="bg-primary h-full" style={{ width: `${goalPct}%` }} />
+                    <div
+                      className={`${TIER_BAR_CLASS[tier]} h-full`}
+                      style={{ width: `${goalPct}%` }}
+                    />
                   </div>
                 </div>
               )}
