@@ -17,8 +17,18 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ### 2026-04-28 (iter257 中) — サブタスク graphical 表示 ★★★ P0 最優先 ★★★
 
-- [ ] **サブタスクを 1, 2, 3 番号付きで graphical に、依存があれば順番表示、チャンク (まとまり) で grouped、Kanban / List メニューから開ける** — 分類: 実装要望 (大、**P0 最優先・真剣依頼**)
+- 🚧 **サブタスクを 1, 2, 3 番号付きで graphical に、依存があれば順番表示、チャンク (まとまり) で grouped、Kanban / List メニューから開ける** — 分類: 実装要望 (大、**P0 最優先・真剣依頼**)
   - **ユーザ強調**: 「**真剣に実装頼んだ**」 — 次 iter で **本 entry を最優先消化**、ラフな実装は許容しない、main 級品質で複数 iter にわたって完遂すること
+  - **進捗 (scope A 完了)**:
+    - [x] `c242409`: foundation — `subtasks-panel.tsx` に番号 1, 2, 3... + status icon (Lucide) + 配色チップ + `<ol>` 化。`subtask-status.ts` pure helper + 9/9 test。
+    - [x] **e2e 探索 (Playwright MCP)** — signup → workspace → parent task QuickAdd → subtasks bulk add 5 件 → 子タスク tab で表示確認。5 status (todo=slate / in_progress=blue / done=green + 未知 / blocked=amber) すべての色/icon が正しく描画。screenshot: `subtasks-panel-iter279-{foundation,multi-status,mobile}.png` (gitignored)。
+    - [x] **モバイル (375px) 対応確認**: status label は `hidden sm:inline` で隠れ、icon のみで省スペース。番号 + icon + title が viewport 内に綺麗に収まる。
+    - [x] done item の title が `text-muted-foreground` で muted (視覚 delight)。
+    - [ ] **scope B**: React Flow ベース DAG modal (Kanban カードの「⊞ flow」 button から開く) — 4 件選択肢を提示中、ユーザ判断待ち
+    - [ ] **scope C**: チャンク (auto-cluster) を含むフル graphical view — POST_MVP 寄り
+  - **e2e で発見した別件 bug (queue 化、scope A 影響あり)**:
+    - **bulk add で全 child の position が `'a0'`** — `itemService.create` が position を計算せず DB default `'a0'` のまま insert する。bulk 5 件追加すると全部 `'a0'` で並び順が undefined になる。番号表示 (1,2,3...) は `localeCompare(position)` 同点だと挿入順依存で意味が薄れる。
+    - 修正 scope: `service.create` に「parentPath が同じ siblings の最大 position を取って `positionBetween(maxPos, null)` で次を計算」を追加 (5-15 行)。既存 `positionBetween` helper 流用。create test に「2 つ続けて作ったら position が異なる」 assert 追加。
   - 原文: 「サブタスクめっちゃグラフィカルに 1 2 3 みたいにして依存とかあれば順番表示して、チャンクをまとめてほしい。看板メニューやリストメニューからそういったのが表示できる。で、めっちゃグラフィカルに今の各タスクのステータスがわかる」
   - 仮解釈:
     - (1) サブタスクの **「順序付き番号 (1, 2, 3...)」** 表示。現在の subtasks-panel は flat list なので、`fractional_position` or 依存 graph topological sort 順を視覚化
