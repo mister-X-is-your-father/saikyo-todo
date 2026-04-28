@@ -15,6 +15,7 @@ import { mutateWithGuard } from '@/lib/service-mutate'
 
 import { dispatchItemEvent } from '@/features/workflow/dispatcher'
 
+import { violatesMustDodInvariant } from './must-dod'
 import { type AssigneeRef, itemRepository } from './repository'
 import {
   CreateItemInputSchema,
@@ -100,7 +101,7 @@ export const itemService = {
           parsed.data.patch as Partial<Parameters<typeof itemRepository.insert>[1]>,
         )
         if (!updated) return err(new ConflictError())
-        if (updated.isMust && (!updated.dod || updated.dod.trim() === '')) {
+        if (violatesMustDodInvariant(updated)) {
           return err(new ValidationError('MUST には DoD が必要です'))
         }
         await recordAudit(tx, {
@@ -141,7 +142,7 @@ export const itemService = {
           before.workspaceId,
           parsed.data.status,
         )
-        if (newType === 'done' && before.isMust && (!before.dod || before.dod.trim() === '')) {
+        if (newType === 'done' && violatesMustDodInvariant(before)) {
           return err(new ValidationError('MUST を done にするには DoD が必要です'))
         }
 
@@ -195,7 +196,7 @@ export const itemService = {
           ? await itemRepository.findDoneStatusKey(tx, before.workspaceId)
           : await itemRepository.findTodoStatusKey(tx, before.workspaceId)
         if (!targetKey) return err(new ValidationError('遷移先 status が見つかりません'))
-        if (input.complete && before.isMust && (!before.dod || before.dod.trim() === '')) {
+        if (input.complete && violatesMustDodInvariant(before)) {
           return err(new ValidationError('MUST を done にするには DoD が必要です'))
         }
         const updated = await itemRepository.updateWithLock(tx, input.id, input.expectedVersion, {
@@ -632,7 +633,7 @@ export const itemService = {
           failed.push({ id, reason: 'unknown_status' })
           continue
         }
-        if (newType === 'done' && before.isMust && (!before.dod || before.dod.trim() === '')) {
+        if (newType === 'done' && violatesMustDodInvariant(before)) {
           failed.push({ id, reason: 'must_without_dod' })
           continue
         }
