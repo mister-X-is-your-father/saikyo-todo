@@ -386,8 +386,29 @@ function ItemEditDialogInner({
             </label>
             {isMust && (
               <div className="space-y-1.5">
-                <Label htmlFor="editDod">DoD (完了条件)</Label>
-                <IMEInput id="editDod" value={dod} onChange={(e) => setDod(e.target.value)} />
+                <Label htmlFor="editDod">
+                  DoD (完了条件)
+                  <span className="ml-1 text-red-600" aria-hidden="true">
+                    *
+                  </span>
+                </Label>
+                <IMEInput
+                  id="editDod"
+                  value={dod}
+                  onChange={(e) => setDod(e.target.value)}
+                  required
+                  aria-required="true"
+                  aria-describedby="editDod-hint"
+                  data-testid="edit-item-dod"
+                />
+                <p
+                  id="editDod-hint"
+                  className="text-muted-foreground text-[11px]"
+                  data-testid="edit-item-dod-hint"
+                >
+                  MUST タスクは DoD (Definition of Done) が必須です。空欄では保存・done
+                  遷移できません。
+                </p>
               </div>
             )}
           </TabsContent>
