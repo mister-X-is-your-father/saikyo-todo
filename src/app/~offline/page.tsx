@@ -29,7 +29,11 @@ export default function OfflinePage() {
         最強TODO はオフラインでもアプリ自体は表示されますが、 Item の作成 /
         同期にはオンライン接続が必要です。
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+      <div
+        role="group"
+        aria-label="復帰アクション"
+        className="flex flex-wrap items-center justify-center gap-2 pt-2"
+      >
         <OfflineRetryButton />
         <Link href="/" className={buttonVariants({ variant: 'outline' })} aria-label="ホームに戻る">
           ホームに戻る
