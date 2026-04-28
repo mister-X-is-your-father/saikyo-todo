@@ -68,6 +68,82 @@ export function dueProximityLabel(kind: DueProximityKind): string {
   return LABEL[kind]
 }
 
+/** 6 種 kind を全部空配列で初期化したテンプレ (Object.keys 順固定用)。 */
+const KIND_ORDER: readonly DueProximityKind[] = [
+  'overdue',
+  'today',
+  'tomorrow',
+  'thisWeek',
+  'later',
+  'noDate',
+] as const
+
+export type DueProximityGroups<T> = Record<DueProximityKind, T[]>
+
+/**
+ * iter289 ai-automation: items を期限近接バケット別の配列に振り分ける。
+ *
+ * AI brief / pm-agent / dashboard widget が「期限切れ 3 件 / 今日 2 件 …」
+ * を 1 関数で出せる substrate。done/archive 済を除外したい場合は caller 側で
+ * 先に filter してから渡すこと (本関数は dueDate しか見ない)。
+ *
+ * 順序: 元配列順を保つ stable group 化 (per-kind 内は元順)。
+ * 各 kind は必ず空配列で初期化されるので `groups.thisWeek.length` のような
+ * undefined チェック不要のアクセスができる。
+ */
+export function groupItemsByDueProximity<T extends { dueDate: string | null | undefined }>(
+  items: readonly T[],
+  today: Date | string = new Date(),
+): DueProximityGroups<T> {
+  const groups: DueProximityGroups<T> = {
+    overdue: [],
+    today: [],
+    tomorrow: [],
+    thisWeek: [],
+    later: [],
+    noDate: [],
+  }
+  for (const it of items) {
+    const { kind } = getDueProximity(it.dueDate, today)
+    groups[kind].push(it)
+  }
+  return groups
+}
+
+/**
+ * iter289 ai-automation: items を期限近接バケット別の件数だけに圧縮。
+ * AI prompt の context 行 (`期限切れ 3 / 今日 2 / 明日 1 / 今週内 4 / 今後 8 / 未設定 2`)
+ * を作る時に便利。
+ */
+export function countItemsByDueProximity(
+  items: readonly { dueDate: string | null | undefined }[],
+  today: Date | string = new Date(),
+): Record<DueProximityKind, number> {
+  const counts = {
+    overdue: 0,
+    today: 0,
+    tomorrow: 0,
+    thisWeek: 0,
+    later: 0,
+    noDate: 0,
+  } satisfies Record<DueProximityKind, number>
+  for (const it of items) {
+    const { kind } = getDueProximity(it.dueDate, today)
+    counts[kind] += 1
+  }
+  return counts
+}
+
+/** AI prompt 行 / dashboard chip 用の 1 行 summary (件数 0 の bucket は省略)。 */
+export function formatDueProximityCounts(counts: Record<DueProximityKind, number>): string {
+  const parts: string[] = []
+  for (const k of KIND_ORDER) {
+    const n = counts[k]
+    if (n > 0) parts.push(`${LABEL[k]} ${n}`)
+  }
+  return parts.length === 0 ? '0 件' : parts.join(' / ')
+}
+
 function toLocalMidnight(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate())
 }

@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { dueProximityLabel, getDueProximity } from './due-proximity'
+import {
+  countItemsByDueProximity,
+  dueProximityLabel,
+  formatDueProximityCounts,
+  getDueProximity,
+  groupItemsByDueProximity,
+} from './due-proximity'
 
 const TODAY = '2026-04-27'
 
@@ -115,5 +121,110 @@ describe('dueProximityLabel', () => {
     expect(dueProximityLabel('thisWeek')).toBe('今週内')
     expect(dueProximityLabel('later')).toBe('今後')
     expect(dueProximityLabel('noDate')).toBe('未設定')
+  })
+})
+
+describe('groupItemsByDueProximity', () => {
+  const items = [
+    { id: 'a', dueDate: '2026-04-22' }, // overdue
+    { id: 'b', dueDate: '2026-04-27' }, // today
+    { id: 'c', dueDate: '2026-04-28' }, // tomorrow
+    { id: 'd', dueDate: '2026-04-30' }, // thisWeek (+3)
+    { id: 'e', dueDate: '2026-05-04' }, // later (+7)
+    { id: 'f', dueDate: null }, // noDate
+    { id: 'g', dueDate: 'garbage' }, // noDate
+  ]
+
+  it('全 6 kind が空配列で初期化される', () => {
+    const groups = groupItemsByDueProximity([], TODAY)
+    expect(groups.overdue).toEqual([])
+    expect(groups.today).toEqual([])
+    expect(groups.tomorrow).toEqual([])
+    expect(groups.thisWeek).toEqual([])
+    expect(groups.later).toEqual([])
+    expect(groups.noDate).toEqual([])
+  })
+
+  it('閾値どおりに振り分け', () => {
+    const groups = groupItemsByDueProximity(items, TODAY)
+    expect(groups.overdue.map((i) => i.id)).toEqual(['a'])
+    expect(groups.today.map((i) => i.id)).toEqual(['b'])
+    expect(groups.tomorrow.map((i) => i.id)).toEqual(['c'])
+    expect(groups.thisWeek.map((i) => i.id)).toEqual(['d'])
+    expect(groups.later.map((i) => i.id)).toEqual(['e'])
+    expect(groups.noDate.map((i) => i.id)).toEqual(['f', 'g'])
+  })
+
+  it('元配列順を保つ (stable)', () => {
+    const reversed = [
+      { id: 'd', dueDate: '2026-04-30' },
+      { id: 'b', dueDate: '2026-04-27' },
+      { id: 'a', dueDate: '2026-04-22' },
+    ]
+    const groups = groupItemsByDueProximity(reversed, TODAY)
+    expect(groups.thisWeek.map((i) => i.id)).toEqual(['d'])
+    expect(groups.today.map((i) => i.id)).toEqual(['b'])
+    expect(groups.overdue.map((i) => i.id)).toEqual(['a'])
+  })
+})
+
+describe('countItemsByDueProximity', () => {
+  it('全 0 で初期化される', () => {
+    const c = countItemsByDueProximity([], TODAY)
+    expect(c).toEqual({ overdue: 0, today: 0, tomorrow: 0, thisWeek: 0, later: 0, noDate: 0 })
+  })
+
+  it('items の数だけ増える', () => {
+    const items = [
+      { dueDate: '2026-04-22' },
+      { dueDate: '2026-04-22' },
+      { dueDate: '2026-04-27' },
+      { dueDate: null },
+    ]
+    const c = countItemsByDueProximity(items, TODAY)
+    expect(c.overdue).toBe(2)
+    expect(c.today).toBe(1)
+    expect(c.noDate).toBe(1)
+    expect(c.tomorrow).toBe(0)
+  })
+})
+
+describe('formatDueProximityCounts', () => {
+  it('全 0 → "0 件"', () => {
+    expect(
+      formatDueProximityCounts({
+        overdue: 0,
+        today: 0,
+        tomorrow: 0,
+        thisWeek: 0,
+        later: 0,
+        noDate: 0,
+      }),
+    ).toBe('0 件')
+  })
+
+  it('0 件の bucket は省略 / kind 順を保つ', () => {
+    const s = formatDueProximityCounts({
+      overdue: 3,
+      today: 0,
+      tomorrow: 1,
+      thisWeek: 4,
+      later: 0,
+      noDate: 2,
+    })
+    expect(s).toBe('期限切れ 3 / 明日 1 / 今週内 4 / 未設定 2')
+  })
+
+  it('1 bucket のみ', () => {
+    expect(
+      formatDueProximityCounts({
+        overdue: 0,
+        today: 5,
+        tomorrow: 0,
+        thisWeek: 0,
+        later: 0,
+        noDate: 0,
+      }),
+    ).toBe('今日 5')
   })
 })
