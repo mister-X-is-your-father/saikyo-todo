@@ -3,25 +3,33 @@
 /**
  * Item に関する Activity (audit_log) 一覧表示。
  * - admin 以上のみ閲覧可能 (サービス層で fallback 空配列)
- * - action ごとにラベル日本語化、before/after は JSON 折りたたみ
+ * - iter298 basics: 各 action 行頭に icon + 配色 chip (graphical 波及シリーズ)
+ * - before/after は JSON 折りたたみ
  */
 import { useState } from 'react'
 
+import {
+  Activity as ActivityIcon,
+  ArrowRightLeft,
+  CheckCircle2,
+  Pencil,
+  Plus,
+  RotateCcw,
+  Trash2,
+} from 'lucide-react'
+
+import { type AuditActionIconKey, getAuditActionVisual } from '@/features/audit/action-visual'
 import { useAuditByTargetItem } from '@/features/audit/hooks'
 
-const ACTION_LABEL: Record<string, string> = {
-  create: '作成',
-  update: '更新',
-  status_change: 'ステータス変更',
-  bulk_status_change: '一括ステータス変更',
-  complete: '完了',
-  uncomplete: '完了取消',
-  move: '移動',
-  reorder: '並び替え',
-  delete: '削除',
-  bulk_delete: '一括削除',
-  set_assignees: '担当者変更',
-  set_tags: 'タグ変更',
+/** action-visual の iconKey から Lucide component に map (status-visual と同パターン)。 */
+const ACTION_ICON: Record<AuditActionIconKey, typeof ActivityIcon> = {
+  plus: Plus,
+  pencil: Pencil,
+  'arrow-right-left': ArrowRightLeft,
+  'check-circle': CheckCircle2,
+  'rotate-ccw': RotateCcw,
+  trash: Trash2,
+  activity: ActivityIcon,
 }
 
 export function ActivityLog({ itemId }: { itemId: string }) {
@@ -62,13 +70,27 @@ function ActivityRow({
   entry: ReturnType<typeof useAuditByTargetItem>['data'] extends (infer U)[] | undefined ? U : never
 }) {
   const [open, setOpen] = useState(false)
-  const label = ACTION_LABEL[entry.action] ?? entry.action
+  const visual = getAuditActionVisual(entry.action)
+  const Icon = ACTION_ICON[visual.iconKey]
+  const label = visual.label === '操作' ? entry.action : visual.label
   const hasDetail = entry.before != null || entry.after != null
   const detailId = `activity-detail-${entry.id}`
   return (
-    <li className="rounded border p-2 text-xs" data-testid={`activity-row-${entry.id}`}>
+    <li
+      className="rounded border p-2 text-xs"
+      data-testid={`activity-row-${entry.id}`}
+      data-action={entry.action}
+    >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
+          <span
+            className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full ring-1 ring-inset ${visual.bgClass} ${visual.textClass} ${visual.ringClass}`}
+            role="img"
+            aria-label={`操作種別: ${label}`}
+            data-testid={`activity-action-icon-${entry.action}`}
+          >
+            <Icon className="h-3 w-3" aria-hidden="true" />
+          </span>
           <span className="font-medium">{label}</span>
           <span
             className={`rounded px-1.5 py-0.5 text-[10px] ${
