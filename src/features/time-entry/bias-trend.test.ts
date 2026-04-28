@@ -5,22 +5,29 @@ import { buildItemDescriptionLookup } from './bias-selector'
 import { computeBiasTrend, formatBiasTrendJa, splitSamplesByDate } from './bias-trend'
 import type { TimeEntry } from './schema'
 
-const entry = (overrides: Partial<TimeEntry>): TimeEntry =>
-  ({
-    id: 'tt-' + Math.random().toString(36).slice(2, 10),
-    workspaceId: 'ws-1',
-    userId: 'u-1',
-    itemId: null,
-    workDate: '2026-04-25',
-    category: 'dev',
-    description: '',
-    durationMinutes: 30,
-    idempotencyKey: '00000000-0000-0000-0000-000000000000',
-    createdAt: new Date('2026-04-25T08:00:00Z'),
-    updatedAt: new Date('2026-04-25T08:00:00Z'),
-    deletedAt: null,
-    ...overrides,
-  }) as unknown as TimeEntry
+// iter270 refactor: 元実装は `as unknown as TimeEntry` の二重 cast に頼っていたが
+// TimeEntry の実フィールドと fixture を揃えれば直接代入できる (idempotencyKey は
+// schema 側に存在しないので削除、syncStatus / syncAttempts / syncError /
+// externalRef / version を schema (mutationMarkers + timestamps) と一致させた)。
+const entry = (overrides: Partial<TimeEntry>): TimeEntry => ({
+  id: 'tt-' + Math.random().toString(36).slice(2, 10),
+  workspaceId: 'ws-1',
+  userId: 'u-1',
+  itemId: null,
+  workDate: '2026-04-25',
+  category: 'dev',
+  description: '',
+  durationMinutes: 30,
+  syncStatus: 'pending',
+  syncAttempts: 0,
+  syncError: null,
+  externalRef: null,
+  createdAt: new Date('2026-04-25T08:00:00Z'),
+  updatedAt: new Date('2026-04-25T08:00:00Z'),
+  deletedAt: null,
+  version: 0,
+  ...overrides,
+})
 
 const report = (overrides: Partial<EstimateBiasReport>): EstimateBiasReport => ({
   totalCount: 5,
