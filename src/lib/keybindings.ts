@@ -34,6 +34,21 @@ export const KEYBINDINGS: Keybinding[] = [
     group: 'Item',
   },
 
+  // --- Today カーソル (j/k Vim 風) ---
+  { combo: 'j / ↓', description: 'Today: 次の Item にカーソル移動', group: 'Today' },
+  { combo: 'k / ↑', description: 'Today: 前の Item にカーソル移動', group: 'Today' },
+  {
+    combo: 'Enter / e',
+    description: 'Today: カーソル位置の Item を編集ダイアログで開く',
+    group: 'Today',
+  },
+  {
+    combo: 'x / Space',
+    description: 'Today: カーソル位置の Item を完了/未完了に切替',
+    group: 'Today',
+  },
+  { combo: 'Esc', description: 'Today: カーソル選択を解除 (ダイアログ未表示時)', group: 'Today' },
+
   // --- グローバル ---
   { combo: 'Cmd+K / Ctrl+K', description: 'コマンドパレットを開く', group: 'グローバル' },
   { combo: '?', description: 'このショートカット一覧を開く', group: 'グローバル' },
