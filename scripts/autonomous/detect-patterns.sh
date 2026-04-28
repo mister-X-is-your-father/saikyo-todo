@@ -43,16 +43,28 @@ else
   echo "1. Lint warnings: skipped (--no-lint or pnpm/node_modules 不在)"
 fi
 
-# 2. TODO/FIXME/あとで/hack
-TODO_COUNT=$(git grep -E '(TODO|FIXME|あとで|hack)' -- 'src/**/*.ts' 'src/**/*.tsx' 2>/dev/null \
-  | wc -l | tr -d ' ')
-echo "2. TODO/FIXME/あとで/hack in src/: $TODO_COUNT"
+# 2. 実際にコメントとして書かれた actionable TODO/FIXME/HACK/あとで のみ。
+#    旧実装は `(TODO|FIXME|あとで|hack)` を素朴 grep していたため製品名 `最強TODO` /
+#    enum `'todo'` / 説明文 `TODO サービス` が大量に false positive 化していた
+#    (iter254 で 18/18 中 17 件が偽陽性)。
+#    src/lib/autonomous/patterns.ts::isActionableCodeTodo と同義: コメント文脈
+#    (`//` / `/*` / JSDoc `* `) + actionable 接尾 (`:` か `(`) を要求。
+#    `src/lib/autonomous/` は本検出器自身のソース + テスト fixture が住む場所
+#    なので exclude する (それ以外で TODO が出たら本物の actionable コメント)。
+TODO_COUNT=$({ git grep -nE '(//|/\*|^[[:space:]]*\*[[:space:]]).*\b(TODO|FIXME|HACK)\b[[:space:]]*[:(]|(//|/\*|^[[:space:]]*\*[[:space:]]).*あとで[[:space:]]*[:(]' \
+  -- 'src/**/*.ts' 'src/**/*.tsx' ':(exclude)src/lib/autonomous/' 2>/dev/null || true; } | wc -l | tr -d ' ')
+echo "2. Actionable TODO/FIXME/HACK in code comments: $TODO_COUNT"
 
-# 3. 直近 5 commit の any leak
-ANY_LEAK=$(git log -5 -p 2>/dev/null \
-  | grep -cE '^\+.*\b(any|as unknown as|@ts-expect-error)\b' || true)
+# 3. 直近 5 commit の TS escape-hatch 追加。
+#    src/lib/autonomous/patterns.ts::parseAnyLeaks と同義の構文限定 regex で
+#    `recentAnyLeak` 等 identifier 内 substring を拾わない。pathspec で md / json
+#    の単純な文字列 hit (HANDOFF.md 等) も除外。
+ANY_LEAK=$(git log -5 -p -- 'src/**/*.ts' 'src/**/*.tsx' 2>/dev/null \
+  | grep -v '^+++' \
+  | grep -cE '^\+.*(:[[:space:]]*any\b|\bas[[:space:]]+any\b|\bas[[:space:]]+unknown[[:space:]]+as\b|<[[:space:]]*any[[:space:]]*[,>]|,[[:space:]]*any[[:space:]]*[,>]|@ts-(expect-error|ignore)\b)' \
+  || true)
 ANY_LEAK=${ANY_LEAK:-0}
-echo "3. Recent any/as unknown as/@ts-expect-error (last 5 commits): $ANY_LEAK"
+echo "3. Recent TS escape-hatch additions (\`: any\` / \`as any\` / \`as unknown as\` / generic any / @ts-expect-error|ignore) in src/, last 5 commits: $ANY_LEAK"
 
 # 4. hotspot ファイル top 5 (直近 10 commit で 5 回以上)
 echo "4. Hotspot files (≥5 changes in last 10 commits):"

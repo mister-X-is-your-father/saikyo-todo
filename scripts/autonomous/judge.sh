@@ -44,9 +44,17 @@ case "$MOD" in
   0)   TRACK="refactor" ;;
 esac
 
-# リファクタ割り込み条件の軽量チェック (詳細値は detect-patterns.sh が出す)
-TODO_COUNT=$(git grep -E '(TODO|FIXME|あとで|hack)' -- 'src/**/*.ts' 'src/**/*.tsx' 2>/dev/null | wc -l | tr -d ' ')
-RECENT_ANY=$(git log -5 -p 2>/dev/null | grep -cE '^\+.*\b(any|as unknown as|@ts-expect-error)\b' || true)
+# リファクタ割り込み条件の軽量チェック (詳細値は detect-patterns.sh が出す)。
+# TODO regex は src/lib/autonomous/patterns.ts::isActionableCodeTodo と同義:
+#   コメント文脈 (// or /* or JSDoc `* `) + actionable 接尾 (`:` か `(`)。
+# any-leak regex は src/lib/autonomous/patterns.ts::parseAnyLeaks と同義:
+#   TS 構文として escape-hatch を意味する形だけ拾う。
+TODO_COUNT=$({ git grep -nE '(//|/\*|^[[:space:]]*\*[[:space:]]).*\b(TODO|FIXME|HACK)\b[[:space:]]*[:(]|(//|/\*|^[[:space:]]*\*[[:space:]]).*あとで[[:space:]]*[:(]' \
+  -- 'src/**/*.ts' 'src/**/*.tsx' ':(exclude)src/lib/autonomous/' 2>/dev/null || true; } | wc -l | tr -d ' ')
+RECENT_ANY=$(git log -5 -p -- 'src/**/*.ts' 'src/**/*.tsx' 2>/dev/null \
+  | grep -v '^+++' \
+  | grep -cE '^\+.*(:[[:space:]]*any\b|\bas[[:space:]]+any\b|\bas[[:space:]]+unknown[[:space:]]+as\b|<[[:space:]]*any[[:space:]]*[,>]|,[[:space:]]*any[[:space:]]*[,>]|@ts-(expect-error|ignore)\b)' \
+  || true)
 
 INTERRUPTS=()
 if [[ "$TODO_COUNT" -ge 5 ]]; then
