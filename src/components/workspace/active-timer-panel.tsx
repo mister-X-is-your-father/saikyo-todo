@@ -25,7 +25,9 @@ import { v4 as uuidv4 } from 'uuid'
 import { isAppError } from '@/lib/errors'
 import { formatElapsed, formatVariance, useActiveTimerStore } from '@/lib/stores/active-timer'
 
+import { applyBiasCalibration } from '@/features/time-entry/bias-calibration'
 import { useCreateTimeEntry } from '@/features/time-entry/hooks'
+import { useEstimateCalibration } from '@/features/time-entry/use-estimate-calibration'
 
 import { Button } from '@/components/ui/button'
 
@@ -48,6 +50,12 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
   const stopFn = useActiveTimerStore((s) => s.stop)
   const elapsedFn = useActiveTimerStore((s) => s.elapsedMs)
   const create = useCreateTimeEntry(workspaceId)
+  // iter271 basics: 直近 bias の校正値を計算し、見積 chip 横に「→ 39分」を併記。
+  // QuickAdd preview と同じ pattern (iter267)。delta=0 / factor=null は非表示。
+  const { calibrationFactor } = useEstimateCalibration(workspaceId)
+  const calibrated = estimateMinutes
+    ? applyBiasCalibration(estimateMinutes, calibrationFactor)
+    : null
 
   // 1 秒ごとに再 render (running 中のみ)。値 source は store の wall-clock 計算なので
   // tick ズレが起きても累積は正しい。
@@ -108,6 +116,16 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
               aria-label={`見積 ${estimateMinutes}分`}
             >
               見積 {estimateMinutes}分
+            </span>
+          ) : null}
+          {calibrated && calibrated.deltaMinutes !== 0 ? (
+            <span
+              className="ml-1 rounded border border-cyan-200 bg-cyan-50 px-1 text-[9px] text-cyan-600"
+              data-testid="active-timer-estimate-calibrated"
+              title={`直近の見積精度に基づく校正値 (中央値 ${calibrationFactor?.toFixed(2)}×)`}
+              aria-label={`校正後 ${calibrated.calibratedMinutes}分 (${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分)`}
+            >
+              → {calibrated.calibratedMinutes}分
             </span>
           ) : null}
         </div>
