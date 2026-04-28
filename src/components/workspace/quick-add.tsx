@@ -126,14 +126,16 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
         <Button
           type="button"
           onClick={() => void submit()}
-          disabled={create.isPending || !preview?.title}
+          disabled={create.isPending || !preview?.title || (preview?.isMust ?? false)}
           data-testid="quick-add-submit"
           aria-label={
             !preview?.title
               ? 'タスクを作成するにはタイトルを入力してください'
-              : create.isPending
-                ? `「${preview.title}」を作成中…`
-                : `「${preview.title}」を作成`
+              : preview.isMust
+                ? 'MUST タスクは編集ダイアログから DoD を入力して作成してください'
+                : create.isPending
+                  ? `「${preview.title}」を作成中…`
+                  : `「${preview.title}」を作成`
           }
         >
           {create.isPending ? '...' : '作成'}
@@ -171,7 +173,18 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
             </span>
           ))}
           {preview.isMust && (
-            <span className="rounded bg-red-100 px-1.5 py-0.5 font-medium text-red-700">MUST</span>
+            <>
+              <span className="rounded bg-red-100 px-1.5 py-0.5 font-medium text-red-700">
+                MUST
+              </span>
+              <span
+                className="rounded border border-red-300 bg-red-50 px-1.5 py-0.5 text-[10px] text-red-700"
+                role="alert"
+                data-testid="quick-add-must-warn"
+              >
+                ⚠ 編集ダイアログで DoD を入れてください
+              </span>
+            </>
           )}
           {preview.decomposeHint && (
             <span className="rounded bg-violet-100 px-1.5 py-0.5 text-violet-700">
