@@ -96,6 +96,7 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
         emptyText="前提条件はありません"
         items={blockedBy}
         onRemove={(ref) => handleRemove({ fromItemId: ref.id, toItemId: item.id, type: 'blocks' })}
+        removing={remove.isPending}
         accent="rose"
       />
       <Section
@@ -103,6 +104,7 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
         emptyText="後続タスクはありません"
         items={blocking}
         onRemove={(ref) => handleRemove({ fromItemId: item.id, toItemId: ref.id, type: 'blocks' })}
+        removing={remove.isPending}
         accent="amber"
       />
       <Section
@@ -112,6 +114,7 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
         onRemove={(ref) =>
           handleRemove({ fromItemId: item.id, toItemId: ref.id, type: 'relates_to' })
         }
+        removing={remove.isPending}
         accent="slate"
       />
 
@@ -181,6 +184,7 @@ function Section({
   emptyText,
   items,
   onRemove,
+  removing,
   accent,
 }: {
   title: string
@@ -190,6 +194,7 @@ function Section({
     createdAt: Date
   }>
   onRemove: (ref: { id: string; title: string; status: string }) => void
+  removing?: boolean
   accent: 'rose' | 'amber' | 'slate'
 }) {
   const accentClass =
@@ -229,8 +234,11 @@ function Section({
                 variant="ghost"
                 size="sm"
                 onClick={() => onRemove(ref)}
+                disabled={removing}
                 data-testid={`dep-remove-${ref.id}`}
-                aria-label={`依存「${ref.title}」を解除`}
+                aria-label={
+                  removing ? `依存「${ref.title}」を解除中…` : `依存「${ref.title}」を解除`
+                }
                 title={`依存「${ref.title}」を解除`}
               >
                 解除
