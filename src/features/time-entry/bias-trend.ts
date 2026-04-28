@@ -86,3 +86,30 @@ export function formatBiasTrendJa(trend: BiasTrend): string {
   }
   return `見積精度の変化: 悪化 (${p}× → ${r}×)`
 }
+
+/**
+ * iter274 ai-automation: Slack reaction / dashboard sparkline / pm-agent prompt
+ * 用に「1 文字 emoji + 1 単語 label」の最小ラベルを返す。色 tone は呼び出し側で
+ * direction を見て決める。
+ *
+ * - improving → ↑ 改善
+ * - worsening → ↓ 悪化
+ * - stable → → 安定
+ * - inconclusive → · データ不足
+ */
+export function formatBiasTrendBadge(direction: BiasTrendDirection): {
+  glyph: string
+  label: string
+} {
+  switch (direction) {
+    case 'improving':
+      return { glyph: '↑', label: '改善' }
+    case 'worsening':
+      return { glyph: '↓', label: '悪化' }
+    case 'stable':
+      return { glyph: '→', label: '安定' }
+    case 'inconclusive':
+    default:
+      return { glyph: '·', label: 'データ不足' }
+  }
+}

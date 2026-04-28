@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest'
 
 import type { EstimateBiasReport } from './bias'
 import { buildItemDescriptionLookup } from './bias-selector'
-import { computeBiasTrend, formatBiasTrendJa, splitSamplesByDate } from './bias-trend'
+import {
+  computeBiasTrend,
+  formatBiasTrendBadge,
+  formatBiasTrendJa,
+  splitSamplesByDate,
+} from './bias-trend'
 import type { TimeEntry } from './schema'
 
 // iter270 refactor: 元実装は `as unknown as TimeEntry` の二重 cast に頼っていたが
@@ -175,5 +180,22 @@ describe('formatBiasTrendJa', () => {
     expect(formatBiasTrendJa(t)).toBe(
       '見積精度の変化: データ不足で判定不能 (各期間 3 件以上のサンプルが必要)',
     )
+  })
+})
+
+// iter274 ai-automation: Slack reaction / dashboard sparkline / pm-agent prompt
+// 用の最小 label。「↑ 改善」「↓ 悪化」「→ 安定」「· データ不足」
+describe('formatBiasTrendBadge', () => {
+  it('improving → ↑ 改善', () => {
+    expect(formatBiasTrendBadge('improving')).toEqual({ glyph: '↑', label: '改善' })
+  })
+  it('worsening → ↓ 悪化', () => {
+    expect(formatBiasTrendBadge('worsening')).toEqual({ glyph: '↓', label: '悪化' })
+  })
+  it('stable → → 安定', () => {
+    expect(formatBiasTrendBadge('stable')).toEqual({ glyph: '→', label: '安定' })
+  })
+  it('inconclusive → · データ不足', () => {
+    expect(formatBiasTrendBadge('inconclusive')).toEqual({ glyph: '·', label: 'データ不足' })
   })
 })
