@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { extractEstimateMinutes, formatEstimate, parseEstimateFromText } from './estimate'
+import {
+  extractEstimateMinutes,
+  formatEstimate,
+  formatItemEstimateSummary,
+  parseEstimateFromText,
+  summarizeItemEstimates,
+} from './estimate'
 
 // iter255 refactor: nl-parse.ts から estimate ロジックを切り出した際の補強。
 // 既存の nl-parse.test.ts (parseQuickAdd 経由) も re-export 経由で同じ関数を踏むので、
@@ -70,5 +76,108 @@ describe('round-trip: format → extract', () => {
 
   it('format した文字列が extract で復元できる (180 分 = 3 時間)', () => {
     expect(extractEstimateMinutes(`見積: ${formatEstimate(180)}`)).toBe(180)
+  })
+})
+
+// iter297 ai-automation: AI brief / dashboard widget 用の集計 helper
+describe('summarizeItemEstimates', () => {
+  it('空配列 → 全 0', () => {
+    expect(summarizeItemEstimates([])).toEqual({
+      totalMinutes: 0,
+      withEstimateCount: 0,
+      withoutEstimateCount: 0,
+      count: 0,
+    })
+  })
+
+  it('全件見積あり', () => {
+    const items = [
+      { description: '見積: 30分' },
+      { description: '見積: 1時間' },
+      { description: '見積: 1時間30分' },
+    ]
+    const r = summarizeItemEstimates(items)
+    expect(r.totalMinutes).toBe(30 + 60 + 90)
+    expect(r.withEstimateCount).toBe(3)
+    expect(r.withoutEstimateCount).toBe(0)
+    expect(r.count).toBe(3)
+  })
+
+  it('一部見積なし (description 空 / 見積 prefix 不在)', () => {
+    const items = [
+      { description: '見積: 30分' },
+      { description: '' }, // 見積なし
+      { description: 'メモ: foo' }, // 見積なし
+      { description: null }, // 見積なし
+    ]
+    const r = summarizeItemEstimates(items)
+    expect(r.totalMinutes).toBe(30)
+    expect(r.withEstimateCount).toBe(1)
+    expect(r.withoutEstimateCount).toBe(3)
+    expect(r.count).toBe(4)
+  })
+
+  it('description undefined も withoutEstimate にカウント', () => {
+    const r = summarizeItemEstimates([{ description: undefined }, { description: '見積: 15分' }])
+    expect(r.totalMinutes).toBe(15)
+    expect(r.withoutEstimateCount).toBe(1)
+  })
+})
+
+describe('formatItemEstimateSummary', () => {
+  it('0 件 → "見積 0 件"', () => {
+    expect(
+      formatItemEstimateSummary({
+        totalMinutes: 0,
+        withEstimateCount: 0,
+        withoutEstimateCount: 0,
+        count: 0,
+      }),
+    ).toBe('見積 0 件')
+  })
+
+  it('全件見積なし', () => {
+    expect(
+      formatItemEstimateSummary({
+        totalMinutes: 0,
+        withEstimateCount: 0,
+        withoutEstimateCount: 5,
+        count: 5,
+      }),
+    ).toBe('見積 0 / 全 5 件')
+  })
+
+  it('全件見積あり ("(うち...)" 省略)', () => {
+    expect(
+      formatItemEstimateSummary({
+        totalMinutes: 270, // 4 時間 30 分
+        withEstimateCount: 3,
+        withoutEstimateCount: 0,
+        count: 3,
+      }),
+    ).toBe('合計 4時間30分 / 3 件')
+  })
+
+  it('一部見積なし ("(うち N 件は見積なし)" 付与)', () => {
+    expect(
+      formatItemEstimateSummary({
+        totalMinutes: 90,
+        withEstimateCount: 1,
+        withoutEstimateCount: 2,
+        count: 3,
+      }),
+    ).toBe('合計 1時間30分 / 3 件 (うち 2 件は見積なし)')
+  })
+
+  it('totalMinutes=0 でも withEstimateCount>0 (異常系) は formatEstimate fallback', () => {
+    // 通常 summarizeItemEstimates で起こらないが defensive に "0分" にフォールバック
+    expect(
+      formatItemEstimateSummary({
+        totalMinutes: 0,
+        withEstimateCount: 1,
+        withoutEstimateCount: 0,
+        count: 1,
+      }),
+    ).toBe('合計 0分 / 1 件')
   })
 })

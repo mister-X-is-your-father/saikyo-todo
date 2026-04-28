@@ -100,3 +100,61 @@ export function extractEstimateMinutes(description: string | null | undefined): 
 function isInRange(minutes: number): boolean {
   return minutes > 0 && minutes <= ESTIMATE_MAX_MINUTES
 }
+
+/**
+ * iter297 ai-automation: items 配列から見積の合計 / 件数 / 未設定 件数 を集計する pure helper。
+ *
+ * AI 朝 brief / dashboard widget が「今日の予定: 合計 4.5時間 / 7件 (うち 2 件は
+ * 見積なし)」のような 1 行 chip を出すための substrate。caller は事前に
+ * 「今日対象の Item」「Sprint 内 Item」等で filter してから渡す前提。
+ *
+ * 戻り値:
+ *   - `totalMinutes`: 見積ありの items の minutes 合計 (見積なしは 0 として加算しない)
+ *   - `withEstimateCount`: 見積を取れた items の件数
+ *   - `withoutEstimateCount`: description から見積を取れなかった items の件数
+ *   - `count`: items.length (受信件数)
+ *
+ * `description` フィールドが必須 (`extractEstimateMinutes` を呼ぶため)。
+ * 未指定 / 空 / 見積なしの description は `withoutEstimateCount` に集計される。
+ */
+export interface ItemEstimateSummary {
+  totalMinutes: number
+  withEstimateCount: number
+  withoutEstimateCount: number
+  count: number
+}
+
+export function summarizeItemEstimates(
+  items: readonly { description: string | null | undefined }[],
+): ItemEstimateSummary {
+  let totalMinutes = 0
+  let withEstimateCount = 0
+  for (const it of items) {
+    const m = extractEstimateMinutes(it.description)
+    if (m !== undefined) {
+      totalMinutes += m
+      withEstimateCount += 1
+    }
+  }
+  return {
+    totalMinutes,
+    withEstimateCount,
+    withoutEstimateCount: items.length - withEstimateCount,
+    count: items.length,
+  }
+}
+
+/**
+ * AI 行 / dashboard chip 用の 1 行 summary。
+ * - 全 0 件 → "見積 0 件"
+ * - 見積なしのみ → "見積 0 / 全 N 件"
+ * - 見積あり → "合計 4.5時間 / N 件 (うち M 件は見積なし)"
+ *   (見積なしが 0 件なら "(うち …)" は省略)
+ */
+export function formatItemEstimateSummary(s: ItemEstimateSummary): string {
+  if (s.count === 0) return '見積 0 件'
+  if (s.withEstimateCount === 0) return `見積 0 / 全 ${s.count} 件`
+  const total = formatEstimate(s.totalMinutes) || '0分'
+  if (s.withoutEstimateCount === 0) return `合計 ${total} / ${s.count} 件`
+  return `合計 ${total} / ${s.count} 件 (うち ${s.withoutEstimateCount} 件は見積なし)`
+}
