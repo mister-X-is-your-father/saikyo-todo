@@ -15,16 +15,12 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ## 未処理 (新しい順)
 
-### 🔥 次 iter で即実装 (P0 最優先、track 判定より優先) 🔥
+### ✅ 2026-04-28 完了 (旧 P0 最優先消化済)
 
-**subtask gap (d) インデント / アウトデント button** が未実装で残っている。
-詳細仕様は本ファイル末尾近くの「(d) インデント (→/← button + Alt+→/←)」 entry
-参照。`src/components/workspace/subtasks-panel.tsx` 内に helper 3 つ + button + hook
-配線で 1 commit 完結 (50-80 行)。期待 commit message:
-`feat(item): subtask に indent/outdent button + Alt+←/→ keyboard (queue: subtask gap d/4)`
-
-**次 iter は basics/ai-automation/refactor の通常 track 判定を上書きして本 entry
-を最優先消化すること** (ユーザ「真剣に実装頼んだ」+ 「op2 (cloud に委任)」確定済)。
+**subtask gap (d) インデント / アウトデント button** は iter290 で `c16d15e` として
+実装済 (cloud loop)。`subtasks-panel-helpers.ts` に 3 pure helper 抽出 + button +
+Alt+←/→ keyboard + DnD cross-parent toast 更新 + helper 単体 test +15 件。
+これで subtask gap a-d 4/4 全消化完了。下記の "(d) インデント" entry も完了印に変更。
 
 ### 2026-04-28 (iter257 中) — サブタスク graphical 表示 ★★★ P0 最優先 ★★★
 
@@ -41,7 +37,7 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
       - [x] **(a) 完了 checkbox** — `a9f1a4b` で実装。各行に既存 `ItemCheckbox` 配置 + done 時 line-through
       - [x] **(b) 再帰表示 + 視覚 group** — `9ca5e46` で実装。`SubtaskTreeNode` 再帰 component + 子持ち node を slate bg + ring の group container として描画 + child count badge
       - [x] **(c) DnD 並べ替え** — `ff41695` で実装。@dnd-kit + 各深さ独立 SortableContext + 同 parent_path 内 reorder のみ (cross-parent は indent/outdent button 誘導)
-      - [ ] **(d) インデント (→/← button + Alt+→/←)** — 未実装。並走 claude session の上書きでローカル commit 確定できなかった。**cloud loop に委任**。
+      - [x] **(d) インデント (→/← button + Alt+→/←)** — `c16d15e` で実装 (iter290 P0、cloud loop)。`subtasks-panel-helpers.ts` に `compareSiblings` / `findPrevSibling` / `findGrandparentId` を抽出 + helper test +15 件、`SubtaskTreeNode` に `ArrowLeftFromLine`/`ArrowRightFromLine` button + Alt+←/→ keyboard + disabled 理由 aria-label、`SubtasksPanel` に `useMoveItem` + `handleIndent`/`handleOutdent` 配線、DnD cross-parent toast 更新。これで subtask gap a-d 4/4 完了。
         - 実装方針 (詳細):
           - `subtasks-panel.tsx` 内に `compareSiblings(a, b)` (position 同点を id で tie-break)、`findPrevSibling(item, allItems)`、`findGrandparentId(item, allItems)` の 3 helper を追加
           - `findGrandparentId` は parentPath を `.` split して 2nd-to-last segment の uuidLabel から item を逆引き、root 直下 (1 segment) は `'root'` 文字列を返す sentinel で newParentItemId=null に対応
