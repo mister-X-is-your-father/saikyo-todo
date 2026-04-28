@@ -273,7 +273,11 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                 </div>
               )}
             </div>
-            <Badge variant={STATUS_COLOR[status]} data-testid={`goal-status-${goal.id}`}>
+            <Badge
+              variant={STATUS_COLOR[status]}
+              data-testid={`goal-status-${goal.id}`}
+              aria-label={`Goal「${goal.title}」のステータス: ${STATUS_LABEL[status]}`}
+            >
               {STATUS_LABEL[status]}
             </Badge>
           </div>

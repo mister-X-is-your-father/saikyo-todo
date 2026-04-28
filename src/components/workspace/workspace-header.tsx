@@ -21,7 +21,11 @@ export function WorkspaceHeader({ title, role, subtitle, pageActions, utility }:
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <h1 className="truncate text-2xl font-bold">{title}</h1>
-          <Badge variant="secondary" className="shrink-0">
+          <Badge
+            variant="secondary"
+            className="shrink-0"
+            aria-label={`あなたの workspace role: ${role}`}
+          >
             {role}
           </Badge>
         </div>

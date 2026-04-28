@@ -349,7 +349,11 @@ function SprintCard({
                 {formatDateJa(sprint.startDate)} 〜 {formatDateJa(sprint.endDate)}
               </p>
             </div>
-            <Badge variant={STATUS_COLOR[status]} data-testid={`sprint-status-${sprint.id}`}>
+            <Badge
+              variant={STATUS_COLOR[status]}
+              data-testid={`sprint-status-${sprint.id}`}
+              aria-label={`Sprint「${sprint.name}」のステータス: ${STATUS_LABEL[status]}`}
+            >
               {STATUS_LABEL[status]}
             </Badge>
           </div>
