@@ -12,7 +12,7 @@
  *   - 改行区切りの bulk 追加 form (空行スキップ / priority=4 / status=todo)
  *   - 親 Item 直下に AI 分解候補 (DecomposeProposalsPanel) を出す
  */
-import { useState } from 'react'
+import { type KeyboardEvent as ReactKeyboardEvent, useState } from 'react'
 
 import {
   closestCenter,
@@ -30,13 +30,13 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical } from 'lucide-react'
+import { ArrowLeftFromLine, ArrowRightFromLine, GripVertical } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { fullPathOf } from '@/lib/db/ltree-path'
 import { isAppError } from '@/lib/errors'
 
-import { useCreateItem, useItems, useReorderItem } from '@/features/item/hooks'
+import { useCreateItem, useItems, useMoveItem, useReorderItem } from '@/features/item/hooks'
 import type { Item } from '@/features/item/schema'
 
 import { Button } from '@/components/ui/button'
@@ -45,7 +45,12 @@ import { Label } from '@/components/ui/label'
 import { DecomposeProposalsPanel } from './decompose-proposals-panel'
 import { ItemCheckbox } from './item-checkbox'
 import { StatusBadge } from './status-badge'
-import { parseBulkSubtaskTitles } from './subtasks-panel-helpers'
+import {
+  compareSiblings,
+  findGrandparentId,
+  findPrevSibling,
+  parseBulkSubtaskTitles,
+} from './subtasks-panel-helpers'
 
 interface Props {
   workspaceId: string
@@ -75,20 +80,30 @@ function SubtaskTreeNode({
   depth,
   allItems,
   workspaceId,
+  onIndent,
+  onOutdent,
+  movePending,
 }: {
   item: Item
   index: number
   depth: number
   allItems: Item[]
   workspaceId: string
+  onIndent: (item: Item) => void
+  onOutdent: (item: Item) => void
+  movePending: boolean
 }) {
   const isDone = item.status === 'done'
   const fullPath = fullPathOf({ id: item.id, parentPath: item.parentPath })
   const grandchildren = allItems
     .filter((i) => !i.deletedAt && i.parentPath === fullPath)
-    .sort((a, b) => a.position.localeCompare(b.position))
+    .sort(compareSiblings)
   const hasChildren = grandchildren.length > 0
   const overDepth = depth + 1 >= MAX_TREE_DEPTH
+
+  // iter290 P0: indent/outdent 可否は同期計算で disabled 切替に流す
+  const canIndent = findPrevSibling(item, allItems) !== null && depth + 1 < MAX_TREE_DEPTH
+  const canOutdent = findGrandparentId(item, allItems) !== null
 
   // DnD: row 自体を sortable に。drag handle のみが pointer hold/drag を起動。
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -98,6 +113,20 @@ function SubtaskTreeNode({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.4 : 1,
+  }
+
+  /** Alt+←/→ keyboard で outdent/indent (focus は drag handle / row 全体)。 */
+  function onRowKeyDown(e: ReactKeyboardEvent<HTMLLIElement>) {
+    if (!e.altKey || e.metaKey || e.ctrlKey || e.shiftKey) return
+    if (e.key === 'ArrowRight') {
+      if (!canIndent || movePending) return
+      e.preventDefault()
+      onIndent(item)
+    } else if (e.key === 'ArrowLeft') {
+      if (!canOutdent || movePending) return
+      e.preventDefault()
+      onOutdent(item)
+    }
   }
 
   /** 親 row 自体の描画。group container 内では bg-card で wrapper の slate と差別化。 */
@@ -120,7 +149,7 @@ function SubtaskTreeNode({
       </button>
       <ItemCheckbox item={item} workspaceId={workspaceId} />
       <span
-        className="bg-muted text-muted-foreground inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[11px] tabular-nums ring-1 ring-inset ring-slate-200"
+        className="bg-muted text-muted-foreground inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[11px] tabular-nums ring-1 ring-slate-200 ring-inset"
         aria-label={`${index + 1} 番目 (深さ ${depth + 1})`}
         data-testid={`subtask-step-${item.id}`}
       >
@@ -131,14 +160,12 @@ function SubtaskTreeNode({
         className="text-[10px]"
         data-testid={`subtask-status-${item.id}`}
       />
-      <span
-        className={`flex-1 truncate ${isDone ? 'text-muted-foreground line-through' : ''}`}
-      >
+      <span className={`flex-1 truncate ${isDone ? 'text-muted-foreground line-through' : ''}`}>
         {item.title}
       </span>
       {hasChildren && (
         <span
-          className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[10px] tabular-nums text-slate-700"
+          className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[10px] text-slate-700 tabular-nums"
           role="img"
           aria-label={`このタスクには子タスクが ${grandchildren.length} 件あります`}
           data-testid={`subtask-childcount-${item.id}`}
@@ -155,6 +182,43 @@ function SubtaskTreeNode({
           MUST
         </span>
       )}
+      {/* iter290 P0 (queue: subtask gap d/4): indent/outdent buttons + Alt+←/→ keyboard */}
+      <button
+        type="button"
+        className="text-muted-foreground hover:text-foreground disabled:opacity-30"
+        onClick={() => onOutdent(item)}
+        disabled={!canOutdent || movePending}
+        data-testid={`subtask-outdent-${item.id}`}
+        aria-label={
+          !canOutdent
+            ? `「${item.title}」は root のためアウトデント不可`
+            : movePending
+              ? `「${item.title}」を移動中…`
+              : `「${item.title}」を 1 段アウトデント (Alt+←)`
+        }
+        title="アウトデント (Alt+←)"
+      >
+        <ArrowLeftFromLine className="h-3.5 w-3.5" aria-hidden="true" />
+      </button>
+      <button
+        type="button"
+        className="text-muted-foreground hover:text-foreground disabled:opacity-30"
+        onClick={() => onIndent(item)}
+        disabled={!canIndent || movePending}
+        data-testid={`subtask-indent-${item.id}`}
+        aria-label={
+          !canIndent
+            ? depth + 1 >= MAX_TREE_DEPTH
+              ? `深さ ${MAX_TREE_DEPTH} を超えるためインデント不可`
+              : `「${item.title}」の前に sibling が無いためインデント不可`
+            : movePending
+              ? `「${item.title}」を移動中…`
+              : `「${item.title}」を 1 段インデント (Alt+→)`
+        }
+        title="インデント (Alt+→)"
+      >
+        <ArrowRightFromLine className="h-3.5 w-3.5" aria-hidden="true" />
+      </button>
     </div>
   )
 
@@ -162,9 +226,11 @@ function SubtaskTreeNode({
     <li
       ref={setNodeRef}
       style={sortableStyle}
-      className="space-y-1"
+      className="space-y-1 outline-none focus-within:ring-1 focus-within:ring-blue-200"
       data-testid={`subtask-${item.id}`}
       data-depth={depth}
+      tabIndex={-1}
+      onKeyDown={onRowKeyDown}
     >
       {hasChildren ? (
         <div
@@ -192,6 +258,9 @@ function SubtaskTreeNode({
                     depth={depth + 1}
                     allItems={allItems}
                     workspaceId={workspaceId}
+                    onIndent={onIndent}
+                    onOutdent={onOutdent}
+                    movePending={movePending}
                   />
                 ))}
               </ol>
@@ -214,6 +283,7 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
   const items = useItems(workspaceId)
   const create = useCreateItem(workspaceId)
   const reorder = useReorderItem(workspaceId)
+  const move = useMoveItem(workspaceId)
   const [bulkText, setBulkText] = useState('')
 
   const parentFullPath = fullPathOf({ id: parent.id, parentPath: parent.parentPath })
@@ -221,7 +291,43 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
 
   const children = allItems
     .filter((i) => !i.deletedAt && i.parentPath === parentFullPath)
-    .sort((a, b) => a.position.localeCompare(b.position))
+    .sort(compareSiblings)
+
+  /**
+   * iter290 P0 (queue: subtask gap d/4): 1 段 indent。前 sibling の子になる。
+   * 前 sibling 不在 / depth 超過は button 側で disabled になっているので呼ばれない。
+   */
+  async function handleIndent(target: Item) {
+    const prev = findPrevSibling(target, allItems)
+    if (!prev) {
+      toast.warning('インデント先の前 sibling がありません')
+      return
+    }
+    try {
+      await move.mutateAsync({ id: target.id, newParentItemId: prev.id })
+      toast.success(`「${target.title}」を 1 段インデントしました`)
+    } catch (e) {
+      toast.error(isAppError(e) ? e.message : 'インデントに失敗')
+    }
+  }
+
+  /**
+   * iter290 P0: 1 段 outdent。祖父の子になる ('root' sentinel → root 直下)。
+   */
+  async function handleOutdent(target: Item) {
+    const grandId = findGrandparentId(target, allItems)
+    if (grandId === null) {
+      toast.warning('これ以上アウトデントできません (既に root)')
+      return
+    }
+    const newParentItemId = grandId === 'root' ? null : grandId
+    try {
+      await move.mutateAsync({ id: target.id, newParentItemId })
+      toast.success(`「${target.title}」を 1 段アウトデントしました`)
+    } catch (e) {
+      toast.error(isAppError(e) ? e.message : 'アウトデントに失敗')
+    }
+  }
 
   /** 再帰総数 (孫以下も含めた直接 + 間接 子孫の件数)。h3 に表示。 */
   const totalDescendants = allItems.filter(
@@ -249,7 +355,8 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
     const overItem = allItems.find((i) => i.id === String(over.id))
     if (!activeItem || !overItem) return
     if (activeItem.parentPath !== overItem.parentPath) {
-      toast.warning('親をまたぐ移動は別操作 (Tab / Shift+Tab) で対応予定')
+      // iter290 P0: 親をまたぐ移動は indent / outdent 専用 button (Alt+←/→) で
+      toast.warning('親をまたぐ移動は indent / outdent ボタン (Alt+←/→) で操作してください')
       return
     }
     // 同 parent の siblings をソート → arrayMove → 前後を計算 → reorder action
@@ -335,7 +442,11 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
             まだ子タスクがありません
           </p>
         ) : (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
             <SortableContext
               items={children.map((c) => c.id)}
               strategy={verticalListSortingStrategy}
@@ -353,6 +464,9 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
                     depth={0}
                     allItems={allItems}
                     workspaceId={workspaceId}
+                    onIndent={handleIndent}
+                    onOutdent={handleOutdent}
+                    movePending={move.isPending}
                   />
                 ))}
               </ol>
