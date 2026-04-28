@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import { CloudEngineerEnvError, loadEnvForCloudEngineer } from './cloud-engineer-adapter'
+import {
+  chooseEngineerRunner,
+  CloudEngineerEnvError,
+  loadEnvForCloudEngineer,
+} from './cloud-engineer-adapter'
 
 const KEYS = [
   'SAIKYO_ENGINEER_GIT_REPO_URL',
@@ -55,5 +59,29 @@ describe('cloud-engineer-adapter (iter 244)', () => {
       expect(e.code).toBe('cloud-engineer-env-error')
       expect(e.message).toContain('SAIKYO_ENGINEER')
     }
+  })
+})
+
+describe('chooseEngineerRunner (iter 245)', () => {
+  it("env 未設定 → 'local'", () => {
+    expect(chooseEngineerRunner({})).toBe('local')
+  })
+
+  it("SAIKYO_ENGINEER_USE_CLOUD_SANDBOX='true' → 'cloud'", () => {
+    expect(chooseEngineerRunner({ SAIKYO_ENGINEER_USE_CLOUD_SANDBOX: 'true' })).toBe('cloud')
+  })
+
+  it("'TRUE' (大文字) は cloud にしない (厳格 match)", () => {
+    expect(chooseEngineerRunner({ SAIKYO_ENGINEER_USE_CLOUD_SANDBOX: 'TRUE' })).toBe('local')
+  })
+
+  it("'1' は cloud にしない (誤入力事故防止)", () => {
+    expect(chooseEngineerRunner({ SAIKYO_ENGINEER_USE_CLOUD_SANDBOX: '1' })).toBe('local')
+  })
+
+  it("'false' / '' / 任意の他文字列は 'local'", () => {
+    expect(chooseEngineerRunner({ SAIKYO_ENGINEER_USE_CLOUD_SANDBOX: 'false' })).toBe('local')
+    expect(chooseEngineerRunner({ SAIKYO_ENGINEER_USE_CLOUD_SANDBOX: '' })).toBe('local')
+    expect(chooseEngineerRunner({ SAIKYO_ENGINEER_USE_CLOUD_SANDBOX: 'yes' })).toBe('local')
   })
 })

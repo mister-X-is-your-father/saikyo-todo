@@ -32,8 +32,10 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
     - [x] iter 244: `cloud-engineer-adapter.ts` で env 解決 + runClaudeOnRepo の呼出
           を集約 (`runEngineerInCloudSandbox`)、test 4 件追加。Engineer service と
           cloud-sandbox-runner の橋渡しが揃った
-    - [ ] engineer-worker / engineer-service 側で `SAIKYO_ENGINEER_USE_CLOUD_SANDBOX`
-          flag を見て adapter にディスパッチする実配線
+    - [x] iter 245: engineer-worker.ts に dispatcher 配線完了 — `chooseEngineerRunner`
+          (pure 関数、env 1 個を厳格 match) で `'cloud' | 'local'` 判定、cloud 路で
+          adminDb から item 取得 → buildUserMessage → runEngineerInCloudSandbox。
+          test 5 件追加 (env 値 'true' / 'TRUE' / '1' / 'false' / 未設定 を assert)
     - [ ] Custom e2b template (DiD + supabase CLI + playwright) で Service test / e2e
           も sandbox 内で完結
     - [ ] E2B_API_KEY を取得して `.env.local` に設定 + 本番 docker-compose に通す

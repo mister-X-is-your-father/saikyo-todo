@@ -140,3 +140,17 @@ export async function runEngineerInCloudSandbox(input: CloudEngineerInput) {
 }
 
 export { CloudEngineerEnvError }
+
+/**
+ * Engineer worker からのディスパッチ判定 (pure)。env 1 個を見るだけだが
+ * テスト容易化と意図明示のため関数化。
+ *
+ * `SAIKYO_ENGINEER_USE_CLOUD_SANDBOX=true` で 'cloud'、それ以外は 'local'。
+ * 'true' のみ受ける (誤入力 'TRUE' / '1' は明示的に拒否) — 本番事故 (思わず
+ * cloud 経路で動く) を防ぐため厳格 match。
+ */
+export function chooseEngineerRunner(
+  env: Record<string, string | undefined> = process.env,
+): 'cloud' | 'local' {
+  return env.SAIKYO_ENGINEER_USE_CLOUD_SANDBOX === 'true' ? 'cloud' : 'local'
+}
