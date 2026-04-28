@@ -26,6 +26,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { addDays, differenceInCalendarDays, format, isValid, parseISO } from 'date-fns'
 import { parseAsBoolean, parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs'
 
+import { computeGanttRange, computeTodayX, computeTotalDays } from '@/features/gantt/gantt-range'
 import { computeProjectStats, formatSlipText } from '@/features/gantt/project-stats'
 import type { Item } from '@/features/item/schema'
 
@@ -100,20 +101,10 @@ export function GanttView({
     [active, hideDone],
   )
 
-  const range = useMemo(() => {
-    if (withDates.length === 0) return null
-    let min = withDates[0]!.start
-    let max = withDates[0]!.due
-    for (const x of withDates) {
-      if (x.start < min) min = x.start
-      if (x.due > max) max = x.due
-    }
-    // 両端 1 日ずつ余白
-    return { start: addDays(min, -1), end: addDays(max, 1) }
-  }, [withDates])
-
-  // 共通計算。range が null (= withDates 空) のときは安全に飛ばす。
-  const totalDays = range ? differenceInCalendarDays(range.end, range.start) + 1 : 0
+  // iter305 refactor: range / totalDays / todayX の inline 計算を pure helper
+  // (`@/features/gantt/gantt-range`) に集約。動作変更ゼロ、test 17 件で固定。
+  const range = useMemo(() => computeGanttRange(withDates), [withDates])
+  const totalDays = computeTotalDays(range)
   const timelineWidth = totalDays * dayPx
   const days: Date[] = []
   if (range) {
@@ -122,11 +113,7 @@ export function GanttView({
 
   // Today 縦線 (TeamGantt/GanttPRO の典型機能)。range 範囲外なら null
   const today = new Date()
-  const todayDayOffset = range ? differenceInCalendarDays(today, range.start) : -1
-  const todayInRange = todayDayOffset >= 0 && todayDayOffset < totalDays
-  // bar の day cell は左端に位置するので、現在時刻分だけ dayPx 内をシフト
-  const todayHourFraction = (today.getHours() * 60 + today.getMinutes()) / (24 * 60)
-  const todayX = todayInRange ? (todayDayOffset + todayHourFraction) * dayPx : null
+  const todayX = computeTodayX(range, today, dayPx)
 
   // Phase 6.15 iter 61: 初回 mount で today に自動スクロール (TeamGantt default)。
   // 早期 return より先に Hook を呼ぶ必要があるためここに置く (rules-of-hooks)。
