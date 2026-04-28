@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { computeSprintBurndown, sprintProgressTone } from './burndown'
+import {
+  computeSprintBurndown,
+  computeSprintProjection,
+  formatSprintProjection,
+  sprintProgressTone,
+} from './burndown'
 
 describe('computeSprintBurndown', () => {
   // 14 日 Sprint、5 日経過、進捗 5/14 (= 36%)、経過 5/14 (= 36%) → on-track
@@ -191,5 +196,163 @@ describe('sprintProgressTone', () => {
   it('境界: completionPct 99 は active なら onTrack/behind, 非 active なら idle', () => {
     expect(sprintProgressTone({ completionPct: 99, isOnTrack: true }, 'active')).toBe('onTrack')
     expect(sprintProgressTone({ completionPct: 99, isOnTrack: true }, 'planning')).toBe('idle')
+  })
+})
+
+describe('computeSprintProjection', () => {
+  it('total=0 は projection 不能 (kind=unknown)', () => {
+    const r = computeSprintProjection({
+      total: 0,
+      done: 0,
+      endDate: '2026-05-10',
+      today: '2026-04-28',
+      avgPerDay: 1,
+    })
+    expect(r.kind).toBe('unknown')
+    expect(r.projectedFinishDate).toBe(null)
+    expect(r.daysAhead).toBe(null)
+  })
+
+  it('全 done は kind=done で daysAhead=期限まで余裕日数', () => {
+    const r = computeSprintProjection({
+      total: 10,
+      done: 10,
+      endDate: '2026-05-10',
+      today: '2026-04-28',
+      avgPerDay: 0,
+    })
+    expect(r.kind).toBe('done')
+    expect(r.projectedFinishDate).toBe('2026-04-28')
+    expect(r.daysAhead).toBe(12) // end - today
+  })
+
+  it('avgPerDay <= 0 は projection 不能', () => {
+    const r = computeSprintProjection({
+      total: 10,
+      done: 5,
+      endDate: '2026-05-10',
+      today: '2026-04-28',
+      avgPerDay: 0,
+    })
+    expect(r.kind).toBe('unknown')
+    expect(r.projectedFinishDate).toBe(null)
+  })
+
+  it('avgPerDay=NaN/Infinity は unknown (fail-soft、有限ペースのみ projection)', () => {
+    const r1 = computeSprintProjection({
+      total: 10,
+      done: 5,
+      endDate: '2026-05-10',
+      today: '2026-04-28',
+      avgPerDay: NaN,
+    })
+    expect(r1.kind).toBe('unknown')
+    const r2 = computeSprintProjection({
+      total: 10,
+      done: 5,
+      endDate: '2026-05-10',
+      today: '2026-04-28',
+      avgPerDay: Infinity,
+    })
+    expect(r2.kind).toBe('unknown')
+  })
+
+  it('on-pace: 残 5 件 / 1 件/日 = 5 日後 (期限まで 5 日) → daysAhead=0', () => {
+    const r = computeSprintProjection({
+      total: 10,
+      done: 5,
+      endDate: '2026-05-03',
+      today: '2026-04-28',
+      avgPerDay: 1,
+    })
+    expect(r.projectedFinishDate).toBe('2026-05-03')
+    expect(r.daysAhead).toBe(0)
+    expect(r.kind).toBe('on-pace')
+  })
+
+  it('ahead: 残 5 件 / 5 件/日 = 1 日後、期限まで 5 日 → +4 日上振れ', () => {
+    const r = computeSprintProjection({
+      total: 10,
+      done: 5,
+      endDate: '2026-05-03',
+      today: '2026-04-28',
+      avgPerDay: 5,
+    })
+    expect(r.projectedFinishDate).toBe('2026-04-29')
+    expect(r.daysAhead).toBe(4)
+    expect(r.kind).toBe('ahead')
+  })
+
+  it('behind: 残 10 件 / 1 件/日 = 10 日後、期限まで 5 日 → -5 日下振れ', () => {
+    const r = computeSprintProjection({
+      total: 10,
+      done: 0,
+      endDate: '2026-05-03',
+      today: '2026-04-28',
+      avgPerDay: 1,
+    })
+    expect(r.projectedFinishDate).toBe('2026-05-08')
+    expect(r.daysAhead).toBe(-5)
+    expect(r.kind).toBe('behind')
+  })
+
+  it('overdue: 残 30 件 / 1 件/日 = 30 日後、期限まで 5 日 → -25 日 (overdue 閾値)', () => {
+    const r = computeSprintProjection({
+      total: 30,
+      done: 0,
+      endDate: '2026-05-03',
+      today: '2026-04-28',
+      avgPerDay: 1,
+    })
+    expect(r.daysAhead).toBe(-25)
+    expect(r.kind).toBe('overdue')
+  })
+})
+
+describe('formatSprintProjection', () => {
+  it('unknown は "予想不能 (ペース不明)"', () => {
+    expect(
+      formatSprintProjection({ projectedFinishDate: null, daysAhead: null, kind: 'unknown' }),
+    ).toBe('予想不能 (ペース不明)')
+  })
+
+  it('done で期限内: "Sprint 完了 (期限まで N 日)"', () => {
+    expect(
+      formatSprintProjection({ projectedFinishDate: '2026-04-28', daysAhead: 5, kind: 'done' }),
+    ).toBe('Sprint 完了 (期限まで 5 日)')
+  })
+
+  it('done で期限後: "Sprint 完了 (期限後 N 日)"', () => {
+    expect(
+      formatSprintProjection({ projectedFinishDate: '2026-04-28', daysAhead: -3, kind: 'done' }),
+    ).toBe('Sprint 完了 (期限後 3 日)')
+  })
+
+  it('ahead: "予想 +N 日上振れ (date)"', () => {
+    expect(
+      formatSprintProjection({ projectedFinishDate: '2026-04-30', daysAhead: 4, kind: 'ahead' }),
+    ).toBe('予想 +4 日上振れ (2026-04-30)')
+  })
+
+  it('on-pace: "予想 ±0 (date)"', () => {
+    expect(
+      formatSprintProjection({ projectedFinishDate: '2026-05-03', daysAhead: 0, kind: 'on-pace' }),
+    ).toBe('予想 ±0 (2026-05-03)')
+  })
+
+  it('behind: "予想 -N 日下振れ (date)"', () => {
+    expect(
+      formatSprintProjection({ projectedFinishDate: '2026-05-08', daysAhead: -5, kind: 'behind' }),
+    ).toBe('予想 -5 日下振れ (2026-05-08)')
+  })
+
+  it('overdue: "予想 -N 日 (期限超過、date)"', () => {
+    expect(
+      formatSprintProjection({
+        projectedFinishDate: '2026-05-28',
+        daysAhead: -25,
+        kind: 'overdue',
+      }),
+    ).toBe('予想 -25 日 (期限超過、2026-05-28)')
   })
 })
