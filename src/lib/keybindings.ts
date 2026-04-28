@@ -28,6 +28,11 @@ export const KEYBINDINGS: Keybinding[] = [
 
   // --- Item ---
   { combo: 'q', description: 'クイック追加にフォーカス', group: 'Item' },
+  {
+    combo: 'Cmd+S / Ctrl+S',
+    description: 'Item 編集ダイアログで保存 (Item を開いている時)',
+    group: 'Item',
+  },
 
   // --- グローバル ---
   { combo: 'Cmd+K / Ctrl+K', description: 'コマンドパレットを開く', group: 'グローバル' },

@@ -8,7 +8,7 @@
  * AI 分解 CTA は主ボタンとして基本 Tab の上部に配置。子 Item が生成されると
  * hooks 側で items cache が invalidate されるので、親の一覧がすぐ更新される。
  */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { toast } from 'sonner'
 
@@ -143,6 +143,25 @@ function ItemEditDialogInner({
       toast.error(isAppError(e) ? e.message : '更新に失敗しました')
     }
   }
+
+  // Phase 6.15 iter 227: Cmd/Ctrl+S で保存 (Todoist / TickTick / Notion 標準)。
+  // dialog open + 'base' tab 中のみ有効、IME 変換中は無視、submit 連打は disabled で
+  // 防ぐので handleSave 内側の guard に任せる。
+  useEffect(() => {
+    if (!open) return
+    function onKey(e: KeyboardEvent) {
+      if (!(e.metaKey || e.ctrlKey)) return
+      if (e.key !== 's' && e.key !== 'S') return
+      if (e.isComposing) return
+      if (update.isPending || !title.trim()) return
+      e.preventDefault()
+      void handleSave()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+    // handleSave は title / state クロージャを参照する。state を deps に入れて 最新を bind。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, title, description, startDate, dueDate, isMust, dod, update.isPending])
 
   async function handleAssigneeChange(next: AssigneeRef[]) {
     await setAssignees.mutateAsync(next)
