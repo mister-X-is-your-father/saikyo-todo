@@ -27,10 +27,19 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
     - [ ] **scope B**: React Flow ベース DAG modal (Kanban カードの「⊞ flow」 button から開く) — 4 件選択肢を提示中、ユーザ判断待ち
     - [ ] **scope C**: チャンク (auto-cluster) を含むフル graphical view — POST_MVP 寄り
     - **2026-04-28 追加 ユーザ指摘 (subtask 機能 gap)**:
-      - [ ] **完了 checkbox** — 各 subtask 行に `ItemCheckbox` を置いてワンクリック完了 (既存 `useToggleCompleteItem` 利用、5-10 行)
-      - [ ] **再帰表示** — 孫タスク (subtask の subtask) を indent 付き tree 表示。展開/折り畳み toggle (30-50 行)
-      - [ ] **DnD 並べ替え** — @dnd-kit (既存 deps) で row reorder。`itemService.reorder` 既存利用 (80-150 行)
-      - [ ] **インデント (Tab / Shift+Tab)** — Tab で「直前 sibling の child に移動」、Shift+Tab で「親の sibling に昇格」。`itemService.move` 既存利用 (30-50 行)
+      - [x] **(a) 完了 checkbox** — `a9f1a4b` で実装。各行に既存 `ItemCheckbox` 配置 + done 時 line-through
+      - [x] **(b) 再帰表示 + 視覚 group** — `9ca5e46` で実装。`SubtaskTreeNode` 再帰 component + 子持ち node を slate bg + ring の group container として描画 + child count badge
+      - [x] **(c) DnD 並べ替え** — `ff41695` で実装。@dnd-kit + 各深さ独立 SortableContext + 同 parent_path 内 reorder のみ (cross-parent は indent/outdent button 誘導)
+      - [ ] **(d) インデント (→/← button + Alt+→/←)** — 未実装。並走 claude session の上書きでローカル commit 確定できなかった。**cloud loop に委任**。
+        - 実装方針 (詳細):
+          - `subtasks-panel.tsx` 内に `compareSiblings(a, b)` (position 同点を id で tie-break)、`findPrevSibling(item, allItems)`、`findGrandparentId(item, allItems)` の 3 helper を追加
+          - `findGrandparentId` は parentPath を `.` split して 2nd-to-last segment の uuidLabel から item を逆引き、root 直下 (1 segment) は `'root'` 文字列を返す sentinel で newParentItemId=null に対応
+          - `SubtaskTreeNode` props に `onIndent` / `onOutdent` callback を追加して再帰で渡す
+          - 各行 header の右端に `ArrowLeftFromLine` (outdent) + `ArrowRightFromLine` (indent) button を 2 つ配置、aria-label に reason 文言、disabled 切替、Alt+←/→ keyboard も `onKeyDown` で
+          - `SubtasksPanel` で `useMoveItem(workspaceId)` + `handleIndent`/`handleOutdent` を実装、`move.mutateAsync({id, newParentItemId})` で indent (前 sibling.id) / outdent (祖父 id or null)
+          - DnD の cross-parent warning toast を「indent / outdent ボタンで操作してください」に更新
+        - 期待 commit: `feat(item): subtask に indent/outdent button + Alt+←/→ keyboard (queue: subtask gap d/4)`
+        - 関連 hook: `useMoveItem` (既存)、`uuidToLabel` (既存、`@/lib/db/ltree-path`)
       - 原文: 「サブタスクってどうやって完了するのか。並べ替えやインデントもできないし。サブタスクのサブタスクの・・・みたいな定義もできない」
       - 対応順: 完了 checkbox → 再帰表示 → DnD → indent (1 つずつ独立 commit)
   - **e2e で発見した別件 bug (修正済)**:
