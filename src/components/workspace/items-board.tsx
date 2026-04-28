@@ -360,7 +360,25 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
       ) : (data?.length ?? 0) === 0 ? (
         <EmptyState
           title="まだ Item がありません"
-          description="上のフォームから作成してください"
+          // iter288 basics: 旧説明 (`上のフォームから作成してください`) は
+          // 単なる行動指示で、Item とは何かの最初の印象が薄かった → workspace
+          // で最初に出会う EmptyState なので、QuickAdd の自然言語例 + 後で
+          // できる切替 (Kanban / Backlog / Gantt) を示してオンボーディング化。
+          // Today (iter273) / Inbox (iter276) / Workflows (iter281) /
+          // Sprints (iter283) / Goals (iter286) と同パターンで 6 view 目。
+          description={
+            <span>
+              チームで共有する 1 件の作業単位 (Item) です。 QuickAdd で{' '}
+              <code className="bg-muted rounded px-1 text-[11px]">明日 9時 資料準備 #design</code> /{' '}
+              <code className="bg-muted rounded px-1 text-[11px]">+3d レビュー @taro</code>{' '}
+              のように日付・タグ・担当者を 1 行で書けます。 作成後は{' '}
+              <code className="bg-muted rounded px-1 text-[11px]">Kanban</code> /{' '}
+              <code className="bg-muted rounded px-1 text-[11px]">Backlog</code> /{' '}
+              <code className="bg-muted rounded px-1 text-[11px]">Gantt</code> /{' '}
+              <code className="bg-muted rounded px-1 text-[11px]">Today</code> で view
+              を切り替えられます。
+            </span>
+          }
           action={
             <button
               type="button"
