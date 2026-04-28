@@ -132,7 +132,11 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
                   data-testid={`archive-restore-${item.id}`}
                   disabled={unarchive.isPending}
                   onClick={() => void handleRestore(item.id, item.version)}
-                  aria-label={`「${item.title}」を復元 (${fmt(item.archivedAt)} にアーカイブ)`}
+                  aria-label={
+                    unarchive.isPending
+                      ? `「${item.title}」を復元中…`
+                      : `「${item.title}」を復元 (${fmt(item.archivedAt)} にアーカイブ)`
+                  }
                 >
                   {unarchive.isPending ? '復元中…' : '復元'}
                 </Button>

@@ -487,6 +487,11 @@ function SprintCard({
                   size="sm"
                   disabled={update.isPending}
                   data-testid={`sprint-period-save-${sprint.id}`}
+                  aria-label={
+                    update.isPending
+                      ? `Sprint「${sprint.name}」の期間を保存中…`
+                      : `Sprint「${sprint.name}」の期間を保存`
+                  }
                 >
                   {update.isPending ? '保存中…' : '保存'}
                 </Button>
