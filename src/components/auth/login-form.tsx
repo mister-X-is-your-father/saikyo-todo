@@ -52,6 +52,7 @@ export function LoginForm() {
           inputMode="email"
           spellCheck={false}
           autoCapitalize="none"
+          autoFocus
           required
           aria-required="true"
           aria-invalid={Boolean(form.formState.errors.email)}

@@ -48,6 +48,7 @@ export function SignupForm() {
         <IMEInput
           id="displayName"
           autoComplete="name"
+          autoFocus
           required
           aria-required="true"
           minLength={1}
