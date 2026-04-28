@@ -130,9 +130,13 @@ export function TimeEntriesTable({
                     disabled={sync.isPending}
                     onClick={() => handleSync(e.id)}
                     data-testid={`time-entry-sync-${e.id}`}
-                    aria-label={`「${e.description || '(無題)'}」(${e.workDate}) を${
-                      e.syncStatus === 'failed' ? '再' : ''
-                    }Sync`}
+                    aria-label={
+                      sync.isPending
+                        ? `「${e.description || '(無題)'}」(${e.workDate}) を Sync 中…`
+                        : `「${e.description || '(無題)'}」(${e.workDate}) を${
+                            e.syncStatus === 'failed' ? '再' : ''
+                          }Sync`
+                    }
                   >
                     {e.syncStatus === 'failed' ? '再Sync' : 'Sync'}
                   </Button>

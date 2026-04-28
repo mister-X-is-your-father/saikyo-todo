@@ -106,6 +106,13 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
           onClick={() => void submit()}
           disabled={create.isPending || !preview?.title}
           data-testid="quick-add-submit"
+          aria-label={
+            !preview?.title
+              ? 'タスクを作成するにはタイトルを入力してください'
+              : create.isPending
+                ? `「${preview.title}」を作成中…`
+                : `「${preview.title}」を作成`
+          }
         >
           {create.isPending ? '...' : '作成'}
         </Button>

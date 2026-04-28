@@ -120,7 +120,12 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
         />
       </div>
       <div className="flex items-end">
-        <Button type="submit" disabled={create.isPending} data-testid="create-time-entry-submit">
+        <Button
+          type="submit"
+          disabled={create.isPending}
+          data-testid="create-time-entry-submit"
+          aria-label={create.isPending ? '稼働記録を作成中…' : '稼働記録を作成'}
+        >
           {create.isPending ? '...' : '記録'}
         </Button>
       </div>
