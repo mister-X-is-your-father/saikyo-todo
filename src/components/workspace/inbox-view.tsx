@@ -7,6 +7,7 @@ import type { Item } from '@/features/item/schema'
 
 import { EmptyState } from '@/components/shared/async-states'
 import { ItemCheckbox } from '@/components/workspace/item-checkbox'
+import { MustBadge } from '@/components/workspace/must-badge'
 import { StatusBadge } from '@/components/workspace/status-badge'
 
 /**
@@ -94,15 +95,7 @@ export function InboxView({
           >
             {it.title}
           </button>
-          {it.isMust && (
-            <span
-              className="shrink-0 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700"
-              role="img"
-              aria-label="MUST item"
-            >
-              MUST
-            </span>
-          )}
+          {it.isMust && <MustBadge data-testid={`inbox-must-${it.id}`} />}
           <div className="ml-auto shrink-0">
             <StatusBadge status={it.status} />
           </div>

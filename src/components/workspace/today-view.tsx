@@ -18,6 +18,7 @@ import { buildTodayGroups } from '@/features/today/build-groups'
 import { EmptyState } from '@/components/shared/async-states'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ItemCheckbox } from '@/components/workspace/item-checkbox'
+import { MustBadge } from '@/components/workspace/must-badge'
 import { StartTimerButton } from '@/components/workspace/start-timer-button'
 import { StatusBadge } from '@/components/workspace/status-badge'
 
@@ -205,15 +206,7 @@ export function TodayView({
                         >
                           {it.title}
                         </button>
-                        {it.isMust && (
-                          <span
-                            className="shrink-0 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700"
-                            role="img"
-                            aria-label="MUST item"
-                          >
-                            MUST
-                          </span>
-                        )}
+                        {it.isMust && <MustBadge data-testid={`today-must-${it.id}`} />}
                       </div>
                       <div className="text-muted-foreground flex shrink-0 items-center gap-2 text-xs">
                         {it.dueTime && (

@@ -30,6 +30,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { ItemCheckbox } from '@/components/workspace/item-checkbox'
+import { MustBadge } from '@/components/workspace/must-badge'
 import { StatusBadge } from '@/components/workspace/status-badge'
 
 interface Props {
@@ -213,15 +214,7 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
                   >
                     {it.title}
                   </button>
-                  {it.isMust && (
-                    <span
-                      className="shrink-0 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700"
-                      role="img"
-                      aria-label="MUST item"
-                    >
-                      MUST
-                    </span>
-                  )}
+                  {it.isMust && <MustBadge data-testid={`period-must-${period}-${it.id}`} />}
                   <div className="ml-auto shrink-0">
                     <StatusBadge status={it.status} />
                   </div>
