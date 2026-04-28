@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
 
+import { useDecomposeItem } from '@/features/agent/hooks'
 import { useCreateItem } from '@/features/item/hooks'
 import { parseQuickAdd } from '@/features/item/nl-parse'
 
@@ -28,6 +29,7 @@ const PRIO_COLOR: Record<number, string> = {
 export function QuickAdd({ workspaceId }: { workspaceId: string }) {
   const [text, setText] = useState('')
   const create = useCreateItem(workspaceId)
+  const decompose = useDecomposeItem(workspaceId)
 
   const preview = useMemo(
     () => (text.trim() ? parseQuickAdd(text, { today: new Date() }) : null),
@@ -60,7 +62,7 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
       return
     }
     try {
-      await create.mutateAsync({
+      const created = await create.mutateAsync({
         workspaceId,
         title: preview.title,
         description: '',
@@ -72,11 +74,31 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
         scheduledFor: preview.scheduledFor ?? null,
         idempotencyKey: crypto.randomUUID(),
       })
-      // decomposeHint は enqueueResearcher — post-create で Server Action 呼ぶ (Phase 2 で配線)
-      toast.success(
-        preview.decomposeHint ? '作成しました (AI 分解は Phase 2 で配線予定)' : '作成しました',
-      )
       setText('')
+      // Phase 6.15 iter 231: 末尾 `?` で AI 分解を fire-and-forget で起動。
+      // toast.success は即時表示し、分解結果 (子タスク作成) は items realtime で非同期に反映。
+      // 失敗しても作成自体は成功しているので警告 toast のみ。
+      if (preview.decomposeHint && created?.id) {
+        toast.success(`作成しました — Researcher が「${preview.title}」を分解中…`)
+        void decompose
+          .mutateAsync({ workspaceId, itemId: created.id })
+          .then((r) => {
+            const proposed = r.toolCalls.filter((c) => c.name === 'propose_child_item').length
+            const made = r.toolCalls.filter((c) => c.name === 'create_item').length
+            if (proposed > 0) {
+              toast.success(`AI 分解完了 — 提案 ${proposed} 件 (子タスクタブで確認)`)
+            } else if (made > 0) {
+              toast.success(`AI 分解完了 (子 ${made} 件作成)`)
+            } else {
+              toast.success('AI 分解完了')
+            }
+          })
+          .catch((err) => {
+            toast.warning(isAppError(err) ? `AI 分解失敗: ${err.message}` : 'AI 分解に失敗しました')
+          })
+      } else {
+        toast.success('作成しました')
+      }
     } catch (e) {
       toast.error(isAppError(e) ? e.message : '作成に失敗しました')
     }
