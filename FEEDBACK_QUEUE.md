@@ -26,9 +26,27 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
     - [x] done item の title が `text-muted-foreground` で muted (視覚 delight)。
     - [ ] **scope B**: React Flow ベース DAG modal (Kanban カードの「⊞ flow」 button から開く) — 4 件選択肢を提示中、ユーザ判断待ち
     - [ ] **scope C**: チャンク (auto-cluster) を含むフル graphical view — POST_MVP 寄り
-  - **e2e で発見した別件 bug (queue 化、scope A 影響あり)**:
-    - **bulk add で全 child の position が `'a0'`** — `itemService.create` が position を計算せず DB default `'a0'` のまま insert する。bulk 5 件追加すると全部 `'a0'` で並び順が undefined になる。番号表示 (1,2,3...) は `localeCompare(position)` 同点だと挿入順依存で意味が薄れる。
-    - 修正 scope: `service.create` に「parentPath が同じ siblings の最大 position を取って `positionBetween(maxPos, null)` で次を計算」を追加 (5-15 行)。既存 `positionBetween` helper 流用。create test に「2 つ続けて作ったら position が異なる」 assert 追加。
+  - **e2e で発見した別件 bug (修正済)**:
+    - [x] **bulk add で全 child の position が `'a0'`** — `itemService.create` が position を計算せず DB default のまま insert していたバグ。`945739f` で `repository.findMaxPositionAmongSiblings` を追加し、`service.create` で `positionBetween(maxPos, null)` を計算して insert に明示渡すよう修正。test 2 件追加 (root sibling / child sibling)、30/30 PASS。`parent_path` は ltree notNull default `''` (root も空 ltree、NULL ではない) を踏まえた実装。
+
+  - **追加要望 2026-04-28: もっとグラフィカル / シンプル / 意味のあるデザイン**:
+    - 原文: 「グラフィカルにできる部分はもっとグラフィカルにしたい。シンプルかつグラフィカル」「意味のあるデザイン」
+    - 解釈: subtask-panel で確立した「番号 + 配色 + icon」 graphical pattern を **app 全体に波及**。ただし装飾ではなく **状態/意味を伝える graphical** ── 見て即「何が起きてるか」が伝わるデザインに揃える。
+    - 候補 (subtask-status helper を共通化して波及):
+      - [ ] **Today / Inbox view**: 各 item の status badge (現状 title の隣にテキスト) を icon+色 chip に統一 (subtask-panel と同 helper 共有)
+      - [ ] **Backlog table**: status 列を icon+色 chip に
+      - [ ] **Kanban カード**: 完了 / blocked の視覚 hint を強化 (現状 title 文字色のみ)
+      - [ ] **Goal / Sprint progress bar**: 現在 stripe 表示。残/超過/達成を色 + icon で意味付け (緑チェック / 黄黄信号 / 赤遅延)
+      - [ ] **Item dependencies tab**: 依存先を visual chain (矢印付き mini DAG) で
+      - [ ] **Activity log**: 操作種別 (create/update/delete/status_change) を icon で
+      - [ ] **Notification bell**: 通知 type 別の色/icon
+      - [ ] **MUST badge**: 現在赤テキスト badge → ⚠ icon + 強い意味 (期限近接で点滅などはやり過ぎ、静的な視覚強調)
+    - 設計原則:
+      - **意味があるなら graphical、無いなら text のまま** (装飾 icon 禁止)
+      - **icon は aria-hidden + 視覚 + sr-only テキスト併用** (アクセシビリティ維持)
+      - **配色は 5-7 色に絞る** (slate / blue / green / amber / red / zinc / muted で統一)
+      - **shadcn / Lucide / 既存 priority dot pattern と整合**
+    - 進め方: 1 view ずつ iter で消化 (今 iter 残り時間 → Today view、次 iter → Backlog、…)。subtask-status helper を `subtask-status.ts` から `item-visual.ts` 等に rename して app 共通化するのが自然。
   - 原文: 「サブタスクめっちゃグラフィカルに 1 2 3 みたいにして依存とかあれば順番表示して、チャンクをまとめてほしい。看板メニューやリストメニューからそういったのが表示できる。で、めっちゃグラフィカルに今の各タスクのステータスがわかる」
   - 仮解釈:
     - (1) サブタスクの **「順序付き番号 (1, 2, 3...)」** 表示。現在の subtasks-panel は flat list なので、`fractional_position` or 依存 graph topological sort 順を視覚化
