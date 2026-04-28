@@ -90,7 +90,7 @@ export function LoginForm() {
         disabled={isPending}
         aria-label={isPending ? 'ログイン処理中…' : 'ログイン'}
       >
-        {isPending ? 'ログイン中...' : 'ログイン'}
+        {isPending ? 'ログイン中…' : 'ログイン'}
       </Button>
     </form>
   )

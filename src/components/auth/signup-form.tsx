@@ -109,7 +109,7 @@ export function SignupForm() {
         disabled={isPending}
         aria-label={isPending ? 'アカウント作成中…' : 'アカウントを作成 (サインアップ)'}
       >
-        {isPending ? '作成中...' : 'サインアップ'}
+        {isPending ? '作成中…' : 'サインアップ'}
       </Button>
     </form>
   )
