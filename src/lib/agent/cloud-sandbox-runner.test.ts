@@ -150,4 +150,66 @@ describe('buildClaudeRunScript (iter 241)', () => {
     expect(script).toContain('pnpm lint')
     expect(script).toContain('pnpm test')
   })
+
+  // iter 243: autoMergeToMain (フル自動 α)
+  it('autoMergeToMain=true で git add/commit/push を含む', () => {
+    const script = buildClaudeRunScript({
+      gitRepoUrl: 'https://github.com/o/r.git',
+      gitRef: 'main',
+      prompt: 'x',
+      autoMergeToMain: true,
+    })
+    expect(script).toContain('git add -A')
+    expect(script).toContain('git commit -F /tmp/commit-msg.txt')
+    expect(script).toContain('git push origin "main"')
+  })
+
+  it('autoMergeToMain=true でも 変更が無ければ no-op で push しない (空 commit ガード)', () => {
+    const script = buildClaudeRunScript({
+      gitRepoUrl: 'https://github.com/o/r.git',
+      gitRef: 'main',
+      prompt: 'x',
+      autoMergeToMain: true,
+    })
+    expect(script).toContain('if [ -z "$(git status --porcelain)" ]; then')
+    expect(script).toContain('no changes')
+  })
+
+  it('autoMergeToMain=false (default) では push 系 step を含まない', () => {
+    const script = buildClaudeRunScript({
+      gitRepoUrl: 'https://github.com/o/r.git',
+      gitRef: 'main',
+      prompt: 'x',
+    })
+    expect(script).not.toContain('git push')
+    expect(script).not.toContain('git commit -F')
+  })
+
+  it('commitMessage を base64 経由で渡し、改行 / 引用符に安全', () => {
+    const tricky = 'fix: "bug"\n\n何かを修正'
+    const script = buildClaudeRunScript({
+      gitRepoUrl: 'https://github.com/o/r.git',
+      gitRef: 'main',
+      prompt: 'x',
+      autoMergeToMain: true,
+      commitMessage: tricky,
+    })
+    const expected = Buffer.from(tricky, 'utf8').toString('base64')
+    expect(script).toContain(expected)
+    // 生 message は埋まらない
+    expect(script).not.toContain(tricky)
+  })
+
+  it('gitAuthorName / Email を指定すると git config に反映', () => {
+    const script = buildClaudeRunScript({
+      gitRepoUrl: 'https://github.com/o/r.git',
+      gitRef: 'main',
+      prompt: 'x',
+      autoMergeToMain: true,
+      gitAuthorName: 'Engineer Bot',
+      gitAuthorEmail: 'engineer@example.com',
+    })
+    expect(script).toContain('git config user.name "Engineer Bot"')
+    expect(script).toContain('git config user.email "engineer@example.com"')
+  })
 })

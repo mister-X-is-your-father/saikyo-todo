@@ -167,6 +167,16 @@ export interface RunClaudeOnRepoInput {
    * default 'fast'。失敗すると set -e で script 全体が exit 非ゼロになる。
    */
   verify?: 'none' | 'fast' | 'full'
+  /**
+   * iter 243 (フル自動 α): verify が通った後に gitRef へ commit + push する。
+   * default false (Draft PR 路線)。true で「sandbox 完走したら main に直接書く」。
+   */
+  autoMergeToMain?: boolean
+  /** commit message。Engineer が item title 等から組み立てて渡す想定 */
+  commitMessage?: string
+  /** commit author 設定 (default は sandbox の git user.name / email) */
+  gitAuthorName?: string
+  gitAuthorEmail?: string
 }
 
 /**
@@ -189,12 +199,27 @@ export function buildClaudeRunScript(args: {
   gitRef: string
   prompt: string
   verify?: 'none' | 'fast' | 'full'
+  /**
+   * iter 243 (フル自動 α): verify が通った後に gitRef へ commit + push する。
+   * verify が落ちる / claude が無変更 だと set -e で前段で exit するので、ここに
+   * 到達した時点で「green な変更がある」状態が保証される。
+   */
+  autoMergeToMain?: boolean
+  /** commit message。default は「engineer: auto-commit (sandbox)」。改行可 (HEREDOC) */
+  commitMessage?: string
+  /** commit author 設定。null なら sandbox の default git user.name / email を使う */
+  gitAuthorName?: string
+  gitAuthorEmail?: string
 }): string {
   // 改行 / クォート安全のため prompt は base64 → tmpfile 経由 で claude に渡す
   const promptB64 = Buffer.from(args.prompt, 'utf8').toString('base64')
   const ref = args.gitRef
   const repoUrl = args.gitRepoUrl
   const verify = args.verify ?? 'fast'
+  const autoMerge = args.autoMergeToMain ?? false
+  const commitMessage =
+    args.commitMessage ?? `engineer: auto-commit from cloud sandbox (sandbox=$SAIKYO_INVOCATION_ID)`
+  const commitMessageB64 = Buffer.from(commitMessage, 'utf8').toString('base64')
 
   const lines = [
     '#!/usr/bin/env bash',
@@ -241,6 +266,29 @@ export function buildClaudeRunScript(args: {
     lines.push('')
   }
 
+  if (autoMerge) {
+    lines.push(
+      '# 7) iter 243: autoMergeToMain — verify が通った時のみ到達する (set -e のおかげ)',
+      '# 変更が無ければ no-op (空 commit / push を避ける)',
+      'if [ -z "$(git status --porcelain)" ]; then',
+      `  echo "[autoMergeToMain] no changes — claude did not modify files, skip commit/push"`,
+      'else',
+      ...(args.gitAuthorName
+        ? [`  git config user.name "${args.gitAuthorName.replace(/"/g, '\\"')}"`]
+        : []),
+      ...(args.gitAuthorEmail
+        ? [`  git config user.email "${args.gitAuthorEmail.replace(/"/g, '\\"')}"`]
+        : []),
+      '  git add -A',
+      `  echo "${commitMessageB64}" | base64 -d > /tmp/commit-msg.txt`,
+      '  git commit -F /tmp/commit-msg.txt',
+      `  git push origin "${ref}"`,
+      `  echo "[autoMergeToMain] pushed to ${ref}"`,
+      'fi',
+      '',
+    )
+  }
+
   return lines.join('\n')
 }
 
@@ -259,6 +307,10 @@ export async function runClaudeOnRepo(input: RunClaudeOnRepoInput): Promise<Clou
     gitRef: input.gitRef ?? 'main',
     prompt: input.prompt,
     verify: input.verify,
+    autoMergeToMain: input.autoMergeToMain,
+    commitMessage: input.commitMessage,
+    gitAuthorName: input.gitAuthorName,
+    gitAuthorEmail: input.gitAuthorEmail,
   })
   const startedAt = Date.now()
 
