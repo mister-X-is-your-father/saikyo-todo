@@ -76,6 +76,13 @@ export function TeamContextEditor({ workspaceId }: Props) {
             disabled={!dirty || upd.isPending}
             onClick={() => void handleSave()}
             data-testid="team-context-save-btn"
+            aria-label={
+              !dirty
+                ? 'チームコンテキストに変更がないため保存不要'
+                : upd.isPending
+                  ? 'チームコンテキストを保存中…'
+                  : 'チームコンテキストを保存 (AI プロンプト末尾に inject)'
+            }
           >
             {upd.isPending ? '保存中…' : '保存'}
           </Button>

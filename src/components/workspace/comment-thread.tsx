@@ -198,6 +198,13 @@ function CommentItem({
               onClick={handleSave}
               disabled={update.isPending || !body.trim()}
               data-testid={`comment-save-${comment.id}`}
+              aria-label={
+                !body.trim()
+                  ? 'コメントを保存するには本文を入力してください'
+                  : update.isPending
+                    ? 'コメントの編集を保存中…'
+                    : 'コメントの編集を保存'
+              }
             >
               保存
             </Button>
