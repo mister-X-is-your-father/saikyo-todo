@@ -68,8 +68,10 @@ mode, pausedAt, accumulatedMs }` + 右下 fixed panel + Item 行 / Dialog
           に mount。Pause / Resume / Stop button、Stop で `time_entries` に auto
           insert (`category='dev'`、`durationMinutes=Math.max(1, round(ms/60000))`、
           `description=「タスク: <title>」`)。1s 間隔で再 render (running 中のみ)
-    - [ ] 次 iter: Item 行 / ItemEditDialog から `Start timer` button (現状は
-          まだ Start triggers が無いので panel が出ない)
+    - [x] iter 249: `start-timer-button.tsx` 新設 — 状態 3 way (active 無 / 自分 /
+          他 Item) で出し分け、ItemEditDialog の base tab に「⏱ タスクタイマー」
+          panel として mount。click → store.start で右下 panel 出現の hot path 完成
+    - [ ] 次 iter: Today / Backlog 行に compact 版を配置 (size='sm' の StartTimerButton)
     - [ ] Scope B (Document PiP) は次の次以降
 
 ### 2026-04-28 (iter238 後)

@@ -53,6 +53,7 @@ import { DecomposeProposalsPanel } from './decompose-proposals-panel'
 import { EngineerTriggerButton } from './engineer-trigger-button'
 import { ItemDecomposeButton } from './item-decompose-button'
 import { ItemDependenciesPanel } from './item-dependencies-panel'
+import { StartTimerButton } from './start-timer-button'
 import { TagPicker } from './tag-picker'
 
 interface Props {
@@ -301,6 +302,18 @@ function ItemEditDialogInner({
                 </p>
               </div>
               <EngineerTriggerButton item={item} />
+            </div>
+
+            <div className="flex items-start justify-between gap-3 rounded-lg border border-dashed p-3">
+              <div className="min-w-0">
+                <div className="text-sm font-semibold">
+                  <span aria-hidden="true">⏱ </span>タスクタイマー
+                </div>
+                <p className="text-muted-foreground text-xs">
+                  作業時間を計測。停止時に稼働記録 (time_entry) として自動保存します。
+                </p>
+              </div>
+              <StartTimerButton item={item} size="sm" />
             </div>
 
             <div className="space-y-1.5">
