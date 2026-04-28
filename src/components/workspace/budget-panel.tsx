@@ -112,18 +112,26 @@ export function BudgetPanel({ workspaceId }: Props) {
             </span>
           </div>
           {s.limit !== null && (
-            <div className="bg-muted relative h-2 w-full overflow-hidden rounded-full">
+            <div
+              role="progressbar"
+              aria-label={`AI 月次コスト消費率 ${ratioPct}% (警告閾値 ${Math.round(s.warnThreshold * 100)}%)`}
+              aria-valuenow={ratioPct}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              className="bg-muted relative h-2 w-full overflow-hidden rounded-full"
+            >
               <div
                 className={`h-full ${
                   s.exceeded ? 'bg-red-500' : s.warnTriggered ? 'bg-amber-500' : 'bg-primary'
                 }`}
                 style={{ width: `${ratioPct}%` }}
+                aria-hidden="true"
               />
-              {/* 警告閾値ライン */}
+              {/* 警告閾値ライン (視覚補助、SR には親 aria-label に含めて伝達) */}
               <div
                 className="bg-foreground/40 absolute top-0 h-full w-px"
                 style={{ left: `${Math.round(s.warnThreshold * 100)}%` }}
-                aria-label={`警告閾値 ${Math.round(s.warnThreshold * 100)}%`}
+                aria-hidden="true"
               />
             </div>
           )}
