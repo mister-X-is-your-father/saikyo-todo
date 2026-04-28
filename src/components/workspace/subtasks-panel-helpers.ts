@@ -72,3 +72,41 @@ export function findGrandparentId(
   const found = allItems.find((i) => !i.deletedAt && uuidToLabel(i.id) === grandparentLabel)
   return found?.id ?? null
 }
+
+/**
+ * iter300 refactor: ある parent Item の (直接 + 間接) 子孫を返す pure helper。
+ *
+ * subtasks-panel.tsx で inline で書かれていた `totalDescendants` 計算を helper 化。
+ * SubtasksPanel の h3 件数表示 / AI prompt embed / dashboard widget 等が同じ
+ * filter ロジック (deleted_at 除外 + parentPath 一致 or `${fullPath}.` で始まる)
+ * を再利用できる。元の inline と完全一致する 4 条件 (`!deletedAt` /
+ * `parentPath !== ''` / `parentPath !== parent.parentPath` / 子孫判定) を保つ。
+ *
+ * 子孫判定:
+ *   - `parentPath === fullPath` → 直接の子
+ *   - `parentPath.startsWith(`${fullPath}.`)` → 孫以下
+ */
+export function getDescendants<T extends LtreeNode>(
+  parent: { id: string; parentPath: string },
+  allItems: readonly T[],
+): T[] {
+  const fullPath =
+    parent.parentPath === ''
+      ? uuidToLabel(parent.id)
+      : `${parent.parentPath}.${uuidToLabel(parent.id)}`
+  return allItems.filter(
+    (i) =>
+      !i.deletedAt &&
+      i.parentPath !== '' &&
+      i.parentPath !== parent.parentPath &&
+      (i.parentPath === fullPath || i.parentPath.startsWith(`${fullPath}.`)),
+  )
+}
+
+/** iter300 refactor: getDescendants の数だけ欲しい時の薄いラッパ。 */
+export function countDescendants<T extends LtreeNode>(
+  parent: { id: string; parentPath: string },
+  allItems: readonly T[],
+): number {
+  return getDescendants(parent, allItems).length
+}

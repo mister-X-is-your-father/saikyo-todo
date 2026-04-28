@@ -48,6 +48,7 @@ import { MustBadge } from './must-badge'
 import { StatusBadge } from './status-badge'
 import {
   compareSiblings,
+  countDescendants,
   findGrandparentId,
   findPrevSibling,
   parseBulkSubtaskTitles,
@@ -322,14 +323,8 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
     }
   }
 
-  /** 再帰総数 (孫以下も含めた直接 + 間接 子孫の件数)。h3 に表示。 */
-  const totalDescendants = allItems.filter(
-    (i) =>
-      !i.deletedAt &&
-      i.parentPath !== '' &&
-      i.parentPath !== parent.parentPath &&
-      (i.parentPath === parentFullPath || i.parentPath.startsWith(`${parentFullPath}.`)),
-  ).length
+  /** 再帰総数 (孫以下も含めた直接 + 間接 子孫の件数)。h3 に表示。iter300 で helper 化 */
+  const totalDescendants = countDescendants(parent, allItems)
 
   // DnD: backlog-view と同じ sensor 設定 (mouse 5px / touch 250ms 長押し)
   const sensors = useSensors(

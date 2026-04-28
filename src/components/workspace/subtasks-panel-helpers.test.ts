@@ -5,10 +5,14 @@
  */
 import { describe, expect, it } from 'vitest'
 
+import { uuidToLabel } from '@/lib/db/ltree-path'
+
 import {
   compareSiblings,
+  countDescendants,
   findGrandparentId,
   findPrevSibling,
+  getDescendants,
   type LtreeNode,
   parseBulkSubtaskTitles,
 } from './subtasks-panel-helpers'
@@ -183,5 +187,94 @@ describe('findGrandparentId', () => {
     const deep = node({ id: D, parentPath: `${A}.${B}.${C}` })
     const list = [...items, deep]
     expect(findGrandparentId(deep, list)).toBe(B)
+  })
+})
+
+describe('getDescendants / countDescendants (iter300 refactor)', () => {
+  // root.A.B.C のような tree。uuidToLabel は ハイフン除去なので
+  // ハイフン無しの id を使うと label === id。
+  const A = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+  const B = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+  const C = 'cccccccccccccccccccccccccccccccc'
+  const D = 'dddddddddddddddddddddddddddddddd'
+  const E = 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+
+  it('parent (root) の直接の子のみ拾う (1 段)', () => {
+    const items: LtreeNode[] = [
+      node({ id: A, parentPath: '' }),
+      node({ id: B, parentPath: uuidToLabel(A) }),
+      node({ id: C, parentPath: uuidToLabel(A) }),
+    ]
+    const parent = { id: A, parentPath: '' }
+    expect(
+      getDescendants(parent, items)
+        .map((i) => i.id)
+        .sort(),
+    ).toEqual([B, C])
+    expect(countDescendants(parent, items)).toBe(2)
+  })
+
+  it('parent (root) の直接の子 + 孫まで再帰的に拾う (2 段)', () => {
+    const items: LtreeNode[] = [
+      node({ id: A, parentPath: '' }),
+      node({ id: B, parentPath: uuidToLabel(A) }),
+      node({ id: C, parentPath: `${uuidToLabel(A)}.${uuidToLabel(B)}` }),
+      node({ id: D, parentPath: `${uuidToLabel(A)}.${uuidToLabel(B)}` }),
+    ]
+    const parent = { id: A, parentPath: '' }
+    expect(countDescendants(parent, items)).toBe(3) // B, C, D
+  })
+
+  it('parent (nested) でも fullPath 計算が動く', () => {
+    // root: A、A の子: B、B の子: C
+    const items: LtreeNode[] = [
+      node({ id: A, parentPath: '' }),
+      node({ id: B, parentPath: uuidToLabel(A) }),
+      node({ id: C, parentPath: `${uuidToLabel(A)}.${uuidToLabel(B)}` }),
+      node({ id: D, parentPath: `${uuidToLabel(A)}.${uuidToLabel(B)}` }),
+    ]
+    // B を parent として渡せば C, D の 2 件
+    const parentB = { id: B, parentPath: uuidToLabel(A) }
+    expect(countDescendants(parentB, items)).toBe(2)
+  })
+
+  it('deletedAt の子孫は除外', () => {
+    const items: LtreeNode[] = [
+      node({ id: A, parentPath: '' }),
+      node({ id: B, parentPath: uuidToLabel(A) }),
+      node({ id: C, parentPath: uuidToLabel(A), deletedAt: new Date() }),
+    ]
+    const parent = { id: A, parentPath: '' }
+    expect(countDescendants(parent, items)).toBe(1) // B のみ
+  })
+
+  it('parent 自身 / sibling は除外 (parentPath が一致しないので)', () => {
+    const items: LtreeNode[] = [
+      node({ id: A, parentPath: '' }), // parent 自身
+      node({ id: E, parentPath: '' }), // root sibling
+      node({ id: B, parentPath: uuidToLabel(A) }), // child of A
+    ]
+    const parent = { id: A, parentPath: '' }
+    expect(countDescendants(parent, items)).toBe(1)
+  })
+
+  it('子孫が 0 件なら 0', () => {
+    const items: LtreeNode[] = [node({ id: A, parentPath: '' })]
+    const parent = { id: A, parentPath: '' }
+    expect(countDescendants(parent, items)).toBe(0)
+  })
+
+  it('別 tree の同名 prefix を持つ item を誤って拾わない (boundary 確認)', () => {
+    // A の fullPath = "A"、A 以外の root item B の fullPath = "B"。
+    // "A" で始まる別 tree の何かが居ないか厳密に確認。ここでは fullPath が
+    // ちょうど一致または `.` 続きなので、startsWith は安全。
+    const items: LtreeNode[] = [
+      node({ id: A, parentPath: '' }),
+      node({ id: 'aaab' + 'a'.repeat(28), parentPath: '' }), // label が "aaab..." で始まる別 root
+      node({ id: B, parentPath: uuidToLabel(A) }),
+    ]
+    const parent = { id: A, parentPath: '' }
+    // A の子 = B のみ。aaab... は別 root なので拾わない
+    expect(countDescendants(parent, items)).toBe(1)
   })
 })
