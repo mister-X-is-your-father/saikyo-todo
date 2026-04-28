@@ -161,6 +161,13 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
               disabled={!dirty || upsertGoal.isPending}
               onClick={() => void handleSave()}
               data-testid={`period-goal-save-${period}`}
+              aria-label={
+                !dirty
+                  ? `${PERIOD_LABEL[period]}ゴールに変更がないため保存不要`
+                  : upsertGoal.isPending
+                    ? `${PERIOD_LABEL[period]}ゴールを保存中…`
+                    : `${PERIOD_LABEL[period]}ゴールを保存`
+              }
             >
               {upsertGoal.isPending ? '保存中…' : 'ゴール保存'}
             </Button>

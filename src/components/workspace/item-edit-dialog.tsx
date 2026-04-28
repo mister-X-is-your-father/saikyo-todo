@@ -698,6 +698,13 @@ function SubtasksPanel({ workspaceId, parent }: { workspaceId: string; parent: I
             disabled={!bulkText.trim() || create.isPending}
             onClick={() => void handleBulkAdd()}
             data-testid="subtasks-bulk-add-btn"
+            aria-label={
+              !bulkText.trim()
+                ? '子タスクを追加するには改行区切りで入力してください'
+                : create.isPending
+                  ? `子タスク ${bulkText.split('\n').filter((t) => t.trim()).length} 件を追加中…`
+                  : `子タスク ${bulkText.split('\n').filter((t) => t.trim()).length} 件をまとめて追加`
+            }
           >
             {create.isPending
               ? '追加中…'

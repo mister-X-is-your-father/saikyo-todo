@@ -731,6 +731,11 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                 size="sm"
                 disabled={upd.isPending}
                 data-testid="sprint-defaults-save-btn"
+                aria-label={
+                  upd.isPending
+                    ? 'Sprint デフォルトを保存中…'
+                    : 'Sprint デフォルト (基本曜日 / 期間) を保存'
+                }
               >
                 {upd.isPending ? '保存中…' : '保存'}
               </Button>
