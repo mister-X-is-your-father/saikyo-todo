@@ -43,6 +43,7 @@ import { useWorkspaceStatuses } from '@/features/workspace/hooks'
 
 import { ItemCheckbox } from './item-checkbox'
 import { ItemDecomposeButton } from './item-decompose-button'
+import { getCardStatusAccent } from './kanban-card-accent'
 import { MustBadge } from './must-badge'
 
 interface Props {
@@ -297,6 +298,7 @@ function KanbanCard({
     const d = new Date()
     return new Date(d.getFullYear(), d.getMonth(), d.getDate())
   }, [])
+  const accent = getCardStatusAccent(item.status)
   return (
     <div
       ref={setNodeRef}
@@ -304,8 +306,9 @@ function KanbanCard({
       {...attributes}
       {...listeners}
       onClick={() => onEdit(item)}
-      className="bg-background group cursor-grab rounded border p-2 text-sm shadow-sm active:cursor-grabbing"
+      className={`group cursor-grab rounded border p-2 text-sm shadow-sm active:cursor-grabbing ${accent.bgClass} ${accent.borderClass}`}
       data-testid={`kanban-card-${item.id}`}
+      data-status={item.status}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-start gap-2">
