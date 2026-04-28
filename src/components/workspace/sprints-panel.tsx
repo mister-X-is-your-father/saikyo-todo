@@ -567,7 +567,11 @@ function SprintCard({
                 onClick={onRunRetro}
                 data-testid={`sprint-retro-${sprint.id}`}
                 title="PM Agent が完了/未完 items を要約して Retro Doc を生成"
-                aria-label={`Sprint「${sprint.name}」の振り返りを生成`}
+                aria-label={
+                  retroPending
+                    ? `Sprint「${sprint.name}」の振り返りを生成中…`
+                    : `Sprint「${sprint.name}」の振り返り Doc を生成 (PM Agent が完了/未完 items を要約)`
+                }
               >
                 <Sparkles className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                 {retroPending ? '振り返り生成中…' : '振り返り生成'}
@@ -581,9 +585,13 @@ function SprintCard({
                 onClick={onRunPremortem}
                 data-testid={`sprint-premortem-${sprint.id}`}
                 title="PM Agent が想定リスクと早期警報を Pre-mortem Doc にまとめる"
-                aria-label={`Sprint「${sprint.name}」の Pre-mortem を${
-                  sprint.premortemGeneratedAt ? '再生成' : '生成'
-                }`}
+                aria-label={
+                  premortemPending
+                    ? `Sprint「${sprint.name}」の Pre-mortem を生成中…`
+                    : sprint.premortemGeneratedAt
+                      ? `Sprint「${sprint.name}」の Pre-mortem を再生成 (PM Agent が想定リスクと早期警報を Doc にまとめる)`
+                      : `Sprint「${sprint.name}」の Pre-mortem を生成 (PM Agent が想定リスクと早期警報を Doc にまとめる)`
+                }
               >
                 <Sparkles className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                 {premortemPending
