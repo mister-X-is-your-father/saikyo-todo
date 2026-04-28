@@ -29,6 +29,12 @@ export interface ActiveTimerState {
   itemId: string | null
   /** UI 表示用の Item title (serializable) */
   itemTitle: string | null
+  /**
+   * iter254: timer Stop 時の variance 計算用 estimate (分)。start 時に
+   * description から extractEstimateMinutes で抽出したものを保持。null なら
+   * 比較は行わず actual だけ表示。
+   */
+  estimateMinutes: number | null
   /** 現在動いている? (paused なら false、running なら true) */
   running: boolean
   /** 動き出した時刻 (Date.now() ms)。null なら停止中 */
@@ -39,13 +45,23 @@ export interface ActiveTimerState {
   mode: TimerMode
 
   /** Item を指定してタイマー開始 (既存タイマーがあれば呼出し側で stop しておく) */
-  start: (input: { itemId: string; itemTitle: string; mode?: TimerMode }) => void
+  start: (input: {
+    itemId: string
+    itemTitle: string
+    mode?: TimerMode
+    estimateMinutes?: number | null
+  }) => void
   /** 一時停止 (累積値は保持) */
   pause: () => void
   /** 再開 (paused → running) */
   resume: () => void
   /** 停止 → state クリア。caller が elapsed ms を取って time_entries に書き込む */
-  stop: () => { itemId: string; itemTitle: string; elapsedMs: number } | null
+  stop: () => {
+    itemId: string
+    itemTitle: string
+    elapsedMs: number
+    estimateMinutes: number | null
+  } | null
   /** 計測中かどうか (running or paused) */
   isActive: () => boolean
   /** 現在までの累積 ms (paused 中の値も足す) */
@@ -57,15 +73,17 @@ export const useActiveTimerStore = create<ActiveTimerState>()(
     (set, get) => ({
       itemId: null,
       itemTitle: null,
+      estimateMinutes: null,
       running: false,
       startedAt: null,
       pausedAccumulatedMs: 0,
       mode: 'stopwatch',
 
-      start: ({ itemId, itemTitle, mode = 'stopwatch' }) => {
+      start: ({ itemId, itemTitle, mode = 'stopwatch', estimateMinutes = null }) => {
         set({
           itemId,
           itemTitle,
+          estimateMinutes,
           running: true,
           startedAt: Date.now(),
           pausedAccumulatedMs: 0,
@@ -91,7 +109,8 @@ export const useActiveTimerStore = create<ActiveTimerState>()(
       },
 
       stop: () => {
-        const { itemId, itemTitle, running, startedAt, pausedAccumulatedMs } = get()
+        const { itemId, itemTitle, estimateMinutes, running, startedAt, pausedAccumulatedMs } =
+          get()
         if (itemId === null) return null
         const now = Date.now()
         const elapsedMs =
@@ -99,11 +118,12 @@ export const useActiveTimerStore = create<ActiveTimerState>()(
         set({
           itemId: null,
           itemTitle: null,
+          estimateMinutes: null,
           running: false,
           startedAt: null,
           pausedAccumulatedMs: 0,
         })
-        return { itemId, itemTitle: itemTitle ?? '', elapsedMs }
+        return { itemId, itemTitle: itemTitle ?? '', elapsedMs, estimateMinutes }
       },
 
       isActive: () => get().itemId !== null,
@@ -121,6 +141,7 @@ export const useActiveTimerStore = create<ActiveTimerState>()(
       partialize: (s) => ({
         itemId: s.itemId,
         itemTitle: s.itemTitle,
+        estimateMinutes: s.estimateMinutes,
         running: s.running,
         startedAt: s.startedAt,
         pausedAccumulatedMs: s.pausedAccumulatedMs,
@@ -138,4 +159,49 @@ export function formatElapsed(ms: number): string {
   const ss = total % 60
   const pad = (n: number) => String(n).padStart(2, '0')
   return hh > 0 ? `${hh}:${pad(mm)}:${pad(ss)}` : `${pad(mm)}:${pad(ss)}`
+}
+
+/**
+ * iter254 ai-automation: timer Stop 時の actual vs estimate variance を一文に整形。
+ *
+ * - estimate なし → 「(見積なし)」
+ * - actual <= estimate → 「予定 30分 / 実測 25分 (-5分、見積内)」
+ * - actual > estimate (許容 10% 以内) → 「予定 30分 / 実測 32分 (+2分、ほぼ見積通り)」
+ * - actual > estimate (大幅) → 「予定 30分 / 実測 50分 (+20分、見積超過)」
+ *
+ * 「ほぼ見積通り」 / 「見積超過」 / 「見積内」のラベルで bias チェックの
+ * フィードバックを与える (Pomodoro 派の learn-by-doing UX)。
+ */
+export interface VarianceReport {
+  /** UI 表示用の一文 */
+  message: string
+  /** 'under' | 'on' | 'over' — toast の severity 切替 (success / info / warning) */
+  bias: 'under' | 'on' | 'over' | 'unknown'
+}
+export function formatVariance(
+  actualMinutes: number,
+  estimateMinutes: number | null,
+): VarianceReport {
+  if (!estimateMinutes || estimateMinutes <= 0) {
+    return { message: `実測 ${actualMinutes}分 (見積なし)`, bias: 'unknown' }
+  }
+  const diff = actualMinutes - estimateMinutes
+  const sign = diff > 0 ? '+' : diff < 0 ? '' : '±'
+  const tolerance = Math.max(1, Math.round(estimateMinutes * 0.1)) // 10% / 最低 1 分
+  let label: string
+  let bias: VarianceReport['bias']
+  if (diff < -tolerance) {
+    label = '見積内'
+    bias = 'under'
+  } else if (diff > tolerance) {
+    label = '見積超過'
+    bias = 'over'
+  } else {
+    label = 'ほぼ見積通り'
+    bias = 'on'
+  }
+  return {
+    message: `予定 ${estimateMinutes}分 / 実測 ${actualMinutes}分 (${sign}${diff}分、${label})`,
+    bias,
+  }
 }

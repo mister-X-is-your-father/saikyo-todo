@@ -309,3 +309,40 @@ export function formatEstimate(minutes: number | undefined): string {
   const m = minutes % 60
   return m === 0 ? `${h}時間` : `${h}時間${m}分`
 }
+
+/**
+ * iter254 ai-automation: Item.description の `見積: X` プレフィクスから分数を復元。
+ * QuickAdd で書き込んだフォーマットを timer Stop 時の variance 計算で使う。
+ *
+ * 受理:
+ *   - `見積: 30分`        → 30
+ *   - `見積: 1時間`       → 60
+ *   - `見積: 1時間30分`   → 90
+ *   - `見積: 2時間`       → 120
+ *   - `見積: 30m` / `見積: 1h` / `見積: 1.5h` / `見積: 2h30m` (英)
+ *
+ * description は複数行 / 末尾任意。1 行目だけを見る (将来 description が長文化しても
+ * 安全)。マッチしない / 範囲外 (>3600 分) は undefined。
+ */
+export function extractEstimateMinutes(description: string | null | undefined): number | undefined {
+  if (!description) return undefined
+  const firstLine = description.split('\n', 1)[0]!
+  const ja = firstLine.match(/見積:\s*(?:(\d{1,3})時間)?(?:(\d{1,2})分)?/)
+  if (ja && (ja[1] || ja[2])) {
+    const minutes = Number(ja[1] ?? '0') * 60 + Number(ja[2] ?? '0')
+    if (minutes > 0 && minutes <= 3600) return minutes
+  }
+  const en = firstLine.match(
+    /見積:\s*(?:(\d+(?:\.\d+)?)h(?:(\d{1,2})m(?:in)?s?)?|(\d{1,3})m(?:in)?s?)/i,
+  )
+  if (en) {
+    if (en[1]) {
+      const minutes = Math.round(Number(en[1]) * 60) + Number(en[2] ?? '0')
+      if (minutes > 0 && minutes <= 3600) return minutes
+    } else if (en[3]) {
+      const minutes = Number(en[3])
+      if (minutes > 0 && minutes <= 3600) return minutes
+    }
+  }
+  return undefined
+}

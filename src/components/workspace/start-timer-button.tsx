@@ -19,12 +19,17 @@ import { toast } from 'sonner'
 
 import { formatElapsed, useActiveTimerStore } from '@/lib/stores/active-timer'
 
+import { extractEstimateMinutes } from '@/features/item/nl-parse'
 import type { Item } from '@/features/item/schema'
 
 import { Button } from '@/components/ui/button'
 
 interface Props {
-  item: Pick<Item, 'id' | 'title'>
+  /**
+   * iter254: description も渡せるように緩めた (estimateMinutes 抽出用、optional)。
+   * 渡されない場合 estimate なしで起動 (variance なし)。
+   */
+  item: Pick<Item, 'id' | 'title'> & { description?: string | null }
   /** 'sm' は Item 行向けの compact、'default' は dialog 向け */
   size?: 'sm' | 'default'
 }
@@ -76,8 +81,13 @@ export function StartTimerButton({ item, size = 'default' }: Props) {
         )
       }
     }
-    start({ itemId: item.id, itemTitle: item.title })
-    toast.success(`「${item.title}」のタイマーを開始しました`)
+    const estimateMinutes = extractEstimateMinutes(item.description) ?? null
+    start({ itemId: item.id, itemTitle: item.title, estimateMinutes })
+    toast.success(
+      estimateMinutes
+        ? `「${item.title}」のタイマーを開始しました (見積 ${estimateMinutes}分)`
+        : `「${item.title}」のタイマーを開始しました`,
+    )
   }
 
   return (

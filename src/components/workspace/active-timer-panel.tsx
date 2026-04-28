@@ -23,7 +23,7 @@ import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 
 import { isAppError } from '@/lib/errors'
-import { formatElapsed, useActiveTimerStore } from '@/lib/stores/active-timer'
+import { formatElapsed, formatVariance, useActiveTimerStore } from '@/lib/stores/active-timer'
 
 import { useCreateTimeEntry } from '@/features/time-entry/hooks'
 
@@ -41,6 +41,7 @@ function todayISO(): string {
 export function ActiveTimerPanel({ workspaceId }: Props) {
   const itemId = useActiveTimerStore((s) => s.itemId)
   const itemTitle = useActiveTimerStore((s) => s.itemTitle)
+  const estimateMinutes = useActiveTimerStore((s) => s.estimateMinutes)
   const running = useActiveTimerStore((s) => s.running)
   const pause = useActiveTimerStore((s) => s.pause)
   const resume = useActiveTimerStore((s) => s.resume)
@@ -75,7 +76,16 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
         durationMinutes: minutes,
         idempotencyKey: uuidv4(),
       })
-      toast.success(`稼働を記録しました: ${minutes} 分`)
+      // iter254: estimate と比較して variance を bias 別 toast で通知。
+      // bias=under → success / on → success / over → warning。
+      const variance = formatVariance(minutes, result.estimateMinutes)
+      const baseMsg = `稼働を記録しました: ${minutes} 分`
+      const fullMsg = result.estimateMinutes ? `${baseMsg} — ${variance.message}` : baseMsg
+      if (variance.bias === 'over') {
+        toast.warning(fullMsg)
+      } else {
+        toast.success(fullMsg)
+      }
     } catch (e) {
       toast.error(isAppError(e) ? e.message : '稼働記録に失敗')
     }
@@ -89,7 +99,18 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
       aria-label={`タスクタイマー (経過 ${formatElapsed(elapsedMs)}${running ? ' 計測中' : ' 一時停止中'})`}
     >
       <div className="min-w-0">
-        <div className="text-muted-foreground text-[10px]">タスク タイマー</div>
+        <div className="text-muted-foreground text-[10px]">
+          タスク タイマー
+          {estimateMinutes ? (
+            <span
+              className="ml-1 rounded bg-cyan-100 px-1 text-[9px] text-cyan-700"
+              data-testid="active-timer-estimate"
+              aria-label={`見積 ${estimateMinutes}分`}
+            >
+              見積 {estimateMinutes}分
+            </span>
+          ) : null}
+        </div>
         <div className="flex items-center gap-2">
           <span className="max-w-[160px] truncate text-xs font-medium" title={itemTitle ?? ''}>
             {itemTitle || '(無題)'}

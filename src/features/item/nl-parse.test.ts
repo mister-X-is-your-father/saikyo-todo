@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatEstimate, parseQuickAdd } from './nl-parse'
+import { extractEstimateMinutes, formatEstimate, parseQuickAdd } from './nl-parse'
 
 const TODAY = new Date(2026, 3, 25) // Sat 2026-04-25
 
@@ -392,6 +392,51 @@ describe('parseQuickAdd', () => {
     })
     it('120 は 2時間 (端数なし)', () => {
       expect(formatEstimate(120)).toBe('2時間')
+    })
+  })
+
+  // iter254 ai-automation: description プレフィクスから estimate を復元
+  // (timer Stop 時の variance 計算で使う)。
+  describe('extractEstimateMinutes', () => {
+    it('null / undefined / 空 は undefined', () => {
+      expect(extractEstimateMinutes(null)).toBeUndefined()
+      expect(extractEstimateMinutes(undefined)).toBeUndefined()
+      expect(extractEstimateMinutes('')).toBeUndefined()
+    })
+    it('見積 プレフィクスが無いと undefined', () => {
+      expect(extractEstimateMinutes('普通の説明文')).toBeUndefined()
+    })
+    it('見積: 30分', () => {
+      expect(extractEstimateMinutes('見積: 30分')).toBe(30)
+    })
+    it('見積: 1時間', () => {
+      expect(extractEstimateMinutes('見積: 1時間')).toBe(60)
+    })
+    it('見積: 1時間30分 (連結)', () => {
+      expect(extractEstimateMinutes('見積: 1時間30分')).toBe(90)
+    })
+    it('見積: 30m (英)', () => {
+      expect(extractEstimateMinutes('見積: 30m')).toBe(30)
+    })
+    it('見積: 1.5h (英、小数)', () => {
+      expect(extractEstimateMinutes('見積: 1.5h')).toBe(90)
+    })
+    it('見積: 2h30m (英、連結)', () => {
+      expect(extractEstimateMinutes('見積: 2h30m')).toBe(150)
+    })
+    it('複数行 description は 1 行目のみ参照', () => {
+      expect(extractEstimateMinutes('見積: 1時間\n本文')).toBe(60)
+      expect(extractEstimateMinutes('本文\n見積: 1時間')).toBeUndefined()
+    })
+    it('範囲外 (>3600) は undefined', () => {
+      expect(extractEstimateMinutes('見積: 100時間')).toBeUndefined()
+    })
+    it('見積: が空マッチでも undefined', () => {
+      expect(extractEstimateMinutes('見積: 0分')).toBeUndefined()
+    })
+    it('round-trip: format → extract', () => {
+      const formatted = formatEstimate(135)
+      expect(extractEstimateMinutes(`見積: ${formatted}`)).toBe(135)
     })
   })
 })
