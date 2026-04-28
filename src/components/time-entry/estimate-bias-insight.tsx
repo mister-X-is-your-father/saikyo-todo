@@ -17,6 +17,10 @@ import { useMemo } from 'react'
 import { useItems } from '@/features/item/hooks'
 import type { Item } from '@/features/item/schema'
 import { computeEstimateBias } from '@/features/time-entry/bias'
+import {
+  formatCalibratedEstimateJa,
+  suggestCalibratedEstimates,
+} from '@/features/time-entry/bias-calibration'
 import { buildItemDescriptionLookup, selectBiasSamples } from '@/features/time-entry/bias-selector'
 import { useTimeEntries } from '@/features/time-entry/hooks'
 
@@ -111,13 +115,29 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
           </div>
         </dl>
         {report.calibrationFactor !== null && (
-          <p
-            className="text-muted-foreground mt-2 text-[11px]"
-            data-testid="estimate-bias-calibration"
-          >
-            calibration: 実測/見積の中央値 ≈ {report.calibrationFactor.toFixed(2)}× (
-            {report.withEstimateCount}/{report.totalCount} 件)
-          </p>
+          <div className="mt-3 space-y-1.5" data-testid="estimate-bias-calibration">
+            <p className="text-muted-foreground text-[11px]">
+              calibration: 実測/見積の中央値 ≈ {report.calibrationFactor.toFixed(2)}× (
+              {report.withEstimateCount}/{report.totalCount} 件)
+            </p>
+            {(() => {
+              const suggestions = suggestCalibratedEstimates(report.calibrationFactor)
+              if (suggestions.length === 0) return null
+              return (
+                <ul
+                  className="text-muted-foreground space-y-0.5 text-[11px]"
+                  aria-label="典型的な見積分の校正推奨"
+                  data-testid="estimate-bias-suggestions"
+                >
+                  {suggestions.map((s) => (
+                    <li key={s.inputMinutes} className="tabular-nums">
+                      {formatCalibratedEstimateJa(s)}
+                    </li>
+                  ))}
+                </ul>
+              )
+            })()}
+          </div>
         )}
       </CardContent>
     </Card>
