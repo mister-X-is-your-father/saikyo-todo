@@ -11,6 +11,8 @@ import { formatFriendlyDate } from '@/features/item/date-tokens'
 import { formatEstimate } from '@/features/item/estimate'
 import { useCreateItem } from '@/features/item/hooks'
 import { parseQuickAdd } from '@/features/item/nl-parse'
+import { applyBiasCalibration } from '@/features/time-entry/bias-calibration'
+import { useEstimateCalibration } from '@/features/time-entry/use-estimate-calibration'
 
 import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
@@ -32,10 +34,22 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
   const [text, setText] = useState('')
   const create = useCreateItem(workspaceId)
   const decompose = useDecomposeItem(workspaceId)
+  // iter267 ai-automation: 直近 bias の calibrationFactor を取得し、見積入力時に
+  // 「30分 → 39分 (校正)」をリアルタイム inline で表示する。
+  const { calibrationFactor } = useEstimateCalibration(workspaceId)
 
   const preview = useMemo(
     () => (text.trim() ? parseQuickAdd(text, { today: new Date() }) : null),
     [text],
+  )
+
+  // preview 確定 + estimate あり + factor あり (= 3 sample 以上 + delta != 0) なら校正値を計算
+  const calibrated = useMemo(
+    () =>
+      preview?.estimateMinutes
+        ? applyBiasCalibration(preview.estimateMinutes, calibrationFactor)
+        : null,
+    [preview, calibrationFactor],
   )
 
   /**
@@ -193,6 +207,19 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
             >
               <span aria-hidden="true">🕐 </span>
               {formatEstimate(preview.estimateMinutes)}
+            </span>
+          )}
+          {/* iter267: bias calibration が利用可能なら校正値を annotation で表示。
+              delta=0 の場合は表示しない (情報量ゼロ)。Item.description には
+              元の見積をそのまま記録するので、UI 提示のみで実データには影響しない。 */}
+          {calibrated && calibrated.deltaMinutes !== 0 && (
+            <span
+              className="rounded border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 text-[10px] text-cyan-600"
+              data-testid="quick-add-estimate-calibrated"
+              title={`直近の見積精度に基づく校正値 (中央値 ${calibrationFactor?.toFixed(2)}×)`}
+              aria-label={`校正後 ${formatEstimate(calibrated.calibratedMinutes)} (${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分)`}
+            >
+              → {formatEstimate(calibrated.calibratedMinutes)}
             </span>
           )}
           {preview.isMust && (
