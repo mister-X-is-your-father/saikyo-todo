@@ -74,7 +74,12 @@ export function LoginForm() {
           </p>
         )}
       </div>
-      <Button type="submit" className="w-full" disabled={isPending}>
+      <Button
+        type="submit"
+        className="w-full"
+        disabled={isPending}
+        aria-label={isPending ? 'ログイン処理中…' : 'ログイン'}
+      >
         {isPending ? 'ログイン中...' : 'ログイン'}
       </Button>
     </form>

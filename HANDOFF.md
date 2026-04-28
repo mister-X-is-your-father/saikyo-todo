@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter255] login / signup form の submit button が pending 状態を SR に再 announce していなかった (iter180-222 の「pending SR 化」パターンの取り残し) → fix: `login-form.tsx` / `signup-form.tsx` の `<Button type=submit>` に `aria-label={isPending ? '<処理中文言>' : '<通常文言>'}` を追加。Docker 不在 cloud env のため Supabase 起動 fallback (login/signup 画面のみ走行) で `aria-label=null → "ログイン" / "アカウントを作成 (サインアップ)"` を確認。typecheck / lint 緑。
 - ✅ [iter3] login: email/password input に required 属性なし → fix: `login-form.tsx` に required + aria-required + minLength=8
 - ✅ [iter4] login: signup link plain click が dev overlay で hit-test 失敗していた → fix: `login/page.tsx` の Link / CardFooter に `relative z-10` を付与 (force:true なら遷移するが本来不要のはず → dev devtools overlay が遮ってた)
 - ✅ [iter5] signup: displayName / email / password に required + aria-required + minLength を追加 (signup-form.tsx)
