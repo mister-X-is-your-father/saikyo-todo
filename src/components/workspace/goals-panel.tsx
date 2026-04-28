@@ -487,12 +487,16 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
                       type="button"
                       onClick={() => void handleDelete(kr.id, kr.title)}
                       disabled={remove.isPending}
-                      aria-label={`KR「${kr.title}」を削除`}
+                      aria-label={
+                        remove.isPending
+                          ? `KR「${kr.title}」を削除中…`
+                          : `KR「${kr.title}」を削除 (soft delete)`
+                      }
                       title="KR を削除 (soft delete)"
                       data-testid={`kr-delete-${kr.id}`}
                       className="text-muted-foreground hover:text-destructive text-xs disabled:opacity-50"
                     >
-                      ✕
+                      <span aria-hidden="true">✕</span>
                     </button>
                   </div>
                 </div>
