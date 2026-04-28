@@ -241,7 +241,18 @@ export function SprintsPanel({ workspaceId }: Props) {
       ) : !list.data || list.data.length === 0 ? (
         <EmptyState
           title="Sprint がありません"
-          description="上のフォームから作成できます"
+          // iter283 basics: 旧説明 (`上のフォームから作成できます`) は単なる行動指示で
+          // Sprint が何かが見えなかった → 用途例と典型的な期間 (1-2週間) を示す。
+          // Today (iter273) / Inbox (iter276) / Workflows (iter281) と同パターン。
+          description={
+            <span>
+              短期 (典型は <code className="bg-muted rounded px-1 text-[11px]">1-2 週間</code>) の
+              スコープ単位で進捗を測る箱です。 ゴール例:{' '}
+              <code className="bg-muted rounded px-1 text-[11px]">α リリース準備</code> /{' '}
+              <code className="bg-muted rounded px-1 text-[11px]">第 3 四半期 OKR</code>。 完了時に
+              Retro Doc / 開始前に Pre-mortem を生成できます。
+            </span>
+          }
           action={
             <button
               type="button"
