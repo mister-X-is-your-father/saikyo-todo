@@ -94,6 +94,7 @@ export function SignupForm() {
           id="password"
           type="password"
           autoComplete="new-password"
+          enterKeyHint="send"
           required
           aria-required="true"
           minLength={8}

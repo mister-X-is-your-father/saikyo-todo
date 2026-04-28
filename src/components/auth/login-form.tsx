@@ -74,6 +74,7 @@ export function LoginForm() {
           id="password"
           type="password"
           autoComplete="current-password"
+          enterKeyHint="send"
           required
           aria-required="true"
           minLength={8}
