@@ -16,6 +16,7 @@ import { useEstimateCalibration } from '@/features/time-entry/use-estimate-calib
 
 import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
+import { MustBadge } from '@/components/workspace/must-badge'
 
 const PRIO_COLOR: Record<number, string> = {
   1: 'bg-red-100 text-red-700',
@@ -224,9 +225,7 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
           )}
           {preview.isMust && (
             <>
-              <span className="rounded bg-red-100 px-1.5 py-0.5 font-medium text-red-700">
-                MUST
-              </span>
+              <MustBadge />
               <span
                 className="rounded border border-red-300 bg-red-50 px-1.5 py-0.5 text-[10px] text-red-700"
                 role="alert"

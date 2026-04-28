@@ -44,6 +44,7 @@ import { Label } from '@/components/ui/label'
 
 import { DecomposeProposalsPanel } from './decompose-proposals-panel'
 import { ItemCheckbox } from './item-checkbox'
+import { MustBadge } from './must-badge'
 import { StatusBadge } from './status-badge'
 import {
   compareSiblings,
@@ -173,15 +174,7 @@ function SubtaskTreeNode({
           {grandchildren.length} 件
         </span>
       )}
-      {item.isMust && (
-        <span
-          className="rounded bg-red-100 px-1 py-0.5 text-[10px] text-red-700"
-          role="img"
-          aria-label="MUST タスク"
-        >
-          MUST
-        </span>
-      )}
+      {item.isMust && <MustBadge />}
       {/* iter290 P0 (queue: subtask gap d/4): indent/outdent buttons + Alt+←/→ keyboard */}
       <button
         type="button"

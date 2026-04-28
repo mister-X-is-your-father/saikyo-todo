@@ -23,6 +23,7 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command'
+import { MustBadge } from '@/components/workspace/must-badge'
 
 export interface PaletteCommand {
   id: string
@@ -112,15 +113,7 @@ export function CommandPalette({ commands, items, onSelectItem }: CommandPalette
                       {item.dueDate}
                     </span>
                   )}
-                  {item.isMust && (
-                    <span
-                      className="ml-auto rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-medium text-red-700"
-                      role="img"
-                      aria-label="MUST タスク"
-                    >
-                      MUST
-                    </span>
-                  )}
+                  {item.isMust && <MustBadge className="ml-auto" />}
                 </CommandItem>
               ))}
             </CommandGroup>

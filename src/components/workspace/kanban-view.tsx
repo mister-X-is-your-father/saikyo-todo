@@ -43,6 +43,7 @@ import { useWorkspaceStatuses } from '@/features/workspace/hooks'
 
 import { ItemCheckbox } from './item-checkbox'
 import { ItemDecomposeButton } from './item-decompose-button'
+import { MustBadge } from './must-badge'
 
 interface Props {
   workspaceId: string
@@ -326,15 +327,7 @@ function KanbanCard({
           </button>
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          {item.isMust && (
-            <span
-              className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-medium text-red-700"
-              role="img"
-              aria-label="MUST item"
-            >
-              MUST
-            </span>
-          )}
+          {item.isMust && <MustBadge />}
           <button
             type="button"
             onPointerDown={(e) => e.stopPropagation()}

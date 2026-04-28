@@ -53,6 +53,7 @@ import { CommentThread } from './comment-thread'
 import { EngineerTriggerButton } from './engineer-trigger-button'
 import { ItemDecomposeButton } from './item-decompose-button'
 import { ItemDependenciesPanel } from './item-dependencies-panel'
+import { MustBadge } from './must-badge'
 import { StartTimerButton } from './start-timer-button'
 import { SubtasksPanel } from './subtasks-panel'
 import { TagPicker } from './tag-picker'
@@ -222,11 +223,7 @@ function ItemEditDialogInner({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <span className="truncate">{item.title}</span>
-            {item.isMust && (
-              <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-medium text-red-700">
-                MUST
-              </span>
-            )}
+            {item.isMust && <MustBadge />}
           </DialogTitle>
           <DialogDescription>
             保存すると楽観ロックで version が進みます。別端末からの変更があると Conflict

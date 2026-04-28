@@ -36,6 +36,8 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
+import { MustBadge } from './must-badge'
+
 interface Props {
   workspaceId: string
   parentItemId: string
@@ -418,15 +420,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
         data-testid={`proposal-${proposal.id}-edit-btn`}
       >
         <div className="flex items-center gap-1.5">
-          {proposal.isMust && (
-            <span
-              className="rounded bg-red-100 px-1 py-0.5 text-[10px] text-red-700"
-              role="img"
-              aria-label="MUST 提案"
-            >
-              MUST
-            </span>
-          )}
+          {proposal.isMust && <MustBadge />}
           <span className="truncate font-medium">{proposal.title}</span>
         </div>
         {proposal.description && (

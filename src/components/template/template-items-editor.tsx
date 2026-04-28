@@ -21,6 +21,7 @@ import { EmptyState, ErrorState, Loading } from '@/components/shared/async-state
 import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { MustBadge } from '@/components/workspace/must-badge'
 
 interface Props {
   templateId: string
@@ -156,15 +157,7 @@ export function TemplateItemsEditor({ templateId }: Props) {
               data-testid="template-item-row"
             >
               <span className="flex-1 truncate">{it.title}</span>
-              {it.isMust ? (
-                <span
-                  className="rounded bg-red-500/10 px-1.5 text-xs text-red-600"
-                  role="img"
-                  aria-label="MUST item"
-                >
-                  MUST
-                </span>
-              ) : null}
+              {it.isMust ? <MustBadge /> : null}
               {it.dueOffsetDays != null ? (
                 <span
                   className="text-muted-foreground text-xs"
