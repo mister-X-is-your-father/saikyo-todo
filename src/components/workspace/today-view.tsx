@@ -43,6 +43,21 @@ export function TodayView({
         }
         title="今日のタスクはありません"
         description="scheduled_for / dueDate を設定すると Today に出てきます"
+        action={
+          <button
+            type="button"
+            className="text-primary hover:bg-muted mt-2 rounded border px-3 py-1.5 text-xs hover:underline"
+            data-testid="today-empty-quick-add"
+            aria-label="クイック追加入力欄にフォーカス (q キーでも可)"
+            onClick={() => {
+              const el = document.getElementById('quick-add-input') as HTMLInputElement | null
+              el?.focus()
+              el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }}
+          >
+            クイック追加にフォーカス (キー: q)
+          </button>
+        }
       />
     )
   }
