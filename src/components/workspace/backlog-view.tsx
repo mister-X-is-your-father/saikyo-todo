@@ -50,6 +50,7 @@ import { BulkCheckbox, BulkHeaderCheckbox } from './bulk-action-bar'
 import { ItemCheckbox } from './item-checkbox'
 import { ItemDecomposeButton } from './item-decompose-button'
 import { ItemResearchButton } from './item-research-button'
+import { StartTimerButton } from './start-timer-button'
 import { StatusBadge } from './status-badge'
 
 interface Props {
@@ -142,10 +143,14 @@ function buildColumns(workspaceId: string, onEdit: (item: Item) => void): Column
     {
       id: 'actions',
       header: 'アクション',
-      size: 300,
+      size: 380,
       enableSorting: false,
       cell: ({ row }) => (
-        <div className="flex gap-2">
+        <div
+          className="flex gap-2"
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+        >
           <Button
             variant="outline"
             size="sm"
@@ -159,6 +164,7 @@ function buildColumns(workspaceId: string, onEdit: (item: Item) => void): Column
           </Button>
           <ItemDecomposeButton workspaceId={workspaceId} item={row.original} />
           <ItemResearchButton workspaceId={workspaceId} item={row.original} />
+          <StartTimerButton item={row.original} size="sm" />
         </div>
       ),
     },

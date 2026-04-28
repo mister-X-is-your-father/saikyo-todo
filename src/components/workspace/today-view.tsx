@@ -9,6 +9,7 @@ import { buildTodayGroups } from '@/features/today/build-groups'
 import { EmptyState } from '@/components/shared/async-states'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ItemCheckbox } from '@/components/workspace/item-checkbox'
+import { StartTimerButton } from '@/components/workspace/start-timer-button'
 import { StatusBadge } from '@/components/workspace/status-badge'
 
 function todayISO(): string {
@@ -116,6 +117,9 @@ export function TodayView({
                         <span className="text-red-600">期限 {it.dueDate}</span>
                       )}
                       <StatusBadge status={it.status} />
+                      <span onClick={(e) => e.stopPropagation()}>
+                        <StartTimerButton item={it} size="sm" />
+                      </span>
                     </div>
                   </div>
                 ))}
