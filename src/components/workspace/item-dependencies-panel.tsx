@@ -32,6 +32,10 @@ import {
   useItemDependencies,
   useRemoveItemDependency,
 } from '@/features/item-dependency/hooks'
+import {
+  formatDependencyReadiness,
+  summarizeDependencyReadiness,
+} from '@/features/item-dependency/readiness'
 import type { ItemDependencyType } from '@/features/item-dependency/schema'
 
 import { Button } from '@/components/ui/button'
@@ -97,9 +101,32 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
   const blockedBy = data?.blockedBy ?? []
   const blocking = data?.blocking ?? []
   const related = data?.related ?? []
+  // iter306 basics: iter297 で整備済の summarizeDependencyReadiness substrate を UI bind。
+  // 依存タブを開いた時に「いま着手可能か / 何件残っているか」が一瞥で伝わる readiness chip を
+  // 先頭に配置 (FEEDBACK_QUEUE「Item dependencies tab: 依存先を visual chain」候補の前段)。
+  const readiness = summarizeDependencyReadiness({ blockedBy, blocking, related })
+  const readinessSummary = formatDependencyReadiness(readiness)
+  const readinessToneClass = readiness.isBlocked
+    ? 'bg-amber-50 text-amber-900 ring-amber-200'
+    : readiness.blockedByCount === 0 &&
+        readiness.blockingCount === 0 &&
+        readiness.relatedCount === 0
+      ? 'bg-zinc-50 text-zinc-700 ring-zinc-200'
+      : 'bg-emerald-50 text-emerald-900 ring-emerald-200'
 
   return (
     <div className="space-y-5" data-testid="dependencies-panel">
+      <div
+        className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs ring-1 ${readinessToneClass}`}
+        role="status"
+        aria-live="polite"
+        aria-label={`依存サマリ: ${readinessSummary}`}
+        data-testid="dep-readiness-chip"
+        data-blocked={readiness.isBlocked}
+      >
+        <span aria-hidden="true">{readiness.isBlocked ? '⏸' : readiness.isReady ? '✓' : '·'}</span>
+        <span>{readinessSummary}</span>
+      </div>
       <Section
         title="前提条件 (これが終わらないと進められない)"
         emptyText="前提条件はありません"
