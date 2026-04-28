@@ -13,6 +13,7 @@ import { parseAsBoolean, parseAsString, parseAsStringEnum, useQueryState } from 
 
 import { isAppError } from '@/lib/errors'
 
+import { applyBoardFilters } from '@/features/item/board-filter'
 import { useItems } from '@/features/item/hooks'
 import { useItemsRealtime } from '@/features/item/realtime'
 import type { Item } from '@/features/item/schema'
@@ -70,21 +71,16 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
   useItemsRealtime(workspaceId)
   const sprintsList = useSprints(workspaceId)
 
+  // iter295 refactor: filter ロジックを `@/features/item/board-filter` に抽出 (test 11 件)
   const filtered = useMemo(() => {
     if (!data) return []
     const activeSprintId = sprintsList.data?.find((s) => s.status === 'active')?.id ?? null
-    return data.filter((i) => {
-      if (i.deletedAt) return false
-      if (must && !i.isMust) return false
-      if (statusFilter && i.status !== statusFilter) return false
-      if (sprintFilter === 'active') {
-        if (!activeSprintId || i.sprintId !== activeSprintId) return false
-      } else if (sprintFilter === 'none') {
-        if (i.sprintId) return false
-      } else if (sprintFilter && sprintFilter !== '') {
-        if (i.sprintId !== sprintFilter) return false
-      }
-      return true
+    return applyBoardFilters({
+      items: data,
+      must,
+      statusFilter,
+      sprintFilter,
+      activeSprintId,
     })
   }, [data, must, statusFilter, sprintFilter, sprintsList.data])
 
