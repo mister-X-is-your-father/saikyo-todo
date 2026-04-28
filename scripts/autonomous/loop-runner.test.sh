@@ -201,6 +201,22 @@ SAIKYO_LOOP_STATE="$S18" bash "$RUNNER" start --mode=autonomous --deadline=2h > 
 assert_contains "T18-deadline" "$(cat "$S18")" "DEADLINE_MIN=120"
 assert_contains "T18-last-order" "$(cat "$S18")" "LAST_ORDER_MIN=105"
 
+# ---------- T18b: main は --concurrency=N を 1-8 で受理、9+ は exit 1 ----------
+echo "T18b: main rejects --concurrency=99"
+# main は acquire-lock で外部 git を叩くので concurrency 引数 validation までは走るが
+# その後 fail する。validation 段階で exit 1 を確認 (lock 取得前のため git は触らない)。
+# 但し validation だけだと state file は作らない。dry-run 的 exit を期待。
+out_concur=$(bash "$RUNNER" main --mode=autonomous --deadline=2h --concurrency=99 2>&1 || true)
+assert_contains "T18b-msg" "$out_concur" "ERROR: --concurrency must be 1-8"
+
+echo "T18c: main rejects --concurrency=0"
+out_concur0=$(bash "$RUNNER" main --mode=autonomous --deadline=2h --concurrency=0 2>&1 || true)
+assert_contains "T18c-msg" "$out_concur0" "ERROR: --concurrency must be 1-8"
+
+echo "T18d: main rejects --concurrency=abc"
+out_concur_abc=$(bash "$RUNNER" main --mode=autonomous --deadline=2h --concurrency=abc 2>&1 || true)
+assert_contains "T18d-msg" "$out_concur_abc" "ERROR: --concurrency must be 1-8"
+
 # ---------- T19: 8h deadline → last_order = 465 (= 7h45min) ----------
 echo "T19: deadline=8h gives last_order=465min (7h45min)"
 S19="$TMP_BASE/s19.state"

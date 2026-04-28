@@ -40,7 +40,32 @@ bash scripts/autonomous/loop-runner.sh main --mode=autonomous --deadline=2h
 # playwright (cron 30 0,8,16 * * * = 3 起動/日、setup 別途)
 bash scripts/autonomous/loop-runner.sh main --mode=playwright --deadline=8h
 # (deadline 8h = 480min, last_order = 7h45min, lock TTL = 510min)
+
+# 並列モード (opt-in、週末等 capacity 余り時のみ)
+bash scripts/autonomous/loop-runner.sh main --mode=autonomous --deadline=2h --concurrency=3
+# 1 batch ごとに 3 subprocess を並走 spawn、batch 全完了まで wait してから次 batch。
+# range: 1-8。default = 1 (= 直列)。
 ```
+
+## --concurrency=N (並列モード、opt-in)
+
+`--concurrency=2` 以上を渡すと **1 batch 内で N 個の subprocess を並走** spawn する。
+
+- batch 内の subprocess 同士は git push race で競合する
+  - HANDOFF.md は append が複数走り **merge conflict 多発** (push-main.sh の rebase fallback で吸収するが完璧ではない)
+  - ファイル独立な commit (例: 別 feature の編集) なら rebase で auto-merge が効く
+- batch 開始時に 2 sec offset で起動 (lock acquired 後なので race は HANDOFF / git push 層のみ)
+- batch 全 fail が 2 連続したら abort (default 直列の 3 連続より厳しめ)
+- log filename には ns + PID を含む (並列で衝突しない unique 名)
+
+**推奨用途**:
+- 週末 / 連休で capacity 余って、HANDOFF conflict より throughput を取りたい時
+- 別 feature を独立 commit する iter (basics 系で 4 件並走など)
+
+**避けるべき用途**:
+- 同 file を高頻度に編集する iter (merge conflict 不可避)
+- refactor 系 (1 commit が大きい、並走は意味なし)
+- playwright モード (1 fix = 1 a11y patch、並走させても同 file 競合しがち)
 
 ## /clear が物理的に呼べない問題への解 (subprocess 隔離)
 

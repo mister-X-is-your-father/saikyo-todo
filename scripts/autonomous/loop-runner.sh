@@ -287,7 +287,8 @@ do_spawn_iter() {
 
   mkdir -p "$ITER_LOG_DIR"
   local iter_idx=$(( ${ITER_COUNT:-0} + 1 ))
-  local log_file="$ITER_LOG_DIR/iter-$(date +%Y%m%dT%H%M%S)-${mode}-${iter_idx}.log"
+  # 並列 spawn でも衝突しない unique 名: 秒単位 + nanos + PID (BASHPID は subshell でも別)
+  local log_file="$ITER_LOG_DIR/iter-$(date +%Y%m%dT%H%M%S%N)-pid${BASHPID:-$$}-${mode}-${iter_idx}.log"
 
   local instruction_file="$SCRIPT_DIR/iter-instruction-${mode}.md"
   if [[ ! -f "$instruction_file" ]]; then
@@ -328,17 +329,22 @@ do_spawn_iter() {
 # ----- subcommand: main (全部入りオーケストレータ) -----
 # trigger prompt はこれを呼ぶだけにする。
 do_main() {
-  local mode="" deadline_str=""
+  local mode="" deadline_str="" concurrency=1
   for arg in "$@"; do
     case "$arg" in
       --mode=*) mode="${arg#--mode=}" ;;
       --deadline=*) deadline_str="${arg#--deadline=}" ;;
+      --concurrency=*) concurrency="${arg#--concurrency=}" ;;
     esac
   done
   [[ -z "$mode" || -z "$deadline_str" ]] && {
     echo "ERROR: --mode and --deadline required" >&2
     exit 1
   }
+  if ! [[ "$concurrency" =~ ^[1-9][0-9]?$ ]] || [[ "$concurrency" -gt 8 ]]; then
+    echo "ERROR: --concurrency must be 1-8 (got: $concurrency)" >&2
+    exit 1
+  fi
   local deadline_min ttl_min
   deadline_min=$(parse_duration "$deadline_str") || exit 1
   ttl_min=$(( deadline_min + LOCK_TTL_MARGIN_MIN ))
@@ -346,6 +352,7 @@ do_main() {
   echo "============================================================"
   echo " loop-runner main mode=$mode deadline=$deadline_str (=${deadline_min}min)"
   echo " lock TTL=${ttl_min}min, last_order_buffer=${LAST_ORDER_BUFFER_MIN}min"
+  echo " concurrency=${concurrency} $( [[ $concurrency -gt 1 ]] && echo '(PARALLEL — 注意: HANDOFF.md merge conflict 多発の可能性、push-main.sh の rebase fallback 頼り)' )"
   echo " $(date -u)"
   echo "============================================================"
 
@@ -378,15 +385,45 @@ do_main() {
       break
     fi
 
-    echo "[main] starting iter (remaining=${remaining}min)"
-    if do_spawn_iter; then
-      consecutive_fail=0
+    if [[ "$concurrency" -eq 1 ]]; then
+      # serial (default)
+      echo "[main] starting iter (remaining=${remaining}min, serial)"
+      if do_spawn_iter; then
+        consecutive_fail=0
+      else
+        consecutive_fail=$(( consecutive_fail + 1 ))
+        echo "[main] iter failed (consecutive=$consecutive_fail)"
+        if [[ "$consecutive_fail" -ge 3 ]]; then
+          echo "[main] 3 consecutive failures, aborting loop"
+          break
+        fi
+      fi
     else
-      consecutive_fail=$(( consecutive_fail + 1 ))
-      echo "[main] iter failed (consecutive=$consecutive_fail)"
-      if [[ "$consecutive_fail" -ge 3 ]]; then
-        echo "[main] 3 consecutive failures, aborting loop"
-        break
+      # parallel batch (opt-in via --concurrency=N)
+      echo "[main] starting parallel batch of $concurrency iters (remaining=${remaining}min)"
+      local pids=()
+      local i
+      for ((i=1; i<=concurrency; i++)); do
+        # 1-2 sec offset で git race を緩和 (lock は既に取得済なので実害は HANDOFF.md merge のみ)
+        do_spawn_iter &
+        pids+=("$!")
+        sleep 2
+      done
+      local batch_fail=0
+      for pid in "${pids[@]}"; do
+        if ! wait "$pid"; then
+          batch_fail=$(( batch_fail + 1 ))
+        fi
+      done
+      echo "[main] parallel batch done (failed=$batch_fail/$concurrency)"
+      if [[ "$batch_fail" -eq "$concurrency" ]]; then
+        consecutive_fail=$(( consecutive_fail + 1 ))
+        if [[ "$consecutive_fail" -ge 2 ]]; then
+          echo "[main] 2 consecutive batch-all-fail, aborting loop"
+          break
+        fi
+      else
+        consecutive_fail=0
       fi
     fi
   done
