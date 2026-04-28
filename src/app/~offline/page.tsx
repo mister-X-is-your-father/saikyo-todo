@@ -22,7 +22,7 @@ export default function OfflinePage() {
   return (
     <main
       aria-labelledby="offline-heading"
-      className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center"
+      className="flex min-h-dvh flex-col items-center justify-center gap-4 p-8 text-center"
     >
       <h1 id="offline-heading" className="text-2xl font-bold">
         オフラインです
