@@ -17,12 +17,12 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <Card role="region" aria-labelledby="login-heading">
+    <Card role="region" aria-labelledby="login-heading" aria-describedby="login-description">
       <CardHeader>
         <CardTitle id="login-heading" role="heading" aria-level={1} className="text-2xl">
           ログイン
         </CardTitle>
-        <CardDescription>最強TODO へようこそ</CardDescription>
+        <CardDescription id="login-description">最強TODO へようこそ</CardDescription>
       </CardHeader>
       <CardContent>
         <LoginForm />

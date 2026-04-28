@@ -17,12 +17,12 @@ export const metadata: Metadata = {
 
 export default function SignupPage() {
   return (
-    <Card role="region" aria-labelledby="signup-heading">
+    <Card role="region" aria-labelledby="signup-heading" aria-describedby="signup-description">
       <CardHeader>
         <CardTitle id="signup-heading" role="heading" aria-level={1} className="text-2xl">
           サインアップ
         </CardTitle>
-        <CardDescription>アカウントを作成して始めましょう</CardDescription>
+        <CardDescription id="signup-description">アカウントを作成して始めましょう</CardDescription>
       </CardHeader>
       <CardContent>
         <SignupForm />
