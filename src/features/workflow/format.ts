@@ -8,26 +8,47 @@
  *   片方欠損は `'—'`。
  *
  * 既存 component から呼ばれる時点では Date|string|null|undefined すべての形が来る
- * (Drizzle/JSON で型が緩い)。fail-safe として `new Date(...)` で正規化する。
+ * (Drizzle 直返しなら Date、Server Action から JSON 越しなら string)。fail-safe
+ * として `new Date(...)` で正規化する。型も両方を正式に受け取れるように
+ * `DateLike` で広げ、test 側の `as unknown as Date` cast を不要にする。
  */
 import type { WorkflowRun } from './schema'
 
-/** WorkflowRun のうち本ヘルパが触るフィールド (テスト fixture 簡略化のため structural) */
-export type RunTimeFields = Pick<WorkflowRun, 'startedAt' | 'createdAt' | 'finishedAt'>
+/** Drizzle 由来 Date と JSON 由来 ISO 文字列の両方を受ける入力型 */
+export type DateLike = Date | string | null | undefined
+
+/**
+ * WorkflowRun のうち本ヘルパが触るフィールド。schema 由来は `Date | null` だが
+ * JSON で受ける呼び出し元のために structural に `DateLike` まで広げている
+ * (実体は `WorkflowRun` を必ず代入できる super-type)。
+ */
+export type RunTimeFields = {
+  startedAt: DateLike
+  createdAt: DateLike
+  finishedAt: DateLike
+}
+
+// 型レベル assertion: WorkflowRun が RunTimeFields に代入可能であることを保証
+// (schema が変わって列名が消えたらコンパイル時に検出する)
+const _assertCompatible = (run: WorkflowRun): RunTimeFields => run
+void _assertCompatible
+
+function toDate(v: DateLike): Date | null {
+  if (v == null) return null
+  const d = v instanceof Date ? v : new Date(v)
+  return Number.isNaN(d.getTime()) ? null : d
+}
 
 export function formatRunTime(r: RunTimeFields): string {
-  const t = r.startedAt ?? r.createdAt
-  if (!t) return '—'
-  const d = t instanceof Date ? t : new Date(t)
-  if (Number.isNaN(d.getTime())) return '—'
+  const d = toDate(r.startedAt) ?? toDate(r.createdAt)
+  if (!d) return '—'
   return d.toLocaleString('ja-JP')
 }
 
 export function formatRunDuration(r: RunTimeFields): string {
-  if (!r.startedAt || !r.finishedAt) return '—'
-  const s = r.startedAt instanceof Date ? r.startedAt : new Date(r.startedAt)
-  const e = r.finishedAt instanceof Date ? r.finishedAt : new Date(r.finishedAt)
-  if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) return '—'
+  const s = toDate(r.startedAt)
+  const e = toDate(r.finishedAt)
+  if (!s || !e) return '—'
   const ms = e.getTime() - s.getTime()
   if (ms < 1000) return `${ms}ms`
   if (ms < 60_000) return `${(ms / 1000).toFixed(1)}s`

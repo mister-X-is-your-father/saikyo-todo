@@ -2,15 +2,14 @@ import { describe, expect, it } from 'vitest'
 
 import { formatRunDuration, formatRunTime, type RunTimeFields } from './format'
 
-// createdAt は schema 上 NOT NULL だが、formatRunTime は null/undefined にも
-// fail-safe するので test fixture では `Date | null` の cast で揃える。
-const run = (overrides: Partial<RunTimeFields>): RunTimeFields =>
-  ({
-    startedAt: null,
-    createdAt: null,
-    finishedAt: null,
-    ...overrides,
-  }) as RunTimeFields
+// RunTimeFields は DateLike (Date | string | null | undefined) を受けるので
+// fixture は cast 不要で string も Date も直接渡せる。
+const run = (overrides: Partial<RunTimeFields>): RunTimeFields => ({
+  startedAt: null,
+  createdAt: null,
+  finishedAt: null,
+  ...overrides,
+})
 
 describe('formatRunTime', () => {
   // toLocaleString('ja-JP') は実行環境 TZ に依存するので、TZ 非依存な
@@ -34,7 +33,7 @@ describe('formatRunTime', () => {
   })
 
   it('Date でなく ISO 文字列でも正しく整形 (Drizzle JSON 由来)', () => {
-    const r = run({ startedAt: '2026-04-25T08:30:00Z' as unknown as Date })
+    const r = run({ startedAt: '2026-04-25T08:30:00Z' })
     expect(formatRunTime(r)).toMatch(JA_DATETIME)
   })
 
@@ -43,8 +42,16 @@ describe('formatRunTime', () => {
   })
 
   it('不正な日付文字列は "—" (fail-safe)', () => {
-    const r = run({ startedAt: 'not-a-date' as unknown as Date })
+    const r = run({ startedAt: 'not-a-date' })
     expect(formatRunTime(r)).toBe('—')
+  })
+
+  it('不正な日付文字列でも createdAt fallback は効く', () => {
+    const r = run({
+      startedAt: 'broken',
+      createdAt: new Date('2026-04-25T07:00:00Z'),
+    })
+    expect(formatRunTime(r)).toMatch(JA_DATETIME)
   })
 })
 
@@ -76,17 +83,22 @@ describe('formatRunDuration', () => {
 
   it('ISO 文字列 (Drizzle JSON 由来) も受理', () => {
     const r = run({
-      startedAt: '2026-04-25T08:00:00.000Z' as unknown as Date,
-      finishedAt: '2026-04-25T08:00:01.500Z' as unknown as Date,
+      startedAt: '2026-04-25T08:00:00.000Z',
+      finishedAt: '2026-04-25T08:00:01.500Z',
     })
     expect(formatRunDuration(r)).toBe('1.5s')
   })
 
   it('不正な日付は "—" (fail-safe)', () => {
     const r = run({
-      startedAt: 'invalid' as unknown as Date,
+      startedAt: 'invalid',
       finishedAt: start,
     })
+    expect(formatRunDuration(r)).toBe('—')
+  })
+
+  it('finishedAt 側だけ不正でも "—"', () => {
+    const r = run({ startedAt: start, finishedAt: 'broken' })
     expect(formatRunDuration(r)).toBe('—')
   })
 })
