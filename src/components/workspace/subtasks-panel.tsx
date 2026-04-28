@@ -14,6 +14,7 @@
  */
 import { useState } from 'react'
 
+import { Ban, CheckCircle2, Circle, HelpCircle, PlayCircle, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { fullPathOf } from '@/lib/db/ltree-path'
@@ -25,7 +26,17 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 
 import { DecomposeProposalsPanel } from './decompose-proposals-panel'
+import { getSubtaskStatusConfig, type SubtaskIconKey } from './subtask-status'
 import { parseBulkSubtaskTitles } from './subtasks-panel-helpers'
+
+const STATUS_ICONS: Record<SubtaskIconKey, typeof Circle> = {
+  circle: Circle,
+  progress: PlayCircle,
+  done: CheckCircle2,
+  cancel: XCircle,
+  block: Ban,
+  unknown: HelpCircle,
+}
 
 interface Props {
   workspaceId: string
@@ -93,33 +104,53 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
             まだ子タスクがありません
           </p>
         ) : (
-          <ul className="space-y-1" data-testid="subtasks-list">
-            {children.map((c) => (
-              <li
-                key={c.id}
-                className="flex items-center gap-2 rounded border px-2 py-1.5 text-sm"
-                data-testid={`subtask-${c.id}`}
-              >
-                <span
-                  className={`rounded px-1.5 py-0.5 text-[10px] ${
-                    c.status === 'done'
-                      ? 'bg-green-100 text-green-700'
-                      : c.status === 'in_progress'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-slate-100 text-slate-700'
-                  }`}
+          <ol
+            className="space-y-1"
+            data-testid="subtasks-list"
+            aria-label={`子タスク 全 ${children.length} 件`}
+          >
+            {children.map((c, idx) => {
+              const cfg = getSubtaskStatusConfig(c.status)
+              const StatusIcon = STATUS_ICONS[cfg.iconKey]
+              const isDone = c.status === 'done'
+              return (
+                <li
+                  key={c.id}
+                  className="flex items-center gap-2 rounded border px-2 py-1.5 text-sm"
+                  data-testid={`subtask-${c.id}`}
                 >
-                  {c.status}
-                </span>
-                <span className="flex-1 truncate">{c.title}</span>
-                {c.isMust && (
-                  <span className="rounded bg-red-100 px-1 py-0.5 text-[10px] text-red-700">
-                    MUST
+                  <span
+                    className="bg-muted text-muted-foreground inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[11px] tabular-nums ring-1 ring-inset ring-slate-200"
+                    aria-label={`${idx + 1} 番目`}
+                    data-testid={`subtask-step-${c.id}`}
+                  >
+                    {idx + 1}
                   </span>
-                )}
-              </li>
-            ))}
-          </ul>
+                  <span
+                    className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] ring-1 ring-inset ${cfg.bgClass} ${cfg.textClass} ${cfg.ringClass}`}
+                    role="img"
+                    aria-label={`ステータス: ${cfg.label}`}
+                    data-testid={`subtask-status-${c.id}`}
+                  >
+                    <StatusIcon className="h-3 w-3" aria-hidden="true" />
+                    <span className="hidden sm:inline">{cfg.label}</span>
+                  </span>
+                  <span className={`flex-1 truncate ${isDone ? 'text-muted-foreground' : ''}`}>
+                    {c.title}
+                  </span>
+                  {c.isMust && (
+                    <span
+                      className="rounded bg-red-100 px-1 py-0.5 text-[10px] text-red-700"
+                      role="img"
+                      aria-label="MUST タスク"
+                    >
+                      MUST
+                    </span>
+                  )}
+                </li>
+              )
+            })}
+          </ol>
         )}
       </div>
 
