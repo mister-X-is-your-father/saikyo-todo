@@ -62,3 +62,30 @@ export function computeSprintBurndown(input: BurndownInput): SprintBurndown {
   const isOnTrack = total === 0 ? true : completionPct >= elapsedPct - 10
   return { totalDays, elapsedDays, remainingDays, elapsedPct, completionPct, isOnTrack }
 }
+
+/**
+ * iter298 basics: Sprint の進捗 tone (色 / icon の意味付け) を pure に決める。
+ *
+ * UI の sprints-panel.tsx で `bg-primary` 一律だった progress bar を、
+ * `達成 (緑チェック) / 進行中 (青↑) / 遅延 (黄⚠) / 対象外 (zinc)` の 4 段で
+ * 視覚的に意味を持たせる substrate (FEEDBACK_QUEUE「Goal / Sprint progress bar:
+ * 残/超過/達成を色 + icon で意味付け」)。
+ *
+ * tone 判定:
+ *   - `done`:    completionPct === 100 (= 全 item 完了。状態に関わらず最強の達成サイン)
+ *   - `behind`:  status === 'active' && !isOnTrack (active で遅れ気味)
+ *   - `onTrack`: status === 'active' && isOnTrack (active で順調)
+ *   - `idle`:    上記以外 (planning / completed / cancelled、または total=0)
+ *
+ * Note: completionPct=100 が active 中の cancelled より優先 (達成は永続)。
+ */
+export type SprintProgressTone = 'done' | 'onTrack' | 'behind' | 'idle'
+
+export function sprintProgressTone(
+  burndown: Pick<SprintBurndown, 'completionPct' | 'isOnTrack'>,
+  status: 'planning' | 'active' | 'completed' | 'cancelled',
+): SprintProgressTone {
+  if (burndown.completionPct >= 100) return 'done'
+  if (status === 'active') return burndown.isOnTrack ? 'onTrack' : 'behind'
+  return 'idle'
+}

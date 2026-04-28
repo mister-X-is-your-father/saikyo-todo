@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { computeSprintBurndown } from './burndown'
+import { computeSprintBurndown, sprintProgressTone } from './burndown'
 
 describe('computeSprintBurndown', () => {
   // 14 日 Sprint、5 日経過、進捗 5/14 (= 36%)、経過 5/14 (= 36%) → on-track
@@ -160,5 +160,36 @@ describe('computeSprintBurndown', () => {
     })
     expect(r.totalDays).toBe(1)
     expect(r.elapsedPct).toBe(100) // elapsedDays=1, totalDays=1
+  })
+})
+
+describe('sprintProgressTone', () => {
+  it('completionPct=100 は status に関わらず done (達成サインが最強)', () => {
+    expect(sprintProgressTone({ completionPct: 100, isOnTrack: true }, 'active')).toBe('done')
+    expect(sprintProgressTone({ completionPct: 100, isOnTrack: false }, 'active')).toBe('done')
+    expect(sprintProgressTone({ completionPct: 100, isOnTrack: true }, 'planning')).toBe('done')
+    expect(sprintProgressTone({ completionPct: 100, isOnTrack: false }, 'cancelled')).toBe('done')
+    expect(sprintProgressTone({ completionPct: 100, isOnTrack: true }, 'completed')).toBe('done')
+  })
+
+  it('active + isOnTrack=true は onTrack', () => {
+    expect(sprintProgressTone({ completionPct: 50, isOnTrack: true }, 'active')).toBe('onTrack')
+    expect(sprintProgressTone({ completionPct: 0, isOnTrack: true }, 'active')).toBe('onTrack')
+  })
+
+  it('active + isOnTrack=false は behind', () => {
+    expect(sprintProgressTone({ completionPct: 30, isOnTrack: false }, 'active')).toBe('behind')
+    expect(sprintProgressTone({ completionPct: 0, isOnTrack: false }, 'active')).toBe('behind')
+  })
+
+  it('planning / completed / cancelled は (未達成なら) idle', () => {
+    expect(sprintProgressTone({ completionPct: 50, isOnTrack: true }, 'planning')).toBe('idle')
+    expect(sprintProgressTone({ completionPct: 80, isOnTrack: false }, 'completed')).toBe('idle')
+    expect(sprintProgressTone({ completionPct: 0, isOnTrack: true }, 'cancelled')).toBe('idle')
+  })
+
+  it('境界: completionPct 99 は active なら onTrack/behind, 非 active なら idle', () => {
+    expect(sprintProgressTone({ completionPct: 99, isOnTrack: true }, 'active')).toBe('onTrack')
+    expect(sprintProgressTone({ completionPct: 99, isOnTrack: true }, 'planning')).toBe('idle')
   })
 })

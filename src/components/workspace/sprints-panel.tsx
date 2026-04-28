@@ -9,13 +9,26 @@
  */
 import { useEffect, useRef, useState } from 'react'
 
-import { CalendarRange, CheckCircle, Pause, Play, Sparkles, X } from 'lucide-react'
+import {
+  AlertTriangle,
+  CalendarRange,
+  CheckCircle,
+  Pause,
+  Play,
+  Sparkles,
+  TrendingUp,
+  X,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
 
 import { isInvalidDateRange } from '@/features/item/date-range'
-import { computeSprintBurndown } from '@/features/sprint/burndown'
+import {
+  computeSprintBurndown,
+  type SprintProgressTone,
+  sprintProgressTone,
+} from '@/features/sprint/burndown'
 import {
   useChangeSprintStatus,
   useCreateSprint,
@@ -63,6 +76,25 @@ const STATUS_COLOR: Record<SprintStatus, 'secondary' | 'default' | 'destructive'
   active: 'default',
   completed: 'secondary',
   cancelled: 'destructive',
+}
+
+// iter298 basics: progress bar の tone (色 / icon) を意味付け
+//   - done    緑 ✓ (達成)
+//   - onTrack 青↑ (順調)
+//   - behind  黄⚠ (遅延)
+//   - idle    zinc 無印 (未着手 / 完了済 / 中止)
+const PROGRESS_TONE_BAR_CLASS: Record<SprintProgressTone, string> = {
+  done: 'bg-emerald-500',
+  onTrack: 'bg-blue-500',
+  behind: 'bg-amber-500',
+  idle: 'bg-primary',
+}
+
+const PROGRESS_TONE_LABEL: Record<SprintProgressTone, string> = {
+  done: '達成',
+  onTrack: '順調',
+  behind: '遅れ気味',
+  idle: '進行中',
 }
 
 // iter265 refactor: 6 個の純粋日付ヘルパを `@/features/sprint/sprint-date-helpers`
@@ -327,7 +359,25 @@ function SprintCard({
     done,
   })
   const pct = burndown.completionPct
-  const { totalDays, elapsedDays, remainingDays, elapsedPct, isOnTrack } = burndown
+  const { totalDays, elapsedDays, remainingDays, elapsedPct } = burndown
+  // iter298 basics: tone は "達成" 永続が最強 → onTrack/behind (active) → idle (それ以外)
+  const tone = sprintProgressTone(burndown, status)
+  const ToneIcon =
+    tone === 'done'
+      ? CheckCircle
+      : tone === 'onTrack'
+        ? TrendingUp
+        : tone === 'behind'
+          ? AlertTriangle
+          : null
+  const toneIconClass =
+    tone === 'done'
+      ? 'text-emerald-600'
+      : tone === 'onTrack'
+        ? 'text-blue-600'
+        : tone === 'behind'
+          ? 'text-amber-600'
+          : ''
 
   return (
     <li data-testid={`sprint-card-${sprint.id}`}>
@@ -360,10 +410,20 @@ function SprintCard({
             <div className="space-y-2">
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">完了率</span>
+                  <span className="text-muted-foreground inline-flex items-center gap-1">
+                    {ToneIcon && (
+                      <ToneIcon aria-hidden="true" className={`h-3.5 w-3.5 ${toneIconClass}`} />
+                    )}
+                    <span>完了率</span>
+                    <span className="sr-only">({PROGRESS_TONE_LABEL[tone]})</span>
+                  </span>
                   <span
                     className={`font-mono ${
-                      status === 'active' && !isOnTrack ? 'text-destructive' : ''
+                      tone === 'behind'
+                        ? 'text-destructive'
+                        : tone === 'done'
+                          ? 'text-emerald-700'
+                          : ''
                     }`}
                   >
                     {done} / {total} ({pct}%)
@@ -372,14 +432,18 @@ function SprintCard({
                 <div
                   className="bg-muted relative h-1.5 w-full overflow-hidden rounded-full"
                   role="progressbar"
-                  aria-label={`Sprint「${sprint.name}」完了率`}
+                  aria-label={`Sprint「${sprint.name}」完了率 (${PROGRESS_TONE_LABEL[tone]})`}
                   aria-valuenow={pct}
                   aria-valuemin={0}
                   aria-valuemax={100}
-                  aria-valuetext={`${done}/${total} (${pct}%)${status === 'active' && !isOnTrack ? ' — 遅れ気味' : ''}`}
+                  aria-valuetext={`${done}/${total} (${pct}%) — ${PROGRESS_TONE_LABEL[tone]}`}
                   data-testid={`sprint-progress-${sprint.id}`}
+                  data-tone={tone}
                 >
-                  <div className="bg-primary h-full" style={{ width: `${pct}%` }} />
+                  <div
+                    className={`${PROGRESS_TONE_BAR_CLASS[tone]} h-full`}
+                    style={{ width: `${pct}%` }}
+                  />
                   {/* ideal 線 (経過率) */}
                   {status === 'active' && (
                     <div
