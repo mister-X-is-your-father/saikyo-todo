@@ -182,7 +182,25 @@ export function GoalsPanel({ workspaceId }: Props) {
       ) : list.error ? (
         <ErrorState message={(list.error as Error).message ?? '読み込みに失敗'} />
       ) : !list.data || list.data.length === 0 ? (
-        <EmptyState title="Goal がありません" description="上のフォームから作成できます" />
+        <EmptyState
+          title="Goal がありません"
+          description="上のフォームから作成できます"
+          action={
+            <button
+              type="button"
+              className="text-primary hover:bg-muted mt-2 rounded border px-3 py-1.5 text-xs hover:underline"
+              data-testid="goals-empty-create"
+              aria-label="Goal 作成フォームの『Objective』入力欄にフォーカス"
+              onClick={() => {
+                const el = document.getElementById('goal-title') as HTMLInputElement | null
+                el?.focus()
+                el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }}
+            >
+              作成フォームへ
+            </button>
+          }
+        />
       ) : (
         <ul className="space-y-3" data-testid="goals-list">
           {list.data.map((g) => (

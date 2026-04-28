@@ -280,7 +280,25 @@ export function SprintsPanel({ workspaceId }: Props) {
       ) : list.error ? (
         <ErrorState message={(list.error as Error).message ?? '読み込みに失敗'} />
       ) : !list.data || list.data.length === 0 ? (
-        <EmptyState title="Sprint がありません" description="上のフォームから作成できます" />
+        <EmptyState
+          title="Sprint がありません"
+          description="上のフォームから作成できます"
+          action={
+            <button
+              type="button"
+              className="text-primary hover:bg-muted mt-2 rounded border px-3 py-1.5 text-xs hover:underline"
+              data-testid="sprints-empty-create"
+              aria-label="Sprint 作成フォームの『名前』入力欄にフォーカス"
+              onClick={() => {
+                const el = document.getElementById('sprint-name') as HTMLInputElement | null
+                el?.focus()
+                el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }}
+            >
+              作成フォームへ
+            </button>
+          }
+        />
       ) : (
         <ul className="space-y-3" data-testid="sprints-list">
           {list.data.map((sp) => (

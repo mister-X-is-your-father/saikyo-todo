@@ -217,7 +217,25 @@ export function WorkflowsPanel({ workspaceId }: Props) {
           onRetry={() => void list.refetch()}
         />
       ) : (list.data ?? []).length === 0 ? (
-        <EmptyState title="Workflow がありません" description="上のフォームから作成してください" />
+        <EmptyState
+          title="Workflow がありません"
+          description="上のフォームから作成してください"
+          action={
+            <button
+              type="button"
+              className="text-primary hover:bg-muted mt-2 rounded border px-3 py-1.5 text-xs hover:underline"
+              data-testid="workflows-empty-create"
+              aria-label="Workflow 作成フォームの『名前』入力欄にフォーカス"
+              onClick={() => {
+                const el = document.getElementById('wf-name') as HTMLInputElement | null
+                el?.focus()
+                el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }}
+            >
+              作成フォームへ
+            </button>
+          }
+        />
       ) : (
         <ul className="space-y-3" data-testid="workflows-list">
           {list.data!.map((wf) => (
