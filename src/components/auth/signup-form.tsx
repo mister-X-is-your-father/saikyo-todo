@@ -52,6 +52,7 @@ export function SignupForm() {
           required
           aria-required="true"
           minLength={1}
+          maxLength={50}
           aria-invalid={Boolean(form.formState.errors.displayName)}
           aria-describedby={form.formState.errors.displayName ? 'displayName-error' : undefined}
           {...form.register('displayName')}
