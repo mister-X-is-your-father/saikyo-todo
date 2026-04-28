@@ -7,7 +7,10 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  countItemsByStatus,
+  formatStatusCounts,
   getStatusVisual,
+  groupItemsByStatus,
   KNOWN_STATUS_KEYS,
   type StatusIconKey,
 } from './status-visual'
@@ -82,5 +85,152 @@ describe('getStatusVisual', () => {
       expect(c.iconKey).not.toBe<StatusIconKey>('unknown')
       expect(c.shortLabel.length).toBeGreaterThan(0)
     }
+  })
+})
+
+describe('groupItemsByStatus', () => {
+  it('status 別に items を振り分け、順序は元配列順を保つ', () => {
+    const items = [
+      { id: 'a', status: 'todo' },
+      { id: 'b', status: 'in_progress' },
+      { id: 'c', status: 'todo' },
+      { id: 'd', status: 'done' },
+      { id: 'e', status: 'blocked' },
+      { id: 'f', status: 'cancelled' },
+    ]
+    const groups = groupItemsByStatus(items)
+    expect(groups.todo.map((i) => i.id)).toEqual(['a', 'c'])
+    expect(groups.in_progress.map((i) => i.id)).toEqual(['b'])
+    expect(groups.done.map((i) => i.id)).toEqual(['d'])
+    expect(groups.blocked.map((i) => i.id)).toEqual(['e'])
+    expect(groups.cancelled.map((i) => i.id)).toEqual(['f'])
+    expect(groups.unknown).toEqual([])
+  })
+
+  it('未知 / null / undefined / 空文字 / カスタム status は unknown bucket に集約', () => {
+    const items = [
+      { id: 'a', status: null },
+      { id: 'b', status: undefined },
+      { id: 'c', status: '' },
+      { id: 'd', status: 'custom-foo' },
+      { id: 'e', status: 'todo' },
+    ]
+    const groups = groupItemsByStatus(items)
+    expect(groups.unknown.map((i) => i.id)).toEqual(['a', 'b', 'c', 'd'])
+    expect(groups.todo.map((i) => i.id)).toEqual(['e'])
+  })
+
+  it('空配列でも 6 つの bucket が空配列で初期化される', () => {
+    const groups = groupItemsByStatus([])
+    expect(groups.todo).toEqual([])
+    expect(groups.in_progress).toEqual([])
+    expect(groups.done).toEqual([])
+    expect(groups.cancelled).toEqual([])
+    expect(groups.blocked).toEqual([])
+    expect(groups.unknown).toEqual([])
+  })
+})
+
+describe('countItemsByStatus', () => {
+  it('status 別に件数を集計', () => {
+    const items = [
+      { status: 'todo' },
+      { status: 'todo' },
+      { status: 'in_progress' },
+      { status: 'done' },
+      { status: 'done' },
+      { status: 'done' },
+      { status: 'blocked' },
+    ]
+    expect(countItemsByStatus(items)).toEqual({
+      todo: 2,
+      in_progress: 1,
+      done: 3,
+      cancelled: 0,
+      blocked: 1,
+      unknown: 0,
+    })
+  })
+
+  it('null / undefined / カスタムは unknown 件数に加算', () => {
+    const items = [
+      { status: null },
+      { status: undefined },
+      { status: 'custom-foo' },
+      { status: 'todo' },
+    ]
+    expect(countItemsByStatus(items)).toEqual({
+      todo: 1,
+      in_progress: 0,
+      done: 0,
+      cancelled: 0,
+      blocked: 0,
+      unknown: 3,
+    })
+  })
+
+  it('空配列は全 0', () => {
+    expect(countItemsByStatus([])).toEqual({
+      todo: 0,
+      in_progress: 0,
+      done: 0,
+      cancelled: 0,
+      blocked: 0,
+      unknown: 0,
+    })
+  })
+})
+
+describe('formatStatusCounts', () => {
+  it('AI prompt 用の 1 行 summary を返す (件数 0 の bucket は省略)', () => {
+    expect(
+      formatStatusCounts({
+        todo: 2,
+        in_progress: 1,
+        done: 3,
+        cancelled: 0,
+        blocked: 1,
+        unknown: 0,
+      }),
+    ).toBe('TODO 2 / 進行中 1 / blocked 1 / 完了 3')
+  })
+
+  it('一部の bucket だけ件数があれば、その分だけ表示', () => {
+    expect(
+      formatStatusCounts({
+        todo: 0,
+        in_progress: 5,
+        done: 0,
+        cancelled: 0,
+        blocked: 0,
+        unknown: 0,
+      }),
+    ).toBe('進行中 5')
+  })
+
+  it('全 0 件は "0 件"', () => {
+    expect(
+      formatStatusCounts({
+        todo: 0,
+        in_progress: 0,
+        done: 0,
+        cancelled: 0,
+        blocked: 0,
+        unknown: 0,
+      }),
+    ).toBe('0 件')
+  })
+
+  it('順序は todo → 進行中 → blocked → 完了 → キャンセル → 不明 (実用視認順、key 順非依存)', () => {
+    expect(
+      formatStatusCounts({
+        unknown: 1,
+        cancelled: 1,
+        done: 1,
+        blocked: 1,
+        in_progress: 1,
+        todo: 1,
+      }),
+    ).toBe('TODO 1 / 進行中 1 / blocked 1 / 完了 1 / キャンセル 1 / 不明 1')
   })
 })
