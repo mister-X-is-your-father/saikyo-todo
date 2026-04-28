@@ -17,8 +17,10 @@ import { isAppError } from '@/lib/errors'
 
 import { useItems, useUnarchiveItem } from '@/features/item/hooks'
 
+import { EmptyState } from '@/components/shared/async-states'
 import { Button } from '@/components/ui/button'
 import { MustBadge } from '@/components/workspace/must-badge'
+import { StatusBadge } from '@/components/workspace/status-badge'
 
 interface Props {
   workspaceId: string
@@ -60,12 +62,23 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
   }
   if (archived.length === 0) {
     return (
-      <div
-        data-testid="archive-empty"
-        className="text-muted-foreground rounded-lg border p-6 text-center text-sm"
-      >
-        アーカイブ済の Item はありません。 ItemEditDialog から「アーカイブ」を実行すると、
-        ここに表示されます。
+      // iter291 basics: 旧の inline div → EmptyState に統一 (Today/Inbox/Workflows/
+      // Sprints/Goals/items-board と同パターンで 7 view 目)。アーカイブと削除の
+      // 違い (削除は復元不可、アーカイブは履歴 + 後で復元可) を 1 行で示す。
+      <div data-testid="archive-empty">
+        <EmptyState
+          title="アーカイブ済の Item はありません"
+          description={
+            <span>
+              ItemEditDialog の{' '}
+              <code className="bg-muted rounded px-1 text-[11px]">アーカイブ</code> button から
+              実行すると、ここに移動します。 削除と違い、いつでも{' '}
+              <code className="bg-muted rounded px-1 text-[11px]">復元</code> button で
+              戻せます。完了済タスクの履歴 / 過去の参考資料を「捨てずに片付ける」場所として
+              活用してください。
+            </span>
+          }
+        />
       </div>
     )
   }
@@ -113,7 +126,10 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
                   {item.title}
                 </Link>
               </td>
-              <td className="px-3 py-2 text-xs">{item.status}</td>
+              <td className="px-3 py-2 text-xs">
+                {/* iter291 basics: 生 enum 文字列 → StatusBadge で graphical 化 (iter261 の波及) */}
+                <StatusBadge status={item.status} className="text-[10px]" />
+              </td>
               <td className="px-3 py-2 text-xs">{fmt(item.dueDate)}</td>
               <td className="text-muted-foreground px-3 py-2 text-xs">{fmt(item.archivedAt)}</td>
               <td className="px-3 py-2 text-right">
