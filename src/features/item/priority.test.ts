@@ -6,6 +6,7 @@ import {
   countNonEmptyPriorityBuckets,
   countNonEmptyPriorityBucketsBy,
   formatPriorityBuckets,
+  formatPriorityBucketsCountWithDays,
   formatPriorityCounts,
   groupItemsByPriority,
   priorityClass,
@@ -217,6 +218,80 @@ describe('countNonEmptyPriorityBuckets / countNonEmptyPriorityBucketsBy', () => 
       expect(
         formatPriorityBuckets(byP, (k, s) => (s.count > 0 ? `P${k}` : null), '0 件', ', '),
       ).toBe('P1, P2')
+    })
+  })
+
+  describe('formatPriorityBucketsCountWithDays', () => {
+    it('全 P count=0 → emptySentinel', () => {
+      const byP = {
+        1: { count: 0, days: null },
+        2: { count: 0, days: null },
+        3: { count: 0, days: null },
+        4: { count: 0, days: null },
+      }
+      expect(
+        formatPriorityBucketsCountWithDays(
+          byP,
+          (s) => s.count,
+          (s) => s.days,
+          '最古',
+          'foo 0 件',
+        ),
+      ).toBe('foo 0 件')
+    })
+
+    it('複数 P 分散 → 番号順 / 区切り、count=0 P 省略', () => {
+      const byP: Record<1 | 2 | 3 | 4, { count: number; days: number | null }> = {
+        1: { count: 2, days: 14 },
+        2: { count: 0, days: null },
+        3: { count: 1, days: 5 },
+        4: { count: 0, days: null },
+      }
+      expect(
+        formatPriorityBucketsCountWithDays(
+          byP,
+          (s) => s.count,
+          (s) => s.days,
+          '最古',
+          'X 0 件',
+        ),
+      ).toBe('P1 2 件 (最古 14日) / P3 1 件 (最古 5日)')
+    })
+
+    it('count > 0 でも days=null は skip (= 不正値 fail-soft)', () => {
+      const byP = {
+        1: { count: 2, days: null },
+        2: { count: 0, days: null },
+        3: { count: 0, days: null },
+        4: { count: 0, days: null },
+      }
+      expect(
+        formatPriorityBucketsCountWithDays(
+          byP,
+          (s) => s.count,
+          (s) => s.days,
+          '最古',
+          'sentinel',
+        ),
+      ).toBe('sentinel')
+    })
+
+    it('daysLabel は caller 側で差し替え可能 (最長 / 最大 等)', () => {
+      const byP: Record<1 | 2 | 3 | 4, { c: number; d: number | null }> = {
+        1: { c: 2, d: 7 },
+        2: { c: 0, d: null },
+        3: { c: 0, d: null },
+        4: { c: 0, d: null },
+      }
+      expect(
+        formatPriorityBucketsCountWithDays(
+          byP,
+          (s) => s.c,
+          (s) => s.d,
+          '最長',
+          'empty',
+        ),
+      ).toBe('P1 2 件 (最長 7日)')
     })
   })
 })

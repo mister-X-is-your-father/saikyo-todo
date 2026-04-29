@@ -23,7 +23,11 @@
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { formatTopWithOverflow } from '@/lib/format-list'
 
-import { bucketByPriorityWith, formatPriorityBuckets, type PriorityKey } from './priority'
+import {
+  bucketByPriorityWith,
+  formatPriorityBucketsCountWithDays,
+  type PriorityKey,
+} from './priority'
 
 export interface StuckWipFields {
   id?: string
@@ -163,12 +167,11 @@ export function computeStuckWipByPriority<
 export function formatStuckWipByPriorityJa(
   byPriority: Record<PriorityKey, StuckWipByPriorityStats>,
 ): string {
-  return formatPriorityBuckets(
+  return formatPriorityBucketsCountWithDays(
     byPriority,
-    (k, s) =>
-      s.count > 0 && s.maxStuckDays !== null
-        ? `P${k} ${s.count} 件 (最長 ${s.maxStuckDays}日)`
-        : null,
+    (s) => s.count,
+    (s) => s.maxStuckDays,
+    '最長',
     '進行中だが停滞 0 件',
   )
 }

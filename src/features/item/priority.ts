@@ -184,3 +184,40 @@ export function formatPriorityBuckets<S>(
   }
   return parts.length === 0 ? emptySentinel : parts.join(separator)
 }
+
+/**
+ * iter385 refactor: 「count > 0 + days != null で `P{k} {count} 件 ({label} {days}日)`」
+ * 形式の by-priority format helper を 1 関数に集約 (= formatPriorityBuckets の特化版)。
+ *
+ * iter325 / iter330 / iter340 / iter345 / iter350 / iter355 / iter360 / iter365 / iter370 /
+ * iter375 / iter380 と同じ「同 shape の散在を 1 file に」方針 20 弾目。must-overdue /
+ * overdue-active / stale-urgent / wip-stuck の 4 callsite で全く同 shape の inline lambda
+ * (`(k, s) => s.count > 0 && s.<daysField> !== null ? \`P${k} ${s.count} 件 (${label} ${days}日)\` : null`)
+ * が重複していたので 1 関数に集約。
+ *
+ * accessor (`getCount` / `getDays`) で field 名差 (`oldestOverdueDays` / `oldestDays` /
+ * `maxStuckDays`) を吸収、`daysLabel` で見出し差 ('最古' / '最長') を吸収。
+ *
+ * caller は 5 行から 1 行に縮む:
+ *   formatPriorityBucketsCountWithDays(byP, s => s.count, s => s.oldestDays, '最古', '... 0 件')
+ *
+ * slip-days.ts (`'遅延: ' + body` wrap pattern) や backlog-aging.ts (count + ancient
+ * 合算 pattern) は別 shape なので本 helper の対象外。
+ */
+export function formatPriorityBucketsCountWithDays<S>(
+  byPriority: Record<PriorityKey, S>,
+  getCount: (s: S) => number,
+  getDays: (s: S) => number | null,
+  daysLabel: string,
+  emptySentinel: string,
+): string {
+  return formatPriorityBuckets(
+    byPriority,
+    (k, s) => {
+      const count = getCount(s)
+      const days = getDays(s)
+      return count > 0 && days !== null ? `P${k} ${count} 件 (${daysLabel} ${days}日)` : null
+    },
+    emptySentinel,
+  )
+}

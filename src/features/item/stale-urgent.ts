@@ -17,7 +17,11 @@
  */
 
 import { getItemAge, oldestAgeDaysOf } from './backlog-aging'
-import { bucketByPriorityWith, formatPriorityBuckets, type PriorityKey } from './priority'
+import {
+  bucketByPriorityWith,
+  formatPriorityBucketsCountWithDays,
+  type PriorityKey,
+} from './priority'
 import { computeUrgency, type UrgencyFields, urgencyTierOf } from './urgency'
 
 /** combinator が要求する Item の structural subset (urgency + createdAt)。 */
@@ -122,10 +126,11 @@ export function computeStaleUrgentByPriority<T extends StaleUrgentFields>(
 export function formatStaleUrgentByPriorityJa(
   byPriority: Record<PriorityKey, StaleUrgentByPriorityStats>,
 ): string {
-  return formatPriorityBuckets(
+  return formatPriorityBucketsCountWithDays(
     byPriority,
-    (k, s) =>
-      s.count > 0 && s.oldestDays !== null ? `P${k} ${s.count} 件 (最古 ${s.oldestDays}日)` : null,
+    (s) => s.count,
+    (s) => s.oldestDays,
+    '最古',
     '対応 + 古参 0 件',
   )
 }
