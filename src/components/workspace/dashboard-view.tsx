@@ -81,6 +81,11 @@ import {
   formatHygieneAxisFocusJa,
   pickWeakestHygieneAxis,
 } from '@/features/item/hygiene-axis-focus'
+import {
+  computeHygieneDebt,
+  formatHygieneDebtJa,
+  hygieneDebtTone,
+} from '@/features/item/hygiene-debt'
 import { formatHygieneFocusJa, pickWeakestHygienePriority } from '@/features/item/hygiene-focus'
 import {
   computeWorkspaceMomentum,
@@ -372,6 +377,19 @@ export function DashboardView({ workspaceId }: Props) {
     return { focus, summary, detail, weakestAxis }
   }, [itemsQ.data])
 
+  // iter381 basics: hygiene-debt (iter379) を bind。期限/DoD/説明文 を 1 つも持たない
+  // 「title だけの brain-dump」 item を triage 候補として chip 表示。debtCount=0 で
+  // chip 非表示 (= triage 不要状態は UI 静か)。tone 別 3 段階配色:
+  //   warn (>= 30%) — 多数 triage 待ち、目立たせる
+  //   neutral (10..30%) — 少数あり、黄色軽警告
+  //   good (< 10%) — ほぼ無し、緑健全
+  const hygieneDebt = useMemo(() => {
+    if (!itemsQ.data) return null
+    const stats = computeHygieneDebt(itemsQ.data)
+    if (stats.debtCount === 0) return null
+    return { stats, summary: formatHygieneDebtJa(stats), tone: hygieneDebtTone(stats) }
+  }, [itemsQ.data])
+
   // iter338 basics: backlog-aging (iter337) を bind。Active (= 未完了 + 未 archive)
   // item を createdAt 年齢バケット別に件数集計、停滞気味 (7 日以上) を tone で警戒。
   const aging = useMemo(() => {
@@ -483,6 +501,20 @@ export function DashboardView({ workspaceId }: Props) {
               'data-focus-priority': hygieneFocus.focus.priority,
               'data-focus-score': hygieneFocus.focus.score,
               'data-focus-axis': hygieneFocus.weakestAxis?.axis ?? '',
+            }}
+          />
+        ) : null}
+        {hygieneDebt ? (
+          <DashboardChip
+            testId="dashboard-hygiene-debt-chip"
+            toneClass={chipTone3Class(hygieneDebt.tone)}
+            glyph="📋"
+            ariaLabel={hygieneDebt.summary}
+            title={hygieneDebt.summary}
+            text={`Triage 候補: ${hygieneDebt.stats.debtCount}`}
+            dataAttrs={{
+              'data-debt-count': hygieneDebt.stats.debtCount,
+              'data-debt-total': hygieneDebt.stats.total,
             }}
           />
         ) : null}
