@@ -16,7 +16,7 @@
  *   - coverageRate = withDod / total (total=0 → null)
  */
 
-import { normalizePriority, type PriorityKey } from './priority'
+import { bucketByPriorityWith, type PriorityKey } from './priority'
 
 export interface DodCoverageFields {
   doneAt: Date | string | null | undefined
@@ -97,16 +97,7 @@ export type DodCoverageByPriority = Record<PriorityKey, DodCoverageStats>
 export function computeDodCoverageByPriority<T extends DodCoverageByPriorityFields>(
   items: readonly T[],
 ): DodCoverageByPriority {
-  const buckets: Record<PriorityKey, T[]> = { 1: [], 2: [], 3: [], 4: [] }
-  for (const it of items) {
-    buckets[normalizePriority(it.priority)].push(it)
-  }
-  return {
-    1: computeDodCoverage(buckets[1]),
-    2: computeDodCoverage(buckets[2]),
-    3: computeDodCoverage(buckets[3]),
-    4: computeDodCoverage(buckets[4]),
-  }
+  return bucketByPriorityWith(items, (group) => computeDodCoverage(group))
 }
 
 /**

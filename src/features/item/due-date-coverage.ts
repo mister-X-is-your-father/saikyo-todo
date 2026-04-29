@@ -19,7 +19,7 @@
 
 import { isValidIsoDate } from '@/lib/date/iso'
 
-import { normalizePriority, type PriorityKey } from './priority'
+import { bucketByPriorityWith, type PriorityKey } from './priority'
 
 export interface DueDateCoverageFields {
   doneAt: Date | string | null | undefined
@@ -99,16 +99,7 @@ export type DueDateCoverageByPriority = Record<PriorityKey, DueDateCoverageStats
 export function computeDueDateCoverageByPriority<T extends DueDateCoverageByPriorityFields>(
   items: readonly T[],
 ): DueDateCoverageByPriority {
-  const buckets: Record<PriorityKey, T[]> = { 1: [], 2: [], 3: [], 4: [] }
-  for (const it of items) {
-    buckets[normalizePriority(it.priority)].push(it)
-  }
-  return {
-    1: computeDueDateCoverage(buckets[1]),
-    2: computeDueDateCoverage(buckets[2]),
-    3: computeDueDateCoverage(buckets[3]),
-    4: computeDueDateCoverage(buckets[4]),
-  }
+  return bucketByPriorityWith(items, (group) => computeDueDateCoverage(group))
 }
 
 /**

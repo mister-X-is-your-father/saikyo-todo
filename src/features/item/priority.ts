@@ -69,6 +69,29 @@ export function groupItemsByPriority<T extends { priority: number | null | undef
   return groups
 }
 
+/**
+ * iter365 refactor: 「priority 別 bucket に分けて compute() を適用」のパターンを
+ * 1 関数に集約。due-hit-rate / dod-coverage / due-date-coverage の各
+ * `compute*ByPriority` で同 shape のコードが 3 重複していた。
+ *
+ * 仕様:
+ *   - 入力: items + compute (1 bucket → R)
+ *   - 出力: Record<PriorityKey, R> (各 bucket 必ず初期化、null/範囲外 priority は p4 集約)
+ *   - 純粋関数、副作用なし、items 順序は bucket 内で stable
+ */
+export function bucketByPriorityWith<T extends { priority: number | null | undefined }, R>(
+  items: readonly T[],
+  compute: (group: readonly T[]) => R,
+): Record<PriorityKey, R> {
+  const groups = groupItemsByPriority(items)
+  return {
+    1: compute(groups[1]),
+    2: compute(groups[2]),
+    3: compute(groups[3]),
+    4: compute(groups[4]),
+  }
+}
+
 export function countItemsByPriority(
   items: readonly { priority: number | null | undefined }[],
 ): Record<PriorityKey, number> {

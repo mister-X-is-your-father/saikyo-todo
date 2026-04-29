@@ -23,7 +23,7 @@
 
 import { dueDateEndOfDayMs, parseDateOrNull } from '@/lib/date/iso'
 
-import { normalizePriority, type PriorityKey } from './priority'
+import { bucketByPriorityWith, type PriorityKey } from './priority'
 
 export interface DueHitRateFields {
   doneAt: Date | string | null | undefined
@@ -98,16 +98,7 @@ export function computeDueHitRateByPriority<T extends DueHitRateByPriorityFields
   items: readonly T[],
   options: ComputeDueHitRateOptions = {},
 ): DueHitRateByPriority {
-  const buckets: Record<PriorityKey, T[]> = { 1: [], 2: [], 3: [], 4: [] }
-  for (const it of items) {
-    buckets[normalizePriority(it.priority)].push(it)
-  }
-  return {
-    1: computeDueHitRate(buckets[1], options),
-    2: computeDueHitRate(buckets[2], options),
-    3: computeDueHitRate(buckets[3], options),
-    4: computeDueHitRate(buckets[4], options),
-  }
+  return bucketByPriorityWith(items, (group) => computeDueHitRate(group, options))
 }
 
 /**

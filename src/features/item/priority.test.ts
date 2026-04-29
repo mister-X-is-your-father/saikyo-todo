@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  bucketByPriorityWith,
   countItemsByPriority,
   formatPriorityCounts,
   groupItemsByPriority,
@@ -115,5 +116,43 @@ describe('formatPriorityCounts', () => {
 
   it('priority 順 (1→2→3→4) で並ぶ — 入力 record の key 順に依存しない', () => {
     expect(formatPriorityCounts({ 4: 1, 3: 2, 2: 3, 1: 4 })).toBe('最優先 4 / 高 3 / 中 2 / 低 1')
+  })
+})
+
+describe('bucketByPriorityWith', () => {
+  it('returns initial values from compute() for empty bucket', () => {
+    const r = bucketByPriorityWith([] as Array<{ priority: number; v: number }>, (g) => g.length)
+    expect(r).toEqual({ 1: 0, 2: 0, 3: 0, 4: 0 })
+  })
+
+  it('groups items by priority and applies compute() to each bucket', () => {
+    const items = [
+      { priority: 1, v: 10 },
+      { priority: 1, v: 20 },
+      { priority: 3, v: 30 },
+      { priority: 4, v: 40 },
+    ]
+    const r = bucketByPriorityWith(items, (g) => g.reduce((s, it) => s + it.v, 0))
+    expect(r).toEqual({ 1: 30, 2: 0, 3: 30, 4: 40 })
+  })
+
+  it('normalizes null/undefined/out-of-range priority to p4', () => {
+    const items = [
+      { priority: null as null | number, v: 1 },
+      { priority: undefined as undefined | number, v: 2 },
+      { priority: 99, v: 3 },
+    ]
+    const r = bucketByPriorityWith(items, (g) => g.length)
+    expect(r).toEqual({ 1: 0, 2: 0, 3: 0, 4: 3 })
+  })
+
+  it('preserves item order within bucket (stable)', () => {
+    const items = [
+      { priority: 1, v: 'a' },
+      { priority: 1, v: 'b' },
+      { priority: 1, v: 'c' },
+    ]
+    const r = bucketByPriorityWith(items, (g) => g.map((it) => it.v).join(''))
+    expect(r[1]).toBe('abc')
   })
 })
