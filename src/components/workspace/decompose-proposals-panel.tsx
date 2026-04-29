@@ -330,6 +330,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
         <form
           className="space-y-2"
           noValidate
+          aria-busy={update.isPending || undefined}
           onSubmit={(e) => {
             e.preventDefault()
             void handleSaveEdit()

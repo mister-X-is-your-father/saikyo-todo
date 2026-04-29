@@ -74,6 +74,7 @@ export function InstantiateForm({ workspaceId, template }: Props) {
     <form
       className="space-y-3 rounded-md border p-3"
       noValidate
+      aria-busy={mut.isPending || undefined}
       data-testid="instantiate-form"
       aria-labelledby={formLabelId}
       onSubmit={(e) => {

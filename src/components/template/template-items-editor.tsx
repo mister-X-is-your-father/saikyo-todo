@@ -83,6 +83,7 @@ export function TemplateItemsEditor({ templateId }: Props) {
       <form
         className="space-y-2 rounded-md border p-3"
         noValidate
+        aria-busy={addMut.isPending || undefined}
         onSubmit={(e) => {
           e.preventDefault()
           void handleAdd()

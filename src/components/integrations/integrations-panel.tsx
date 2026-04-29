@@ -286,6 +286,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
         <form
           className="space-y-3"
           noValidate
+          aria-busy={create.isPending || undefined}
           onSubmit={(e) => {
             e.preventDefault()
             void handleSubmit()

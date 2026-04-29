@@ -83,6 +83,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
           <form
             className="space-y-3"
             noValidate
+            aria-busy={createMut.isPending || undefined}
             onSubmit={(e) => {
               e.preventDefault()
               void handleCreate()

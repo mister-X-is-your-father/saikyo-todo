@@ -52,6 +52,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
     <form
       onSubmit={handleSubmit}
       noValidate
+      aria-busy={create.isPending || undefined}
       className="grid gap-3 md:grid-cols-[auto_auto_1fr_auto_auto]"
       data-testid="create-time-entry-form"
     >
