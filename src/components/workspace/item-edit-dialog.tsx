@@ -31,6 +31,8 @@ import {
 } from '@/features/item/hooks'
 import type { AssigneeRef } from '@/features/item/repository'
 import type { Item } from '@/features/item/schema'
+import { useItemDependencies } from '@/features/item-dependency/hooks'
+import { summarizeDependencyReadiness } from '@/features/item-dependency/readiness'
 import { useAllKeyResultsByWorkspace, useAssignItemToKeyResult } from '@/features/okr/hooks'
 import { useAssignItemToSprint, useSprints } from '@/features/sprint/hooks'
 
@@ -120,6 +122,12 @@ function ItemEditDialogInner({
 
   const { data: assignees } = useItemAssignees(item.id)
   const setAssignees = useSetItemAssignees(workspaceId, item.id)
+  // iter416 basics: 依存 tab の trigger に「未完了 blocker N 件」 badge を出す。
+  // tab を開かなくても「いま依存ブロックされているか」が一瞥で伝わる UX。
+  // useItemDependencies は ItemDependenciesPanel と queryKey 共通なので dedupe される
+  // (= 1 query で 2 caller)。openBlockedByCount > 0 のときだけ amber chip を render。
+  const depsQ = useItemDependencies(item.id)
+  const depsReadiness = depsQ.data ? summarizeDependencyReadiness(depsQ.data) : null
   const { data: tagIds } = useItemTagIds(item.id)
   const setTags = useSetItemTags(workspaceId, item.id)
   const sprintsList = useSprints(workspaceId)
@@ -284,8 +292,27 @@ function ItemEditDialogInner({
             <TabsTrigger value="subtasks" data-testid="tab-subtasks">
               子タスク
             </TabsTrigger>
-            <TabsTrigger value="dependencies" data-testid="tab-dependencies">
-              依存
+            <TabsTrigger
+              value="dependencies"
+              data-testid="tab-dependencies"
+              data-blocked={depsReadiness?.isBlocked ?? false}
+              aria-label={
+                depsReadiness?.isBlocked
+                  ? `依存タブ — 未完了の前提 ${depsReadiness.openBlockedByCount} 件`
+                  : '依存タブ'
+              }
+            >
+              <span>依存</span>
+              {depsReadiness && depsReadiness.isBlocked ? (
+                <span
+                  className="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-100 px-1 text-[10px] font-medium text-amber-800 ring-1 ring-amber-300 ring-inset"
+                  data-testid="tab-dependencies-blocker-count"
+                  aria-hidden="true"
+                  title={`未完了の前提 ${depsReadiness.openBlockedByCount} 件`}
+                >
+                  {depsReadiness.openBlockedByCount}
+                </span>
+              ) : null}
             </TabsTrigger>
             <TabsTrigger value="comments" data-testid="tab-comments">
               コメント
