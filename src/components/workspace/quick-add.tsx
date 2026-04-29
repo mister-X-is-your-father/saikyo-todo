@@ -145,6 +145,10 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
               void submit()
             }
           }}
+          // iter350: タスク title は app 固有で browser autoComplete 候補は無関係。
+          // 各回新規入力なので "off" でドロップダウンを抑制 (頻繁な入力 hot path で
+          // suggested 候補のチラ見えは集中阻害)。
+          autoComplete="off"
           className="flex-1"
         />
         <Button
