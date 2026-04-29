@@ -29,6 +29,11 @@ import { trendGlyph, trendToneClass } from '@/lib/ui/trend-tone'
 
 import { useBurndown, useMustSummary } from '@/features/dashboard/hooks'
 import {
+  countAgingItemsOlderThanWeek,
+  countItemsByAge,
+  formatAgingCounts,
+} from '@/features/item/backlog-aging'
+import {
   computeCompletionDaysByPriority,
   computePriorityLatencyGap,
   formatCompletionDaysByPriorityJa,
@@ -97,6 +102,19 @@ export function DashboardView({ workspaceId }: Props) {
     return { stats, summary, gap }
   }, [itemsQ.data])
 
+  // iter338 basics: backlog-aging (iter337) を bind。Active (= 未完了 + 未 archive)
+  // item を createdAt 年齢バケット別に件数集計、停滞気味 (7 日以上) を tone で警戒。
+  const aging = useMemo(() => {
+    if (!itemsQ.data) return null
+    const active = itemsQ.data.filter((it) => !it.doneAt && !it.archivedAt)
+    if (active.length === 0) return null
+    const counts = countItemsByAge(active)
+    const summary = formatAgingCounts(counts)
+    if (summary === '0 件') return null
+    const olderThanWeek = countAgingItemsOlderThanWeek(counts)
+    return { counts, summary, olderThanWeek }
+  }, [itemsQ.data])
+
   if (summary.isLoading) return <Loading message="ダッシュボード読込中..." />
   if (summary.error) {
     return (
@@ -147,6 +165,24 @@ export function DashboardView({ workspaceId }: Props) {
               {trendGlyph(velocity.result.trend)}
             </span>
             <span aria-hidden="true">{velocity.line}</span>
+          </div>
+        ) : null}
+        {aging ? (
+          <div
+            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${aging.olderThanWeek > 0 ? trendToneClass('up', 'negative') : 'border-border bg-muted text-muted-foreground'}`}
+            data-testid="dashboard-backlog-aging-chip"
+            data-older-than-week={aging.olderThanWeek}
+            role="status"
+            aria-label={`Backlog 年齢: ${aging.summary}${aging.olderThanWeek > 0 ? ` — 7 日以上 ${aging.olderThanWeek} 件 (棚卸し対象)` : ''}`}
+            title={aging.summary}
+          >
+            <span aria-hidden="true" className="font-mono">
+              ⌛
+            </span>
+            <span aria-hidden="true" className="truncate">
+              Backlog: {aging.summary}
+              {aging.olderThanWeek > 0 ? ` — 7日+ ${aging.olderThanWeek}件` : ''}
+            </span>
           </div>
         ) : null}
         {completionGap ? (
