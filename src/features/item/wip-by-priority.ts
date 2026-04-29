@@ -15,7 +15,7 @@
  *     total=0 → null
  */
 
-import { normalizePriority, type PriorityKey } from './priority'
+import { normalizePriority, PRIORITY_ORDER, type PriorityKey } from './priority'
 
 export interface WipByPriorityFields {
   status: string | null | undefined
@@ -65,12 +65,12 @@ export function computeWipByPriority<T extends WipByPriorityFields>(
  */
 export function formatWipByPriorityJa(stats: WipByPriorityStats): string {
   if (stats.total === 0) return 'WIP 0 件'
-  const nonZero = ([1, 2, 3, 4] as const).filter((k) => stats.byPriority[k] > 0)
+  const nonZero = PRIORITY_ORDER.filter((k) => stats.byPriority[k] > 0)
   if (nonZero.length === 1) {
     const k = nonZero[0]!
     return `WIP: ${stats.total} 件 (P${k}: ${stats.byPriority[k]})`
   }
-  const parts = ([1, 2, 3, 4] as const).map((k) => `P${k}: ${stats.byPriority[k]}`)
+  const parts = PRIORITY_ORDER.map((k) => `P${k}: ${stats.byPriority[k]}`)
   return `WIP: ${stats.total} 件 (${parts.join(' / ')})`
 }
 

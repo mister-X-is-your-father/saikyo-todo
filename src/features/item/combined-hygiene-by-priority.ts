@@ -26,7 +26,7 @@ import {
   computeDueDateCoverageByPriority,
   type DueDateCoverageByPriorityFields,
 } from './due-date-coverage'
-import type { PriorityKey } from './priority'
+import { PRIORITY_ORDER, type PriorityKey } from './priority'
 
 export interface CombinedHygieneByPriorityFields
   extends
@@ -59,7 +59,7 @@ export function computeCombinedHygieneByPriority<T extends CombinedHygieneByPrio
  */
 export function formatCombinedHygieneByPriorityJa(byPriority: CombinedHygieneByPriority): string {
   const parts: string[] = []
-  for (const k of [1, 2, 3, 4] as const) {
+  for (const k of PRIORITY_ORDER) {
     const s = byPriority[k]
     if (s.score === null || s.eligibleAxes === 0) continue
     parts.push(`P${k} ${s.score}`)

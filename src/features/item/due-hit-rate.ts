@@ -23,7 +23,7 @@
 
 import { dueDateEndOfDayMs, parseDateOrNull } from '@/lib/date/iso'
 
-import { bucketByPriorityWith, type PriorityKey } from './priority'
+import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
 
 export interface DueHitRateFields {
   doneAt: Date | string | null | undefined
@@ -113,7 +113,7 @@ export { countNonEmptyPriorityBuckets } from './priority'
  */
 export function formatDueHitRateByPriorityJa(byPriority: DueHitRateByPriority): string {
   const parts: string[] = []
-  for (const k of [1, 2, 3, 4] as const) {
+  for (const k of PRIORITY_ORDER) {
     const stats = byPriority[k]
     if (stats.total === 0 || stats.hitRate === null) continue
     const pct = Math.round(stats.hitRate * 100)

@@ -47,7 +47,11 @@ export type PriorityKey = 1 | 2 | 3 | 4
 
 export type PriorityGroups<T> = Record<PriorityKey, T[]>
 
-const PRIORITY_ORDER: readonly PriorityKey[] = [1, 2, 3, 4] as const
+/**
+ * iter375 refactor: 全 by-priority helper / dashboard / format 用に共通の priority
+ * 反復順序。`[1, 2, 3, 4] as const` の inline 散在を 1 source of truth に集約。
+ */
+export const PRIORITY_ORDER: readonly PriorityKey[] = [1, 2, 3, 4] as const
 
 /**
  * iter344 ai-automation: 他 substrate (e.g. due-hit-rate-by-priority) から再利用
@@ -107,7 +111,7 @@ export function bucketByPriorityWith<T extends { priority: number | null | undef
 export function countNonEmptyPriorityBuckets(
   byPriority: Record<PriorityKey, { total: number }>,
 ): number {
-  return ([1, 2, 3, 4] as const).filter((k) => byPriority[k].total > 0).length
+  return PRIORITY_ORDER.filter((k) => byPriority[k].total > 0).length
 }
 
 export function countItemsByPriority(

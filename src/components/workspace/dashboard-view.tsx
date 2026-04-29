@@ -87,7 +87,7 @@ import {
   formatMustHygieneJa,
   mustHygieneSeverity,
 } from '@/features/item/must-hygiene'
-import { countNonEmptyPriorityBuckets } from '@/features/item/priority'
+import { countNonEmptyPriorityBuckets, PRIORITY_ORDER } from '@/features/item/priority'
 import {
   formatRecentCompletedSummaryJa,
   selectRecentCompleted,
@@ -336,9 +336,7 @@ export function DashboardView({ workspaceId }: Props) {
     // richer info は a11y / hover 経路でのみ提供、iter346/363/366 と同手法)。
     // 複数 priority に未完了が分散している時のみ priority breakdown を tooltip に。
     const byPriority = computeCombinedHygieneByPriority(itemsQ.data)
-    const eligibleBuckets = ([1, 2, 3, 4] as const).filter(
-      (k) => byPriority[k].score !== null,
-    ).length
+    const eligibleBuckets = PRIORITY_ORDER.filter((k) => byPriority[k].score !== null).length
     const detail =
       eligibleBuckets > 1
         ? `${summary} — ${formatCombinedHygieneByPriorityJa(byPriority)}`

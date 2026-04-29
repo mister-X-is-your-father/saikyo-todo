@@ -19,7 +19,7 @@
 
 import { type CombinedHygieneTone, combinedHygieneTone } from './combined-hygiene'
 import type { CombinedHygieneByPriority } from './combined-hygiene-by-priority'
-import type { PriorityKey } from './priority'
+import { PRIORITY_ORDER, type PriorityKey } from './priority'
 
 export interface HygieneFocus {
   /** 一番 score が低かった priority */
@@ -36,7 +36,7 @@ export function pickWeakestHygienePriority(
   byPriority: CombinedHygieneByPriority,
 ): HygieneFocus | null {
   let best: HygieneFocus | null = null
-  for (const k of [1, 2, 3, 4] as const) {
+  for (const k of PRIORITY_ORDER) {
     const s = byPriority[k]
     if (s.score === null || s.eligibleAxes === 0) continue
     // 同 score 同点 → priority 数値小 (= 重要度高) を優先 → strict less than で更新

@@ -26,9 +26,9 @@
 
 import { parseDateOrNull } from '@/lib/date/iso'
 
-export type PriorityKey = 1 | 2 | 3 | 4
+import { PRIORITY_ORDER } from './priority'
 
-const PRIORITY_ORDER: readonly PriorityKey[] = [1, 2, 3, 4] as const
+export type PriorityKey = 1 | 2 | 3 | 4
 
 const PRIORITY_LABEL: Record<PriorityKey, string> = {
   1: 'P1',

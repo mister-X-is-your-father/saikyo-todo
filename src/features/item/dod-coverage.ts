@@ -16,7 +16,7 @@
  *   - coverageRate = withDod / total (total=0 → null)
  */
 
-import { bucketByPriorityWith, type PriorityKey } from './priority'
+import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
 
 export interface DodCoverageFields {
   doneAt: Date | string | null | undefined
@@ -108,7 +108,7 @@ export function computeDodCoverageByPriority<T extends DodCoverageByPriorityFiel
  */
 export function formatDodCoverageByPriorityJa(byPriority: DodCoverageByPriority): string {
   const parts: string[] = []
-  for (const k of [1, 2, 3, 4] as const) {
+  for (const k of PRIORITY_ORDER) {
     const stats = byPriority[k]
     if (stats.total === 0 || stats.coverageRate === null) continue
     const pct = Math.round(stats.coverageRate * 100)

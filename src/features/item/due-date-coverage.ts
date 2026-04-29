@@ -19,7 +19,7 @@
 
 import { isValidIsoDate } from '@/lib/date/iso'
 
-import { bucketByPriorityWith, type PriorityKey } from './priority'
+import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
 
 export interface DueDateCoverageFields {
   doneAt: Date | string | null | undefined
@@ -110,7 +110,7 @@ export function computeDueDateCoverageByPriority<T extends DueDateCoverageByPrio
  */
 export function formatDueDateCoverageByPriorityJa(byPriority: DueDateCoverageByPriority): string {
   const parts: string[] = []
-  for (const k of [1, 2, 3, 4] as const) {
+  for (const k of PRIORITY_ORDER) {
     const stats = byPriority[k]
     if (stats.total === 0 || stats.coverageRate === null) continue
     const pct = Math.round(stats.coverageRate * 100)
