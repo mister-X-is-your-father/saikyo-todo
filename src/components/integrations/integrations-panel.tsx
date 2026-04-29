@@ -367,13 +367,13 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="src-method">method</Label>
+                  <Label htmlFor="src-method">HTTP メソッド</Label>
                   <select
                     id="src-method"
                     value={method}
                     onChange={(e) => setMethod(e.target.value as 'GET' | 'POST')}
                     className="h-9 w-full rounded-md border px-3 py-1 text-sm"
-                    aria-label="HTTP method"
+                    aria-label="HTTP メソッド (GET / POST)"
                   >
                     <option value="GET">GET</option>
                     <option value="POST">POST</option>
