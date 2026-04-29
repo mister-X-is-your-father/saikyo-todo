@@ -24,7 +24,7 @@ export default function LoginPage() {
         <span className="text-muted-foreground">アカウント未作成?</span>
         <Link
           href="/signup"
-          className="text-primary relative z-10 underline underline-offset-4"
+          className="text-primary relative z-10 inline-flex items-center py-2 underline underline-offset-4"
           data-testid="signup-link"
           aria-label="アカウントをお持ちでない方はこちらでサインアップ"
         >
