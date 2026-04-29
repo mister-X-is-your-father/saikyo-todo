@@ -83,6 +83,8 @@ import {
 } from '@/features/item/hygiene-axis-focus'
 import {
   computeHygieneDebt,
+  computeHygieneDebtByPriority,
+  formatHygieneDebtByPriorityJa,
   formatHygieneDebtJa,
   hygieneDebtTone,
 } from '@/features/item/hygiene-debt'
@@ -387,7 +389,16 @@ export function DashboardView({ workspaceId }: Props) {
     if (!itemsQ.data) return null
     const stats = computeHygieneDebt(itemsQ.data)
     if (stats.debtCount === 0) return null
-    return { stats, summary: formatHygieneDebtJa(stats), tone: hygieneDebtTone(stats) }
+    const summary = formatHygieneDebtJa(stats)
+    // iter383 basics: priority 別 breakdown (iter382) を aria-label / title に同梱
+    // → SR / hover で「P1 67% / P3 50%」が読める (visible chip text 不変、richer
+    // info は a11y/hover 経路でのみ提供、iter363/366/373/378 と同手法)。複数
+    // priority に debt が分散している時のみ priority breakdown を tooltip に。
+    const byPriority = computeHygieneDebtByPriority(itemsQ.data)
+    const debtBuckets = PRIORITY_ORDER.filter((k) => byPriority[k].debtCount > 0).length
+    const detail =
+      debtBuckets > 1 ? `${summary} — ${formatHygieneDebtByPriorityJa(byPriority)}` : summary
+    return { stats, summary, detail, tone: hygieneDebtTone(stats) }
   }, [itemsQ.data])
 
   // iter338 basics: backlog-aging (iter337) を bind。Active (= 未完了 + 未 archive)
@@ -509,8 +520,8 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-hygiene-debt-chip"
             toneClass={chipTone3Class(hygieneDebt.tone)}
             glyph="📋"
-            ariaLabel={hygieneDebt.summary}
-            title={hygieneDebt.summary}
+            ariaLabel={hygieneDebt.detail}
+            title={hygieneDebt.detail}
             text={`Triage 候補: ${hygieneDebt.stats.debtCount}`}
             dataAttrs={{
               'data-debt-count': hygieneDebt.stats.debtCount,
