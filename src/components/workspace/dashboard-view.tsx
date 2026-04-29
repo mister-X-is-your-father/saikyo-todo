@@ -28,6 +28,11 @@ import { isAppError } from '@/lib/errors'
 import { trendGlyph, trendToneClass } from '@/lib/ui/trend-tone'
 
 import { useBurndown, useMustSummary } from '@/features/dashboard/hooks'
+import {
+  computeCompletionDaysByPriority,
+  computePriorityLatencyGap,
+  formatCompletionDaysByPriorityJa,
+} from '@/features/item/completion-days-by-priority'
 import { useItems } from '@/features/item/hooks'
 import { computeVelocity, formatVelocitySummary } from '@/features/item/velocity'
 
@@ -79,6 +84,19 @@ export function DashboardView({ workspaceId }: Props) {
     return { result, line: formatVelocitySummary(result, 7) }
   }, [itemsQ.data])
 
+  // iter336 basics: completion-days-by-priority (iter334) を bind。
+  // 全期間完了済 item の所要日数 priority 別 + 高優先 vs 低優先 gap chip。
+  // since filter は割愛 (Date.now() useMemo 内呼出を避ける、全 history で平均が取れる方が
+  // 統計的にも安定)。Item 完了履歴は archive されないので過去全件が対象。
+  const completionGap = useMemo(() => {
+    if (!itemsQ.data) return null
+    const stats = computeCompletionDaysByPriority(itemsQ.data)
+    const summary = formatCompletionDaysByPriorityJa(stats)
+    if (summary === '完了 0 件 (該当なし)') return null
+    const gap = computePriorityLatencyGap(stats)
+    return { stats, summary, gap }
+  }, [itemsQ.data])
+
   if (summary.isLoading) return <Loading message="ダッシュボード読込中..." />
   if (summary.error) {
     return (
@@ -114,22 +132,47 @@ export function DashboardView({ workspaceId }: Props) {
         />
       </div>
 
-      {/* iter331 basics: velocity chip — 直近 7 日 done 件数 + 傾向 (up/flat/down) */}
-      {velocity ? (
-        <div
-          className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${trendToneClass(velocity.result.trend, 'positive')}`}
-          data-testid="dashboard-velocity-chip"
-          data-trend={velocity.result.trend}
-          role="status"
-          aria-label={velocity.line}
-          title={velocity.line}
-        >
-          <span aria-hidden="true" className="font-mono">
-            {trendGlyph(velocity.result.trend)}
-          </span>
-          <span aria-hidden="true">{velocity.line}</span>
-        </div>
-      ) : null}
+      {/* iter331 / iter336 basics: velocity + completion latency chips (flex-wrap で同列) */}
+      <div className="flex flex-wrap items-center gap-2">
+        {velocity ? (
+          <div
+            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${trendToneClass(velocity.result.trend, 'positive')}`}
+            data-testid="dashboard-velocity-chip"
+            data-trend={velocity.result.trend}
+            role="status"
+            aria-label={velocity.line}
+            title={velocity.line}
+          >
+            <span aria-hidden="true" className="font-mono">
+              {trendGlyph(velocity.result.trend)}
+            </span>
+            <span aria-hidden="true">{velocity.line}</span>
+          </div>
+        ) : null}
+        {completionGap ? (
+          <div
+            className="border-border bg-muted text-muted-foreground inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs"
+            data-testid="dashboard-completion-gap-chip"
+            data-gap-days={completionGap.gap?.gapDays ?? ''}
+            role="status"
+            aria-label={
+              completionGap.gap
+                ? `${completionGap.summary} — gap ${completionGap.gap.gapDays}日 (P${completionGap.gap.lowKey} が P${completionGap.gap.highKey} より遅い)`
+                : completionGap.summary
+            }
+            title={completionGap.summary}
+          >
+            <span aria-hidden="true" className="font-mono">
+              ⏱
+            </span>
+            <span aria-hidden="true" className="truncate">
+              {completionGap.gap
+                ? `完了所要 P${completionGap.gap.highKey} ${completionGap.gap.highDays}日 / P${completionGap.gap.lowKey} ${completionGap.gap.lowDays}日 (gap ${completionGap.gap.gapDays}日)`
+                : completionGap.summary}
+            </span>
+          </div>
+        ) : null}
+      </div>
 
       {/* WIP 警告 */}
       {s.wipExceeded ? (
