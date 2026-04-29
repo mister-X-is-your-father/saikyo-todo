@@ -124,3 +124,32 @@ export function getAuditActionVisual(action: string | null | undefined): AuditAc
 
 /** 既知 action key 一覧 (test / future-proofing 用)。 */
 export const KNOWN_AUDIT_ACTIONS = Object.keys(ACTION_MAP)
+
+/**
+ * iter324 ai-automation: action visual に対応する 7 カテゴリ集約 key。集計
+ * substrate (`audit-activity.ts`) の bucket key として使う。iconKey と同
+ * vocabulary を採るので、AI prompt / UI label / 集計の 3 軸で命名が揃う。
+ */
+export type AuditActionCategory =
+  | 'create'
+  | 'update'
+  | 'transition'
+  | 'complete'
+  | 'reopen'
+  | 'delete'
+  | 'other'
+
+const ICON_TO_CATEGORY: Record<AuditActionIconKey, AuditActionCategory> = {
+  plus: 'create',
+  pencil: 'update',
+  'arrow-right-left': 'transition',
+  'check-circle': 'complete',
+  'rotate-ccw': 'reopen',
+  trash: 'delete',
+  activity: 'other',
+}
+
+/** action key を 7 カテゴリに集約。未知 action は 'other' fallback。 */
+export function getAuditActionCategory(action: string | null | undefined): AuditActionCategory {
+  return ICON_TO_CATEGORY[getAuditActionVisual(action).iconKey]
+}
