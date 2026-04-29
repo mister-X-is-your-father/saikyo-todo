@@ -19,6 +19,11 @@
 import { formatTopWithOverflow } from '@/lib/format-list'
 
 import {
+  bucketByPriorityWith,
+  formatPriorityBucketsCountWithDays,
+  type PriorityKey,
+} from './priority'
+import {
   renderStuckEntry,
   selectStuckWipItems,
   type StuckWipEntry,
@@ -87,4 +92,56 @@ export function mustStuckWipSeverity<T extends MustStuckWipFields>(
   entries: readonly StuckWipEntry<T>[],
 ): MustStuckWipSeverity {
   return entries.length > 0 ? 'critical' : 'idle'
+}
+
+/** by-priority 集計の単 bucket 値: must-stuck-wip 件数 + 最長停滞日数 (count=0 → null)。 */
+export interface MustStuckWipByPriorityStats {
+  count: number
+  maxStuckDays: number | null
+}
+
+/**
+ * iter389 ai-automation: must-stuck-wip を priority 別に集計する pure helper。
+ * iter384 (`computeMustOverdueByPriority`) と同シリーズ — must 系を priority 別に
+ * 切り分ける substrate (must の中でも P1 偏在は最深刻 escalation を示唆)。
+ * iter362 wip-stuck-by-priority の must-only 版とも見れる。
+ *
+ * 「P1 MUST 進行中だが停滞 2 件 (最長 7日) / P3 MUST 進行中だが停滞 1 件 (最長 4日)」
+ * のように、MUST stuck WIP の中でも高優先軸の停滞を分離して可視化。
+ *
+ * pickMustStuckWipItems の filter ロジックは bucketByPriorityWith 経由で priority 別に
+ * 再適用 (P1 のみ / P2 のみ ... の各 bucket 内で MUST stuck WIP 集計)。
+ */
+export function computeMustStuckWipByPriority<
+  T extends MustStuckWipFields & { priority: number | null | undefined },
+>(
+  items: readonly T[],
+  options: PickMustStuckWipOptions = {},
+  today: Date | string = new Date(),
+): Record<PriorityKey, MustStuckWipByPriorityStats> {
+  return bucketByPriorityWith(items, (group) => {
+    const entries = pickMustStuckWipItems(group, options, today)
+    if (entries.length === 0) return { count: 0, maxStuckDays: null }
+    const max = entries.reduce((m, e) => (e.stuckDays > m ? e.stuckDays : m), 0)
+    return { count: entries.length, maxStuckDays: max }
+  })
+}
+
+/**
+ * priority 別 must-stuck-wip を 1 行 summary に。例:
+ *   'P1 2 件 (最長 7日) / P3 1 件 (最長 4日)' / count=0 P 省略 / 全 P 0 → 'MUST 進行中だが停滞 0 件'
+ *
+ * iter385 で集約した formatPriorityBucketsCountWithDays を使う 5 callsite 目。
+ * label '最長' は wip-stuck-by-priority と同じ vocabulary (= stuckDays 軸の見出し統一)。
+ */
+export function formatMustStuckWipByPriorityJa(
+  byPriority: Record<PriorityKey, MustStuckWipByPriorityStats>,
+): string {
+  return formatPriorityBucketsCountWithDays(
+    byPriority,
+    (s) => s.count,
+    (s) => s.maxStuckDays,
+    '最長',
+    'MUST 進行中だが停滞 0 件',
+  )
 }

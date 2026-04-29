@@ -7,6 +7,8 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  computeMustStuckWipByPriority,
+  formatMustStuckWipByPriorityJa,
   formatMustStuckWipJa,
   type MustStuckWipFields,
   mustStuckWipSeverity,
@@ -136,5 +138,67 @@ describe('mustStuckWipSeverity', () => {
     const items = [mk({ id: 'a', updatedAt: dt(3) })]
     const entries = pickMustStuckWipItems(items, {}, TODAY)
     expect(mustStuckWipSeverity(entries)).toBe('critical')
+  })
+})
+
+describe('computeMustStuckWipByPriority', () => {
+  function mkP(
+    overrides: Partial<MustStuckWipFields & { priority: number | null }>,
+  ): MustStuckWipFields & { priority: number | null } {
+    return { ...mk(overrides), priority: overrides.priority ?? 4 }
+  }
+
+  it('items 空 → 全 P count=0', () => {
+    const result = computeMustStuckWipByPriority([], {}, TODAY)
+    expect(result[1]).toEqual({ count: 0, maxStuckDays: null })
+    expect(result[2]).toEqual({ count: 0, maxStuckDays: null })
+    expect(result[3]).toEqual({ count: 0, maxStuckDays: null })
+    expect(result[4]).toEqual({ count: 0, maxStuckDays: null })
+  })
+
+  it('priority 別に集計、isMust=false / 短期 / done は除外', () => {
+    const items = [
+      mkP({ id: 'a', priority: 1, updatedAt: dt(7) }), // ✓ P1 7日
+      mkP({ id: 'b', priority: 1, updatedAt: dt(4) }), // ✓ P1 4日
+      mkP({ id: 'c', priority: 3, updatedAt: dt(5) }), // ✓ P3 5日
+      mkP({ id: 'd', priority: 1, updatedAt: dt(7), isMust: false }), // not must
+      mkP({ id: 'e', priority: 2, updatedAt: dt(2) }), // 短期 (2 < 3 日)
+      mkP({ id: 'f', priority: 4, updatedAt: dt(8), doneAt: new Date() }), // done
+    ]
+    const result = computeMustStuckWipByPriority(items, {}, TODAY)
+    expect(result[1]).toEqual({ count: 2, maxStuckDays: 7 })
+    expect(result[3]).toEqual({ count: 1, maxStuckDays: 5 })
+    expect(result[2]).toEqual({ count: 0, maxStuckDays: null })
+    expect(result[4]).toEqual({ count: 0, maxStuckDays: null })
+  })
+
+  it('priority null/範囲外 は p4', () => {
+    const items = [
+      mkP({ id: 'a', priority: null, updatedAt: dt(3) }),
+      mkP({ id: 'b', priority: 99 as number, updatedAt: dt(7) }),
+    ]
+    const result = computeMustStuckWipByPriority(items, {}, TODAY)
+    expect(result[4]).toEqual({ count: 2, maxStuckDays: 7 })
+  })
+})
+
+describe('formatMustStuckWipByPriorityJa', () => {
+  it('全 P count=0 → MUST 進行中だが停滞 0 件', () => {
+    const empty = computeMustStuckWipByPriority([], {}, TODAY)
+    expect(formatMustStuckWipByPriorityJa(empty)).toBe('MUST 進行中だが停滞 0 件')
+  })
+
+  it('複数 P 分散 → 番号順 / 区切り、count=0 P 省略', () => {
+    function mkP(
+      overrides: Partial<MustStuckWipFields & { priority: number }>,
+    ): MustStuckWipFields & { priority: number } {
+      return { ...mk(overrides), priority: overrides.priority ?? 4 }
+    }
+    const items = [
+      mkP({ id: 'a', priority: 1, updatedAt: dt(7) }),
+      mkP({ id: 'b', priority: 3, updatedAt: dt(4) }),
+    ]
+    const byP = computeMustStuckWipByPriority(items, {}, TODAY)
+    expect(formatMustStuckWipByPriorityJa(byP)).toBe('P1 1 件 (最長 7日) / P3 1 件 (最長 4日)')
   })
 })
