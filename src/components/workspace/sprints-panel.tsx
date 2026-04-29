@@ -233,14 +233,29 @@ export function SprintsPanel({ workspaceId }: Props) {
               </div>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="sprint-goal">ゴール (任意)</Label>
+              <Label htmlFor="sprint-goal">ゴール (任意、Cmd/Ctrl+Enter で作成)</Label>
               <Textarea
                 id="sprint-goal"
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
+                // iter316: Cmd/Ctrl+Enter で作成 (iter313-315 と同 pattern、form 内 Textarea
+                // でも default Enter は改行のため modifier 併用必須)。name 空 / pending 中は noop。
+                onKeyDown={(e) => {
+                  if (
+                    (e.metaKey || e.ctrlKey) &&
+                    e.key === 'Enter' &&
+                    !e.nativeEvent.isComposing &&
+                    name.trim() &&
+                    !createMut.isPending
+                  ) {
+                    e.preventDefault()
+                    void handleCreate()
+                  }
+                }}
                 placeholder="この Sprint で達成したいこと"
                 rows={2}
                 maxLength={500}
+                aria-label="Sprint ゴール (任意、Cmd/Ctrl+Enter で作成)"
               />
             </div>
             <div className="flex justify-end">
