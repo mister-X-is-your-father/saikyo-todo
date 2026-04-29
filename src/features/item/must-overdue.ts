@@ -21,6 +21,7 @@ import { MS_PER_DAY, parseDateOrNull, parseIsoDateAsLocalMidnight } from '@/lib/
 import { formatTopWithOverflow } from '@/lib/format-list'
 
 import { computeOverdueActive, type OverdueActiveFields } from './overdue-active'
+import { bucketByPriorityWith, formatPriorityBuckets, type PriorityKey } from './priority'
 
 export interface MustOverdueFields extends OverdueActiveFields {
   isMust: boolean | null | undefined
@@ -166,4 +167,56 @@ export function formatMustOverdueTitlesJa<T extends MustOverdueWithTitle>(
     limit,
   )
   return `MUST 期限超過: ${body}`
+}
+
+/** by-priority 集計の単 bucket 値: must-overdue 件数 + 最古超過日数 (count=0 → null)。 */
+export interface MustOverdueByPriorityStats {
+  count: number
+  oldestOverdueDays: number | null
+}
+
+/**
+ * iter384 ai-automation: must-overdue を priority 別に集計する pure helper。
+ * iter369 (`computeOverdueActiveByPriority`) の must-only 版 (= isMust=true filter 追加)。
+ * iter382 hygiene-debt / iter387 slip-days / iter389 backlog-aging / iter399 stale-urgent
+ * / iter362 wip-stuck / iter369 overdue-active と並ぶ「× priority」軸 11 弾目。
+ *
+ * 「P1 MUST 期限超過 2 件 (最古 14 日) / P3 MUST 期限超過 1 件 (最古 5 日)」のように、
+ * MUST の中でも高優先軸の overdue を分離して可視化。must-overdue は全体「2 件」だけでも
+ * MVP 違反警報だが、P1 が含まれているか否かで escalation 順位が変わる。
+ *
+ * computeMustOverdue (= isMust + overdue active 全集計) を bucketByPriorityWith 経由で
+ * priority 別に再適用 (P1 のみ / P2 のみ ... の各 bucket 内で MUST overdue 集計)。
+ */
+export function computeMustOverdueByPriority<
+  T extends MustOverdueFields & { priority: number | null | undefined },
+>(
+  items: readonly T[],
+  today: Date | string = new Date(),
+): Record<PriorityKey, MustOverdueByPriorityStats> {
+  return bucketByPriorityWith(items, (group) => {
+    const stats = computeMustOverdue(group, today)
+    if (stats.total === 0) return { count: 0, oldestOverdueDays: null }
+    return { count: stats.total, oldestOverdueDays: stats.oldestOverdueDays }
+  })
+}
+
+/**
+ * priority 別 must-overdue を 1 行 summary に。例:
+ *   'P1 2 件 (最古 14日) / P3 1 件 (最古 5日)' / count=0 P 省略 / 全 P 0 → 'MUST 期限超過 0 件'
+ *
+ * iter369 formatOverdueActiveByPriorityJa と format 互換 (= bucket 内の文言は同じ、
+ * 全 0 sentinel のみ 'MUST 期限超過 0 件' / 'overdue 0 件' に差し替え)。
+ */
+export function formatMustOverdueByPriorityJa(
+  byPriority: Record<PriorityKey, MustOverdueByPriorityStats>,
+): string {
+  return formatPriorityBuckets(
+    byPriority,
+    (k, s) =>
+      s.count > 0 && s.oldestOverdueDays !== null
+        ? `P${k} ${s.count} 件 (最古 ${s.oldestOverdueDays}日)`
+        : null,
+    'MUST 期限超過 0 件',
+  )
 }
