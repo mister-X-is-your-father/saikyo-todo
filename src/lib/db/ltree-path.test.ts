@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { computeMovedPath, fullPathOf, uuidToLabel } from './ltree-path'
+import { computeMovedPath, fullPathOf, isPathDescendantOf, uuidToLabel } from './ltree-path'
 
 describe('uuidToLabel', () => {
   it('strips all hyphens', () => {
@@ -39,5 +39,35 @@ describe('computeMovedPath', () => {
     const r = computeMovedPath({ id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb' }, 'aaa.xxx')
     expect(r.newParentPath).toBe('aaa.xxx')
     expect(r.newFullPath).toBe('aaa.xxx.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
+  })
+})
+
+describe('isPathDescendantOf', () => {
+  it('直下の子 (parentPath === parentFull) → true', () => {
+    expect(isPathDescendantOf('aaa', 'aaa')).toBe(true)
+  })
+
+  it('孫 (parentPath が parentFull. で始まる) → true', () => {
+    expect(isPathDescendantOf('aaa.bbb', 'aaa')).toBe(true)
+    expect(isPathDescendantOf('aaa.bbb.ccc', 'aaa')).toBe(true)
+  })
+
+  it('別 parent の子 → false', () => {
+    expect(isPathDescendantOf('xxx', 'aaa')).toBe(false)
+    expect(isPathDescendantOf('xxx.yyy', 'aaa')).toBe(false)
+  })
+
+  it('別 parent の prefix-match に見えるが非 ltree-segment 境界 → false', () => {
+    // 'aaa2.xxx' は 'aaa' で始まるが、segment 境界で見ると 'aaa2' は別 segment
+    // (prefix '${parentFull}.' = 'aaa.' で始まらない)
+    expect(isPathDescendantOf('aaa2', 'aaa')).toBe(false)
+    expect(isPathDescendantOf('aaa2.xxx', 'aaa')).toBe(false)
+  })
+
+  it('root parentFull (空文字) は限定的にしか動かない', () => {
+    // 仕様: parentFull='' で itemParentPath='' なら true (root === root の trivial case)
+    expect(isPathDescendantOf('', '')).toBe(true)
+    // それ以外は startsWith('.') で false (= '.x' で始まる ltree は無効)
+    expect(isPathDescendantOf('aaa', '')).toBe(false)
   })
 })

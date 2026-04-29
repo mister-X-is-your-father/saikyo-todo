@@ -27,7 +27,7 @@
  *  - 並びは maxStaleDays 降順 → parent.title ja 昇順
  */
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
-import { fullPathOf } from '@/lib/db/ltree-path'
+import { fullPathOf, isPathDescendantOf } from '@/lib/db/ltree-path'
 import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 
 import { formatPriorityBuckets, normalizePriority, type PriorityKey } from './priority'
@@ -81,14 +81,12 @@ export function pickAtRiskParents<I extends ParentItemFields>(
     if (candidate.doneAt != null) continue
 
     const parentFull = fullPathOf({ id: candidate.id, parentPath: candidate.parentPath })
-    const directPrefix = `${parentFull}.`
 
     let oldestUpdatedAtMs: number | null = null
     let activeDescendantCount = 0
     for (const it of allItems) {
       if (it.deletedAt != null) continue
-      const isDescendant = it.parentPath === parentFull || it.parentPath.startsWith(directPrefix)
-      if (!isDescendant) continue
+      if (!isPathDescendantOf(it.parentPath, parentFull)) continue
       // active 子孫のみ: cancelled / done は除外 (= 達成 / 諦めは「停滞」じゃない)
       if (it.status === 'cancelled') continue
       if (it.doneAt != null) continue

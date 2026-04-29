@@ -24,7 +24,7 @@
  *     0 除算は 0 として返す)。`Math.round` で整数化。
  *   - 全 done (= isComplete) は pctDone === 100 && total > 0
  */
-import { fullPathOf } from '@/lib/db/ltree-path'
+import { fullPathOf, isPathDescendantOf } from '@/lib/db/ltree-path'
 
 import { normalizeStatus } from './status-visual'
 
@@ -83,7 +83,6 @@ export function summarizeDescendantsProgress(
   allItems: readonly DescendantFields[],
 ): DescendantsProgress {
   const parentFull = fullPathOf(parent)
-  const directPrefix = `${parentFull}.`
 
   const counts = {
     todo: 0,
@@ -96,9 +95,7 @@ export function summarizeDescendantsProgress(
   let total = 0
   for (const it of allItems) {
     if (it.deletedAt != null) continue
-    const isDirect = it.parentPath === parentFull
-    const isDeeper = it.parentPath.startsWith(directPrefix)
-    if (!isDirect && !isDeeper) continue
+    if (!isPathDescendantOf(it.parentPath, parentFull)) continue
     total += 1
     counts[normalizeStatus(it.status)] += 1
   }

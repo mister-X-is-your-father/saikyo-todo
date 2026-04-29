@@ -35,3 +35,32 @@ export function computeMovedPath(
     newFullPath: newParentFull === '' ? label : `${newParentFull}.${label}`,
   }
 }
+
+/**
+ * iter430 refactor: 「ある item の parentPath が parent のフル path の子孫を表すか」を
+ * 1 関数に集約。
+ *
+ * descendants-progress (iter417) / at-risk-parents (iter427) で同 shape の
+ * `parentPath === parentFull || parentPath.startsWith(parentFull + '.')` が
+ * 重複していたので集約 (= iter325 / iter330 / ... / iter425 と同じ「同 shape の
+ * 散在を 1 file に」方針 29 弾目)。
+ *
+ * 仕様:
+ *   - `itemParentPath === parentFull` (= 直下の子) → true
+ *   - `itemParentPath.startsWith(parentFull + '.')` (= 孫以降) → true
+ *   - それ以外 → false
+ *   - parentFull が空文字 (= root) の場合: '.' で始まる ltree は無いので
+ *     `itemParentPath === ''` (= root 直下) のみ true (それ以外の root 直下や
+ *     どの parent の子も含まれない、本 helper は root を「parent」として扱わない)
+ *   - 純粋関数、副作用なし、O(itemParentPath.length)
+ *
+ * caller usage:
+ *   const parentFull = fullPathOf(parent)
+ *   for (const it of items) {
+ *     if (isPathDescendantOf(it.parentPath, parentFull)) { ... }
+ *   }
+ */
+export function isPathDescendantOf(itemParentPath: string, parentFull: string): boolean {
+  if (itemParentPath === parentFull) return true
+  return itemParentPath.startsWith(`${parentFull}.`)
+}
