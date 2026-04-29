@@ -148,6 +148,8 @@ import {
   computeSlipDaysByPriority,
   formatSlipDaysByPriorityJa,
   formatSlipDaysJa,
+  formatSlipDaysTitlesJa,
+  pickSlipDaysItems,
   slipSeverity,
 } from '@/features/item/slip-days'
 import {
@@ -278,8 +280,13 @@ export function DashboardView({ workspaceId }: Props) {
     // (iter363/366/373/378/383 と同手法)。
     const byPriority = computeSlipDaysByPriority(itemsQ.data)
     const priorityBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)
-    const detail =
-      priorityBuckets > 1 ? `${summary} — ${formatSlipDaysByPriorityJa(byPriority)}` : summary
+    const priorityDetail = priorityBuckets > 1 ? ` — ${formatSlipDaysByPriorityJa(byPriority)}` : ''
+    // iter408 basics: iter407 で追加した pickSlipDaysItems / formatSlipDaysTitlesJa を
+    // SR / hover に bind (iter383 / iter386 / iter391 / iter406 と同手法、3 層情報設計)。
+    // 視覚 chip text は stats summary のまま、aria-label / title だけ richer (具体名付き) に。
+    const entries = pickSlipDaysItems(itemsQ.data)
+    const titlesDetail = entries.length > 0 ? ` — ${formatSlipDaysTitlesJa(entries, 3)}` : ''
+    const detail = `${summary}${priorityDetail}${titlesDetail}`
     return { stats, summary, detail, severe }
   }, [itemsQ.data])
 
