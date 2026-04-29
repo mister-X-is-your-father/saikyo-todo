@@ -5,7 +5,13 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import { formatStaleItemsSummary, selectStaleItems, type StaleItemFields } from './stale-items'
+import {
+  computeStaleItemsByPriority,
+  formatStaleItemsByPriorityJa,
+  formatStaleItemsSummary,
+  selectStaleItems,
+  type StaleItemFields,
+} from './stale-items'
 
 const TODAY = new Date(2026, 3, 28) // 2026-04-28
 const DAY = 24 * 60 * 60 * 1000
@@ -145,5 +151,66 @@ describe('formatStaleItemsSummary', () => {
     }
     const entries = selectStaleItems([item], {}, TODAY)
     expect(formatStaleItemsSummary(entries)).toContain('(無題)')
+  })
+})
+
+describe('computeStaleItemsByPriority', () => {
+  function mkP(
+    overrides: Partial<StaleItemFields & { priority: number | null }>,
+  ): StaleItemFields & { priority: number | null } {
+    return { ...mk(overrides), priority: overrides.priority ?? 4 }
+  }
+
+  it('items 空 → 全 P count=0', () => {
+    const result = computeStaleItemsByPriority([], {}, TODAY)
+    expect(result[1]).toEqual({ count: 0, oldestStaleDays: null })
+    expect(result[2]).toEqual({ count: 0, oldestStaleDays: null })
+    expect(result[3]).toEqual({ count: 0, oldestStaleDays: null })
+    expect(result[4]).toEqual({ count: 0, oldestStaleDays: null })
+  })
+
+  it('priority 別に集計、threshold 未満 / done は除外', () => {
+    const items = [
+      mkP({ id: 'a', priority: 1, updatedAt: dt(14) }), // ✓
+      mkP({ id: 'b', priority: 1, updatedAt: dt(8) }), // ✓
+      mkP({ id: 'c', priority: 3, updatedAt: dt(10) }), // ✓
+      mkP({ id: 'd', priority: 1, updatedAt: dt(6) }), // 短期
+      mkP({ id: 'e', priority: 4, updatedAt: dt(20), doneAt: new Date() }), // done
+    ]
+    const result = computeStaleItemsByPriority(items, {}, TODAY)
+    expect(result[1]).toEqual({ count: 2, oldestStaleDays: 14 })
+    expect(result[3]).toEqual({ count: 1, oldestStaleDays: 10 })
+    expect(result[2]).toEqual({ count: 0, oldestStaleDays: null })
+    expect(result[4]).toEqual({ count: 0, oldestStaleDays: null })
+  })
+
+  it('priority null/範囲外 は p4', () => {
+    const items = [
+      mkP({ id: 'a', priority: null, updatedAt: dt(8) }),
+      mkP({ id: 'b', priority: 99 as number, updatedAt: dt(14) }),
+    ]
+    const result = computeStaleItemsByPriority(items, {}, TODAY)
+    expect(result[4]).toEqual({ count: 2, oldestStaleDays: 14 })
+  })
+})
+
+describe('formatStaleItemsByPriorityJa', () => {
+  it('全 P count=0 → stale 0 件', () => {
+    const empty = computeStaleItemsByPriority([], {}, TODAY)
+    expect(formatStaleItemsByPriorityJa(empty)).toBe('stale 0 件')
+  })
+
+  it('複数 P 分散 → 番号順 / 区切り、count=0 P 省略', () => {
+    function mkP(
+      overrides: Partial<StaleItemFields & { priority: number }>,
+    ): StaleItemFields & { priority: number } {
+      return { ...mk(overrides), priority: overrides.priority ?? 4 }
+    }
+    const items = [
+      mkP({ id: 'a', priority: 1, updatedAt: dt(14) }),
+      mkP({ id: 'b', priority: 3, updatedAt: dt(10) }),
+    ]
+    const byP = computeStaleItemsByPriority(items, {}, TODAY)
+    expect(formatStaleItemsByPriorityJa(byP)).toBe('P1 1 件 (最古 14日) / P3 1 件 (最古 10日)')
   })
 })

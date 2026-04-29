@@ -17,6 +17,12 @@
  */
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 
+import {
+  bucketByPriorityWith,
+  formatPriorityBucketsCountWithDays,
+  type PriorityKey,
+} from './priority'
+
 /** stale 判定に必要な Item の structural subset。 */
 export interface StaleItemFields {
   id?: string
@@ -91,6 +97,59 @@ export function formatStaleItemsSummary<T extends StaleItemFields>(
     return `${title} (${e.staleDays} 日前)`
   })
   return `stale ${entries.length}: ${parts.join(' / ')}`
+}
+
+/** by-priority 集計の単 bucket 値: stale items 件数 + 最古日数 (count=0 → null)。 */
+export interface StaleItemsByPriorityStats {
+  count: number
+  oldestStaleDays: number | null
+}
+
+/**
+ * iter392 ai-automation: stale items を priority 別に集計する pure helper。iter369
+ * (overdue-active) / iter382 (hygiene-debt) / iter384 (must-overdue) / iter389
+ * (must-stuck-wip) と並ぶ「× priority」軸 12 弾目。
+ *
+ * 「P1 stale 3 件 (最古 14日) / P3 stale 2 件 (最古 10日)」のように、stale (= 7 日以上
+ * 放置) の中でも高優先軸の偏在を可視化、全体「stale 5 件」だけでは見えない priority
+ * bias を露出。AI 朝 brief や pm-agent の triage で「P1 が放置されている = 最深刻」を
+ * 別軸で示せる。
+ *
+ * selectStaleItems の filter ロジックは bucketByPriorityWith 経由で priority 別に
+ * 再適用 (P1 のみ / P2 のみ ... の各 bucket 内で stale 集計)。
+ */
+export function computeStaleItemsByPriority<
+  T extends StaleItemFields & { priority: number | null | undefined },
+>(
+  items: readonly T[],
+  options: SelectStaleItemsOptions = {},
+  today: Date | string = new Date(),
+): Record<PriorityKey, StaleItemsByPriorityStats> {
+  return bucketByPriorityWith(items, (group) => {
+    const entries = selectStaleItems(group, options, today)
+    if (entries.length === 0) return { count: 0, oldestStaleDays: null }
+    const max = entries.reduce((m, e) => (e.staleDays > m ? e.staleDays : m), 0)
+    return { count: entries.length, oldestStaleDays: max }
+  })
+}
+
+/**
+ * priority 別 stale items を 1 行 summary に。例:
+ *   'P1 3 件 (最古 14日) / P3 2 件 (最古 10日)' / count=0 P 省略 / 全 P 0 → 'stale 0 件'
+ *
+ * iter385 で集約した formatPriorityBucketsCountWithDays を使う 6 callsite 目。
+ * label '最古' は overdue-active / must-overdue と vocabulary 統一。
+ */
+export function formatStaleItemsByPriorityJa(
+  byPriority: Record<PriorityKey, StaleItemsByPriorityStats>,
+): string {
+  return formatPriorityBucketsCountWithDays(
+    byPriority,
+    (s) => s.count,
+    (s) => s.oldestStaleDays,
+    '最古',
+    'stale 0 件',
+  )
 }
 
 // iter305 refactor: parseDateOrNull (lib/date/iso) に集約。
