@@ -111,7 +111,29 @@ export function bucketByPriorityWith<T extends { priority: number | null | undef
 export function countNonEmptyPriorityBuckets(
   byPriority: Record<PriorityKey, { total: number }>,
 ): number {
-  return PRIORITY_ORDER.filter((k) => byPriority[k].total > 0).length
+  return countNonEmptyPriorityBucketsBy(byPriority, (s) => s.total > 0)
+}
+
+/**
+ * iter390 refactor: `countNonEmptyPriorityBuckets` の generic 化版。任意の
+ * predicate (= 「empty とみなす条件」) で priority bucket を数える。
+ *
+ * dashboard chip の「priority breakdown を tooltip に出すか?」判定 (= 0/1/≥2 の
+ * 3 値判定) は by-priority substrate ごとに「empty」の意味が違う:
+ *  - due-hit-rate / coverage 系: `total === 0`
+ *  - combined-hygiene: `score === null`
+ *  - hygiene-debt: `debtCount === 0`
+ *  - slip-days: `count === 0`
+ *
+ * 個別 substrate ごとに inline filter していたのを 1 generic に集約。
+ * 既存 `countNonEmptyPriorityBuckets(stats)` は本 helper の wrapper として残す
+ * (後方互換、`{total: number}` shape 専用の薄いショートカット)。
+ */
+export function countNonEmptyPriorityBucketsBy<T>(
+  byPriority: Record<PriorityKey, T>,
+  isNonEmpty: (v: T) => boolean,
+): number {
+  return PRIORITY_ORDER.filter((k) => isNonEmpty(byPriority[k])).length
 }
 
 export function countItemsByPriority(

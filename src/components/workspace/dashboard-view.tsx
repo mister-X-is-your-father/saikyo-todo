@@ -101,7 +101,10 @@ import {
   formatMustHygieneJa,
   mustHygieneSeverity,
 } from '@/features/item/must-hygiene'
-import { countNonEmptyPriorityBuckets, PRIORITY_ORDER } from '@/features/item/priority'
+import {
+  countNonEmptyPriorityBuckets,
+  countNonEmptyPriorityBucketsBy,
+} from '@/features/item/priority'
 import {
   formatRecentCompletedSummaryJa,
   selectRecentCompleted,
@@ -221,7 +224,7 @@ export function DashboardView({ workspaceId }: Props) {
     // 複数 priority に miss が分散している時のみ priority breakdown を tooltip に
     // (iter363/366/373/378/383 と同手法)。
     const byPriority = computeSlipDaysByPriority(itemsQ.data)
-    const priorityBuckets = PRIORITY_ORDER.filter((k) => byPriority[k].count > 0).length
+    const priorityBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)
     const detail =
       priorityBuckets > 1 ? `${summary} — ${formatSlipDaysByPriorityJa(byPriority)}` : summary
     return { stats, summary, detail, severe }
@@ -364,7 +367,7 @@ export function DashboardView({ workspaceId }: Props) {
     // richer info は a11y / hover 経路でのみ提供、iter346/363/366 と同手法)。
     // 複数 priority に未完了が分散している時のみ priority breakdown を tooltip に。
     const byPriority = computeCombinedHygieneByPriority(itemsQ.data)
-    const eligibleBuckets = PRIORITY_ORDER.filter((k) => byPriority[k].score !== null).length
+    const eligibleBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.score !== null)
     const detail =
       eligibleBuckets > 1
         ? `${summary} — ${formatCombinedHygieneByPriorityJa(byPriority)}`
@@ -411,7 +414,7 @@ export function DashboardView({ workspaceId }: Props) {
     // info は a11y/hover 経路でのみ提供、iter363/366/373/378 と同手法)。複数
     // priority に debt が分散している時のみ priority breakdown を tooltip に。
     const byPriority = computeHygieneDebtByPriority(itemsQ.data)
-    const debtBuckets = PRIORITY_ORDER.filter((k) => byPriority[k].debtCount > 0).length
+    const debtBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.debtCount > 0)
     const priorityDetail = debtBuckets > 1 ? formatHygieneDebtByPriorityJa(byPriority) : null
     // iter386 basics: aged-hygiene-debt (iter384) を bind。priority 別と並列で
     // 「年齢別の停滞 debt」を tooltip に同梱、stagnantDebtCount > 0 (= ancient/stale

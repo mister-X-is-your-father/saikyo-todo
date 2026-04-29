@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import {
   bucketByPriorityWith,
   countItemsByPriority,
+  countNonEmptyPriorityBuckets,
+  countNonEmptyPriorityBucketsBy,
   formatPriorityCounts,
   groupItemsByPriority,
   priorityClass,
@@ -154,5 +156,36 @@ describe('bucketByPriorityWith', () => {
     ]
     const r = bucketByPriorityWith(items, (g) => g.map((it) => it.v).join(''))
     expect(r[1]).toBe('abc')
+  })
+})
+
+describe('countNonEmptyPriorityBuckets / countNonEmptyPriorityBucketsBy', () => {
+  it('countNonEmptyPriorityBuckets: counts buckets with total > 0', () => {
+    const r = countNonEmptyPriorityBuckets({
+      1: { total: 3 },
+      2: { total: 0 },
+      3: { total: 1 },
+      4: { total: 0 },
+    })
+    expect(r).toBe(2)
+  })
+
+  it('countNonEmptyPriorityBucketsBy: applies custom predicate', () => {
+    const byPriority = {
+      1: { score: 80 },
+      2: { score: null },
+      3: { score: 30 },
+      4: { score: null },
+    }
+    expect(countNonEmptyPriorityBucketsBy(byPriority, (s) => s.score !== null)).toBe(2)
+  })
+
+  it('countNonEmptyPriorityBucketsBy: returns 0 when all buckets empty by predicate', () => {
+    expect(
+      countNonEmptyPriorityBucketsBy(
+        { 1: { count: 0 }, 2: { count: 0 }, 3: { count: 0 }, 4: { count: 0 } },
+        (s) => s.count > 0,
+      ),
+    ).toBe(0)
   })
 })
