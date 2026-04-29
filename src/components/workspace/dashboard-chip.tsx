@@ -72,6 +72,7 @@ export function DashboardChip({
       className={`${BASE_CLASS} ${toneClass}`}
       data-testid={testId}
       role="status"
+      aria-live="polite"
       aria-label={ariaLabel}
       title={title}
       {...(dataAttrs ?? {})}

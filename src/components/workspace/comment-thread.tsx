@@ -61,7 +61,7 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
           読み込み中…
         </p>
       ) : (comments?.length ?? 0) === 0 ? (
-        <p className="text-muted-foreground text-sm" role="status">
+        <p className="text-muted-foreground text-sm" role="status" aria-live="polite">
           まだコメントはありません
         </p>
       ) : (
