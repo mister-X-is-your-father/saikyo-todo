@@ -2,11 +2,13 @@ import { describe, expect, it } from 'vitest'
 
 import {
   agingLabel,
+  classifyBacklogAgingHint,
   countAgingItemsOlderThanWeek,
   countItemsByAge,
   countItemsByAgeByPriority,
   formatAgingByPriorityJa,
   formatAgingCounts,
+  formatBacklogAgingHintJa,
   getItemAge,
   groupItemsByAge,
   oldestAgeDaysOf,
@@ -317,5 +319,50 @@ describe('oldestAgeDaysOf', () => {
     // 未来 createdAt は ageDays=0 で扱われる
     const future = new Date(TODAY.getTime() + 5 * MS_PER_DAY).toISOString()
     expect(oldestAgeDaysOf([{ createdAt: future }], TODAY)).toBe(0)
+  })
+})
+
+describe('classifyBacklogAgingHint / formatBacklogAgingHintJa (iter447)', () => {
+  const c = (
+    overrides: Partial<Record<'new' | 'recent' | 'stale' | 'ancient' | 'unknown', number>>,
+  ) => ({
+    new: 0,
+    recent: 0,
+    stale: 0,
+    ancient: 0,
+    unknown: 0,
+    ...overrides,
+  })
+
+  it('stagnant=0 → fresh / "新鮮 (停滞なし)"', () => {
+    expect(classifyBacklogAgingHint(c({ new: 5, recent: 3 }))).toBe('fresh')
+    expect(formatBacklogAgingHintJa(c({}))).toBe('新鮮 (停滞なし)')
+  })
+
+  it('stagnant 1-4 かつ ancient < 3 → mild', () => {
+    expect(classifyBacklogAgingHint(c({ stale: 2 }))).toBe('mild')
+    expect(classifyBacklogAgingHint(c({ stale: 2, ancient: 2 }))).toBe('mild')
+    expect(formatBacklogAgingHintJa(c({ stale: 1 }))).toBe('軽微停滞')
+  })
+
+  it('stagnant ≥ 5 → moderate (ancient < 5)', () => {
+    expect(classifyBacklogAgingHint(c({ stale: 5 }))).toBe('moderate')
+    expect(classifyBacklogAgingHint(c({ stale: 3, ancient: 2 }))).toBe('moderate')
+    expect(formatBacklogAgingHintJa(c({ stale: 5 }))).toBe('停滞多め')
+  })
+
+  it('ancient 3-4 → moderate (stagnant < 5 でも)', () => {
+    expect(classifyBacklogAgingHint(c({ ancient: 3 }))).toBe('moderate')
+    expect(classifyBacklogAgingHint(c({ ancient: 4 }))).toBe('moderate')
+  })
+
+  it('ancient ≥ 5 → severe', () => {
+    expect(classifyBacklogAgingHint(c({ ancient: 5 }))).toBe('severe')
+    expect(classifyBacklogAgingHint(c({ ancient: 10 }))).toBe('severe')
+    expect(formatBacklogAgingHintJa(c({ ancient: 5 }))).toBe('深刻 (古参累積)')
+  })
+
+  it('unknown は集計対象外 (stagnant に含まない)', () => {
+    expect(classifyBacklogAgingHint(c({ unknown: 100 }))).toBe('fresh')
   })
 })

@@ -201,3 +201,45 @@ export function formatAgingByPriorityJa(byPriority: AgingByPriority): string {
   )
   return body === '停滞 0 件' ? body : `停滞: ${body}`
 }
+
+/**
+ * iter447 ai-automation: backlog-aging の severity を「1 word」で表現する hint helper。
+ *
+ * iter424 (descendants-activity-hint) / iter439 (blocked-items-hint) / iter442
+ * (at-risk-parents-hint) / iter444 (parent-items-progress-hint) と並ぶ「item axis
+ * 1-word state」シリーズの backlog-aging 軸版 (5 弾目)。AI 朝 brief / pm-agent /
+ * dashboard chip / Slack 通知が「backlog の停滞度合い」を 1 word で出せる substrate。
+ *
+ * 4 状態 (stagnant = stale + ancient / ancient counts):
+ *  - 'fresh'     → '新鮮 (停滞なし)'    (stagnant === 0)
+ *  - 'mild'      → '軽微停滞'            (stagnant 1-4 かつ ancient < 3)
+ *  - 'moderate'  → '停滞多め'            (stagnant ≥ 5 または ancient 3-4)
+ *  - 'severe'    → '深刻 (古参累積)'    (ancient ≥ 5)
+ *
+ * caller benefits:
+ *  - dashboard backlog-aging chip glyph / tone を hint base で決める
+ *  - Slack 朝 brief 1 行 status (severe で「ancient 5+ 件累積」警告)
+ *  - AI prompt 1 word 状況把握 / formatAgingByPriorityJa (priority 別) と相補
+ */
+export type BacklogAgingHint = 'fresh' | 'mild' | 'moderate' | 'severe'
+
+export function classifyBacklogAgingHint(
+  counts: Readonly<Record<AgingKind, number>>,
+): BacklogAgingHint {
+  const stagnant = counts.stale + counts.ancient
+  if (stagnant === 0) return 'fresh'
+  if (counts.ancient >= 5) return 'severe'
+  if (stagnant >= 5 || counts.ancient >= 3) return 'moderate'
+  return 'mild'
+}
+
+const HINT_LABEL_JA: Record<BacklogAgingHint, string> = {
+  fresh: '新鮮 (停滞なし)',
+  mild: '軽微停滞',
+  moderate: '停滞多め',
+  severe: '深刻 (古参累積)',
+}
+
+export function formatBacklogAgingHintJa(counts: Readonly<Record<AgingKind, number>>): string {
+  return HINT_LABEL_JA[classifyBacklogAgingHint(counts)]
+}
