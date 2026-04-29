@@ -79,7 +79,6 @@ export function LoginForm() {
           enterKeyHint="send"
           required
           aria-required="true"
-          minLength={8}
           aria-invalid={form.formState.errors.password ? true : undefined}
           aria-describedby={form.formState.errors.password ? 'password-error' : undefined}
           {...form.register('password')}
