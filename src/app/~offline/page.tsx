@@ -43,6 +43,7 @@ export default function OfflinePage() {
         <OfflineRetryButton />
         <Link
           href="/"
+          prefetch={false}
           aria-label="ホームに戻る (アプリの起点画面に遷移、オンライン復帰後は最新状態を表示)"
           className={buttonVariants({ variant: 'outline' })}
         >
