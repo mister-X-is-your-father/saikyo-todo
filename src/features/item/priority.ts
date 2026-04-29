@@ -49,7 +49,12 @@ export type PriorityGroups<T> = Record<PriorityKey, T[]>
 
 const PRIORITY_ORDER: readonly PriorityKey[] = [1, 2, 3, 4] as const
 
-function normalizePriority(p: number | null | undefined): PriorityKey {
+/**
+ * iter344 ai-automation: 他 substrate (e.g. due-hit-rate-by-priority) から再利用
+ * したいので export 化。挙動は変わらず: 1/2/3 はそのまま、null/undefined/範囲外は
+ * p4 に集約。
+ */
+export function normalizePriority(p: number | null | undefined): PriorityKey {
   if (p === 1 || p === 2 || p === 3) return p
   return 4
 }

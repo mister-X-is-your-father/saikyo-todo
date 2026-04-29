@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest'
 
 import {
   computeDueHitRate,
+  computeDueHitRateByPriority,
+  type DueHitRateByPriorityFields,
   type DueHitRateFields,
   dueHitRateTone,
+  formatDueHitRateByPriorityJa,
   formatDueHitRateJa,
 } from './due-hit-rate'
 
@@ -156,6 +159,81 @@ describe('dueHitRateTone', () => {
 
   it('returns "neutral" for empty (total=0 / hitRate=null)', () => {
     expect(dueHitRateTone({ total: 0, hit: 0, miss: 0, hitRate: null })).toBe('neutral')
+  })
+})
+
+describe('computeDueHitRateByPriority', () => {
+  it('returns zero stats for all priorities when items empty', () => {
+    const r = computeDueHitRateByPriority([])
+    for (const k of [1, 2, 3, 4] as const) {
+      expect(r[k]).toEqual({ total: 0, hit: 0, miss: 0, hitRate: null })
+    }
+  })
+
+  it('groups by priority and computes per-bucket hit rate', () => {
+    const items: DueHitRateByPriorityFields[] = [
+      // P1: 2 hits / 0 miss → 100%
+      { priority: 1, doneAt: '2026-04-25T10:00:00Z', dueDate: '2026-04-29' },
+      { priority: 1, doneAt: '2026-04-26T10:00:00Z', dueDate: '2026-04-29' },
+      // P3: 1 hit / 1 miss → 50%
+      { priority: 3, doneAt: '2026-04-25T10:00:00Z', dueDate: '2026-04-29' },
+      { priority: 3, doneAt: '2026-05-01T10:00:00Z', dueDate: '2026-04-29' },
+      // P4: 0 hit / 1 miss → 0%
+      { priority: 4, doneAt: '2026-05-01T10:00:00Z', dueDate: '2026-04-29' },
+    ]
+    const r = computeDueHitRateByPriority(items)
+    expect(r[1]).toEqual({ total: 2, hit: 2, miss: 0, hitRate: 1 })
+    expect(r[2]).toEqual({ total: 0, hit: 0, miss: 0, hitRate: null })
+    expect(r[3]).toEqual({ total: 2, hit: 1, miss: 1, hitRate: 0.5 })
+    expect(r[4]).toEqual({ total: 1, hit: 0, miss: 1, hitRate: 0 })
+  })
+
+  it('normalizes null/undefined/out-of-range priority to p4', () => {
+    const items: DueHitRateByPriorityFields[] = [
+      { priority: null, doneAt: '2026-04-25T10:00:00Z', dueDate: '2026-04-29' }, // → p4 hit
+      { priority: undefined, doneAt: '2026-05-01T10:00:00Z', dueDate: '2026-04-29' }, // → p4 miss
+      { priority: 99, doneAt: '2026-04-25T10:00:00Z', dueDate: '2026-04-29' }, // → p4 hit
+    ]
+    const r = computeDueHitRateByPriority(items)
+    expect(r[4]).toEqual({ total: 3, hit: 2, miss: 1, hitRate: 2 / 3 })
+  })
+
+  it('respects since option per priority bucket', () => {
+    const items: DueHitRateByPriorityFields[] = [
+      { priority: 1, doneAt: '2026-04-01T10:00:00Z', dueDate: '2026-04-01' }, // before since
+      { priority: 1, doneAt: '2026-04-25T10:00:00Z', dueDate: '2026-04-29' }, // after since (hit)
+    ]
+    const r = computeDueHitRateByPriority(items, { since: '2026-04-15T00:00:00Z' })
+    expect(r[1]).toEqual({ total: 1, hit: 1, miss: 0, hitRate: 1 })
+  })
+})
+
+describe('formatDueHitRateByPriorityJa', () => {
+  it('formats per-priority entries (skips total=0)', () => {
+    const items: DueHitRateByPriorityFields[] = [
+      { priority: 1, doneAt: '2026-04-25T10:00:00Z', dueDate: '2026-04-29' },
+      { priority: 1, doneAt: '2026-04-26T10:00:00Z', dueDate: '2026-04-29' },
+      { priority: 3, doneAt: '2026-04-25T10:00:00Z', dueDate: '2026-04-29' },
+      { priority: 3, doneAt: '2026-05-01T10:00:00Z', dueDate: '2026-04-29' },
+    ]
+    const r = computeDueHitRateByPriority(items)
+    expect(formatDueHitRateByPriorityJa(r)).toBe('期限達成率: P1 100% (2/2) / P3 50% (1/2)')
+  })
+
+  it('formats empty (all priorities total=0) as "完了 0 件 (該当なし)"', () => {
+    const r = computeDueHitRateByPriority([])
+    expect(formatDueHitRateByPriorityJa(r)).toBe('完了 0 件 (該当なし)')
+  })
+
+  it('rounds percentage half-to-even', () => {
+    // 2/3 = 0.666… → 67%
+    const items: DueHitRateByPriorityFields[] = [
+      { priority: 2, doneAt: '2026-04-25T10:00:00Z', dueDate: '2026-04-29' },
+      { priority: 2, doneAt: '2026-04-26T10:00:00Z', dueDate: '2026-04-29' },
+      { priority: 2, doneAt: '2026-05-01T10:00:00Z', dueDate: '2026-04-29' },
+    ]
+    const r = computeDueHitRateByPriority(items)
+    expect(formatDueHitRateByPriorityJa(r)).toBe('期限達成率: P2 67% (2/3)')
   })
 })
 

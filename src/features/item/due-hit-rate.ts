@@ -23,10 +23,17 @@
 
 import { parseDateOrNull } from '@/lib/date/iso'
 
+import { normalizePriority, type PriorityKey } from './priority'
+
 export interface DueHitRateFields {
   doneAt: Date | string | null | undefined
   /** 'YYYY-MM-DD' ISO date (時刻なし) */
   dueDate: string | null | undefined
+}
+
+/** priority 別集計用の structural subset。priority 未設定 / 範囲外は p4 に集約。 */
+export interface DueHitRateByPriorityFields extends DueHitRateFields {
+  priority: number | null | undefined
 }
 
 export interface DueHitRateStats {
@@ -81,6 +88,53 @@ export function computeDueHitRate<T extends DueHitRateFields>(
   const total = hit + miss
   if (total === 0) return EMPTY
   return { total, hit, miss, hitRate: hit / total }
+}
+
+/**
+ * iter344 ai-automation: priority 別の `DueHitRateStats` を計算する pure helper。
+ *
+ * iter334 (`completion-days-by-priority`、所要日数 avg を P 別) の対称軸。AI brief /
+ * pm-agent / dashboard widget が「P1 100% / P3 50% / P4 67%」のような priority 別
+ * SLA 達成率を 1 関数で取り出せる。低優先 ほど hit rate 悪 → bias 検出。
+ *
+ * 各 priority bucket は必ず初期化されているので、caller は `byPriority[3].total === 0`
+ * のような undefined チェック不要。集計対象 / since filter / 不正値除外は本体
+ * `computeDueHitRate` と同じ振る舞い。
+ */
+export type DueHitRateByPriority = Record<PriorityKey, DueHitRateStats>
+
+export function computeDueHitRateByPriority<T extends DueHitRateByPriorityFields>(
+  items: readonly T[],
+  options: ComputeDueHitRateOptions = {},
+): DueHitRateByPriority {
+  const buckets: Record<PriorityKey, T[]> = { 1: [], 2: [], 3: [], 4: [] }
+  for (const it of items) {
+    buckets[normalizePriority(it.priority)].push(it)
+  }
+  return {
+    1: computeDueHitRate(buckets[1], options),
+    2: computeDueHitRate(buckets[2], options),
+    3: computeDueHitRate(buckets[3], options),
+    4: computeDueHitRate(buckets[4], options),
+  }
+}
+
+/**
+ * AI prompt 用 1 行サマリ (priority 別):
+ *   `'期限達成率: P1 100% (3/3) / P2 80% (4/5) / P4 67% (2/3)'`
+ *
+ * total=0 の priority は省略。全 priority が total=0 → `'完了 0 件 (該当なし)'`。
+ */
+export function formatDueHitRateByPriorityJa(byPriority: DueHitRateByPriority): string {
+  const parts: string[] = []
+  for (const k of [1, 2, 3, 4] as const) {
+    const stats = byPriority[k]
+    if (stats.total === 0 || stats.hitRate === null) continue
+    const pct = Math.round(stats.hitRate * 100)
+    parts.push(`P${k} ${pct}% (${stats.hit}/${stats.total})`)
+  }
+  if (parts.length === 0) return '完了 0 件 (該当なし)'
+  return `期限達成率: ${parts.join(' / ')}`
 }
 
 /**
