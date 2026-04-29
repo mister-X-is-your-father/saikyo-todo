@@ -17,7 +17,12 @@
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { titleOrUntitled } from '@/lib/format-list'
 
-import { formatPriorityBucketsLabeled, normalizePriority, type PriorityKey } from './priority'
+import {
+  formatPriorityBucketsLabeled,
+  initPriorityRecord,
+  normalizePriority,
+  type PriorityKey,
+} from './priority'
 
 /** 完了抽出に必要な Item の structural subset。 */
 export interface FreshlyDoneItemFields {
@@ -129,12 +134,10 @@ export type FreshlyDoneByPriority = Record<PriorityKey, FreshlyDonePriorityStats
 export function computeFreshlyDoneByPriority<T extends FreshlyDoneItemFields>(
   entries: readonly FreshlyDoneItemEntry<T>[],
 ): FreshlyDoneByPriority {
-  const result: FreshlyDoneByPriority = {
-    1: { count: 0, latestDaysSinceDone: null },
-    2: { count: 0, latestDaysSinceDone: null },
-    3: { count: 0, latestDaysSinceDone: null },
-    4: { count: 0, latestDaysSinceDone: null },
-  }
+  const result: FreshlyDoneByPriority = initPriorityRecord(() => ({
+    count: 0,
+    latestDaysSinceDone: null,
+  }))
   for (const e of entries) {
     const bucket = result[e.priority]
     bucket.count += 1

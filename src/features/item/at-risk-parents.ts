@@ -30,7 +30,12 @@ import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { fullPathOf, isPathDescendantOf } from '@/lib/db/ltree-path'
 import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 
-import { formatPriorityBucketsLabeled, normalizePriority, type PriorityKey } from './priority'
+import {
+  formatPriorityBucketsLabeled,
+  initPriorityRecord,
+  normalizePriority,
+  type PriorityKey,
+} from './priority'
 
 export interface AtRiskParentEntry<I> {
   parent: I
@@ -164,12 +169,10 @@ export type AtRiskParentsByPriority = Record<PriorityKey, AtRiskParentsPriorityS
 export function computeAtRiskParentsByPriority<I>(
   entries: readonly AtRiskParentEntry<I>[],
 ): AtRiskParentsByPriority {
-  const result: AtRiskParentsByPriority = {
-    1: { count: 0, maxStaleDays: null },
-    2: { count: 0, maxStaleDays: null },
-    3: { count: 0, maxStaleDays: null },
-    4: { count: 0, maxStaleDays: null },
-  }
+  const result: AtRiskParentsByPriority = initPriorityRecord(() => ({
+    count: 0,
+    maxStaleDays: null,
+  }))
   for (const e of entries) {
     const bucket = result[e.priority]
     bucket.count += 1

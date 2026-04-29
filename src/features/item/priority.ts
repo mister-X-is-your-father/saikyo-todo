@@ -263,6 +263,26 @@ export function formatPriorityBucketsCountWithDays<S>(
 }
 
 /**
+ * iter440 refactor: priority 4-key Record の 4 行明示初期化 pattern を 1 関数に集約。
+ * 6 callsite (at-risk-parents / parent-items-progress / recent-completed /
+ * freshly-done / blocked-items / completion-days-by-priority) で同 shape の
+ * 4 行 literal `{1: factory(), 2: factory(), 3: factory(), 4: factory()}` が散在
+ * していたので 1 関数に集約 (= iter325 / iter330 / ... / iter435 と同じ「同 shape の
+ * 散在を 1 file に」方針 31 弾目)。
+ *
+ * factory は **bucket ごとに新インスタンス** を返すべき (= mutable state を共有しない
+ * よう、全 callsite が後で push / accumulate する)。`initPriorityRecord(() => ({...}))`
+ * の lambda は 4 回呼ばれるので各回 fresh object。
+ *
+ * 既存 `bucketByPriorityWith(items, compute)` は items + per-group compute 用なので
+ * 別 API。本 helper は pre-init (= 空 record を作るだけ) 専用、後で外側 loop で
+ * accumulate する pattern に使う。
+ */
+export function initPriorityRecord<T>(factory: () => T): Record<PriorityKey, T> {
+  return { 1: factory(), 2: factory(), 3: factory(), 4: factory() }
+}
+
+/**
  * iter435 refactor: 「formatPriorityBuckets の出力を `${prefix}: ${body}` で wrap、
  * empty sentinel ならそのまま返す」 pattern を集約。slip-days / at-risk-parents /
  * parent-items-progress / recent-completed / blocked-items の 5 callsite で同 shape

@@ -18,7 +18,12 @@
 import { parseDateOrNull } from '@/lib/date/iso'
 import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 
-import { formatPriorityBucketsLabeled, normalizePriority, type PriorityKey } from './priority'
+import {
+  formatPriorityBucketsLabeled,
+  initPriorityRecord,
+  normalizePriority,
+  type PriorityKey,
+} from './priority'
 
 export interface RecentCompletedFields {
   id?: string
@@ -129,12 +134,10 @@ export function computeRecentCompletedByPriority<T extends RecentCompletedFields
   entries: readonly RecentCompletedEntry<T>[],
   now: Date = new Date(),
 ): RecentCompletedByPriority {
-  const result: RecentCompletedByPriority = {
-    1: { count: 0, latestMinutesAgo: null },
-    2: { count: 0, latestMinutesAgo: null },
-    3: { count: 0, latestMinutesAgo: null },
-    4: { count: 0, latestMinutesAgo: null },
-  }
+  const result: RecentCompletedByPriority = initPriorityRecord(() => ({
+    count: 0,
+    latestMinutesAgo: null,
+  }))
   const nowMs = now.getTime()
   for (const e of entries) {
     const bucket = result[e.priority]

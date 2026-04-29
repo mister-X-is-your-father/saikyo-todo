@@ -20,6 +20,7 @@ import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 
 import {
   formatPriorityBucketsLabeled,
+  initPriorityRecord,
   normalizePriority,
   type PriorityKey,
 } from '@/features/item/priority'
@@ -149,12 +150,10 @@ export type BlockedItemsByPriority = Record<PriorityKey, BlockedItemsPrioritySta
 export function computeBlockedItemsByPriority(
   blocked: readonly WorkspaceBlockedItem[],
 ): BlockedItemsByPriority {
-  const result: BlockedItemsByPriority = {
-    1: { count: 0, maxOpenBlockerCount: null },
-    2: { count: 0, maxOpenBlockerCount: null },
-    3: { count: 0, maxOpenBlockerCount: null },
-    4: { count: 0, maxOpenBlockerCount: null },
-  }
+  const result: BlockedItemsByPriority = initPriorityRecord(() => ({
+    count: 0,
+    maxOpenBlockerCount: null,
+  }))
   for (const b of blocked) {
     const bucket = result[b.priority]
     bucket.count += 1

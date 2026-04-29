@@ -11,6 +11,7 @@ import {
   formatPriorityBucketsLabeled,
   formatPriorityCounts,
   groupItemsByPriority,
+  initPriorityRecord,
   priorityClass,
   priorityDetailSuffix,
   priorityLabel,
@@ -363,6 +364,34 @@ describe('countNonEmptyPriorityBuckets / countNonEmptyPriorityBucketsBy', () => 
         return 'expensive'
       })
       expect(called).toBe(1)
+    })
+  })
+
+  describe('initPriorityRecord (iter440)', () => {
+    it('factory を 4 回呼んで 4-key Record を返す', () => {
+      let called = 0
+      const r = initPriorityRecord(() => {
+        called += 1
+        return { v: called }
+      })
+      expect(called).toBe(4)
+      expect(r[1].v).toBe(1)
+      expect(r[2].v).toBe(2)
+      expect(r[3].v).toBe(3)
+      expect(r[4].v).toBe(4)
+    })
+
+    it('factory が新インスタンスを返せば bucket 間で mutable state は共有されない', () => {
+      const r = initPriorityRecord(() => ({ count: 0 }))
+      r[1].count = 99
+      expect(r[2].count).toBe(0)
+      expect(r[3].count).toBe(0)
+      expect(r[4].count).toBe(0)
+    })
+
+    it('プリミティブ値も factory から返せる (sums Record etc)', () => {
+      const r = initPriorityRecord(() => 0)
+      expect(r).toEqual({ 1: 0, 2: 0, 3: 0, 4: 0 })
     })
   })
 

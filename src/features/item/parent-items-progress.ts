@@ -24,6 +24,7 @@ import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 import { type DescendantsProgress, summarizeDescendantsProgress } from './descendants-progress'
 import {
   formatPriorityBucketsLabeled,
+  initPriorityRecord,
   normalizePriority,
   PRIORITY_ORDER,
   type PriorityKey,
@@ -212,13 +213,11 @@ export type ParentItemsProgressByPriority = Record<PriorityKey, ParentItemsProgr
 export function computeParentItemsProgressByPriority<I>(
   entries: readonly ParentItemProgress<I>[],
 ): ParentItemsProgressByPriority {
-  const result: ParentItemsProgressByPriority = {
-    1: { count: 0, avgPctDone: null },
-    2: { count: 0, avgPctDone: null },
-    3: { count: 0, avgPctDone: null },
-    4: { count: 0, avgPctDone: null },
-  }
-  const sums: Record<PriorityKey, number> = { 1: 0, 2: 0, 3: 0, 4: 0 }
+  const result: ParentItemsProgressByPriority = initPriorityRecord(() => ({
+    count: 0,
+    avgPctDone: null,
+  }))
+  const sums: Record<PriorityKey, number> = initPriorityRecord(() => 0)
   for (const e of entries) {
     result[e.priority].count += 1
     sums[e.priority] += e.progress.pctDone

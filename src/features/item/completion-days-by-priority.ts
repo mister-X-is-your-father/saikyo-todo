@@ -26,7 +26,7 @@
 
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 
-import { normalizePriority, PRIORITY_ORDER, type PriorityKey } from './priority'
+import { initPriorityRecord, normalizePriority, PRIORITY_ORDER, type PriorityKey } from './priority'
 
 // iter380 refactor: 重複していた local PriorityKey / normalizePriority を priority.ts
 // に集約。re-export で後方互換 (本 file の `PriorityKey` を import している callers
@@ -60,12 +60,7 @@ export interface ComputeCompletionDaysOptions {
 }
 
 function emptyStats(): CompletionDaysByPriority {
-  return {
-    1: { count: 0, avgDays: null },
-    2: { count: 0, avgDays: null },
-    3: { count: 0, avgDays: null },
-    4: { count: 0, avgDays: null },
-  }
+  return initPriorityRecord(() => ({ count: 0, avgDays: null }))
 }
 
 export function computeCompletionDaysByPriority<T extends CompletionDaysFields>(
@@ -73,12 +68,10 @@ export function computeCompletionDaysByPriority<T extends CompletionDaysFields>(
   options: ComputeCompletionDaysOptions = {},
 ): CompletionDaysByPriority {
   const since = options.since ? parseDateOrNull(options.since) : null
-  const sums: Record<PriorityKey, { totalMs: number; count: number }> = {
-    1: { totalMs: 0, count: 0 },
-    2: { totalMs: 0, count: 0 },
-    3: { totalMs: 0, count: 0 },
-    4: { totalMs: 0, count: 0 },
-  }
+  const sums: Record<PriorityKey, { totalMs: number; count: number }> = initPriorityRecord(() => ({
+    totalMs: 0,
+    count: 0,
+  }))
 
   for (const it of items) {
     const created = parseDateOrNull(it.createdAt)
