@@ -2,14 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { LoginForm } from '@/components/auth/login-form'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader } from '@/components/ui/card'
 
 export const metadata: Metadata = {
   title: 'ログイン | 最強TODO',
@@ -19,9 +12,9 @@ export default function LoginPage() {
   return (
     <Card aria-labelledby="login-heading" aria-describedby="login-description">
       <CardHeader>
-        <CardTitle id="login-heading" role="heading" aria-level={1} className="text-2xl">
+        <h1 id="login-heading" className="font-heading text-2xl leading-snug font-medium">
           ログイン
-        </CardTitle>
+        </h1>
         <CardDescription id="login-description">最強TODO へようこそ</CardDescription>
       </CardHeader>
       <CardContent>

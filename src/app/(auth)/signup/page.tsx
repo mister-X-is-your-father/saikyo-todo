@@ -2,14 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { SignupForm } from '@/components/auth/signup-form'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader } from '@/components/ui/card'
 
 export const metadata: Metadata = {
   title: 'サインアップ | 最強TODO',
@@ -19,9 +12,9 @@ export default function SignupPage() {
   return (
     <Card aria-labelledby="signup-heading" aria-describedby="signup-description">
       <CardHeader>
-        <CardTitle id="signup-heading" role="heading" aria-level={1} className="text-2xl">
+        <h1 id="signup-heading" className="font-heading text-2xl leading-snug font-medium">
           サインアップ
-        </CardTitle>
+        </h1>
         <CardDescription id="signup-description">アカウントを作成して始めましょう</CardDescription>
       </CardHeader>
       <CardContent>
