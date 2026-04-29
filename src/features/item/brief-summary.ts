@@ -322,6 +322,50 @@ export type BriefAxis =
   | 'topUrgent'
 
 /**
+ * iter400 refactor: 6 axis を severity 順 (= MVP 原則優先度順) に並べた canonical 列。
+ * detectBriefActiveAxis / detectBriefActiveAxes が共通参照する severity 順 source。
+ *
+ * iter325 / iter330 / ... / iter395 と同じ「同 shape の散在を 1 file に」方針 23 弾目。
+ * 旧実装は 6 連続 if が 2 関数で重複していたので、axis 列 + 1 述語に集約。
+ */
+const BRIEF_AXES_BY_SEVERITY: readonly BriefAxis[] = [
+  'mustOverdue',
+  'mustAtRisk',
+  'overdueActive',
+  'stuckWip',
+  'stale',
+  'topUrgent',
+] as const
+
+/** 各 axis が「現在 trigger 状態か」判定する述語。detectBriefActive{Axis,Axes} で共有。 */
+function isBriefAxisTriggered<T extends BriefItemFields>(
+  input: {
+    topUrgent: TopUrgentEntry<T>[]
+    mustAtRisk: MustRiskEntry<T>[]
+    stale: StaleItemEntry<T>[]
+    stuckWip: StuckWipEntry<T>[]
+    overdueActive: OverdueActiveStats
+    mustOverdue: MustOverdueStats
+  },
+  axis: BriefAxis,
+): boolean {
+  switch (axis) {
+    case 'mustOverdue':
+      return input.mustOverdue.total > 0
+    case 'mustAtRisk':
+      return input.mustAtRisk.length > 0
+    case 'overdueActive':
+      return input.overdueActive.total > 0
+    case 'stuckWip':
+      return input.stuckWip.length > 0
+    case 'stale':
+      return input.stale.length > 0
+    case 'topUrgent':
+      return input.topUrgent.length > 0
+  }
+}
+
+/**
  * iter396 basics: 6 軸を severity 順に検査して「現時点で最深刻な軸」を 1 値で返す。
  * null は「全 axis 0 件」(= 完璧、'idle' severity)。
  *
@@ -337,12 +381,9 @@ export function detectBriefActiveAxis<T extends BriefItemFields>(input: {
   overdueActive: OverdueActiveStats
   mustOverdue: MustOverdueStats
 }): BriefAxis | null {
-  if (input.mustOverdue.total > 0) return 'mustOverdue'
-  if (input.mustAtRisk.length > 0) return 'mustAtRisk'
-  if (input.overdueActive.total > 0) return 'overdueActive'
-  if (input.stuckWip.length > 0) return 'stuckWip'
-  if (input.stale.length > 0) return 'stale'
-  if (input.topUrgent.length > 0) return 'topUrgent'
+  for (const axis of BRIEF_AXES_BY_SEVERITY) {
+    if (isBriefAxisTriggered(input, axis)) return axis
+  }
   return null
 }
 
@@ -363,14 +404,7 @@ export function detectBriefActiveAxes<T extends BriefItemFields>(input: {
   overdueActive: OverdueActiveStats
   mustOverdue: MustOverdueStats
 }): BriefAxis[] {
-  const axes: BriefAxis[] = []
-  if (input.mustOverdue.total > 0) axes.push('mustOverdue')
-  if (input.mustAtRisk.length > 0) axes.push('mustAtRisk')
-  if (input.overdueActive.total > 0) axes.push('overdueActive')
-  if (input.stuckWip.length > 0) axes.push('stuckWip')
-  if (input.stale.length > 0) axes.push('stale')
-  if (input.topUrgent.length > 0) axes.push('topUrgent')
-  return axes
+  return BRIEF_AXES_BY_SEVERITY.filter((axis) => isBriefAxisTriggered(input, axis))
 }
 
 /**
