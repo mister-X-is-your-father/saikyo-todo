@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { classifyByCountAndMax } from './hint'
+import { classifyByCountAndMax, makeHintLabelFormatter } from './hint'
 
 const T = { moderateCount: 3, moderateMax: 14, severeCount: 5, severeMax: 30 }
 
@@ -52,5 +52,35 @@ describe('classifyByCountAndMax (iter445)', () => {
     const r = classifyByCountAndMax([e(5), e(20), e(10), e(15), e(2)], (x) => x.v, T)
     // count=5 satisfies severeCount=5 → severe
     expect(r).toBe('severe')
+  })
+})
+
+describe('makeHintLabelFormatter (iter455)', () => {
+  type State = 'a' | 'b' | 'c'
+  const classify = (input: { v: number }): State => (input.v < 10 ? 'a' : input.v < 100 ? 'b' : 'c')
+  const labels: Record<State, string> = {
+    a: '小',
+    b: '中',
+    c: '大',
+  }
+
+  it('classify + labels から input → string な thunk を生成', () => {
+    const fmt = makeHintLabelFormatter(classify, labels)
+    expect(fmt({ v: 5 })).toBe('小')
+    expect(fmt({ v: 50 })).toBe('中')
+    expect(fmt({ v: 500 })).toBe('大')
+  })
+
+  it('返された関数は pure (= 同じ input は常に同じ output)', () => {
+    const fmt = makeHintLabelFormatter(classify, labels)
+    const input = { v: 50 }
+    expect(fmt(input)).toBe(fmt(input))
+    expect(fmt(input)).toBe('中')
+  })
+
+  it('classify を mock しても labels で出し分け可', () => {
+    const fmt = makeHintLabelFormatter<unknown, State>(() => 'a', labels)
+    expect(fmt(null)).toBe('小')
+    expect(fmt({ anything: true })).toBe('小')
   })
 })

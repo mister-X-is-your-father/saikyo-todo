@@ -24,6 +24,7 @@
 
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { formatNonZeroCounts } from '@/lib/format-counts'
+import { makeHintLabelFormatter } from '@/lib/hint'
 
 import { bucketByPriorityWith, formatPriorityBucketsLabeled, type PriorityKey } from './priority'
 
@@ -240,6 +241,7 @@ const HINT_LABEL_JA: Record<BacklogAgingHint, string> = {
   severe: '深刻 (古参累積)',
 }
 
-export function formatBacklogAgingHintJa(counts: Readonly<Record<AgingKind, number>>): string {
-  return HINT_LABEL_JA[classifyBacklogAgingHint(counts)]
-}
+export const formatBacklogAgingHintJa = makeHintLabelFormatter(
+  classifyBacklogAgingHint,
+  HINT_LABEL_JA,
+)

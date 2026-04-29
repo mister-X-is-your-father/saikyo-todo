@@ -206,7 +206,7 @@ export function formatBlockedItemsByPriorityJa(byPriority: BlockedItemsByPriorit
  * 行 status / AI prompt の 1 word ヒント。formatBlockedItemsBriefJa (詳細 list)
  * と相補で「数値 vs 意味付け」を出し分け。
  */
-import { classifyByCountAndMax, type FourStateHint } from '@/lib/hint'
+import { classifyByCountAndMax, type FourStateHint, makeHintLabelFormatter } from '@/lib/hint'
 
 export type BlockedItemsHint = FourStateHint
 
@@ -228,6 +228,7 @@ const HINT_LABEL_JA: Record<BlockedItemsHint, string> = {
   severe: '依存深刻 (前提解消急務)',
 }
 
-export function formatBlockedItemsHintJa(blocked: readonly WorkspaceBlockedItem[]): string {
-  return HINT_LABEL_JA[classifyBlockedItemsHint(blocked)]
-}
+export const formatBlockedItemsHintJa = makeHintLabelFormatter(
+  classifyBlockedItemsHint,
+  HINT_LABEL_JA,
+)

@@ -20,6 +20,7 @@
  *  - archive 済 / deletedAt の done item は集計に含める (= 一度完了したものは消えない)
  */
 import { formatLocalISO, MS_PER_DAY, parseDateOrNull, toLocalMidnight } from '@/lib/date/iso'
+import { makeHintLabelFormatter } from '@/lib/hint'
 
 import { bucketByPriorityWith, formatPriorityBucketsLabeled, type PriorityKey } from './priority'
 
@@ -219,6 +220,7 @@ const VELOCITY_HINT_LABEL_JA: Record<VelocityHint, string> = {
   down: '減速中',
 }
 
-export function formatVelocityHintJa(summary: VelocitySummary): string {
-  return VELOCITY_HINT_LABEL_JA[classifyVelocityHint(summary)]
-}
+export const formatVelocityHintJa = makeHintLabelFormatter(
+  classifyVelocityHint,
+  VELOCITY_HINT_LABEL_JA,
+)
