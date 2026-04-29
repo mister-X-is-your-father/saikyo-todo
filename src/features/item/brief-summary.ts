@@ -105,6 +105,12 @@ export interface BriefSummary<T extends BriefItemFields> {
   mustOverdue: MustOverdueStats
   /** AI prompt 用 7 行テキスト (同 today 同期済) */
   textSummary: string
+  /**
+   * iter377: 7 軸のうち最も深刻な signal だけを 1 行で返す compact headline。
+   * mobile UI / status bar / 通知 1 行で「最優先アラート」を表示する用。
+   * 全 axis idle なら `'問題なし — 今日 top urgent: ...'` (= top urgent 列挙) を返す。
+   */
+  headline: string
 }
 
 /**
@@ -147,6 +153,15 @@ export function buildBriefSummary<T extends BriefItemFields>(
     formatMustOverdueJa(mustOverdue),
   ].join('\n')
 
+  const headline = pickBriefHeadline({
+    topUrgent,
+    mustAtRisk,
+    stale,
+    stuckWip,
+    overdueActive,
+    mustOverdue,
+  })
+
   return {
     topUrgent,
     mustAtRisk,
@@ -156,7 +171,46 @@ export function buildBriefSummary<T extends BriefItemFields>(
     overdueActive,
     mustOverdue,
     textSummary,
+    headline,
   }
+}
+
+/**
+ * iter377 ai-automation: 7 axis を severity 順にスキャンして 1 行 headline を返す。
+ *
+ * 順序 (= MVP「絶対落とさない」原則の優先度):
+ *  1. mustOverdue (total > 0) — MUST 期限超過 = 最深刻
+ *  2. mustAtRisk (length > 0) — MUST 期限近接
+ *  3. overdueActive (total > 0) — 期限超過全般
+ *  4. stuckWip (length > 0) — 進行中で停滞
+ *  5. stale (length > 0) — 7+ 日触っていない
+ *  6. (else) — top urgent 1 件
+ *  7. (全部 0) — 'urgent 上位 0 (該当なし)' fallback
+ */
+function pickBriefHeadline<T extends BriefItemFields>(input: {
+  topUrgent: TopUrgentEntry<T>[]
+  mustAtRisk: MustRiskEntry<T>[]
+  stale: StaleItemEntry<T>[]
+  stuckWip: StuckWipEntry<T>[]
+  overdueActive: OverdueActiveStats
+  mustOverdue: MustOverdueStats
+}): string {
+  if (input.mustOverdue.total > 0) {
+    return formatMustOverdueJa(input.mustOverdue)
+  }
+  if (input.mustAtRisk.length > 0) {
+    return formatAtRiskMustSummary(input.mustAtRisk)
+  }
+  if (input.overdueActive.total > 0) {
+    return formatOverdueActiveJa(input.overdueActive)
+  }
+  if (input.stuckWip.length > 0) {
+    return formatStuckWipSummaryJa(input.stuckWip)
+  }
+  if (input.stale.length > 0) {
+    return formatStaleItemsSummary(input.stale)
+  }
+  return formatTopUrgentLine(input.topUrgent)
 }
 
 /**

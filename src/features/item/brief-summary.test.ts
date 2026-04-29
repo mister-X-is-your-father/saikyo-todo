@@ -118,6 +118,88 @@ describe('buildBriefSummary — textSummary フォーマット', () => {
   })
 })
 
+describe('buildBriefSummary — headline', () => {
+  it('全 axis idle → top urgent 1 行', () => {
+    const r = buildBriefSummary([], {}, TODAY)
+    expect(r.headline).toBe('urgent 上位 0 (該当なし)')
+  })
+
+  it('mustOverdue がある → 最深刻 MUST 期限超過 が headline', () => {
+    const items: BriefItemFields[] = [
+      item({
+        id: 'M',
+        priority: 1,
+        isMust: true,
+        dueDate: '2026-04-20', // 7 日 overdue
+        updatedAt: '2026-04-26',
+      }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.headline).toMatch(/^MUST 期限超過 /)
+  })
+
+  it('mustOverdue 無し + mustAtRisk あり → MUST at-risk が headline', () => {
+    const items: BriefItemFields[] = [
+      item({
+        id: 'A',
+        priority: 1,
+        isMust: true,
+        dueDate: '2026-05-01', // 4 日先 (within 6)
+        updatedAt: TODAY,
+      }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.headline).toMatch(/^MUST at-risk /)
+  })
+
+  it('MUST 系無し + overdueActive あり → 期限超過 が headline', () => {
+    const items: BriefItemFields[] = [
+      item({
+        id: 'O',
+        priority: 2,
+        isMust: false, // not MUST
+        dueDate: '2026-04-20', // 7 日 overdue
+        updatedAt: '2026-04-26',
+      }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.headline).toMatch(/^期限超過 /)
+  })
+
+  it('overdue 無し + stuckWip あり → 進行中だが停滞 が headline', () => {
+    const items: BriefItemFields[] = [
+      item({
+        id: 'S',
+        priority: 3,
+        status: 'in_progress',
+        updatedAt: new Date(2026, 3, 22), // 5 日前 (>= 3 日 threshold)
+      }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.headline.startsWith('進行中だが停滞')).toBe(true)
+  })
+
+  it('stuck 無し + stale あり → stale が headline', () => {
+    const items: BriefItemFields[] = [
+      item({
+        id: 'St',
+        priority: 4,
+        updatedAt: new Date(2026, 3, 5), // 22 日前
+      }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.headline).toMatch(/^stale /)
+  })
+
+  it('全 alert 無し + topUrgent あり → urgent 上位 が headline', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'U', priority: 1, title: 'タスクA', updatedAt: TODAY }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.headline).toMatch(/^urgent 上位 /)
+  })
+})
+
 describe('formatTopUrgentLine', () => {
   it('1 件以上は title + urgency を区切って整形', () => {
     const items: BriefItemFields[] = [
