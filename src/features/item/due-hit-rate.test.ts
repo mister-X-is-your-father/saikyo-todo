@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   computeDueHitRate,
   computeDueHitRateByPriority,
+  countNonEmptyPriorityBuckets,
   type DueHitRateByPriorityFields,
   type DueHitRateFields,
   dueHitRateTone,
@@ -234,6 +235,33 @@ describe('formatDueHitRateByPriorityJa', () => {
     ]
     const r = computeDueHitRateByPriority(items)
     expect(formatDueHitRateByPriorityJa(r)).toBe('期限達成率: P2 67% (2/3)')
+  })
+})
+
+describe('countNonEmptyPriorityBuckets', () => {
+  it('returns 0 for fully empty (no completed items)', () => {
+    const r = computeDueHitRateByPriority([])
+    expect(countNonEmptyPriorityBuckets(r)).toBe(0)
+  })
+
+  it('returns 1 when all completed items in one priority', () => {
+    const items: DueHitRateByPriorityFields[] = [
+      { priority: 1, doneAt: '2026-04-25T10:00:00Z', dueDate: '2026-04-29' },
+      { priority: 1, doneAt: '2026-04-26T10:00:00Z', dueDate: '2026-04-29' },
+    ]
+    const r = computeDueHitRateByPriority(items)
+    expect(countNonEmptyPriorityBuckets(r)).toBe(1)
+  })
+
+  it('returns N when items spread across N priorities', () => {
+    const items: DueHitRateByPriorityFields[] = [
+      { priority: 1, doneAt: '2026-04-25T10:00:00Z', dueDate: '2026-04-29' },
+      { priority: 2, doneAt: '2026-04-26T10:00:00Z', dueDate: '2026-04-29' },
+      { priority: 3, doneAt: '2026-04-27T10:00:00Z', dueDate: '2026-04-29' },
+      { priority: 4, doneAt: '2026-04-28T10:00:00Z', dueDate: '2026-04-29' },
+    ]
+    const r = computeDueHitRateByPriority(items)
+    expect(countNonEmptyPriorityBuckets(r)).toBe(4)
   })
 })
 

@@ -39,7 +39,14 @@ import {
   computePriorityLatencyGap,
   formatCompletionDaysByPriorityJa,
 } from '@/features/item/completion-days-by-priority'
-import { computeDueHitRate, dueHitRateTone, formatDueHitRateJa } from '@/features/item/due-hit-rate'
+import {
+  computeDueHitRate,
+  computeDueHitRateByPriority,
+  countNonEmptyPriorityBuckets,
+  dueHitRateTone,
+  formatDueHitRateByPriorityJa,
+  formatDueHitRateJa,
+} from '@/features/item/due-hit-rate'
 import { useItems } from '@/features/item/hooks'
 import {
   computeWorkspaceMomentum,
@@ -114,6 +121,9 @@ export function DashboardView({ workspaceId }: Props) {
   // 期限達成率を chip 表示。total=0 (= 期限付き完了 item 無し) は chip 非表示で UI 静か。
   // hitRate >= 0.8 は emerald (達成)、0.5..0.8 は muted (中立)、<0.5 は amber (警戒)
   // で 3 段階 tone (達成率は higher better なので「up=achievement」polarity='positive')。
+  // iter346 basics: priority 別 breakdown (iter344) を aria-label / title に同梱
+  // → SR / hover で「P1 100% (3/3) / P3 50% (1/2)」が読める (visible chip 自体は
+  // 全体集計だけ、UI は静かなまま、richer info は a11y / hover 経路でのみ提供)。
   const dueHitRate = useMemo(() => {
     if (!itemsQ.data) return null
     const stats = computeDueHitRate(itemsQ.data)
@@ -121,7 +131,14 @@ export function DashboardView({ workspaceId }: Props) {
     const summary = formatDueHitRateJa(stats)
     const pct = Math.round(stats.hitRate * 100)
     const tone = dueHitRateTone(stats)
-    return { stats, summary, pct, tone }
+    const byPriority = computeDueHitRateByPriority(itemsQ.data)
+    // priority breakdown は「複数 priority に hit/miss が分散」時のみ tooltip に
+    // 出す。単一 priority に偏ると全体 summary と同情報なので冗長。
+    const detail =
+      countNonEmptyPriorityBuckets(byPriority) > 1
+        ? `${summary} — ${formatDueHitRateByPriorityJa(byPriority)}`
+        : summary
+    return { stats, summary, pct, tone, detail }
   }, [itemsQ.data])
 
   // iter338 basics: backlog-aging (iter337) を bind。Active (= 未完了 + 未 archive)
@@ -234,8 +251,8 @@ export function DashboardView({ workspaceId }: Props) {
             data-testid="dashboard-due-hit-rate-chip"
             data-hit-rate={dueHitRate.pct}
             role="status"
-            aria-label={dueHitRate.summary}
-            title={dueHitRate.summary}
+            aria-label={dueHitRate.detail}
+            title={dueHitRate.detail}
           >
             <span aria-hidden="true" className="font-mono">
               ◎
