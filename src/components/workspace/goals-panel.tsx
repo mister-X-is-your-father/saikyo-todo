@@ -711,6 +711,10 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
               placeholder="例: 100"
               className="w-32 text-sm"
               aria-label="目標値"
+              // iter348: 目標値は decimal 入力可 (% / hours など) のため inputMode="decimal"
+              // で mobile に小数 keypad を呼出。step=any で arrow キー / spinner で小数入力可。
+              inputMode="decimal"
+              step="any"
             />
             <Input
               value={unit}
@@ -719,6 +723,7 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
               className="w-24 text-sm"
               aria-label="単位"
               maxLength={20}
+              autoComplete="off"
             />
           </div>
         )}
