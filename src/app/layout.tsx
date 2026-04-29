@@ -63,7 +63,7 @@ export default async function RootLayout({
             <NuqsAdapter>
               <AppQueryProvider>{children}</AppQueryProvider>
             </NuqsAdapter>
-            <Toaster richColors position="bottom-right" closeButton />
+            <Toaster richColors position="bottom-right" closeButton containerAriaLabel="通知" />
             <ServiceWorkerRegister />
           </NextIntlClientProvider>
         </ThemeProvider>
