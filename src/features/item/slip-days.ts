@@ -20,6 +20,7 @@
  */
 
 import { dueDateEndOfDayMs, MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
+import { formatTopWithOverflow } from '@/lib/format-list'
 
 import { bucketByPriorityWith, formatPriorityBuckets, type PriorityKey } from './priority'
 
@@ -152,4 +153,81 @@ export function formatSlipDaysByPriorityJa(byPriority: SlipDaysByPriority): stri
     '遅延 0 件',
   )
   return body === '遅延 0 件' ? body : `遅延: ${body}`
+}
+
+/** pickSlipDaysItems の戻り単 entry。item + 何日 遅延完了したか。 */
+export interface SlipDaysEntry<T extends SlipDaysFields> {
+  item: T
+  /** doneAt - dueDateEnd を ceil(/MS_PER_DAY) で整数日数化、最低 1 日 */
+  slipDays: number
+}
+
+/**
+ * iter407 ai-automation: doneAt が dueDate を超えた items を実際に抽出して slipDays
+ * desc で返す pure helper。iter379 (pickMustOverdueItems) / iter382
+ * (pickOverdueActiveItems) と同シリーズ — slip-days 軸の "具体名 + 遅延日数" 取出 helper。
+ *
+ * computeSlipDays は stats (count / avg / median / max) のみだったが、AI 回顧 brief や
+ * dashboard tooltip / pm-agent 学習 prompt で「具体的にどのタスクが何日 slip した」を
+ * 見せたい時は items 一覧が必要。本 helper はその gap を埋める。
+ *
+ * 仕様 (computeSlipDays と filter ロジック互換):
+ *   - doneAt 設定済 + dueDate valid ISO + doneAt > dueDateEnd
+ *   - options.since: doneAt >= since の item のみ集計 (window 指定)
+ *   - 並び: slipDays 降順 (= 最も遅延が大きい)、tie で元配列順 stable
+ */
+export function pickSlipDaysItems<T extends SlipDaysFields>(
+  items: readonly T[],
+  options: ComputeSlipDaysOptions = {},
+): SlipDaysEntry<T>[] {
+  const sinceParsed = options.since !== undefined ? parseDateOrNull(options.since) : null
+  const sinceMs = sinceParsed ? sinceParsed.getTime() : null
+
+  const enriched: { entry: SlipDaysEntry<T>; index: number }[] = []
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i]
+    if (!it) continue
+    const done = parseDateOrNull(it.doneAt)
+    if (!done) continue
+    if (sinceMs !== null && done.getTime() < sinceMs) continue
+    if (!it.dueDate) continue
+    const dueEnd = dueDateEndOfDayMs(it.dueDate)
+    if (dueEnd === null) continue
+    if (done.getTime() <= dueEnd) continue
+    const slipDays = Math.ceil((done.getTime() - dueEnd) / MS_PER_DAY)
+    enriched.push({ entry: { item: it, slipDays }, index: i })
+  }
+  enriched.sort((a, b) => {
+    if (b.entry.slipDays !== a.entry.slipDays) return b.entry.slipDays - a.entry.slipDays
+    return a.index - b.index
+  })
+  return enriched.map((e) => e.entry)
+}
+
+/** caller の slip item に title が含まれる場合の structural subset。 */
+export type SlipDaysWithTitle = SlipDaysFields & { title?: string | null }
+
+/**
+ * AI 回顧 brief / dashboard tooltip 用 1 行サマリ (title list 付き):
+ *   `'遅延完了: 提出書類 14日 / 報告 5日 / 他 1 件'`
+ *   `'遅延完了 0 件'`
+ *
+ * iter379 formatMustOverdueTitlesJa / iter382 formatOverdueActiveTitlesJa と同
+ * vocabulary、prefix を '遅延完了' に差し替え (= 過去形 = retrospective 軸)。
+ */
+export function formatSlipDaysTitlesJa<T extends SlipDaysWithTitle>(
+  entries: readonly SlipDaysEntry<T>[],
+  limit: number = 3,
+): string {
+  if (entries.length === 0) return '遅延完了 0 件'
+  const body = formatTopWithOverflow(
+    entries,
+    (e) => {
+      const title =
+        typeof e.item.title === 'string' && e.item.title.length > 0 ? e.item.title : '(無題)'
+      return `${title} ${e.slipDays}日`
+    },
+    limit,
+  )
+  return `遅延完了: ${body}`
 }

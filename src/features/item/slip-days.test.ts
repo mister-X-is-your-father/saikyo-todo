@@ -5,6 +5,8 @@ import {
   computeSlipDaysByPriority,
   formatSlipDaysByPriorityJa,
   formatSlipDaysJa,
+  formatSlipDaysTitlesJa,
+  pickSlipDaysItems,
   type SlipDaysByPriorityFields,
   type SlipDaysFields,
   slipSeverity,
@@ -225,5 +227,87 @@ describe('formatSlipDaysByPriorityJa', () => {
 
   it('formats empty as "遅延 0 件"', () => {
     expect(formatSlipDaysByPriorityJa(computeSlipDaysByPriority([]))).toBe('遅延 0 件')
+  })
+})
+
+describe('pickSlipDaysItems (iter407)', () => {
+  type T = SlipDaysFields & { title?: string | null }
+  it('items 空 → 空配列', () => {
+    expect(pickSlipDaysItems([])).toEqual([])
+  })
+
+  it('doneAt > dueDate のみ通す、slipDays desc 並び', () => {
+    const items: T[] = [
+      { title: 'A', doneAt: localEndOfDay('2026-04-29', 5).toISOString(), dueDate: '2026-04-29' },
+      { title: 'B', doneAt: localEndOfDay('2026-04-29', 14).toISOString(), dueDate: '2026-04-29' },
+      { title: 'C', doneAt: localEndOfDay('2026-04-29', 0).toISOString(), dueDate: '2026-04-29' }, // hit
+      { title: 'D', doneAt: localEndOfDay('2026-04-29', 2).toISOString(), dueDate: '2026-04-29' },
+    ]
+    const res = pickSlipDaysItems(items)
+    expect(res.map((e) => e.item.title)).toEqual(['B', 'A', 'D'])
+    expect(res.map((e) => e.slipDays)).toEqual([14, 5, 2])
+  })
+
+  it('doneAt 未設定 / dueDate 未設定 / 不正 ISO は除外', () => {
+    const items: T[] = [
+      { title: 'no-done', doneAt: null, dueDate: '2026-04-29' },
+      { title: 'no-due', doneAt: localEndOfDay('2026-04-29', 5).toISOString(), dueDate: null },
+      { title: 'bad-iso', doneAt: localEndOfDay('2026-04-29', 5).toISOString(), dueDate: 'foo' },
+      { title: 'OK', doneAt: localEndOfDay('2026-04-29', 5).toISOString(), dueDate: '2026-04-29' },
+    ]
+    const res = pickSlipDaysItems(items)
+    expect(res.map((e) => e.item.title)).toEqual(['OK'])
+  })
+
+  it('options.since で window 制限可', () => {
+    const items: T[] = [
+      { title: 'old', doneAt: localEndOfDay('2026-04-01', 5).toISOString(), dueDate: '2026-04-01' },
+      { title: 'new', doneAt: localEndOfDay('2026-04-29', 5).toISOString(), dueDate: '2026-04-29' },
+    ]
+    const res = pickSlipDaysItems(items, { since: '2026-04-15' })
+    expect(res.map((e) => e.item.title)).toEqual(['new'])
+  })
+})
+
+describe('formatSlipDaysTitlesJa (iter407)', () => {
+  type T = SlipDaysFields & { title?: string | null }
+  it('0 件 sentinel', () => {
+    expect(formatSlipDaysTitlesJa([])).toBe('遅延完了 0 件')
+  })
+
+  it('複数件 / 区切り (slipDays desc)', () => {
+    const items: T[] = [
+      {
+        title: '提出書類',
+        doneAt: localEndOfDay('2026-04-29', 14).toISOString(),
+        dueDate: '2026-04-29',
+      },
+      {
+        title: '報告',
+        doneAt: localEndOfDay('2026-04-29', 5).toISOString(),
+        dueDate: '2026-04-29',
+      },
+    ]
+    const entries = pickSlipDaysItems(items)
+    expect(formatSlipDaysTitlesJa(entries)).toBe('遅延完了: 提出書類 14日 / 報告 5日')
+  })
+
+  it('limit 超えは 他 N 件 でまとめる', () => {
+    const items: T[] = [
+      { title: 'A', doneAt: localEndOfDay('2026-04-29', 14).toISOString(), dueDate: '2026-04-29' },
+      { title: 'B', doneAt: localEndOfDay('2026-04-29', 10).toISOString(), dueDate: '2026-04-29' },
+      { title: 'C', doneAt: localEndOfDay('2026-04-29', 5).toISOString(), dueDate: '2026-04-29' },
+      { title: 'D', doneAt: localEndOfDay('2026-04-29', 3).toISOString(), dueDate: '2026-04-29' },
+    ]
+    const entries = pickSlipDaysItems(items)
+    expect(formatSlipDaysTitlesJa(entries, 2)).toBe('遅延完了: A 14日 / B 10日 / 他 2 件')
+  })
+
+  it('title 欠落は (無題) で fallback', () => {
+    const items: T[] = [
+      { title: null, doneAt: localEndOfDay('2026-04-29', 5).toISOString(), dueDate: '2026-04-29' },
+    ]
+    const entries = pickSlipDaysItems(items)
+    expect(formatSlipDaysTitlesJa(entries)).toContain('(無題)')
   })
 })
