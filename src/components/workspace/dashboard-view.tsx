@@ -177,6 +177,11 @@ import {
   selectStuckWipItems,
   stuckWipSeverity,
 } from '@/features/item/wip-stuck'
+import {
+  formatBlockedItemsBriefJa,
+  pickWorkspaceBlockedItems,
+} from '@/features/item-dependency/blocked-items'
+import { useWorkspaceBlocksDependencies } from '@/features/item-dependency/hooks'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -203,6 +208,9 @@ export function DashboardView({ workspaceId }: Props) {
   const [, setOpenItemId] = useQueryState('item', parseAsString)
   // iter331 basics: velocity (iter302) を bind — 直近 7 日 done 件数 + 傾向。
   const itemsQ = useItems(workspaceId)
+  // iter413 basics: workspace blocks edges を fetch (= Gantt 依存線描画でも使う既存 hook 流用)。
+  // iter412 で追加した pickWorkspaceBlockedItems / formatBlockedItemsBriefJa を bind するため。
+  const blocksDepsQ = useWorkspaceBlocksDependencies(workspaceId)
 
   const todayStr = todayUtcISO()
   const soonStr = shiftIsoDate(todayStr, 7)
@@ -377,6 +385,20 @@ export function DashboardView({ workspaceId }: Props) {
       priorityBuckets > 1 ? `${summary} — ${formatStuckWipByPriorityJa(byPriority)}` : summary
     return { entries, summary, severity: sev, detail }
   }, [itemsQ.data])
+
+  // iter413 basics: workspace blocked items (iter412 substrate) を bind。
+  // 「いま blocked になっている Item の上位 3 件」を chip 表示。entries=0 で chip
+  // 非表示 (UI 静か = 依存ブロックゼロ)、tone は amber (= 「依存待ちで進めない」=
+  // warning)。dep-readiness chip (iter306/411) は ItemEditDialog 内 1 Item 単位だが、
+  // 本 chip は workspace 全体の blocked Item を 1 行で俯瞰する dashboard 役割。
+  // wipStuck (進行中停滞) / overdue-active (期限超過) と相補で「進められない原因」軸。
+  const blockedWorkspaceItems = useMemo(() => {
+    if (!itemsQ.data || !blocksDepsQ.data) return null
+    const entries = pickWorkspaceBlockedItems(itemsQ.data, blocksDepsQ.data)
+    if (entries.length === 0) return null
+    const summary = formatBlockedItemsBriefJa(entries, 3)
+    return { entries, summary }
+  }, [itemsQ.data, blocksDepsQ.data])
 
   // iter368 basics: overdue-active (iter367) を bind。期限超過で未完了の item を
   // status 別 chip 表示。total=0 / severity='idle' で chip 非表示で UI 静か。
@@ -897,6 +919,19 @@ export function DashboardView({ workspaceId }: Props) {
             dataAttrs={{
               'data-severity': wipStuck.severity,
               'data-stuck-count': wipStuck.entries.length,
+            }}
+          />
+        ) : null}
+        {blockedWorkspaceItems ? (
+          <DashboardChip
+            testId="dashboard-blocked-items-chip"
+            toneClass={chipTone3Class('warn')}
+            glyph="🔒"
+            ariaLabel={`依存ブロック: ${blockedWorkspaceItems.summary}`}
+            title={blockedWorkspaceItems.summary}
+            text={blockedWorkspaceItems.summary}
+            dataAttrs={{
+              'data-blocked-count': blockedWorkspaceItems.entries.length,
             }}
           />
         ) : null}
