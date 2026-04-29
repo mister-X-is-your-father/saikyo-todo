@@ -22,7 +22,7 @@ export default function OfflinePage() {
   return (
     <main
       aria-labelledby="offline-heading"
-      aria-describedby="offline-description"
+      aria-describedby="offline-description offline-secondary"
       className="flex min-h-dvh flex-col items-center justify-center gap-4 p-8 text-center"
     >
       <h1 id="offline-heading" className="text-2xl font-bold">
@@ -31,7 +31,7 @@ export default function OfflinePage() {
       <p id="offline-description" className="text-muted-foreground max-w-md text-sm">
         ネットワーク接続が切れています。再接続後にもう一度お試しください。
       </p>
-      <p className="text-muted-foreground max-w-md text-xs">
+      <p id="offline-secondary" className="text-muted-foreground max-w-md text-xs">
         最強TODO はオフラインでもアプリ自体は表示されますが、 Item の作成 /
         同期にはオンライン接続が必要です。
       </p>
