@@ -51,6 +51,9 @@ export function CreateWorkspaceForm() {
           aria-required="true"
           minLength={1}
           maxLength={50}
+          // iter343: 既存の Workspace 名候補を browser auto-fill が誤候補で上書きしないよう off
+          // (Workspace 名は each user 固有で auto-fill 候補に意味がない、空欄で誤候補が出るのは UX 阻害)。
+          autoComplete="off"
           aria-invalid={form.formState.errors.name ? true : undefined}
           aria-describedby={form.formState.errors.name ? 'ws-name-error' : undefined}
           {...form.register('name')}
@@ -73,6 +76,7 @@ export function CreateWorkspaceForm() {
           maxLength={50}
           autoCapitalize="none"
           autoCorrect="off"
+          autoComplete="off"
           spellCheck={false}
           aria-invalid={form.formState.errors.slug ? true : undefined}
           aria-describedby={form.formState.errors.slug ? 'ws-slug-error' : undefined}
