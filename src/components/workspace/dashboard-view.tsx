@@ -77,6 +77,10 @@ import {
   formatDueHitRateJa,
 } from '@/features/item/due-hit-rate'
 import { useItems } from '@/features/item/hooks'
+import {
+  formatHygieneAxisFocusJa,
+  pickWeakestHygieneAxis,
+} from '@/features/item/hygiene-axis-focus'
 import { formatHygieneFocusJa, pickWeakestHygienePriority } from '@/features/item/hygiene-focus'
 import {
   computeWorkspaceMomentum,
@@ -359,7 +363,13 @@ export function DashboardView({ workspaceId }: Props) {
     const byPriority = computeCombinedHygieneByPriority(itemsQ.data)
     const focus = pickWeakestHygienePriority(byPriority)
     if (focus === null || focus.tone !== 'warn') return null
-    return { focus, summary: formatHygieneFocusJa(focus) }
+    const summary = formatHygieneFocusJa(focus)
+    // iter378 basics: 焦点 priority 内の最弱軸 (期限/DoD/説明文 = iter377) を tooltip
+    // に同梱して 2D drill-down。「P3 が一番弱い → さらにその中で 説明文 が弱い」
+    // を 1 経路で読める (iter363/366/373 と同手法、visible chip text は不変)。
+    const weakestAxis = pickWeakestHygieneAxis(byPriority[focus.priority])
+    const detail = weakestAxis ? `${summary} / ${formatHygieneAxisFocusJa(weakestAxis)}` : summary
+    return { focus, summary, detail, weakestAxis }
   }, [itemsQ.data])
 
   // iter338 basics: backlog-aging (iter337) を bind。Active (= 未完了 + 未 archive)
@@ -466,12 +476,13 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-hygiene-focus-chip"
             toneClass={chipTone3Class('warn')}
             glyph="⚠"
-            ariaLabel={hygieneFocus.summary}
-            title={hygieneFocus.summary}
+            ariaLabel={hygieneFocus.detail}
+            title={hygieneFocus.detail}
             text={`重点: P${hygieneFocus.focus.priority} Hygiene ${hygieneFocus.focus.score}`}
             dataAttrs={{
               'data-focus-priority': hygieneFocus.focus.priority,
               'data-focus-score': hygieneFocus.focus.score,
+              'data-focus-axis': hygieneFocus.weakestAxis?.axis ?? '',
             }}
           />
         ) : null}
