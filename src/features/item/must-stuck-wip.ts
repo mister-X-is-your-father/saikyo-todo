@@ -16,6 +16,8 @@
  *   - dashboard 専用 chip 候補 (severity 'critical' = red、wip-stuck chip と異なる色軸)
  */
 
+import { formatTopWithOverflow } from '@/lib/format-list'
+
 import { selectStuckWipItems, type StuckWipEntry, type StuckWipFields } from './wip-stuck'
 
 export interface MustStuckWipFields extends StuckWipFields {
@@ -62,15 +64,16 @@ export function formatMustStuckWipJa<T extends MustStuckWipFields>(
   limit: number = 3,
 ): string {
   if (entries.length === 0) return 'MUST 進行中だが停滞 0 件'
-  const head = entries.slice(0, Math.max(0, limit))
-  const rest = entries.length - head.length
-  const parts = head.map((e) => {
-    const title =
-      typeof e.item.title === 'string' && e.item.title.length > 0 ? e.item.title : '(無題)'
-    return `${title} ${e.stuckDays} 日`
-  })
-  if (rest > 0) parts.push(`他 ${rest} 件`)
-  return `MUST 進行中だが停滞: ${entries.length} 件 (${parts.join(' / ')})`
+  const body = formatTopWithOverflow(
+    entries,
+    (e) => {
+      const title =
+        typeof e.item.title === 'string' && e.item.title.length > 0 ? e.item.title : '(無題)'
+      return `${title} ${e.stuckDays} 日`
+    },
+    limit,
+  )
+  return `MUST 進行中だが停滞: ${entries.length} 件 (${body})`
 }
 
 /**
