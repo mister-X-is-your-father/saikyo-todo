@@ -63,7 +63,6 @@ import {
 import {
   computeDueHitRate,
   computeDueHitRateByPriority,
-  countNonEmptyPriorityBuckets,
   dueHitRateTone,
   formatDueHitRateByPriorityJa,
   formatDueHitRateJa,
@@ -79,6 +78,7 @@ import {
   formatMustHygieneJa,
   mustHygieneSeverity,
 } from '@/features/item/must-hygiene'
+import { countNonEmptyPriorityBuckets } from '@/features/item/priority'
 import {
   formatRecentCompletedSummaryJa,
   selectRecentCompleted,
@@ -204,9 +204,8 @@ export function DashboardView({ workspaceId }: Props) {
     const tone = dueDateCoverageTone(stats)
     const pct = Math.round(stats.coverageRate * 100)
     const byPriority = computeDueDateCoverageByPriority(itemsQ.data)
-    const nonEmptyBuckets = ([1, 2, 3, 4] as const).filter((k) => byPriority[k].total > 0).length
     const detail =
-      nonEmptyBuckets > 1
+      countNonEmptyPriorityBuckets(byPriority) > 1
         ? `${summary} — ${formatDueDateCoverageByPriorityJa(byPriority)}`
         : summary
     return { stats, summary, tone, pct, detail }
@@ -227,9 +226,10 @@ export function DashboardView({ workspaceId }: Props) {
     const pct = Math.round(stats.coverageRate * 100)
     const byPriority = computeDodCoverageByPriority(itemsQ.data)
     // 複数 priority に未完了が分散している時のみ priority breakdown を tooltip に。
-    const nonEmptyBuckets = ([1, 2, 3, 4] as const).filter((k) => byPriority[k].total > 0).length
     const detail =
-      nonEmptyBuckets > 1 ? `${summary} — ${formatDodCoverageByPriorityJa(byPriority)}` : summary
+      countNonEmptyPriorityBuckets(byPriority) > 1
+        ? `${summary} — ${formatDodCoverageByPriorityJa(byPriority)}`
+        : summary
     return { stats, summary, tone, pct, detail }
   }, [itemsQ.data])
 
@@ -284,9 +284,8 @@ export function DashboardView({ workspaceId }: Props) {
     const tone = descriptionCoverageTone(stats)
     const pct = Math.round(stats.coverageRate * 100)
     const byPriority = computeDescriptionCoverageByPriority(itemsQ.data)
-    const nonEmptyBuckets = ([1, 2, 3, 4] as const).filter((k) => byPriority[k].total > 0).length
     const detail =
-      nonEmptyBuckets > 1
+      countNonEmptyPriorityBuckets(byPriority) > 1
         ? `${summary} — ${formatDescriptionCoverageByPriorityJa(byPriority)}`
         : summary
     return { stats, summary, tone, pct, detail }

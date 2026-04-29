@@ -92,6 +92,24 @@ export function bucketByPriorityWith<T extends { priority: number | null | undef
   }
 }
 
+/**
+ * iter370 refactor: priority bucket のうち実データ (total > 0) を持つ件数を返す
+ * 汎用 helper。due-hit-rate.ts (iter346) に閉じていた `countNonEmptyPriorityBuckets`
+ * を generic 化、4 by-priority substrate (due-hit-rate / dod-coverage /
+ * due-date-coverage / description-coverage) で共通利用できるように。
+ *
+ * 0 = 全 priority 0 件 (= empty)、1 = 単一 priority 偏在 (breakdown 冗長)、
+ * ≥2 = 複数 priority 分散 (breakdown 出す価値あり)。
+ *
+ * 引数は `Record<PriorityKey, {total: number}>` を満たす任意の by-priority stats。
+ * dashboard chip の「priority breakdown を tooltip に出すか?」判定に使う。
+ */
+export function countNonEmptyPriorityBuckets(
+  byPriority: Record<PriorityKey, { total: number }>,
+): number {
+  return ([1, 2, 3, 4] as const).filter((k) => byPriority[k].total > 0).length
+}
+
 export function countItemsByPriority(
   items: readonly { priority: number | null | undefined }[],
 ): Record<PriorityKey, number> {

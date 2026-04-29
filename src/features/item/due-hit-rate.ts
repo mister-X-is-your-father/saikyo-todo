@@ -101,16 +101,9 @@ export function computeDueHitRateByPriority<T extends DueHitRateByPriorityFields
   return bucketByPriorityWith(items, (group) => computeDueHitRate(group, options))
 }
 
-/**
- * iter346 basics: priority bucket のうち実データ (total > 0) を持つ件数。
- * dashboard chip / AI brief で「複数 priority に分散しているか」判定に使う。
- *
- * 0 = 全 priority 完了 0 件 (= empty)、1 = 単一 priority 偏在 (breakdown 冗長)、
- * ≥2 = 複数 priority 分散 (breakdown 出す価値あり)。
- */
-export function countNonEmptyPriorityBuckets(byPriority: DueHitRateByPriority): number {
-  return ([1, 2, 3, 4] as const).filter((k) => byPriority[k].total > 0).length
-}
+// iter370 refactor: countNonEmptyPriorityBuckets は priority.ts の generic に集約。
+// 後方互換のため re-export (既存 dashboard-view.tsx import を壊さない)。
+export { countNonEmptyPriorityBuckets } from './priority'
 
 /**
  * AI prompt 用 1 行サマリ (priority 別):
