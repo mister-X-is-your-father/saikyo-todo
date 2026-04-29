@@ -25,7 +25,7 @@
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { formatNonZeroCounts } from '@/lib/format-counts'
 
-import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
+import { bucketByPriorityWith, formatPriorityBuckets, type PriorityKey } from './priority'
 
 export type AgingKind = 'new' | 'recent' | 'stale' | 'ancient' | 'unknown'
 
@@ -191,13 +191,13 @@ export function countItemsByAgeByPriority<T extends AgingByPriorityFields>(
  * stale + ancient が 0 件の priority は省略。全 P で 0 → `'停滞 0 件'`。
  */
 export function formatAgingByPriorityJa(byPriority: AgingByPriority): string {
-  const parts: string[] = []
-  for (const k of PRIORITY_ORDER) {
-    const counts = byPriority[k]
-    const stagnant = counts.stale + counts.ancient
-    if (stagnant === 0) continue
-    parts.push(`P${k} ${stagnant} 件`)
-  }
-  if (parts.length === 0) return '停滞 0 件'
-  return `停滞: ${parts.join(' / ')}`
+  const body = formatPriorityBuckets(
+    byPriority,
+    (k, counts) => {
+      const stagnant = counts.stale + counts.ancient
+      return stagnant === 0 ? null : `P${k} ${stagnant} 件`
+    },
+    '停滞 0 件',
+  )
+  return body === '停滞 0 件' ? body : `停滞: ${body}`
 }

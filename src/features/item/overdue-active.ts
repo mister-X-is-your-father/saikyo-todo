@@ -27,7 +27,7 @@
 import { isValidIsoDate, MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { formatNonZeroCounts } from '@/lib/format-counts'
 
-import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
+import { bucketByPriorityWith, formatPriorityBuckets, type PriorityKey } from './priority'
 import { normalizeStatus } from './status-visual'
 
 export interface OverdueActiveFields {
@@ -185,13 +185,12 @@ export function computeOverdueActiveByPriority<
 export function formatOverdueActiveByPriorityJa(
   byPriority: Record<PriorityKey, OverdueActiveByPriorityStats>,
 ): string {
-  const parts: string[] = []
-  for (const k of PRIORITY_ORDER) {
-    const s = byPriority[k]
-    if (s.count > 0 && s.oldestOverdueDays !== null) {
-      parts.push(`P${k} ${s.count} 件 (最古 ${s.oldestOverdueDays}日)`)
-    }
-  }
-  if (parts.length === 0) return '期限超過 0 件'
-  return parts.join(' / ')
+  return formatPriorityBuckets(
+    byPriority,
+    (k, s) =>
+      s.count > 0 && s.oldestOverdueDays !== null
+        ? `P${k} ${s.count} 件 (最古 ${s.oldestOverdueDays}日)`
+        : null,
+    '期限超過 0 件',
+  )
 }

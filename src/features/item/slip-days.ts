@@ -21,7 +21,7 @@
 
 import { dueDateEndOfDayMs, MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 
-import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
+import { bucketByPriorityWith, formatPriorityBuckets, type PriorityKey } from './priority'
 
 export interface SlipDaysFields {
   doneAt: Date | string | null | undefined
@@ -145,12 +145,11 @@ export function computeSlipDaysByPriority<T extends SlipDaysByPriorityFields>(
  * count=0 の priority は省略。全 priority count=0 → `'遅延 0 件'`。
  */
 export function formatSlipDaysByPriorityJa(byPriority: SlipDaysByPriority): string {
-  const parts: string[] = []
-  for (const k of PRIORITY_ORDER) {
-    const stats = byPriority[k]
-    if (stats.count === 0 || stats.maxDays === null) continue
-    parts.push(`P${k} ${stats.count} 件 (最大 ${stats.maxDays}日)`)
-  }
-  if (parts.length === 0) return '遅延 0 件'
-  return `遅延: ${parts.join(' / ')}`
+  const body = formatPriorityBuckets(
+    byPriority,
+    (k, s) =>
+      s.count === 0 || s.maxDays === null ? null : `P${k} ${s.count} 件 (最大 ${s.maxDays}日)`,
+    '遅延 0 件',
+  )
+  return body === '遅延 0 件' ? body : `遅延: ${body}`
 }

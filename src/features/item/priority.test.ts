@@ -5,6 +5,7 @@ import {
   countItemsByPriority,
   countNonEmptyPriorityBuckets,
   countNonEmptyPriorityBucketsBy,
+  formatPriorityBuckets,
   formatPriorityCounts,
   groupItemsByPriority,
   priorityClass,
@@ -187,5 +188,35 @@ describe('countNonEmptyPriorityBuckets / countNonEmptyPriorityBucketsBy', () => 
         (s) => s.count > 0,
       ),
     ).toBe(0)
+  })
+
+  describe('formatPriorityBuckets', () => {
+    it('全 P null → emptySentinel', () => {
+      const byP = { 1: { count: 0 }, 2: { count: 0 }, 3: { count: 0 }, 4: { count: 0 } }
+      expect(
+        formatPriorityBuckets(byP, (_k, s) => (s.count > 0 ? `non-empty` : null), '0 件'),
+      ).toBe('0 件')
+    })
+
+    it('複数 P 分散 → / 区切りで join', () => {
+      const byP = { 1: { count: 2 }, 2: { count: 0 }, 3: { count: 1 }, 4: { count: 0 } }
+      expect(
+        formatPriorityBuckets(byP, (k, s) => (s.count > 0 ? `P${k} ${s.count}` : null), '0 件'),
+      ).toBe('P1 2 / P3 1')
+    })
+
+    it('単一 P → そのまま 1 つだけ', () => {
+      const byP = { 1: { count: 0 }, 2: { count: 5 }, 3: { count: 0 }, 4: { count: 0 } }
+      expect(
+        formatPriorityBuckets(byP, (k, s) => (s.count > 0 ? `P${k} ${s.count}` : null), '0 件'),
+      ).toBe('P2 5')
+    })
+
+    it('separator option 反映', () => {
+      const byP = { 1: { count: 1 }, 2: { count: 1 }, 3: { count: 0 }, 4: { count: 0 } }
+      expect(
+        formatPriorityBuckets(byP, (k, s) => (s.count > 0 ? `P${k}` : null), '0 件', ', '),
+      ).toBe('P1, P2')
+    })
   })
 })

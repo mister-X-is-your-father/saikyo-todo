@@ -150,3 +150,37 @@ export function countItemsByPriority(
 export function formatPriorityCounts(counts: Record<PriorityKey, number>): string {
   return formatNonZeroCounts(counts, PRIORITY_ORDER, LABELS)
 }
+
+/**
+ * iter370 refactor: by-priority bucket を「P1 X 件 (...) / P2 Y 件 (...)」形式の
+ * 1 行 summary に整形する汎用 helper。
+ *
+ * 同 shape のループが 5 callsite (wip-stuck / stale-urgent / overdue-active /
+ * slip-days / backlog-aging の各 by-priority format 関数) で重複していたので集約。
+ *
+ * 仕様:
+ *   - PRIORITY_ORDER (= 1..4) を順番に走査
+ *   - 各 bucket で `formatBucket(k, s)` を呼び、戻り値が string なら `parts` に追加、
+ *     null なら skip (= caller 判断で「該当なし bucket」を省略)
+ *   - 全部 null なら `emptySentinel` を返す (= 「全 P が該当なし」 sentinel)
+ *   - separator default ' / '
+ *
+ * caller benefits:
+ *   - skip 条件 (count === 0 / rate === null / 等) を formatBucket 内で判断
+ *   - bucket フォーマット (件数 + sub-detail) も formatBucket 内で自由
+ *   - sentinel / prefix は caller 側で完結 (caller が `'遅延: ' + body` する場合は
+ *     emptySentinel が返されたか判定して分岐)
+ */
+export function formatPriorityBuckets<S>(
+  byPriority: Record<PriorityKey, S>,
+  formatBucket: (k: PriorityKey, s: S) => string | null,
+  emptySentinel: string,
+  separator: string = ' / ',
+): string {
+  const parts: string[] = []
+  for (const k of PRIORITY_ORDER) {
+    const formatted = formatBucket(k, byPriority[k])
+    if (formatted !== null) parts.push(formatted)
+  }
+  return parts.length === 0 ? emptySentinel : parts.join(separator)
+}
