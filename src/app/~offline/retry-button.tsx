@@ -10,7 +10,7 @@ export function OfflineRetryButton() {
       onClick={() => {
         if (typeof window !== 'undefined') window.location.reload()
       }}
-      aria-label="ページを再読み込みして接続を再試行"
+      aria-label="再読み込みして再試行 (ページ全体を読み直して接続を回復)"
     >
       再読み込みして再試行
     </Button>
