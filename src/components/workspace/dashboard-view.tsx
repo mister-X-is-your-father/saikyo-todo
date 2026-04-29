@@ -113,6 +113,8 @@ import {
   pickMustOverdueItems,
 } from '@/features/item/must-overdue'
 import {
+  computeMustStaleByPriority,
+  formatMustStaleByPriorityJa,
   formatMustStaleJa,
   mustStaleSeverity,
   pickMustStaleItems,
@@ -431,7 +433,14 @@ export function DashboardView({ workspaceId }: Props) {
     const sev = mustStaleSeverity(entries)
     if (sev === 'idle') return null
     const summary = formatMustStaleJa(entries, 3)
-    return { entries, summary, severity: sev }
+    // iter406 basics: iter404 で追加した computeMustStaleByPriority を SR / hover に bind
+    // (iter386 must-overdue / iter391 must-stuck-wip と同手法、3 chip で 3 層情報設計揃い)。
+    // priorityBuckets > 1 の時のみ append、単一 P 偏在は冗長省略。
+    const byPriority = computeMustStaleByPriority(itemsQ.data)
+    const priorityBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)
+    const detail =
+      priorityBuckets > 1 ? `${summary} — ${formatMustStaleByPriorityJa(byPriority)}` : summary
+    return { entries, summary, detail, severity: sev, priorityBuckets }
   }, [itemsQ.data])
 
   const mustStuckWip = useMemo(() => {
@@ -922,13 +931,14 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-must-stale-chip"
             toneClass="border-red-300 bg-red-50 text-red-800"
             glyph="⏳"
-            ariaLabel={mustStale.summary}
-            title={mustStale.summary}
+            ariaLabel={mustStale.detail}
+            title={mustStale.detail}
             text={mustStale.summary}
             attention
             dataAttrs={{
               'data-severity': mustStale.severity,
               'data-must-stale-count': mustStale.entries.length,
+              'data-priority-buckets': mustStale.priorityBuckets,
             }}
           />
         ) : null}
