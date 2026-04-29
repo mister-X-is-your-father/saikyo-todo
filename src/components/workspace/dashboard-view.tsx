@@ -136,8 +136,10 @@ import {
   pickOverdueActiveItems,
 } from '@/features/item/overdue-active'
 import {
+  formatAggregateParentItemsJa,
   formatParentItemsProgressBriefJa,
   pickIncompleteParentItems,
+  summarizeParentItemsAggregate,
 } from '@/features/item/parent-items-progress'
 import {
   countNonEmptyCountPriorityBuckets,
@@ -428,7 +430,14 @@ export function DashboardView({ workspaceId }: Props) {
     const entries = pickIncompleteParentItems(itemsQ.data)
     if (entries.length === 0) return null
     const summary = formatParentItemsProgressBriefJa(entries, 3)
-    return { entries, summary }
+    // iter423 basics: iter422 で追加した summarizeParentItemsAggregate を SR / hover に
+    // bind (iter386 must-overdue / iter408 slip-days / iter414 blocked-items と同手法、
+    // 3 層情報設計)。視覚 chip text は summary (= 個別 title list) のまま、aria-label /
+    // title だけ richer (= 集約「平均 35%, 停滞 2 / 順調 2 / 仕上げ 1」) に。
+    const aggregate = summarizeParentItemsAggregate(entries)
+    const aggregateLine = formatAggregateParentItemsJa(aggregate)
+    const detail = `${summary} — ${aggregateLine}`
+    return { entries, summary, detail, aggregate }
   }, [itemsQ.data])
 
   // iter368 basics: overdue-active (iter367) を bind。期限超過で未完了の item を
@@ -972,11 +981,13 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-parent-items-progress-chip"
             toneClass={chipTone3Class('neutral')}
             glyph="📋"
-            ariaLabel={`案件進捗: ${parentItemsProgress.summary}`}
-            title={parentItemsProgress.summary}
+            ariaLabel={`案件進捗: ${parentItemsProgress.detail}`}
+            title={parentItemsProgress.detail}
             text={parentItemsProgress.summary}
             dataAttrs={{
               'data-parent-items-count': parentItemsProgress.entries.length,
+              'data-parent-avg-pct': parentItemsProgress.aggregate.avgPctDone,
+              'data-parent-stuck-count': parentItemsProgress.aggregate.byTier.stuck,
             }}
           />
         ) : null}
