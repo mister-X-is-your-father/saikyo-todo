@@ -218,6 +218,21 @@ export function urgencyTierLabel(tier: UrgencyTier): string {
   return TIER_LABEL[tier]
 }
 
+/**
+ * iter395 refactor: `urgencyTier(computeUrgency(item, today))` の 4 callsite
+ * (`groupItemsByUrgencyTier` / `pickItemsByUrgencyTiers` / `countItemsByUrgencyTier` /
+ * `formatTopUrgentTitlesJa`) を 1 関数に集約。score → tier の 2 段 dispatch を
+ * 「item → tier」の 1 hop に縮める shorthand。動作 1:1 (`urgencyTier` /
+ * `computeUrgency` を介して同じ実装)、caller benefits: dashboard / AI prompt が
+ * score を経由せずに tier だけ欲しい時 (例: tier 別 chip class 切替) に 1 関数で。
+ */
+export function urgencyTierOf<T extends UrgencyFields>(
+  item: T,
+  today: Date = new Date(),
+): UrgencyTier {
+  return urgencyTier(computeUrgency(item, today))
+}
+
 export type UrgencyTierGroups<T> = Record<UrgencyTier, T[]>
 
 /**
@@ -237,7 +252,7 @@ export function groupItemsByUrgencyTier<T extends UrgencyFields>(
     none: [],
   }
   for (const it of items) {
-    groups[urgencyTier(computeUrgency(it, today))].push(it)
+    groups[urgencyTierOf(it, today)].push(it)
   }
   return groups
 }
@@ -265,7 +280,7 @@ export function pickItemsByUrgencyTiers<T extends UrgencyFields>(
   const tierSet = new Set(tiers)
   const out: T[] = []
   for (const it of items) {
-    if (tierSet.has(urgencyTier(computeUrgency(it, today)))) out.push(it)
+    if (tierSet.has(urgencyTierOf(it, today))) out.push(it)
   }
   return out
 }
@@ -283,7 +298,7 @@ export function countItemsByUrgencyTier<T extends UrgencyFields>(
     none: 0,
   }
   for (const it of items) {
-    counts[urgencyTier(computeUrgency(it, today))] += 1
+    counts[urgencyTierOf(it, today)] += 1
   }
   return counts
 }
@@ -341,9 +356,6 @@ export function formatTopUrgentTitlesJa<T extends UrgencyFields & UrgencyTitleFi
 ): string {
   const top = selectTopUrgentItems(items, n, today)
   if (top.length === 0) return '緊急対応 0 件'
-  const parts = top.map((it) => {
-    const tier = urgencyTier(computeUrgency(it, today))
-    return `${it.title} (${TIER_LABEL[tier]})`
-  })
+  const parts = top.map((it) => `${it.title} (${TIER_LABEL[urgencyTierOf(it, today)]})`)
   return `上位 urgent: ${parts.join(' / ')}`
 }

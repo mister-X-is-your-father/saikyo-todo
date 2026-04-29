@@ -16,6 +16,7 @@ import {
   urgencyTier,
   urgencyTierCountsSeverity,
   urgencyTierLabel,
+  urgencyTierOf,
 } from './urgency'
 
 const TODAY = new Date(2026, 3, 27) // Mon 2026-04-27
@@ -341,6 +342,25 @@ describe('urgencyTier — score → bucket', () => {
     expect(urgencyTier(50)).toBe<UrgencyTier>('high')
     expect(urgencyTier(19)).toBe<UrgencyTier>('low')
     expect(urgencyTier(20)).toBe<UrgencyTier>('medium')
+  })
+})
+
+describe('urgencyTierOf', () => {
+  it('item → tier の 1 hop shorthand (urgencyTier(computeUrgency()) と等価)', () => {
+    expect(urgencyTierOf(item({ priority: 1 }), TODAY)).toBe<UrgencyTier>('critical')
+    expect(urgencyTierOf(item({ priority: 2 }), TODAY)).toBe<UrgencyTier>('high')
+    expect(urgencyTierOf(item({ priority: 3 }), TODAY)).toBe<UrgencyTier>('medium')
+    expect(urgencyTierOf(item({ priority: 4 }), TODAY)).toBe<UrgencyTier>('low')
+    expect(
+      urgencyTierOf(item({ priority: 1, doneAt: new Date('2026-04-26') }), TODAY),
+    ).toBe<UrgencyTier>('none')
+  })
+
+  it('proximity bonus / MUST も合成 score 経由で正しく tier 化', () => {
+    // p4 + overdue + must = 10+50+30 = 90 → high
+    expect(
+      urgencyTierOf(item({ priority: 4, dueDate: '2026-04-26', isMust: true }), TODAY),
+    ).toBe<UrgencyTier>('high')
   })
 })
 
