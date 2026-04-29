@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader } from '@/co
 
 export const metadata: Metadata = {
   title: 'サインアップ | 最強TODO',
+  description:
+    '最強TODO のサインアップ画面。新規アカウント作成 (表示名 + メールアドレス + 8文字以上のパスワード)。',
 }
 
 export default function SignupPage() {

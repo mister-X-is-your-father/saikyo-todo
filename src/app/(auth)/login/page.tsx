@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader } from '@/co
 
 export const metadata: Metadata = {
   title: 'ログイン | 最強TODO',
+  description: '最強TODO のログイン画面。メールアドレスとパスワードでサインイン。',
 }
 
 export default function LoginPage() {
