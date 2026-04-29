@@ -31,6 +31,7 @@ import { trendGlyph, trendToneClass } from '@/lib/ui/trend-tone'
 
 import { useBurndown, useMustSummary } from '@/features/dashboard/hooks'
 import { computeAgedHygieneDebt, formatAgedHygieneDebtJa } from '@/features/item/aged-hygiene-debt'
+import { formatAtRiskParentsBriefJa, pickAtRiskParents } from '@/features/item/at-risk-parents'
 import {
   countAgingItemsOlderThanWeek,
   countItemsByAge,
@@ -428,6 +429,19 @@ export function DashboardView({ workspaceId }: Props) {
   // chip text は「最も進捗が遅い案件」が先頭に来る。entries=0 (= 未完了 parent
   // ゼロ = 全 parent 達成 or workspace に parent が無い) で chip 非表示で UI 静か。
   // tone は neutral (= warning ではなく info、blocked-items の amber と区別)。
+  // iter428 basics: at-risk-parents (iter427 substrate) を bind。
+  // 「子孫の最終更新が古い案件 (parent rollup)」を 1 行 chip で警告。
+  // entries=0 で chip 非表示で UI 静か (= 全案件 active なら警報なし)。
+  // tone は amber (= 「触れていない = 注意」、neutral とも red とも違う警告)。
+  // parent-items-progress (進捗 list) と相補で「進捗 list」 vs 「停滞 list」軸。
+  const atRiskParents = useMemo(() => {
+    if (!itemsQ.data) return null
+    const entries = pickAtRiskParents(itemsQ.data)
+    if (entries.length === 0) return null
+    const summary = formatAtRiskParentsBriefJa(entries, 3)
+    return { entries, summary }
+  }, [itemsQ.data])
+
   const parentItemsProgress = useMemo(() => {
     if (!itemsQ.data) return null
     const entries = pickIncompleteParentItems(itemsQ.data)
@@ -976,6 +990,19 @@ export function DashboardView({ workspaceId }: Props) {
             dataAttrs={{
               'data-blocked-count': blockedWorkspaceItems.entries.length,
               'data-priority-buckets': blockedWorkspaceItems.priorityBuckets,
+            }}
+          />
+        ) : null}
+        {atRiskParents ? (
+          <DashboardChip
+            testId="dashboard-at-risk-parents-chip"
+            toneClass={chipTone3Class('warn')}
+            glyph="💤"
+            ariaLabel={`触れていない案件: ${atRiskParents.summary}`}
+            title={atRiskParents.summary}
+            text={atRiskParents.summary}
+            dataAttrs={{
+              'data-at-risk-count': atRiskParents.entries.length,
             }}
           />
         ) : null}
