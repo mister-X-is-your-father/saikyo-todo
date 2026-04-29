@@ -11,8 +11,10 @@ import {
   computeOverdueActiveByPriority,
   formatOverdueActiveByPriorityJa,
   formatOverdueActiveJa,
+  formatOverdueActiveTitlesJa,
   type OverdueActiveFields,
   overdueActiveSeverity,
+  pickOverdueActiveItems,
 } from './overdue-active'
 
 const TODAY = new Date(2026, 3, 29) // 2026-04-29
@@ -234,5 +236,75 @@ describe('formatOverdueActiveByPriorityJa', () => {
     ]
     const byP = computeOverdueActiveByPriority(items, TODAY)
     expect(formatOverdueActiveByPriorityJa(byP)).toBe('P1 1 件 (最古 14日) / P3 1 件 (最古 5日)')
+  })
+})
+
+describe('pickOverdueActiveItems', () => {
+  it('overdue items を overdueDays 降順で返す', () => {
+    const items = [
+      { ...mk({ dueDate: dueDateNDaysAgo(3) }), title: '中期' },
+      { ...mk({ dueDate: dueDateNDaysAgo(14) }), title: '最古' },
+      { ...mk({ dueDate: dueDateNDaysAgo(1) }), title: '直近' },
+    ]
+    const result = pickOverdueActiveItems(items, TODAY)
+    expect(result.map((e) => e.item.title)).toEqual(['最古', '中期', '直近'])
+    expect(result.map((e) => e.overdueDays)).toEqual([14, 3, 1])
+  })
+
+  it('done / archive / cancelled / 未来日 / 不正日付 は除外', () => {
+    const items = [
+      mk({ dueDate: dueDateNDaysAgo(5), doneAt: new Date() }), // done
+      mk({ dueDate: dueDateNDaysAgo(5), archivedAt: new Date() }), // archived
+      mk({ dueDate: dueDateNDaysAgo(5), status: 'cancelled' }), // cancelled
+      mk({ dueDate: dueDateNDaysAgo(5), status: 'done' }), // status=done
+      mk({ dueDate: dueDateNDaysAgo(-3) }), // 未来日 (= -3 = 3 日後)
+      mk({ dueDate: 'not-a-date' }), // 不正
+      mk({ dueDate: null }), // null
+      mk({ dueDate: dueDateNDaysAgo(2) }), // ✓ 唯一 overdue
+    ]
+    const result = pickOverdueActiveItems(items, TODAY)
+    expect(result.length).toBe(1)
+    expect(result[0]!.overdueDays).toBe(2)
+  })
+
+  it('today が不正なら空配列', () => {
+    const items = [mk({ dueDate: dueDateNDaysAgo(5) })]
+    expect(pickOverdueActiveItems(items, 'invalid-date')).toEqual([])
+  })
+})
+
+describe('formatOverdueActiveTitlesJa', () => {
+  it('0 件 sentinel', () => {
+    expect(formatOverdueActiveTitlesJa([])).toBe('期限超過 0 件')
+  })
+
+  it('上位 limit 件 + 残りは "他 N 件"', () => {
+    const items = [
+      { ...mk({ dueDate: dueDateNDaysAgo(14) }), title: 'A' },
+      { ...mk({ dueDate: dueDateNDaysAgo(10) }), title: 'B' },
+      { ...mk({ dueDate: dueDateNDaysAgo(5) }), title: 'C' },
+      { ...mk({ dueDate: dueDateNDaysAgo(2) }), title: 'D' },
+    ]
+    const entries = pickOverdueActiveItems(items, TODAY)
+    expect(formatOverdueActiveTitlesJa(entries, 2)).toBe('期限超過: A 14日 / B 10日 / 他 2 件')
+  })
+
+  it('title 欠落 → "(無題)"', () => {
+    const items = [
+      { ...mk({ dueDate: dueDateNDaysAgo(7) }), title: null },
+      { ...mk({ dueDate: dueDateNDaysAgo(3) }), title: '' },
+    ]
+    const entries = pickOverdueActiveItems(items, TODAY)
+    expect(formatOverdueActiveTitlesJa(entries)).toBe('期限超過: (無題) 7日 / (無題) 3日')
+  })
+
+  it('default limit=3', () => {
+    const items = [
+      { ...mk({ dueDate: dueDateNDaysAgo(14) }), title: 'A' },
+      { ...mk({ dueDate: dueDateNDaysAgo(10) }), title: 'B' },
+      { ...mk({ dueDate: dueDateNDaysAgo(5) }), title: 'C' },
+    ]
+    const entries = pickOverdueActiveItems(items, TODAY)
+    expect(formatOverdueActiveTitlesJa(entries)).toBe('期限超過: A 14日 / B 10日 / C 5日')
   })
 })
