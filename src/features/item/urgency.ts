@@ -295,3 +295,25 @@ export function countItemsByUrgencyTier<T extends UrgencyFields>(
 export function formatUrgencyTierCounts(counts: Record<UrgencyTier, number>): string {
   return formatNonZeroCounts(counts, TIER_ORDER, TIER_LABEL)
 }
+
+/**
+ * iter393 basics: urgency tier counts から「要対応 chip」を出すかの severity を決める helper。
+ *
+ * dashboard chip は actionable subset (critical / high) が 1 件以上のときだけ
+ * 出したい (= medium / low / none しか無い workspace は UI 静か)。tone は:
+ *   - `severe` … critical > 0 (赤、強警告)
+ *   - `warn`   … critical = 0 かつ high > 0 (琥珀、警戒)
+ *   - `idle`   … 上記以外 (= chip 非表示、progressive disclosure)
+ *
+ * slip-days / must-hygiene と同じ「重度 / 軽度 / 静か」 3 値モデル。chip の
+ * tone class とは独立 (chip 側で 'severe' は red 直接 / 'warn' は chipTone3Class)。
+ */
+export type UrgencyTierSeverity = 'severe' | 'warn' | 'idle'
+
+export function urgencyTierCountsSeverity(
+  counts: Record<UrgencyTier, number>,
+): UrgencyTierSeverity {
+  if (counts.critical > 0) return 'severe'
+  if (counts.high > 0) return 'warn'
+  return 'idle'
+}

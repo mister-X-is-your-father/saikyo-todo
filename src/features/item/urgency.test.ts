@@ -13,6 +13,7 @@ import {
   type UrgencyFields,
   type UrgencyTier,
   urgencyTier,
+  urgencyTierCountsSeverity,
   urgencyTierLabel,
 } from './urgency'
 
@@ -491,5 +492,37 @@ describe('pickItemsByUrgencyTiers', () => {
     const b = item({ priority: 1 }) // high (P1)
     const result = pickItemsByUrgencyTiers([a, b], ['critical', 'high'], TODAY)
     expect(result).toEqual([b])
+  })
+})
+
+describe('urgencyTierCountsSeverity', () => {
+  it('critical > 0 で severe (high の有無に依存しない)', () => {
+    expect(urgencyTierCountsSeverity({ critical: 1, high: 0, medium: 0, low: 0, none: 0 })).toBe(
+      'severe',
+    )
+    expect(urgencyTierCountsSeverity({ critical: 2, high: 5, medium: 0, low: 0, none: 0 })).toBe(
+      'severe',
+    )
+  })
+
+  it('critical = 0 かつ high > 0 で warn', () => {
+    expect(urgencyTierCountsSeverity({ critical: 0, high: 1, medium: 0, low: 0, none: 0 })).toBe(
+      'warn',
+    )
+    expect(urgencyTierCountsSeverity({ critical: 0, high: 5, medium: 10, low: 20, none: 3 })).toBe(
+      'warn',
+    )
+  })
+
+  it('critical = 0 かつ high = 0 で idle (= chip 非表示状態、medium/low/none のみ)', () => {
+    expect(urgencyTierCountsSeverity({ critical: 0, high: 0, medium: 5, low: 10, none: 2 })).toBe(
+      'idle',
+    )
+  })
+
+  it('全件 0 で idle (= active item 0、UI 静か)', () => {
+    expect(urgencyTierCountsSeverity({ critical: 0, high: 0, medium: 0, low: 0, none: 0 })).toBe(
+      'idle',
+    )
   })
 })

@@ -118,6 +118,11 @@ import {
   formatSlipDaysJa,
   slipSeverity,
 } from '@/features/item/slip-days'
+import {
+  countItemsByUrgencyTier,
+  formatUrgencyTierCounts,
+  urgencyTierCountsSeverity,
+} from '@/features/item/urgency'
 import { computeVelocity, formatVelocitySummary } from '@/features/item/velocity'
 import {
   computeWipByPriority,
@@ -448,6 +453,26 @@ export function DashboardView({ workspaceId }: Props) {
     return { counts, summary, olderThanWeek, stagnantBreakdown }
   }, [itemsQ.data])
 
+  // iter393 basics: urgency-tier counts (iter294 / iter392) を bind。priority +
+  // dueDate + MUST 由来の合成 score で 5 tier 分類した active item の actionable
+  // subset (critical + high) を chip 表示。idle (= critical=0 かつ high=0) で chip
+  // 非表示で UI 静か (= 「actionable item 0 = 静か」progressive disclosure)。
+  // visible chip text は「要対応: 緊急 X / 高 Y」、aria-label / title に full counts
+  // (medium / low / none 含む) を同梱して 2 層情報設計 (iter363/366/373/378/383/388/391
+  // 系の richer-info-via-a11y/hover 同手法)。
+  const urgencyTiers = useMemo(() => {
+    if (!itemsQ.data) return null
+    const counts = countItemsByUrgencyTier(itemsQ.data)
+    const severity = urgencyTierCountsSeverity(counts)
+    if (severity === 'idle') return null
+    const actionable: string[] = []
+    if (counts.critical > 0) actionable.push(`緊急 ${counts.critical}`)
+    if (counts.high > 0) actionable.push(`高 ${counts.high}`)
+    const visible = `要対応: ${actionable.join(' / ')}`
+    const detail = `${visible} — 全体: ${formatUrgencyTierCounts(counts)}`
+    return { counts, severity, visible, detail }
+  }, [itemsQ.data])
+
   if (summary.isLoading) return <Loading message="ダッシュボード読込中..." />
   if (summary.error) {
     return (
@@ -486,6 +511,25 @@ export function DashboardView({ workspaceId }: Props) {
       {/* iter331 / iter336 basics: trend / hygiene chips (flex-wrap で同列)
        * iter355 refactor: 8 chip の JSX 重複を <DashboardChip> に集約 */}
       <div className="flex flex-wrap items-center gap-2">
+        {urgencyTiers ? (
+          <DashboardChip
+            testId="dashboard-urgency-tiers-chip"
+            toneClass={
+              urgencyTiers.severity === 'severe'
+                ? 'border-red-200 bg-red-50 text-red-700'
+                : chipTone3Class('warn')
+            }
+            glyph="🚨"
+            ariaLabel={urgencyTiers.detail}
+            title={urgencyTiers.detail}
+            text={urgencyTiers.visible}
+            dataAttrs={{
+              'data-critical-count': urgencyTiers.counts.critical,
+              'data-high-count': urgencyTiers.counts.high,
+              'data-severity': urgencyTiers.severity,
+            }}
+          />
+        ) : null}
         {recentDone ? (
           <DashboardChip
             testId="dashboard-recent-done-chip"
