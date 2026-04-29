@@ -139,7 +139,26 @@ export interface BriefSummary<T extends BriefItemFields> {
    * 軸のみ (= stats-only headline → entries-based titles へ昇格)。
    */
   headlineWithTitles: string
+  /**
+   * iter394 ai-automation: 7 軸のうち最も深刻な軸の severity を 1 つに集約。
+   * mobile UI / status bar / 通知 / dashboard banner が「全体の警報レベル」を 1 値で
+   * 受け取り、配色 / icon / 通知音 等を切替えるための axis-aggregate 指標。
+   *
+   * 値は `'critical' / 'high' / 'medium' / 'low' / 'idle'` の 5 段階:
+   *  - 'critical' = mustOverdue.total > 0 (= MVP「絶対落とさない」原則違反、最深刻)
+   *  - 'high'     = mustAtRisk.length > 0 OR overdueActive.total > 0 OR stuckWip.length > 0
+   *  - 'medium'   = stale.length > 0
+   *  - 'low'      = topUrgent.length > 0 (= 警報無し、緊急対応 candidate のみ)
+   *  - 'idle'     = 全 axis 0 件 (= 完璧な状態)
+   *
+   * pickBriefHeadline の severity 順序と整合 (= headline が表示している軸が
+   * 'critical' であれば severity も 'critical')。
+   */
+  severity: BriefSeverity
 }
+
+/** iter394: BriefSummary の集約 severity (5 段階)。 */
+export type BriefSeverity = 'critical' | 'high' | 'medium' | 'low' | 'idle'
 
 /**
  * 4 substrate を同 today で実行し、結果と整形済テキストを bundle して返す。
@@ -204,6 +223,15 @@ export function buildBriefSummary<T extends BriefItemFields>(
     overdueActiveEntries,
   })
 
+  const severity = pickBriefSeverity({
+    topUrgent,
+    mustAtRisk,
+    stale,
+    stuckWip,
+    overdueActive,
+    mustOverdue,
+  })
+
   return {
     topUrgent,
     mustAtRisk,
@@ -217,6 +245,7 @@ export function buildBriefSummary<T extends BriefItemFields>(
     textSummary,
     headline,
     headlineWithTitles,
+    severity,
   }
 }
 
@@ -256,6 +285,35 @@ function pickBriefHeadline<T extends BriefItemFields>(input: {
     return formatStaleItemsSummary(input.stale)
   }
   return formatTopUrgentLine(input.topUrgent)
+}
+
+/**
+ * iter394 ai-automation: 7 軸の集約 severity を 5 段階で返す。pickBriefHeadline と同じ
+ * severity 順序を保つので、headline が表示している軸 = severity の決定軸 (= UI が
+ * 「色」と「文言」を一貫して選べる)。
+ *
+ * 順序 (mustOverdue 'critical' を最深刻として MVP 原則優先):
+ *  1. mustOverdue (total > 0) → 'critical' (= MVP 違反警報、red 強調)
+ *  2. mustAtRisk / overdueActive / stuckWip (1+ 件) → 'high' (= 注意要、red/amber)
+ *  3. stale (1+ 件) → 'medium' (= 放置注意、amber)
+ *  4. topUrgent (1+ 件) → 'low' (= 警報無し、緊急対応 candidate あり、neutral)
+ *  5. 全 axis 0 → 'idle' (= 完璧、green/grey)
+ */
+function pickBriefSeverity<T extends BriefItemFields>(input: {
+  topUrgent: TopUrgentEntry<T>[]
+  mustAtRisk: MustRiskEntry<T>[]
+  stale: StaleItemEntry<T>[]
+  stuckWip: StuckWipEntry<T>[]
+  overdueActive: OverdueActiveStats
+  mustOverdue: MustOverdueStats
+}): BriefSeverity {
+  if (input.mustOverdue.total > 0) return 'critical'
+  if (input.mustAtRisk.length > 0 || input.overdueActive.total > 0 || input.stuckWip.length > 0) {
+    return 'high'
+  }
+  if (input.stale.length > 0) return 'medium'
+  if (input.topUrgent.length > 0) return 'low'
+  return 'idle'
 }
 
 /**

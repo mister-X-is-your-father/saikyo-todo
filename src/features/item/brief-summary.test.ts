@@ -360,3 +360,63 @@ describe('buildBriefSummary — iter388 headlineWithTitles', () => {
     expect(r.headlineWithTitles).toMatch(/^urgent 上位 /)
   })
 })
+
+describe('buildBriefSummary — iter394 severity', () => {
+  it('mustOverdue 1+ 件 → critical', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'M', isMust: true, dueDate: '2026-04-13', title: '提出書類' }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.severity).toBe('critical')
+  })
+
+  it('mustAtRisk 1+ 件 (mustOverdue 無し) → high', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'R', isMust: true, dueDate: '2026-04-30', title: 'リスク' }), // within 6 日 (3 日後)
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.severity).toBe('high')
+  })
+
+  it('overdueActive (must 無し) → high', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'O', isMust: false, dueDate: '2026-04-22', title: '通常 overdue' }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.severity).toBe('high')
+  })
+
+  it('stuckWip → high', () => {
+    const items: BriefItemFields[] = [
+      item({
+        id: 'S',
+        status: 'in_progress',
+        updatedAt: new Date(2026, 3, 20),
+        title: '停滞 WIP',
+      }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.severity).toBe('high')
+  })
+
+  it('stale だけ (high 系無し) → medium', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'St', updatedAt: new Date(2026, 2, 1), title: '放置' }), // > 7 日 stale
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.severity).toBe('medium')
+  })
+
+  it('topUrgent のみ (警報無し) → low', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'T', priority: 1, title: '緊急 candidate' }), // P1 だけ
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.severity).toBe('low')
+  })
+
+  it('全 axis 0 (空 items) → idle', () => {
+    const r = buildBriefSummary([], {}, TODAY)
+    expect(r.severity).toBe('idle')
+  })
+})
