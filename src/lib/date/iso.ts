@@ -85,6 +85,46 @@ export function todayUtcISO(now: Date = new Date()): string {
 }
 
 /**
+ * iter360 refactor: ISO `YYYY-MM-DD` 文字列が有効か (= year-month-day prefix が
+ * range 内か) を判定。`due-date-coverage` / `must-hygiene` で 2 callsite に重複
+ * していたので集約。
+ *
+ * 仕様:
+ *  - input が `YYYY-MM-DD...` の prefix を持ち、month が 1..12、day が 1..31
+ *    なら true (= 厳密にはうるう年 / 30/31 日月の day も受け入れる、Date 構築側で
+ *    overflow 動作するため)
+ *  - 形式不一致 / 範囲外 → false
+ *
+ * caller の用途は「dueDate っぽい文字列か」を fail-soft 判定するため、厳密 calendar
+ * 検証ではなく shape check 程度で十分。
+ */
+export function isValidIsoDate(s: string): boolean {
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (!m) return false
+  const mo = Number(m[2])
+  const d = Number(m[3])
+  return mo >= 1 && mo <= 12 && d >= 1 && d <= 31
+}
+
+/**
+ * iter360 refactor: ISO `YYYY-MM-DD` をローカル TZ の **当日終端** (23:59:59.999)
+ * の ms timestamp に変換する糖衣。`due-hit-rate` / `slip-days` で 2 callsite 同一
+ * 実装が重複していたので集約。
+ *
+ * caller (`computeDueHitRate` / `computeSlipDays`) は `doneAt.getTime() <= dueEnd`
+ * のような比較に使う (= 「dueDate 当日中に完了したか」)。不正 ISO は null fail-soft、
+ * caller 側で `if (dueEnd === null) continue` で除外する想定。
+ */
+export function dueDateEndOfDayMs(dueDate: string): number | null {
+  if (!isValidIsoDate(dueDate)) return null
+  const m = dueDate.match(/^(\d{4})-(\d{2})-(\d{2})/)!
+  const y = Number(m[1])
+  const mo = Number(m[2])
+  const d = Number(m[3])
+  return new Date(y, mo - 1, d, 23, 59, 59, 999).getTime()
+}
+
+/**
  * iter305 refactor: Date / ISO 文字列 / null / undefined / 不正値を Date | null に
  * 正規化する fail-soft parser。velocity / freshly-done / stale-items で 3 callsite
  * 同一実装が重複していたので集約。

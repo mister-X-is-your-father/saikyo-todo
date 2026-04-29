@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  dueDateEndOfDayMs,
   formatLocalISO,
   formatUtcISO,
   isoDaysFromNow,
+  isValidIsoDate,
   parseDateOrNull,
   shiftIsoDate,
   todayISO,
@@ -188,5 +190,59 @@ describe('toLocalMidnight', () => {
     const result = toLocalMidnight(original)
     expect(result).not.toBe(original)
     expect(original.getHours()).toBe(14)
+  })
+})
+
+describe('isValidIsoDate', () => {
+  it('returns true for valid YYYY-MM-DD', () => {
+    expect(isValidIsoDate('2026-04-29')).toBe(true)
+    expect(isValidIsoDate('2024-12-31')).toBe(true)
+    expect(isValidIsoDate('2026-01-01')).toBe(true)
+  })
+
+  it('returns true for ISO datetime prefix (only checks YYYY-MM-DD)', () => {
+    expect(isValidIsoDate('2026-04-29T15:30:00Z')).toBe(true)
+  })
+
+  it('returns false for out-of-range month / day', () => {
+    expect(isValidIsoDate('2026-99-29')).toBe(false)
+    expect(isValidIsoDate('2026-04-99')).toBe(false)
+    expect(isValidIsoDate('2026-00-15')).toBe(false)
+    expect(isValidIsoDate('2026-12-00')).toBe(false)
+  })
+
+  it('returns false for malformed input', () => {
+    expect(isValidIsoDate('garbage')).toBe(false)
+    expect(isValidIsoDate('')).toBe(false)
+    expect(isValidIsoDate('2026/04/29')).toBe(false)
+    expect(isValidIsoDate('26-04-29')).toBe(false)
+  })
+})
+
+describe('dueDateEndOfDayMs', () => {
+  it('returns end-of-day ms for valid YYYY-MM-DD', () => {
+    const ms = dueDateEndOfDayMs('2026-04-29')
+    expect(ms).not.toBeNull()
+    const d = new Date(ms!)
+    expect(d.getFullYear()).toBe(2026)
+    expect(d.getMonth()).toBe(3)
+    expect(d.getDate()).toBe(29)
+    expect(d.getHours()).toBe(23)
+    expect(d.getMinutes()).toBe(59)
+    expect(d.getSeconds()).toBe(59)
+    expect(d.getMilliseconds()).toBe(999)
+  })
+
+  it('returns null for invalid ISO', () => {
+    expect(dueDateEndOfDayMs('garbage')).toBe(null)
+    expect(dueDateEndOfDayMs('2026-99-99')).toBe(null)
+    expect(dueDateEndOfDayMs('')).toBe(null)
+  })
+
+  it('produces ms greater than start-of-day', () => {
+    const end = dueDateEndOfDayMs('2026-04-29')!
+    const start = new Date(2026, 3, 29, 0, 0, 0).getTime()
+    expect(end).toBeGreaterThan(start)
+    expect(end - start).toBe(24 * 60 * 60 * 1000 - 1) // 1 day - 1 ms
   })
 })

@@ -15,6 +15,8 @@
  *   - total / withDueDate / withoutDueDate / coverageRate (total=0 → null)
  */
 
+import { isValidIsoDate } from '@/lib/date/iso'
+
 export interface MustHygieneFields {
   isMust: boolean | null | undefined
   doneAt: Date | string | null | undefined
@@ -37,13 +39,7 @@ const EMPTY: MustHygieneStats = {
   coverageRate: null,
 }
 
-function isValidIsoDate(s: string): boolean {
-  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/)
-  if (!m) return false
-  const mo = Number(m[2])
-  const d = Number(m[3])
-  return mo >= 1 && mo <= 12 && d >= 1 && d <= 31
-}
+// iter360 refactor: isValidIsoDate は lib/date/iso.ts に集約。
 
 export function computeMustHygiene<T extends MustHygieneFields>(
   items: readonly T[],

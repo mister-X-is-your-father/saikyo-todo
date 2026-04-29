@@ -21,7 +21,7 @@
  *   - hit + miss + total + hitRate (total=0 → null) を返す
  */
 
-import { parseDateOrNull } from '@/lib/date/iso'
+import { dueDateEndOfDayMs, parseDateOrNull } from '@/lib/date/iso'
 
 import { normalizePriority, type PriorityKey } from './priority'
 
@@ -54,16 +54,7 @@ export interface ComputeDueHitRateOptions {
 
 const EMPTY: DueHitRateStats = { total: 0, hit: 0, miss: 0, hitRate: null }
 
-/** dueDate (`YYYY-MM-DD`) のローカル 23:59:59.999 を ms で返す。不正は null */
-function dueDateEndOfDayMs(dueDate: string): number | null {
-  const m = dueDate.match(/^(\d{4})-(\d{2})-(\d{2})/)
-  if (!m) return null
-  const y = Number(m[1])
-  const mo = Number(m[2])
-  const d = Number(m[3])
-  if (mo < 1 || mo > 12 || d < 1 || d > 31) return null
-  return new Date(y, mo - 1, d, 23, 59, 59, 999).getTime()
-}
+// iter360 refactor: dueDateEndOfDayMs は lib/date/iso.ts に集約。
 
 export function computeDueHitRate<T extends DueHitRateFields>(
   items: readonly T[],

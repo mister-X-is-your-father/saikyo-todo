@@ -19,7 +19,7 @@
  *       maxDays = 最大 slip (count=0 → null)
  */
 
-import { parseDateOrNull } from '@/lib/date/iso'
+import { dueDateEndOfDayMs, parseDateOrNull } from '@/lib/date/iso'
 
 export interface SlipDaysFields {
   doneAt: Date | string | null | undefined
@@ -45,15 +45,7 @@ export interface ComputeSlipDaysOptions {
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 const EMPTY: SlipDaysStats = { count: 0, avgDays: null, medianDays: null, maxDays: null }
 
-function dueDateEndOfDayMs(dueDate: string): number | null {
-  const m = dueDate.match(/^(\d{4})-(\d{2})-(\d{2})/)
-  if (!m) return null
-  const y = Number(m[1])
-  const mo = Number(m[2])
-  const d = Number(m[3])
-  if (mo < 1 || mo > 12 || d < 1 || d > 31) return null
-  return new Date(y, mo - 1, d, 23, 59, 59, 999).getTime()
-}
+// iter360 refactor: dueDateEndOfDayMs は lib/date/iso.ts に集約。
 
 function round1(n: number): number {
   return Math.round(n * 10) / 10
