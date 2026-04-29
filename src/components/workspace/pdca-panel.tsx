@@ -98,7 +98,6 @@ export function PdcaPanel({ workspaceId }: Props) {
             <div
               className="flex h-2 w-full overflow-hidden rounded-full"
               role="img"
-              aria-labelledby="pdca-dist-label"
               aria-label={(() => {
                 const pct = (n: number) => Math.round((n / total) * 100)
                 return `分布 (合計 ${total}): Plan ${counts.plan} (${pct(counts.plan)}%) / Do ${counts.do} (${pct(counts.do)}%) / Check ${counts.check} (${pct(counts.check)}%) / Act ${counts.act} (${pct(counts.act)}%)`
