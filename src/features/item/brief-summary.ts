@@ -174,6 +174,20 @@ export interface BriefSummary<T extends BriefItemFields> {
    *   - dashboard で「危機度メーター」(= 1 軸 / 2 軸 / 3 軸+ で警告強度を変える)
    */
   activeAxes: BriefAxis[]
+  /**
+   * iter401 basics: severity に対応する emoji icon (UI / 通知 / Slack message 用)。
+   * formatBriefStatusBarJa が内部で使う SEVERITY_ICON mapping をフィールド化、caller は
+   * 文字列を作らずに icon だけ取り出せる。
+   *
+   * mapping: critical=🆘 / high=🚨 / medium=⚠️ / low=🔆 / idle=✅
+   *
+   * caller benefits:
+   *   - mobile UI で `<icon> {headline}` のような細分化レイアウトが組める
+   *     (= formatBriefStatusBarJa は 1 行固定 layout、本フィールドは icon 単独)
+   *   - 通知 icon / Slack icon で文字列分解せず参照可
+   *   - aria-label に severity 言葉と icon を分けて渡す
+   */
+  severityIcon: string
 }
 
 /** iter394: BriefSummary の集約 severity (5 段階)。 */
@@ -285,6 +299,7 @@ export function buildBriefSummary<T extends BriefItemFields>(
     severity,
     activeAxis,
     activeAxes,
+    severityIcon: SEVERITY_ICON_FULL[severity],
   }
 }
 
@@ -565,17 +580,21 @@ export function formatActiveAxesJa(activeAxes: readonly BriefAxis[]): string {
  *   - idle     = ✅ (= 完璧)
  */
 export function formatBriefStatusBarJa<T extends BriefItemFields>(brief: BriefSummary<T>): string {
-  if (brief.severity === 'idle') return '✅ idle 問題なし'
-  const icon = SEVERITY_ICON[brief.severity]
+  if (brief.severity === 'idle') return `${SEVERITY_ICON_FULL.idle} idle 問題なし`
   const axesCount = brief.activeAxes.length
-  return `${icon} ${brief.severity} [${axesCount} 軸] ${brief.headlineWithTitles}`
+  return `${SEVERITY_ICON_FULL[brief.severity]} ${brief.severity} [${axesCount} 軸] ${brief.headlineWithTitles}`
 }
 
-const SEVERITY_ICON: Record<Exclude<BriefSeverity, 'idle'>, string> = {
+/**
+ * iter401: severity → emoji icon mapping (idle 含む完全 5 段階)。
+ * BriefSummary.severityIcon と formatBriefStatusBarJa が共通参照 (= 1 source of truth)。
+ */
+const SEVERITY_ICON_FULL: Record<BriefSeverity, string> = {
   critical: '🆘',
   high: '🚨',
   medium: '⚠️',
   low: '🔆',
+  idle: '✅',
 }
 
 /**

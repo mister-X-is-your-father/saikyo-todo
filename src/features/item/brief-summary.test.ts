@@ -600,6 +600,48 @@ describe('formatBriefStatusBarJa (iter398)', () => {
   })
 })
 
+describe('buildBriefSummary — iter401 severityIcon', () => {
+  it('idle → ✅', () => {
+    const r = buildBriefSummary([], {}, TODAY)
+    expect(r.severityIcon).toBe('✅')
+  })
+
+  it('critical → 🆘', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'M', isMust: true, dueDate: '2026-04-13', title: '提出' }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.severityIcon).toBe('🆘')
+  })
+
+  it('high → 🚨', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'R', isMust: true, dueDate: '2026-04-30' }), // mustAtRisk
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.severityIcon).toBe('🚨')
+  })
+
+  it('medium → ⚠️', () => {
+    const items: BriefItemFields[] = [item({ id: 'S', updatedAt: new Date(2026, 2, 1) })]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.severityIcon).toBe('⚠️')
+  })
+
+  it('low → 🔆', () => {
+    const items: BriefItemFields[] = [item({ id: 'T', priority: 1, title: 'urgent' })]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.severityIcon).toBe('🔆')
+  })
+
+  it('formatBriefStatusBarJa の prefix と severityIcon が同一 (= 1 source of truth)', () => {
+    const items: BriefItemFields[] = [item({ id: 'M', isMust: true, dueDate: '2026-04-13' })]
+    const r = buildBriefSummary(items, {}, TODAY)
+    const statusBar = formatBriefStatusBarJa(r)
+    expect(statusBar.startsWith(r.severityIcon)).toBe(true)
+  })
+})
+
 describe('formatActiveAxesJa (iter399)', () => {
   it('空配列 → 警報なし', () => {
     expect(formatActiveAxesJa([])).toBe('警報なし')
