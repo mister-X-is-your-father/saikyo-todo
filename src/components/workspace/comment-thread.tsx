@@ -105,6 +105,9 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
             aria-busy={create.isPending || undefined}
             size="sm"
             data-testid="comment-post"
+            // iter356: aria-keyshortcuts で SR / voice control に shortcut を expose。
+            // WCAG 2.1.4 (Character Key Shortcuts) ARIA 1.2 attribute、modifier 必須形式。
+            aria-keyshortcuts="Meta+Enter Control+Enter"
             aria-label={
               !body.trim()
                 ? 'コメントを投稿するには本文を入力してください'
