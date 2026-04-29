@@ -7,6 +7,7 @@
 import Mustache from 'mustache'
 import { randomUUID } from 'node:crypto'
 
+import { formatUtcISO, shiftIsoDate } from '@/lib/date/iso'
 import { uuidToLabel } from '@/lib/db/ltree-path'
 
 export interface PlanItemInsert {
@@ -53,9 +54,7 @@ function renderMustache(tpl: string, vars: Record<string, unknown>): string {
 }
 
 function addDaysISO(base: Date, days: number): string {
-  const d = new Date(base)
-  d.setUTCDate(d.getUTCDate() + days)
-  return d.toISOString().slice(0, 10)
+  return shiftIsoDate(formatUtcISO(base), days)
 }
 
 function coerceAssignees(v: unknown): Array<Record<string, unknown>> {

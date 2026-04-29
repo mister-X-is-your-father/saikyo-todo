@@ -1,17 +1,12 @@
 import 'server-only'
 
 import { requireWorkspaceMember } from '@/lib/auth/guard'
+import { formatUtcISO, shiftIsoDate } from '@/lib/date/iso'
 import { withUserDb } from '@/lib/db/scoped-client'
 import { ValidationError } from '@/lib/errors'
 
 import { dashboardRepository } from './repository'
 import { type BurndownPoint, GetBurndownInputSchema, type MustSummary } from './schema'
-
-function addDaysISO(base: Date, days: number): string {
-  const d = new Date(base)
-  d.setUTCDate(d.getUTCDate() + days)
-  return d.toISOString().slice(0, 10)
-}
 
 export const dashboardService = {
   async getMustSummary(workspaceId: string): Promise<MustSummary> {
@@ -23,10 +18,9 @@ export const dashboardService = {
         dashboardRepository.countMustInProgress(tx, workspaceId),
       ])
       // today (UTC date)
-      const today = new Date()
-      const todayISO = today.toISOString().slice(0, 10)
-      const soon = addDaysISO(today, 7)
-      const yesterday = addDaysISO(today, -1)
+      const todayISO = formatUtcISO(new Date())
+      const soon = shiftIsoDate(todayISO, 7)
+      const yesterday = shiftIsoDate(todayISO, -1)
 
       const [overdueCount, dueSoonCount] = await Promise.all([
         dashboardRepository.countOpenMustByDueRange(tx, workspaceId, null, yesterday),

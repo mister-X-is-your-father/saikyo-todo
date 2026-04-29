@@ -17,6 +17,7 @@ import 'server-only'
 import { and, eq, gte, isNotNull, isNull, lte, sql } from 'drizzle-orm'
 
 import { requireUser, requireWorkspaceMember } from '@/lib/auth/guard'
+import { formatUtcISO } from '@/lib/date/iso'
 import { items } from '@/lib/db/schema'
 import { withUserDb } from '@/lib/db/scoped-client'
 import { ValidationError } from '@/lib/errors'
@@ -34,9 +35,8 @@ export interface PdcaSummary {
   daily: Array<{ date: string; done: number }>
 }
 
-function toISO(d: Date): string {
-  return d.toISOString().slice(0, 10)
-}
+// iter350 refactor: toISO は lib/date/iso.ts#formatUtcISO に集約。
+const toISO = formatUtcISO
 
 function percentile(sortedAsc: number[], p: number): number {
   if (sortedAsc.length === 0) return 0

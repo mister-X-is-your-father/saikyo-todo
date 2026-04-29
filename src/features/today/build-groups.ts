@@ -12,6 +12,8 @@
  * doneAt あり (= 完了済) は全 bucket から除外。
  * priority 昇順 (1=最高 → 4=最低) で各 group 内をソート。
  */
+import { shiftIsoDate } from '@/lib/date/iso'
+
 import type { Item } from '@/features/item/schema'
 
 export interface Group {
@@ -19,12 +21,12 @@ export interface Group {
   items: Item[]
 }
 
-/** YYYY-MM-DD 文字列を日数 offset (UTC ベース) で進める。 */
-export function shiftISO(iso: string, days: number): string {
-  const d = new Date(`${iso}T00:00:00Z`)
-  d.setUTCDate(d.getUTCDate() + days)
-  return d.toISOString().slice(0, 10)
-}
+/**
+ * YYYY-MM-DD 文字列を日数 offset (UTC ベース) で進める。
+ * iter350 refactor: 実装は lib/date/iso.ts#shiftIsoDate に集約。後方互換のため
+ * 本 export 名は維持 (test / 既存 caller が `shiftISO` で参照)。
+ */
+export const shiftISO = shiftIsoDate
 
 export function buildTodayGroups(items: Item[], today: string): Group[] {
   const tomorrow = shiftISO(today, 1)

@@ -18,6 +18,7 @@ import 'server-only'
 import { sql } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
 
+import { formatUtcISO } from '@/lib/date/iso'
 import { adminDb } from '@/lib/db/scoped-client'
 import { enqueueJob, type PmRecoveryJobData, type PmStandupJobData } from '@/lib/jobs/queue'
 
@@ -25,9 +26,8 @@ import { shouldFireForWorkspace } from '@/features/agent/cron-tz'
 import { pmService } from '@/features/agent/pm-service'
 import { templateService } from '@/features/template/service'
 
-function dateKeyUTC(now: Date): string {
-  return now.toISOString().slice(0, 10)
-}
+// iter350 refactor: dateKeyUTC は lib/date/iso.ts#formatUtcISO に集約。
+const dateKeyUTC = formatUtcISO
 
 /** Default cron used when a workspace has no settings row (defensive). */
 const DEFAULT_STANDUP_CRON = '0 9 * * *'

@@ -14,6 +14,7 @@ import 'server-only'
 import { calculateCostUsd } from '@/lib/ai/pricing'
 import { executeToolLoop, type ToolLoopInput } from '@/lib/ai/tool-loop'
 import { recordAudit } from '@/lib/audit'
+import { formatUtcISO } from '@/lib/date/iso'
 import { adminDb } from '@/lib/db/scoped-client'
 import { CancelledError, ExternalServiceError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
@@ -324,7 +325,7 @@ export function buildRecoveryUserMessage(params: {
 
 /** Pure helper: stand-up 用 user message を組み立てる (テスト可能)。 */
 export function buildStandupUserMessage(params: { today: Date }): string {
-  const iso = params.today.toISOString().slice(0, 10)
+  const iso = formatUtcISO(params.today)
   return [
     `${iso} の朝の Stand-up をまとめてください。`,
     '',
