@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  computeFreshlyDoneByPriority,
+  formatFreshlyDoneByPriorityJa,
   formatFreshlyDoneSummary,
+  type FreshlyDoneItemEntry,
   type FreshlyDoneItemFields,
   selectFreshlyDoneItems,
 } from './freshly-done'
@@ -125,15 +128,80 @@ describe('formatFreshlyDoneSummary', () => {
 
   it('1 件以上は "完了 N: title (今日|N 日前) / ..." 形式', () => {
     const entries = [
-      { item: item({ id: 'a', title: 'A' }), daysSinceDone: 0 },
-      { item: item({ id: 'b', title: 'B' }), daysSinceDone: 3 },
-      { item: item({ id: 'c', title: 'C' }), daysSinceDone: 7 },
+      { item: item({ id: 'a', title: 'A' }), daysSinceDone: 0, priority: 4 as const },
+      { item: item({ id: 'b', title: 'B' }), daysSinceDone: 3, priority: 4 as const },
+      { item: item({ id: 'c', title: 'C' }), daysSinceDone: 7, priority: 4 as const },
     ]
     expect(formatFreshlyDoneSummary(entries)).toBe('完了 3: A (今日) / B (3 日前) / C (7 日前)')
   })
 
   it('title 欠落は "(無題)" fallback', () => {
-    const entries = [{ item: item({ id: 'a', title: undefined }), daysSinceDone: 1 }]
+    const entries = [
+      { item: item({ id: 'a', title: undefined }), daysSinceDone: 1, priority: 4 as const },
+    ]
     expect(formatFreshlyDoneSummary(entries)).toBe('完了 1: (無題) (1 日前)')
+  })
+})
+
+describe('selectFreshlyDoneItems — priority 抽出 (iter437)', () => {
+  it('item.priority=1 は entry.priority=1 で乗る', () => {
+    const r = selectFreshlyDoneItems(
+      [item({ id: 'a', doneAt: '2026-04-27T00:00:00Z', priority: 1 })],
+      undefined,
+      NOW,
+    )
+    expect(r[0]?.priority).toBe(1)
+  })
+
+  it('priority=null / 範囲外 (5) は 4 に集約', () => {
+    const r = selectFreshlyDoneItems(
+      [
+        item({ id: 'a', doneAt: '2026-04-27T00:00:00Z', priority: null }),
+        item({ id: 'b', doneAt: '2026-04-27T00:00:00Z', priority: 5 }),
+      ],
+      undefined,
+      NOW,
+    )
+    expect(r.map((e) => e.priority)).toEqual([4, 4])
+  })
+})
+
+describe('computeFreshlyDoneByPriority / formatFreshlyDoneByPriorityJa (iter437)', () => {
+  type Entry = FreshlyDoneItemEntry<FreshlyDoneItemFields & { id: string; title: string }>
+  const e = (id: string, days: number, priority: 1 | 2 | 3 | 4): Entry => ({
+    item: item({ id, title: `T-${id}`, priority }),
+    daysSinceDone: days,
+    priority,
+  })
+
+  it('空 → 全 bucket count=0 / latestDaysSinceDone=null', () => {
+    const r = computeFreshlyDoneByPriority([])
+    expect(r).toEqual({
+      1: { count: 0, latestDaysSinceDone: null },
+      2: { count: 0, latestDaysSinceDone: null },
+      3: { count: 0, latestDaysSinceDone: null },
+      4: { count: 0, latestDaysSinceDone: null },
+    })
+    expect(formatFreshlyDoneByPriorityJa(r)).toBe('完了 0 件 (直近 7 日)')
+  })
+
+  it('P1 1 件 (今日) + P3 2 件 (1日前 / 3日前) → P3 最新=1', () => {
+    const r = computeFreshlyDoneByPriority([e('a', 0, 1), e('b', 1, 3), e('c', 3, 3)])
+    expect(r[1]).toEqual({ count: 1, latestDaysSinceDone: 0 })
+    expect(r[3]).toEqual({ count: 2, latestDaysSinceDone: 1 })
+    expect(formatFreshlyDoneByPriorityJa(r)).toBe(
+      '完了: P1 1 件 (最新 今日) / P3 2 件 (最新 1日前)',
+    )
+  })
+
+  it('単一 priority 偏在 → 1 行のみ', () => {
+    const r = computeFreshlyDoneByPriority([e('a', 5, 4), e('b', 7, 4)])
+    expect(formatFreshlyDoneByPriorityJa(r)).toBe('完了: P4 2 件 (最新 5日前)')
+  })
+
+  it('thresholdDays を渡すと empty sentinel に反映', () => {
+    expect(formatFreshlyDoneByPriorityJa(computeFreshlyDoneByPriority([]), 14)).toBe(
+      '完了 0 件 (直近 14 日)',
+    )
   })
 })

@@ -17,18 +17,23 @@
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { titleOrUntitled } from '@/lib/format-list'
 
+import { formatPriorityBucketsLabeled, normalizePriority, type PriorityKey } from './priority'
+
 /** 完了抽出に必要な Item の structural subset。 */
 export interface FreshlyDoneItemFields {
   id?: string
   title?: string
   doneAt: Date | string | null | undefined
   archivedAt: Date | string | null | undefined
+  priority?: number | null
 }
 
 export interface FreshlyDoneItemEntry<T extends FreshlyDoneItemFields> {
   item: T
   /** 完了からの経過日数 (床関数、0 = 今日完了) */
   daysSinceDone: number
+  /** item.priority を 1-4 に正規化 (null/未設定は 4 へ) — iter437 で追加 */
+  priority: PriorityKey
 }
 
 export interface SelectFreshlyDoneItemsOptions {
@@ -57,7 +62,10 @@ export function selectFreshlyDoneItems<T extends FreshlyDoneItemFields>(
     if (diffMs < 0) continue // 未来完了 (時計ズレ等) は除外
     const daysSinceDone = Math.floor(diffMs / MS_PER_DAY)
     if (daysSinceDone > thresholdDays) continue
-    enriched.push({ entry: { item: it, daysSinceDone }, index: i })
+    enriched.push({
+      entry: { item: it, daysSinceDone, priority: normalizePriority(it.priority) },
+      index: i,
+    })
   }
   enriched.sort((a, b) => {
     if (a.entry.daysSinceDone !== b.entry.daysSinceDone) {
@@ -88,3 +96,82 @@ export function formatFreshlyDoneSummary<T extends FreshlyDoneItemFields>(
 }
 
 // iter305 refactor: parseDateOrNull (lib/date/iso) に集約。
+
+/**
+ * iter437 ai-automation: freshly-done entries を priority 別 stat にバケット
+ * 化する pure helper。
+ *
+ * iter386 (must-overdue) / iter391 (must-stuck-wip) / iter406 (must-stale) /
+ * iter408 (slip-days) / iter414 (blocked-items) / iter429 (at-risk-parents) /
+ * iter432 (parent-items-progress) / iter434 (recent-completed) と並ぶ
+ * 「× priority」軸 — freshly-done 軸版 (9 弾目)。
+ *
+ * recent-completed (iter434) との対称軸: recent-completed は windowHours=24h /
+ * latestMinutesAgo (= 短期 momentum)、本 freshly-done は thresholdDays=7d /
+ * latestDaysSinceDone (= 週次 retro)。AI 朝 brief / 週次 retro Doc が「今週は
+ * P1 で 3 件 (最新 1日前) / P3 で 5 件 (最新 0日前)」のような P 別 retroactive
+ * 達成感を 1 関数で出せる。
+ *
+ * 仕様:
+ *  - 入力: `selectFreshlyDoneItems` の出力 (entries に priority 含む)
+ *  - 各 bucket の `count` (= 該当完了 item 数) と `latestDaysSinceDone`
+ *    (= bucket 内最新完了の日数、count=0 なら null、Math.floor 整数)
+ *  - 全 priority 0 件 / count=0 でも全 4 bucket は必ず初期化
+ */
+export interface FreshlyDonePriorityStats {
+  count: number
+  /** bucket 内最新完了の経過日数 (Math.floor 整数、count=0 なら null、0 = 今日完了) */
+  latestDaysSinceDone: number | null
+}
+
+export type FreshlyDoneByPriority = Record<PriorityKey, FreshlyDonePriorityStats>
+
+export function computeFreshlyDoneByPriority<T extends FreshlyDoneItemFields>(
+  entries: readonly FreshlyDoneItemEntry<T>[],
+): FreshlyDoneByPriority {
+  const result: FreshlyDoneByPriority = {
+    1: { count: 0, latestDaysSinceDone: null },
+    2: { count: 0, latestDaysSinceDone: null },
+    3: { count: 0, latestDaysSinceDone: null },
+    4: { count: 0, latestDaysSinceDone: null },
+  }
+  for (const e of entries) {
+    const bucket = result[e.priority]
+    bucket.count += 1
+    if (bucket.latestDaysSinceDone === null || e.daysSinceDone < bucket.latestDaysSinceDone) {
+      bucket.latestDaysSinceDone = e.daysSinceDone
+    }
+  }
+  return result
+}
+
+/**
+ * 経過日数を「今日 / 1 日前 / 5 日前」形式に整形。0 → '今日'、それ以外は
+ * `${days}日前`。recent-completed の minutes 表記と対称な days 表記版。
+ */
+function formatDaysAgoJa(days: number): string {
+  return days === 0 ? '今日' : `${days}日前`
+}
+
+/**
+ * AI prompt 用 priority 別 1 行サマリ:
+ *   '完了: P1 1 件 (最新 今日) / P3 2 件 (最新 1日前)'
+ *
+ * count=0 bucket は省略、全 0 → '完了 0 件 (直近 N 日)' (sentinel に thresholdDays
+ * 反映で formatFreshlyDoneSummary と一貫)。iter386/408/414/429/432/434 と同じ
+ * '{label}: P1 ... / P3 ...' 形式。
+ */
+export function formatFreshlyDoneByPriorityJa(
+  byPriority: FreshlyDoneByPriority,
+  thresholdDays: number = 7,
+): string {
+  return formatPriorityBucketsLabeled(
+    byPriority,
+    (k, s) =>
+      s.count === 0 || s.latestDaysSinceDone === null
+        ? null
+        : `P${k} ${s.count} 件 (最新 ${formatDaysAgoJa(s.latestDaysSinceDone)})`,
+    '完了',
+    `完了 0 件 (直近 ${thresholdDays} 日)`,
+  )
+}
