@@ -61,6 +61,11 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col">
+        <noscript>
+          <div className="bg-destructive text-destructive-foreground p-4 text-center text-sm">
+            最強TODO は JavaScript を必要とします。ブラウザで JavaScript を有効にしてください。
+          </div>
+        </noscript>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <NextIntlClientProvider messages={messages}>
             <NuqsAdapter>
