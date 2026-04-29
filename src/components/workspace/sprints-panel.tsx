@@ -222,6 +222,7 @@ export function SprintsPanel({ workspaceId }: Props) {
                   onChange={(e) => setStartDate(e.target.value)}
                   required
                   aria-required="true"
+                  max={endDate || undefined}
                 />
               </div>
               <div className="space-y-1">
@@ -517,6 +518,7 @@ function SprintCard({
                     id={`sprint-edit-start-${sprint.id}`}
                     type="date"
                     value={editStart}
+                    max={editEnd || undefined}
                     onChange={(e) => setEditStart(e.target.value)}
                     required
                     aria-label="Sprint 開始日"

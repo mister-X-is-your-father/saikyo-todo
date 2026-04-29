@@ -363,6 +363,9 @@ function ItemEditDialogInner({
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   data-testid="edit-item-start-date"
+                  // iter346: 既存 dueDate を超える startDate は不正なので max で HTML5 制約。
+                  // 反対方向 (min={startDate}) は editDue 側に既設、両方向ガードで対称化。
+                  max={dueDate || undefined}
                 />
               </div>
               <div className="space-y-1.5">
