@@ -18,6 +18,7 @@
 
 import { formatTopWithOverflow } from '@/lib/format-list'
 
+import { filterMustOnly } from './must-filter'
 import {
   bucketByPriorityWith,
   formatPriorityBucketsCountWithDays,
@@ -54,11 +55,7 @@ export function pickMustStuckWipItems<T extends MustStuckWipFields>(
   options: PickMustStuckWipOptions = {},
   today: Date | string = new Date(),
 ): StuckWipEntry<T>[] {
-  const onlyMust: T[] = []
-  for (const it of items) {
-    if (it && it.isMust) onlyMust.push(it)
-  }
-  return selectStuckWipItems(onlyMust, options, today)
+  return selectStuckWipItems(filterMustOnly(items), options, today)
 }
 
 /**

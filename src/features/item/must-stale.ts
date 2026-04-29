@@ -19,6 +19,7 @@
 
 import { formatTopWithOverflow } from '@/lib/format-list'
 
+import { filterMustOnly } from './must-filter'
 import {
   bucketByPriorityWith,
   formatPriorityBucketsCountWithDays,
@@ -51,11 +52,7 @@ export function pickMustStaleItems<T extends MustStaleFields>(
   options: SelectStaleItemsOptions = {},
   today: Date | string = new Date(),
 ): StaleItemEntry<T>[] {
-  const onlyMust: T[] = []
-  for (const it of items) {
-    if (it && it.isMust) onlyMust.push(it)
-  }
-  return selectStaleItems(onlyMust, options, today)
+  return selectStaleItems(filterMustOnly(items), options, today)
 }
 
 /**

@@ -19,6 +19,7 @@
 
 import { formatTopWithOverflow } from '@/lib/format-list'
 
+import { filterMustOnly } from './must-filter'
 import {
   computeOverdueActive,
   type OverdueActiveEntry,
@@ -57,10 +58,7 @@ export function computeMustOverdue<T extends MustOverdueFields>(
   items: readonly T[],
   today: Date | string = new Date(),
 ): MustOverdueStats {
-  const onlyMust: T[] = []
-  for (const it of items) {
-    if (it && it.isMust) onlyMust.push(it)
-  }
+  const onlyMust = filterMustOnly(items)
   if (onlyMust.length === 0) return EMPTY
   const stats = computeOverdueActive(onlyMust, today)
   return { total: stats.total, oldestOverdueDays: stats.oldestOverdueDays }
@@ -125,11 +123,7 @@ export function pickMustOverdueItems<T extends MustOverdueFields>(
   items: readonly T[],
   today: Date | string = new Date(),
 ): MustOverdueEntry<T>[] {
-  const mustOnly: T[] = []
-  for (const it of items) {
-    if (it && it.isMust) mustOnly.push(it)
-  }
-  return pickOverdueActiveItems(mustOnly, today)
+  return pickOverdueActiveItems(filterMustOnly(items), today)
 }
 
 /** caller の MUST item に title が含まれる場合の structural subset。 */
