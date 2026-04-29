@@ -189,6 +189,7 @@ export function SprintsPanel({ workspaceId }: Props) {
           <form
             className="space-y-3"
             noValidate
+            aria-busy={createMut.isPending || undefined}
             onSubmit={(e) => {
               e.preventDefault()
               void handleCreate()
@@ -480,6 +481,7 @@ function SprintCard({
             <form
               className="space-y-2 rounded border border-dashed p-2"
               noValidate
+              aria-busy={update.isPending || undefined}
               onSubmit={async (e) => {
                 e.preventDefault()
                 if (isInvalidDateRange(editStart, editEnd)) {
@@ -758,6 +760,7 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
           <form
             className="flex flex-wrap items-end gap-2"
             noValidate
+            aria-busy={upd.isPending || undefined}
             onSubmit={(e) => {
               e.preventDefault()
               void save()
