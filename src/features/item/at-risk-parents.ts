@@ -30,12 +30,16 @@ import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { fullPathOf } from '@/lib/db/ltree-path'
 import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 
+import { formatPriorityBuckets, normalizePriority, type PriorityKey } from './priority'
+
 export interface AtRiskParentEntry<I> {
   parent: I
   /** active 子孫のうち最古 updatedAt の経過日数 (Math.floor で整数) */
   maxStaleDays: number
   /** active 子孫の件数 (集計対象、cancelled / done / deleted を除外) */
   activeDescendantCount: number
+  /** parent.priority を 1-4 に正規化 (null/未設定は 4 へ) */
+  priority: PriorityKey
 }
 
 interface ParentItemFields {
@@ -46,6 +50,7 @@ interface ParentItemFields {
   updatedAt: Date | string | null | undefined
   doneAt?: Date | string | null
   deletedAt?: Date | null
+  priority?: number | null
 }
 
 export interface SelectAtRiskParentsOptions {
@@ -101,7 +106,12 @@ export function pickAtRiskParents<I extends ParentItemFields>(
     if (diffMs < 0) continue
     const maxStaleDays = Math.floor(diffMs / MS_PER_DAY)
     if (maxStaleDays < thresholdDays) continue
-    result.push({ parent: candidate, maxStaleDays, activeDescendantCount })
+    result.push({
+      parent: candidate,
+      maxStaleDays,
+      activeDescendantCount,
+      priority: normalizePriority(candidate.priority),
+    })
   }
   result.sort((a, b) => {
     if (a.maxStaleDays !== b.maxStaleDays) return b.maxStaleDays - a.maxStaleDays
@@ -129,4 +139,64 @@ export function formatAtRiskParentsBriefJa<I extends ParentItemFields>(
     limit,
   )
   return `触れていない案件 ${entries.length} 件: ${body}`
+}
+
+/**
+ * iter429 ai-automation: at-risk parents を priority 別 stat にバケット化する pure helper。
+ *
+ * iter386 (must-overdue) / iter391 (must-stuck-wip) / iter406 (must-stale) /
+ * iter408 (slip-days) / iter414 (blocked-items) と並ぶ「× priority」軸 — at-risk
+ * parents 軸版 (6 弾目)。dashboard chip の aria-label / title (= SR / hover 経路) で
+ * 「priority breakdown」を出すための substrate。
+ *
+ * 仕様:
+ *  - at-risk parent を priority (1-4) で bucket 化 (PRIORITY_ORDER 不変)
+ *  - 各 bucket の `count` (= 該当 at-risk parent 数) と `maxStaleDays`
+ *    (= bucket 内最大、count=0 なら null)
+ *  - 全 priority 0 件 / count=0 でも全 4 bucket は必ず初期化
+ */
+export interface AtRiskParentsPriorityStats {
+  count: number
+  /** 該当 priority bucket 内最大 maxStaleDays (count=0 なら null) */
+  maxStaleDays: number | null
+}
+
+export type AtRiskParentsByPriority = Record<PriorityKey, AtRiskParentsPriorityStats>
+
+export function computeAtRiskParentsByPriority<I>(
+  entries: readonly AtRiskParentEntry<I>[],
+): AtRiskParentsByPriority {
+  const result: AtRiskParentsByPriority = {
+    1: { count: 0, maxStaleDays: null },
+    2: { count: 0, maxStaleDays: null },
+    3: { count: 0, maxStaleDays: null },
+    4: { count: 0, maxStaleDays: null },
+  }
+  for (const e of entries) {
+    const bucket = result[e.priority]
+    bucket.count += 1
+    if (bucket.maxStaleDays === null || e.maxStaleDays > bucket.maxStaleDays) {
+      bucket.maxStaleDays = e.maxStaleDays
+    }
+  }
+  return result
+}
+
+/**
+ * AI prompt / dashboard chip aria-label 用 priority 別 1 行サマリ:
+ *   '触れていない案件: P1 1 件 (最大 14日) / P3 2 件 (最大 8日)'
+ *
+ * count=0 bucket は省略、全 0 → '触れていない案件 0 件'。iter386/408/414 と同じ
+ * '{label}: P1 ... / P3 ...' 形式。
+ */
+export function formatAtRiskParentsByPriorityJa(byPriority: AtRiskParentsByPriority): string {
+  const body = formatPriorityBuckets(
+    byPriority,
+    (k, s) =>
+      s.count === 0 || s.maxStaleDays === null
+        ? null
+        : `P${k} ${s.count} 件 (最大 ${s.maxStaleDays}日)`,
+    '触れていない案件 0 件',
+  )
+  return body === '触れていない案件 0 件' ? body : `触れていない案件: ${body}`
 }

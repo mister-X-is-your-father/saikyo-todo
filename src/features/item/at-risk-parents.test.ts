@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest'
 
 import { uuidToLabel } from '@/lib/db/ltree-path'
 
-import { formatAtRiskParentsBriefJa, pickAtRiskParents } from './at-risk-parents'
+import {
+  type AtRiskParentEntry,
+  computeAtRiskParentsByPriority,
+  formatAtRiskParentsBriefJa,
+  formatAtRiskParentsByPriorityJa,
+  pickAtRiskParents,
+} from './at-risk-parents'
 
 const NOW = new Date('2026-04-29T00:00:00Z')
 
@@ -19,6 +25,7 @@ interface TestItem {
   updatedAt: Date | string | null
   doneAt?: Date | null
   deletedAt?: Date | null
+  priority?: number | null
 }
 
 const item = (id: string, overrides: Partial<TestItem> = {}): TestItem => ({
@@ -188,6 +195,7 @@ describe('formatAtRiskParentsBriefJa', () => {
           parent: item(PARENT_A, { title: 'リリース準備' }),
           maxStaleDays: 14,
           activeDescendantCount: 3,
+          priority: 4,
         },
       ]),
     ).toBe('触れていない案件 1 件: リリース準備 14日')
@@ -198,6 +206,7 @@ describe('formatAtRiskParentsBriefJa', () => {
       parent: item(`p${i}`, { title }),
       maxStaleDays: 20 - i,
       activeDescendantCount: 1,
+      priority: 4 as const,
     }))
     expect(formatAtRiskParentsBriefJa(entries, 3)).toBe(
       '触れていない案件 5 件: A 20日 / B 19日 / C 18日 / 他 2 件',
@@ -211,8 +220,77 @@ describe('formatAtRiskParentsBriefJa', () => {
           parent: item(PARENT_A, { title: '' }),
           maxStaleDays: 8,
           activeDescendantCount: 1,
+          priority: 4,
         },
       ]),
     ).toBe('触れていない案件 1 件: (無題) 8日')
+  })
+})
+
+describe('pickAtRiskParents — priority 抽出', () => {
+  it('parent.priority=1 は priority=1 で乗る', () => {
+    const r = pickAtRiskParents(
+      [
+        item(PARENT_A, { title: 'P1', priority: 1 }),
+        item('c1', { parentPath: PARENT_A_FULL, updatedAt: daysAgo(14) }),
+      ],
+      {},
+      NOW,
+    )
+    expect(r[0]?.priority).toBe(1)
+  })
+
+  it('priority=null / 範囲外 (5) は 4 に集約', () => {
+    const r = pickAtRiskParents(
+      [
+        item(PARENT_A, { title: 'A', priority: null }),
+        item('a1', { parentPath: PARENT_A_FULL, updatedAt: daysAgo(14) }),
+        item(PARENT_B, { title: 'B', priority: 5 }),
+        item('b1', { parentPath: PARENT_B_FULL, updatedAt: daysAgo(14) }),
+      ],
+      {},
+      NOW,
+    )
+    expect(r.map((e) => e.priority)).toEqual([4, 4])
+  })
+})
+
+describe('computeAtRiskParentsByPriority / formatAtRiskParentsByPriorityJa', () => {
+  const e = (
+    id: string,
+    days: number,
+    priority: 1 | 2 | 3 | 4 = 4,
+  ): AtRiskParentEntry<TestItem> => ({
+    parent: item(id, { priority, title: `T-${id}` }),
+    maxStaleDays: days,
+    activeDescendantCount: 1,
+    priority,
+  })
+
+  it('空 → 全 bucket count=0 / max=null', () => {
+    const r = computeAtRiskParentsByPriority([])
+    expect(r).toEqual({
+      1: { count: 0, maxStaleDays: null },
+      2: { count: 0, maxStaleDays: null },
+      3: { count: 0, maxStaleDays: null },
+      4: { count: 0, maxStaleDays: null },
+    })
+    expect(formatAtRiskParentsByPriorityJa(r)).toBe('触れていない案件 0 件')
+  })
+
+  it('P1 1 件 (14日) + P3 2 件 (8日 / 12日) → P3 max=12', () => {
+    const r = computeAtRiskParentsByPriority([e('a', 14, 1), e('b', 8, 3), e('c', 12, 3)])
+    expect(r[1]).toEqual({ count: 1, maxStaleDays: 14 })
+    expect(r[2]).toEqual({ count: 0, maxStaleDays: null })
+    expect(r[3]).toEqual({ count: 2, maxStaleDays: 12 })
+    expect(r[4]).toEqual({ count: 0, maxStaleDays: null })
+    expect(formatAtRiskParentsByPriorityJa(r)).toBe(
+      '触れていない案件: P1 1 件 (最大 14日) / P3 2 件 (最大 12日)',
+    )
+  })
+
+  it('単一 priority 偏在 → 1 行のみ', () => {
+    const r = computeAtRiskParentsByPriority([e('a', 14, 4), e('b', 8, 4)])
+    expect(formatAtRiskParentsByPriorityJa(r)).toBe('触れていない案件: P4 2 件 (最大 14日)')
   })
 })
