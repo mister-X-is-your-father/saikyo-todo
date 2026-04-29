@@ -90,21 +90,32 @@ export function StartTimerButton({ item, size = 'default' }: Props) {
     )
   }
 
+  // iter310: size='sm' (Today / Backlog 行) で otherActive 時に 12 文字超 ("別 Item を停止して計測開始")
+  // が並び、行幅を圧迫して折返し / レイアウト崩れの原因に。compact 時のみ短縮した
+  // visible label を出し、SR / hover には full hint を保つ (WCAG 2.5.3 ラベルと
+  // 名前の整合性: 短縮 visible label "切替して開始" は full aria-label の prefix)。
+  const isCompact = size === 'sm'
+  const visibleLabel = otherActive
+    ? isCompact
+      ? '切替して開始'
+      : '別 Item を停止して計測開始'
+    : '計測開始'
+  const fullHint = otherActive
+    ? `「${activeItemTitle}」のタイマーを停止して「${item.title}」の計測を開始`
+    : `「${item.title}」のタイマーを開始`
+
   return (
     <Button
       type="button"
       variant="outline"
-      size={size === 'sm' ? 'sm' : 'default'}
+      size={isCompact ? 'sm' : 'default'}
       onClick={handleClick}
       data-testid={`start-timer-${item.id}`}
-      aria-label={
-        otherActive
-          ? `「${activeItemTitle}」のタイマーを停止して「${item.title}」の計測を開始`
-          : `「${item.title}」のタイマーを開始`
-      }
+      aria-label={fullHint}
+      title={otherActive ? fullHint : undefined}
     >
       <Timer className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-      {otherActive ? '別 Item を停止して計測開始' : '計測開始'}
+      {visibleLabel}
     </Button>
   )
 }
