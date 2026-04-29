@@ -3,8 +3,10 @@ import { describe, expect, it } from 'vitest'
 import { uuidToLabel } from '@/lib/db/ltree-path'
 
 import {
+  computeParentItemsProgressByPriority,
   formatAggregateParentItemsJa,
   formatParentItemsProgressBriefJa,
+  formatParentItemsProgressByPriorityJa,
   type ParentItemProgress,
   pickIncompleteParentItems,
   summarizeParentItemsAggregate,
@@ -23,6 +25,7 @@ interface TestItem {
   parentPath: string
   status: string | null | undefined
   deletedAt?: Date | null
+  priority?: number | null
 }
 
 const item = (id: string, overrides: Partial<TestItem> = {}): TestItem => ({
@@ -137,6 +140,7 @@ describe('formatParentItemsProgressBriefJa', () => {
             pctDone: 30,
             isComplete: false,
           },
+          priority: 4,
         },
       ]),
     ).toBe('進行中: リリース準備 30% (3/10)')
@@ -156,6 +160,7 @@ describe('formatParentItemsProgressBriefJa', () => {
         pctDone: i * 10,
         isComplete: false,
       },
+      priority: 4 as const,
     }))
     expect(formatParentItemsProgressBriefJa(entries, 3)).toBe(
       '進行中: A 0% (0/10) / B 10% (1/10) / C 20% (2/10) / 他 2 件',
@@ -178,6 +183,7 @@ describe('formatParentItemsProgressBriefJa', () => {
             pctDone: 20,
             isComplete: false,
           },
+          priority: 4,
         },
       ]),
     ).toBe('進行中: (無題) 20% (1/5)')
@@ -198,6 +204,7 @@ describe('summarizeParentItemsAggregate / formatAggregateParentItemsJa', () => {
       pctDone: pct,
       isComplete: pct === 100,
     },
+    priority: 4,
   })
 
   it('空 → all-zero aggregate', () => {
@@ -249,5 +256,79 @@ describe('summarizeParentItemsAggregate / formatAggregateParentItemsJa', () => {
     // avg = (33 + 67) / 2 = 50 (round)
     const r = summarizeParentItemsAggregate([e(33), e(67)])
     expect(r.avgPctDone).toBe(50)
+  })
+})
+
+describe('pickIncompleteParentItems — priority 抽出', () => {
+  it('parent.priority=1 は priority=1 で entry に乗る', () => {
+    const r = pickIncompleteParentItems([
+      item(PARENT_A, { title: 'P1', priority: 1 }),
+      item('c1', { parentPath: PARENT_A_FULL, status: 'todo' }),
+    ])
+    expect(r[0]?.priority).toBe(1)
+  })
+
+  it('priority=null / 範囲外 (5) は 4 に集約', () => {
+    const r = pickIncompleteParentItems([
+      item(PARENT_A, { title: 'A', priority: null }),
+      item('a1', { parentPath: PARENT_A_FULL, status: 'todo' }),
+      item(PARENT_B, { title: 'B', priority: 5 }),
+      item('b1', { parentPath: PARENT_B_FULL, status: 'todo' }),
+    ])
+    expect(r.map((x) => x.priority)).toEqual([4, 4])
+  })
+})
+
+describe('computeParentItemsProgressByPriority / formatParentItemsProgressByPriorityJa', () => {
+  const e = (
+    id: string,
+    pct: number,
+    priority: 1 | 2 | 3 | 4 = 4,
+  ): ParentItemProgress<TestItem> => ({
+    parent: item(id, { priority, title: `T-${id}` }),
+    progress: {
+      total: 10,
+      done: Math.round((pct / 100) * 10),
+      inProgress: 0,
+      blocked: 0,
+      todo: 10 - Math.round((pct / 100) * 10),
+      cancelled: 0,
+      unknown: 0,
+      pctDone: pct,
+      isComplete: false,
+    },
+    priority,
+  })
+
+  it('空 → 全 bucket count=0 / avg=null', () => {
+    const r = computeParentItemsProgressByPriority([])
+    expect(r).toEqual({
+      1: { count: 0, avgPctDone: null },
+      2: { count: 0, avgPctDone: null },
+      3: { count: 0, avgPctDone: null },
+      4: { count: 0, avgPctDone: null },
+    })
+    expect(formatParentItemsProgressByPriorityJa(r)).toBe('進行中の案件 0 件')
+  })
+
+  it('P1 1 件 (30%) + P3 2 件 (60% / 80%) → P3 avg=70', () => {
+    const r = computeParentItemsProgressByPriority([e('a', 30, 1), e('b', 60, 3), e('c', 80, 3)])
+    expect(r[1]).toEqual({ count: 1, avgPctDone: 30 })
+    expect(r[2]).toEqual({ count: 0, avgPctDone: null })
+    expect(r[3]).toEqual({ count: 2, avgPctDone: 70 })
+    expect(r[4]).toEqual({ count: 0, avgPctDone: null })
+    expect(formatParentItemsProgressByPriorityJa(r)).toBe(
+      '進行中: P1 1 件 (平均 30%) / P3 2 件 (平均 70%)',
+    )
+  })
+
+  it('単一 priority 偏在 → 1 行のみ', () => {
+    const r = computeParentItemsProgressByPriority([e('a', 30, 4), e('b', 50, 4)])
+    expect(formatParentItemsProgressByPriorityJa(r)).toBe('進行中: P4 2 件 (平均 40%)')
+  })
+
+  it('avgPctDone は Math.round で整数化 (33 + 67 → 50)', () => {
+    const r = computeParentItemsProgressByPriority([e('a', 33, 2), e('b', 67, 2)])
+    expect(r[2]?.avgPctDone).toBe(50)
   })
 })

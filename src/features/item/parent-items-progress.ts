@@ -22,10 +22,18 @@
 import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 
 import { type DescendantsProgress, summarizeDescendantsProgress } from './descendants-progress'
+import {
+  formatPriorityBuckets,
+  normalizePriority,
+  PRIORITY_ORDER,
+  type PriorityKey,
+} from './priority'
 
 export interface ParentItemProgress<I> {
   parent: I
   progress: DescendantsProgress
+  /** parent.priority を 1-4 に正規化 (null/未設定は 4 へ) — iter432 で追加 */
+  priority: PriorityKey
 }
 
 interface ParentItemFields {
@@ -34,6 +42,7 @@ interface ParentItemFields {
   parentPath: string
   status: string | null | undefined
   deletedAt?: Date | null
+  priority?: number | null
 }
 
 /**
@@ -57,7 +66,11 @@ export function pickIncompleteParentItems<I extends ParentItemFields>(
     )
     if (progress.total === 0) continue
     if (progress.isComplete) continue
-    result.push({ parent: candidate, progress })
+    result.push({
+      parent: candidate,
+      progress,
+      priority: normalizePriority(candidate.priority),
+    })
   }
   result.sort((a, b) => {
     if (a.progress.pctDone !== b.progress.pctDone) {
@@ -170,4 +183,68 @@ export function formatAggregateParentItemsJa(agg: ParentItemsAggregate): string 
   if (agg.byTier.almostDone > 0) parts.push(`仕上げ ${agg.byTier.almostDone}`)
   const tierBody = parts.length > 0 ? `, ${parts.join(' / ')}` : ''
   return `進行中 ${agg.count} 件: 平均 ${agg.avgPctDone}%${tierBody}`
+}
+
+/**
+ * iter432 ai-automation: incomplete parents を priority 別 stat にバケット化する
+ * pure helper。
+ *
+ * iter386 (must-overdue) / iter391 (must-stuck-wip) / iter406 (must-stale) /
+ * iter408 (slip-days) / iter414 (blocked-items) / iter429 (at-risk-parents) と
+ * 並ぶ「× priority」軸 — parent-items-progress 軸版 (7 弾目)。dashboard chip の
+ * aria-label / title (= SR / hover 経路) で「priority breakdown」を出すための
+ * substrate (= 次 iter で basics として bind 予定)。
+ *
+ * 仕様:
+ *  - incomplete parent を priority (1-4) で bucket 化 (PRIORITY_ORDER 不変)
+ *  - 各 bucket の `count` (= 該当 parent 数) と `avgPctDone` (= bucket 内 pctDone
+ *    平均、Math.round 整数化、count=0 なら null) を返す
+ *  - 全 priority 0 件 / count=0 でも全 4 bucket は必ず初期化 (undefined チェック不要)
+ */
+export interface ParentItemsProgressPriorityStats {
+  count: number
+  /** 該当 priority bucket 内の pctDone 平均 (Math.round 整数、count=0 なら null) */
+  avgPctDone: number | null
+}
+
+export type ParentItemsProgressByPriority = Record<PriorityKey, ParentItemsProgressPriorityStats>
+
+export function computeParentItemsProgressByPriority<I>(
+  entries: readonly ParentItemProgress<I>[],
+): ParentItemsProgressByPriority {
+  const result: ParentItemsProgressByPriority = {
+    1: { count: 0, avgPctDone: null },
+    2: { count: 0, avgPctDone: null },
+    3: { count: 0, avgPctDone: null },
+    4: { count: 0, avgPctDone: null },
+  }
+  const sums: Record<PriorityKey, number> = { 1: 0, 2: 0, 3: 0, 4: 0 }
+  for (const e of entries) {
+    result[e.priority].count += 1
+    sums[e.priority] += e.progress.pctDone
+  }
+  for (const k of PRIORITY_ORDER) {
+    const bucket = result[k]
+    if (bucket.count > 0) bucket.avgPctDone = Math.round(sums[k] / bucket.count)
+  }
+  return result
+}
+
+/**
+ * AI prompt / dashboard chip aria-label 用 priority 別 1 行サマリ:
+ *   '進行中: P1 1 件 (平均 30%) / P3 2 件 (平均 60%)'
+ *
+ * count=0 bucket は省略、全 0 → '進行中の案件 0 件'。iter386/408/414/429 と同じ
+ * '{label}: P1 ... / P3 ...' 形式。
+ */
+export function formatParentItemsProgressByPriorityJa(
+  byPriority: ParentItemsProgressByPriority,
+): string {
+  const body = formatPriorityBuckets(
+    byPriority,
+    (k, s) =>
+      s.count === 0 || s.avgPctDone === null ? null : `P${k} ${s.count} 件 (平均 ${s.avgPctDone}%)`,
+    '進行中の案件 0 件',
+  )
+  return body === '進行中の案件 0 件' ? body : `進行中: ${body}`
 }
