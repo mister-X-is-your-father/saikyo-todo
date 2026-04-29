@@ -118,6 +118,7 @@ import {
   formatSlipDaysJa,
   slipSeverity,
 } from '@/features/item/slip-days'
+import { formatStaleUrgentJa, pickStaleUrgentItems } from '@/features/item/stale-urgent'
 import {
   countItemsByUrgencyTier,
   formatTopUrgentTitlesJa,
@@ -479,6 +480,23 @@ export function DashboardView({ workspaceId }: Props) {
     return { counts, severity, visible, detail }
   }, [itemsQ.data])
 
+  // iter398 basics: stale-urgent (iter397 = urgency × aging combinator) を bind。
+  // critical / high かつ 7 日以上経過の item を「対応 + 古参」 triage 候補として
+  // chip 表示。urgent はあって当然 + stale も backlog 全体には散見、両方該当する
+  // 「対応すべき + 既に放置」が深刻アラーム signal なので警戒色 (red) で目立たせる。
+  // 0 件で chip 非表示で UI 静か (= triage 不要状態は無音)。aria-label / title に
+  // top 3 stale-urgent item の title を `formatTopUrgentTitlesJa` で同梱、
+  // urgency-tiers chip と同じ vocabulary を再利用 (iter394/iter396 と整合)。
+  const staleUrgent = useMemo(() => {
+    if (!itemsQ.data) return null
+    const stale = pickStaleUrgentItems(itemsQ.data)
+    if (stale.length === 0) return null
+    const summary = formatStaleUrgentJa(itemsQ.data)
+    const topTitles = formatTopUrgentTitlesJa(stale, 3)
+    const detail = `${summary} — ${topTitles}`
+    return { stale, summary, detail }
+  }, [itemsQ.data])
+
   if (summary.isLoading) return <Loading message="ダッシュボード読込中..." />
   if (summary.error) {
     return (
@@ -534,6 +552,18 @@ export function DashboardView({ workspaceId }: Props) {
               'data-high-count': urgencyTiers.counts.high,
               'data-severity': urgencyTiers.severity,
             }}
+          />
+        ) : null}
+        {staleUrgent ? (
+          <DashboardChip
+            testId="dashboard-stale-urgent-chip"
+            toneClass="border-red-200 bg-red-50 text-red-700"
+            glyph="⏳"
+            ariaLabel={staleUrgent.detail}
+            title={staleUrgent.detail}
+            text={staleUrgent.summary}
+            truncateText
+            dataAttrs={{ 'data-stale-urgent-count': staleUrgent.stale.length }}
           />
         ) : null}
         {recentDone ? (
