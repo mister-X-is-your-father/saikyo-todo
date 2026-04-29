@@ -386,7 +386,7 @@ export function DashboardView({ workspaceId }: Props) {
     const entries = pickOverdueActiveItems(itemsQ.data)
     const titlesDetail = entries.length > 0 ? ` — ${formatOverdueActiveTitlesJa(entries, 3)}` : ''
     const detail = `${summary}${priorityDetail}${titlesDetail}`
-    return { stats, summary, severity: sev, detail }
+    return { stats, summary, severity: sev, detail, priorityBuckets }
   }, [itemsQ.data])
 
   // iter373 basics: must-overdue (iter372) を bind。MUST かつ期限超過の最深刻 item を
@@ -410,7 +410,7 @@ export function DashboardView({ workspaceId }: Props) {
     const entries = pickMustOverdueItems(itemsQ.data)
     const titlesDetail = entries.length > 0 ? ` — ${formatMustOverdueTitlesJa(entries, 3)}` : ''
     const detail = `${summary}${priorityDetail}${titlesDetail}`
-    return { stats, summary, detail, severity: sev }
+    return { stats, summary, detail, severity: sev, priorityBuckets }
   }, [itemsQ.data])
 
   // iter366 basics: must-stuck-wip (iter364) を bind。MUST かつ stuck WIP な
@@ -430,7 +430,7 @@ export function DashboardView({ workspaceId }: Props) {
     const priorityBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)
     const detail =
       priorityBuckets > 1 ? `${summary} — ${formatMustStuckWipByPriorityJa(byPriority)}` : summary
-    return { entries, summary, detail, severity: sev }
+    return { entries, summary, detail, severity: sev, priorityBuckets }
   }, [itemsQ.data])
 
   // iter361 basics: recent-completed (iter359) を bind。直近 24h 完了 item の
@@ -879,6 +879,7 @@ export function DashboardView({ workspaceId }: Props) {
             dataAttrs={{
               'data-severity': mustStuckWip.severity,
               'data-must-stuck-count': mustStuckWip.entries.length,
+              'data-priority-buckets': mustStuckWip.priorityBuckets,
             }}
           />
         ) : null}
@@ -895,6 +896,7 @@ export function DashboardView({ workspaceId }: Props) {
               'data-severity': mustOverdue.severity,
               'data-must-overdue-count': mustOverdue.stats.total,
               'data-oldest-days': mustOverdue.stats.oldestOverdueDays ?? 0,
+              'data-priority-buckets': mustOverdue.priorityBuckets,
             }}
           />
         ) : null}
@@ -962,6 +964,7 @@ export function DashboardView({ workspaceId }: Props) {
               'data-severity': overdueActive.severity,
               'data-overdue-total': overdueActive.stats.total,
               'data-oldest-days': overdueActive.stats.oldestOverdueDays ?? 0,
+              'data-priority-buckets': overdueActive.priorityBuckets,
             }}
           />
         ) : null}
