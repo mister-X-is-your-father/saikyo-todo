@@ -100,6 +100,7 @@ export function TemplateItemsEditor({ templateId }: Props) {
             aria-required="true"
             minLength={1}
             maxLength={500}
+            autoComplete="off"
           />
           <input
             type="number"

@@ -105,6 +105,7 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                 aria-required="true"
                 minLength={1}
                 maxLength={200}
+                autoComplete="off"
               />
             </div>
             <div className="space-y-1">

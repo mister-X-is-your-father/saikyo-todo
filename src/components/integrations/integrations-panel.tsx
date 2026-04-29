@@ -321,6 +321,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                 aria-required="true"
                 minLength={1}
                 maxLength={200}
+                autoComplete="off"
               />
             </div>
           </div>
@@ -338,6 +339,10 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                   required
                   aria-required="true"
                   minLength={1}
+                  // iter345: API token は password manager の auto-fill 対象外、
+                  // new-password で suggest は出るが既存 password 補完を避ける。
+                  autoComplete="new-password"
+                  spellCheck={false}
                   data-testid="src-token"
                 />
               </div>
@@ -350,6 +355,8 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                   placeholder="カンマ区切り (例: proj-a, proj-b)"
                   required
                   aria-required="true"
+                  autoComplete="off"
+                  spellCheck={false}
                 />
               </div>
             </div>
@@ -366,6 +373,8 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     placeholder="https://example.com/api/items"
                     required
                     aria-required="true"
+                    autoComplete="off"
+                    spellCheck={false}
                     data-testid="src-url"
                   />
                 </div>
