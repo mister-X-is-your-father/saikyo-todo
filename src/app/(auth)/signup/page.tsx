@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function SignupPage() {
   return (
-    <Card role="region" aria-labelledby="signup-heading" aria-describedby="signup-description">
+    <Card aria-labelledby="signup-heading" aria-describedby="signup-description">
       <CardHeader>
         <CardTitle id="signup-heading" role="heading" aria-level={1} className="text-2xl">
           サインアップ

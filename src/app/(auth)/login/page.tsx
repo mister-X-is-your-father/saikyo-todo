@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <Card role="region" aria-labelledby="login-heading" aria-describedby="login-description">
+    <Card aria-labelledby="login-heading" aria-describedby="login-description">
       <CardHeader>
         <CardTitle id="login-heading" role="heading" aria-level={1} className="text-2xl">
           ログイン
