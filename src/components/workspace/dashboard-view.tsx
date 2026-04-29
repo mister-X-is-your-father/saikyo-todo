@@ -192,8 +192,10 @@ import {
 } from '@/features/item/urgency'
 import {
   classifyVelocityHint,
+  computeCompletionStreak,
   computeVelocity,
   computeVelocityByPriority,
+  formatCompletionStreakJa,
   formatVelocityByPriorityJa,
   formatVelocityHintJa,
   formatVelocitySummary,
@@ -269,15 +271,20 @@ export function DashboardView({ workspaceId }: Props) {
       // VelocityPriorityStats has count field, mapping is direct
       byPriority,
     )
+    // iter458 basics: iter457 で追加した completion streak を SR / hover に append、
+    // streak ≥ 2 (= 連続日数 OK) のみ表示 (= 0/1 日は冗長省略)。positive feedback で
+    // 「3 日連続!」が SR 経路で読める。
+    const streak = computeCompletionStreak(result)
+    const streakDetail = streak >= 2 ? ` — ${formatCompletionStreakJa(streak)}` : ''
     const detail = `${line}${priorityDetailSuffix(priorityBuckets, () =>
       formatVelocityByPriorityJa(byPriority, 7),
-    )}`
+    )}${streakDetail}`
     // iter456 basics: iter454 で追加した velocity trend hint (idle/up/flat/down) を
     // chip aria-label prefix + data-velocity-hint attr に bind (= iter441 / iter443 /
     // iter446 / iter448 / iter451 hint chip 同手法 6 弾目)。
     const hint = classifyVelocityHint(result)
     const hintLabel = formatVelocityHintJa(result)
-    return { result, line, detail, priorityBuckets, hint, hintLabel }
+    return { result, line, detail, priorityBuckets, hint, hintLabel, streak }
   }, [itemsQ.data])
 
   // iter336 basics: completion-days-by-priority (iter334) を bind。
@@ -929,6 +936,7 @@ export function DashboardView({ workspaceId }: Props) {
               'data-trend': velocity.result.trend,
               'data-priority-buckets': velocity.priorityBuckets,
               'data-velocity-hint': velocity.hint,
+              'data-streak': velocity.streak,
             }}
           />
         ) : null}
