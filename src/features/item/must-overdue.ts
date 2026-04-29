@@ -17,10 +17,14 @@
  *   - dashboard 専用 chip (severity 'critical' = red、must-stuck-wip と異なる軸)
  */
 
-import { MS_PER_DAY, parseDateOrNull, parseIsoDateAsLocalMidnight } from '@/lib/date/iso'
 import { formatTopWithOverflow } from '@/lib/format-list'
 
-import { computeOverdueActive, type OverdueActiveFields } from './overdue-active'
+import {
+  computeOverdueActive,
+  type OverdueActiveEntry,
+  type OverdueActiveFields,
+  pickOverdueActiveItems,
+} from './overdue-active'
 import {
   bucketByPriorityWith,
   formatPriorityBucketsCountWithDays,
@@ -92,60 +96,40 @@ export function mustOverdueSeverity(stats: MustOverdueStats): MustOverdueSeverit
   return stats.total > 0 ? 'critical' : 'idle'
 }
 
-/** pickMustOverdueItems の戻り単 entry。item + 何日 overdue か。 */
-export interface MustOverdueEntry<T extends MustOverdueFields> {
-  item: T
-  /** today - dueDate (整数日数、Math.floor) */
-  overdueDays: number
-}
+/**
+ * pickMustOverdueItems の戻り単 entry。item + 何日 overdue か。
+ *
+ * iter390 refactor: shape は `OverdueActiveEntry<T>` と完全同一なので type alias で
+ * 統合。caller は `MustOverdueEntry<T>` / `OverdueActiveEntry<T>` どちらの名前でも
+ * 同 shape を参照できる (= 既存 import の後方互換を保ちつつ実装は 1 か所に集約)。
+ */
+export type MustOverdueEntry<T extends MustOverdueFields> = OverdueActiveEntry<T>
 
 /**
  * iter379 ai-automation: isMust=true かつ overdue active な items を実際に抽出して
  * overdueDays 降順で返す pure helper。
  *
- * computeMustOverdue は stats (total / oldestOverdueDays) のみだったが、AI 朝 brief や
- * dashboard tooltip で「具体的にどの MUST が期限超過しているか」を見せたい時は items
- * 一覧が必要。本 helper はその gap を埋める。
+ * iter390 refactor: filter + sort + map のロジックは pickOverdueActiveItems と完全
+ * 同一だったので、isMust 制約を pre-filter して pickOverdueActiveItems に委譲する形に
+ * 集約 (= ~25 行の重複削除)。並び安定性は mustOnly 内 index 順 = 元 items 内 MUST の
+ * 相対順序が保たれるので caller 観測には差分なし。status 検査は normalizeStatus 経由
+ * (大文字/小文字 fail-soft) に揃った (旧実装は strict literal だった)。
  *
- * 仕様 (computeOverdueActive と filter ロジック互換、isMust 追加):
+ * 仕様 (caller 観測):
  *   - isMust=true (null/false/undefined 除外)
  *   - dueDate valid ISO + dueDate < today
- *   - done/archive/cancelled 除外
- *   - 並び: overdueDays 降順 (= 最も deeply overdue)、tie で元配列順 stable
+ *   - done/archive/cancelled 除外 (status は normalizeStatus 経由)
+ *   - 並び: overdueDays 降順、tie で元配列順 stable
  */
 export function pickMustOverdueItems<T extends MustOverdueFields>(
   items: readonly T[],
   today: Date | string = new Date(),
 ): MustOverdueEntry<T>[] {
-  const todayDate = parseDateOrNull(today)
-  if (!todayDate) return []
-  const todayMidnightMs = new Date(
-    todayDate.getFullYear(),
-    todayDate.getMonth(),
-    todayDate.getDate(),
-  ).getTime()
-
-  const enriched: { entry: MustOverdueEntry<T>; index: number }[] = []
-  for (let i = 0; i < items.length; i++) {
-    const it = items[i]
-    if (!it || !it.isMust) continue
-    if (it.doneAt || it.archivedAt) continue
-    if (it.status === 'cancelled' || it.status === 'done') continue
-    if (typeof it.dueDate !== 'string') continue
-    const dueMidnight = parseIsoDateAsLocalMidnight(it.dueDate)
-    if (!dueMidnight) continue
-    const dueMs = dueMidnight.getTime()
-    if (dueMs >= todayMidnightMs) continue
-    const overdueDays = Math.floor((todayMidnightMs - dueMs) / MS_PER_DAY)
-    enriched.push({ entry: { item: it, overdueDays }, index: i })
+  const mustOnly: T[] = []
+  for (const it of items) {
+    if (it && it.isMust) mustOnly.push(it)
   }
-  enriched.sort((a, b) => {
-    if (b.entry.overdueDays !== a.entry.overdueDays) {
-      return b.entry.overdueDays - a.entry.overdueDays
-    }
-    return a.index - b.index
-  })
-  return enriched.map((e) => e.entry)
+  return pickOverdueActiveItems(mustOnly, today)
 }
 
 /** caller の MUST item に title が含まれる場合の structural subset。 */
