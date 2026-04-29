@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   title: 'オフライン | 最強TODO',
   description:
     '最強TODO のオフライン fallback 画面 (PWA SW)。ネットワーク復帰後に再読み込みしてください。',
+  robots: { index: false, follow: false },
 }
 
 export default function OfflinePage() {
