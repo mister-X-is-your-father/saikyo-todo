@@ -27,6 +27,8 @@ import {
 import { isAppError } from '@/lib/errors'
 
 import { useBurndown, useMustSummary } from '@/features/dashboard/hooks'
+import { useItems } from '@/features/item/hooks'
+import { computeVelocity, formatVelocitySummary } from '@/features/item/velocity'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -51,11 +53,26 @@ function addDaysISO(baseISO: string, days: number): string {
   return d.toISOString().slice(0, 10)
 }
 
+// iter331 basics: velocity trend の direction を視覚的に意味付け。TopItemsByTimeChip の
+// TREND_TONE と整合 (up=blue 増加 / flat=zinc 横ばい / down=red 失速)。
+const VELOCITY_TONE: Record<'up' | 'flat' | 'down', string> = {
+  up: 'bg-blue-50 text-blue-700 border-blue-200',
+  flat: 'bg-muted text-muted-foreground border-border',
+  down: 'bg-red-50 text-red-700 border-red-200',
+}
+const VELOCITY_GLYPH: Record<'up' | 'flat' | 'down', string> = {
+  up: '↑',
+  flat: '→',
+  down: '↓',
+}
+
 export function DashboardView({ workspaceId }: Props) {
   const summary = useMustSummary(workspaceId)
   const burndown = useBurndown(workspaceId, 14)
   // Phase 6.15 iter 71: MUST item title click で ItemEditDialog を open
   const [, setOpenItemId] = useQueryState('item', parseAsString)
+  // iter331 basics: velocity (iter302) を bind — 直近 7 日 done 件数 + 傾向。
+  const itemsQ = useItems(workspaceId)
 
   const todayStr = todayISO()
   const soonStr = addDaysISO(todayStr, 7)
@@ -63,6 +80,13 @@ export function DashboardView({ workspaceId }: Props) {
   const burndownData = useMemo(() => {
     return (burndown.data ?? []).map((p) => ({ ...p, label: formatDayShort(p.date) }))
   }, [burndown.data])
+
+  const velocity = useMemo(() => {
+    if (!itemsQ.data) return null
+    const result = computeVelocity(itemsQ.data, { windowDays: 7 })
+    if (result.total === 0) return null
+    return { result, line: formatVelocitySummary(result, 7) }
+  }, [itemsQ.data])
 
   if (summary.isLoading) return <Loading message="ダッシュボード読込中..." />
   if (summary.error) {
@@ -98,6 +122,23 @@ export function DashboardView({ workspaceId }: Props) {
           tone={s.dueSoonCount > 0 ? 'warning' : 'default'}
         />
       </div>
+
+      {/* iter331 basics: velocity chip — 直近 7 日 done 件数 + 傾向 (up/flat/down) */}
+      {velocity ? (
+        <div
+          className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${VELOCITY_TONE[velocity.result.trend]}`}
+          data-testid="dashboard-velocity-chip"
+          data-trend={velocity.result.trend}
+          role="status"
+          aria-label={velocity.line}
+          title={velocity.line}
+        >
+          <span aria-hidden="true" className="font-mono">
+            {VELOCITY_GLYPH[velocity.result.trend]}
+          </span>
+          <span aria-hidden="true">{velocity.line}</span>
+        </div>
+      ) : null}
 
       {/* WIP 警告 */}
       {s.wipExceeded ? (
