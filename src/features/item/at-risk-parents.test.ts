@@ -4,9 +4,11 @@ import { uuidToLabel } from '@/lib/db/ltree-path'
 
 import {
   type AtRiskParentEntry,
+  classifyAtRiskParentsHint,
   computeAtRiskParentsByPriority,
   formatAtRiskParentsBriefJa,
   formatAtRiskParentsByPriorityJa,
+  formatAtRiskParentsHintJa,
   pickAtRiskParents,
 } from './at-risk-parents'
 
@@ -292,5 +294,51 @@ describe('computeAtRiskParentsByPriority / formatAtRiskParentsByPriorityJa', () 
   it('単一 priority 偏在 → 1 行のみ', () => {
     const r = computeAtRiskParentsByPriority([e('a', 14, 4), e('b', 8, 4)])
     expect(formatAtRiskParentsByPriorityJa(r)).toBe('触れていない案件: P4 2 件 (最大 14日)')
+  })
+})
+
+describe('classifyAtRiskParentsHint / formatAtRiskParentsHintJa (iter442)', () => {
+  // local helper for entries
+  const entry = (
+    days: number,
+    priority: 1 | 2 | 3 | 4 = 4,
+  ): AtRiskParentEntry<{ id: string; title: string }> => ({
+    parent: { id: `p-${days}`, title: `T-${days}` },
+    maxStaleDays: days,
+    activeDescendantCount: 1,
+    priority,
+  })
+
+  it('空 → idle / "案件停滞なし"', () => {
+    expect(classifyAtRiskParentsHint([])).toBe('idle')
+    expect(formatAtRiskParentsHintJa([])).toBe('案件停滞なし')
+  })
+
+  it('count ≤ 2 かつ max < 14 → mild', () => {
+    expect(classifyAtRiskParentsHint([entry(7)])).toBe('mild')
+    expect(classifyAtRiskParentsHint([entry(7), entry(13)])).toBe('mild')
+    expect(formatAtRiskParentsHintJa([entry(8)])).toBe('一部案件停滞')
+  })
+
+  it('count 3-4 → moderate (max < 14 でも)', () => {
+    const r = [entry(7), entry(8), entry(10)]
+    expect(classifyAtRiskParentsHint(r)).toBe('moderate')
+    expect(formatAtRiskParentsHintJa(r)).toBe('案件停滞多め')
+  })
+
+  it('max 14-29 → moderate (count 1 でも)', () => {
+    expect(classifyAtRiskParentsHint([entry(14)])).toBe('moderate')
+    expect(classifyAtRiskParentsHint([entry(29)])).toBe('moderate')
+  })
+
+  it('count ≥ 5 → severe', () => {
+    const r = Array.from({ length: 5 }, (_, i) => entry(7 + i))
+    expect(classifyAtRiskParentsHint(r)).toBe('severe')
+    expect(formatAtRiskParentsHintJa(r)).toBe('案件深刻放置 (要 review)')
+  })
+
+  it('max ≥ 30 → severe (count 1 でも)', () => {
+    expect(classifyAtRiskParentsHint([entry(30)])).toBe('severe')
+    expect(classifyAtRiskParentsHint([entry(60)])).toBe('severe')
   })
 })

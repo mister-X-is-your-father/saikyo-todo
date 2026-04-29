@@ -201,3 +201,49 @@ export function formatAtRiskParentsByPriorityJa(byPriority: AtRiskParentsByPrior
     '触れていない案件 0 件',
   )
 }
+
+/**
+ * iter442 ai-automation: at-risk parents の severity を「1 word」で表現する hint helper。
+ *
+ * iter424 (descendants-activity-hint, 個別 parent 単位) / iter439 (blocked-items-hint,
+ * 依存 axis) と並ぶ「item axis 1-word state」シリーズの at-risk-parents 軸版 (3 弾目)。
+ * AI 朝 brief / pm-agent / dashboard chip / Slack 通知が「workspace 全体の案件停滞
+ * 度合い」を 1 word で出せる substrate。
+ *
+ * 4 状態 (entries.length, maxStaleDays max の組み合わせ):
+ *  - 'idle'      → '全案件 active' / '案件停滞なし'  (entries 空)
+ *  - 'mild'      → '一部案件停滞'                     (count ≤ 2 かつ max < 14)
+ *  - 'moderate'  → '案件停滞多め'                     (count 3-4 または max 14-29)
+ *  - 'severe'    → '案件深刻放置 (要 review)'         (count ≥ 5 または max ≥ 30)
+ *
+ * caller benefits:
+ *  - dashboard chip の glyph / tone を hint base で決める (severe = red 候補)
+ *  - Slack 朝 brief の 1 行 status (severe で workspace-wide 警告)
+ *  - AI prompt の 1 word 状況把握 (= 'severe' なら brief 先頭警告 / 'idle' なら省略)
+ *  - formatAtRiskParentsBriefJa (詳細 list) と相補で「数値 vs 意味付け」を出し分け
+ */
+export type AtRiskParentsHint = 'idle' | 'mild' | 'moderate' | 'severe'
+
+export function classifyAtRiskParentsHint<I>(
+  entries: readonly AtRiskParentEntry<I>[],
+): AtRiskParentsHint {
+  if (entries.length === 0) return 'idle'
+  let maxStale = 0
+  for (const e of entries) {
+    if (e.maxStaleDays > maxStale) maxStale = e.maxStaleDays
+  }
+  if (entries.length >= 5 || maxStale >= 30) return 'severe'
+  if (entries.length >= 3 || maxStale >= 14) return 'moderate'
+  return 'mild'
+}
+
+const HINT_LABEL_JA: Record<AtRiskParentsHint, string> = {
+  idle: '案件停滞なし',
+  mild: '一部案件停滞',
+  moderate: '案件停滞多め',
+  severe: '案件深刻放置 (要 review)',
+}
+
+export function formatAtRiskParentsHintJa<I>(entries: readonly AtRiskParentEntry<I>[]): string {
+  return HINT_LABEL_JA[classifyAtRiskParentsHint(entries)]
+}
