@@ -807,10 +807,12 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                 type="number"
                 min={1}
                 max={90}
+                step={1}
                 value={length}
                 onChange={(e) => setLength(Number(e.target.value))}
                 className="h-9 w-20 text-sm"
-                aria-label="Sprint 期間 (日数)"
+                aria-label="Sprint 期間 (日数、1-90)"
+                inputMode="numeric"
                 data-testid="sprint-defaults-length"
               />
             </div>

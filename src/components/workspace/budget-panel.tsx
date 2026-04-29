@@ -217,6 +217,8 @@ export function BudgetPanel({ workspaceId }: Props) {
                 value={draftLimit}
                 onChange={(e) => setDraftLimit(e.target.value)}
                 placeholder="例: 50.00"
+                // iter349: USD 通貨額は decimal 入力 (.50) 必須、mobile に小数 keypad を呼出。
+                inputMode="decimal"
                 data-testid="budget-limit-input"
               />
             </div>
@@ -232,6 +234,7 @@ export function BudgetPanel({ workspaceId }: Props) {
                 max={1}
                 value={draftWarn}
                 onChange={(e) => setDraftWarn(e.target.value)}
+                inputMode="decimal"
                 data-testid="budget-warn-input"
               />
             </div>

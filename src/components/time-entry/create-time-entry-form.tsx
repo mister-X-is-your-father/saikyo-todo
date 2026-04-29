@@ -119,6 +119,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           className="w-24"
           required
           aria-required="true"
+          inputMode="numeric"
         />
       </div>
       <div className="flex items-end">
