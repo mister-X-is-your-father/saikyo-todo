@@ -21,7 +21,9 @@ export default function LoginPage() {
         <LoginForm />
       </CardContent>
       <CardFooter className="relative z-10 flex justify-between text-sm">
-        <span className="text-muted-foreground">アカウント未作成?</span>
+        <span aria-hidden="true" className="text-muted-foreground">
+          アカウント未作成?
+        </span>
         <Link
           href="/signup"
           className="text-primary relative z-10 inline-flex items-center py-2 underline underline-offset-4"
