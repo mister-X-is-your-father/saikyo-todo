@@ -144,10 +144,12 @@ import {
   pickOverdueActiveItems,
 } from '@/features/item/overdue-active'
 import {
+  classifyParentItemsProgressHint,
   computeParentItemsProgressByPriority,
   formatAggregateParentItemsJa,
   formatParentItemsProgressBriefJa,
   formatParentItemsProgressByPriorityJa,
+  formatParentItemsProgressHintJa,
   pickIncompleteParentItems,
   summarizeParentItemsAggregate,
 } from '@/features/item/parent-items-progress'
@@ -490,7 +492,11 @@ export function DashboardView({ workspaceId }: Props) {
       formatParentItemsProgressByPriorityJa(byPriority),
     )
     const detail = `${summary} — ${aggregateLine}${prioritySuffix}`
-    return { entries, summary, detail, aggregate, priorityBuckets }
+    // iter446 basics: iter444 で追加した hint (idle/stuck/slow/healthy/almostDone)
+    // を chip data attr + aria-label prefix に bind (= iter441 / iter443 と同手法 3 弾目)。
+    const hint = classifyParentItemsProgressHint(entries)
+    const hintLabel = formatParentItemsProgressHintJa(entries)
+    return { entries, summary, detail, aggregate, priorityBuckets, hint, hintLabel }
   }, [itemsQ.data])
 
   // iter368 basics: overdue-active (iter367) を bind。期限超過で未完了の item を
@@ -1064,8 +1070,8 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-parent-items-progress-chip"
             toneClass={chipTone3Class('neutral')}
             glyph="📋"
-            ariaLabel={`案件進捗: ${parentItemsProgress.detail}`}
-            title={parentItemsProgress.detail}
+            ariaLabel={`${parentItemsProgress.hintLabel}: ${parentItemsProgress.detail}`}
+            title={`${parentItemsProgress.hintLabel} — ${parentItemsProgress.detail}`}
             text={parentItemsProgress.summary}
             truncateText
             dataAttrs={{
@@ -1073,6 +1079,7 @@ export function DashboardView({ workspaceId }: Props) {
               'data-parent-avg-pct': parentItemsProgress.aggregate.avgPctDone,
               'data-parent-stuck-count': parentItemsProgress.aggregate.byTier.stuck,
               'data-priority-buckets': parentItemsProgress.priorityBuckets,
+              'data-progress-hint': parentItemsProgress.hint,
             }}
           />
         ) : null}
