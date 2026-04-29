@@ -338,11 +338,16 @@ function KanbanCard({
               e.stopPropagation()
               onEdit(item)
             }}
-            aria-label="編集"
+            // iter331: aria-label を context-rich に (旧 "編集" だけでは Kanban 内のどの
+            // item の編集 button か SR で判別不能だった、複数 card の同 button を
+            // 連続 announce すると区別できない)。✎ char には aria-hidden を付与し
+            // unicode 名 (U+270E LOWER RIGHT PENCIL) の冗長読み上げを抑制。
+            aria-label={`「${item.title}」を編集`}
+            title={`「${item.title}」を編集`}
             className="text-muted-foreground hover:text-foreground rounded px-1 text-xs"
             data-testid={`kanban-edit-${item.id}`}
           >
-            ✎
+            <span aria-hidden="true">✎</span>
           </button>
         </div>
       </div>
