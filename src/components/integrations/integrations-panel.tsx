@@ -285,6 +285,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
       <CardContent>
         <form
           className="space-y-3"
+          noValidate
           onSubmit={(e) => {
             e.preventDefault()
             void handleSubmit()

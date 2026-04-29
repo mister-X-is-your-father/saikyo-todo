@@ -328,6 +328,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
       >
         <form
           className="space-y-2"
+          noValidate
           onSubmit={(e) => {
             e.preventDefault()
             void handleSaveEdit()
