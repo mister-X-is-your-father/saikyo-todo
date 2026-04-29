@@ -35,6 +35,11 @@ import {
   formatAgingCounts,
 } from '@/features/item/backlog-aging'
 import {
+  combinedHygieneTone,
+  combineHygieneScore,
+  formatCombinedHygieneJa,
+} from '@/features/item/combined-hygiene'
+import {
   computeCompletionDaysByPriority,
   computePriorityLatencyGap,
   formatCompletionDaysByPriorityJa,
@@ -291,6 +296,43 @@ export function DashboardView({ workspaceId }: Props) {
     return { stats, summary, tone, pct, detail }
   }, [itemsQ.data])
 
+  // iter371 basics: combined-hygiene (iter369) を bind。3 hygiene 軸 (期限 / DoD /
+  // 説明文) を 1 つの 0..100 score に統合した「Planning Hygiene 70」chip を表示。
+  // 個別 chip 3 種と並列で「全体としての健全度」を一望可能に。score=null (= 集計対象
+  // 軸 0 = 全 hygiene chip 非表示状態) で chip 非表示。
+  const hygieneScore = useMemo(() => {
+    if (!itemsQ.data) return null
+    if (!dueCoverage && !dodCoverage && !descCoverage) return null
+    // 3 chip useMemo の `stats` を再利用 (= 二重計算しない、依存も既に dueCoverage /
+    // dodCoverage / descCoverage の useMemo に集約済)。null chip は EMPTY stats を渡す。
+    const score = combineHygieneScore({
+      dueDate: dueCoverage?.stats ?? {
+        total: 0,
+        withDueDate: 0,
+        withoutDueDate: 0,
+        coverageRate: null,
+      },
+      dod: dodCoverage?.stats ?? {
+        total: 0,
+        withDod: 0,
+        withoutDod: 0,
+        coverageRate: null,
+      },
+      description: descCoverage?.stats ?? {
+        total: 0,
+        withDescription: 0,
+        withoutDescription: 0,
+        coverageRate: null,
+      },
+    })
+    if (score.score === null) return null
+    return {
+      score,
+      summary: formatCombinedHygieneJa(score),
+      tone: combinedHygieneTone(score),
+    }
+  }, [itemsQ.data, dueCoverage, dodCoverage, descCoverage])
+
   // iter338 basics: backlog-aging (iter337) を bind。Active (= 未完了 + 未 archive)
   // item を createdAt 年齢バケット別に件数集計、停滞気味 (7 日以上) を tone で警戒。
   const aging = useMemo(() => {
@@ -374,6 +416,20 @@ export function DashboardView({ workspaceId }: Props) {
             title={momentum.line}
             text={momentum.line}
             dataAttrs={{ 'data-direction': momentum.result.direction }}
+          />
+        ) : null}
+        {hygieneScore ? (
+          <DashboardChip
+            testId="dashboard-hygiene-score-chip"
+            toneClass={chipTone3Class(hygieneScore.tone)}
+            glyph="🧭"
+            ariaLabel={hygieneScore.summary}
+            title={hygieneScore.summary}
+            text={`Hygiene ${hygieneScore.score.score}`}
+            dataAttrs={{
+              'data-hygiene-score': hygieneScore.score.score ?? 0,
+              'data-eligible-axes': hygieneScore.score.eligibleAxes,
+            }}
           />
         ) : null}
         {dueCoverage ? (
