@@ -189,7 +189,9 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">新規 Item (クイック追加)</CardTitle>
+          <CardTitle className="text-base" role="heading" aria-level={2}>
+            新規 Item (クイック追加)
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <QuickAdd workspaceId={workspaceId} />
