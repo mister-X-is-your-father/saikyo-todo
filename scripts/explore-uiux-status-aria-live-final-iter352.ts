@@ -37,7 +37,7 @@ async function main(): Promise<void> {
     const src = readFileSync(resolve(process.cwd(), f), 'utf8')
     const lines = src.split(/\r?\n/)
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]
+      const line = lines[i] ?? ''
       if (!/role="status"/.test(line)) continue
       if (line.trim().startsWith('//') || line.trim().startsWith('*')) continue
       totalStatus++
@@ -45,7 +45,7 @@ async function main(): Promise<void> {
       let chunk = ''
       let j = i
       while (j < i + 6 && !chunk.includes('>')) {
-        chunk += lines[j] + ' '
+        chunk += (lines[j] ?? '') + ' '
         j++
       }
       if (/aria-live=/.test(chunk)) totalWithAriaLive++

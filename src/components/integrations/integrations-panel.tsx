@@ -400,6 +400,8 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     value={itemsPath}
                     onChange={(e) => setItemsPath(e.target.value)}
                     placeholder="例: data.items (省略で root)"
+                    autoComplete="off"
+                    spellCheck={false}
                   />
                 </div>
                 <div className="space-y-1">
@@ -409,6 +411,8 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     value={duePath}
                     onChange={(e) => setDuePath(e.target.value)}
                     placeholder="例: due_date"
+                    autoComplete="off"
+                    spellCheck={false}
                   />
                 </div>
                 <div className="space-y-1">
@@ -420,6 +424,8 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     required
                     aria-required="true"
                     minLength={1}
+                    autoComplete="off"
+                    spellCheck={false}
                   />
                 </div>
                 <div className="space-y-1">
@@ -431,6 +437,8 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     required
                     aria-required="true"
                     minLength={1}
+                    autoComplete="off"
+                    spellCheck={false}
                   />
                 </div>
               </div>
