@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  classifyBlockedItemsHint,
   computeBlockedItemsByPriority,
   formatBlockedItemsBriefJa,
   formatBlockedItemsByPriorityJa,
+  formatBlockedItemsHintJa,
   pickWorkspaceBlockedItems,
   type WorkspaceBlockedItem,
 } from './blocked-items'
@@ -221,5 +223,40 @@ describe('computeBlockedItemsByPriority / formatBlockedItemsByPriorityJa', () =>
   it('count=0 の bucket は format で省略', () => {
     const r = computeBlockedItemsByPriority([blocked('a', 5, 2)])
     expect(formatBlockedItemsByPriorityJa(r)).toBe('依存ブロック: P2 1 件 (最大 5 件待ち)')
+  })
+})
+
+describe('classifyBlockedItemsHint / formatBlockedItemsHintJa (iter439)', () => {
+  it('空 → idle / "依存ブロックなし"', () => {
+    expect(classifyBlockedItemsHint([])).toBe('idle')
+    expect(formatBlockedItemsHintJa([])).toBe('依存ブロックなし')
+  })
+
+  it('count ≤ 2 かつ max ≤ 2 → mild', () => {
+    expect(classifyBlockedItemsHint([blocked('a', 1)])).toBe('mild')
+    expect(classifyBlockedItemsHint([blocked('a', 2), blocked('b', 1)])).toBe('mild')
+    expect(formatBlockedItemsHintJa([blocked('a', 2)])).toBe('依存軽微')
+  })
+
+  it('count 3-4 → moderate (max ≤ 2 でも)', () => {
+    const r = [blocked('a', 1), blocked('b', 2), blocked('c', 1)]
+    expect(classifyBlockedItemsHint(r)).toBe('moderate')
+    expect(formatBlockedItemsHintJa(r)).toBe('依存中程度')
+  })
+
+  it('max ≥ 3 → moderate (count 1 でも)', () => {
+    expect(classifyBlockedItemsHint([blocked('a', 3)])).toBe('moderate')
+    expect(classifyBlockedItemsHint([blocked('a', 4)])).toBe('moderate')
+  })
+
+  it('count ≥ 5 → severe', () => {
+    const r = Array.from({ length: 5 }, (_, i) => blocked(`a${i}`, 1))
+    expect(classifyBlockedItemsHint(r)).toBe('severe')
+    expect(formatBlockedItemsHintJa(r)).toBe('依存深刻 (前提解消急務)')
+  })
+
+  it('max ≥ 5 → severe (count 1 でも)', () => {
+    expect(classifyBlockedItemsHint([blocked('a', 5)])).toBe('severe')
+    expect(classifyBlockedItemsHint([blocked('a', 10)])).toBe('severe')
   })
 })

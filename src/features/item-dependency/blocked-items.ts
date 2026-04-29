@@ -185,3 +185,47 @@ export function formatBlockedItemsByPriorityJa(byPriority: BlockedItemsByPriorit
     '依存ブロック 0 件',
   )
 }
+
+/**
+ * iter439 ai-automation: blocked items の severity を「1 word」で表現する hint helper。
+ *
+ * iter424 (formatDescendantsActivityHintJa: descendants-progress 10 状態 hint) と
+ * 並ぶ「item axis 1-word state」シリーズの dependency-blocked 軸版。
+ * AI 朝 brief / pm-agent / dashboard chip / Slack 通知が「いま依存はどれくらい
+ * ヤバいか」を 1 word で出せる substrate。
+ *
+ * 4 状態 (count, maxOpenBlockerCount の組み合わせ):
+ *  - 'idle'      → '依存ブロックなし'        (entries 空)
+ *  - 'mild'      → '依存軽微'                 (count ≤ 2 かつ max ≤ 2)
+ *  - 'moderate'  → '依存中程度'               (count 3-4 または max 3-4)
+ *  - 'severe'    → '依存深刻 (前提解消急務)'  (count ≥ 5 または max ≥ 5)
+ *
+ * caller benefits: dashboard chip の glyph / tone を hint base で決める / Slack 1
+ * 行 status / AI prompt の 1 word ヒント。formatBlockedItemsBriefJa (詳細 list)
+ * と相補で「数値 vs 意味付け」を出し分け。
+ */
+export type BlockedItemsHint = 'idle' | 'mild' | 'moderate' | 'severe'
+
+export function classifyBlockedItemsHint(
+  blocked: readonly WorkspaceBlockedItem[],
+): BlockedItemsHint {
+  if (blocked.length === 0) return 'idle'
+  let maxBlockers = 0
+  for (const b of blocked) {
+    if (b.openBlockerCount > maxBlockers) maxBlockers = b.openBlockerCount
+  }
+  if (blocked.length >= 5 || maxBlockers >= 5) return 'severe'
+  if (blocked.length >= 3 || maxBlockers >= 3) return 'moderate'
+  return 'mild'
+}
+
+const HINT_LABEL_JA: Record<BlockedItemsHint, string> = {
+  idle: '依存ブロックなし',
+  mild: '依存軽微',
+  moderate: '依存中程度',
+  severe: '依存深刻 (前提解消急務)',
+}
+
+export function formatBlockedItemsHintJa(blocked: readonly WorkspaceBlockedItem[]): string {
+  return HINT_LABEL_JA[classifyBlockedItemsHint(blocked)]
+}
