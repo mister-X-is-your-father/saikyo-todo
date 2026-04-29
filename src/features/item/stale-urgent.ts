@@ -17,6 +17,7 @@
  */
 
 import { getItemAge } from './backlog-aging'
+import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
 import { computeUrgency, type UrgencyFields, urgencyTierOf } from './urgency'
 
 /** combinator が要求する Item の structural subset (urgency + createdAt)。 */
@@ -86,4 +87,55 @@ export function formatStaleUrgentJa<T extends StaleUrgentFields>(
   if (critical > 0) parts.push(`緊急 ${critical}`)
   if (high > 0) parts.push(`高 ${high}`)
   return `対応 + 古参 ${stale.length} 件 (${parts.join(' / ')}、最古 ${oldest} 日)`
+}
+
+/** by-priority 集計の単 bucket 値: stale-urgent 件数 + 最古日数 (count=0 → null)。 */
+export interface StaleUrgentByPriorityStats {
+  count: number
+  oldestDays: number | null
+}
+
+/**
+ * iter399 ai-automation: stale-urgent items を priority 別に集計する pure helper。
+ * iter382 hygiene-debt-by-priority / iter387 slip-days-by-priority / iter389
+ * backlog-aging-by-priority と並ぶ「× priority」軸 8 弾目。
+ *
+ * 「P1 が一番 stale-urgent、最古 21 日 / P2 が次、最古 8 日」のように 高優先軸の
+ * 停滞を分離して可視化、全体「対応 + 古参 5 件」だけでは見えない priority bias を
+ * 露出。pickStaleUrgentItems の filter ロジックは bucketByPriorityWith 経由で
+ * priority 別に再適用 (P1 のみ / P2 のみ ... の各 bucket 内で stale-urgent 抽出)。
+ */
+export function computeStaleUrgentByPriority<T extends StaleUrgentFields>(
+  items: readonly T[],
+  options: StaleUrgentOptions = {},
+): Record<PriorityKey, StaleUrgentByPriorityStats> {
+  const today = options.today ?? new Date()
+  return bucketByPriorityWith(items, (group) => {
+    const stale = pickStaleUrgentItems(group, options)
+    if (stale.length === 0) return { count: 0, oldestDays: null }
+    let oldest = 0
+    for (const it of stale) {
+      const { ageDays } = getItemAge(it.createdAt, today)
+      if (ageDays !== undefined && ageDays > oldest) oldest = ageDays
+    }
+    return { count: stale.length, oldestDays: oldest }
+  })
+}
+
+/**
+ * priority 別 stale-urgent を 1 行 summary に。例:
+ *   'P1 2 件 (最古 14日) / P2 1 件 (最古 8日)' / count=0 の P は省略 / 全 P 0 → '対応 + 古参 0 件'
+ */
+export function formatStaleUrgentByPriorityJa(
+  byPriority: Record<PriorityKey, StaleUrgentByPriorityStats>,
+): string {
+  const parts: string[] = []
+  for (const k of PRIORITY_ORDER) {
+    const s = byPriority[k]
+    if (s.count > 0 && s.oldestDays !== null) {
+      parts.push(`P${k} ${s.count} 件 (最古 ${s.oldestDays}日)`)
+    }
+  }
+  if (parts.length === 0) return '対応 + 古参 0 件'
+  return parts.join(' / ')
 }

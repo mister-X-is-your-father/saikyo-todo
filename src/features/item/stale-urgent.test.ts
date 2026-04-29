@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatStaleUrgentJa, pickStaleUrgentItems, type StaleUrgentFields } from './stale-urgent'
+import {
+  computeStaleUrgentByPriority,
+  formatStaleUrgentByPriorityJa,
+  formatStaleUrgentJa,
+  pickStaleUrgentItems,
+  type StaleUrgentFields,
+} from './stale-urgent'
 
 const TODAY = new Date(2026, 3, 27) // Mon 2026-04-27
 
@@ -122,5 +128,66 @@ describe('formatStaleUrgentJa', () => {
 
   it('空配列 → 対応 + 古参 0 件', () => {
     expect(formatStaleUrgentJa([], { today: TODAY })).toBe('対応 + 古参 0 件')
+  })
+})
+
+describe('computeStaleUrgentByPriority', () => {
+  it('priority 別 bucket で stale-urgent 件数と最古日数を返す', () => {
+    const items = [
+      item({ priority: 1, createdAt: days(14) }), // P1 stale-urgent (critical, age 14)
+      item({ priority: 1, createdAt: days(7) }), // P1 stale-urgent (age 7)
+      item({ priority: 2, createdAt: days(20) }), // P2 stale-urgent (high, age 20)
+      item({ priority: 2, createdAt: days(2) }), // P2 age 不足
+      item({ priority: 3, createdAt: days(40) }), // P3 tier 不足
+      item({ priority: 4, createdAt: days(60) }), // P4 tier 不足
+    ]
+    const byPriority = computeStaleUrgentByPriority(items, { today: TODAY })
+    expect(byPriority[1]).toEqual({ count: 2, oldestDays: 14 })
+    expect(byPriority[2]).toEqual({ count: 1, oldestDays: 20 })
+    expect(byPriority[3]).toEqual({ count: 0, oldestDays: null })
+    expect(byPriority[4]).toEqual({ count: 0, oldestDays: null })
+  })
+
+  it('全 P bucket は必ず初期化 (空入力でも全 P key 存在)', () => {
+    const byPriority = computeStaleUrgentByPriority([], { today: TODAY })
+    expect(byPriority[1]).toEqual({ count: 0, oldestDays: null })
+    expect(byPriority[2]).toEqual({ count: 0, oldestDays: null })
+    expect(byPriority[3]).toEqual({ count: 0, oldestDays: null })
+    expect(byPriority[4]).toEqual({ count: 0, oldestDays: null })
+  })
+
+  it('priority null/範囲外 は P4 集約 (normalizePriority 経由)', () => {
+    const items = [
+      item({ priority: 5, createdAt: days(10) }), // 範囲外 → P4 だが tier 不足で除外
+      item({ priority: 1, createdAt: days(8) }), // P1 stale-urgent
+    ]
+    const byPriority = computeStaleUrgentByPriority(items, { today: TODAY })
+    expect(byPriority[1].count).toBe(1)
+    expect(byPriority[4].count).toBe(0)
+  })
+})
+
+describe('formatStaleUrgentByPriorityJa', () => {
+  it('複数 P に分散している stale-urgent を 1 行に', () => {
+    const items = [
+      item({ priority: 1, createdAt: days(14) }),
+      item({ priority: 1, createdAt: days(8) }),
+      item({ priority: 2, createdAt: days(20) }),
+    ]
+    const byPriority = computeStaleUrgentByPriority(items, { today: TODAY })
+    expect(formatStaleUrgentByPriorityJa(byPriority)).toBe(
+      'P1 2 件 (最古 14日) / P2 1 件 (最古 20日)',
+    )
+  })
+
+  it('count=0 の P は省略', () => {
+    const items = [item({ priority: 1, createdAt: days(10) })]
+    const byPriority = computeStaleUrgentByPriority(items, { today: TODAY })
+    expect(formatStaleUrgentByPriorityJa(byPriority)).toBe('P1 1 件 (最古 10日)')
+  })
+
+  it('全 P 0 → 対応 + 古参 0 件', () => {
+    const byPriority = computeStaleUrgentByPriority([], { today: TODAY })
+    expect(formatStaleUrgentByPriorityJa(byPriority)).toBe('対応 + 古参 0 件')
   })
 })
