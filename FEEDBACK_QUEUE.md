@@ -15,6 +15,40 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ## 未処理 (新しい順)
 
+### 2026-04-30 — Sprint 担当者 swim-lane Gantt ★ 新規 ★
+
+- [ ] **Sprint ごとに 担当者を縦に並べる Gantt 風ビュー (誰が何を いつ するか)** — 分類: 実装要望 (中-大)
+  - 原文: 「スプリントごとに、担当者を縦に並べて何をするかをわかるような機能 (がんと的な)」
+  - 仮解釈:
+    - sprint detail ページに新 view 「assignee swim-lane」 を追加
+    - **Y 軸**: workspace member 1 行 / 1 swim lane (avatar + 名前)、未 assignee は「未割当」 lane
+    - **X 軸**: sprint 期間 (`startDate` → `endDate`、典型 14 日)
+    - 各 item を 該当 assignee の lane に bar として配置 (start = scheduledFor、end = dueDate、長さ = estimateMinutes 由来)
+    - 同 lane 内で時間重複があれば「conflict 警告」 (同時並行不可な場合)
+    - lane の合計 estimateMinutes を 上端に表示 → capacity overflow 検知 (= queue 別件「余裕時間 一覧」と協調)
+  - 既存資産:
+    - `sprints-panel.tsx` (786 行、`SprintCard` で sprint 一覧)
+    - `gantt-view.tsx` (583 行、bar render / SVG 線描画 / critical path)
+    - `useWorkspaceMembers` (member 一覧)
+    - `extractEstimateMinutes` (description から 見積分数)
+    - subtask-status.ts / status-visual.ts (graphical 配色)
+  - 設計案 3 scope:
+    - **A (最小)**: SprintCard に新 disclosure「担当者ビュー」、HTML/CSS grid で row=member × col=日 で簡易表 (bar は `<div>` で width = duration / sprint length × 100%)
+    - **B (中)**: A + sprint period 内の item を assignee で group + sort、未 assignee lane 別、status 配色 (subtask-status helper 流用)、合計 estimate vs capacity 8h × N day を chip 表示
+    - **C (大)**: B + DnD で lane 間 移動 (assignee 変更) + bar resize で期間調整 (queue 別件「Gantt DnD」と統合) + click で ItemEditDialog
+  - 既存制約 (考慮):
+    - sprint length は workspace_settings の `sprint_default_length_days` (default 14)
+    - estimate が無い item の bar 長 — 1 day default? 表示しない?
+    - sprint 期間外の dueDate を持つ item — clip して表示? 別 box?
+  - **要追加質問**:
+    - (a) 表示 placement — sprint detail の新 tab? sprint 一覧の inline disclosure?
+    - (b) capacity 計算は member 別? workspace default 8h × N day?
+    - (c) 未 assignee lane を表示? 隠す (filter)?
+    - (d) sprint 期間外の item の扱い (例: dueDate が sprint 終了後)
+  - 関連既存 candidate:
+    - `gantt-view.tsx` を「assignee 軸」モードで再利用するのが工数最小 (item × time → item × member × time)
+    - `personal-period-view.tsx` の period filter ロジックは流用可能
+
 ### 2026-04-29 — Template 登録機能 (タスク + サブタスクをまとめて) ★ 新規 ★
 
 - [ ] **Template 登録機能 — タスク + サブタスクをまとめて 1 つの Template として登録、再利用** — 分類: 実装要望 (中-大)
