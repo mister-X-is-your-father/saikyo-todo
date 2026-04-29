@@ -99,7 +99,7 @@ export function BudgetPanel({ workspaceId }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
+        <CardTitle className="flex items-center gap-2 text-base" role="heading" aria-level={2}>
           AI 月次コスト
           {s.exceeded && (
             <span className="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-700">

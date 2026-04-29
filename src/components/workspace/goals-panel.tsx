@@ -119,7 +119,9 @@ export function GoalsPanel({ workspaceId }: Props) {
       <TeamContextEditor workspaceId={workspaceId} />
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">新規 Goal (Objective)</CardTitle>
+          <CardTitle className="text-base" role="heading" aria-level={2}>
+            新規 Goal (Objective)
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <form
@@ -344,7 +346,9 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
               )}
             </button>
             <div className="min-w-0 flex-1">
-              <CardTitle className="truncate text-base">{goal.title}</CardTitle>
+              <CardTitle className="truncate text-base" role="heading" aria-level={3}>
+                {goal.title}
+              </CardTitle>
               <p className="text-muted-foreground mt-0.5 text-xs">
                 {goal.period} · {goal.startDate} 〜 {goal.endDate}
               </p>
