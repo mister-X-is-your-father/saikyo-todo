@@ -665,10 +665,11 @@ function ItemEditDialogInner({
               {clearBaseline.isPending ? 'クリア中…' : 'baseline クリア'}
             </Button>
           )}
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             キャンセル
           </Button>
           <Button
+            type="button"
             onClick={handleSave}
             disabled={update.isPending || !title.trim()}
             data-testid="item-edit-save"

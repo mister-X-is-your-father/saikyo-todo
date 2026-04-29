@@ -214,10 +214,11 @@ function CommentItem({
             data-testid={`comment-edit-input-${comment.id}`}
           />
           <div className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => setEditing(false)}>
+            <Button type="button" variant="outline" size="sm" onClick={() => setEditing(false)}>
               キャンセル
             </Button>
             <Button
+              type="button"
               size="sm"
               onClick={handleSave}
               disabled={update.isPending || !body.trim()}
