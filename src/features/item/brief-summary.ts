@@ -250,16 +250,45 @@ export function buildBriefSummary<T extends BriefItemFields>(
 }
 
 /**
- * iter377 ai-automation: 7 axis を severity 順にスキャンして 1 行 headline を返す。
+ * iter395 refactor: 6 軸を severity 順に検査して「現時点で最深刻な軸」を 1 値で返す。
+ * pickBriefHeadline / pickBriefHeadlineWithTitles / pickBriefSeverity の 3 関数で
+ * 同 shape の 5 段カスケード if が重複していたので 1 か所に集約 (iter325 / iter330 /
+ * ... / iter390 と同じ「同 shape の散在を 1 file に」方針 22 弾目)。
  *
  * 順序 (= MVP「絶対落とさない」原則の優先度):
- *  1. mustOverdue (total > 0) — MUST 期限超過 = 最深刻
- *  2. mustAtRisk (length > 0) — MUST 期限近接
- *  3. overdueActive (total > 0) — 期限超過全般
- *  4. stuckWip (length > 0) — 進行中で停滞
- *  5. stale (length > 0) — 7+ 日触っていない
- *  6. (else) — top urgent 1 件
- *  7. (全部 0) — 'urgent 上位 0 (該当なし)' fallback
+ *  1. 'mustOverdue' (total > 0) — MVP 違反警報 = 最深刻 ('critical' severity)
+ *  2. 'mustAtRisk' (length > 0) — MUST 期限近接 ('high')
+ *  3. 'overdueActive' (total > 0) — 期限超過全般 ('high')
+ *  4. 'stuckWip' (length > 0) — 進行中で停滞 ('high')
+ *  5. 'stale' (length > 0) — 7+ 日触っていない ('medium')
+ *  6. 'topUrgent' (length > 0) — 緊急 candidate のみ ('low')
+ *  7. null — 全 axis 0 件 ('idle')
+ *
+ * caller (3 関数 + 将来の chip 配色 / 通知 icon 切替) は同 detector を共有することで
+ * severity 順序の不整合を構造的に防げる。
+ */
+type BriefAxis = 'mustOverdue' | 'mustAtRisk' | 'overdueActive' | 'stuckWip' | 'stale' | 'topUrgent'
+
+function detectBriefActiveAxis<T extends BriefItemFields>(input: {
+  topUrgent: TopUrgentEntry<T>[]
+  mustAtRisk: MustRiskEntry<T>[]
+  stale: StaleItemEntry<T>[]
+  stuckWip: StuckWipEntry<T>[]
+  overdueActive: OverdueActiveStats
+  mustOverdue: MustOverdueStats
+}): BriefAxis | null {
+  if (input.mustOverdue.total > 0) return 'mustOverdue'
+  if (input.mustAtRisk.length > 0) return 'mustAtRisk'
+  if (input.overdueActive.total > 0) return 'overdueActive'
+  if (input.stuckWip.length > 0) return 'stuckWip'
+  if (input.stale.length > 0) return 'stale'
+  if (input.topUrgent.length > 0) return 'topUrgent'
+  return null
+}
+
+/**
+ * iter377 ai-automation: 6 軸を severity 順にスキャンして 1 行 headline を返す
+ * (iter395 で `detectBriefActiveAxis` に集約)。stats-only 版。
  */
 function pickBriefHeadline<T extends BriefItemFields>(input: {
   topUrgent: TopUrgentEntry<T>[]
@@ -269,35 +298,34 @@ function pickBriefHeadline<T extends BriefItemFields>(input: {
   overdueActive: OverdueActiveStats
   mustOverdue: MustOverdueStats
 }): string {
-  if (input.mustOverdue.total > 0) {
-    return formatMustOverdueJa(input.mustOverdue)
+  const axis = detectBriefActiveAxis(input)
+  switch (axis) {
+    case 'mustOverdue':
+      return formatMustOverdueJa(input.mustOverdue)
+    case 'mustAtRisk':
+      return formatAtRiskMustSummary(input.mustAtRisk)
+    case 'overdueActive':
+      return formatOverdueActiveJa(input.overdueActive)
+    case 'stuckWip':
+      return formatStuckWipSummaryJa(input.stuckWip)
+    case 'stale':
+      return formatStaleItemsSummary(input.stale)
+    case 'topUrgent':
+    case null:
+      return formatTopUrgentLine(input.topUrgent)
   }
-  if (input.mustAtRisk.length > 0) {
-    return formatAtRiskMustSummary(input.mustAtRisk)
-  }
-  if (input.overdueActive.total > 0) {
-    return formatOverdueActiveJa(input.overdueActive)
-  }
-  if (input.stuckWip.length > 0) {
-    return formatStuckWipSummaryJa(input.stuckWip)
-  }
-  if (input.stale.length > 0) {
-    return formatStaleItemsSummary(input.stale)
-  }
-  return formatTopUrgentLine(input.topUrgent)
 }
 
 /**
- * iter394 ai-automation: 7 軸の集約 severity を 5 段階で返す。pickBriefHeadline と同じ
- * severity 順序を保つので、headline が表示している軸 = severity の決定軸 (= UI が
- * 「色」と「文言」を一貫して選べる)。
+ * iter394 ai-automation: 6 軸の集約 severity を 5 段階で返す (iter395 で
+ * `detectBriefActiveAxis` に集約)。
  *
- * 順序 (mustOverdue 'critical' を最深刻として MVP 原則優先):
- *  1. mustOverdue (total > 0) → 'critical' (= MVP 違反警報、red 強調)
- *  2. mustAtRisk / overdueActive / stuckWip (1+ 件) → 'high' (= 注意要、red/amber)
- *  3. stale (1+ 件) → 'medium' (= 放置注意、amber)
- *  4. topUrgent (1+ 件) → 'low' (= 警報無し、緊急対応 candidate あり、neutral)
- *  5. 全 axis 0 → 'idle' (= 完璧、green/grey)
+ * mapping:
+ *  - mustOverdue → 'critical'
+ *  - mustAtRisk / overdueActive / stuckWip → 'high'
+ *  - stale → 'medium'
+ *  - topUrgent → 'low'
+ *  - null (全 axis 0) → 'idle'
  */
 function pickBriefSeverity<T extends BriefItemFields>(input: {
   topUrgent: TopUrgentEntry<T>[]
@@ -307,21 +335,27 @@ function pickBriefSeverity<T extends BriefItemFields>(input: {
   overdueActive: OverdueActiveStats
   mustOverdue: MustOverdueStats
 }): BriefSeverity {
-  if (input.mustOverdue.total > 0) return 'critical'
-  if (input.mustAtRisk.length > 0 || input.overdueActive.total > 0 || input.stuckWip.length > 0) {
-    return 'high'
+  const axis = detectBriefActiveAxis(input)
+  switch (axis) {
+    case 'mustOverdue':
+      return 'critical'
+    case 'mustAtRisk':
+    case 'overdueActive':
+    case 'stuckWip':
+      return 'high'
+    case 'stale':
+      return 'medium'
+    case 'topUrgent':
+      return 'low'
+    case null:
+      return 'idle'
   }
-  if (input.stale.length > 0) return 'medium'
-  if (input.topUrgent.length > 0) return 'low'
-  return 'idle'
 }
 
 /**
  * iter388 basics: pickBriefHeadline と同じ severity 順だが、must-overdue / overdue-active
- * 軸のとき stats でなく entries (具体名 + overdueDays) で 1 行 alert を返す。
- *
- * caller (mobile UI / 通知 detail / actionable AI brief) は「何が overdue なのか」を即特定可。
- * stats-only headline とは別フィールドで保持 (両方 BriefSummary に bundle、用途で使い分け)。
+ * 軸のとき entries (具体名 + overdueDays) で 1 行 alert を返す (iter395 で
+ * `detectBriefActiveAxis` に集約)。
  */
 function pickBriefHeadlineWithTitles<T extends BriefItemFields>(input: {
   topUrgent: TopUrgentEntry<T>[]
@@ -333,22 +367,22 @@ function pickBriefHeadlineWithTitles<T extends BriefItemFields>(input: {
   mustOverdueEntries: MustOverdueEntry<T>[]
   overdueActiveEntries: OverdueActiveEntry<T>[]
 }): string {
-  if (input.mustOverdue.total > 0) {
-    return formatMustOverdueTitlesJa(input.mustOverdueEntries)
+  const axis = detectBriefActiveAxis(input)
+  switch (axis) {
+    case 'mustOverdue':
+      return formatMustOverdueTitlesJa(input.mustOverdueEntries)
+    case 'mustAtRisk':
+      return formatAtRiskMustSummary(input.mustAtRisk)
+    case 'overdueActive':
+      return formatOverdueActiveTitlesJa(input.overdueActiveEntries)
+    case 'stuckWip':
+      return formatStuckWipSummaryJa(input.stuckWip)
+    case 'stale':
+      return formatStaleItemsSummary(input.stale)
+    case 'topUrgent':
+    case null:
+      return formatTopUrgentLine(input.topUrgent)
   }
-  if (input.mustAtRisk.length > 0) {
-    return formatAtRiskMustSummary(input.mustAtRisk)
-  }
-  if (input.overdueActive.total > 0) {
-    return formatOverdueActiveTitlesJa(input.overdueActiveEntries)
-  }
-  if (input.stuckWip.length > 0) {
-    return formatStuckWipSummaryJa(input.stuckWip)
-  }
-  if (input.stale.length > 0) {
-    return formatStaleItemsSummary(input.stale)
-  }
-  return formatTopUrgentLine(input.topUrgent)
 }
 
 /**
