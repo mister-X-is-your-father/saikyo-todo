@@ -188,6 +188,7 @@ export function SprintsPanel({ workspaceId }: Props) {
         <CardContent>
           <form
             className="space-y-3"
+            noValidate
             onSubmit={(e) => {
               e.preventDefault()
               void handleCreate()
@@ -463,6 +464,7 @@ function SprintCard({
           {editing && (
             <form
               className="space-y-2 rounded border border-dashed p-2"
+              noValidate
               onSubmit={async (e) => {
                 e.preventDefault()
                 if (isInvalidDateRange(editStart, editEnd)) {
@@ -740,6 +742,7 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
         ) : (
           <form
             className="flex flex-wrap items-end gap-2"
+            noValidate
             onSubmit={(e) => {
               e.preventDefault()
               void save()
