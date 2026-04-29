@@ -41,7 +41,11 @@ export default function OfflinePage() {
         className="flex flex-wrap items-center justify-center gap-2 pt-2"
       >
         <OfflineRetryButton />
-        <Link href="/" className={buttonVariants({ variant: 'outline' })}>
+        <Link
+          href="/"
+          aria-label="ホームに戻る (アプリの起点画面に遷移、オンライン復帰後は最新状態を表示)"
+          className={buttonVariants({ variant: 'outline' })}
+        >
           ホームに戻る
         </Link>
       </div>
