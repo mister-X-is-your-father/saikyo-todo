@@ -74,6 +74,7 @@ export function SignupForm() {
           type="email"
           autoComplete="email"
           inputMode="email"
+          autoCorrect="off"
           spellCheck={false}
           autoCapitalize="none"
           required
