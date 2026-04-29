@@ -42,7 +42,7 @@ export function SignupForm() {
       method="post"
       onSubmit={form.handleSubmit(onSubmit)}
       aria-labelledby="signup-heading"
-      aria-busy={isPending}
+      aria-busy={isPending || undefined}
       noValidate
       className="space-y-4"
     >
