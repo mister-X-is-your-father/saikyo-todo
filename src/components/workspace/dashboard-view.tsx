@@ -104,6 +104,11 @@ import {
   mustHygieneSeverity,
 } from '@/features/item/must-hygiene'
 import {
+  formatMustStuckWipJa,
+  mustStuckWipSeverity,
+  pickMustStuckWipItems,
+} from '@/features/item/must-stuck-wip'
+import {
   countNonEmptyPriorityBuckets,
   countNonEmptyPriorityBucketsBy,
 } from '@/features/item/priority'
@@ -337,6 +342,19 @@ export function DashboardView({ workspaceId }: Props) {
     const detail =
       priorityBuckets > 1 ? `${summary} — ${formatStuckWipByPriorityJa(byPriority)}` : summary
     return { entries, summary, severity: sev, detail }
+  }, [itemsQ.data])
+
+  // iter366 basics: must-stuck-wip (iter364) を bind。MUST かつ stuck WIP な
+  // 最深刻 item を chip 表示。1 件以上で 'critical' (red 単色) 表示、0 件で chip
+  // 非表示で UI 静か。MUST 絶対落とさない原則 (CLAUDE.md) を「進行中で停滞して
+  // いる MUST」として最も強く警告する dashboard 専用 chip。
+  const mustStuckWip = useMemo(() => {
+    if (!itemsQ.data) return null
+    const entries = pickMustStuckWipItems(itemsQ.data)
+    const sev = mustStuckWipSeverity(entries)
+    if (sev === 'idle') return null
+    const summary = formatMustStuckWipJa(entries, 3)
+    return { entries, summary, severity: sev }
   }, [itemsQ.data])
 
   // iter361 basics: recent-completed (iter359) を bind。直近 24h 完了 item の
@@ -770,6 +788,20 @@ export function DashboardView({ workspaceId }: Props) {
             dataAttrs={{
               'data-severity': wipStuck.severity,
               'data-stuck-count': wipStuck.entries.length,
+            }}
+          />
+        ) : null}
+        {mustStuckWip ? (
+          <DashboardChip
+            testId="dashboard-must-stuck-wip-chip"
+            toneClass="border-red-300 bg-red-100 text-red-800"
+            glyph="🚨"
+            ariaLabel={mustStuckWip.summary}
+            title={mustStuckWip.summary}
+            text={mustStuckWip.summary}
+            dataAttrs={{
+              'data-severity': mustStuckWip.severity,
+              'data-must-stuck-count': mustStuckWip.entries.length,
             }}
           />
         ) : null}
