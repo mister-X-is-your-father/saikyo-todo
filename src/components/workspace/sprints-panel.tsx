@@ -209,6 +209,8 @@ export function SprintsPanel({ workspaceId }: Props) {
                   aria-required="true"
                   minLength={1}
                   maxLength={100}
+                  // iter344: app 固有 input なので browser auto-fill 候補は無関係 → off
+                  autoComplete="off"
                 />
               </div>
               <div className="space-y-1">

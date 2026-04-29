@@ -101,6 +101,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   aria-required="true"
                   minLength={1}
                   maxLength={200}
+                  autoComplete="off"
                 />
               </div>
               <div>
@@ -149,6 +150,8 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   onChange={(e) => setScheduleCron(e.target.value)}
                   placeholder="0 9 * * 1  (毎週月曜 09:00)"
                   className="font-mono"
+                  autoComplete="off"
+                  spellCheck={false}
                 />
               </div>
             ) : null}

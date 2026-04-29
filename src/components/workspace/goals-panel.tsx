@@ -145,6 +145,7 @@ export function GoalsPanel({ workspaceId }: Props) {
                   aria-required="true"
                   minLength={1}
                   maxLength={200}
+                  autoComplete="off"
                 />
               </div>
               <div className="space-y-1">
@@ -688,6 +689,7 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
             aria-required="true"
             minLength={1}
             maxLength={300}
+            autoComplete="off"
           />
           <select
             value={mode}
