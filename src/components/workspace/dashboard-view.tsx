@@ -104,6 +104,11 @@ import {
   mustHygieneSeverity,
 } from '@/features/item/must-hygiene'
 import {
+  computeMustOverdue,
+  formatMustOverdueJa,
+  mustOverdueSeverity,
+} from '@/features/item/must-overdue'
+import {
   formatMustStuckWipJa,
   mustStuckWipSeverity,
   pickMustStuckWipItems,
@@ -368,6 +373,19 @@ export function DashboardView({ workspaceId }: Props) {
     const detail =
       priorityBuckets > 1 ? `${summary} — ${formatOverdueActiveByPriorityJa(byPriority)}` : summary
     return { stats, summary, severity: sev, detail }
+  }, [itemsQ.data])
+
+  // iter373 basics: must-overdue (iter372) を bind。MUST かつ期限超過の最深刻 item を
+  // chip 表示。1 件以上で 'critical' (red 単色)、0 件で chip 非表示で UI 静か。
+  // MUST 絶対落とさない原則 (CLAUDE.md) を「期限を超えて未完了の MUST」として最も
+  // 強く警告する dashboard 専用 chip (must-stuck-wip = 進行中停滞 と相補)。
+  const mustOverdue = useMemo(() => {
+    if (!itemsQ.data) return null
+    const stats = computeMustOverdue(itemsQ.data)
+    const sev = mustOverdueSeverity(stats)
+    if (sev === 'idle') return null
+    const summary = formatMustOverdueJa(stats)
+    return { stats, summary, severity: sev }
   }, [itemsQ.data])
 
   // iter366 basics: must-stuck-wip (iter364) を bind。MUST かつ stuck WIP な
@@ -828,6 +846,21 @@ export function DashboardView({ workspaceId }: Props) {
             dataAttrs={{
               'data-severity': mustStuckWip.severity,
               'data-must-stuck-count': mustStuckWip.entries.length,
+            }}
+          />
+        ) : null}
+        {mustOverdue ? (
+          <DashboardChip
+            testId="dashboard-must-overdue-chip"
+            toneClass="border-red-400 bg-red-100 text-red-900"
+            glyph="🆘"
+            ariaLabel={mustOverdue.summary}
+            title={mustOverdue.summary}
+            text={mustOverdue.summary}
+            dataAttrs={{
+              'data-severity': mustOverdue.severity,
+              'data-must-overdue-count': mustOverdue.stats.total,
+              'data-oldest-days': mustOverdue.stats.oldestOverdueDays ?? 0,
             }}
           />
         ) : null}
