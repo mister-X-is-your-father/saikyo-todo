@@ -182,6 +182,7 @@ function SubtaskTreeNode({
         className="text-muted-foreground hover:text-foreground disabled:opacity-30"
         onClick={() => onOutdent(item)}
         disabled={!canOutdent || movePending}
+        aria-busy={movePending || undefined}
         data-testid={`subtask-outdent-${item.id}`}
         aria-label={
           !canOutdent
@@ -199,6 +200,7 @@ function SubtaskTreeNode({
         className="text-muted-foreground hover:text-foreground disabled:opacity-30"
         onClick={() => onIndent(item)}
         disabled={!canIndent || movePending}
+        aria-busy={movePending || undefined}
         data-testid={`subtask-indent-${item.id}`}
         aria-label={
           !canIndent
@@ -497,6 +499,7 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
             type="button"
             size="sm"
             disabled={!bulkText.trim() || create.isPending}
+            aria-busy={create.isPending || undefined}
             onClick={() => void handleBulkAdd()}
             data-testid="subtasks-bulk-add-btn"
             aria-label={

@@ -128,6 +128,7 @@ export function TimeEntriesTable({
                     size="sm"
                     variant="outline"
                     disabled={sync.isPending}
+                    aria-busy={sync.isPending || undefined}
                     onClick={() => handleSync(e.id)}
                     data-testid={`time-entry-sync-${e.id}`}
                     aria-label={

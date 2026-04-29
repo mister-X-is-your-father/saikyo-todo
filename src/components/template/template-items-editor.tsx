@@ -129,6 +129,7 @@ export function TemplateItemsEditor({ templateId }: Props) {
           type="submit"
           size="sm"
           disabled={addMut.isPending || !title.trim()}
+          aria-busy={addMut.isPending || undefined}
           aria-label={
             !title.trim()
               ? '子 Item を追加するにはタイトルを入力してください'
@@ -173,6 +174,7 @@ export function TemplateItemsEditor({ templateId }: Props) {
                 size="sm"
                 onClick={() => handleRemove(it.id, it.title)}
                 disabled={removeMut.isPending}
+                aria-busy={removeMut.isPending || undefined}
                 aria-label={
                   removeMut.isPending
                     ? `Template item「${it.title}」を削除中…`

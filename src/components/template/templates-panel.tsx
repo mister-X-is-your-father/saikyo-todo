@@ -155,6 +155,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
             <Button
               type="submit"
               disabled={createMut.isPending || !name.trim()}
+              aria-busy={createMut.isPending || undefined}
               aria-label={
                 !name.trim()
                   ? 'Template を作成するには名前を入力してください'
@@ -246,6 +247,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
                     size="sm"
                     onClick={() => handleDelete(t)}
                     disabled={deleteMut.isPending}
+                    aria-busy={deleteMut.isPending || undefined}
                     aria-label={
                       deleteMut.isPending
                         ? `Template「${t.name}」を削除中…`

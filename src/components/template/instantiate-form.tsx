@@ -123,6 +123,7 @@ export function InstantiateForm({ workspaceId, template }: Props) {
         type="submit"
         size="sm"
         disabled={mut.isPending}
+        aria-busy={mut.isPending || undefined}
         aria-label={
           mut.isPending
             ? `Template「${template.name}」を展開中…`
