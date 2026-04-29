@@ -63,6 +63,11 @@ import {
   formatWorkspaceMomentumJa,
   momentumDirectionToTrend,
 } from '@/features/item/momentum'
+import {
+  computeMustHygiene,
+  formatMustHygieneJa,
+  mustHygieneSeverity,
+} from '@/features/item/must-hygiene'
 import { computeSlipDays, formatSlipDaysJa, slipSeverity } from '@/features/item/slip-days'
 import { computeVelocity, formatVelocitySummary } from '@/features/item/velocity'
 import {
@@ -209,6 +214,19 @@ export function DashboardView({ workspaceId }: Props) {
     return { stats, summary, bias }
   }, [itemsQ.data])
 
+  // iter358 basics: must-hygiene (iter357) を bind。MUST item の dueDate 設定状況
+  // を chip 表示。total=0 / severity='idle' で chip 非表示。severity 4 値で配色:
+  // severe (= 半数以上 期限なし) = red、mild = amber、clean = emerald (= 全て期限付)、
+  // idle = hidden (MUST 自体無し)。must-risk (期限近接) と相補。
+  const mustHygiene = useMemo(() => {
+    if (!itemsQ.data) return null
+    const stats = computeMustHygiene(itemsQ.data)
+    const sev = mustHygieneSeverity(stats)
+    if (sev === 'idle') return null
+    const summary = formatMustHygieneJa(stats)
+    return { stats, summary, severity: sev }
+  }, [itemsQ.data])
+
   // iter338 basics: backlog-aging (iter337) を bind。Active (= 未完了 + 未 archive)
   // item を createdAt 年齢バケット別に件数集計、停滞気味 (7 日以上) を tone で警戒。
   const aging = useMemo(() => {
@@ -302,6 +320,26 @@ export function DashboardView({ workspaceId }: Props) {
             title={dodCoverage.summary}
             text={dodCoverage.summary}
             dataAttrs={{ 'data-coverage-pct': dodCoverage.pct }}
+          />
+        ) : null}
+        {mustHygiene ? (
+          <DashboardChip
+            testId="dashboard-must-hygiene-chip"
+            toneClass={
+              mustHygiene.severity === 'severe'
+                ? 'border-red-200 bg-red-50 text-red-700'
+                : mustHygiene.severity === 'mild'
+                  ? chipTone3Class('warn')
+                  : chipTone3Class('good')
+            }
+            glyph="🔥"
+            ariaLabel={mustHygiene.summary}
+            title={mustHygiene.summary}
+            text={mustHygiene.summary}
+            dataAttrs={{
+              'data-severity': mustHygiene.severity,
+              'data-without-due': mustHygiene.stats.withoutDueDate,
+            }}
           />
         ) : null}
         {wipBias ? (
