@@ -178,7 +178,9 @@ import {
   stuckWipSeverity,
 } from '@/features/item/wip-stuck'
 import {
+  computeBlockedItemsByPriority,
   formatBlockedItemsBriefJa,
+  formatBlockedItemsByPriorityJa,
   pickWorkspaceBlockedItems,
 } from '@/features/item-dependency/blocked-items'
 import { useWorkspaceBlocksDependencies } from '@/features/item-dependency/hooks'
@@ -397,7 +399,21 @@ export function DashboardView({ workspaceId }: Props) {
     const entries = pickWorkspaceBlockedItems(itemsQ.data, blocksDepsQ.data)
     if (entries.length === 0) return null
     const summary = formatBlockedItemsBriefJa(entries, 3)
-    return { entries, summary }
+    // iter414 ai-automation: priority 別 breakdown を aria-label / title に同梱
+    // (iter386 must-overdue / iter391 must-stuck-wip / iter406 must-stale / iter408
+    // slip-days と同手法、3 chip 共通の 3 層情報設計)。priority bucket > 1 の時のみ
+    // append (= 単一 P 偏在は冗長省略)。視覚 chip text は summary のまま、SR / hover
+    // だけ richer (具体的な priority bias) に。
+    const byPriority = computeBlockedItemsByPriority(entries)
+    const priorityBuckets =
+      (byPriority[1].count > 0 ? 1 : 0) +
+      (byPriority[2].count > 0 ? 1 : 0) +
+      (byPriority[3].count > 0 ? 1 : 0) +
+      (byPriority[4].count > 0 ? 1 : 0)
+    const priorityDetail =
+      priorityBuckets > 1 ? ` — ${formatBlockedItemsByPriorityJa(byPriority)}` : ''
+    const detail = `${summary}${priorityDetail}`
+    return { entries, summary, detail, priorityBuckets }
   }, [itemsQ.data, blocksDepsQ.data])
 
   // iter368 basics: overdue-active (iter367) を bind。期限超過で未完了の item を
@@ -927,11 +943,12 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-blocked-items-chip"
             toneClass={chipTone3Class('warn')}
             glyph="🔒"
-            ariaLabel={`依存ブロック: ${blockedWorkspaceItems.summary}`}
-            title={blockedWorkspaceItems.summary}
+            ariaLabel={`依存ブロック: ${blockedWorkspaceItems.detail}`}
+            title={blockedWorkspaceItems.detail}
             text={blockedWorkspaceItems.summary}
             dataAttrs={{
               'data-blocked-count': blockedWorkspaceItems.entries.length,
+              'data-priority-buckets': blockedWorkspaceItems.priorityBuckets,
             }}
           />
         ) : null}

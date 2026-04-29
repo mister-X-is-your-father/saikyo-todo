@@ -18,6 +18,12 @@
  */
 import { formatTopWithOverflow } from '@/lib/format-list'
 
+import {
+  formatPriorityBuckets,
+  normalizePriority,
+  type PriorityKey,
+} from '@/features/item/priority'
+
 export interface WorkspaceBlockedItem {
   itemId: string
   title: string
@@ -25,6 +31,8 @@ export interface WorkspaceBlockedItem {
   openBlockerCount: number
   /** 前提の総件数 (= openBlockerCount + 完了済 blocker の件数) */
   totalBlockerCount: number
+  /** Item.priority を 1-4 に正規化したもの (null/未設定は 4 へ集約) */
+  priority: PriorityKey
 }
 
 interface ItemFields {
@@ -32,6 +40,7 @@ interface ItemFields {
   title: string
   doneAt: Date | null
   deletedAt?: Date | null
+  priority?: number | null
 }
 
 interface BlockEdge {
@@ -82,6 +91,7 @@ export function pickWorkspaceBlockedItems<I extends ItemFields>(
       title: target.title,
       openBlockerCount: counts.open,
       totalBlockerCount: counts.total,
+      priority: normalizePriority(target.priority),
     })
   }
   result.sort((a, b) => {
@@ -115,4 +125,66 @@ export function formatBlockedItemsBriefJa(
     limit,
   )
   return `blocked ${blocked.length} 件: ${body}`
+}
+
+/**
+ * iter414 ai-automation: blocked items を priority 別 stat にバケット化する pure helper。
+ *
+ * iter386 (must-overdue) / iter391 (must-stuck-wip) / iter406 (must-stale) /
+ * iter408 (slip-days) と並ぶ「× priority」軸 — dependency-blocked 軸版。
+ * dashboard chip の aria-label / title (= SR / hover 経路) で「priority breakdown」を
+ * 出すための substrate。
+ *
+ * 仕様:
+ *  - blocked Item を `priority` (1-4) で bucket 化 (PRIORITY_ORDER 不変)
+ *  - 各 bucket の `count` (= 該当 blocked Item 数) と `maxOpenBlockerCount`
+ *    (= bucket 内最大の openBlockerCount、count=0 なら null)
+ *  - 全 priority 0 件 / count = 0 でも全 4 bucket は必ず初期化
+ */
+export interface BlockedItemsPriorityStats {
+  count: number
+  /** 該当 priority bucket 内最大の openBlockerCount (count=0 なら null) */
+  maxOpenBlockerCount: number | null
+}
+
+export type BlockedItemsByPriority = Record<PriorityKey, BlockedItemsPriorityStats>
+
+export function computeBlockedItemsByPriority(
+  blocked: readonly WorkspaceBlockedItem[],
+): BlockedItemsByPriority {
+  const result: BlockedItemsByPriority = {
+    1: { count: 0, maxOpenBlockerCount: null },
+    2: { count: 0, maxOpenBlockerCount: null },
+    3: { count: 0, maxOpenBlockerCount: null },
+    4: { count: 0, maxOpenBlockerCount: null },
+  }
+  for (const b of blocked) {
+    const bucket = result[b.priority]
+    bucket.count += 1
+    if (bucket.maxOpenBlockerCount === null || b.openBlockerCount > bucket.maxOpenBlockerCount) {
+      bucket.maxOpenBlockerCount = b.openBlockerCount
+    }
+  }
+  return result
+}
+
+/**
+ * AI prompt / dashboard chip aria-label 用の priority 別 1 行サマリ:
+ *
+ *   `'依存ブロック: P1 1 件 (最大 3 件待ち) / P3 2 件 (最大 1 件待ち)'`
+ *
+ * count=0 の bucket は省略。全 priority count=0 → `'依存ブロック 0 件'`。
+ * iter386 (must-overdue) / iter408 (slip-days) と同じ '{label}: P1 ... / P3 ...'
+ * 形式で SR / hover の長 label が一貫する。
+ */
+export function formatBlockedItemsByPriorityJa(byPriority: BlockedItemsByPriority): string {
+  const body = formatPriorityBuckets(
+    byPriority,
+    (k, s) =>
+      s.count === 0 || s.maxOpenBlockerCount === null
+        ? null
+        : `P${k} ${s.count} 件 (最大 ${s.maxOpenBlockerCount} 件待ち)`,
+    '依存ブロック 0 件',
+  )
+  return body === '依存ブロック 0 件' ? body : `依存ブロック: ${body}`
 }
