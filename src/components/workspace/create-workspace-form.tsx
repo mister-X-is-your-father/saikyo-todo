@@ -35,9 +35,14 @@ export function CreateWorkspaceForm() {
     })
   }
 
+  function onInvalid(errors: typeof form.formState.errors) {
+    const firstError = Object.keys(errors)[0] as keyof CreateWorkspaceInput | undefined
+    if (firstError) form.setFocus(firstError)
+  }
+
   return (
     <form
-      onSubmit={form.handleSubmit(onSubmit)}
+      onSubmit={form.handleSubmit(onSubmit, onInvalid)}
       noValidate
       aria-busy={isPending || undefined}
       className="space-y-4"
