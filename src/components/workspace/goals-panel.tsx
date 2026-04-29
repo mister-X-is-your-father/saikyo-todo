@@ -675,14 +675,14 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
               type="number"
               value={target}
               onChange={(e) => setTarget(e.target.value)}
-              placeholder="target"
+              placeholder="例: 100"
               className="w-32 text-sm"
               aria-label="目標値"
             />
             <Input
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
-              placeholder="unit (件 / %)"
+              placeholder="例: 件 / %"
               className="w-24 text-sm"
               aria-label="単位"
               maxLength={20}
