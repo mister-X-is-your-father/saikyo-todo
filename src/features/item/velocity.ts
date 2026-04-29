@@ -19,7 +19,7 @@
  *  - 不正 doneAt は除外 (fail-soft)、windowDays<=0 は空 result
  *  - archive 済 / deletedAt の done item は集計に含める (= 一度完了したものは消えない)
  */
-import { parseDateOrNull } from '@/lib/date/iso'
+import { formatLocalISO, parseDateOrNull, toLocalMidnight } from '@/lib/date/iso'
 
 export interface VelocityFields {
   doneAt: Date | string | null | undefined
@@ -125,15 +125,4 @@ export function formatVelocitySummary(summary: VelocitySummary, windowDays = 7):
 }
 
 // iter305 refactor: parseDateOrNull (lib/date/iso) に集約 (3 callsite 重複削除)。
-
-function toLocalMidnight(d: Date | null): Date | null {
-  if (!d) return null
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate())
-}
-
-function formatLocalISO(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
+// iter340 refactor: toLocalMidnight / formatLocalISO も lib/date/iso に集約。

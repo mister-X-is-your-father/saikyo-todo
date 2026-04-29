@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { isoDaysFromNow, parseDateOrNull, shiftIsoDate, todayISO } from './iso'
+import {
+  formatLocalISO,
+  isoDaysFromNow,
+  parseDateOrNull,
+  shiftIsoDate,
+  todayISO,
+  toLocalMidnight,
+} from './iso'
 
 describe('todayISO', () => {
   it('Date を YYYY-MM-DD ローカル化', () => {
@@ -106,5 +113,50 @@ describe('shiftIsoDate', () => {
   it('0 padding を保つ (1 月 / 5 日 等)', () => {
     expect(shiftIsoDate('2026-01-05', 0)).toBe('2026-01-05')
     expect(shiftIsoDate('2026-12-09', 0)).toBe('2026-12-09')
+  })
+})
+
+describe('formatLocalISO', () => {
+  it('Date を YYYY-MM-DD ローカル化 (時刻部分を捨てる)', () => {
+    expect(formatLocalISO(new Date(2026, 3, 27, 14, 30, 45))).toBe('2026-04-27')
+  })
+
+  it('1 月 / 5 日も 0 padding', () => {
+    expect(formatLocalISO(new Date(2026, 0, 5))).toBe('2026-01-05')
+    expect(formatLocalISO(new Date(2026, 11, 9, 23, 59))).toBe('2026-12-09')
+  })
+
+  it('todayISO と同値 (今日の Date を渡せば形式一致)', () => {
+    const d = new Date(2026, 3, 27, 9, 0, 0)
+    expect(formatLocalISO(d)).toBe(todayISO(d))
+  })
+})
+
+describe('toLocalMidnight', () => {
+  it('Date を 0:00:00 揃えで返す', () => {
+    const r = toLocalMidnight(new Date(2026, 3, 27, 14, 30, 45))
+    expect(r).not.toBeNull()
+    expect(r?.getFullYear()).toBe(2026)
+    expect(r?.getMonth()).toBe(3)
+    expect(r?.getDate()).toBe(27)
+    expect(r?.getHours()).toBe(0)
+    expect(r?.getMinutes()).toBe(0)
+    expect(r?.getSeconds()).toBe(0)
+  })
+
+  it('null / undefined は null', () => {
+    expect(toLocalMidnight(null)).toBe(null)
+    expect(toLocalMidnight(undefined)).toBe(null)
+  })
+
+  it('不正 Date (NaN time) は null (fail-soft)', () => {
+    expect(toLocalMidnight(new Date('garbage'))).toBe(null)
+  })
+
+  it('元 Date を mutate しない (新インスタンスを返す)', () => {
+    const original = new Date(2026, 3, 27, 14, 30)
+    const result = toLocalMidnight(original)
+    expect(result).not.toBe(original)
+    expect(original.getHours()).toBe(14)
   })
 })

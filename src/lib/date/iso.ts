@@ -24,20 +24,44 @@ function pad(n: number): string {
   return String(n).padStart(2, '0')
 }
 
-function formatLocal(d: Date): string {
+/**
+ * iter340 refactor: ローカル TZ の Date を `YYYY-MM-DD` に整形。
+ *
+ * `velocity.ts#formatLocalISO` / `daily-summary.ts#formatISODate` /
+ * `sprint-date-helpers.ts#formatLocal` で 4 callsite (本 file の private
+ * `formatLocal` 含む) 同一実装が重複していたので集約。`todayISO` /
+ * `isoDaysFromNow` は本関数を内部で呼ぶ。caller は validated Date 前提
+ * (NaN time の不正 Date を渡すと `'NaN-NaN-NaN'` を返すが behavior 互換)。
+ */
+export function formatLocalISO(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
 /** ローカル時刻の Date を `YYYY-MM-DD` に。`now` 省略で現在 */
 export function todayISO(now: Date = new Date()): string {
-  return formatLocal(now)
+  return formatLocalISO(now)
 }
 
 /** 今日 (now) からの相対日付 ISO (ローカル基準)。 */
 export function isoDaysFromNow(days: number, now: Date = new Date()): string {
   const d = new Date(now)
   d.setDate(d.getDate() + days)
-  return formatLocal(d)
+  return formatLocalISO(d)
+}
+
+/**
+ * iter340 refactor: Date を「ローカル TZ の 0:00:00」に揃えた新 Date を返す
+ * fail-soft helper。`velocity.ts` / `due-proximity.ts` / `daily-summary.ts` で
+ * 3 callsite (signature が微妙に違うが core ロジックは同一) 重複していたので
+ * 集約。最も defensive な `daily-summary` 系 (NaN/null/undefined → null) に
+ * 揃える。
+ *
+ * caller がすべて null チェックを伴うので互換 (due-proximity も `if (!todayDate ...)
+ * return ...` で受けている)。
+ */
+export function toLocalMidnight(d: Date | null | undefined): Date | null {
+  if (!d || Number.isNaN(d.getTime())) return null
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate())
 }
 
 /**

@@ -22,6 +22,8 @@
  * 表記の一貫性 (`4h 30min` / `30min`) を保つ。
  */
 
+import { formatLocalISO, toLocalMidnight } from '@/lib/date/iso'
+
 import { formatMinutes } from './category-summary'
 
 /** 集計に必要な最小 structural subset。 */
@@ -85,7 +87,7 @@ export function dailyMinutesSeries(
   for (let i = windowDays - 1; i >= 0; i--) {
     const d = new Date(todayDate)
     d.setDate(d.getDate() - i)
-    const dateISO = formatISODate(d)
+    const dateISO = formatLocalISO(d)
     series.push({ date: dateISO, minutes: grouped.get(dateISO) ?? 0 })
   }
   return series
@@ -116,11 +118,6 @@ export function totalDailyMinutes(map: ReadonlyMap<string, number>): number {
 // internal helpers
 // ----------------------------------------------------------------------
 
-function toLocalMidnight(d: Date): Date | null {
-  if (!d || Number.isNaN(d.getTime())) return null
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate())
-}
-
 function parseDate(iso: string): Date | null {
   const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/)
   if (!m) return null
@@ -129,13 +126,6 @@ function parseDate(iso: string): Date | null {
   const d = Number(m[3])
   if (mo < 1 || mo > 12 || d < 1 || d > 31) return null
   return new Date(y, mo - 1, d)
-}
-
-function formatISODate(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
 }
 
 /** 'YYYY-MM-DD' → 'M/D' (年は省略、ローカル月日のみ)。不正は raw を返す。 */
