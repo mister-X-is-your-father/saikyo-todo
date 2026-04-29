@@ -34,6 +34,8 @@ import { computeAgedHygieneDebt, formatAgedHygieneDebtJa } from '@/features/item
 import {
   countAgingItemsOlderThanWeek,
   countItemsByAge,
+  countItemsByAgeByPriority,
+  formatAgingByPriorityJa,
   formatAgingCounts,
 } from '@/features/item/backlog-aging'
 import {
@@ -437,7 +439,13 @@ export function DashboardView({ workspaceId }: Props) {
     const summary = formatAgingCounts(counts)
     if (summary === '0 件') return null
     const olderThanWeek = countAgingItemsOlderThanWeek(counts)
-    return { counts, summary, olderThanWeek }
+    // iter391 basics: priority 別 breakdown (iter389) を aria-label に同梱
+    // → SR / hover で「停滞: P1 2 件 / P3 1 件」が読める。olderThanWeek > 0 で
+    // priority breakdown が複数 P 分散している時のみ tooltip に (iter363/366/373/
+    // 378/383/388 と同手法、visible chip text 不変)。
+    const byPriority = countItemsByAgeByPriority(active)
+    const stagnantBreakdown = olderThanWeek > 0 ? formatAgingByPriorityJa(byPriority) : null
+    return { counts, summary, olderThanWeek, stagnantBreakdown }
   }, [itemsQ.data])
 
   if (summary.isLoading) return <Loading message="ダッシュボード読込中..." />
@@ -634,7 +642,7 @@ export function DashboardView({ workspaceId }: Props) {
               aging.olderThanWeek > 0 ? trendToneClass('up', 'negative') : chipTone3Class('neutral')
             }
             glyph="⌛"
-            ariaLabel={`Backlog 年齢: ${aging.summary}${aging.olderThanWeek > 0 ? ` — 7 日以上 ${aging.olderThanWeek} 件 (棚卸し対象)` : ''}`}
+            ariaLabel={`Backlog 年齢: ${aging.summary}${aging.olderThanWeek > 0 ? ` — 7 日以上 ${aging.olderThanWeek} 件 (棚卸し対象)` : ''}${aging.stagnantBreakdown && aging.stagnantBreakdown !== '停滞 0 件' ? ` — ${aging.stagnantBreakdown}` : ''}`}
             title={aging.summary}
             text={
               <>

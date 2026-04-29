@@ -171,7 +171,7 @@ describe('countNonEmptyPriorityBuckets / countNonEmptyPriorityBucketsBy', () => 
   })
 
   it('countNonEmptyPriorityBucketsBy: applies custom predicate', () => {
-    const byPriority = {
+    const byPriority: Record<1 | 2 | 3 | 4, { score: number | null }> = {
       1: { score: 80 },
       2: { score: null },
       3: { score: 30 },
