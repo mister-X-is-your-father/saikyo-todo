@@ -4,6 +4,8 @@ import {
   agingLabel,
   countAgingItemsOlderThanWeek,
   countItemsByAge,
+  countItemsByAgeByPriority,
+  formatAgingByPriorityJa,
   formatAgingCounts,
   getItemAge,
   groupItemsByAge,
@@ -209,5 +211,65 @@ describe('integration: items → counts → format', () => {
     const summary = formatAgingCounts(counts)
     expect(summary).toBe('新規 1 / 直近 1 / 停滞 1 / 古参 2')
     expect(countAgingItemsOlderThanWeek(counts)).toBe(3)
+  })
+})
+
+describe('countItemsByAgeByPriority', () => {
+  it('returns empty buckets for empty input', () => {
+    const r = countItemsByAgeByPriority([], TODAY)
+    expect(r[1]).toEqual({ new: 0, recent: 0, stale: 0, ancient: 0, unknown: 0 })
+    expect(r[2].new).toBe(0)
+    expect(r[3].new).toBe(0)
+    expect(r[4].new).toBe(0)
+  })
+
+  it('counts items by priority × age bucket', () => {
+    const items = [
+      { priority: 1, createdAt: daysAgo(45, TODAY.getTime()) }, // P1 ancient
+      { priority: 1, createdAt: daysAgo(0, TODAY.getTime()) }, // P1 new
+      { priority: 3, createdAt: daysAgo(10, TODAY.getTime()) }, // P3 stale
+      { priority: 3, createdAt: daysAgo(2, TODAY.getTime()) }, // P3 recent
+    ]
+    const r = countItemsByAgeByPriority(items, TODAY)
+    expect(r[1].ancient).toBe(1)
+    expect(r[1].new).toBe(1)
+    expect(r[3].stale).toBe(1)
+    expect(r[3].recent).toBe(1)
+  })
+
+  it('normalizes null/out-of-range priority to P4', () => {
+    const items = [
+      { priority: null, createdAt: daysAgo(45, TODAY.getTime()) },
+      { priority: 9, createdAt: daysAgo(10, TODAY.getTime()) },
+    ]
+    const r = countItemsByAgeByPriority(items, TODAY)
+    expect(r[4].ancient).toBe(1)
+    expect(r[4].stale).toBe(1)
+  })
+})
+
+describe('formatAgingByPriorityJa', () => {
+  it('formats stagnant counts per priority (stale + ancient sum)', () => {
+    const items = [
+      { priority: 1, createdAt: daysAgo(45, TODAY.getTime()) }, // P1 ancient
+      { priority: 1, createdAt: daysAgo(15, TODAY.getTime()) }, // P1 stale
+      { priority: 1, createdAt: daysAgo(0, TODAY.getTime()) }, // P1 new (excluded)
+      { priority: 3, createdAt: daysAgo(35, TODAY.getTime()) }, // P3 ancient
+    ]
+    const r = countItemsByAgeByPriority(items, TODAY)
+    expect(formatAgingByPriorityJa(r)).toBe('停滞: P1 2 件 / P3 1 件')
+  })
+
+  it('formats empty as "停滞 0 件"', () => {
+    expect(formatAgingByPriorityJa(countItemsByAgeByPriority([], TODAY))).toBe('停滞 0 件')
+  })
+
+  it('skips priorities with stagnant=0', () => {
+    const items = [
+      { priority: 1, createdAt: daysAgo(0, TODAY.getTime()) }, // P1 new
+      { priority: 3, createdAt: daysAgo(45, TODAY.getTime()) }, // P3 ancient
+    ]
+    const r = countItemsByAgeByPriority(items, TODAY)
+    expect(formatAgingByPriorityJa(r)).toBe('停滞: P3 1 件')
   })
 })

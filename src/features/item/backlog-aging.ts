@@ -25,6 +25,8 @@
 import { parseDateOrNull } from '@/lib/date/iso'
 import { formatNonZeroCounts } from '@/lib/format-counts'
 
+import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
+
 export type AgingKind = 'new' | 'recent' | 'stale' | 'ancient' | 'unknown'
 
 const KIND_ORDER: readonly AgingKind[] = ['new', 'recent', 'stale', 'ancient', 'unknown'] as const
@@ -134,4 +136,45 @@ export function formatAgingCounts(counts: Readonly<Record<AgingKind, number>>): 
  */
 export function countAgingItemsOlderThanWeek(counts: Readonly<Record<AgingKind, number>>): number {
   return counts.stale + counts.ancient
+}
+
+/**
+ * iter389 ai-automation: priority 別の `countItemsByAge` を計算する pure helper。
+ *
+ * iter344 due-hit-rate / iter362 dod-coverage / iter364 due-date-coverage /
+ * iter372 combined-hygiene / iter382 hygiene-debt / iter387 slip-days と
+ * 並ぶ「× priority」軸 7 弾目。「P1 が古参 3 件」のように 高優先軸の停滞を
+ * 分離して可視化できる substrate。低優先 backlog の積み残しは想定内、
+ * 高優先 backlog の積み残しは要注意 = 異常検出に使える。
+ */
+export interface AgingByPriorityFields {
+  createdAt: Date | string | null | undefined
+  priority: number | null | undefined
+}
+
+export type AgingByPriority = Record<PriorityKey, Record<AgingKind, number>>
+
+export function countItemsByAgeByPriority<T extends AgingByPriorityFields>(
+  items: readonly T[],
+  today: Date | string = new Date(),
+): AgingByPriority {
+  return bucketByPriorityWith(items, (group) => countItemsByAge(group, today))
+}
+
+/**
+ * AI prompt 用 1 行サマリ (priority 別 + ancient/stale 合算):
+ *   `'停滞: P1 3 件 / P3 5 件'`
+ *
+ * stale + ancient が 0 件の priority は省略。全 P で 0 → `'停滞 0 件'`。
+ */
+export function formatAgingByPriorityJa(byPriority: AgingByPriority): string {
+  const parts: string[] = []
+  for (const k of PRIORITY_ORDER) {
+    const counts = byPriority[k]
+    const stagnant = counts.stale + counts.ancient
+    if (stagnant === 0) continue
+    parts.push(`P${k} ${stagnant} 件`)
+  }
+  if (parts.length === 0) return '停滞 0 件'
+  return `停滞: ${parts.join(' / ')}`
 }
