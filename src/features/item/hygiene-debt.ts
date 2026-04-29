@@ -22,12 +22,18 @@
 
 import { isValidIsoDate } from '@/lib/date/iso'
 
+import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
+
 export interface HygieneDebtFields {
   doneAt: Date | string | null | undefined
   archivedAt: Date | string | null | undefined
   dueDate: string | null | undefined
   dod: string | null | undefined
   description: string | null | undefined
+}
+
+export interface HygieneDebtByPriorityFields extends HygieneDebtFields {
+  priority: number | null | undefined
 }
 
 export interface HygieneDebtStats {
@@ -103,4 +109,41 @@ export function pickHygieneDebtItems<T extends HygieneDebtFields>(items: readonl
     }
   }
   return out
+}
+
+/**
+ * iter382 ai-automation: priority 別の `HygieneDebtStats` を計算する pure helper。
+ *
+ * iter344 due-hit-rate / iter362 dod-coverage / iter364 due-date-coverage /
+ * iter372 combined-hygiene と並ぶ「× priority」軸 substrate 5 弾目。
+ * AI brief / pm-agent / dashboard が「P1 が一番 debt 多い 60% / P3 30%」のように
+ * priority 別 triage 候補を 1 関数で出せる。「軽い気持ちで P1 ticket を作って
+ * 計画化漏れ」 pattern を高優先軸で検出。
+ */
+export type HygieneDebtByPriority = Record<PriorityKey, HygieneDebtStats>
+
+export function computeHygieneDebtByPriority<T extends HygieneDebtByPriorityFields>(
+  items: readonly T[],
+): HygieneDebtByPriority {
+  return bucketByPriorityWith(items, (group) => computeHygieneDebt(group))
+}
+
+/**
+ * AI prompt 用 1 行 summary (priority 別):
+ *   `'Hygiene Debt: P1 60% (3/5) / P3 30% (1/3)'`
+ *
+ * total=0 / debtCount=0 の priority は省略。全 priority が空 / debt なし →
+ * `'未完了 0 件 (該当なし)'`。
+ */
+export function formatHygieneDebtByPriorityJa(byPriority: HygieneDebtByPriority): string {
+  const parts: string[] = []
+  for (const k of PRIORITY_ORDER) {
+    const stats = byPriority[k]
+    if (stats.total === 0 || stats.rate === null) continue
+    if (stats.debtCount === 0) continue
+    const pct = Math.round(stats.rate * 100)
+    parts.push(`P${k} ${pct}% (${stats.debtCount}/${stats.total})`)
+  }
+  if (parts.length === 0) return '未完了 0 件 (該当なし)'
+  return `Hygiene Debt: ${parts.join(' / ')}`
 }

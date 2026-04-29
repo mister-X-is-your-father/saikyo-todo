@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import {
   computeHygieneDebt,
+  computeHygieneDebtByPriority,
+  formatHygieneDebtByPriorityJa,
   formatHygieneDebtJa,
   hygieneDebtTone,
   pickHygieneDebtItems,
@@ -13,10 +15,19 @@ interface Item {
   dueDate: string | null
   dod: string | null
   description: string | null
+  priority: number | null
 }
 
 function item(p: Partial<Item> = {}): Item {
-  return { doneAt: null, archivedAt: null, dueDate: null, dod: null, description: null, ...p }
+  return {
+    doneAt: null,
+    archivedAt: null,
+    dueDate: null,
+    dod: null,
+    description: null,
+    priority: null,
+    ...p,
+  }
 }
 
 describe('computeHygieneDebt', () => {
@@ -140,5 +151,59 @@ describe('pickHygieneDebtItems', () => {
   it('skips done / archived items', () => {
     const items: Item[] = [item({ doneAt: new Date() }), item({ archivedAt: new Date() }), item()]
     expect(pickHygieneDebtItems(items)).toHaveLength(1)
+  })
+})
+
+describe('computeHygieneDebtByPriority', () => {
+  it('returns empty stats for empty input', () => {
+    const r = computeHygieneDebtByPriority([])
+    expect(r[1].total).toBe(0)
+    expect(r[1].debtCount).toBe(0)
+    expect(r[1].rate).toBe(null)
+  })
+
+  it('counts debt by priority bucket', () => {
+    const items: Item[] = [
+      item({ priority: 1 }), // P1 debt
+      item({ priority: 1 }), // P1 debt
+      item({ priority: 1, dueDate: '2026-05-01' }), // P1 not debt
+      item({ priority: 3 }), // P3 debt
+      item({ priority: 3, dod: 'ok' }), // P3 not debt
+    ]
+    const r = computeHygieneDebtByPriority(items)
+    expect(r[1].total).toBe(3)
+    expect(r[1].debtCount).toBe(2)
+    expect(r[1].rate).toBeCloseTo(2 / 3, 5)
+    expect(r[3].total).toBe(2)
+    expect(r[3].debtCount).toBe(1)
+    expect(r[3].rate).toBe(0.5)
+  })
+
+  it('normalizes null/out-of-range priority into P4', () => {
+    const items: Item[] = [item({ priority: null }), item({ priority: 9 })]
+    const r = computeHygieneDebtByPriority(items)
+    expect(r[4].total).toBe(2)
+    expect(r[4].debtCount).toBe(2)
+  })
+
+  it('formats per-priority summary with non-zero buckets only', () => {
+    const items: Item[] = [
+      item({ priority: 1 }),
+      item({ priority: 1 }),
+      item({ priority: 1, dueDate: '2026-05-01' }),
+      item({ priority: 3 }),
+      item({ priority: 3, dueDate: '2026-05-02' }),
+    ]
+    const r = computeHygieneDebtByPriority(items)
+    // P1 67% (2/3) / P3 50% (1/2) — P2 / P4 are 0 → skipped
+    expect(formatHygieneDebtByPriorityJa(r)).toBe('Hygiene Debt: P1 67% (2/3) / P3 50% (1/2)')
+  })
+
+  it('formats empty buckets / zero debt as "未完了 0 件 (該当なし)"', () => {
+    expect(formatHygieneDebtByPriorityJa(computeHygieneDebtByPriority([]))).toBe(
+      '未完了 0 件 (該当なし)',
+    )
+    const noDebt = computeHygieneDebtByPriority([item({ priority: 1, dueDate: '2026-05-01' })])
+    expect(formatHygieneDebtByPriorityJa(noDebt)).toBe('未完了 0 件 (該当なし)')
   })
 })
