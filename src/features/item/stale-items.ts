@@ -16,6 +16,7 @@
  * 戻り値は 古い順 (= 最も放置されている item が先頭) に並ぶ。同時刻は元配列順で stable。
  */
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
+import { formatTopWithOverflow } from '@/lib/format-list'
 
 import {
   bucketByPriorityWith,
@@ -150,6 +151,42 @@ export function formatStaleItemsByPriorityJa(
     '最古',
     'stale 0 件',
   )
+}
+
+/**
+ * iter409 ai-automation: stale items の "title list with overflow" formatter。iter379
+ * (formatMustOverdueTitlesJa) / iter382 (formatOverdueActiveTitlesJa) / iter407
+ * (formatSlipDaysTitlesJa) と同シリーズ — stale-items 軸の title list を limit + overflow
+ * で整形する変種。
+ *
+ * `formatStaleItemsSummary` (既存) との違い:
+ *   - 既存は entries 全件を `/` で連結 (overflow 制御無し)
+ *   - 本 fn は limit を超えた残件を「他 N 件」で集約 (= AI brief / 通知 / dashboard
+ *     tooltip で長さを抑える)
+ *
+ * 文言例:
+ *   '古参: 提出書類 14日 / 連絡 10日 / 他 1 件'   (limit=2、entries=3 件)
+ *   '古参: A 14日 / B 10日 / C 8日'              (limit=3、entries=3 件)
+ *   '古参 0 件'                                    (entries=空)
+ *
+ * iter379/382/407 と同 vocabulary、prefix '古参' で stale 軸を表現 (= must-stale の
+ * 'MUST 古参' から MUST 部分を取り除いた汎用版)。
+ */
+export function formatStaleItemsTitlesJa<T extends StaleItemFields>(
+  entries: readonly StaleItemEntry<T>[],
+  limit: number = 3,
+): string {
+  if (entries.length === 0) return '古参 0 件'
+  const body = formatTopWithOverflow(
+    entries,
+    (e) => {
+      const title =
+        typeof e.item.title === 'string' && e.item.title.length > 0 ? e.item.title : '(無題)'
+      return `${title} ${e.staleDays}日`
+    },
+    limit,
+  )
+  return `古参: ${body}`
 }
 
 // iter305 refactor: parseDateOrNull (lib/date/iso) に集約。

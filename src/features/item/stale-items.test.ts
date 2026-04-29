@@ -9,6 +9,7 @@ import {
   computeStaleItemsByPriority,
   formatStaleItemsByPriorityJa,
   formatStaleItemsSummary,
+  formatStaleItemsTitlesJa,
   selectStaleItems,
   type StaleItemFields,
 } from './stale-items'
@@ -212,5 +213,43 @@ describe('formatStaleItemsByPriorityJa', () => {
     ]
     const byP = computeStaleItemsByPriority(items, {}, TODAY)
     expect(formatStaleItemsByPriorityJa(byP)).toBe('P1 1 件 (最古 14日) / P3 1 件 (最古 10日)')
+  })
+})
+
+describe('formatStaleItemsTitlesJa (iter409)', () => {
+  it('0 件 → 古参 0 件', () => {
+    expect(formatStaleItemsTitlesJa([])).toBe('古参 0 件')
+  })
+
+  it('複数件 / 区切り (staleDays desc)', () => {
+    const items = [
+      mk({ id: 'A', title: '提出書類', updatedAt: dt(14) }),
+      mk({ id: 'B', title: '連絡', updatedAt: dt(10) }),
+    ]
+    const entries = selectStaleItems(items, {}, TODAY)
+    expect(formatStaleItemsTitlesJa(entries)).toBe('古参: 提出書類 14日 / 連絡 10日')
+  })
+
+  it('limit 超えは 他 N 件 でまとめる', () => {
+    const items = [
+      mk({ id: 'A', title: 'A', updatedAt: dt(14) }),
+      mk({ id: 'B', title: 'B', updatedAt: dt(12) }),
+      mk({ id: 'C', title: 'C', updatedAt: dt(10) }),
+      mk({ id: 'D', title: 'D', updatedAt: dt(8) }),
+    ]
+    const entries = selectStaleItems(items, {}, TODAY)
+    expect(formatStaleItemsTitlesJa(entries, 2)).toBe('古参: A 14日 / B 12日 / 他 2 件')
+  })
+
+  it('title 欠落は (無題) で fallback', () => {
+    const noTitle: StaleItemFields = {
+      id: 'X',
+      status: 'todo',
+      updatedAt: dt(10),
+      doneAt: null,
+      archivedAt: null,
+    }
+    const entries = selectStaleItems([noTitle], {}, TODAY)
+    expect(formatStaleItemsTitlesJa(entries)).toContain('(無題)')
   })
 })
