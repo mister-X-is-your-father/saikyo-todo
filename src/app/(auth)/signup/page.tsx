@@ -10,12 +10,12 @@ export const metadata: Metadata = {
 
 export default function SignupPage() {
   return (
-    <Card aria-labelledby="signup-heading" aria-describedby="signup-description">
+    <Card>
       <CardHeader>
         <h1 id="signup-heading" className="font-heading text-2xl leading-snug font-medium">
           サインアップ
         </h1>
-        <CardDescription id="signup-description">アカウントを作成して始めましょう</CardDescription>
+        <CardDescription>アカウントを作成して始めましょう</CardDescription>
       </CardHeader>
       <CardContent>
         <SignupForm />
