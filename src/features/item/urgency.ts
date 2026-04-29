@@ -242,6 +242,34 @@ export function groupItemsByUrgencyTier<T extends UrgencyFields>(
   return groups
 }
 
+/**
+ * iter392 ai-automation: 指定 tier 集合に該当する items だけを stable 順序で抽出。
+ *
+ * `groupItemsByUrgencyTier` は 5 tier 全部を返すが、本 helper は「actionable」
+ * (= critical + high) 等の subset を 1 配列で取り出す薄い filter。AI 朝 brief /
+ * pm-agent / dashboard が「今すぐ動くべき items 一覧」を 1 関数で出せる。
+ *
+ * 仕様:
+ *   - input: items + tiers (string[] / readonly、Set 化して O(1) 判定)
+ *   - 出力: 対象 tier に属する items を **元配列順** で返す stable 順序
+ *   - tiers が空なら空配列
+ *   - selectTopUrgentItems (top-N) と相補: 本 helper は「tier filter 全件」、
+ *     selectTopUrgentItems は「score 降順 N 件」
+ */
+export function pickItemsByUrgencyTiers<T extends UrgencyFields>(
+  items: readonly T[],
+  tiers: readonly UrgencyTier[],
+  today: Date = new Date(),
+): T[] {
+  if (tiers.length === 0) return []
+  const tierSet = new Set(tiers)
+  const out: T[] = []
+  for (const it of items) {
+    if (tierSet.has(urgencyTier(computeUrgency(it, today)))) out.push(it)
+  }
+  return out
+}
+
 /** items を tier 別の件数に圧縮 (group せず数だけ欲しい AI prompt 用)。 */
 export function countItemsByUrgencyTier<T extends UrgencyFields>(
   items: readonly T[],

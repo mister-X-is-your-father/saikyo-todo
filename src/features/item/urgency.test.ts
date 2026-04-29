@@ -8,6 +8,7 @@ import {
   formatUrgencyExplanation,
   formatUrgencyTierCounts,
   groupItemsByUrgencyTier,
+  pickItemsByUrgencyTiers,
   selectTopUrgentItems,
   type UrgencyFields,
   type UrgencyTier,
@@ -451,5 +452,44 @@ describe('formatUrgencyTierCounts', () => {
     expect(formatUrgencyTierCounts({ critical: 1, high: 0, medium: 0, low: 0, none: 1 })).toBe(
       '緊急 1 / 対象外 1',
     )
+  })
+})
+
+describe('pickItemsByUrgencyTiers', () => {
+  it('returns empty array when tiers is empty', () => {
+    const items: UrgencyFields[] = [item({ priority: 1, isMust: true, dueDate: '2026-04-25' })]
+    expect(pickItemsByUrgencyTiers(items, [], TODAY)).toEqual([])
+  })
+
+  it('returns only items matching specified tiers (single tier)', () => {
+    const a = item({ priority: 1, isMust: true, dueDate: '2026-04-25' }) // critical (overdue+must)
+    const b = item({ priority: 4 }) // low
+    const c = item({ priority: 2 }) // high (P2)
+    const result = pickItemsByUrgencyTiers([a, b, c], ['critical'], TODAY)
+    expect(result).toEqual([a])
+  })
+
+  it('returns items matching any of multiple tiers (actionable subset)', () => {
+    const a = item({ priority: 1, isMust: true, dueDate: '2026-04-25' }) // critical
+    const b = item({ priority: 4 }) // low
+    const c = item({ priority: 2 }) // high
+    const result = pickItemsByUrgencyTiers([a, b, c], ['critical', 'high'], TODAY)
+    // a (critical) and c (high) — stable order
+    expect(result).toEqual([a, c])
+  })
+
+  it('preserves stable element order from input', () => {
+    const a = item({ priority: 2 }) // high
+    const b = item({ priority: 4 }) // low (excluded)
+    const c = item({ priority: 2 }) // high
+    const result = pickItemsByUrgencyTiers([a, b, c], ['high'], TODAY)
+    expect(result).toEqual([a, c])
+  })
+
+  it('treats done items as none tier (excluded from active filter)', () => {
+    const a = item({ priority: 1, doneAt: new Date() }) // none (done)
+    const b = item({ priority: 1 }) // high (P1)
+    const result = pickItemsByUrgencyTiers([a, b], ['critical', 'high'], TODAY)
+    expect(result).toEqual([b])
   })
 })
