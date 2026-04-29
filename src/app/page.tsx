@@ -40,9 +40,11 @@ export default async function HomePage() {
       </header>
 
       {workspaces.length === 0 ? (
-        <Card>
+        <Card role="region" aria-labelledby="first-ws-heading">
           <CardHeader>
-            <CardTitle>最初の Workspace を作成</CardTitle>
+            <CardTitle id="first-ws-heading" role="heading" aria-level={2}>
+              最初の Workspace を作成
+            </CardTitle>
             <CardDescription>
               チームで共有する最初の Workspace を作りましょう。後から追加 / 切替できます。
             </CardDescription>
@@ -83,9 +85,16 @@ export default async function HomePage() {
             ))}
           </ul>
 
-          <Card id="new">
+          <Card id="new" role="region" aria-labelledby="another-ws-heading">
             <CardHeader>
-              <CardTitle className="text-base">別の Workspace を作成</CardTitle>
+              <CardTitle
+                id="another-ws-heading"
+                className="text-base"
+                role="heading"
+                aria-level={2}
+              >
+                別の Workspace を作成
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <CreateWorkspaceForm />
