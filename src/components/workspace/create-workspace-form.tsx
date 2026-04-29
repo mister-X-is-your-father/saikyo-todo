@@ -36,7 +36,7 @@ export function CreateWorkspaceForm() {
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="name">Workspace 名</Label>
         <IMEInput
