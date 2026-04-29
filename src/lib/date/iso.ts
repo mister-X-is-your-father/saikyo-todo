@@ -133,6 +133,32 @@ export function dueDateEndOfDayMs(dueDate: string): number | null {
 }
 
 /**
+ * iter380 refactor: ISO `YYYY-MM-DD` 文字列を **ローカル TZ の当日 0:00** Date に
+ * 変換する fail-soft helper。`due-proximity.ts#parseIsoDate` /
+ * `time-entry/daily-summary.ts#parseDate` の private 実装が完全同一だったので集約、
+ * `must-overdue.ts` / `overdue-active.ts` の inline match (`isValidIsoDate` +
+ * `match(/^(\d{4})-(\d{2})-(\d{2})/)` + `new Date(y, mo - 1, d)`) も同 shape なので
+ * こちらに置換。
+ *
+ * 仕様:
+ *  - 形式不一致 (= prefix が `YYYY-MM-DD` を満たさない) → null
+ *  - 月 < 1 / 月 > 12 / 日 < 1 / 日 > 31 → null
+ *  - そうでなければ `new Date(y, mo - 1, d)` (= ローカル TZ の 0:00)
+ *
+ * `dueDateEndOfDayMs` (当日 23:59:59.999 ms) と対称。caller は `parseIsoDate(today)`
+ * のような private fn を再実装しなくて良くなる。
+ */
+export function parseIsoDateAsLocalMidnight(iso: string): Date | null {
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (!m) return null
+  const y = Number(m[1])
+  const mo = Number(m[2])
+  const d = Number(m[3])
+  if (mo < 1 || mo > 12 || d < 1 || d > 31) return null
+  return new Date(y, mo - 1, d)
+}
+
+/**
  * iter305 refactor: Date / ISO 文字列 / null / undefined / 不正値を Date | null に
  * 正規化する fail-soft parser。velocity / freshly-done / stale-items で 3 callsite
  * 同一実装が重複していたので集約。

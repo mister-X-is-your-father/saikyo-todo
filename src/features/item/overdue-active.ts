@@ -24,7 +24,7 @@
  *   - status = 'done' / 'cancelled' → 除外 (DEFAULT_EXCLUDE_STATUSES)
  */
 
-import { isValidIsoDate, MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
+import { MS_PER_DAY, parseDateOrNull, parseIsoDateAsLocalMidnight } from '@/lib/date/iso'
 import { formatNonZeroCounts } from '@/lib/format-counts'
 
 import { bucketByPriorityWith, formatPriorityBuckets, type PriorityKey } from './priority'
@@ -91,10 +91,10 @@ export function computeOverdueActive<T extends OverdueActiveFields>(
   for (const it of items) {
     if (!it) continue
     if (it.doneAt || it.archivedAt) continue
-    if (typeof it.dueDate !== 'string' || !isValidIsoDate(it.dueDate)) continue
-    const m = it.dueDate.match(/^(\d{4})-(\d{2})-(\d{2})/)
-    if (!m) continue
-    const dueMs = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getTime()
+    if (typeof it.dueDate !== 'string') continue
+    const dueMidnight = parseIsoDateAsLocalMidnight(it.dueDate)
+    if (!dueMidnight) continue
+    const dueMs = dueMidnight.getTime()
     if (dueMs >= todayMidnightMs) continue // overdue は厳密に dueDate < today
 
     const statusKey = normalizeStatus(it.status)

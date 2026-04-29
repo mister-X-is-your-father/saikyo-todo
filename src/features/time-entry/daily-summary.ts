@@ -22,7 +22,7 @@
  * 表記の一貫性 (`4h 30min` / `30min`) を保つ。
  */
 
-import { formatLocalISO, toLocalMidnight } from '@/lib/date/iso'
+import { formatLocalISO, parseIsoDateAsLocalMidnight, toLocalMidnight } from '@/lib/date/iso'
 
 import { formatMinutes } from './category-summary'
 
@@ -79,7 +79,8 @@ export function dailyMinutesSeries(
 ): DailyMinutes[] {
   const windowDays = options.windowDays ?? 7
   if (windowDays <= 0) return []
-  const todayDate = typeof today === 'string' ? parseDate(today) : toLocalMidnight(today)
+  const todayDate =
+    typeof today === 'string' ? parseIsoDateAsLocalMidnight(today) : toLocalMidnight(today)
   if (!todayDate) return []
   const grouped = groupTimeEntriesByDay(entries, options)
 
@@ -117,16 +118,6 @@ export function totalDailyMinutes(map: ReadonlyMap<string, number>): number {
 // ----------------------------------------------------------------------
 // internal helpers
 // ----------------------------------------------------------------------
-
-function parseDate(iso: string): Date | null {
-  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/)
-  if (!m) return null
-  const y = Number(m[1])
-  const mo = Number(m[2])
-  const d = Number(m[3])
-  if (mo < 1 || mo > 12 || d < 1 || d > 31) return null
-  return new Date(y, mo - 1, d)
-}
 
 /** 'YYYY-MM-DD' → 'M/D' (年は省略、ローカル月日のみ)。不正は raw を返す。 */
 function formatShortDate(iso: string): string {

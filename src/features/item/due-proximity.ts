@@ -23,7 +23,7 @@
  *  - 不正 ISO は `noDate` と同じ扱い (fail-soft)
  *  - `diffDays` は overdue で負、noDate で undefined
  */
-import { MS_PER_DAY, toLocalMidnight } from '@/lib/date/iso'
+import { MS_PER_DAY, parseIsoDateAsLocalMidnight, toLocalMidnight } from '@/lib/date/iso'
 import { formatNonZeroCounts } from '@/lib/format-counts'
 
 export type DueProximityKind = 'overdue' | 'today' | 'tomorrow' | 'thisWeek' | 'later' | 'noDate'
@@ -50,8 +50,9 @@ export function getDueProximity(
   today: Date | string = new Date(),
 ): DueProximity {
   if (!dueDate) return { kind: 'noDate', diffDays: undefined, label: LABEL.noDate }
-  const todayDate = typeof today === 'string' ? parseIsoDate(today) : toLocalMidnight(today)
-  const dueParsed = parseIsoDate(dueDate)
+  const todayDate =
+    typeof today === 'string' ? parseIsoDateAsLocalMidnight(today) : toLocalMidnight(today)
+  const dueParsed = parseIsoDateAsLocalMidnight(dueDate)
   if (!todayDate || !dueParsed) {
     return { kind: 'noDate', diffDays: undefined, label: LABEL.noDate }
   }
@@ -139,14 +140,4 @@ export function countItemsByDueProximity(
 /** AI prompt 行 / dashboard chip 用の 1 行 summary (件数 0 の bucket は省略)。 */
 export function formatDueProximityCounts(counts: Record<DueProximityKind, number>): string {
   return formatNonZeroCounts(counts, KIND_ORDER, LABEL)
-}
-
-function parseIsoDate(iso: string): Date | null {
-  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/)
-  if (!m) return null
-  const y = Number(m[1])
-  const mo = Number(m[2])
-  const d = Number(m[3])
-  if (mo < 1 || mo > 12 || d < 1 || d > 31) return null
-  return new Date(y, mo - 1, d)
 }

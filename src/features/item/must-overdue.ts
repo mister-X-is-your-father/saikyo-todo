@@ -17,7 +17,7 @@
  *   - dashboard 専用 chip (severity 'critical' = red、must-stuck-wip と異なる軸)
  */
 
-import { isValidIsoDate, MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
+import { MS_PER_DAY, parseDateOrNull, parseIsoDateAsLocalMidnight } from '@/lib/date/iso'
 import { formatTopWithOverflow } from '@/lib/format-list'
 
 import { computeOverdueActive, type OverdueActiveFields } from './overdue-active'
@@ -126,10 +126,10 @@ export function pickMustOverdueItems<T extends MustOverdueFields>(
     if (!it || !it.isMust) continue
     if (it.doneAt || it.archivedAt) continue
     if (it.status === 'cancelled' || it.status === 'done') continue
-    if (typeof it.dueDate !== 'string' || !isValidIsoDate(it.dueDate)) continue
-    const m = it.dueDate.match(/^(\d{4})-(\d{2})-(\d{2})/)
-    if (!m) continue
-    const dueMs = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getTime()
+    if (typeof it.dueDate !== 'string') continue
+    const dueMidnight = parseIsoDateAsLocalMidnight(it.dueDate)
+    if (!dueMidnight) continue
+    const dueMs = dueMidnight.getTime()
     if (dueMs >= todayMidnightMs) continue
     const overdueDays = Math.floor((todayMidnightMs - dueMs) / MS_PER_DAY)
     enriched.push({ entry: { item: it, overdueDays }, index: i })

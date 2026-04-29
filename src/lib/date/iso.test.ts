@@ -8,6 +8,7 @@ import {
   isValidIsoDate,
   MS_PER_DAY,
   parseDateOrNull,
+  parseIsoDateAsLocalMidnight,
   shiftIsoDate,
   todayISO,
   todayUtcISO,
@@ -245,6 +246,55 @@ describe('dueDateEndOfDayMs', () => {
     const start = new Date(2026, 3, 29, 0, 0, 0).getTime()
     expect(end).toBeGreaterThan(start)
     expect(end - start).toBe(24 * 60 * 60 * 1000 - 1) // 1 day - 1 ms
+  })
+})
+
+describe('parseIsoDateAsLocalMidnight', () => {
+  it('valid ISO `YYYY-MM-DD` をローカル TZ 0:00 Date に変換', () => {
+    const d = parseIsoDateAsLocalMidnight('2026-04-29')
+    expect(d).not.toBeNull()
+    expect(d!.getFullYear()).toBe(2026)
+    expect(d!.getMonth()).toBe(3) // 0-indexed = April
+    expect(d!.getDate()).toBe(29)
+    expect(d!.getHours()).toBe(0)
+    expect(d!.getMinutes()).toBe(0)
+    expect(d!.getSeconds()).toBe(0)
+  })
+
+  it('長い ISO (`YYYY-MM-DDTHH:MM:SS`) も prefix のみ採用', () => {
+    const d = parseIsoDateAsLocalMidnight('2026-04-29T12:34:56Z')
+    expect(d).not.toBeNull()
+    expect(d!.getFullYear()).toBe(2026)
+    expect(d!.getDate()).toBe(29)
+    expect(d!.getHours()).toBe(0) // 時刻 prefix は無視、0:00 に揃う
+  })
+
+  it('形式不一致は null', () => {
+    expect(parseIsoDateAsLocalMidnight('2026/04/29')).toBeNull()
+    expect(parseIsoDateAsLocalMidnight('29-04-2026')).toBeNull()
+    expect(parseIsoDateAsLocalMidnight('not-a-date')).toBeNull()
+    expect(parseIsoDateAsLocalMidnight('')).toBeNull()
+  })
+
+  it('月が範囲外 (0 / 13) は null', () => {
+    expect(parseIsoDateAsLocalMidnight('2026-00-15')).toBeNull()
+    expect(parseIsoDateAsLocalMidnight('2026-13-15')).toBeNull()
+  })
+
+  it('日が範囲外 (0 / 32) は null', () => {
+    expect(parseIsoDateAsLocalMidnight('2026-04-00')).toBeNull()
+    expect(parseIsoDateAsLocalMidnight('2026-04-32')).toBeNull()
+  })
+
+  it('境界値 (1 月 1 日 / 12 月 31 日) は受け入れ', () => {
+    expect(parseIsoDateAsLocalMidnight('2026-01-01')).not.toBeNull()
+    expect(parseIsoDateAsLocalMidnight('2026-12-31')).not.toBeNull()
+  })
+
+  it('toLocalMidnight(parseDateOrNull(iso)) と同等の Date を返す (semantics 互換)', () => {
+    const a = parseIsoDateAsLocalMidnight('2026-04-29')!
+    const b = toLocalMidnight(parseDateOrNull('2026-04-29'))!
+    expect(a.getTime()).toBe(b.getTime())
   })
 })
 
