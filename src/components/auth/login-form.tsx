@@ -42,6 +42,7 @@ export function LoginForm() {
       method="post"
       onSubmit={form.handleSubmit(onSubmit)}
       aria-labelledby="login-heading"
+      aria-describedby="login-description"
       aria-busy={isPending || undefined}
       noValidate
       className="space-y-4"

@@ -15,7 +15,7 @@ export default function SignupPage() {
         <h1 id="signup-heading" className="font-heading text-2xl leading-snug font-medium">
           サインアップ
         </h1>
-        <CardDescription>アカウントを作成して始めましょう</CardDescription>
+        <CardDescription id="signup-description">アカウントを作成して始めましょう</CardDescription>
       </CardHeader>
       <CardContent>
         <SignupForm />

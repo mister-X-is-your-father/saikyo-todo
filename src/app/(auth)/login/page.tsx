@@ -15,7 +15,7 @@ export default function LoginPage() {
         <h1 id="login-heading" className="font-heading text-2xl leading-snug font-medium">
           ログイン
         </h1>
-        <CardDescription>最強TODO へようこそ</CardDescription>
+        <CardDescription id="login-description">最強TODO へようこそ</CardDescription>
       </CardHeader>
       <CardContent>
         <LoginForm />
