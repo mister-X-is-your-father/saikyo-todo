@@ -6,12 +6,15 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  classifyVelocityHint,
   computeVelocity,
   computeVelocityByPriority,
   formatVelocityByPriorityJa,
+  formatVelocityHintJa,
   formatVelocitySummary,
   type VelocityByPriorityFields,
   type VelocityFields,
+  type VelocitySummary,
 } from './velocity'
 
 const TODAY = new Date(2026, 3, 28) // 2026-04-28
@@ -196,5 +199,38 @@ describe('computeVelocityByPriority / formatVelocityByPriorityJa (iter452)', () 
     const items = [mkP(dt(0), null), mkP(dt(0), 99)]
     const r = computeVelocityByPriority(items, {}, TODAY)
     expect(r[4].count).toBe(2)
+  })
+})
+
+describe('classifyVelocityHint / formatVelocityHintJa (iter454)', () => {
+  const mkSummary = (total: number, trend: 'up' | 'flat' | 'down'): VelocitySummary => ({
+    byDay: [],
+    total,
+    avgPerDay: total / 7,
+    trend,
+  })
+
+  it('total=0 → idle / "完了なし"', () => {
+    const r = mkSummary(0, 'flat')
+    expect(classifyVelocityHint(r)).toBe('idle')
+    expect(formatVelocityHintJa(r)).toBe('完了なし')
+  })
+
+  it('total>0 + trend=up → up / "加速中"', () => {
+    const r = mkSummary(10, 'up')
+    expect(classifyVelocityHint(r)).toBe('up')
+    expect(formatVelocityHintJa(r)).toBe('加速中')
+  })
+
+  it('total>0 + trend=flat → flat / "安定"', () => {
+    const r = mkSummary(7, 'flat')
+    expect(classifyVelocityHint(r)).toBe('flat')
+    expect(formatVelocityHintJa(r)).toBe('安定')
+  })
+
+  it('total>0 + trend=down → down / "減速中"', () => {
+    const r = mkSummary(5, 'down')
+    expect(classifyVelocityHint(r)).toBe('down')
+    expect(formatVelocityHintJa(r)).toBe('減速中')
   })
 })

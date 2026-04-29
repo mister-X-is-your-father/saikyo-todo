@@ -185,3 +185,40 @@ export function formatVelocityByPriorityJa(
     `直近 ${windowDays} 日 velocity 0 件`,
   )
 }
+
+/**
+ * iter454 ai-automation: velocity の trend (up/flat/down) を「1 word jp ヒント」に
+ * 整形する hint helper。既存 `VelocitySummary.trend` の英語 enum を「加速中 / 安定 /
+ * 減速中 / 完了なし」の 4 状態 jp 表記に出し分け。
+ *
+ * iter424 / iter439 / iter442 / iter444 / iter447 / iter449 と並ぶ「item axis 1-word
+ * state」シリーズの velocity-trend 軸版 (7 弾目)。AI 朝 brief / pm-agent / dashboard
+ * chip / Slack 通知が「workspace の完了ペース傾向」を 1 word で出せる substrate。
+ *
+ * 4 状態:
+ *  - 'idle' → '完了なし'   (total === 0、windowDays 内の done item ゼロ)
+ *  - 'up'   → '加速中'      (前半 → 後半で +20%+ 増加)
+ *  - 'flat' → '安定'        (-20% ≤ 増減 ≤ +20%)
+ *  - 'down' → '減速中'      (前半 → 後半で -20%- 減少)
+ *
+ * 既存 `formatVelocitySummary` の trendLabel (= up/flat/down 英語) と相補で「英語
+ * enum vs 1 word jp 文言」を出し分け。caller は trend を SR / chip aria-label に
+ * 1 単語で込められる。
+ */
+export type VelocityHint = 'idle' | 'up' | 'flat' | 'down'
+
+export function classifyVelocityHint(summary: VelocitySummary): VelocityHint {
+  if (summary.total === 0) return 'idle'
+  return summary.trend
+}
+
+const VELOCITY_HINT_LABEL_JA: Record<VelocityHint, string> = {
+  idle: '完了なし',
+  up: '加速中',
+  flat: '安定',
+  down: '減速中',
+}
+
+export function formatVelocityHintJa(summary: VelocitySummary): string {
+  return VELOCITY_HINT_LABEL_JA[classifyVelocityHint(summary)]
+}
