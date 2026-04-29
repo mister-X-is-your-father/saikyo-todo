@@ -7,7 +7,12 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import { type BriefItemFields, buildBriefSummary, formatTopUrgentLine } from './brief-summary'
+import {
+  type BriefItemFields,
+  buildBriefSummary,
+  detectBriefActiveAxis,
+  formatTopUrgentLine,
+} from './brief-summary'
 
 const TODAY = new Date(2026, 3, 27) // 2026-04-27 (Mon)
 
@@ -418,5 +423,61 @@ describe('buildBriefSummary — iter394 severity', () => {
   it('全 axis 0 (空 items) → idle', () => {
     const r = buildBriefSummary([], {}, TODAY)
     expect(r.severity).toBe('idle')
+  })
+})
+
+describe('buildBriefSummary — iter396 activeAxis', () => {
+  it('mustOverdue 1+ → activeAxis = mustOverdue', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'M', isMust: true, dueDate: '2026-04-13', title: '提出書類' }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.activeAxis).toBe('mustOverdue')
+  })
+
+  it('mustAtRisk のみ → activeAxis = mustAtRisk', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'R', isMust: true, dueDate: '2026-04-30', title: 'リスク' }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.activeAxis).toBe('mustAtRisk')
+  })
+
+  it('stuckWip のみ → activeAxis = stuckWip (severity high と区別可能)', () => {
+    const items: BriefItemFields[] = [
+      item({
+        id: 'S',
+        status: 'in_progress',
+        updatedAt: new Date(2026, 3, 20),
+        title: '停滞 WIP',
+      }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.activeAxis).toBe('stuckWip')
+    expect(r.severity).toBe('high') // severity = high だが activeAxis で stuckWip と特定可能
+  })
+
+  it('全 axis 0 → activeAxis = null', () => {
+    const r = buildBriefSummary([], {}, TODAY)
+    expect(r.activeAxis).toBeNull()
+  })
+})
+
+describe('detectBriefActiveAxis (export)', () => {
+  it('caller が brief を作らずに axis を早期判定可能', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'M', isMust: true, dueDate: '2026-04-13', title: '提出書類' }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    // detector を直接呼んでも同 axis が返る (= caller は BriefSummary を作らずに済む)
+    const axis = detectBriefActiveAxis({
+      topUrgent: r.topUrgent,
+      mustAtRisk: r.mustAtRisk,
+      stale: r.stale,
+      stuckWip: r.stuckWip,
+      overdueActive: r.overdueActive,
+      mustOverdue: r.mustOverdue,
+    })
+    expect(axis).toBe('mustOverdue')
   })
 })

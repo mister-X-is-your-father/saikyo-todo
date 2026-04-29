@@ -155,6 +155,13 @@ export interface BriefSummary<T extends BriefItemFields> {
    * 'critical' であれば severity も 'critical')。
    */
   severity: BriefSeverity
+  /**
+   * iter396 basics: 現在 headline / severity を決定している axis (null = 全 axis 0)。
+   * caller は switch で axis 別の chip 配色 / 通知 icon / banner styling を 1 か所で
+   * 切替できる (= severity の "high" 内 3 軸 mustAtRisk/overdueActive/stuckWip も
+   * 区別可能、severity だけでは見えない nuance)。
+   */
+  activeAxis: BriefAxis | null
 }
 
 /** iter394: BriefSummary の集約 severity (5 段階)。 */
@@ -232,6 +239,15 @@ export function buildBriefSummary<T extends BriefItemFields>(
     mustOverdue,
   })
 
+  const activeAxis = detectBriefActiveAxis({
+    topUrgent,
+    mustAtRisk,
+    stale,
+    stuckWip,
+    overdueActive,
+    mustOverdue,
+  })
+
   return {
     topUrgent,
     mustAtRisk,
@@ -246,6 +262,7 @@ export function buildBriefSummary<T extends BriefItemFields>(
     headline,
     headlineWithTitles,
     severity,
+    activeAxis,
   }
 }
 
@@ -267,9 +284,30 @@ export function buildBriefSummary<T extends BriefItemFields>(
  * caller (3 関数 + 将来の chip 配色 / 通知 icon 切替) は同 detector を共有することで
  * severity 順序の不整合を構造的に防げる。
  */
-type BriefAxis = 'mustOverdue' | 'mustAtRisk' | 'overdueActive' | 'stuckWip' | 'stale' | 'topUrgent'
+/**
+ * iter396 basics: BriefSummary の「現時点で最深刻な軸」識別子。pickBriefHeadline /
+ * pickBriefSeverity / pickBriefHeadlineWithTitles の 3 関数が共通参照する severity
+ * 順 axis (severity 順序: mustOverdue → mustAtRisk → overdueActive → stuckWip →
+ * stale → topUrgent)。caller (chip 配色 / 通知 icon / dashboard banner styling) は
+ * \`BriefSummary.activeAxis\` を switch して axis 別 UI を 1 か所で切替可能。
+ */
+export type BriefAxis =
+  | 'mustOverdue'
+  | 'mustAtRisk'
+  | 'overdueActive'
+  | 'stuckWip'
+  | 'stale'
+  | 'topUrgent'
 
-function detectBriefActiveAxis<T extends BriefItemFields>(input: {
+/**
+ * iter396 basics: 6 軸を severity 順に検査して「現時点で最深刻な軸」を 1 値で返す。
+ * null は「全 axis 0 件」(= 完璧、'idle' severity)。
+ *
+ * caller (UI / chip / 通知) が BriefSummary を作る前に axis だけ早期判定したい時、
+ * または `BriefSummary.activeAxis` (本 fn の結果が bundle される) を switch して
+ * axis 別 UI を切替する用。
+ */
+export function detectBriefActiveAxis<T extends BriefItemFields>(input: {
   topUrgent: TopUrgentEntry<T>[]
   mustAtRisk: MustRiskEntry<T>[]
   stale: StaleItemEntry<T>[]
