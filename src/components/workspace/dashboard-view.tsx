@@ -32,9 +32,11 @@ import { trendGlyph, trendToneClass } from '@/lib/ui/trend-tone'
 import { useBurndown, useMustSummary } from '@/features/dashboard/hooks'
 import { computeAgedHygieneDebt, formatAgedHygieneDebtJa } from '@/features/item/aged-hygiene-debt'
 import {
+  classifyAtRiskParentsHint,
   computeAtRiskParentsByPriority,
   formatAtRiskParentsBriefJa,
   formatAtRiskParentsByPriorityJa,
+  formatAtRiskParentsHintJa,
   pickAtRiskParents,
 } from '@/features/item/at-risk-parents'
 import {
@@ -460,7 +462,12 @@ export function DashboardView({ workspaceId }: Props) {
     const byPriority = computeAtRiskParentsByPriority(entries)
     const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
     const detail = `${summary}${priorityDetailSuffix(priorityBuckets, () => formatAtRiskParentsByPriorityJa(byPriority))}`
-    return { entries, summary, detail, priorityBuckets }
+    // iter443 basics: iter442 で追加した hint (idle/mild/moderate/severe) を chip
+    // data attr + aria-label prefix に bind、SR / E2E が「workspace-wide 案件停滞度」
+    // を 1 word で取れる (= iter441 blocked-items-hint と同手法 2 弾目)。
+    const hint = classifyAtRiskParentsHint(entries)
+    const hintLabel = formatAtRiskParentsHintJa(entries)
+    return { entries, summary, detail, priorityBuckets, hint, hintLabel }
   }, [itemsQ.data])
 
   const parentItemsProgress = useMemo(() => {
@@ -1041,13 +1048,14 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-at-risk-parents-chip"
             toneClass={chipTone3Class('warn')}
             glyph="💤"
-            ariaLabel={`触れていない案件: ${atRiskParents.detail}`}
-            title={atRiskParents.detail}
+            ariaLabel={`${atRiskParents.hintLabel}: ${atRiskParents.detail}`}
+            title={`${atRiskParents.hintLabel} — ${atRiskParents.detail}`}
             text={atRiskParents.summary}
             truncateText
             dataAttrs={{
               'data-at-risk-count': atRiskParents.entries.length,
               'data-priority-buckets': atRiskParents.priorityBuckets,
+              'data-at-risk-hint': atRiskParents.hint,
             }}
           />
         ) : null}
