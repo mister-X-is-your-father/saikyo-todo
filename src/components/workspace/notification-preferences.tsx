@@ -142,6 +142,7 @@ export function NotificationPreferencesButton({ Icon = Settings }: { Icon?: Luci
                     className="mt-0.5 size-4 cursor-pointer accent-current"
                     checked={checked}
                     disabled={isLoading || update.isPending}
+                    aria-busy={update.isPending || undefined}
                     onChange={(e) => void setFlag(spec.key, e.target.checked)}
                     data-testid={`pref-toggle-${spec.key}`}
                   />

@@ -243,6 +243,7 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
           variant="ghost"
           onClick={inPip ? closePip : () => void handleOpenPip()}
           disabled={!pipSupported || pipPending}
+          aria-busy={pipPending || undefined}
           aria-label={
             !pipSupported
               ? 'Picture-in-Picture は Chrome / Edge で利用可能'
@@ -269,6 +270,7 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
           variant="outline"
           onClick={() => void handleStop()}
           disabled={create.isPending}
+          aria-busy={create.isPending || undefined}
           aria-label={
             create.isPending
               ? 'タイマーを停止して稼働記録を作成中…'
