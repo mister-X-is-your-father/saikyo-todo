@@ -149,10 +149,24 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
           <Textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder={`この${PERIOD_LABEL[period]}で達成したいことを書く (例: ◯◯ を完了する)`}
+            // iter314: Cmd/Ctrl+Enter で保存 (iter313 team-context / iter228 comment-thread と
+            // 同 pattern)。dirty + !pending のときだけ反応、IME 確定中は無視。
+            onKeyDown={(e) => {
+              if (
+                (e.metaKey || e.ctrlKey) &&
+                e.key === 'Enter' &&
+                !e.nativeEvent.isComposing &&
+                dirty &&
+                !upsertGoal.isPending
+              ) {
+                e.preventDefault()
+                void handleSave()
+              }
+            }}
+            placeholder={`この${PERIOD_LABEL[period]}で達成したいことを書く (例: ◯◯ を完了する) (Cmd/Ctrl+Enter で保存)`}
             rows={3}
             maxLength={2000}
-            aria-label={`${PERIOD_LABEL[period]}ゴール`}
+            aria-label={`${PERIOD_LABEL[period]}ゴール (Cmd/Ctrl+Enter で保存)`}
             data-testid={`period-goal-textarea-${period}`}
           />
           <div className="flex justify-end">
