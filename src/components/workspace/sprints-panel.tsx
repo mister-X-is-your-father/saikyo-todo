@@ -556,6 +556,7 @@ function SprintCard({
                   type="submit"
                   size="sm"
                   disabled={update.isPending}
+                  aria-busy={update.isPending || undefined}
                   data-testid={`sprint-period-save-${sprint.id}`}
                   aria-label={
                     update.isPending
@@ -660,6 +661,7 @@ function SprintCard({
                 size="sm"
                 variant="outline"
                 disabled={retroPending}
+                aria-busy={retroPending || undefined}
                 onClick={onRunRetro}
                 data-testid={`sprint-retro-${sprint.id}`}
                 title="PM Agent が完了/未完 items を要約して Retro Doc を生成"
@@ -678,6 +680,7 @@ function SprintCard({
                 size="sm"
                 variant="outline"
                 disabled={premortemPending}
+                aria-busy={premortemPending || undefined}
                 onClick={onRunPremortem}
                 data-testid={`sprint-premortem-${sprint.id}`}
                 title="PM Agent が想定リスクと早期警報を Pre-mortem Doc にまとめる"
@@ -824,6 +827,7 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                 type="submit"
                 size="sm"
                 disabled={upd.isPending}
+                aria-busy={upd.isPending || undefined}
                 data-testid="sprint-defaults-save-btn"
                 aria-label={
                   upd.isPending

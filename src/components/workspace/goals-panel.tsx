@@ -421,6 +421,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     variant="outline"
                     onClick={() => void changeStatus('completed')}
                     disabled={update.isPending}
+                    aria-busy={update.isPending || undefined}
                     data-testid={`goal-complete-${goal.id}`}
                     aria-label={
                       update.isPending
@@ -436,6 +437,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     variant="ghost"
                     onClick={() => void changeStatus('archived')}
                     disabled={update.isPending}
+                    aria-busy={update.isPending || undefined}
                     data-testid={`goal-archive-${goal.id}`}
                     aria-label={
                       update.isPending
@@ -455,6 +457,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     variant="outline"
                     onClick={() => void changeStatus('active')}
                     disabled={update.isPending}
+                    aria-busy={update.isPending || undefined}
                     data-testid={`goal-reactivate-${goal.id}`}
                     aria-label={
                       update.isPending
@@ -470,6 +473,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     variant="ghost"
                     onClick={() => void changeStatus('archived')}
                     disabled={update.isPending}
+                    aria-busy={update.isPending || undefined}
                     data-testid={`goal-archive-${goal.id}`}
                     aria-label={
                       update.isPending
@@ -488,6 +492,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                   variant="outline"
                   onClick={() => void changeStatus('active')}
                   disabled={update.isPending}
+                  aria-busy={update.isPending || undefined}
                   data-testid={`goal-reactivate-${goal.id}`}
                   aria-label={
                     update.isPending
@@ -504,6 +509,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                 variant="outline"
                 onClick={() => void handleDecompose()}
                 disabled={decompose.isPending || status !== 'active'}
+                aria-busy={decompose.isPending || undefined}
                 data-testid={`goal-decompose-${goal.id}`}
                 title={
                   status !== 'active'
@@ -623,6 +629,7 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
                       type="button"
                       onClick={() => void handleDelete(kr.id, kr.title)}
                       disabled={remove.isPending}
+                      aria-busy={remove.isPending || undefined}
                       aria-label={
                         remove.isPending
                           ? `KR「${kr.title}」を削除中…`
