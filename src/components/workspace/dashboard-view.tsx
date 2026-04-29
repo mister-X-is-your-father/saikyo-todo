@@ -145,6 +145,7 @@ import {
   countNonEmptyCountPriorityBuckets,
   countNonEmptyPriorityBuckets,
   countNonEmptyPriorityBucketsBy,
+  priorityDetailSuffix,
 } from '@/features/item/priority'
 import {
   formatRecentCompletedSummaryJa,
@@ -297,7 +298,9 @@ export function DashboardView({ workspaceId }: Props) {
     // (iter363/366/373/378/383 と同手法)。
     const byPriority = computeSlipDaysByPriority(itemsQ.data)
     const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
-    const priorityDetail = priorityBuckets > 1 ? ` — ${formatSlipDaysByPriorityJa(byPriority)}` : ''
+    const priorityDetail = priorityDetailSuffix(priorityBuckets, () =>
+      formatSlipDaysByPriorityJa(byPriority),
+    )
     // iter408 basics: iter407 で追加した pickSlipDaysItems / formatSlipDaysTitlesJa を
     // SR / hover に bind (iter383 / iter386 / iter391 / iter406 と同手法、3 層情報設計)。
     // 視覚 chip text は stats summary のまま、aria-label / title だけ richer (具体名付き) に。
@@ -390,8 +393,7 @@ export function DashboardView({ workspaceId }: Props) {
     // /388/391/401 と同手法)。複数 P 分散時のみ append、単一 P 偏在は冗長省略。
     const byPriority = computeStuckWipByPriority(itemsQ.data)
     const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
-    const detail =
-      priorityBuckets > 1 ? `${summary} — ${formatStuckWipByPriorityJa(byPriority)}` : summary
+    const detail = `${summary}${priorityDetailSuffix(priorityBuckets, () => formatStuckWipByPriorityJa(byPriority))}`
     return { entries, summary, severity: sev, detail }
   }, [itemsQ.data])
 
@@ -413,8 +415,9 @@ export function DashboardView({ workspaceId }: Props) {
     // だけ richer (具体的な priority bias) に。
     const byPriority = computeBlockedItemsByPriority(entries)
     const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
-    const priorityDetail =
-      priorityBuckets > 1 ? ` — ${formatBlockedItemsByPriorityJa(byPriority)}` : ''
+    const priorityDetail = priorityDetailSuffix(priorityBuckets, () =>
+      formatBlockedItemsByPriorityJa(byPriority),
+    )
     const detail = `${summary}${priorityDetail}`
     return { entries, summary, detail, priorityBuckets }
   }, [itemsQ.data, blocksDepsQ.data])
@@ -454,8 +457,9 @@ export function DashboardView({ workspaceId }: Props) {
     // (iter363/366/373/378/383/388/391/401/363 と同手法、priority bias を SR/hover で読める)
     const byPriority = computeOverdueActiveByPriority(itemsQ.data)
     const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
-    const priorityDetail =
-      priorityBuckets > 1 ? ` — ${formatOverdueActiveByPriorityJa(byPriority)}` : ''
+    const priorityDetail = priorityDetailSuffix(priorityBuckets, () =>
+      formatOverdueActiveByPriorityJa(byPriority),
+    )
     // iter383 basics: iter382 の pickOverdueActiveItems / formatOverdueActiveTitlesJa を
     // SR / hover 経路に bind (iter381 must-overdue chip と同手法)。視覚 chip text は
     // stats summary のまま、aria-label / title だけ richer (具体名付き) に。
@@ -481,8 +485,9 @@ export function DashboardView({ workspaceId }: Props) {
     // entries.length > 0 の時のみ titles を append (= 0 件 fallback で過剰冗長を回避)。
     const byPriority = computeMustOverdueByPriority(itemsQ.data)
     const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
-    const priorityDetail =
-      priorityBuckets > 1 ? ` — ${formatMustOverdueByPriorityJa(byPriority)}` : ''
+    const priorityDetail = priorityDetailSuffix(priorityBuckets, () =>
+      formatMustOverdueByPriorityJa(byPriority),
+    )
     const entries = pickMustOverdueItems(itemsQ.data)
     const titlesDetail = entries.length > 0 ? ` — ${formatMustOverdueTitlesJa(entries, 3)}` : ''
     const detail = `${summary}${priorityDetail}${titlesDetail}`
@@ -507,8 +512,7 @@ export function DashboardView({ workspaceId }: Props) {
     // priorityBuckets > 1 の時のみ append、単一 P 偏在は冗長省略。
     const byPriority = computeMustStaleByPriority(itemsQ.data)
     const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
-    const detail =
-      priorityBuckets > 1 ? `${summary} — ${formatMustStaleByPriorityJa(byPriority)}` : summary
+    const detail = `${summary}${priorityDetailSuffix(priorityBuckets, () => formatMustStaleByPriorityJa(byPriority))}`
     return { entries, summary, detail, severity: sev, priorityBuckets }
   }, [itemsQ.data])
 
@@ -523,8 +527,7 @@ export function DashboardView({ workspaceId }: Props) {
     // priorityBuckets > 1 の時のみ append、単一 P 偏在は冗長省略。
     const byPriority = computeMustStuckWipByPriority(itemsQ.data)
     const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
-    const detail =
-      priorityBuckets > 1 ? `${summary} — ${formatMustStuckWipByPriorityJa(byPriority)}` : summary
+    const detail = `${summary}${priorityDetailSuffix(priorityBuckets, () => formatMustStuckWipByPriorityJa(byPriority))}`
     return { entries, summary, detail, severity: sev, priorityBuckets }
   }, [itemsQ.data])
 

@@ -137,6 +137,28 @@ export function countNonEmptyPriorityBucketsBy<T>(
 }
 
 /**
+ * iter425 refactor: dashboard chip の「priority breakdown を bucket > 1 の時だけ
+ * append」 pattern を集約。8 callsite で `bucket > 1 ? ' — ${formatter}' : ''` の
+ * 同 shape 三項演算子が散在していたので 1 関数に集約 (= iter325 / iter330 / ... /
+ * iter420 と同じ「同 shape の散在を 1 file に」方針 28 弾目)。
+ *
+ * 仕様:
+ *  - bucket > 1 (= 複数 priority に分散) の時のみ ` — ${formatter()}` を返す
+ *  - bucket <= 1 (= 0件 or 単一 priority 偏在) は空文字 (= 冗長省略)
+ *  - separator はハードコード ' — '、prefix が空文字の (' — '+detail) と
+ *    フル replace の (`${summary} — ${detail}`) の両方の callsite に対応する
+ *    suffix-only API
+ *
+ * caller usage:
+ *   const detail = `${summary}${priorityDetailSuffix(buckets, () => formatBy(byP))}`
+ *
+ * formatter は遅延 evaluation (= bucket <= 1 なら呼ばれない、format cost 回避)。
+ */
+export function priorityDetailSuffix(bucketCount: number, formatter: () => string): string {
+  return bucketCount > 1 ? ` — ${formatter()}` : ''
+}
+
+/**
  * iter415 refactor: `countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)`
  * の薄いショートカット — `Record<PriorityKey, {count: number}>` shape 専用。
  *

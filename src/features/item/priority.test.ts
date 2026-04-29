@@ -11,6 +11,7 @@ import {
   formatPriorityCounts,
   groupItemsByPriority,
   priorityClass,
+  priorityDetailSuffix,
   priorityLabel,
 } from './priority'
 
@@ -328,6 +329,39 @@ describe('countNonEmptyPriorityBuckets / countNonEmptyPriorityBucketsBy', () => 
           'empty',
         ),
       ).toBe('P1 2 件 (最長 7日)')
+    })
+  })
+
+  describe('priorityDetailSuffix', () => {
+    it('bucket=0 → 空文字', () => {
+      expect(priorityDetailSuffix(0, () => 'P1 2件')).toBe('')
+    })
+
+    it('bucket=1 (単一 P 偏在) → 空文字', () => {
+      expect(priorityDetailSuffix(1, () => 'P1 2件')).toBe('')
+    })
+
+    it('bucket=2+ → " — ${formatter()}"', () => {
+      expect(priorityDetailSuffix(2, () => 'P1 2件 / P3 1件')).toBe(' — P1 2件 / P3 1件')
+    })
+
+    it('formatter は遅延 evaluation (bucket <= 1 で呼ばれない)', () => {
+      let called = 0
+      priorityDetailSuffix(0, () => {
+        called += 1
+        return 'expensive'
+      })
+      priorityDetailSuffix(1, () => {
+        called += 1
+        return 'expensive'
+      })
+      expect(called).toBe(0)
+      // bucket=2 で呼ばれる
+      priorityDetailSuffix(2, () => {
+        called += 1
+        return 'expensive'
+      })
+      expect(called).toBe(1)
     })
   })
 })
