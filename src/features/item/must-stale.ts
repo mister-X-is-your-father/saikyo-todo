@@ -20,6 +20,11 @@
 import { formatTopWithOverflow } from '@/lib/format-list'
 
 import {
+  bucketByPriorityWith,
+  formatPriorityBucketsCountWithDays,
+  type PriorityKey,
+} from './priority'
+import {
   selectStaleItems,
   type SelectStaleItemsOptions,
   type StaleItemEntry,
@@ -95,4 +100,56 @@ export function mustStaleSeverity<T extends MustStaleFields>(
   entries: readonly StaleItemEntry<T>[],
 ): MustStaleSeverity {
   return entries.length > 0 ? 'critical' : 'idle'
+}
+
+/** by-priority 集計の単 bucket 値: must-stale 件数 + 最古日数 (count=0 → null)。 */
+export interface MustStaleByPriorityStats {
+  count: number
+  oldestStaleDays: number | null
+}
+
+/**
+ * iter404 ai-automation: must-stale を priority 別に集計する pure helper。iter384
+ * (must-overdue-by-priority) / iter389 (must-stuck-wip-by-priority) と同シリーズ —
+ * must 系 by-priority substrate 3 弾目。must の中でも P1 偏在は最深刻 escalation を
+ * 示唆 (= 「絶対落としたくない P1 MUST が放置されている」)。
+ *
+ * 「P1 MUST 古参 2 件 (最古 14日) / P3 MUST 古参 1 件 (最古 8日)」のように、MUST stale
+ * の priority bias を可視化、全体「2 件」だけでは見えない bias を露出。
+ *
+ * pickMustStaleItems の filter ロジックは bucketByPriorityWith 経由で priority 別に
+ * 再適用 (P1 のみ / P2 のみ ... の各 bucket 内で MUST stale 集計)。
+ */
+export function computeMustStaleByPriority<
+  T extends MustStaleFields & { priority: number | null | undefined },
+>(
+  items: readonly T[],
+  options: SelectStaleItemsOptions = {},
+  today: Date | string = new Date(),
+): Record<PriorityKey, MustStaleByPriorityStats> {
+  return bucketByPriorityWith(items, (group) => {
+    const entries = pickMustStaleItems(group, options, today)
+    if (entries.length === 0) return { count: 0, oldestStaleDays: null }
+    const max = entries.reduce((m, e) => (e.staleDays > m ? e.staleDays : m), 0)
+    return { count: entries.length, oldestStaleDays: max }
+  })
+}
+
+/**
+ * priority 別 must-stale を 1 行 summary に。例:
+ *   'P1 2 件 (最古 14日) / P3 1 件 (最古 8日)' / count=0 P 省略 / 全 P 0 → 'MUST 古参 0 件'
+ *
+ * iter385 で集約した formatPriorityBucketsCountWithDays を 7 callsite 目で利用、
+ * '最古' label = stale-items / overdue-active / must-overdue と vocabulary 統一。
+ */
+export function formatMustStaleByPriorityJa(
+  byPriority: Record<PriorityKey, MustStaleByPriorityStats>,
+): string {
+  return formatPriorityBucketsCountWithDays(
+    byPriority,
+    (s) => s.count,
+    (s) => s.oldestStaleDays,
+    '最古',
+    'MUST 古参 0 件',
+  )
 }

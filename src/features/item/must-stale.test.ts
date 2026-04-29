@@ -7,6 +7,8 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  computeMustStaleByPriority,
+  formatMustStaleByPriorityJa,
   formatMustStaleJa,
   type MustStaleFields,
   mustStaleSeverity,
@@ -142,5 +144,67 @@ describe('mustStaleSeverity', () => {
     const items = [mk({ id: 'A', updatedAt: dt(10) })]
     const entries = pickMustStaleItems(items, {}, TODAY)
     expect(mustStaleSeverity(entries)).toBe('critical')
+  })
+})
+
+describe('computeMustStaleByPriority', () => {
+  function mkP(
+    overrides: Partial<MustStaleFields & { priority: number | null }>,
+  ): MustStaleFields & { priority: number | null } {
+    return { ...mk(overrides), priority: overrides.priority ?? 4 }
+  }
+
+  it('items 空 → 全 P count=0', () => {
+    const result = computeMustStaleByPriority([], {}, TODAY)
+    expect(result[1]).toEqual({ count: 0, oldestStaleDays: null })
+    expect(result[2]).toEqual({ count: 0, oldestStaleDays: null })
+    expect(result[3]).toEqual({ count: 0, oldestStaleDays: null })
+    expect(result[4]).toEqual({ count: 0, oldestStaleDays: null })
+  })
+
+  it('priority 別に集計、isMust=false / 短期 / done は除外', () => {
+    const items = [
+      mkP({ id: 'a', priority: 1, updatedAt: dt(14) }), // ✓ P1
+      mkP({ id: 'b', priority: 1, updatedAt: dt(8) }), // ✓ P1
+      mkP({ id: 'c', priority: 3, updatedAt: dt(10) }), // ✓ P3
+      mkP({ id: 'd', priority: 1, updatedAt: dt(7), isMust: false }), // not must
+      mkP({ id: 'e', priority: 2, updatedAt: dt(5) }), // 短期
+      mkP({ id: 'f', priority: 4, updatedAt: dt(20), doneAt: new Date() }), // done
+    ]
+    const result = computeMustStaleByPriority(items, {}, TODAY)
+    expect(result[1]).toEqual({ count: 2, oldestStaleDays: 14 })
+    expect(result[3]).toEqual({ count: 1, oldestStaleDays: 10 })
+    expect(result[2]).toEqual({ count: 0, oldestStaleDays: null })
+    expect(result[4]).toEqual({ count: 0, oldestStaleDays: null })
+  })
+
+  it('priority null/範囲外 は p4', () => {
+    const items = [
+      mkP({ id: 'a', priority: null, updatedAt: dt(8) }),
+      mkP({ id: 'b', priority: 99 as number, updatedAt: dt(14) }),
+    ]
+    const result = computeMustStaleByPriority(items, {}, TODAY)
+    expect(result[4]).toEqual({ count: 2, oldestStaleDays: 14 })
+  })
+})
+
+describe('formatMustStaleByPriorityJa', () => {
+  it('全 P count=0 → MUST 古参 0 件', () => {
+    const empty = computeMustStaleByPriority([], {}, TODAY)
+    expect(formatMustStaleByPriorityJa(empty)).toBe('MUST 古参 0 件')
+  })
+
+  it('複数 P 分散 → 番号順 / 区切り、count=0 P 省略', () => {
+    function mkP(
+      overrides: Partial<MustStaleFields & { priority: number }>,
+    ): MustStaleFields & { priority: number } {
+      return { ...mk(overrides), priority: overrides.priority ?? 4 }
+    }
+    const items = [
+      mkP({ id: 'a', priority: 1, updatedAt: dt(14) }),
+      mkP({ id: 'b', priority: 3, updatedAt: dt(8) }),
+    ]
+    const byP = computeMustStaleByPriority(items, {}, TODAY)
+    expect(formatMustStaleByPriorityJa(byP)).toBe('P1 1 件 (最古 14日) / P3 1 件 (最古 8日)')
   })
 })
