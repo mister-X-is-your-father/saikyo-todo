@@ -473,6 +473,41 @@ function pickBriefHeadlineWithTitles<T extends BriefItemFields>(input: {
 }
 
 /**
+ * iter398 basics: BriefSummary を「status bar / mobile 通知 / 1-line UI」用の 1 行に
+ * 整形する formatter。severity icon + activeAxes 数 + headlineWithTitles を結合。
+ *
+ * 文言例:
+ *   '🆘 critical [3 軸] MUST 期限超過: 提出書類 14日 / 連絡 5日'    (= 同時 3 軸警報)
+ *   '🚨 high [1 軸] 進行中だが停滞: 1 件 (停滞 WIP 4 日)'           (= 1 軸 stuckWip のみ)
+ *   '⚠️ medium [1 軸] stale 1: 放置 (10 日前)'                      (= 1 軸 stale のみ)
+ *   '🔆 low [1 軸] urgent 上位 1: タスク (urgency 100)'             (= 警報無し candidate あり)
+ *   '✅ idle 問題なし'                                              (= 全 axis 0 件)
+ *
+ * caller (mobile status bar / 通知 / Slack message / dashboard banner) は本文字列を
+ * そのまま埋め込める (= severity icon で視覚優先度、[N 軸] で危機度、headline で具体内容)。
+ *
+ * severity icon mapping (= iter394 BriefSeverity 5 段階):
+ *   - critical = 🆘 (= MVP 違反警報)
+ *   - high     = 🚨 (= 注意要)
+ *   - medium   = ⚠️ (= 放置注意)
+ *   - low      = 🔆 (= 警報無し candidate あり)
+ *   - idle     = ✅ (= 完璧)
+ */
+export function formatBriefStatusBarJa<T extends BriefItemFields>(brief: BriefSummary<T>): string {
+  if (brief.severity === 'idle') return '✅ idle 問題なし'
+  const icon = SEVERITY_ICON[brief.severity]
+  const axesCount = brief.activeAxes.length
+  return `${icon} ${brief.severity} [${axesCount} 軸] ${brief.headlineWithTitles}`
+}
+
+const SEVERITY_ICON: Record<Exclude<BriefSeverity, 'idle'>, string> = {
+  critical: '🆘',
+  high: '🚨',
+  medium: '⚠️',
+  low: '🔆',
+}
+
+/**
  * top urgent エントリを 1 行に整形 (`urgent 上位 3: A (urgency 180) / B (135) / C (100)`)。
  * 0 件は `'urgent 上位 0 (該当なし)'`。title 欠落は `'(無題)'` で fallback。
  */

@@ -12,6 +12,7 @@ import {
   buildBriefSummary,
   detectBriefActiveAxes,
   detectBriefActiveAxis,
+  formatBriefStatusBarJa,
   formatTopUrgentLine,
 } from './brief-summary'
 
@@ -541,5 +542,58 @@ describe('buildBriefSummary — iter397 activeAxes (multi-axis)', () => {
       mustOverdue: r.mustOverdue,
     })
     expect(direct).toEqual(r.activeAxes)
+  })
+})
+
+describe('formatBriefStatusBarJa (iter398)', () => {
+  it('idle (全 axis 0) → ✅ idle 問題なし', () => {
+    const r = buildBriefSummary([], {}, TODAY)
+    expect(formatBriefStatusBarJa(r)).toBe('✅ idle 問題なし')
+  })
+
+  it('critical → 🆘 prefix + axes count + headlineWithTitles', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'M', isMust: true, dueDate: '2026-04-13', title: '提出書類' }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    const out = formatBriefStatusBarJa(r)
+    expect(out).toMatch(/^🆘 critical \[\d+ 軸\] MUST 期限超過: /)
+    expect(out).toContain('提出書類')
+  })
+
+  it('high (mustAtRisk) → 🚨 prefix', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'R', isMust: true, dueDate: '2026-04-30', title: 'リスク' }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(formatBriefStatusBarJa(r)).toMatch(/^🚨 high \[\d+ 軸\] /)
+  })
+
+  it('medium (stale) → ⚠️ prefix', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'St', updatedAt: new Date(2026, 2, 1), title: '放置' }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(formatBriefStatusBarJa(r)).toMatch(/^⚠️ medium \[\d+ 軸\] /)
+  })
+
+  it('low (topUrgent only) → 🔆 prefix', () => {
+    const items: BriefItemFields[] = [item({ id: 'T', priority: 1, title: 'urgent candidate' })]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(formatBriefStatusBarJa(r)).toMatch(/^🔆 low \[\d+ 軸\] /)
+  })
+
+  it('複数 axes 同時 → [N 軸] count 反映', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'M', isMust: true, dueDate: '2026-04-13', title: '提出' }),
+      item({ id: 'St', updatedAt: new Date(2026, 2, 1), title: '放置' }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    const out = formatBriefStatusBarJa(r)
+    // mustOverdue + overdueActive + stale + topUrgent = 4 軸 などが triggered
+    const m = out.match(/\[(\d+) 軸\]/)
+    expect(m).not.toBeNull()
+    const axesCount = Number(m![1])
+    expect(axesCount).toBeGreaterThanOrEqual(2) // 複数 axes
   })
 })
