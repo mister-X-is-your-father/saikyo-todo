@@ -183,7 +183,9 @@ export function SprintsPanel({ workspaceId }: Props) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">新規 Sprint</CardTitle>
+          <CardTitle className="text-base" role="heading" aria-level={2}>
+            新規 Sprint
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <form
@@ -398,7 +400,9 @@ function SprintCard({
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <CardTitle className="truncate text-base">{sprint.name}</CardTitle>
+              <CardTitle className="truncate text-base" role="heading" aria-level={3}>
+                {sprint.name}
+              </CardTitle>
               <p
                 className="text-muted-foreground mt-0.5 text-xs"
                 data-testid={`sprint-period-${sprint.id}`}
@@ -736,7 +740,9 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
   return (
     <Card data-testid="sprint-defaults-editor">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm">Sprint デフォルト (workspace 全体)</CardTitle>
+        <CardTitle className="text-sm" role="heading" aria-level={2}>
+          Sprint デフォルト (workspace 全体)
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         {!editing ? (
