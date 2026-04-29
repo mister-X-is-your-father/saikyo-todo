@@ -31,7 +31,12 @@ import { trendGlyph, trendToneClass } from '@/lib/ui/trend-tone'
 
 import { useBurndown, useMustSummary } from '@/features/dashboard/hooks'
 import { computeAgedHygieneDebt, formatAgedHygieneDebtJa } from '@/features/item/aged-hygiene-debt'
-import { formatAtRiskParentsBriefJa, pickAtRiskParents } from '@/features/item/at-risk-parents'
+import {
+  computeAtRiskParentsByPriority,
+  formatAtRiskParentsBriefJa,
+  formatAtRiskParentsByPriorityJa,
+  pickAtRiskParents,
+} from '@/features/item/at-risk-parents'
 import {
   countAgingItemsOlderThanWeek,
   countItemsByAge,
@@ -439,7 +444,13 @@ export function DashboardView({ workspaceId }: Props) {
     const entries = pickAtRiskParents(itemsQ.data)
     if (entries.length === 0) return null
     const summary = formatAtRiskParentsBriefJa(entries, 3)
-    return { entries, summary }
+    // iter431 basics: iter429 で追加した by-priority breakdown を SR / hover に bind
+    // (iter386 / iter408 / iter414 / iter423 と同手法、3 層情報設計 5 chip 目)。
+    // priority bucket > 1 (= 複数 P 分散) のときのみ append、単一 P 偏在は冗長省略。
+    const byPriority = computeAtRiskParentsByPriority(entries)
+    const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
+    const detail = `${summary}${priorityDetailSuffix(priorityBuckets, () => formatAtRiskParentsByPriorityJa(byPriority))}`
+    return { entries, summary, detail, priorityBuckets }
   }, [itemsQ.data])
 
   const parentItemsProgress = useMemo(() => {
@@ -998,11 +1009,12 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-at-risk-parents-chip"
             toneClass={chipTone3Class('warn')}
             glyph="💤"
-            ariaLabel={`触れていない案件: ${atRiskParents.summary}`}
-            title={atRiskParents.summary}
+            ariaLabel={`触れていない案件: ${atRiskParents.detail}`}
+            title={atRiskParents.detail}
             text={atRiskParents.summary}
             dataAttrs={{
               'data-at-risk-count': atRiskParents.entries.length,
+              'data-priority-buckets': atRiskParents.priorityBuckets,
             }}
           />
         ) : null}
