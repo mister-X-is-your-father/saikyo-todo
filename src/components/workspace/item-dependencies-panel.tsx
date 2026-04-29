@@ -11,9 +11,24 @@
  * - blocks: 上流 (前提) になる Item を選ぶ → fromItemId=picked, toItemId=self
  *   （= "この Item は picked の後続")
  * - relates_to: 関連を結ぶ → fromItemId=self, toItemId=picked
+ *
+ * iter301 basics: 各 row 行頭に **方向 icon** (← 前提 / → 後続 / ⇄ 関連) を配置、
+ * status は raw 文字列 → `StatusBadge` (icon + 配色 chip) に統一。section 全体の
+ * accent 色は header 周辺で残し、row 内の status 表現は app 共通 graphical pattern
+ * (subtask-panel / Today / Inbox 等) と揃える (FEEDBACK_QUEUE「Item dependencies
+ * tab: 依存先を visual chain (矢印付き mini DAG) で」候補の前段)。
  */
 import { useMemo, useState } from 'react'
 
+import {
+  ArrowLeft,
+  ArrowLeftRight,
+  ArrowRight,
+  Circle,
+  CircleCheck,
+  CirclePause,
+  type LucideIcon,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
@@ -25,11 +40,28 @@ import {
   useItemDependencies,
   useRemoveItemDependency,
 } from '@/features/item-dependency/hooks'
+import {
+  type DependencyReadinessIconKey,
+  formatDependencyReadiness,
+  getDependencyReadinessVisual,
+  summarizeDependencyReadiness,
+} from '@/features/item-dependency/readiness'
 import type { ItemDependencyType } from '@/features/item-dependency/schema'
 
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { MustBadge } from '@/components/workspace/must-badge'
+import { StatusBadge } from '@/components/workspace/status-badge'
+
+/**
+ * iter411 basics: readiness-visual の iconKey を Lucide component に map。
+ * `STATUS_ICONS` (status-badge.tsx) / `ACTION_ICON` (activity-log.tsx) と同パターン。
+ */
+const READINESS_ICON: Record<DependencyReadinessIconKey, LucideIcon> = {
+  check: CircleCheck,
+  pause: CirclePause,
+  idle: Circle,
+}
 
 interface Props {
   workspaceId: string
@@ -89,16 +121,38 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
   const blockedBy = data?.blockedBy ?? []
   const blocking = data?.blocking ?? []
   const related = data?.related ?? []
+  // iter306 basics: iter297 で整備済の summarizeDependencyReadiness substrate を UI bind。
+  // 依存タブを開いた時に「いま着手可能か / 何件残っているか」が一瞥で伝わる readiness chip を
+  // 先頭に配置 (FEEDBACK_QUEUE「Item dependencies tab: 依存先を visual chain」候補の前段)。
+  // iter411 basics: tone (色 + Lucide icon) を `getDependencyReadinessVisual` に集約。
+  // 旧 inline ternary + unicode glyph (✓/⏸/·) を status-badge / sprint-progress と
+  // 同じ graphical pattern (Lucide icon + Tailwind class set) に統一。
+  const readiness = summarizeDependencyReadiness({ blockedBy, blocking, related })
+  const readinessSummary = formatDependencyReadiness(readiness)
+  const readinessVisual = getDependencyReadinessVisual(readiness)
+  const ReadinessIcon = READINESS_ICON[readinessVisual.iconKey]
 
   return (
     <div className="space-y-5" data-testid="dependencies-panel">
+      <div
+        className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs ring-1 ring-inset ${readinessVisual.bgClass} ${readinessVisual.textClass} ${readinessVisual.ringClass}`}
+        role="status"
+        aria-live="polite"
+        aria-label={`依存サマリ (${readinessVisual.toneLabel}): ${readinessSummary}`}
+        data-testid="dep-readiness-chip"
+        data-blocked={readiness.isBlocked}
+        data-tone={readinessVisual.tone}
+      >
+        <ReadinessIcon className="h-3 w-3 shrink-0" aria-hidden="true" />
+        <span>{readinessSummary}</span>
+      </div>
       <Section
         title="前提条件 (これが終わらないと進められない)"
         emptyText="前提条件はありません"
         items={blockedBy}
         onRemove={(ref) => handleRemove({ fromItemId: ref.id, toItemId: item.id, type: 'blocks' })}
         removing={remove.isPending}
-        accent="rose"
+        direction="incoming"
       />
       <Section
         title="後続タスク (この Item を待っている)"
@@ -106,7 +160,7 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
         items={blocking}
         onRemove={(ref) => handleRemove({ fromItemId: item.id, toItemId: ref.id, type: 'blocks' })}
         removing={remove.isPending}
-        accent="amber"
+        direction="outgoing"
       />
       <Section
         title="関連"
@@ -116,7 +170,7 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
           handleRemove({ fromItemId: item.id, toItemId: ref.id, type: 'relates_to' })
         }
         removing={remove.isPending}
-        accent="slate"
+        direction="mutual"
       />
 
       <div
@@ -180,13 +234,44 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
   )
 }
 
+/**
+ * 依存方向を視覚化するための icon + tooltip + sr 文言の対応。
+ * - incoming (前提条件): ← 「この Item を待っている上流」
+ * - outgoing (後続タスク): → 「この Item を待つ下流」
+ * - mutual (関連): ⇄ 「双方向の関連」
+ *
+ * icon の色は section 種別を伝える役割を兼ねる (rose=前提 / amber=後続 / slate=関連)。
+ */
+type DependencyDirection = 'incoming' | 'outgoing' | 'mutual'
+
+const DIRECTION_CONFIG: Record<
+  DependencyDirection,
+  { icon: LucideIcon; iconClass: string; srLabel: string }
+> = {
+  incoming: {
+    icon: ArrowLeft,
+    iconClass: 'text-rose-600 dark:text-rose-400',
+    srLabel: '前提 (この Item は上流の完了を待っている)',
+  },
+  outgoing: {
+    icon: ArrowRight,
+    iconClass: 'text-amber-600 dark:text-amber-400',
+    srLabel: '後続 (この Item の完了を待っている)',
+  },
+  mutual: {
+    icon: ArrowLeftRight,
+    iconClass: 'text-slate-500 dark:text-slate-400',
+    srLabel: '関連 (双方向)',
+  },
+}
+
 function Section({
   title,
   emptyText,
   items,
   onRemove,
   removing,
-  accent,
+  direction,
 }: {
   title: string
   emptyText: string
@@ -196,14 +281,9 @@ function Section({
   }>
   onRemove: (ref: { id: string; title: string; status: string }) => void
   removing?: boolean
-  accent: 'rose' | 'amber' | 'slate'
+  direction: DependencyDirection
 }) {
-  const accentClass =
-    accent === 'rose'
-      ? 'bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
-      : accent === 'amber'
-        ? 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
-        : 'bg-slate-50 text-slate-700 dark:bg-slate-900 dark:text-slate-300'
+  const { icon: DirectionIcon, iconClass, srLabel } = DIRECTION_CONFIG[direction]
 
   return (
     <div className="space-y-2">
@@ -217,10 +297,14 @@ function Section({
               key={ref.id}
               className="flex items-center gap-2 rounded border px-2 py-1.5 text-sm"
               data-testid={`dep-${ref.id}`}
+              data-direction={direction}
             >
-              <span className={`rounded px-1.5 py-0.5 text-[10px] ${accentClass}`}>
-                {ref.status}
-              </span>
+              <DirectionIcon
+                className={`h-4 w-4 shrink-0 ${iconClass}`}
+                role="img"
+                aria-label={srLabel}
+              />
+              <StatusBadge status={ref.status} className="text-[10px]" iconOnly />
               <span className="flex-1 truncate">
                 {ref.isMust && <MustBadge className="mr-1" iconOnly />}
                 {ref.title}
