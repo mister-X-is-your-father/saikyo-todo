@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest'
 
 import {
   computeDueDateCoverage,
+  computeDueDateCoverageByPriority,
+  type DueDateCoverageByPriorityFields,
   type DueDateCoverageFields,
   dueDateCoverageTone,
+  formatDueDateCoverageByPriorityJa,
   formatDueDateCoverageJa,
 } from './due-date-coverage'
 
@@ -168,6 +171,59 @@ describe('dueDateCoverageTone', () => {
     expect(
       dueDateCoverageTone({ total: 0, withDueDate: 0, withoutDueDate: 0, coverageRate: null }),
     ).toBe('neutral')
+  })
+})
+
+describe('computeDueDateCoverageByPriority', () => {
+  it('returns zero stats for all priorities when items empty', () => {
+    const r = computeDueDateCoverageByPriority([])
+    for (const k of [1, 2, 3, 4] as const) {
+      expect(r[k]).toEqual({ total: 0, withDueDate: 0, withoutDueDate: 0, coverageRate: null })
+    }
+  })
+
+  it('groups by priority and computes per-bucket coverage', () => {
+    const items: DueDateCoverageByPriorityFields[] = [
+      { priority: 1, doneAt: null, archivedAt: null, dueDate: '2026-04-29' },
+      { priority: 1, doneAt: null, archivedAt: null, dueDate: '2026-05-01' },
+      { priority: 3, doneAt: null, archivedAt: null, dueDate: '2026-04-29' },
+      { priority: 3, doneAt: null, archivedAt: null, dueDate: null },
+      { priority: 4, doneAt: null, archivedAt: null, dueDate: null },
+      { priority: 4, doneAt: null, archivedAt: null, dueDate: null },
+    ]
+    const r = computeDueDateCoverageByPriority(items)
+    expect(r[1]).toEqual({ total: 2, withDueDate: 2, withoutDueDate: 0, coverageRate: 1 })
+    expect(r[3]).toEqual({ total: 2, withDueDate: 1, withoutDueDate: 1, coverageRate: 0.5 })
+    expect(r[4]).toEqual({ total: 2, withDueDate: 0, withoutDueDate: 2, coverageRate: 0 })
+  })
+
+  it('normalizes null/undefined/out-of-range priority to p4', () => {
+    const items: DueDateCoverageByPriorityFields[] = [
+      { priority: null, doneAt: null, archivedAt: null, dueDate: '2026-04-29' },
+      { priority: 99, doneAt: null, archivedAt: null, dueDate: null },
+    ]
+    const r = computeDueDateCoverageByPriority(items)
+    expect(r[4]).toEqual({ total: 2, withDueDate: 1, withoutDueDate: 1, coverageRate: 0.5 })
+  })
+})
+
+describe('formatDueDateCoverageByPriorityJa', () => {
+  it('formats per-priority entries (skips total=0)', () => {
+    const items: DueDateCoverageByPriorityFields[] = [
+      { priority: 1, doneAt: null, archivedAt: null, dueDate: '2026-04-29' },
+      { priority: 1, doneAt: null, archivedAt: null, dueDate: '2026-05-01' },
+      { priority: 3, doneAt: null, archivedAt: null, dueDate: '2026-04-29' },
+      { priority: 3, doneAt: null, archivedAt: null, dueDate: null },
+    ]
+    const r = computeDueDateCoverageByPriority(items)
+    expect(formatDueDateCoverageByPriorityJa(r)).toBe(
+      '期限カバレッジ: P1 100% (2/2) / P3 50% (1/2)',
+    )
+  })
+
+  it('formats empty (all priorities total=0) as "未完了 0 件 (該当なし)"', () => {
+    const r = computeDueDateCoverageByPriority([])
+    expect(formatDueDateCoverageByPriorityJa(r)).toBe('未完了 0 件 (該当なし)')
   })
 })
 

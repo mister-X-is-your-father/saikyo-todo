@@ -19,10 +19,16 @@
 
 import { isValidIsoDate } from '@/lib/date/iso'
 
+import { normalizePriority, type PriorityKey } from './priority'
+
 export interface DueDateCoverageFields {
   doneAt: Date | string | null | undefined
   archivedAt: Date | string | null | undefined
   dueDate: string | null | undefined
+}
+
+export interface DueDateCoverageByPriorityFields extends DueDateCoverageFields {
+  priority: number | null | undefined
 }
 
 export interface DueDateCoverageStats {
@@ -78,6 +84,49 @@ export function formatDueDateCoverageJa(stats: DueDateCoverageStats): string {
     return `期限カバレッジ: 0% (0 / ${stats.total} 件 — 全て未設定)`
   }
   return `期限カバレッジ: ${pct}% (${stats.withDueDate} / ${stats.total} 件 — 未設定 ${stats.withoutDueDate} 件)`
+}
+
+/**
+ * iter364 ai-automation: priority 別の `DueDateCoverageStats` を計算する pure helper。
+ *
+ * iter344 (`computeDueHitRateByPriority`) / iter362 (`computeDodCoverageByPriority`)
+ * と並ぶ「× priority」軸 substrate 3 兄弟。AI brief / pm-agent / dashboard が
+ * 「P1 期限カバレッジ 100% / P3 50%」のように priority 別 planning 漏れを 1 関数で
+ * 出せる。低優先 ほど期限未設定 = 「軽い気持ちで作って計画化漏れ」 pattern を検出。
+ */
+export type DueDateCoverageByPriority = Record<PriorityKey, DueDateCoverageStats>
+
+export function computeDueDateCoverageByPriority<T extends DueDateCoverageByPriorityFields>(
+  items: readonly T[],
+): DueDateCoverageByPriority {
+  const buckets: Record<PriorityKey, T[]> = { 1: [], 2: [], 3: [], 4: [] }
+  for (const it of items) {
+    buckets[normalizePriority(it.priority)].push(it)
+  }
+  return {
+    1: computeDueDateCoverage(buckets[1]),
+    2: computeDueDateCoverage(buckets[2]),
+    3: computeDueDateCoverage(buckets[3]),
+    4: computeDueDateCoverage(buckets[4]),
+  }
+}
+
+/**
+ * AI prompt 用 1 行サマリ (priority 別):
+ *   `'期限カバレッジ: P1 100% (2/2) / P3 50% (1/2)'`
+ *
+ * total=0 の priority は省略。全 priority が total=0 → `'未完了 0 件 (該当なし)'`。
+ */
+export function formatDueDateCoverageByPriorityJa(byPriority: DueDateCoverageByPriority): string {
+  const parts: string[] = []
+  for (const k of [1, 2, 3, 4] as const) {
+    const stats = byPriority[k]
+    if (stats.total === 0 || stats.coverageRate === null) continue
+    const pct = Math.round(stats.coverageRate * 100)
+    parts.push(`P${k} ${pct}% (${stats.withDueDate}/${stats.total})`)
+  }
+  if (parts.length === 0) return '未完了 0 件 (該当なし)'
+  return `期限カバレッジ: ${parts.join(' / ')}`
 }
 
 /**
