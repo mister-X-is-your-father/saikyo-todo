@@ -118,7 +118,12 @@ import {
   formatSlipDaysJa,
   slipSeverity,
 } from '@/features/item/slip-days'
-import { formatStaleUrgentJa, pickStaleUrgentItems } from '@/features/item/stale-urgent'
+import {
+  computeStaleUrgentByPriority,
+  formatStaleUrgentByPriorityJa,
+  formatStaleUrgentJa,
+  pickStaleUrgentItems,
+} from '@/features/item/stale-urgent'
 import {
   countItemsByUrgencyTier,
   formatTopUrgentTitlesJa,
@@ -487,13 +492,22 @@ export function DashboardView({ workspaceId }: Props) {
   // 0 件で chip 非表示で UI 静か (= triage 不要状態は無音)。aria-label / title に
   // top 3 stale-urgent item の title を `formatTopUrgentTitlesJa` で同梱、
   // urgency-tiers chip と同じ vocabulary を再利用 (iter394/iter396 と整合)。
+  // iter401 basics: priority 別 breakdown (iter399 = computeStaleUrgentByPriority)
+  // を aria-label / title に同梱 → SR / hover で「P1 2 件 (最古 14日) / P2 1 件
+  // (最古 8日)」が読める。stale-urgent が複数 priority に分散している時のみ
+  // append (単一 P 偏在は全体 summary と同情報なので冗長)。iter363/366/373/378/
+  // 383/388/391 系の richer-info-via-a11y/hover 同手法。
   const staleUrgent = useMemo(() => {
     if (!itemsQ.data) return null
     const stale = pickStaleUrgentItems(itemsQ.data)
     if (stale.length === 0) return null
     const summary = formatStaleUrgentJa(itemsQ.data)
     const topTitles = formatTopUrgentTitlesJa(stale, 3)
-    const detail = `${summary} — ${topTitles}`
+    const byPriority = computeStaleUrgentByPriority(itemsQ.data)
+    const priorityBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)
+    const priorityDetail = priorityBuckets > 1 ? formatStaleUrgentByPriorityJa(byPriority) : null
+    const extras = [topTitles, priorityDetail].filter((x): x is string => x !== null)
+    const detail = extras.length > 0 ? `${summary} — ${extras.join(' — ')}` : summary
     return { stale, summary, detail }
   }, [itemsQ.data])
 
