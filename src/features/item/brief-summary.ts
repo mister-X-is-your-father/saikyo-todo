@@ -14,7 +14,10 @@
  *   - `mustAtRisk`: selectAtRiskMust の MustRiskEntry[] (default 6 日内)
  *   - `stale`: selectStaleItems の StaleItemEntry[] (default 7 日閾値)
  *   - `velocity`: computeVelocity の summary (default 7 日 window)
- *   - `textSummary`: 4 軸を 4 行に整形した AI prompt 用テキスト
+ *   - `stuckWip`: selectStuckWipItems の StuckWipEntry[] (default 3 日閾値、iter374 追加)
+ *   - `overdueActive`: computeOverdueActive の OverdueActiveStats (iter374 追加)
+ *   - `mustOverdue`: computeMustOverdue の MustOverdueStats (iter374 追加、MVP 警報)
+ *   - `textSummary`: 7 軸を 7 行に整形した AI prompt 用テキスト
  *
  * 設計原則:
  *   - 純粋 (today を引数で受け取り、内部で new Date() しない)
@@ -25,11 +28,23 @@
  */
 
 import {
+  computeMustOverdue,
+  formatMustOverdueJa,
+  type MustOverdueFields,
+  type MustOverdueStats,
+} from './must-overdue'
+import {
   formatAtRiskMustSummary,
   type MustRiskEntry,
   type MustRiskFields,
   selectAtRiskMust,
 } from './must-risk'
+import {
+  computeOverdueActive,
+  formatOverdueActiveJa,
+  type OverdueActiveFields,
+  type OverdueActiveStats,
+} from './overdue-active'
 import {
   formatStaleItemsSummary,
   selectStaleItems,
@@ -43,9 +58,21 @@ import {
   type VelocityFields,
   type VelocitySummary,
 } from './velocity'
+import {
+  formatStuckWipSummaryJa,
+  selectStuckWipItems,
+  type StuckWipEntry,
+  type StuckWipFields,
+} from './wip-stuck'
 
-/** brief-summary が必要とする Item の structural subset (4 substrate の union) */
-export type BriefItemFields = MustRiskFields & StaleItemFields & VelocityFields & UrgencyFields
+/** brief-summary が必要とする Item の structural subset (7 substrate の union) */
+export type BriefItemFields = MustRiskFields &
+  StaleItemFields &
+  VelocityFields &
+  UrgencyFields &
+  StuckWipFields &
+  OverdueActiveFields &
+  MustOverdueFields
 
 export interface BriefSummaryOptions {
   /** 上位緊急 item の件数 (default 3) */
@@ -56,6 +83,8 @@ export interface BriefSummaryOptions {
   staleThresholdDays?: number
   /** velocity 集計の window (default 7) */
   velocityWindowDays?: number
+  /** stuck WIP 判定の updatedAt 経過日数閾値 (default 3、iter374 追加) */
+  stuckWipThresholdDays?: number
 }
 
 export interface TopUrgentEntry<T extends BriefItemFields> {
@@ -68,7 +97,13 @@ export interface BriefSummary<T extends BriefItemFields> {
   mustAtRisk: MustRiskEntry<T>[]
   stale: StaleItemEntry<T>[]
   velocity: VelocitySummary
-  /** AI prompt 用 4 行テキスト (同 today 同期済) */
+  /** iter374 追加: 進行中だが停滞している WIP entries */
+  stuckWip: StuckWipEntry<T>[]
+  /** iter374 追加: 期限超過で未完了の active item 集計 */
+  overdueActive: OverdueActiveStats
+  /** iter374 追加: MUST かつ期限超過の最深刻 item 集計 (= MVP 「絶対落とさない」原則違反) */
+  mustOverdue: MustOverdueStats
+  /** AI prompt 用 7 行テキスト (同 today 同期済) */
   textSummary: string
 }
 
@@ -84,6 +119,7 @@ export function buildBriefSummary<T extends BriefItemFields>(
   const mustAtRiskWithinDays = options.mustAtRiskWithinDays ?? 6
   const staleThresholdDays = options.staleThresholdDays ?? 7
   const velocityWindowDays = options.velocityWindowDays ?? 7
+  const stuckWipThresholdDays = options.stuckWipThresholdDays ?? 3
 
   // selectTopUrgentItems は Date を要求するので Date に正規化
   const todayDate = typeof today === 'string' ? new Date(today) : today
@@ -97,15 +133,30 @@ export function buildBriefSummary<T extends BriefItemFields>(
   const mustAtRisk = selectAtRiskMust(items, { withinDays: mustAtRiskWithinDays }, today)
   const stale = selectStaleItems(items, { thresholdDays: staleThresholdDays }, today)
   const velocity = computeVelocity(items, { windowDays: velocityWindowDays }, today)
+  const stuckWip = selectStuckWipItems(items, { thresholdDays: stuckWipThresholdDays }, today)
+  const overdueActive = computeOverdueActive(items, today)
+  const mustOverdue = computeMustOverdue(items, today)
 
   const textSummary = [
     formatTopUrgentLine(topUrgent),
     formatAtRiskMustSummary(mustAtRisk),
     formatStaleItemsSummary(stale),
     formatVelocitySummary(velocity, velocityWindowDays),
+    formatStuckWipSummaryJa(stuckWip),
+    formatOverdueActiveJa(overdueActive),
+    formatMustOverdueJa(mustOverdue),
   ].join('\n')
 
-  return { topUrgent, mustAtRisk, stale, velocity, textSummary }
+  return {
+    topUrgent,
+    mustAtRisk,
+    stale,
+    velocity,
+    stuckWip,
+    overdueActive,
+    mustOverdue,
+    textSummary,
+  }
 }
 
 /**

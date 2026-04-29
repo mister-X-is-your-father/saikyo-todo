@@ -93,19 +93,22 @@ describe('buildBriefSummary — 4 substrate 統合', () => {
 })
 
 describe('buildBriefSummary — textSummary フォーマット', () => {
-  it('textSummary は 4 行 (改行区切り)', () => {
+  it('textSummary は 7 行 (改行区切り、iter374 で 3 軸追加)', () => {
     const r = buildBriefSummary([], {}, TODAY)
     const lines = r.textSummary.split('\n')
-    expect(lines).toHaveLength(4)
+    expect(lines).toHaveLength(7)
   })
 
-  it('順序は urgent → must-at-risk → stale → velocity', () => {
+  it('順序は urgent → must-at-risk → stale → velocity → stuckWip → overdue → must-overdue', () => {
     const r = buildBriefSummary([], {}, TODAY)
     const lines = r.textSummary.split('\n')
     expect(lines[0]).toMatch(/^urgent /)
     expect(lines[1]).toMatch(/^MUST at-risk /)
     expect(lines[2]).toMatch(/^stale /)
     expect(lines[3]).toMatch(/^直近 /)
+    expect(lines[4]).toMatch(/^進行中だが停滞 /)
+    expect(lines[5]).toMatch(/^期限超過 /)
+    expect(lines[6]).toMatch(/^MUST 期限超過 /)
   })
 
   it('1 件以上ある場合は title が含まれる', () => {
