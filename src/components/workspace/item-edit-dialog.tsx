@@ -8,7 +8,7 @@
  * AI 分解 CTA は主ボタンとして基本 Tab の上部に配置。子 Item が生成されると
  * hooks 側で items cache が invalidate されるので、親の一覧がすぐ更新される。
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -17,11 +17,13 @@ import { isAppError } from '@/lib/errors'
 
 import { isInvalidDateRange } from '@/features/item/date-range'
 import { formatFriendlyDate } from '@/features/item/date-tokens'
+import { summarizeDescendantsProgress } from '@/features/item/descendants-progress'
 import {
   itemKeys,
   useArchiveItem,
   useClearItemBaseline,
   useItemAssignees,
+  useItems,
   useItemTagIds,
   useSetItemAssignees,
   useSetItemBaseline,
@@ -128,6 +130,19 @@ function ItemEditDialogInner({
   // (= 1 query で 2 caller)。openBlockedByCount > 0 のときだけ amber chip を render。
   const depsQ = useItemDependencies(item.id)
   const depsReadiness = depsQ.data ? summarizeDependencyReadiness(depsQ.data) : null
+  // iter418 basics: 子タスク tab の trigger に「進捗 6/10」 badge を表示。
+  // tab を開かずに subtree 進捗が一瞥で伝わる UX (deps-tab badge iter416 と同型)。
+  // useItems は SubtasksPanel と queryKey 共通なので 1 query dedupe (= 重複 fetch なし)。
+  // pctDone は tab title (= hover で見える) に retained、視覚 chip は 'done/total' 表記
+  // (= raw count の方が「6 件中 6 件完了」を瞬時にデコードできる)。
+  const allItemsQ = useItems(workspaceId)
+  const descendantsProgress = useMemo(
+    () =>
+      allItemsQ.data
+        ? summarizeDescendantsProgress({ id: item.id, parentPath: item.parentPath }, allItemsQ.data)
+        : null,
+    [allItemsQ.data, item.id, item.parentPath],
+  )
   const { data: tagIds } = useItemTagIds(item.id)
   const setTags = useSetItemTags(workspaceId, item.id)
   const sprintsList = useSprints(workspaceId)
@@ -289,8 +304,32 @@ function ItemEditDialogInner({
             <TabsTrigger value="base" data-testid="tab-base">
               基本
             </TabsTrigger>
-            <TabsTrigger value="subtasks" data-testid="tab-subtasks">
-              子タスク
+            <TabsTrigger
+              value="subtasks"
+              data-testid="tab-subtasks"
+              data-subtask-total={descendantsProgress?.total ?? 0}
+              data-subtask-done={descendantsProgress?.done ?? 0}
+              aria-label={
+                descendantsProgress && descendantsProgress.total > 0
+                  ? `子タスク タブ — 進捗 ${descendantsProgress.pctDone}% (完了 ${descendantsProgress.done} / 全 ${descendantsProgress.total} 件)`
+                  : '子タスク タブ'
+              }
+            >
+              <span>子タスク</span>
+              {descendantsProgress && descendantsProgress.total > 0 ? (
+                <span
+                  className={`ml-1 inline-flex items-center justify-center rounded-full px-1.5 text-[10px] font-medium ring-1 ring-inset ${
+                    descendantsProgress.isComplete
+                      ? 'bg-emerald-100 text-emerald-800 ring-emerald-300'
+                      : 'bg-slate-100 text-slate-700 ring-slate-300'
+                  }`}
+                  data-testid="tab-subtasks-progress"
+                  aria-hidden="true"
+                  title={`進捗 ${descendantsProgress.pctDone}% (完了 ${descendantsProgress.done} / 全 ${descendantsProgress.total} 件)`}
+                >
+                  {descendantsProgress.done}/{descendantsProgress.total}
+                </span>
+              ) : null}
             </TabsTrigger>
             <TabsTrigger
               value="dependencies"
