@@ -461,7 +461,7 @@ export function GanttView({
                   <span
                     className="ml-1 shrink-0 text-xs text-red-500"
                     role="img"
-                    aria-label="MUST item"
+                    aria-label="MUST タスク"
                   >
                     MUST
                   </span>
@@ -471,7 +471,7 @@ export function GanttView({
                 {hasBaseline && (
                   <div
                     data-testid={`gantt-baseline-${item.id}`}
-                    aria-label={`baseline ${item.baselineStartDate} → ${item.baselineEndDate}`}
+                    aria-label={`ベースライン ${item.baselineStartDate} → ${item.baselineEndDate}`}
                     className="pointer-events-none absolute"
                     style={{
                       left: baselineLeft,
