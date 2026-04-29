@@ -7,8 +7,10 @@ import { describe, expect, it } from 'vitest'
 
 import {
   classifyVelocityHint,
+  computeCompletionStreak,
   computeVelocity,
   computeVelocityByPriority,
+  formatCompletionStreakJa,
   formatVelocityByPriorityJa,
   formatVelocityHintJa,
   formatVelocitySummary,
@@ -232,5 +234,43 @@ describe('classifyVelocityHint / formatVelocityHintJa (iter454)', () => {
     const r = mkSummary(5, 'down')
     expect(classifyVelocityHint(r)).toBe('down')
     expect(formatVelocityHintJa(r)).toBe('減速中')
+  })
+})
+
+describe('computeCompletionStreak / formatCompletionStreakJa (iter457)', () => {
+  const mkByDay = (counts: number[]): VelocitySummary => ({
+    byDay: counts.map((count, i) => ({ date: `2026-04-${22 + i}`, count })),
+    total: counts.reduce((s, c) => s + c, 0),
+    avgPerDay: 0,
+    trend: 'flat',
+  })
+
+  it('byDay 空 → streak=0', () => {
+    expect(computeCompletionStreak(mkByDay([]))).toBe(0)
+    expect(formatCompletionStreakJa(0)).toBe('完了 streak 0 日 (今日まだ完了なし)')
+  })
+
+  it('末尾 (today) count=0 → streak=0', () => {
+    expect(computeCompletionStreak(mkByDay([1, 1, 1, 0]))).toBe(0)
+  })
+
+  it('末尾 count=1 → streak=1', () => {
+    expect(computeCompletionStreak(mkByDay([0, 0, 0, 1]))).toBe(1)
+    expect(formatCompletionStreakJa(1)).toBe('完了 streak 1 日 (今日完了あり)')
+  })
+
+  it('末尾から遡って 連続 → streak=連続日数', () => {
+    expect(computeCompletionStreak(mkByDay([0, 1, 1, 1]))).toBe(3)
+    expect(formatCompletionStreakJa(3)).toBe('完了 streak 3 日連続!')
+  })
+
+  it('全日 count > 0 → byDay.length', () => {
+    expect(computeCompletionStreak(mkByDay([1, 2, 3, 4, 5, 6, 7]))).toBe(7)
+    expect(formatCompletionStreakJa(7)).toBe('完了 streak 7 日連続!')
+  })
+
+  it('途中 break → 末尾連続部分のみ', () => {
+    // [1, 0, 1, 1, 1] → 末尾 3 日連続 (途中 0 で break するが末尾から遡って 3 まで)
+    expect(computeCompletionStreak(mkByDay([1, 0, 1, 1, 1]))).toBe(3)
   })
 })

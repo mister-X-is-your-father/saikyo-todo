@@ -224,3 +224,47 @@ export const formatVelocityHintJa = makeHintLabelFormatter(
   classifyVelocityHint,
   VELOCITY_HINT_LABEL_JA,
 )
+
+/**
+ * iter457 ai-automation: 「直近 N 日のうち done が 1 件以上あった連続日数」を
+ * 計算する pure helper (= completion streak)。
+ *
+ * `VelocitySummary.byDay` (= 古い順 N 日分の日別 done count) から today (= 末尾)
+ * から遡って count > 0 の連続日数を返す。今日 done なしなら 0、今日 + 昨日 done
+ * ありなら 2、…のような GitHub contribution streak スタイル。
+ *
+ * caller benefits:
+ *  - AI 朝 brief / Slack 通知が「3 日連続で何か完了している!」のような positive
+ *    reinforcement を 1 関数で出せる
+ *  - dashboard widget で「streak: 5 日」を表示
+ *  - momentum hint (iter449) が件数ベース、本 helper は 連続性ベース、相補
+ *
+ * 仕様:
+ *  - byDay 空 → streak=0
+ *  - 末尾日 (= today) count=0 → streak=0 (= 今日まだ done なし、streak 途切れ)
+ *  - 末尾から遡って count > 0 が続く間 streak++、count=0 で break
+ *  - byDay 全日 count > 0 → byDay.length (= window 全期間 streak)
+ *
+ * 0 から始まる pure 関数、副作用なし。
+ */
+export function computeCompletionStreak(summary: VelocitySummary): number {
+  let streak = 0
+  for (let i = summary.byDay.length - 1; i >= 0; i--) {
+    const day = summary.byDay[i]
+    if (!day || day.count === 0) break
+    streak += 1
+  }
+  return streak
+}
+
+/**
+ * AI prompt 用 1 行サマリ:
+ *   '完了 streak 0 日 (今日まだ完了なし)'
+ *   '完了 streak 1 日 (今日完了あり)'
+ *   '完了 streak 5 日連続!'
+ */
+export function formatCompletionStreakJa(streak: number): string {
+  if (streak === 0) return '完了 streak 0 日 (今日まだ完了なし)'
+  if (streak === 1) return '完了 streak 1 日 (今日完了あり)'
+  return `完了 streak ${streak} 日連続!`
+}
