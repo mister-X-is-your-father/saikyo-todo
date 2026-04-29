@@ -82,6 +82,7 @@ export function TemplateItemsEditor({ templateId }: Props) {
     <div className="space-y-4" data-testid="template-items-editor">
       <form
         className="space-y-2 rounded-md border p-3"
+        noValidate
         onSubmit={(e) => {
           e.preventDefault()
           void handleAdd()
