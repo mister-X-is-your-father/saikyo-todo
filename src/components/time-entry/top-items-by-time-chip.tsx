@@ -24,6 +24,12 @@ import { formatMinutes } from '@/features/time-entry/category-summary'
 import { useTimeEntries } from '@/features/time-entry/hooks'
 import { formatTopItemsByTime, selectTopItemsByTime } from '@/features/time-entry/item-time-summary'
 import {
+  findPeakWeekday,
+  formatWeekdayTimeDistributionJa,
+  groupTimeEntriesByWeekday,
+  weekdayLabelJa,
+} from '@/features/time-entry/weekday-time-distribution'
+import {
   computeWeeklyTimeTrend,
   formatWeeklyTimeTrendJa,
   splitTimeEntriesByWeek,
@@ -59,29 +65,41 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
     const trend = computeWeeklyTimeTrend(thisWeek, priorWeek)
     // top 0 件かつ trend idle (= 14 日 完全に稼働ゼロ) なら card 非表示で UI 静か
     if (top.length === 0 && trend.direction === 'idle') return null
+    // iter328 basics: 直近 14 日 (thisWeek + priorWeek) の曜日別分布。
+    // 7 日だと各曜日が 1 回しか出ず pattern にならないので、trend 同様 14 日を使う。
+    const weekdayTotals = groupTimeEntriesByWeekday([...thisWeek, ...priorWeek])
+    const peak = findPeakWeekday(weekdayTotals)
+    const weekdayLine = formatWeekdayTimeDistributionJa(weekdayTotals)
     return {
       top,
       line: formatTopItemsByTime(top, titles),
       titles,
       trend,
       trendLine: formatWeeklyTimeTrendJa(trend),
+      weekdayTotals,
+      weekdayLine,
+      peak,
     }
   }, [entriesQ.data, itemsQ.data])
 
   if (!summary) return null
   const tone = TREND_TONE[summary.trend.direction]
+  const peakLabel = summary.peak
+    ? `曜日 peak: ${weekdayLabelJa(summary.peak.key)}曜 (${formatMinutes(summary.peak.minutes)})`
+    : null
+  const fullWeekdayAria = peakLabel ? `${peakLabel} — 直近 14 日 ${summary.weekdayLine}` : null
 
   return (
     <Card data-testid="top-items-by-time-chip">
       <CardHeader>
         <CardTitle className="text-base">
           <span aria-hidden="true">直近 {WINDOW_DAYS} 日 稼働ダッシュボード</span>
-          <span className="sr-only">{`${summary.trendLine}。${summary.line}`}</span>
+          <span className="sr-only">{`${summary.trendLine}。${peakLabel ? `${peakLabel}。` : ''}${summary.line}`}</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div
-          className={`mb-3 inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${tone.class}`}
+          className={`mb-2 inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${tone.class}`}
           data-testid="weekly-time-trend-chip"
           data-direction={summary.trend.direction}
           role="status"
@@ -92,6 +110,23 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
           </span>
           <span aria-hidden="true">{summary.trendLine}</span>
         </div>
+        {peakLabel && fullWeekdayAria ? (
+          <div
+            className="text-muted-foreground border-border mb-3 inline-flex items-center gap-1.5 rounded border bg-amber-50 px-2 py-1 text-[11px] text-amber-800"
+            data-testid="weekday-time-distribution-chip"
+            data-peak={summary.peak?.key}
+            role="status"
+            aria-label={fullWeekdayAria}
+            title={fullWeekdayAria}
+          >
+            <span aria-hidden="true" className="font-mono">
+              ▤
+            </span>
+            <span aria-hidden="true" className="truncate">
+              {peakLabel}
+            </span>
+          </div>
+        ) : null}
         {summary.top.length === 0 ? (
           <p className="text-muted-foreground text-xs" data-testid="top-items-by-time-empty">
             直近 {WINDOW_DAYS} 日 — Item 紐付けの稼働記録なし (自由稼働のみ)
