@@ -196,9 +196,11 @@ import {
   stuckWipSeverity,
 } from '@/features/item/wip-stuck'
 import {
+  classifyBlockedItemsHint,
   computeBlockedItemsByPriority,
   formatBlockedItemsBriefJa,
   formatBlockedItemsByPriorityJa,
+  formatBlockedItemsHintJa,
   pickWorkspaceBlockedItems,
 } from '@/features/item-dependency/blocked-items'
 import { useWorkspaceBlocksDependencies } from '@/features/item-dependency/hooks'
@@ -428,8 +430,12 @@ export function DashboardView({ workspaceId }: Props) {
     const priorityDetail = priorityDetailSuffix(priorityBuckets, () =>
       formatBlockedItemsByPriorityJa(byPriority),
     )
+    // iter441 basics: iter439 で追加した hint (idle/mild/moderate/severe) を chip data
+    // attr + aria-label prefix に bind、SR / E2E が「重大度」を 1 word で取れる。
+    const hint = classifyBlockedItemsHint(entries)
+    const hintLabel = formatBlockedItemsHintJa(entries)
     const detail = `${summary}${priorityDetail}`
-    return { entries, summary, detail, priorityBuckets }
+    return { entries, summary, detail, priorityBuckets, hint, hintLabel }
   }, [itemsQ.data, blocksDepsQ.data])
 
   // iter421 basics: workspace 内の進行中 parent (iter419 substrate) を bind。
@@ -1019,13 +1025,14 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-blocked-items-chip"
             toneClass={chipTone3Class('warn')}
             glyph="🔒"
-            ariaLabel={`依存ブロック: ${blockedWorkspaceItems.detail}`}
-            title={blockedWorkspaceItems.detail}
+            ariaLabel={`${blockedWorkspaceItems.hintLabel}: ${blockedWorkspaceItems.detail}`}
+            title={`${blockedWorkspaceItems.hintLabel} — ${blockedWorkspaceItems.detail}`}
             text={blockedWorkspaceItems.summary}
             truncateText
             dataAttrs={{
               'data-blocked-count': blockedWorkspaceItems.entries.length,
               'data-priority-buckets': blockedWorkspaceItems.priorityBuckets,
+              'data-block-hint': blockedWorkspaceItems.hint,
             }}
           />
         ) : null}
