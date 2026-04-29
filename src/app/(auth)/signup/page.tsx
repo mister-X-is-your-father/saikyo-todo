@@ -8,7 +8,6 @@ export const metadata: Metadata = {
   title: 'サインアップ | 最強TODO',
   description:
     '最強TODO のサインアップ画面。新規アカウント作成 (表示名 + メールアドレス + 8文字以上のパスワード)。',
-  robots: { index: false, follow: false },
 }
 
 export default function SignupPage() {
