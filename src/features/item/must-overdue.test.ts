@@ -8,8 +8,10 @@ import { describe, expect, it } from 'vitest'
 import {
   computeMustOverdue,
   formatMustOverdueJa,
+  formatMustOverdueTitlesJa,
   type MustOverdueFields,
   mustOverdueSeverity,
+  pickMustOverdueItems,
 } from './must-overdue'
 
 const TODAY = new Date(2026, 3, 29) // 2026-04-29
@@ -101,5 +103,83 @@ describe('mustOverdueSeverity', () => {
 
   it('total>0 → critical', () => {
     expect(mustOverdueSeverity({ total: 1, oldestOverdueDays: 5 })).toBe('critical')
+  })
+})
+
+type MustOverdueWithTitleFields = MustOverdueFields & { title?: string | null }
+
+function mkT(
+  overrides: Partial<MustOverdueWithTitleFields> & { title?: string | null },
+): MustOverdueWithTitleFields {
+  return {
+    title: overrides.title,
+    status: overrides.status ?? 'todo',
+    dueDate: 'dueDate' in overrides ? overrides.dueDate : dueDateNDaysAgo(1),
+    doneAt: overrides.doneAt ?? null,
+    archivedAt: overrides.archivedAt ?? null,
+    isMust: 'isMust' in overrides ? overrides.isMust : true,
+  }
+}
+
+describe('pickMustOverdueItems', () => {
+  it('items 空 → 空配列', () => {
+    expect(pickMustOverdueItems([], TODAY)).toEqual([])
+  })
+
+  it('isMust=false / done / archive / cancelled / future-due は除外', () => {
+    const items = [
+      mkT({ title: 'A', isMust: false }), // not must
+      mkT({ title: 'B', doneAt: new Date() }),
+      mkT({ title: 'C', archivedAt: new Date() }),
+      mkT({ title: 'D', status: 'cancelled' }),
+      mkT({ title: 'E', dueDate: dueDateNDaysAgo(-1) }), // future
+      mkT({ title: 'F', dueDate: dueDateNDaysAgo(5) }), // ✓ overdue
+    ]
+    const result = pickMustOverdueItems(items, TODAY)
+    expect(result.map((e) => e.item.title)).toEqual(['F'])
+    expect(result[0]?.overdueDays).toBe(5)
+  })
+
+  it('overdueDays desc 並び、同 day は元配列順 stable', () => {
+    const items = [
+      mkT({ title: 'A', dueDate: dueDateNDaysAgo(3) }),
+      mkT({ title: 'B', dueDate: dueDateNDaysAgo(7) }),
+      mkT({ title: 'C', dueDate: dueDateNDaysAgo(7) }),
+      mkT({ title: 'D', dueDate: dueDateNDaysAgo(5) }),
+    ]
+    const result = pickMustOverdueItems(items, TODAY)
+    expect(result.map((e) => e.item.title)).toEqual(['B', 'C', 'D', 'A'])
+  })
+})
+
+describe('formatMustOverdueTitlesJa', () => {
+  it('0 件 sentinel', () => {
+    expect(formatMustOverdueTitlesJa([])).toBe('MUST 期限超過 0 件')
+  })
+
+  it('複数件 / 区切り (overdueDays desc)', () => {
+    const items = [
+      mkT({ title: '提出書類', dueDate: dueDateNDaysAgo(14) }),
+      mkT({ title: '連絡', dueDate: dueDateNDaysAgo(5) }),
+    ]
+    const entries = pickMustOverdueItems(items, TODAY)
+    expect(formatMustOverdueTitlesJa(entries)).toBe('MUST 期限超過: 提出書類 14日 / 連絡 5日')
+  })
+
+  it('limit 超えは 他 N 件 でまとめる', () => {
+    const items = [
+      mkT({ title: 'A', dueDate: dueDateNDaysAgo(10) }),
+      mkT({ title: 'B', dueDate: dueDateNDaysAgo(8) }),
+      mkT({ title: 'C', dueDate: dueDateNDaysAgo(6) }),
+      mkT({ title: 'D', dueDate: dueDateNDaysAgo(4) }),
+    ]
+    const entries = pickMustOverdueItems(items, TODAY)
+    expect(formatMustOverdueTitlesJa(entries, 2)).toBe('MUST 期限超過: A 10日 / B 8日 / 他 2 件')
+  })
+
+  it('title 欠落は (無題) で fallback', () => {
+    const items = [mkT({ dueDate: dueDateNDaysAgo(5) })] // title undefined
+    const entries = pickMustOverdueItems(items, TODAY)
+    expect(formatMustOverdueTitlesJa(entries)).toContain('(無題)')
   })
 })

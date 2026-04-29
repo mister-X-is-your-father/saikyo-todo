@@ -17,6 +17,9 @@
  *   - dashboard 専用 chip (severity 'critical' = red、must-stuck-wip と異なる軸)
  */
 
+import { isValidIsoDate, MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
+import { formatTopWithOverflow } from '@/lib/format-list'
+
 import { computeOverdueActive, type OverdueActiveFields } from './overdue-active'
 
 export interface MustOverdueFields extends OverdueActiveFields {
@@ -82,4 +85,85 @@ export type MustOverdueSeverity = 'critical' | 'idle'
 
 export function mustOverdueSeverity(stats: MustOverdueStats): MustOverdueSeverity {
   return stats.total > 0 ? 'critical' : 'idle'
+}
+
+/** pickMustOverdueItems の戻り単 entry。item + 何日 overdue か。 */
+export interface MustOverdueEntry<T extends MustOverdueFields> {
+  item: T
+  /** today - dueDate (整数日数、Math.floor) */
+  overdueDays: number
+}
+
+/**
+ * iter379 ai-automation: isMust=true かつ overdue active な items を実際に抽出して
+ * overdueDays 降順で返す pure helper。
+ *
+ * computeMustOverdue は stats (total / oldestOverdueDays) のみだったが、AI 朝 brief や
+ * dashboard tooltip で「具体的にどの MUST が期限超過しているか」を見せたい時は items
+ * 一覧が必要。本 helper はその gap を埋める。
+ *
+ * 仕様 (computeOverdueActive と filter ロジック互換、isMust 追加):
+ *   - isMust=true (null/false/undefined 除外)
+ *   - dueDate valid ISO + dueDate < today
+ *   - done/archive/cancelled 除外
+ *   - 並び: overdueDays 降順 (= 最も deeply overdue)、tie で元配列順 stable
+ */
+export function pickMustOverdueItems<T extends MustOverdueFields>(
+  items: readonly T[],
+  today: Date | string = new Date(),
+): MustOverdueEntry<T>[] {
+  const todayDate = parseDateOrNull(today)
+  if (!todayDate) return []
+  const todayMidnightMs = new Date(
+    todayDate.getFullYear(),
+    todayDate.getMonth(),
+    todayDate.getDate(),
+  ).getTime()
+
+  const enriched: { entry: MustOverdueEntry<T>; index: number }[] = []
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i]
+    if (!it || !it.isMust) continue
+    if (it.doneAt || it.archivedAt) continue
+    if (it.status === 'cancelled' || it.status === 'done') continue
+    if (typeof it.dueDate !== 'string' || !isValidIsoDate(it.dueDate)) continue
+    const m = it.dueDate.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (!m) continue
+    const dueMs = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getTime()
+    if (dueMs >= todayMidnightMs) continue
+    const overdueDays = Math.floor((todayMidnightMs - dueMs) / MS_PER_DAY)
+    enriched.push({ entry: { item: it, overdueDays }, index: i })
+  }
+  enriched.sort((a, b) => {
+    if (b.entry.overdueDays !== a.entry.overdueDays) {
+      return b.entry.overdueDays - a.entry.overdueDays
+    }
+    return a.index - b.index
+  })
+  return enriched.map((e) => e.entry)
+}
+
+/** caller の MUST item に title が含まれる場合の structural subset。 */
+export type MustOverdueWithTitle = MustOverdueFields & { title?: string | null }
+
+/**
+ * AI prompt 用 1 行サマリ (title list 付き):
+ *   `'MUST 期限超過: 提出書類 14日 / 連絡 5日 / 他 1 件'`
+ *   `'MUST 期限超過 0 件'`
+ */
+export function formatMustOverdueTitlesJa<T extends MustOverdueWithTitle>(
+  entries: readonly MustOverdueEntry<T>[],
+  limit: number = 3,
+): string {
+  if (entries.length === 0) return 'MUST 期限超過 0 件'
+  const body = formatTopWithOverflow(
+    entries,
+    (e) => {
+      const title =
+        typeof e.item.title === 'string' && e.item.title.length > 0 ? e.item.title : '(無題)'
+      return `${title} ${e.overdueDays}日`
+    },
+    limit,
+  )
+  return `MUST 期限超過: ${body}`
 }
