@@ -6,7 +6,7 @@
  * - iter298 basics: 各 action 行頭に icon + 配色 chip (graphical 波及シリーズ)
  * - before/after は JSON 折りたたみ
  */
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import {
   Activity as ActivityIcon,
@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 
 import { type AuditActionIconKey, getAuditActionVisual } from '@/features/audit/action-visual'
+import { formatAuditActivityBrief } from '@/features/audit/audit-activity'
 import { useAuditByTargetItem } from '@/features/audit/hooks'
 
 /** action-visual の iconKey から Lucide component に map (status-visual と同パターン)。 */
@@ -34,6 +35,14 @@ const ACTION_ICON: Record<AuditActionIconKey, typeof ActivityIcon> = {
 
 export function ActivityLog({ itemId }: { itemId: string }) {
   const { data, isLoading, error } = useAuditByTargetItem(itemId)
+  // iter326 basics: iter324 で整備済 audit-activity substrate (31/31 PASS) を bind。
+  // Item に紐付く全 entry (user + agent 両方) を 1 行 brief で「活動 N 件 (M 名):
+  // 作成 X / 更新 Y / ...」と要約。AI agent の自動操作も合算して見たいので
+  // actorTypes=[] で全 actorType 集計。
+  const summary = useMemo(() => {
+    if (!data || data.length === 0) return null
+    return formatAuditActivityBrief(data, { actorTypes: [] })
+  }, [data])
   if (isLoading) {
     return (
       <p className="text-muted-foreground text-sm" role="status" aria-live="polite">
@@ -56,11 +65,25 @@ export function ActivityLog({ itemId }: { itemId: string }) {
     )
   }
   return (
-    <ul className="space-y-2" data-testid="activity-log">
-      {data.map((entry) => (
-        <ActivityRow key={entry.id} entry={entry} />
-      ))}
-    </ul>
+    <div className="space-y-2">
+      {summary ? (
+        <div
+          className="bg-muted/40 text-muted-foreground inline-flex items-center gap-1.5 rounded border px-2 py-1 text-[11px]"
+          role="status"
+          aria-label={summary}
+          data-testid="activity-log-summary"
+          title={summary}
+        >
+          <ActivityIcon className="h-3 w-3" aria-hidden="true" />
+          <span aria-hidden="true">{summary}</span>
+        </div>
+      ) : null}
+      <ul className="space-y-2" data-testid="activity-log">
+        {data.map((entry) => (
+          <ActivityRow key={entry.id} entry={entry} />
+        ))}
+      </ul>
+    </div>
   )
 }
 
