@@ -142,8 +142,10 @@ import {
   pickOverdueActiveItems,
 } from '@/features/item/overdue-active'
 import {
+  computeParentItemsProgressByPriority,
   formatAggregateParentItemsJa,
   formatParentItemsProgressBriefJa,
+  formatParentItemsProgressByPriorityJa,
   pickIncompleteParentItems,
   summarizeParentItemsAggregate,
 } from '@/features/item/parent-items-progress'
@@ -464,8 +466,16 @@ export function DashboardView({ workspaceId }: Props) {
     // title だけ richer (= 集約「平均 35%, 停滞 2 / 順調 2 / 仕上げ 1」) に。
     const aggregate = summarizeParentItemsAggregate(entries)
     const aggregateLine = formatAggregateParentItemsJa(aggregate)
-    const detail = `${summary} — ${aggregateLine}`
-    return { entries, summary, detail, aggregate }
+    // iter433 basics: iter432 で追加した by-priority breakdown を SR / hover に append
+    // (iter386 / iter408 / iter414 / iter423 / iter431 と同手法、3 層情報設計 6 chip 目)。
+    // priority bucket > 1 (= 複数 P 分散) のときのみ append、単一 P 偏在は冗長省略。
+    const byPriority = computeParentItemsProgressByPriority(entries)
+    const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
+    const prioritySuffix = priorityDetailSuffix(priorityBuckets, () =>
+      formatParentItemsProgressByPriorityJa(byPriority),
+    )
+    const detail = `${summary} — ${aggregateLine}${prioritySuffix}`
+    return { entries, summary, detail, aggregate, priorityBuckets }
   }, [itemsQ.data])
 
   // iter368 basics: overdue-active (iter367) を bind。期限超過で未完了の item を
@@ -1030,6 +1040,7 @@ export function DashboardView({ workspaceId }: Props) {
               'data-parent-items-count': parentItemsProgress.entries.length,
               'data-parent-avg-pct': parentItemsProgress.aggregate.avgPctDone,
               'data-parent-stuck-count': parentItemsProgress.aggregate.byTier.stuck,
+              'data-priority-buckets': parentItemsProgress.priorityBuckets,
             }}
           />
         ) : null}
