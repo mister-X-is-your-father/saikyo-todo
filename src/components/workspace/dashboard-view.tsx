@@ -190,7 +190,12 @@ import {
   formatUrgencyTierCounts,
   urgencyTierCountsSeverity,
 } from '@/features/item/urgency'
-import { computeVelocity, formatVelocitySummary } from '@/features/item/velocity'
+import {
+  computeVelocity,
+  computeVelocityByPriority,
+  formatVelocityByPriorityJa,
+  formatVelocitySummary,
+} from '@/features/item/velocity'
 import {
   computeWipByPriority,
   formatWipByPriorityJa,
@@ -253,7 +258,19 @@ export function DashboardView({ workspaceId }: Props) {
     if (!itemsQ.data) return null
     const result = computeVelocity(itemsQ.data, { windowDays: 7 })
     if (result.total === 0) return null
-    return { result, line: formatVelocitySummary(result, 7) }
+    const line = formatVelocitySummary(result, 7)
+    // iter453 basics: iter452 で追加した by-priority velocity を SR / hover に append
+    // (iter386 / iter408 / iter414 / iter423 / iter431 / iter433 / iter436 と同手法、
+    // 3 層情報設計 8 chip 目)。priority bucket > 1 のときのみ append。
+    const byPriority = computeVelocityByPriority(itemsQ.data, { windowDays: 7 })
+    const priorityBuckets = countNonEmptyCountPriorityBuckets(
+      // VelocityPriorityStats has count field, mapping is direct
+      byPriority,
+    )
+    const detail = `${line}${priorityDetailSuffix(priorityBuckets, () =>
+      formatVelocityByPriorityJa(byPriority, 7),
+    )}`
+    return { result, line, detail, priorityBuckets }
   }, [itemsQ.data])
 
   // iter336 basics: completion-days-by-priority (iter334) を bind。
@@ -898,10 +915,13 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-velocity-chip"
             toneClass={trendToneClass(velocity.result.trend, 'positive')}
             glyph={trendGlyph(velocity.result.trend)}
-            ariaLabel={velocity.line}
-            title={velocity.line}
+            ariaLabel={velocity.detail}
+            title={velocity.detail}
             text={velocity.line}
-            dataAttrs={{ 'data-trend': velocity.result.trend }}
+            dataAttrs={{
+              'data-trend': velocity.result.trend,
+              'data-priority-buckets': velocity.priorityBuckets,
+            }}
           />
         ) : null}
         {momentum ? (
