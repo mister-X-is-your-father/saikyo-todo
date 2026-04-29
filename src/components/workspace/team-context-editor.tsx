@@ -50,7 +50,9 @@ export function TeamContextEditor({ workspaceId }: Props) {
   return (
     <Card data-testid="team-context-editor">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm">チームコンテキスト (AI プロンプトに inject)</CardTitle>
+        <CardTitle className="text-sm" role="heading" aria-level={2}>
+          チームコンテキスト (AI プロンプトに inject)
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         <Label htmlFor="team-context-textarea" className="sr-only">

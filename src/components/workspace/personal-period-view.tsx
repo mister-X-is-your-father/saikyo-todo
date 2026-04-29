@@ -141,7 +141,7 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
     <div className="space-y-4" data-testid={`personal-period-view-${period}`}>
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">
+          <CardTitle className="text-base" role="heading" aria-level={2}>
             {PERIOD_LABEL[period]}ゴール ({periodKey})
           </CardTitle>
         </CardHeader>
@@ -192,7 +192,7 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
 
       <Card role="region" aria-label={`${PERIOD_LABEL[period]}の Item ${filtered.length} 件`}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">
+          <CardTitle className="text-base" role="heading" aria-level={2}>
             {PERIOD_LABEL[period]}の Item ({filtered.length})
           </CardTitle>
         </CardHeader>
