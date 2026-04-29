@@ -22,6 +22,8 @@
 
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 
+import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
+
 export interface StuckWipFields {
   id?: string
   title?: string
@@ -111,4 +113,57 @@ export function stuckWipSeverity<T extends StuckWipFields>(
   if (entries.length === 0) return 'idle'
   if (entries.some((e) => e.stuckDays >= 7)) return 'severe'
   return 'mild'
+}
+
+/** by-priority 集計の単 bucket 値: stuck WIP 件数 + 最長 stuck 日数 (count=0 → null)。 */
+export interface StuckWipByPriorityStats {
+  count: number
+  maxStuckDays: number | null
+}
+
+/**
+ * iter362 ai-automation: stuck WIP items を priority 別に集計する pure helper。
+ * iter382 hygiene-debt-by-priority / iter387 slip-days-by-priority / iter389
+ * backlog-aging-by-priority / iter399 stale-urgent-by-priority と並ぶ「× priority」軸
+ * 9 弾目。
+ *
+ * 「P1 が一番停滞、最長 7 日 / P3 が次、最長 5 日」のように 高優先軸の停滞 WIP を分離
+ * して可視化、全体「進行中だが停滞 5 件」だけでは見えない priority bias を露出。
+ * selectStuckWipItems の filter ロジックは bucketByPriorityWith 経由で priority 別に
+ * 再適用 (P1 のみ / P2 のみ ... の各 bucket 内で stuck 抽出)。
+ */
+export function computeStuckWipByPriority<
+  T extends StuckWipFields & { priority: number | null | undefined },
+>(
+  items: readonly T[],
+  options: SelectStuckWipOptions = {},
+  today: Date | string = new Date(),
+): Record<PriorityKey, StuckWipByPriorityStats> {
+  return bucketByPriorityWith(items, (group) => {
+    const stuck = selectStuckWipItems(group, options, today)
+    if (stuck.length === 0) return { count: 0, maxStuckDays: null }
+    let max = 0
+    for (const e of stuck) {
+      if (e.stuckDays > max) max = e.stuckDays
+    }
+    return { count: stuck.length, maxStuckDays: max }
+  })
+}
+
+/**
+ * priority 別 stuck WIP を 1 行 summary に。例:
+ *   'P1 2 件 (最長 7日) / P3 1 件 (最長 5日)' / count=0 の P は省略 / 全 P 0 → '進行中だが停滞 0 件'
+ */
+export function formatStuckWipByPriorityJa(
+  byPriority: Record<PriorityKey, StuckWipByPriorityStats>,
+): string {
+  const parts: string[] = []
+  for (const k of PRIORITY_ORDER) {
+    const s = byPriority[k]
+    if (s.count > 0 && s.maxStuckDays !== null) {
+      parts.push(`P${k} ${s.count} 件 (最長 ${s.maxStuckDays}日)`)
+    }
+  }
+  if (parts.length === 0) return '進行中だが停滞 0 件'
+  return parts.join(' / ')
 }
