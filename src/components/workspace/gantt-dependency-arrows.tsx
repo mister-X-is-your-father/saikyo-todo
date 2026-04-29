@@ -67,6 +67,7 @@ export function GanttDependencyArrows({ width, height, bars, edges, offsetLeftPx
       height={height}
       className="pointer-events-none absolute top-0 left-0 z-10"
       style={{ marginLeft: offsetLeftPx }}
+      aria-hidden="true"
     >
       <defs>
         <marker
