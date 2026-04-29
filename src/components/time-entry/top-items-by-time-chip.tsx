@@ -17,10 +17,13 @@
 
 import { useMemo } from 'react'
 
+import { Flame } from 'lucide-react'
+
 import { isoDaysFromNow, todayISO } from '@/lib/date/iso'
 
 import { useItems } from '@/features/item/hooks'
 import { formatMinutes } from '@/features/time-entry/category-summary'
+import { computeDailyStreak, formatStreakSummary } from '@/features/time-entry/daily-streak'
 import { useTimeEntries } from '@/features/time-entry/hooks'
 import { formatTopItemsByTime, selectTopItemsByTime } from '@/features/time-entry/item-time-summary'
 import {
@@ -70,6 +73,10 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
     const weekdayTotals = groupTimeEntriesByWeekday([...thisWeek, ...priorWeek])
     const peak = findPeakWeekday(weekdayTotals)
     const weekdayLine = formatWeekdayTimeDistributionJa(weekdayTotals)
+    // iter330 basics: daily-streak (iter327) を bind。entries 全件で計算 (Set
+    // dedupe で O(N+D))。Duolingo 風の「連続 N 日」モチベーション指標。
+    const streak = computeDailyStreak(entriesQ.data, today)
+    const streakLine = formatStreakSummary(streak, today)
     return {
       top,
       line: formatTopItemsByTime(top, titles),
@@ -79,6 +86,8 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
       weekdayTotals,
       weekdayLine,
       peak,
+      streak,
+      streakLine,
     }
   }, [entriesQ.data, itemsQ.data])
 
@@ -88,27 +97,44 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
     ? `曜日 peak: ${weekdayLabelJa(summary.peak.key)}曜 (${formatMinutes(summary.peak.minutes)})`
     : null
   const fullWeekdayAria = peakLabel ? `${peakLabel} — 直近 14 日 ${summary.weekdayLine}` : null
+  const streakActive = summary.streak.currentStreak > 0
+  const streakClass = streakActive
+    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+    : 'bg-muted text-muted-foreground border-border'
 
   return (
     <Card data-testid="top-items-by-time-chip">
       <CardHeader>
         <CardTitle className="text-base">
           <span aria-hidden="true">直近 {WINDOW_DAYS} 日 稼働ダッシュボード</span>
-          <span className="sr-only">{`${summary.trendLine}。${peakLabel ? `${peakLabel}。` : ''}${summary.line}`}</span>
+          <span className="sr-only">{`${summary.trendLine}。${summary.streakLine}。${peakLabel ? `${peakLabel}。` : ''}${summary.line}`}</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div
-          className={`mb-2 inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${tone.class}`}
-          data-testid="weekly-time-trend-chip"
-          data-direction={summary.trend.direction}
-          role="status"
-          aria-label={summary.trendLine}
-        >
-          <span aria-hidden="true" className="font-mono">
-            {tone.glyph}
-          </span>
-          <span aria-hidden="true">{summary.trendLine}</span>
+        <div className="mb-2 flex flex-wrap items-center gap-1.5">
+          <div
+            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${tone.class}`}
+            data-testid="weekly-time-trend-chip"
+            data-direction={summary.trend.direction}
+            role="status"
+            aria-label={summary.trendLine}
+          >
+            <span aria-hidden="true" className="font-mono">
+              {tone.glyph}
+            </span>
+            <span aria-hidden="true">{summary.trendLine}</span>
+          </div>
+          <div
+            className={`inline-flex items-center gap-1 rounded border px-2 py-1 text-xs ${streakClass}`}
+            data-testid="daily-streak-chip"
+            data-streak-active={streakActive ? 'true' : 'false'}
+            role="status"
+            aria-label={summary.streakLine}
+            title={`連続稼働: ${summary.streak.currentStreak} 日 / 最長 ${summary.streak.longestStreak} 日`}
+          >
+            <Flame className="h-3 w-3" aria-hidden="true" />
+            <span aria-hidden="true">{summary.streakLine}</span>
+          </div>
         </div>
         {peakLabel && fullWeekdayAria ? (
           <div
