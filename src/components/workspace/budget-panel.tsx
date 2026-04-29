@@ -9,14 +9,24 @@
  *
  * Dashboard view に置く想定。
  */
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
 
-import { useBudgetStatus, useUpdateMonthlyCostLimit } from '@/features/agent/cost-hooks'
+import {
+  useBudgetStatus,
+  useMonthlyCost,
+  useUpdateMonthlyCostLimit,
+} from '@/features/agent/cost-hooks'
+import {
+  computeMonthlyCostTrend,
+  type CostMonthDirection,
+  formatMonthlyCostTrendJa,
+  rollupCostByMonth,
+} from '@/features/agent/cost-monthly-trend'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -27,12 +37,33 @@ interface Props {
   workspaceId: string
 }
 
+// iter333 basics: 月次コスト trend chip の direction → tone / glyph map。
+// Dashboard velocity chip (iter331) や TopItemsByTimeChip trend (iter321) と同
+// vocabulary (up=blue↑ / flat=muted→ / down=red↓ / idle=muted·)。
+const COST_TREND_TONE: Record<CostMonthDirection, { glyph: string; class: string }> = {
+  up: { glyph: '↑', class: 'bg-amber-50 text-amber-700 border-amber-200' },
+  down: { glyph: '↓', class: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  flat: { glyph: '→', class: 'bg-muted text-muted-foreground border-border' },
+  idle: { glyph: '·', class: 'bg-muted text-muted-foreground border-border' },
+}
+
 export function BudgetPanel({ workspaceId }: Props) {
   const status = useBudgetStatus(workspaceId)
+  const monthly = useMonthlyCost(workspaceId, 3)
   const update = useUpdateMonthlyCostLimit()
   const [editing, setEditing] = useState(false)
   const [draftLimit, setDraftLimit] = useState('')
   const [draftWarn, setDraftWarn] = useState('')
+
+  // iter333 basics: cost-monthly-trend (iter332) を bind — 先月比トレンド chip
+  const trendChip = useMemo(() => {
+    if (!monthly.data) return null
+    const todayIso = new Date().toISOString().slice(0, 10)
+    const rolled = rollupCostByMonth(monthly.data)
+    const trend = computeMonthlyCostTrend(rolled, todayIso)
+    if (trend.direction === 'idle') return null
+    return { trend, line: formatMonthlyCostTrendJa(trend) }
+  }, [monthly.data])
 
   if (status.isLoading || !status.data) return null
   const s = status.data
@@ -111,6 +142,21 @@ export function BudgetPanel({ workspaceId }: Props) {
               )}
             </span>
           </div>
+          {trendChip ? (
+            <div
+              className={`inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-[11px] ${COST_TREND_TONE[trendChip.trend.direction].class}`}
+              data-testid="budget-cost-trend-chip"
+              data-direction={trendChip.trend.direction}
+              role="status"
+              aria-label={trendChip.line}
+              title={trendChip.line}
+            >
+              <span aria-hidden="true" className="font-mono">
+                {COST_TREND_TONE[trendChip.trend.direction].glyph}
+              </span>
+              <span aria-hidden="true">{trendChip.line}</span>
+            </div>
+          ) : null}
           {s.limit !== null && (
             <div
               role="progressbar"
