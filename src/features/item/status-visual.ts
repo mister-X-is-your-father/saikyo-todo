@@ -121,7 +121,7 @@ const STATUS_ORDER: readonly StatusKey[] = [
   'unknown',
 ] as const
 
-function normalizeStatus(s: string | null | undefined): StatusKey {
+export function normalizeStatus(s: string | null | undefined): StatusKey {
   if (s === 'todo' || s === 'in_progress' || s === 'done' || s === 'cancelled' || s === 'blocked') {
     return s
   }
