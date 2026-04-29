@@ -191,9 +191,11 @@ import {
   urgencyTierCountsSeverity,
 } from '@/features/item/urgency'
 import {
+  classifyVelocityHint,
   computeVelocity,
   computeVelocityByPriority,
   formatVelocityByPriorityJa,
+  formatVelocityHintJa,
   formatVelocitySummary,
 } from '@/features/item/velocity'
 import {
@@ -270,7 +272,12 @@ export function DashboardView({ workspaceId }: Props) {
     const detail = `${line}${priorityDetailSuffix(priorityBuckets, () =>
       formatVelocityByPriorityJa(byPriority, 7),
     )}`
-    return { result, line, detail, priorityBuckets }
+    // iter456 basics: iter454 で追加した velocity trend hint (idle/up/flat/down) を
+    // chip aria-label prefix + data-velocity-hint attr に bind (= iter441 / iter443 /
+    // iter446 / iter448 / iter451 hint chip 同手法 6 弾目)。
+    const hint = classifyVelocityHint(result)
+    const hintLabel = formatVelocityHintJa(result)
+    return { result, line, detail, priorityBuckets, hint, hintLabel }
   }, [itemsQ.data])
 
   // iter336 basics: completion-days-by-priority (iter334) を bind。
@@ -915,12 +922,13 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-velocity-chip"
             toneClass={trendToneClass(velocity.result.trend, 'positive')}
             glyph={trendGlyph(velocity.result.trend)}
-            ariaLabel={velocity.detail}
-            title={velocity.detail}
+            ariaLabel={`${velocity.hintLabel}: ${velocity.detail}`}
+            title={`${velocity.hintLabel} — ${velocity.detail}`}
             text={velocity.line}
             dataAttrs={{
               'data-trend': velocity.result.trend,
               'data-priority-buckets': velocity.priorityBuckets,
+              'data-velocity-hint': velocity.hint,
             }}
           />
         ) : null}
