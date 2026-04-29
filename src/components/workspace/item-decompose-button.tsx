@@ -48,6 +48,7 @@ export function ItemDecomposeButton({ workspaceId, item }: Props) {
       size="sm"
       variant="outline"
       disabled={decompose.isPending || item.status === 'done'}
+      aria-busy={decompose.isPending || undefined}
       onClick={(e) => {
         // 親 row の onClick / drag に伝播させない
         e.stopPropagation()

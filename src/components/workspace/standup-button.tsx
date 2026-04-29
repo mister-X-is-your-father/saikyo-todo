@@ -42,6 +42,7 @@ export function StandupButton({ workspaceId }: Props) {
       variant="outline"
       size="sm"
       disabled={standup.isPending}
+      aria-busy={standup.isPending || undefined}
       onClick={() => void run()}
       data-testid="pm-standup-btn"
       title="PM Agent が in_progress / overdue / yesterday-done を要約して Stand-up Doc を生成"

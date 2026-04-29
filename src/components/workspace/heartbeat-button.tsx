@@ -41,6 +41,7 @@ export function HeartbeatButton({ workspaceId }: Props) {
       variant="outline"
       size="sm"
       disabled={scan.isPending}
+      aria-busy={scan.isPending || undefined}
       onClick={() => void run()}
       data-testid="heartbeat-btn"
       title="MUST item を 7d / 3d / 1d / overdue 段階でスキャンして通知を作成"

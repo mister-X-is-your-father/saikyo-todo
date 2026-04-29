@@ -39,6 +39,7 @@ export function ItemResearchButton({ workspaceId, item }: Props) {
       size="sm"
       variant="outline"
       disabled={research.isPending || item.status === 'done'}
+      aria-busy={research.isPending || undefined}
       onClick={(e) => {
         e.stopPropagation()
         void run()
