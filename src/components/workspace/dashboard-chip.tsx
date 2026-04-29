@@ -74,9 +74,14 @@ export function DashboardChip({
   dataAttrs,
   attention = false,
 }: DashboardChipProps) {
+  // iter378: attention chip は SR の assertive 読上げに加えて、視覚的にも目立たせる
+  // ため `ring-2 ring-red-400/60` を追加 (border / bg は toneClass の指定を尊重)。
+  // Tailwind ring は border の outside にレンダリングされるので chip 寸法は不変、
+  // 純粋な視覚 hint として overlay される。
+  const attentionClass = attention ? ' ring-2 ring-red-400/60' : ''
   return (
     <div
-      className={`${BASE_CLASS} ${toneClass}`}
+      className={`${BASE_CLASS} ${toneClass}${attentionClass}`}
       data-testid={testId}
       role={attention ? 'alert' : 'status'}
       aria-live={attention ? 'assertive' : 'polite'}
