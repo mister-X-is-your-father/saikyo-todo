@@ -20,6 +20,7 @@
  * 取る、stale な entry でも見落とさない)。type 未知は 'unknown' bucket。
  */
 
+import { parseDateOrNull } from '@/lib/date/iso'
 import { formatNonZeroCounts } from '@/lib/format-counts'
 
 export const NOTIFICATION_TYPE_KEYS = [
@@ -61,13 +62,6 @@ function emptyCounts(): NotificationCountByType {
   return { heartbeat: 0, mention: 0, invite: 0, 'sync-failure': 0, unknown: 0 }
 }
 
-function toDateOrNull(input: Date | string | null | undefined): Date | null {
-  if (!input) return null
-  if (input instanceof Date) return Number.isFinite(input.getTime()) ? input : null
-  const d = new Date(input)
-  return Number.isFinite(d.getTime()) ? d : null
-}
-
 export function notificationTypeLabel(type: NotificationTypeKey): string {
   return NOTIFICATION_TYPE_LABEL[type]
 }
@@ -77,12 +71,12 @@ export function groupNotificationsByType(
   options: NotificationActivityOptions = {},
 ): NotificationCountByType {
   const result = emptyCounts()
-  const since = options.since ? toDateOrNull(options.since) : null
+  const since = options.since ? parseDateOrNull(options.since) : null
   const onlyUnread = options.onlyUnread === true
   for (const n of notifications) {
     if (onlyUnread && n.readAt) continue
     if (since) {
-      const created = toDateOrNull(n.createdAt)
+      const created = parseDateOrNull(n.createdAt)
       if (!created) continue
       if (created.getTime() < since.getTime()) continue
     }

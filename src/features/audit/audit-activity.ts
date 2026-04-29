@@ -16,6 +16,7 @@
  *     AI Agent 起因の自動 mutation は人のチーム活動と分けて見たいケース多い)
  */
 
+import { parseDateOrNull } from '@/lib/date/iso'
 import { formatNonZeroCounts } from '@/lib/format-counts'
 
 import { type AuditActionCategory, getAuditActionCategory } from './action-visual'
@@ -68,13 +69,6 @@ function emptyCounts(): AuditCategoryCounts {
   }
 }
 
-function toDateOrNull(input: Date | string | null | undefined): Date | null {
-  if (!input) return null
-  if (input instanceof Date) return Number.isFinite(input.getTime()) ? input : null
-  const d = new Date(input)
-  return Number.isFinite(d.getTime()) ? d : null
-}
-
 function passesFilter(
   entry: AuditActivityEntry,
   since: Date | null,
@@ -82,7 +76,7 @@ function passesFilter(
 ): boolean {
   if (actorTypeSet && !actorTypeSet.has(entry.actorType)) return false
   if (since) {
-    const ts = toDateOrNull(entry.ts)
+    const ts = parseDateOrNull(entry.ts)
     if (!ts) return false
     if (ts.getTime() < since.getTime()) return false
   }
@@ -98,7 +92,7 @@ export function groupAuditByCategory(
   options: AuditActivityOptions = {},
 ): AuditCategoryCounts {
   const result = emptyCounts()
-  const since = options.since ? toDateOrNull(options.since) : null
+  const since = options.since ? parseDateOrNull(options.since) : null
   const actorTypeSet =
     options.actorTypes === undefined
       ? new Set<string>(['user'])
@@ -122,7 +116,7 @@ export function groupAuditByActor(
   options: AuditActivityOptions = {},
 ): Map<string, number> {
   const result = new Map<string, number>()
-  const since = options.since ? toDateOrNull(options.since) : null
+  const since = options.since ? parseDateOrNull(options.since) : null
   const actorTypeSet =
     options.actorTypes === undefined
       ? new Set<string>(['user'])
