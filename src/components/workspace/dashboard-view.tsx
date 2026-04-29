@@ -65,6 +65,11 @@ import {
 } from '@/features/item/momentum'
 import { computeSlipDays, formatSlipDaysJa, slipSeverity } from '@/features/item/slip-days'
 import { computeVelocity, formatVelocitySummary } from '@/features/item/velocity'
+import {
+  computeWipByPriority,
+  formatWipByPriorityJa,
+  wipBiasKind,
+} from '@/features/item/wip-by-priority'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -191,6 +196,19 @@ export function DashboardView({ workspaceId }: Props) {
     return { stats, summary, tone, pct }
   }, [itemsQ.data])
 
+  // iter356 basics: wip-by-priority (iter354) を bind。in_progress item の priority
+  // 分布で「高優先が止まっているか」を chip 表示。total=0 で chip 非表示。bias kind
+  // 別 tone (low-priority-only=amber 警戒 / has-high-priority=emerald 健全)。
+  const wipBias = useMemo(() => {
+    if (!itemsQ.data) return null
+    const stats = computeWipByPriority(itemsQ.data)
+    if (stats.total === 0) return null
+    const bias = wipBiasKind(stats)
+    if (bias === 'idle') return null
+    const summary = formatWipByPriorityJa(stats)
+    return { stats, summary, bias }
+  }, [itemsQ.data])
+
   // iter338 basics: backlog-aging (iter337) を bind。Active (= 未完了 + 未 archive)
   // item を createdAt 年齢バケット別に件数集計、停滞気味 (7 日以上) を tone で警戒。
   const aging = useMemo(() => {
@@ -284,6 +302,23 @@ export function DashboardView({ workspaceId }: Props) {
             title={dodCoverage.summary}
             text={dodCoverage.summary}
             dataAttrs={{ 'data-coverage-pct': dodCoverage.pct }}
+          />
+        ) : null}
+        {wipBias ? (
+          <DashboardChip
+            testId="dashboard-wip-bias-chip"
+            toneClass={
+              wipBias.bias === 'low-priority-only' ? chipTone3Class('warn') : chipTone3Class('good')
+            }
+            glyph="▶"
+            ariaLabel={
+              wipBias.bias === 'low-priority-only'
+                ? `${wipBias.summary} — 高優先 0、低優先タスクのみ進行中 (bias 検出)`
+                : wipBias.summary
+            }
+            title={wipBias.summary}
+            text={wipBias.summary}
+            dataAttrs={{ 'data-bias': wipBias.bias, 'data-wip-total': wipBias.stats.total }}
           />
         ) : null}
         {aging ? (
