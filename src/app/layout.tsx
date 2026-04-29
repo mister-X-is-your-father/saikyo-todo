@@ -67,6 +67,7 @@ export default async function RootLayout({
               richColors
               position="bottom-right"
               closeButton
+              theme="system"
               containerAriaLabel="通知"
               toastOptions={{ closeButtonAriaLabel: '通知を閉じる' }}
             />
