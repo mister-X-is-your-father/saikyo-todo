@@ -1,0 +1,100 @@
+/**
+ * iter342 ai-automation: 完了済 item の **「期限達成率」** (hit rate) を計算する
+ * pure helper。
+ *
+ * iter334 (`completion-days-by-priority`) は完了所要日数の avg を priority 別に出すが、
+ * 「期限を守ったか」の binary は別軸。本 helper は dueDate を持つ完了 item を
+ * `hit` (doneAt ≤ dueDate 当日終端) / `miss` (doneAt > dueDate) に分類し、
+ * SLA 達成率を 1 関数で取り出す。
+ *
+ * caller benefits:
+ *   - AI 朝 brief: 「期限達成率: 80% (12 / 15 件)」
+ *   - pm-agent: 「直近 30 日 hit rate 50% — 見積精度 / 着手遅延を疑う」
+ *   - dashboard widget: hit rate chip + tone (高 = emerald 安心 / 低 = amber 警戒)
+ *
+ * 仕様:
+ *   - input: items 配列 ({doneAt, dueDate} の structural subset)
+ *   - 除外: doneAt 未設定 / 不正 / dueDate 未設定 / 不正 ISO
+ *   - 比較: doneAt の timestamp vs dueDate 当日のローカル 23:59:59.999
+ *     (= ユーザの local TZ で「その日のうちに完了」を hit と判定)
+ *   - options.since: doneAt >= since の item のみ集計 (window 指定)。不正値で全件
+ *   - hit + miss + total + hitRate (total=0 → null) を返す
+ */
+
+import { parseDateOrNull } from '@/lib/date/iso'
+
+export interface DueHitRateFields {
+  doneAt: Date | string | null | undefined
+  /** 'YYYY-MM-DD' ISO date (時刻なし) */
+  dueDate: string | null | undefined
+}
+
+export interface DueHitRateStats {
+  /** 完了 + dueDate 有効 item の総数 (= hit + miss) */
+  total: number
+  /** doneAt が dueDate 当日終端 (ローカル 23:59:59.999) までに完了した件数 */
+  hit: number
+  /** doneAt が dueDate を超過した件数 */
+  miss: number
+  /** hit / total (total=0 → null)。0..1 の少数 */
+  hitRate: number | null
+}
+
+export interface ComputeDueHitRateOptions {
+  /** doneAt >= since の item のみ集計。Date | ISO 文字列、不正値で全件 */
+  since?: Date | string
+}
+
+const EMPTY: DueHitRateStats = { total: 0, hit: 0, miss: 0, hitRate: null }
+
+/** dueDate (`YYYY-MM-DD`) のローカル 23:59:59.999 を ms で返す。不正は null */
+function dueDateEndOfDayMs(dueDate: string): number | null {
+  const m = dueDate.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (!m) return null
+  const y = Number(m[1])
+  const mo = Number(m[2])
+  const d = Number(m[3])
+  if (mo < 1 || mo > 12 || d < 1 || d > 31) return null
+  return new Date(y, mo - 1, d, 23, 59, 59, 999).getTime()
+}
+
+export function computeDueHitRate<T extends DueHitRateFields>(
+  items: readonly T[],
+  options: ComputeDueHitRateOptions = {},
+): DueHitRateStats {
+  const sinceParsed = options.since !== undefined ? parseDateOrNull(options.since) : null
+  const sinceMs = sinceParsed ? sinceParsed.getTime() : null
+
+  let hit = 0
+  let miss = 0
+  for (const it of items) {
+    const done = parseDateOrNull(it.doneAt)
+    if (!done) continue
+    if (sinceMs !== null && done.getTime() < sinceMs) continue
+    if (!it.dueDate) continue
+    const dueEnd = dueDateEndOfDayMs(it.dueDate)
+    if (dueEnd === null) continue
+    if (done.getTime() <= dueEnd) hit += 1
+    else miss += 1
+  }
+
+  const total = hit + miss
+  if (total === 0) return EMPTY
+  return { total, hit, miss, hitRate: hit / total }
+}
+
+/**
+ * AI prompt 用 1 行サマリ:
+ *   `'期限達成率: 80% (12 / 15 件)'` (= hit/total)
+ *   `'期限達成率: 100% (5 / 5 件)'`
+ *   `'期限達成率: 0% (0 / 3 件 — 全て遅延)'`
+ *   `'完了 0 件 (該当なし)'` — dueDate 付き完了 item が無い
+ *
+ * パーセントは 0 桁丸め (`Math.round(rate * 100)`)。0% / 100% も明示。
+ */
+export function formatDueHitRateJa(stats: DueHitRateStats): string {
+  if (stats.total === 0 || stats.hitRate === null) return '完了 0 件 (該当なし)'
+  const pct = Math.round(stats.hitRate * 100)
+  const tail = pct === 0 ? ' — 全て遅延' : ''
+  return `期限達成率: ${pct}% (${stats.hit} / ${stats.total} 件${tail})`
+}
