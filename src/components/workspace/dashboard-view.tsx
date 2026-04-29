@@ -40,6 +40,13 @@ import {
   formatCompletionDaysByPriorityJa,
 } from '@/features/item/completion-days-by-priority'
 import {
+  computeDescriptionCoverage,
+  computeDescriptionCoverageByPriority,
+  descriptionCoverageTone,
+  formatDescriptionCoverageByPriorityJa,
+  formatDescriptionCoverageJa,
+} from '@/features/item/description-coverage'
+import {
   computeDodCoverage,
   computeDodCoverageByPriority,
   dodCoverageTone,
@@ -266,6 +273,25 @@ export function DashboardView({ workspaceId }: Props) {
     return { entries, total, summary }
   }, [itemsQ.data])
 
+  // iter368 basics: description-coverage (iter367) を bind。未完了 item の説明文
+  // 設定率を chip 表示。total=0 で chip 非表示。期限 / DoD 同等の planning hygiene
+  // 3 兄弟の 3 つ目。priority breakdown を tooltip に同梱 (iter346/363/366 と同手法)。
+  const descCoverage = useMemo(() => {
+    if (!itemsQ.data) return null
+    const stats = computeDescriptionCoverage(itemsQ.data)
+    if (stats.total === 0 || stats.coverageRate === null) return null
+    const summary = formatDescriptionCoverageJa(stats)
+    const tone = descriptionCoverageTone(stats)
+    const pct = Math.round(stats.coverageRate * 100)
+    const byPriority = computeDescriptionCoverageByPriority(itemsQ.data)
+    const nonEmptyBuckets = ([1, 2, 3, 4] as const).filter((k) => byPriority[k].total > 0).length
+    const detail =
+      nonEmptyBuckets > 1
+        ? `${summary} — ${formatDescriptionCoverageByPriorityJa(byPriority)}`
+        : summary
+    return { stats, summary, tone, pct, detail }
+  }, [itemsQ.data])
+
   // iter338 basics: backlog-aging (iter337) を bind。Active (= 未完了 + 未 archive)
   // item を createdAt 年齢バケット別に件数集計、停滞気味 (7 日以上) を tone で警戒。
   const aging = useMemo(() => {
@@ -371,6 +397,17 @@ export function DashboardView({ workspaceId }: Props) {
             title={dodCoverage.detail}
             text={dodCoverage.summary}
             dataAttrs={{ 'data-coverage-pct': dodCoverage.pct }}
+          />
+        ) : null}
+        {descCoverage ? (
+          <DashboardChip
+            testId="dashboard-desc-coverage-chip"
+            toneClass={chipTone3Class(descCoverage.tone)}
+            glyph="📝"
+            ariaLabel={descCoverage.detail}
+            title={descCoverage.detail}
+            text={descCoverage.summary}
+            dataAttrs={{ 'data-coverage-pct': descCoverage.pct }}
           />
         ) : null}
         {mustHygiene ? (
