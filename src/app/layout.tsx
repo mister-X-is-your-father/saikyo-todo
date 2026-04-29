@@ -4,11 +4,11 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
 
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
-import { Toaster } from 'sonner'
 
 import { AppQueryProvider } from '@/components/shared/query-provider'
 import { ServiceWorkerRegister } from '@/components/shared/sw-register'
 import { ThemeProvider } from '@/components/shared/theme-provider'
+import { ThemedToaster } from '@/components/shared/themed-toaster'
 
 import './globals.css'
 
@@ -63,11 +63,10 @@ export default async function RootLayout({
             <NuqsAdapter>
               <AppQueryProvider>{children}</AppQueryProvider>
             </NuqsAdapter>
-            <Toaster
+            <ThemedToaster
               richColors
               position="bottom-right"
               closeButton
-              theme="system"
               containerAriaLabel="通知"
               toastOptions={{ closeButtonAriaLabel: '通知を閉じる' }}
             />
