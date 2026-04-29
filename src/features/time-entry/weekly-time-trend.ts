@@ -26,6 +26,8 @@
  * workDate (空文字 / 形式違反) は除外。
  */
 
+import { formatMinutes } from './category-summary'
+
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 export interface WeeklyTimeEntry {
@@ -126,23 +128,14 @@ export function computeWeeklyTimeTrend(
   return { thisWeekMinutes, priorWeekMinutes, deltaMinutes, deltaPct, direction }
 }
 
-function formatHm(min: number): string {
-  const safe = Math.max(0, Math.round(min))
-  const h = Math.floor(safe / 60)
-  const m = safe % 60
-  if (h === 0) return `${m}min`
-  if (m === 0) return `${h}h`
-  return `${h}h ${m}min`
-}
-
 export function formatWeeklyTimeTrendJa(trend: WeeklyTimeTrend): string {
   if (trend.direction === 'idle') {
     return '直近 14 日: 稼働記録なし'
   }
-  const cur = formatHm(trend.thisWeekMinutes)
-  const prev = formatHm(trend.priorWeekMinutes)
+  const cur = formatMinutes(trend.thisWeekMinutes)
+  const prev = formatMinutes(trend.priorWeekMinutes)
   const sign = trend.deltaMinutes > 0 ? '+' : ''
-  const delta = formatHm(Math.abs(trend.deltaMinutes))
+  const delta = formatMinutes(Math.abs(trend.deltaMinutes))
   const pctPart =
     trend.deltaPct === null ? '' : ` (${trend.deltaPct >= 0 ? '+' : ''}${trend.deltaPct}%)`
   if (trend.direction === 'flat') {

@@ -14,6 +14,7 @@ import { useMemo } from 'react'
 import { isoDaysFromNow, todayISO } from '@/lib/date/iso'
 
 import { useItems } from '@/features/item/hooks'
+import { formatMinutes } from '@/features/time-entry/category-summary'
 import { useTimeEntries } from '@/features/time-entry/hooks'
 import { formatTopItemsByTime, selectTopItemsByTime } from '@/features/time-entry/item-time-summary'
 
@@ -53,10 +54,7 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
         <ol className="space-y-1">
           {summary.top.map((row, idx) => {
             const title = summary.titles.get(row.itemId) ?? '(無題)'
-            const minutes = row.totalMinutes
-            const h = Math.floor(minutes / 60)
-            const m = minutes % 60
-            const label = h === 0 ? `${m}min` : m === 0 ? `${h}h` : `${h}h ${m}min`
+            const label = formatMinutes(row.totalMinutes)
             return (
               <li
                 key={row.itemId}
