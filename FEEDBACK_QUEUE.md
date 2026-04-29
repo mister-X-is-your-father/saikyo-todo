@@ -179,7 +179,49 @@ button disabled + reason aria-label。typecheck/lint 緑 (warning baseline 1)。
 
 ### 🔥 次 iter で即実装 (P0 最優先、track 判定より優先) 🔥
 
-(空 — queue P0 不在、judge.sh の track 判定に従う)
+ユーザ指示 (2026-04-30): 「さっきのやつとか優先してやってほしいな」「最優先でできるようにして欲しい」
+→ 下記 5 件 queue を **track 判定より優先して順次消化**。各 iter で 1 件 着手、scope A
+(最小実装) から 1 commit + immediate push + HANDOFF.md 1 行 (`1/1` 形式)。**質問が
+あれば仮置きで進める** (ユーザ確認待ちで止めない、判断は commit body に明記)。
+
+優先順位 (上から消化):
+
+1. **Template 登録機能** (詳細: 本ファイル下方の同名 section、scope A から)
+   - 仮置き判断: 既存 `templates` table 拡張、UI scope A は ItemEditDialog から
+     「Template 保存」 button → `templates.body` JSON に `{parent:{...}, children:[{title,dod,...},...]}`
+   - subtask の subtask は scope A では非対応 (フラット 2 階層のみ)
+   - Template 起動時は parent + child を一気に bulk insert (1 件確認モードは scope B 以降)
+
+2. **案件サマリ panel** (詳細: 本ファイル下方、scope A から)
+   - 仮置き判断: 「案件」= parent task 単位、ItemEditDialog の新 tab「サマリ」
+   - subtask 進捗 % + 既存 readiness chip + 直近 7 日の activity 件数 を pure helper で集約
+   - AI 要約は scope C (今 iter は不使用)
+   - risk score も scope B 以降
+
+3. **チームメンバー余裕時間 一覧** (詳細: 本ファイル下方、scope A から)
+   - 仮置き判断: capacity = 8h/day 固定、見積無し item は「未見積 N 件」 chip で別表示
+   - workspace home に panel 追加、avatar + 今日 chip + 今週 chip (ISO 週)
+   - MUST 別カウントは scope B 以降、Slack 通知も別件
+
+4. **Gantt DnD 期間編集** (詳細: 本ファイル下方、scope A から)
+   - 仮置き判断: bar 中央 drag → 期間平行 shift のみ実装 (左右 edge / 依存連動は別 iter)
+   - day 単位 snap、@dnd-kit で実装 (既導入)
+   - 失敗時 ghost reset + toast、楽観ロック衝突は revert
+
+5. **Sprint 担当者 swim-lane Gantt** (詳細: 本ファイル下方、scope A から)
+   - 仮置き判断: sprint detail の inline disclosure (新 tab ではない)、未 assignee lane 表示
+   - HTML/CSS grid (member × 日)、bar は `<div>` で width 計算
+   - capacity 計算は workspace default 8h × N day (member 別は別件)
+
+各 iter ルール:
+- 1 commit が 30-150 行、scope A の最小実装で typecheck/lint clean
+- shadcn UI (`src/components/ui/`) 編集禁止
+- pure helper には test 1-2 件追加
+- commit message: `feat|fix(<phase>): <一言> [iter<N> queue 1/1]` (track 名は `queue` で固定)
+- 同 entry の scope A 完了後、scope B/C を **連続消化 OK** (1 entry 完遂まで他 entry に飛ばない、context 連続性のため)
+- 3 連続失敗 (typecheck/lint/test 落ち) で次 entry に進む
+
+5 件全部消化したら本 P0 section を「(空)」に戻す → track 判定に復帰。
 
 <details>
 <summary>iter302 で消化済の Scope B 仕様 (履歴)</summary>
