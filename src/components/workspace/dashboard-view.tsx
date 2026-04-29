@@ -30,6 +30,7 @@ import { rateToPct } from '@/lib/format-rate'
 import { trendGlyph, trendToneClass } from '@/lib/ui/trend-tone'
 
 import { useBurndown, useMustSummary } from '@/features/dashboard/hooks'
+import { computeAgedHygieneDebt, formatAgedHygieneDebtJa } from '@/features/item/aged-hygiene-debt'
 import {
   countAgingItemsOlderThanWeek,
   countItemsByAge,
@@ -397,9 +398,16 @@ export function DashboardView({ workspaceId }: Props) {
     // priority に debt が分散している時のみ priority breakdown を tooltip に。
     const byPriority = computeHygieneDebtByPriority(itemsQ.data)
     const debtBuckets = PRIORITY_ORDER.filter((k) => byPriority[k].debtCount > 0).length
-    const detail =
-      debtBuckets > 1 ? `${summary} — ${formatHygieneDebtByPriorityJa(byPriority)}` : summary
-    return { stats, summary, detail, tone: hygieneDebtTone(stats) }
+    const priorityDetail = debtBuckets > 1 ? formatHygieneDebtByPriorityJa(byPriority) : null
+    // iter386 basics: aged-hygiene-debt (iter384) を bind。priority 別と並列で
+    // 「年齢別の停滞 debt」を tooltip に同梱、stagnantDebtCount > 0 (= ancient/stale
+    // 軸に debt あり) 時のみ「停滞 Debt: 3 件 (古参 2 / 停滞 1) — 最古 45 日」を
+    // 同梱 (priority 軸 / 年齢軸 で 2D drill-down、iter378 と同手法)。
+    const aged = computeAgedHygieneDebt(itemsQ.data)
+    const ageDetail = aged.stagnantDebtCount > 0 ? formatAgedHygieneDebtJa(aged) : null
+    const extras = [priorityDetail, ageDetail].filter((x): x is string => x !== null)
+    const detail = extras.length > 0 ? `${summary} — ${extras.join(' — ')}` : summary
+    return { stats, summary, detail, tone: hygieneDebtTone(stats), aged }
   }, [itemsQ.data])
 
   // iter338 basics: backlog-aging (iter337) を bind。Active (= 未完了 + 未 archive)
@@ -527,6 +535,8 @@ export function DashboardView({ workspaceId }: Props) {
             dataAttrs={{
               'data-debt-count': hygieneDebt.stats.debtCount,
               'data-debt-total': hygieneDebt.stats.total,
+              'data-stagnant-debt-count': hygieneDebt.aged.stagnantDebtCount,
+              'data-oldest-age-days': hygieneDebt.aged.oldestAgeDays ?? '',
             }}
           />
         ) : null}
