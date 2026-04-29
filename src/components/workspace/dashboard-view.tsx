@@ -106,7 +106,9 @@ import {
 import {
   computeMustOverdue,
   formatMustOverdueJa,
+  formatMustOverdueTitlesJa,
   mustOverdueSeverity,
+  pickMustOverdueItems,
 } from '@/features/item/must-overdue'
 import {
   formatMustStuckWipJa,
@@ -385,7 +387,13 @@ export function DashboardView({ workspaceId }: Props) {
     const sev = mustOverdueSeverity(stats)
     if (sev === 'idle') return null
     const summary = formatMustOverdueJa(stats)
-    return { stats, summary, severity: sev }
+    // iter381 basics: iter379 で追加した pickMustOverdueItems / formatMustOverdueTitlesJa を
+    // SR / hover 経路でのみ読める「2 層情報」として bind (iter371 / iter378 / iter383 等と同手法)。
+    // 視覚 chip text は stats summary のまま、aria-label / title だけ richer (titles 付き) に。
+    const entries = pickMustOverdueItems(itemsQ.data)
+    const titles = formatMustOverdueTitlesJa(entries, 3)
+    const detail = entries.length > 0 ? `${summary} — ${titles}` : summary
+    return { stats, summary, detail, severity: sev }
   }, [itemsQ.data])
 
   // iter366 basics: must-stuck-wip (iter364) を bind。MUST かつ stuck WIP な
@@ -855,8 +863,8 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-must-overdue-chip"
             toneClass="border-red-400 bg-red-100 text-red-900"
             glyph="🆘"
-            ariaLabel={mustOverdue.summary}
-            title={mustOverdue.summary}
+            ariaLabel={mustOverdue.detail}
+            title={mustOverdue.detail}
             text={mustOverdue.summary}
             attention
             dataAttrs={{
