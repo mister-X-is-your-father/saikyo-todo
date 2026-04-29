@@ -275,7 +275,9 @@ function ItemEditDialogInner({
         )}
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
-          <TabsList className="w-full">
+          {/* iter327: TabsList に aria-label を付与し landmark / SR ナビ可能に。
+              Activity は他 4 タブが日本語のため "アクティビティ" にローカライズ統一 (WCAG 3.1.2)。 */}
+          <TabsList className="w-full" aria-label="Item 編集タブ">
             <TabsTrigger value="base" data-testid="tab-base">
               基本
             </TabsTrigger>
@@ -289,7 +291,7 @@ function ItemEditDialogInner({
               コメント
             </TabsTrigger>
             <TabsTrigger value="activity" data-testid="tab-activity">
-              Activity
+              アクティビティ
             </TabsTrigger>
           </TabsList>
 
