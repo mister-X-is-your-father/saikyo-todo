@@ -40,6 +40,11 @@ import {
   formatCompletionDaysByPriorityJa,
 } from '@/features/item/completion-days-by-priority'
 import {
+  computeDodCoverage,
+  dodCoverageTone,
+  formatDodCoverageJa,
+} from '@/features/item/dod-coverage'
+import {
   computeDueDateCoverage,
   dueDateCoverageTone,
   formatDueDateCoverageJa,
@@ -172,6 +177,19 @@ export function DashboardView({ workspaceId }: Props) {
     return { stats, summary, tone, pct }
   }, [itemsQ.data])
 
+  // iter353 basics: dod-coverage (iter352) を bind。未完了 item の DoD 設定率を
+  // chip 表示。total=0 で chip 非表示。due-date-coverage chip と並列の「planning
+  // hygiene 二軸」(期限 + DoD = 計画化 + 受入条件)。
+  const dodCoverage = useMemo(() => {
+    if (!itemsQ.data) return null
+    const stats = computeDodCoverage(itemsQ.data)
+    if (stats.total === 0 || stats.coverageRate === null) return null
+    const summary = formatDodCoverageJa(stats)
+    const tone = dodCoverageTone(stats)
+    const pct = Math.round(stats.coverageRate * 100)
+    return { stats, summary, tone, pct }
+  }, [itemsQ.data])
+
   // iter338 basics: backlog-aging (iter337) を bind。Active (= 未完了 + 未 archive)
   // item を createdAt 年齢バケット別に件数集計、停滞気味 (7 日以上) を tone で警戒。
   const aging = useMemo(() => {
@@ -271,6 +289,27 @@ export function DashboardView({ workspaceId }: Props) {
               📅
             </span>
             <span aria-hidden="true">{dueCoverage.summary}</span>
+          </div>
+        ) : null}
+        {dodCoverage ? (
+          <div
+            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${
+              dodCoverage.tone === 'good'
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                : dodCoverage.tone === 'warn'
+                  ? 'border-amber-200 bg-amber-50 text-amber-700'
+                  : 'border-border bg-muted text-muted-foreground'
+            }`}
+            data-testid="dashboard-dod-coverage-chip"
+            data-coverage-pct={dodCoverage.pct}
+            role="status"
+            aria-label={dodCoverage.summary}
+            title={dodCoverage.summary}
+          >
+            <span aria-hidden="true" className="font-mono">
+              ✓
+            </span>
+            <span aria-hidden="true">{dodCoverage.summary}</span>
           </div>
         ) : null}
         {aging ? (
