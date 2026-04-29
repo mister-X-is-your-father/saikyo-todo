@@ -820,7 +820,9 @@ export function DashboardView({ workspaceId }: Props) {
       {/* Burndown */}
       <Card role="region" aria-label="MUST Item の バーンダウン グラフ (直近 14 日)">
         <CardHeader>
-          <CardTitle className="text-base">バーンダウン (14 日)</CardTitle>
+          <CardTitle className="text-base" role="heading" aria-level={2}>
+            バーンダウン (14 日)
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {burndown.isLoading ? (
@@ -878,7 +880,7 @@ export function DashboardView({ workspaceId }: Props) {
       {/* MUST 一覧 */}
       <Card role="region" aria-label={`MUST Item 一覧 ${s.items.length} 件`}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-base" role="heading" aria-level={2}>
             <Flame className="h-4 w-4 text-red-500" aria-hidden="true" />
             MUST Item 一覧
           </CardTitle>

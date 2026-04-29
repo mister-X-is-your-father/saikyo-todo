@@ -53,7 +53,9 @@ export function PdcaPanel({ workspaceId }: Props) {
     <Card data-testid="pdca-panel">
       <CardHeader>
         <div className="flex items-center justify-between gap-2">
-          <CardTitle className="text-base">PDCA ({days} 日間)</CardTitle>
+          <CardTitle className="text-base" role="heading" aria-level={2}>
+            PDCA ({days} 日間)
+          </CardTitle>
           <div className="flex gap-1" role="group" aria-label="集計期間">
             <Button
               size="sm"
