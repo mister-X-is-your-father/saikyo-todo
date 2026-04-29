@@ -18,7 +18,12 @@
 
 import { formatTopWithOverflow } from '@/lib/format-list'
 
-import { selectStuckWipItems, type StuckWipEntry, type StuckWipFields } from './wip-stuck'
+import {
+  renderStuckEntry,
+  selectStuckWipItems,
+  type StuckWipEntry,
+  type StuckWipFields,
+} from './wip-stuck'
 
 export interface MustStuckWipFields extends StuckWipFields {
   isMust: boolean | null | undefined
@@ -64,15 +69,7 @@ export function formatMustStuckWipJa<T extends MustStuckWipFields>(
   limit: number = 3,
 ): string {
   if (entries.length === 0) return 'MUST 進行中だが停滞 0 件'
-  const body = formatTopWithOverflow(
-    entries,
-    (e) => {
-      const title =
-        typeof e.item.title === 'string' && e.item.title.length > 0 ? e.item.title : '(無題)'
-      return `${title} ${e.stuckDays} 日`
-    },
-    limit,
-  )
+  const body = formatTopWithOverflow(entries, renderStuckEntry, limit)
   return `MUST 進行中だが停滞: ${entries.length} 件 (${body})`
 }
 

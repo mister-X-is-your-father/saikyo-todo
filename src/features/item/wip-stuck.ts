@@ -89,16 +89,20 @@ export function formatStuckWipSummaryJa<T extends StuckWipFields>(
   limit: number = 3,
 ): string {
   if (entries.length === 0) return '進行中だが停滞 0 件'
-  const body = formatTopWithOverflow(
-    entries,
-    (e) => {
-      const title =
-        typeof e.item.title === 'string' && e.item.title.length > 0 ? e.item.title : '(無題)'
-      return `${title} ${e.stuckDays} 日`
-    },
-    limit,
-  )
+  const body = formatTopWithOverflow(entries, renderStuckEntry, limit)
   return `進行中だが停滞: ${entries.length} 件 (${body})`
+}
+
+/**
+ * iter375 refactor: stuck WIP entry を `${title} ${stuckDays} 日` に整形する render fn。
+ * `formatStuckWipSummaryJa` (wip-stuck.ts) / `formatMustStuckWipJa` (must-stuck-wip.ts)
+ * の 2 callsite で同 shape の inline render が重複していたので集約。title 欠落は
+ * `(無題)` で fallback。
+ */
+export function renderStuckEntry<T extends StuckWipFields>(e: StuckWipEntry<T>): string {
+  const title =
+    typeof e.item.title === 'string' && e.item.title.length > 0 ? e.item.title : '(無題)'
+  return `${title} ${e.stuckDays} 日`
 }
 
 /**
