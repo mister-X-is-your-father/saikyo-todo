@@ -3,8 +3,11 @@ import { describe, expect, it } from 'vitest'
 import { uuidToLabel } from '@/lib/db/ltree-path'
 
 import {
+  formatAggregateParentItemsJa,
   formatParentItemsProgressBriefJa,
+  type ParentItemProgress,
   pickIncompleteParentItems,
+  summarizeParentItemsAggregate,
 } from './parent-items-progress'
 
 const NOW = new Date('2026-04-29T00:00:00Z')
@@ -178,5 +181,73 @@ describe('formatParentItemsProgressBriefJa', () => {
         },
       ]),
     ).toBe('進行中: (無題) 20% (1/5)')
+  })
+})
+
+describe('summarizeParentItemsAggregate / formatAggregateParentItemsJa', () => {
+  const e = (pct: number): ParentItemProgress<{ title: string }> => ({
+    parent: { title: `T-${pct}` },
+    progress: {
+      total: 10,
+      done: Math.round((pct / 100) * 10),
+      inProgress: 0,
+      blocked: 0,
+      todo: 10 - Math.round((pct / 100) * 10),
+      cancelled: 0,
+      unknown: 0,
+      pctDone: pct,
+      isComplete: pct === 100,
+    },
+  })
+
+  it('空 → all-zero aggregate', () => {
+    expect(summarizeParentItemsAggregate([])).toEqual({
+      count: 0,
+      avgPctDone: 0,
+      byTier: { stuck: 0, slow: 0, healthy: 0, almostDone: 0 },
+    })
+    expect(formatAggregateParentItemsJa(summarizeParentItemsAggregate([]))).toBe('進行中 0 件')
+  })
+
+  it('1 entry pct=30 → slow 1 / avg=30%', () => {
+    const r = summarizeParentItemsAggregate([e(30)])
+    expect(r).toEqual({
+      count: 1,
+      avgPctDone: 30,
+      byTier: { stuck: 0, slow: 1, healthy: 0, almostDone: 0 },
+    })
+    expect(formatAggregateParentItemsJa(r)).toBe('進行中 1 件: 平均 30%, 前半遅延 1')
+  })
+
+  it('tier 境界 (25 / 50 / 75) は下側 tier に入る', () => {
+    expect(summarizeParentItemsAggregate([e(0)]).byTier.stuck).toBe(1)
+    expect(summarizeParentItemsAggregate([e(24)]).byTier.stuck).toBe(1)
+    expect(summarizeParentItemsAggregate([e(25)]).byTier.slow).toBe(1)
+    expect(summarizeParentItemsAggregate([e(49)]).byTier.slow).toBe(1)
+    expect(summarizeParentItemsAggregate([e(50)]).byTier.healthy).toBe(1)
+    expect(summarizeParentItemsAggregate([e(74)]).byTier.healthy).toBe(1)
+    expect(summarizeParentItemsAggregate([e(75)]).byTier.almostDone).toBe(1)
+    expect(summarizeParentItemsAggregate([e(99)]).byTier.almostDone).toBe(1)
+  })
+
+  it('混在 tier (10 / 30 / 60 / 80 / 90) → 全 4 bucket 顕在', () => {
+    const r = summarizeParentItemsAggregate([e(10), e(30), e(60), e(80), e(90)])
+    expect(r.count).toBe(5)
+    expect(r.avgPctDone).toBe(54) // (10+30+60+80+90)/5 = 270/5 = 54
+    expect(r.byTier).toEqual({ stuck: 1, slow: 1, healthy: 1, almostDone: 2 })
+    expect(formatAggregateParentItemsJa(r)).toBe(
+      '進行中 5 件: 平均 54%, 停滞 1 / 前半遅延 1 / 順調 1 / 仕上げ 2',
+    )
+  })
+
+  it('count=0 tier は format で省略', () => {
+    const r = summarizeParentItemsAggregate([e(60), e(70), e(80)])
+    expect(formatAggregateParentItemsJa(r)).toBe('進行中 3 件: 平均 70%, 順調 2 / 仕上げ 1')
+  })
+
+  it('avgPctDone は Math.round で整数化', () => {
+    // avg = (33 + 67) / 2 = 50 (round)
+    const r = summarizeParentItemsAggregate([e(33), e(67)])
+    expect(r.avgPctDone).toBe(50)
   })
 })

@@ -89,3 +89,85 @@ export function formatParentItemsProgressBriefJa<I extends ParentItemFields>(
   )
   return `進行中: ${body}`
 }
+
+/**
+ * iter422 ai-automation: incomplete parents の集合を 1 数値 / カテゴリ別件数で要約。
+ *
+ * iter419 (pickIncompleteParentItems) で取り出した list を AI brief / pm-agent /
+ * dashboard が「案件 5 件: 平均 35%, 停滞 2 / 健全 2 / 仕上げ 1」のように 1 行で
+ * 出すための substrate。1 列の chip では list (= 個別 title) より aggregate 数値の
+ * 方が密度が高く、ユーザは「どこに注意」より「全体感」を瞬時把握できる。
+ *
+ * 進捗 tier (= bucket):
+ *  - `stuck`        pctDone < 25  (停滞: 1/4 未満、優先で注意)
+ *  - `slow`         25 ≤ pct < 50 (前半の遅延)
+ *  - `healthy`      50 ≤ pct < 75 (順調進行中)
+ *  - `almostDone`   75 ≤ pct < 100 (仕上げ間近、push で完了候補)
+ *  - 100 (= isComplete) は entries に含まれない (pickIncompleteParentItems で除外済)
+ *
+ * 仕様:
+ *  - entries 空 → all-zero / avgPctDone=0 / 全 tier 0
+ *  - avgPctDone は単純平均 (= sum / count)、Math.round で整数化
+ *  - tier の累積は border 値で「下側」に入る (= 25 は slow / 50 は healthy)
+ */
+export type ParentItemsProgressTier = 'stuck' | 'slow' | 'healthy' | 'almostDone'
+
+export interface ParentItemsAggregate {
+  count: number
+  avgPctDone: number
+  byTier: Record<ParentItemsProgressTier, number>
+}
+
+const ZERO_AGGREGATE: ParentItemsAggregate = {
+  count: 0,
+  avgPctDone: 0,
+  byTier: { stuck: 0, slow: 0, healthy: 0, almostDone: 0 },
+}
+
+function progressTier(pctDone: number): ParentItemsProgressTier {
+  if (pctDone < 25) return 'stuck'
+  if (pctDone < 50) return 'slow'
+  if (pctDone < 75) return 'healthy'
+  return 'almostDone'
+}
+
+export function summarizeParentItemsAggregate<I>(
+  entries: readonly ParentItemProgress<I>[],
+): ParentItemsAggregate {
+  if (entries.length === 0) return ZERO_AGGREGATE
+  const byTier: Record<ParentItemsProgressTier, number> = {
+    stuck: 0,
+    slow: 0,
+    healthy: 0,
+    almostDone: 0,
+  }
+  let sum = 0
+  for (const e of entries) {
+    sum += e.progress.pctDone
+    byTier[progressTier(e.progress.pctDone)] += 1
+  }
+  return {
+    count: entries.length,
+    avgPctDone: Math.round(sum / entries.length),
+    byTier,
+  }
+}
+
+/**
+ * AI prompt 行 / dashboard chip 用の集約 1 行サマリ:
+ *   '進行中 5 件: 平均 35%, 停滞 2 / 順調 2 / 仕上げ 1'
+ *   '進行中 0 件' (= entries 空)
+ *
+ * count=0 の tier は省略 (= 「健全 0 件」を出さない)、bucket 順序は: 停滞 → 前半遅延
+ * → 順調 → 仕上げ間近。
+ */
+export function formatAggregateParentItemsJa(agg: ParentItemsAggregate): string {
+  if (agg.count === 0) return '進行中 0 件'
+  const parts: string[] = []
+  if (agg.byTier.stuck > 0) parts.push(`停滞 ${agg.byTier.stuck}`)
+  if (agg.byTier.slow > 0) parts.push(`前半遅延 ${agg.byTier.slow}`)
+  if (agg.byTier.healthy > 0) parts.push(`順調 ${agg.byTier.healthy}`)
+  if (agg.byTier.almostDone > 0) parts.push(`仕上げ ${agg.byTier.almostDone}`)
+  const tierBody = parts.length > 0 ? `, ${parts.join(' / ')}` : ''
+  return `進行中 ${agg.count} 件: 平均 ${agg.avgPctDone}%${tierBody}`
+}
