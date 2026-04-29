@@ -120,6 +120,7 @@ import {
 } from '@/features/item/slip-days'
 import {
   countItemsByUrgencyTier,
+  formatTopUrgentTitlesJa,
   formatUrgencyTierCounts,
   urgencyTierCountsSeverity,
 } from '@/features/item/urgency'
@@ -460,6 +461,10 @@ export function DashboardView({ workspaceId }: Props) {
   // visible chip text は「要対応: 緊急 X / 高 Y」、aria-label / title に full counts
   // (medium / low / none 含む) を同梱して 2 層情報設計 (iter363/366/373/378/383/388/391
   // 系の richer-info-via-a11y/hover 同手法)。
+  // iter396 basics: aria-label / title に iter394 整備済 `formatTopUrgentTitlesJa`
+  // で top 3 urgent items の title + tier ラベル付き 1 行 summary も同梱、SR / hover
+  // で「上位 urgent: 提出 (緊急) / 急ぎ (高)」が読めるようにして 3 層情報設計に拡張
+  // (visible は count、a11y/hover は count + 全体内訳 + top items の 3 段)。
   const urgencyTiers = useMemo(() => {
     if (!itemsQ.data) return null
     const counts = countItemsByUrgencyTier(itemsQ.data)
@@ -469,7 +474,8 @@ export function DashboardView({ workspaceId }: Props) {
     if (counts.critical > 0) actionable.push(`緊急 ${counts.critical}`)
     if (counts.high > 0) actionable.push(`高 ${counts.high}`)
     const visible = `要対応: ${actionable.join(' / ')}`
-    const detail = `${visible} — 全体: ${formatUrgencyTierCounts(counts)}`
+    const topTitles = formatTopUrgentTitlesJa(itemsQ.data, 3)
+    const detail = `${visible} — 全体: ${formatUrgencyTierCounts(counts)} — ${topTitles}`
     return { counts, severity, visible, detail }
   }, [itemsQ.data])
 
