@@ -109,6 +109,11 @@ import {
   pickMustStuckWipItems,
 } from '@/features/item/must-stuck-wip'
 import {
+  computeOverdueActive,
+  formatOverdueActiveJa,
+  overdueActiveSeverity,
+} from '@/features/item/overdue-active'
+import {
   countNonEmptyPriorityBuckets,
   countNonEmptyPriorityBucketsBy,
 } from '@/features/item/priority'
@@ -342,6 +347,19 @@ export function DashboardView({ workspaceId }: Props) {
     const detail =
       priorityBuckets > 1 ? `${summary} — ${formatStuckWipByPriorityJa(byPriority)}` : summary
     return { entries, summary, severity: sev, detail }
+  }, [itemsQ.data])
+
+  // iter368 basics: overdue-active (iter367) を bind。期限超過で未完了の item を
+  // status 別 chip 表示。total=0 / severity='idle' で chip 非表示で UI 静か。
+  // severity 3 値: severe (= 7 日以上 overdue or 5+ 件) = red、mild = amber、
+  // idle = hidden。slip-days (完了済) と相補で「これから完了させる必要がある」観点。
+  const overdueActive = useMemo(() => {
+    if (!itemsQ.data) return null
+    const stats = computeOverdueActive(itemsQ.data)
+    const sev = overdueActiveSeverity(stats)
+    if (sev === 'idle') return null
+    const summary = formatOverdueActiveJa(stats)
+    return { stats, summary, severity: sev }
   }, [itemsQ.data])
 
   // iter366 basics: must-stuck-wip (iter364) を bind。MUST かつ stuck WIP な
@@ -850,6 +868,25 @@ export function DashboardView({ workspaceId }: Props) {
             dataAttrs={{
               'data-severe': slipDays.severe ? 'true' : 'false',
               'data-max-days': slipDays.stats.maxDays ?? 0,
+            }}
+          />
+        ) : null}
+        {overdueActive ? (
+          <DashboardChip
+            testId="dashboard-overdue-active-chip"
+            toneClass={
+              overdueActive.severity === 'severe'
+                ? 'border-red-200 bg-red-50 text-red-700'
+                : chipTone3Class('warn')
+            }
+            glyph="📅"
+            ariaLabel={overdueActive.summary}
+            title={overdueActive.summary}
+            text={overdueActive.summary}
+            dataAttrs={{
+              'data-severity': overdueActive.severity,
+              'data-overdue-total': overdueActive.stats.total,
+              'data-oldest-days': overdueActive.stats.oldestOverdueDays ?? 0,
             }}
           />
         ) : null}
