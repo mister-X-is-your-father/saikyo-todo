@@ -157,6 +157,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               size="sm"
               variant="ghost"
               disabled={cancel.isPending}
+              aria-busy={cancel.isPending || undefined}
               onClick={() => void handleCancel()}
               data-testid="agent-cancel"
               title="実行中の Agent を中止"
@@ -180,6 +181,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                   size="sm"
                   variant="outline"
                   disabled={accept.isPending || rejectAll.isPending || decompose.isPending}
+                  aria-busy={accept.isPending || undefined}
                   onClick={() => void handleAcceptAll()}
                   data-testid="proposals-accept-all"
                   aria-label={
@@ -195,6 +197,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                   size="sm"
                   variant="ghost"
                   disabled={rejectAll.isPending || accept.isPending || decompose.isPending}
+                  aria-busy={rejectAll.isPending || undefined}
                   onClick={() => void handleRejectAll()}
                   data-testid="proposals-reject-all"
                   aria-label={
@@ -214,6 +217,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               variant="ghost"
               className="gap-1"
               disabled={decompose.isPending || rejectAll.isPending}
+              aria-busy={decompose.isPending || undefined}
               onClick={() => void handleRedecompose({ clearExisting: false })}
               data-testid="proposals-redecompose"
               title="既存の提案を残したまま追加で分解"
@@ -232,6 +236,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                 size="sm"
                 variant="ghost"
                 disabled={decompose.isPending || rejectAll.isPending}
+                aria-busy={decompose.isPending || undefined}
                 onClick={() => void handleRedecompose({ clearExisting: true })}
                 data-testid="proposals-redecompose-fresh"
                 title="既存提案を全て却下してから再分解"
@@ -410,6 +415,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               type="submit"
               size="sm"
               disabled={update.isPending}
+              aria-busy={update.isPending || undefined}
               data-testid={`proposal-${proposal.id}-save`}
               aria-label={
                 update.isPending
