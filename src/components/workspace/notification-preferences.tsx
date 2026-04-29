@@ -109,10 +109,13 @@ export function NotificationPreferencesButton({ Icon = Settings }: { Icon?: Luci
           type="button"
           variant="ghost"
           size="icon"
-          aria-label="通知設定"
+          aria-label="通知設定 (メール通知 4 種を ON/OFF)"
+          aria-haspopup="dialog"
           data-testid="notification-preferences"
         >
-          <Icon className="h-4 w-4" />
+          {/* iter332: lucide icon に aria-hidden を付与し SR の冗長 announce を抑制
+              (Button の aria-label が完全に意味伝達済、icon は decorative)。 */}
+          <Icon className="h-4 w-4" aria-hidden="true" />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 max-w-[calc(100vw-1rem)] gap-0 p-0">
