@@ -108,14 +108,29 @@ export function WorkflowsPanel({ workspaceId }: Props) {
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="wf-desc">説明 (任意)</Label>
+              <Label htmlFor="wf-desc">説明 (任意、Cmd/Ctrl+Enter で作成)</Label>
               <Textarea
                 id="wf-desc"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                // iter329: Cmd/Ctrl+Enter で作成 (iter313-318 続編、Textarea Cmd+Enter sweep)。
+                // form 内 Textarea でも default Enter は改行のため modifier 必須。
+                onKeyDown={(e) => {
+                  if (
+                    (e.metaKey || e.ctrlKey) &&
+                    e.key === 'Enter' &&
+                    !e.nativeEvent.isComposing &&
+                    name.trim() &&
+                    !create.isPending
+                  ) {
+                    e.preventDefault()
+                    void handleCreate()
+                  }
+                }}
                 rows={2}
                 maxLength={2000}
                 placeholder="この workflow が何を自動化するか"
+                aria-label="Workflow の説明 (任意、Cmd/Ctrl+Enter で作成)"
               />
             </div>
             <div className="flex justify-end">
