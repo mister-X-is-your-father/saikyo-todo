@@ -171,7 +171,11 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
               読み込み中…
             </div>
           ) : notifications.length === 0 ? (
-            <div className="text-muted-foreground p-4 text-center text-xs" role="status">
+            <div
+              className="text-muted-foreground p-4 text-center text-xs"
+              role="status"
+              aria-live="polite"
+            >
               通知はありません
             </div>
           ) : (

@@ -59,7 +59,7 @@ export function ActivityLog({ itemId }: { itemId: string }) {
   }
   if (!data || data.length === 0) {
     return (
-      <p className="text-muted-foreground text-sm" role="status">
+      <p className="text-muted-foreground text-sm" role="status" aria-live="polite">
         Activity は admin 以上のみ閲覧できます。まだ記録がないか、権限が不足しています。
       </p>
     )
@@ -70,6 +70,7 @@ export function ActivityLog({ itemId }: { itemId: string }) {
         <div
           className="bg-muted/40 text-muted-foreground inline-flex items-center gap-1.5 rounded border px-2 py-1 text-[11px]"
           role="status"
+          aria-live="polite"
           aria-label={summary}
           data-testid="activity-log-summary"
           title={summary}

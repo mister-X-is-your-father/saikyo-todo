@@ -263,7 +263,7 @@ function SubtaskTreeNode({
             </SortableContext>
           )}
           {overDepth && (
-            <p className="ml-4 text-[10px] text-amber-700" role="status">
+            <p className="ml-4 text-[10px] text-amber-700" role="status" aria-live="polite">
               ⚠ 深さ {MAX_TREE_DEPTH} を超える子タスクは省略 ({grandchildren.length} 件)
             </p>
           )}
@@ -428,7 +428,7 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
             読み込み中…
           </p>
         ) : children.length === 0 ? (
-          <p className="text-muted-foreground text-xs" role="status">
+          <p className="text-muted-foreground text-xs" role="status" aria-live="polite">
             まだ子タスクがありません
           </p>
         ) : (

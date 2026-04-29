@@ -483,7 +483,7 @@ function SourceImportHistory({ sourceId }: { sourceId: string }) {
   const imports = q.data ?? []
   if (imports.length === 0) {
     return (
-      <p className="text-muted-foreground text-xs" role="status">
+      <p className="text-muted-foreground text-xs" role="status" aria-live="polite">
         まだ Pull 履歴がありません
       </p>
     )

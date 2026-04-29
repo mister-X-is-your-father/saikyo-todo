@@ -143,6 +143,7 @@ export function BudgetPanel({ workspaceId }: Props) {
               data-testid="budget-cost-trend-chip"
               data-direction={trendChip.trend.direction}
               role="status"
+              aria-live="polite"
               aria-label={trendChip.line}
               title={trendChip.line}
             >

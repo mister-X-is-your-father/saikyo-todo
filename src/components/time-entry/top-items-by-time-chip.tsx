@@ -112,6 +112,7 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
             data-testid="weekly-time-trend-chip"
             data-direction={summary.trend.direction}
             role="status"
+            aria-live="polite"
             aria-label={summary.trendLine}
           >
             <span aria-hidden="true" className="font-mono">
@@ -124,6 +125,7 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
             data-testid="daily-streak-chip"
             data-streak-active={streakActive ? 'true' : 'false'}
             role="status"
+            aria-live="polite"
             aria-label={summary.streakLine}
             title={`連続稼働: ${summary.streak.currentStreak} 日 / 最長 ${summary.streak.longestStreak} 日`}
           >
@@ -137,6 +139,7 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
             data-testid="weekday-time-distribution-chip"
             data-peak={summary.peak?.key}
             role="status"
+            aria-live="polite"
             aria-label={fullWeekdayAria}
             title={fullWeekdayAria}
           >
