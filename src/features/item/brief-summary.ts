@@ -473,6 +473,43 @@ function pickBriefHeadlineWithTitles<T extends BriefItemFields>(input: {
 }
 
 /**
+ * iter399 ai-automation: BriefAxis を日本語短ラベルに変換する mapping。
+ * formatActiveAxesJa で人間可読 list を生成する用。caller は AI prompt や UI に
+ * embedded したい時に直接参照可。
+ */
+export const BRIEF_AXIS_LABEL_JA: Record<BriefAxis, string> = {
+  mustOverdue: 'MUST 期限超過',
+  mustAtRisk: 'MUST 期限近接',
+  overdueActive: '期限超過',
+  stuckWip: '進行中停滞',
+  stale: '古参',
+  topUrgent: '緊急候補',
+}
+
+/**
+ * iter399 ai-automation: activeAxes を日本語の人間可読 1 行に整形する formatter。
+ *
+ * 文言例:
+ *   '警報なし'                                              (= 空配列)
+ *   '警報: MUST 期限超過'                                   (= 1 軸)
+ *   '同時警報: MUST 期限超過 + 進行中停滞'                  (= 2 軸)
+ *   '同時警報: MUST 期限超過 + 進行中停滞 + 古参'           (= 3+ 軸)
+ *
+ * caller (AI 朝 brief / pm-agent / dashboard banner) は本文字列をそのまま埋め込み:
+ * 「同時警報 N 軸」を Japanese で読み下せる視覚優先 1 行 alert として使う。
+ *
+ * `formatBriefStatusBarJa` (iter398) は severity 主体の 1 行 (= '🆘 critical [3 軸]'
+ * ...)、本 fn は axes 詳細主体の 1 行 (= '同時警報: A + B + C') — caller は用途で
+ * 使い分け。
+ */
+export function formatActiveAxesJa(activeAxes: readonly BriefAxis[]): string {
+  if (activeAxes.length === 0) return '警報なし'
+  const labels = activeAxes.map((a) => BRIEF_AXIS_LABEL_JA[a])
+  if (activeAxes.length === 1) return `警報: ${labels[0]}`
+  return `同時警報: ${labels.join(' + ')}`
+}
+
+/**
  * iter398 basics: BriefSummary を「status bar / mobile 通知 / 1-line UI」用の 1 行に
  * 整形する formatter。severity icon + activeAxes 数 + headlineWithTitles を結合。
  *

@@ -8,10 +8,12 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  BRIEF_AXIS_LABEL_JA,
   type BriefItemFields,
   buildBriefSummary,
   detectBriefActiveAxes,
   detectBriefActiveAxis,
+  formatActiveAxesJa,
   formatBriefStatusBarJa,
   formatTopUrgentLine,
 } from './brief-summary'
@@ -595,5 +597,51 @@ describe('formatBriefStatusBarJa (iter398)', () => {
     expect(m).not.toBeNull()
     const axesCount = Number(m![1])
     expect(axesCount).toBeGreaterThanOrEqual(2) // 複数 axes
+  })
+})
+
+describe('formatActiveAxesJa (iter399)', () => {
+  it('空配列 → 警報なし', () => {
+    expect(formatActiveAxesJa([])).toBe('警報なし')
+  })
+
+  it('1 軸 → 警報: <label>', () => {
+    expect(formatActiveAxesJa(['mustOverdue'])).toBe('警報: MUST 期限超過')
+    expect(formatActiveAxesJa(['stuckWip'])).toBe('警報: 進行中停滞')
+  })
+
+  it('2 軸 → 同時警報: <a> + <b>', () => {
+    expect(formatActiveAxesJa(['mustOverdue', 'stuckWip'])).toBe(
+      '同時警報: MUST 期限超過 + 進行中停滞',
+    )
+  })
+
+  it('3 軸+ → 同時警報: a + b + c', () => {
+    expect(formatActiveAxesJa(['mustOverdue', 'stuckWip', 'stale'])).toBe(
+      '同時警報: MUST 期限超過 + 進行中停滞 + 古参',
+    )
+  })
+
+  it('全 6 軸の label が存在する', () => {
+    const all: (keyof typeof BRIEF_AXIS_LABEL_JA)[] = [
+      'mustOverdue',
+      'mustAtRisk',
+      'overdueActive',
+      'stuckWip',
+      'stale',
+      'topUrgent',
+    ]
+    for (const axis of all) {
+      expect(BRIEF_AXIS_LABEL_JA[axis]).toMatch(/.+/)
+    }
+  })
+
+  it('caller は brief.activeAxes をそのまま渡せる (= 同 today 整合)', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'M', isMust: true, dueDate: '2026-04-13', title: '提出書類' }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    const formatted = formatActiveAxesJa(r.activeAxes)
+    expect(formatted).toContain('MUST 期限超過')
   })
 })
