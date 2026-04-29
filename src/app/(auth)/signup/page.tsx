@@ -24,7 +24,7 @@ export default function SignupPage() {
         <span className="text-muted-foreground">アカウントあり?</span>
         <Link
           href="/login"
-          className="text-primary relative z-10 underline-offset-4 hover:underline"
+          className="text-primary relative z-10 underline underline-offset-4"
           aria-label="既にアカウントをお持ちの方はこちらでログイン"
         >
           ログイン
