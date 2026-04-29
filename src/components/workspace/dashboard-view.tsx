@@ -136,6 +136,7 @@ import {
   pickOverdueActiveItems,
 } from '@/features/item/overdue-active'
 import {
+  countNonEmptyCountPriorityBuckets,
   countNonEmptyPriorityBuckets,
   countNonEmptyPriorityBucketsBy,
 } from '@/features/item/priority'
@@ -289,7 +290,7 @@ export function DashboardView({ workspaceId }: Props) {
     // 複数 priority に miss が分散している時のみ priority breakdown を tooltip に
     // (iter363/366/373/378/383 と同手法)。
     const byPriority = computeSlipDaysByPriority(itemsQ.data)
-    const priorityBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)
+    const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
     const priorityDetail = priorityBuckets > 1 ? ` — ${formatSlipDaysByPriorityJa(byPriority)}` : ''
     // iter408 basics: iter407 で追加した pickSlipDaysItems / formatSlipDaysTitlesJa を
     // SR / hover に bind (iter383 / iter386 / iter391 / iter406 と同手法、3 層情報設計)。
@@ -382,7 +383,7 @@ export function DashboardView({ workspaceId }: Props) {
     // iter363 basics: priority 別 breakdown を tooltip に同梱 (iter363/366/373/378/383
     // /388/391/401 と同手法)。複数 P 分散時のみ append、単一 P 偏在は冗長省略。
     const byPriority = computeStuckWipByPriority(itemsQ.data)
-    const priorityBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)
+    const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
     const detail =
       priorityBuckets > 1 ? `${summary} — ${formatStuckWipByPriorityJa(byPriority)}` : summary
     return { entries, summary, severity: sev, detail }
@@ -405,11 +406,7 @@ export function DashboardView({ workspaceId }: Props) {
     // append (= 単一 P 偏在は冗長省略)。視覚 chip text は summary のまま、SR / hover
     // だけ richer (具体的な priority bias) に。
     const byPriority = computeBlockedItemsByPriority(entries)
-    const priorityBuckets =
-      (byPriority[1].count > 0 ? 1 : 0) +
-      (byPriority[2].count > 0 ? 1 : 0) +
-      (byPriority[3].count > 0 ? 1 : 0) +
-      (byPriority[4].count > 0 ? 1 : 0)
+    const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
     const priorityDetail =
       priorityBuckets > 1 ? ` — ${formatBlockedItemsByPriorityJa(byPriority)}` : ''
     const detail = `${summary}${priorityDetail}`
@@ -429,7 +426,7 @@ export function DashboardView({ workspaceId }: Props) {
     // iter371 basics: priority breakdown を tooltip / aria-label に同梱
     // (iter363/366/373/378/383/388/391/401/363 と同手法、priority bias を SR/hover で読める)
     const byPriority = computeOverdueActiveByPriority(itemsQ.data)
-    const priorityBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)
+    const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
     const priorityDetail =
       priorityBuckets > 1 ? ` — ${formatOverdueActiveByPriorityJa(byPriority)}` : ''
     // iter383 basics: iter382 の pickOverdueActiveItems / formatOverdueActiveTitlesJa を
@@ -456,7 +453,7 @@ export function DashboardView({ workspaceId }: Props) {
     // (priority breakdown + titles) に。priorityBuckets > 1 の時のみ P-breakdown を append、
     // entries.length > 0 の時のみ titles を append (= 0 件 fallback で過剰冗長を回避)。
     const byPriority = computeMustOverdueByPriority(itemsQ.data)
-    const priorityBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)
+    const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
     const priorityDetail =
       priorityBuckets > 1 ? ` — ${formatMustOverdueByPriorityJa(byPriority)}` : ''
     const entries = pickMustOverdueItems(itemsQ.data)
@@ -482,7 +479,7 @@ export function DashboardView({ workspaceId }: Props) {
     // (iter386 must-overdue / iter391 must-stuck-wip と同手法、3 chip で 3 層情報設計揃い)。
     // priorityBuckets > 1 の時のみ append、単一 P 偏在は冗長省略。
     const byPriority = computeMustStaleByPriority(itemsQ.data)
-    const priorityBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)
+    const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
     const detail =
       priorityBuckets > 1 ? `${summary} — ${formatMustStaleByPriorityJa(byPriority)}` : summary
     return { entries, summary, detail, severity: sev, priorityBuckets }
@@ -498,7 +495,7 @@ export function DashboardView({ workspaceId }: Props) {
     // (iter386 must-overdue chip と同手法、3 層情報設計の must-stuck-wip 版)。
     // priorityBuckets > 1 の時のみ append、単一 P 偏在は冗長省略。
     const byPriority = computeMustStuckWipByPriority(itemsQ.data)
-    const priorityBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)
+    const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
     const detail =
       priorityBuckets > 1 ? `${summary} — ${formatMustStuckWipByPriorityJa(byPriority)}` : summary
     return { entries, summary, detail, severity: sev, priorityBuckets }
@@ -695,7 +692,7 @@ export function DashboardView({ workspaceId }: Props) {
     const summary = formatStaleUrgentJa(itemsQ.data)
     const topTitles = formatTopUrgentTitlesJa(stale, 3)
     const byPriority = computeStaleUrgentByPriority(itemsQ.data)
-    const priorityBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)
+    const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
     const priorityDetail = priorityBuckets > 1 ? formatStaleUrgentByPriorityJa(byPriority) : null
     const extras = [topTitles, priorityDetail].filter((x): x is string => x !== null)
     const detail = extras.length > 0 ? `${summary} — ${extras.join(' — ')}` : summary

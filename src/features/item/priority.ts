@@ -136,6 +136,24 @@ export function countNonEmptyPriorityBucketsBy<T>(
   return PRIORITY_ORDER.filter((k) => isNonEmpty(byPriority[k])).length
 }
 
+/**
+ * iter415 refactor: `countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)`
+ * の薄いショートカット — `Record<PriorityKey, {count: number}>` shape 専用。
+ *
+ * 同じ predicate が dashboard-view.tsx 内で 8 callsite (must-overdue / must-stuck-wip /
+ * must-stale / overdue-active / slip-days / stuck-wip / stale-urgent / blocked-items)
+ * で重複していたので集約 (= iter325 / iter330 / ... / iter410 と同じ「同 shape の
+ * 散在を 1 file に」方針 26 弾目)。`countNonEmptyPriorityBuckets` (`{total: number}`
+ * 用) と対称な API。各 substrate の by-priority stats が「count > 0 = 該当あり」の
+ * shape (slip-days / must-overdue / must-stuck-wip / must-stale / blocked-items 等)
+ * を共通に拾える。
+ */
+export function countNonEmptyCountPriorityBuckets(
+  byPriority: Record<PriorityKey, { count: number }>,
+): number {
+  return countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)
+}
+
 export function countItemsByPriority(
   items: readonly { priority: number | null | undefined }[],
 ): Record<PriorityKey, number> {

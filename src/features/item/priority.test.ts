@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   bucketByPriorityWith,
   countItemsByPriority,
+  countNonEmptyCountPriorityBuckets,
   countNonEmptyPriorityBuckets,
   countNonEmptyPriorityBucketsBy,
   formatPriorityBuckets,
@@ -189,6 +190,41 @@ describe('countNonEmptyPriorityBuckets / countNonEmptyPriorityBucketsBy', () => 
         (s) => s.count > 0,
       ),
     ).toBe(0)
+  })
+
+  describe('countNonEmptyCountPriorityBuckets', () => {
+    it('全 bucket count=0 → 0', () => {
+      expect(
+        countNonEmptyCountPriorityBuckets({
+          1: { count: 0 },
+          2: { count: 0 },
+          3: { count: 0 },
+          4: { count: 0 },
+        }),
+      ).toBe(0)
+    })
+
+    it('単一 priority 偏在 → 1', () => {
+      expect(
+        countNonEmptyCountPriorityBuckets({
+          1: { count: 0 },
+          2: { count: 5 },
+          3: { count: 0 },
+          4: { count: 0 },
+        }),
+      ).toBe(1)
+    })
+
+    it('複数 priority 分散 → 2+', () => {
+      expect(
+        countNonEmptyCountPriorityBuckets({
+          1: { count: 2 },
+          2: { count: 0 },
+          3: { count: 3 },
+          4: { count: 1 },
+        }),
+      ).toBe(3)
+    })
   })
 
   describe('formatPriorityBuckets', () => {
