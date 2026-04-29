@@ -342,7 +342,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                   id="src-project-ids"
                   value={projectIds}
                   onChange={(e) => setProjectIds(e.target.value)}
-                  placeholder="comma-separated (例: proj-a, proj-b)"
+                  placeholder="カンマ区切り (例: proj-a, proj-b)"
                   required
                   aria-required="true"
                 />
