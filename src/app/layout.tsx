@@ -44,6 +44,7 @@ export const viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover' as const,
+  colorScheme: 'light dark',
 }
 
 export default async function RootLayout({
