@@ -156,6 +156,8 @@ import {
   priorityDetailSuffix,
 } from '@/features/item/priority'
 import {
+  computeRecentCompletedByPriority,
+  formatRecentCompletedByPriorityJa,
   formatRecentCompletedSummaryJa,
   selectRecentCompleted,
 } from '@/features/item/recent-completed'
@@ -570,14 +572,23 @@ export function DashboardView({ workspaceId }: Props) {
   // title list を chip 表示。slip-days / must-hygiene の警告 chip と対比して
   // positive UX (= 「今日の達成: 3 件」を見える化、頑張ったことを褒める)。
   // count=0 で chip 非表示で UI 静か。tone は emerald (= 達成 = good)、glyph 🎉。
+  // iter436 basics: iter434 で追加した by-priority breakdown を SR / hover に append
+  // (iter386 / iter408 / iter414 / iter423 / iter431 / iter433 と同手法、3 層情報設計
+  // 7 chip 目)。priority bucket > 1 のときのみ append、単一 P 偏在は冗長省略。
   const recentDone = useMemo(() => {
     if (!itemsQ.data) return null
     const entries = selectRecentCompleted(itemsQ.data, { windowHours: 24, limit: 3 })
     if (entries.length === 0) return null
     // 全件カウントは limit 無しで再計算 (= "他 N 件" を出すため)
-    const total = selectRecentCompleted(itemsQ.data, { windowHours: 24 }).length
+    const allEntries = selectRecentCompleted(itemsQ.data, { windowHours: 24 })
+    const total = allEntries.length
     const summary = formatRecentCompletedSummaryJa(entries, total, 3)
-    return { entries, total, summary }
+    const byPriority = computeRecentCompletedByPriority(allEntries)
+    const priorityBuckets = countNonEmptyCountPriorityBuckets(byPriority)
+    const detail = `${summary}${priorityDetailSuffix(priorityBuckets, () =>
+      formatRecentCompletedByPriorityJa(byPriority),
+    )}`
+    return { entries, total, summary, detail, priorityBuckets }
   }, [itemsQ.data])
 
   // iter368 basics: description-coverage (iter367) を bind。未完了 item の説明文
@@ -838,11 +849,14 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-recent-done-chip"
             toneClass={chipTone3Class('good')}
             glyph="🎉"
-            ariaLabel={recentDone.summary}
-            title={recentDone.summary}
+            ariaLabel={recentDone.detail}
+            title={recentDone.detail}
             text={recentDone.summary}
             truncateText
-            dataAttrs={{ 'data-recent-done-count': recentDone.total }}
+            dataAttrs={{
+              'data-recent-done-count': recentDone.total,
+              'data-priority-buckets': recentDone.priorityBuckets,
+            }}
           />
         ) : null}
         {velocity ? (
