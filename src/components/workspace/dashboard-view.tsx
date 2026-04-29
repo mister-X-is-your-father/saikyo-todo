@@ -843,6 +843,7 @@ export function DashboardView({ workspaceId }: Props) {
             ariaLabel={mustStuckWip.summary}
             title={mustStuckWip.summary}
             text={mustStuckWip.summary}
+            attention
             dataAttrs={{
               'data-severity': mustStuckWip.severity,
               'data-must-stuck-count': mustStuckWip.entries.length,
@@ -857,6 +858,7 @@ export function DashboardView({ workspaceId }: Props) {
             ariaLabel={mustOverdue.summary}
             title={mustOverdue.summary}
             text={mustOverdue.summary}
+            attention
             dataAttrs={{
               'data-severity': mustOverdue.severity,
               'data-must-overdue-count': mustOverdue.stats.total,

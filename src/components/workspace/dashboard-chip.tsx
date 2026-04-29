@@ -36,6 +36,12 @@ export interface DashboardChipProps {
    * key は `data-` で始まる文字列、value は string | number | boolean。
    */
   dataAttrs?: Record<string, string | number | boolean>
+  /**
+   * iter376: 緊急度の高い chip (MUST 違反 / overdue 重大 等) は role="alert" +
+   * aria-live="assertive" に切替えて SR が割込み読上げ。default false (= role="status"
+   * + aria-live="polite")。
+   */
+  attention?: boolean
 }
 
 const BASE_CLASS = 'inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs'
@@ -66,13 +72,14 @@ export function DashboardChip({
   text,
   truncateText = false,
   dataAttrs,
+  attention = false,
 }: DashboardChipProps) {
   return (
     <div
       className={`${BASE_CLASS} ${toneClass}`}
       data-testid={testId}
-      role="status"
-      aria-live="polite"
+      role={attention ? 'alert' : 'status'}
+      aria-live={attention ? 'assertive' : 'polite'}
       aria-label={ariaLabel}
       title={title}
       {...(dataAttrs ?? {})}
