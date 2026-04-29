@@ -108,7 +108,13 @@ export function TemplateItemsEditor({ templateId }: Props) {
             value={dueOffset}
             onChange={(e) => setDueOffset(e.target.value)}
             className="h-9 w-28 rounded-md border px-2 text-sm"
-            aria-label="期日 offset (日数 — 展開日 + N 日後を期日に設定)"
+            aria-label="期日 offset (日数 — 展開日 + N 日後を期日に設定、0-365)"
+            // iter347: 妥当範囲 0-365 日を HTML5 native で制約 (1 年超は誤入力 / 仕様外)。
+            // step=1 で小数入力ガード。inputMode="numeric" で mobile に数字 keypad。
+            min={0}
+            max={365}
+            step={1}
+            inputMode="numeric"
           />
         </div>
         <label className="flex items-center gap-1 text-sm">
