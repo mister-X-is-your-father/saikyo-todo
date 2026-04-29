@@ -348,14 +348,28 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor={`p-desc-${proposal.id}`}>説明</Label>
+            <Label htmlFor={`p-desc-${proposal.id}`}>説明 (Cmd/Ctrl+Enter で保存)</Label>
             <Textarea
               id={`p-desc-${proposal.id}`}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              // iter317: Cmd/Ctrl+Enter で保存 (iter313-316 と同 pattern、form 内 Textarea
+              // でも default Enter は改行のため modifier 併用必須)。title 空 / pending 中は noop。
+              onKeyDown={(e) => {
+                if (
+                  (e.metaKey || e.ctrlKey) &&
+                  e.key === 'Enter' &&
+                  !e.nativeEvent.isComposing &&
+                  title.trim() &&
+                  !update.isPending
+                ) {
+                  e.preventDefault()
+                  void handleSaveEdit()
+                }
+              }}
               rows={3}
               maxLength={10000}
-              aria-label="提案 description"
+              aria-label="提案 description (Cmd/Ctrl+Enter で保存)"
             />
           </div>
           <label className="flex items-center gap-1.5 text-xs">
