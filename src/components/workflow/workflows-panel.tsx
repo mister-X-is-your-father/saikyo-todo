@@ -87,6 +87,7 @@ export function WorkflowsPanel({ workspaceId }: Props) {
         <CardContent>
           <form
             className="space-y-3"
+            noValidate
             onSubmit={(e) => {
               e.preventDefault()
               void handleCreate()

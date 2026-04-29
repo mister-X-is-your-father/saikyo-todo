@@ -73,6 +73,7 @@ export function InstantiateForm({ workspaceId, template }: Props) {
   return (
     <form
       className="space-y-3 rounded-md border p-3"
+      noValidate
       data-testid="instantiate-form"
       aria-labelledby={formLabelId}
       onSubmit={(e) => {

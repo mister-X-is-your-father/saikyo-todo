@@ -51,6 +51,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
   return (
     <form
       onSubmit={handleSubmit}
+      noValidate
       className="grid gap-3 md:grid-cols-[auto_auto_1fr_auto_auto]"
       data-testid="create-time-entry-form"
     >
