@@ -137,6 +137,7 @@ export function WorkflowsPanel({ workspaceId }: Props) {
               <Button
                 type="submit"
                 disabled={!name.trim() || create.isPending}
+                aria-busy={create.isPending || undefined}
                 data-testid="wf-create-btn"
                 aria-label={
                   !name.trim()
@@ -280,6 +281,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             variant="outline"
             onClick={() => void handleTrigger()}
             disabled={!wf.enabled || trigger.isPending}
+            aria-busy={trigger.isPending || undefined}
             data-testid={`wf-run-${wf.id}`}
             title={
               nodeCount === 0
@@ -314,6 +316,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             variant="ghost"
             onClick={() => void toggleEnabled()}
             disabled={update.isPending}
+            aria-busy={update.isPending || undefined}
             data-testid={`wf-toggle-${wf.id}`}
             aria-label={
               update.isPending
@@ -343,6 +346,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             variant="ghost"
             onClick={() => void handleDelete()}
             disabled={del.isPending}
+            aria-busy={del.isPending || undefined}
             data-testid={`wf-delete-${wf.id}`}
             aria-label={
               del.isPending ? `Workflow「${wf.name}」を削除中…` : `Workflow「${wf.name}」を削除`
@@ -677,6 +681,7 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
               type="button"
               className="hover:bg-muted/50 text-muted-foreground hover:text-foreground flex shrink-0 items-center gap-1 border-l px-2 disabled:opacity-50"
               disabled={trigger.isPending}
+              aria-busy={trigger.isPending || undefined}
               onClick={(e) => {
                 e.stopPropagation()
                 void handleRerun(r)

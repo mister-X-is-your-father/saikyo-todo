@@ -144,6 +144,7 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             variant="outline"
             onClick={() => void handlePull()}
             disabled={!src.enabled || trigger.isPending}
+            aria-busy={trigger.isPending || undefined}
             data-testid={`src-pull-${src.id}`}
             title="手動 pull (sync 実行、30s timeout)"
             aria-label={
@@ -162,6 +163,7 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             variant="ghost"
             onClick={() => void toggleEnabled()}
             disabled={update.isPending}
+            aria-busy={update.isPending || undefined}
             data-testid={`src-toggle-${src.id}`}
             aria-label={
               update.isPending
@@ -191,6 +193,7 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             variant="ghost"
             onClick={() => void handleDelete()}
             disabled={del.isPending}
+            aria-busy={del.isPending || undefined}
             data-testid={`src-delete-${src.id}`}
             aria-label={
               del.isPending ? `Source「${src.name}」を削除中…` : `Source「${src.name}」を削除`
@@ -429,6 +432,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
             <Button
               type="submit"
               disabled={!name.trim() || create.isPending}
+              aria-busy={create.isPending || undefined}
               data-testid="src-create-btn"
               aria-label={
                 !name.trim()
