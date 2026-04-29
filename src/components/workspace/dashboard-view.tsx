@@ -120,7 +120,9 @@ import {
   computeOverdueActiveByPriority,
   formatOverdueActiveByPriorityJa,
   formatOverdueActiveJa,
+  formatOverdueActiveTitlesJa,
   overdueActiveSeverity,
+  pickOverdueActiveItems,
 } from '@/features/item/overdue-active'
 import {
   countNonEmptyPriorityBuckets,
@@ -372,8 +374,14 @@ export function DashboardView({ workspaceId }: Props) {
     // (iter363/366/373/378/383/388/391/401/363 と同手法、priority bias を SR/hover で読める)
     const byPriority = computeOverdueActiveByPriority(itemsQ.data)
     const priorityBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)
-    const detail =
-      priorityBuckets > 1 ? `${summary} — ${formatOverdueActiveByPriorityJa(byPriority)}` : summary
+    const priorityDetail =
+      priorityBuckets > 1 ? ` — ${formatOverdueActiveByPriorityJa(byPriority)}` : ''
+    // iter383 basics: iter382 の pickOverdueActiveItems / formatOverdueActiveTitlesJa を
+    // SR / hover 経路に bind (iter381 must-overdue chip と同手法)。視覚 chip text は
+    // stats summary のまま、aria-label / title だけ richer (具体名付き) に。
+    const entries = pickOverdueActiveItems(itemsQ.data)
+    const titlesDetail = entries.length > 0 ? ` — ${formatOverdueActiveTitlesJa(entries, 3)}` : ''
+    const detail = `${summary}${priorityDetail}${titlesDetail}`
     return { stats, summary, severity: sev, detail }
   }, [itemsQ.data])
 
