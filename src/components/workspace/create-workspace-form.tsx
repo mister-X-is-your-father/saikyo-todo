@@ -46,7 +46,7 @@ export function CreateWorkspaceForm() {
           aria-required="true"
           minLength={1}
           maxLength={50}
-          aria-invalid={Boolean(form.formState.errors.name)}
+          aria-invalid={form.formState.errors.name ? true : undefined}
           aria-describedby={form.formState.errors.name ? 'ws-name-error' : undefined}
           {...form.register('name')}
         />
@@ -69,7 +69,7 @@ export function CreateWorkspaceForm() {
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}
-          aria-invalid={Boolean(form.formState.errors.slug)}
+          aria-invalid={form.formState.errors.slug ? true : undefined}
           aria-describedby={form.formState.errors.slug ? 'ws-slug-error' : undefined}
           {...form.register('slug')}
         />
