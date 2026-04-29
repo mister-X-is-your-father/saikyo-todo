@@ -106,7 +106,13 @@ import {
   formatRecentCompletedSummaryJa,
   selectRecentCompleted,
 } from '@/features/item/recent-completed'
-import { computeSlipDays, formatSlipDaysJa, slipSeverity } from '@/features/item/slip-days'
+import {
+  computeSlipDays,
+  computeSlipDaysByPriority,
+  formatSlipDaysByPriorityJa,
+  formatSlipDaysJa,
+  slipSeverity,
+} from '@/features/item/slip-days'
 import { computeVelocity, formatVelocitySummary } from '@/features/item/velocity'
 import {
   computeWipByPriority,
@@ -210,7 +216,15 @@ export function DashboardView({ workspaceId }: Props) {
     if (stats.count === 0) return null
     const summary = formatSlipDaysJa(stats)
     const severe = slipSeverity(stats) === 'severe'
-    return { stats, summary, severe }
+    // iter388 basics: priority 別 breakdown (iter387) を aria-label / title に同梱
+    // → SR / hover で「P1 2 件 (最大 14日) / P3 1 件 (最大 2日)」が読める。
+    // 複数 priority に miss が分散している時のみ priority breakdown を tooltip に
+    // (iter363/366/373/378/383 と同手法)。
+    const byPriority = computeSlipDaysByPriority(itemsQ.data)
+    const priorityBuckets = PRIORITY_ORDER.filter((k) => byPriority[k].count > 0).length
+    const detail =
+      priorityBuckets > 1 ? `${summary} — ${formatSlipDaysByPriorityJa(byPriority)}` : summary
+    return { stats, summary, detail, severe }
   }, [itemsQ.data])
 
   // iter351 basics: due-date-coverage (iter349) を bind。未完了 item の期限
@@ -649,8 +663,8 @@ export function DashboardView({ workspaceId }: Props) {
                 : 'border-amber-200 bg-amber-50 text-amber-700'
             }
             glyph="⏰"
-            ariaLabel={slipDays.summary}
-            title={slipDays.summary}
+            ariaLabel={slipDays.detail}
+            title={slipDays.detail}
             text={slipDays.summary}
             dataAttrs={{
               'data-severe': slipDays.severe ? 'true' : 'false',
