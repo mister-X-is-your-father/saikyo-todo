@@ -15,6 +15,56 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ## 未処理 (新しい順)
 
+### 🔥 次 iter で即実装 (P0 最優先、track 判定より優先) 🔥
+
+**TickTick 風 タスクタイマー — Scope B: Document Picture-in-Picture (常に手前表示)**
+
+ユーザ指摘 (2026-04-29): 「フローティングでウィンドウ常に手前表示のやつとかも実現してくれ」
+
+iter247-249 で実装済の Scope A (in-page 常駐 floating panel `active-timer-panel.tsx`)
+を、Document Picture-in-Picture API で **別 window 化 + 常に手前表示** に拡張する。
+
+# 仕様
+- `active-timer-panel.tsx` の右上に「PiP で取り出す」 button (Lucide `PictureInPicture2` icon)
+- click で `window.documentPictureInPicture.requestWindow({width: 320, height: 140})` を呼んで別 window を生成
+- React Portal (`createPortal`) で **同じ React tree を PiP window の body に render** (state は親と共有、Zustand store なので自動)
+- PiP window の `<head>` に親 document の `<link rel="stylesheet">` / `<style>` を全 clone (Tailwind 等の CSS が効くように)
+- PiP window が close されたら parent state に戻す (pagehide event listener で cleanup、portal target を null に)
+- Chrome / Edge のみ動作。Safari / Firefox は `documentPictureInPicture` undefined → button は disabled + tooltip「Chrome / Edge で利用可能」+ aria-label に reason
+- 既存 panel の Stop / Pause / Resume / 経過時間表示はそのまま (PiP window 側でも同じ button が動く)
+
+# 実装ファイル
+- `src/components/workspace/active-timer-panel.tsx` (button 追加 + portal logic、+50-100 行)
+- `src/lib/browser/document-pip.ts` (pure helper for capability detection + window open + stylesheet clone、+30-50 行 + unit test 5-7 件)
+
+# pure helper signature
+```ts
+export function isDocumentPipSupported(): boolean
+export async function openDocumentPipWindow(opts: { width: number; height: number; sourceDoc?: Document }): Promise<Window | null>
+export function copyStylesheetsToWindow(target: Window, sourceDoc?: Document): void
+```
+
+# UX 卓越基準 (a-g 該当部)
+- a 発見可能性: PiP icon button + tooltip / aria-label「常に手前表示で別 window 化 (Chrome/Edge)」
+- b アクセシビリティ: button keyboard 到達可、Safari/Firefox では disabled + reason aria-label
+- c 状態網羅: support 検出 / 開いてる中 / 閉じた / 失敗 (例: ユーザ拒否) の 4 状態
+- d 速度感: portal でリアルタイム同期、open は async でも UI block しない
+- e 細部: 開いた直後 PiP window に focus 移動、close で main panel に戻る
+- f レスポンシブ: 小型 window (320×140) なので元 panel より compact 表示も検討
+- g 一貫性: shadcn / Lucide / 既存 panel の配色そのまま
+
+# 期待 commit
+`feat(timer): タイマー panel を Document Picture-in-Picture で常に手前表示 window 化 (queue: TickTick タイマー Scope B)`
+
+# 関連 reference
+- MDN: https://developer.mozilla.org/en-US/docs/Web/API/Document_Picture-in-Picture_API
+- chrome.com の sample: https://developer.chrome.com/docs/web-platform/document-picture-in-picture/
+
+# 依存
+- 既存 `active-timer.ts` Zustand store (iter247、`useActiveTimerStore`) はそのまま流用
+- 既存 `formatElapsed` / `formatVariance` (iter254) も流用
+- Document PiP API は polyfill 不要、native 機能のみ使う
+
 ### ✅ 2026-04-28 完了 (旧 P0 最優先消化済)
 
 **subtask gap (d) インデント / アウトデント button** は iter290 で `c16d15e` として
