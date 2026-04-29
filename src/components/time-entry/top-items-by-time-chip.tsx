@@ -3,10 +3,16 @@
 /**
  * iter318 basics: iter317 で整備済 `selectTopItemsByTime` substrate (19/19 PASS)
  * の UI bind。直近 7 日 (今日含む) の time_entries から **item 別 top 5** を 1 行
- * chip で表示する軽量カード。`EstimateBiasInsight` (iter259) と同 pattern で
- * TimeEntries panel に常駐させる。
+ * chip で表示する軽量カード。
  *
- * 0 件 (entries 無し / itemId 紐付け 0 件) は card ごと非表示にして UI を静かに保つ。
+ * iter321 basics: iter319 `weekly-time-trend.ts` (16/16 PASS) を組み合わせて
+ * 週次トレンド (今週 vs 先週、↑↓→・ + 色) を card 上部に追加。今や本 card は
+ * 「直近 7 日 稼働ダッシュボード」となり、`EstimateBiasInsight` (iter259) と同
+ * pattern で TimeEntries panel に常駐する。
+ *
+ * top 0 件 + trend idle の二重条件で card 非表示 (= 14 日完全に稼働ゼロ)。
+ * top 0 件 だが trend で何らかの稼働がある (item 紐付け無し dev/meeting) 時は
+ * trend chip だけ見せる。
  */
 
 import { useMemo } from 'react'
@@ -17,11 +23,26 @@ import { useItems } from '@/features/item/hooks'
 import { formatMinutes } from '@/features/time-entry/category-summary'
 import { useTimeEntries } from '@/features/time-entry/hooks'
 import { formatTopItemsByTime, selectTopItemsByTime } from '@/features/time-entry/item-time-summary'
+import {
+  computeWeeklyTimeTrend,
+  formatWeeklyTimeTrendJa,
+  splitTimeEntriesByWeek,
+  type WeeklyTimeDirection,
+} from '@/features/time-entry/weekly-time-trend'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 const TOP_N = 5
 const WINDOW_DAYS = 7
+
+// iter321 basics: 稼働時間 trend の direction を視覚的に意味付け (色 + glyph)。
+// up=blue (忙しさ増)、down=red (失速)、flat=zinc (安定)、idle=muted (記録なし)。
+const TREND_TONE: Record<WeeklyTimeDirection, { glyph: string; class: string }> = {
+  up: { glyph: '↑', class: 'bg-blue-50 text-blue-700 border-blue-200' },
+  down: { glyph: '↓', class: 'bg-red-50 text-red-700 border-red-200' },
+  flat: { glyph: '→', class: 'bg-muted text-muted-foreground border-border' },
+  idle: { glyph: '·', class: 'bg-muted text-muted-foreground border-border' },
+}
 
 export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
   const entriesQ = useTimeEntries(workspaceId)
@@ -32,57 +53,83 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
     const today = todayISO()
     const from = isoDaysFromNow(-(WINDOW_DAYS - 1))
     const top = selectTopItemsByTime(entriesQ.data, TOP_N, { from, to: today })
-    if (top.length === 0) return null
     const titles = new Map<string, string>()
     for (const it of itemsQ.data ?? []) titles.set(it.id, it.title)
-    return { top, line: formatTopItemsByTime(top, titles), titles }
+    const { thisWeek, priorWeek } = splitTimeEntriesByWeek(entriesQ.data, today)
+    const trend = computeWeeklyTimeTrend(thisWeek, priorWeek)
+    // top 0 件かつ trend idle (= 14 日 完全に稼働ゼロ) なら card 非表示で UI 静か
+    if (top.length === 0 && trend.direction === 'idle') return null
+    return {
+      top,
+      line: formatTopItemsByTime(top, titles),
+      titles,
+      trend,
+      trendLine: formatWeeklyTimeTrendJa(trend),
+    }
   }, [entriesQ.data, itemsQ.data])
 
   if (!summary) return null
+  const tone = TREND_TONE[summary.trend.direction]
 
   return (
     <Card data-testid="top-items-by-time-chip">
       <CardHeader>
         <CardTitle className="text-base">
-          <span aria-hidden="true">
-            直近 {WINDOW_DAYS} 日 実績 top {summary.top.length}
-          </span>
-          <span className="sr-only">{summary.line}</span>
+          <span aria-hidden="true">直近 {WINDOW_DAYS} 日 稼働ダッシュボード</span>
+          <span className="sr-only">{`${summary.trendLine}。${summary.line}`}</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ol className="space-y-1">
-          {summary.top.map((row, idx) => {
-            const title = summary.titles.get(row.itemId) ?? '(無題)'
-            const label = formatMinutes(row.totalMinutes)
-            return (
-              <li
-                key={row.itemId}
-                className="flex items-center gap-2 text-xs"
-                data-testid={`top-items-by-time-row-${idx + 1}`}
-              >
-                <span
-                  className="bg-muted text-muted-foreground inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-medium"
-                  aria-hidden="true"
+        <div
+          className={`mb-3 inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${tone.class}`}
+          data-testid="weekly-time-trend-chip"
+          data-direction={summary.trend.direction}
+          role="status"
+          aria-label={summary.trendLine}
+        >
+          <span aria-hidden="true" className="font-mono">
+            {tone.glyph}
+          </span>
+          <span aria-hidden="true">{summary.trendLine}</span>
+        </div>
+        {summary.top.length === 0 ? (
+          <p className="text-muted-foreground text-xs" data-testid="top-items-by-time-empty">
+            直近 {WINDOW_DAYS} 日 — Item 紐付けの稼働記録なし (自由稼働のみ)
+          </p>
+        ) : (
+          <ol className="space-y-1">
+            {summary.top.map((row, idx) => {
+              const title = summary.titles.get(row.itemId) ?? '(無題)'
+              const label = formatMinutes(row.totalMinutes)
+              return (
+                <li
+                  key={row.itemId}
+                  className="flex items-center gap-2 text-xs"
+                  data-testid={`top-items-by-time-row-${idx + 1}`}
                 >
-                  {idx + 1}
-                </span>
-                <span className="min-w-0 flex-1 truncate" title={title}>
-                  {title}
-                </span>
-                <span className="font-mono tabular-nums" aria-label={`合計 ${label}`}>
-                  {label}
-                </span>
-                <span
-                  className="text-muted-foreground text-[10px] tabular-nums"
-                  aria-label={`${row.entryCount} 件`}
-                >
-                  {row.entryCount} 件
-                </span>
-              </li>
-            )
-          })}
-        </ol>
+                  <span
+                    className="bg-muted text-muted-foreground inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-medium"
+                    aria-hidden="true"
+                  >
+                    {idx + 1}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate" title={title}>
+                    {title}
+                  </span>
+                  <span className="font-mono tabular-nums" aria-label={`合計 ${label}`}>
+                    {label}
+                  </span>
+                  <span
+                    className="text-muted-foreground text-[10px] tabular-nums"
+                    aria-label={`${row.entryCount} 件`}
+                  >
+                    {row.entryCount} 件
+                  </span>
+                </li>
+              )
+            })}
+          </ol>
+        )}
       </CardContent>
     </Card>
   )
