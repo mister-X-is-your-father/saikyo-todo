@@ -21,8 +21,8 @@ import {
   type AgingGroups,
   type AgingKind,
   countItemsByAge,
-  getItemAge,
   groupItemsByAge,
+  oldestAgeDaysOf,
 } from './backlog-aging'
 import { type HygieneDebtFields, pickHygieneDebtItems } from './hygiene-debt'
 
@@ -58,12 +58,7 @@ export function computeAgedHygieneDebt<T extends AgedHygieneDebtFields>(
     return { totalDebt: 0, byAge: { ...EMPTY_BY_AGE }, oldestAgeDays: null, stagnantDebtCount: 0 }
   }
   const byAge = countItemsByAge(debts, today)
-  let oldestAgeDays: number | null = null
-  for (const it of debts) {
-    const { ageDays } = getItemAge(it.createdAt, today)
-    if (ageDays === undefined) continue
-    if (oldestAgeDays === null || ageDays > oldestAgeDays) oldestAgeDays = ageDays
-  }
+  const oldestAgeDays = oldestAgeDaysOf(debts, today)
   const stagnantDebtCount = byAge.ancient + byAge.stale
   return { totalDebt: debts.length, byAge, oldestAgeDays, stagnantDebtCount }
 }

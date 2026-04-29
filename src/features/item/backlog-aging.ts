@@ -79,6 +79,31 @@ export function agingLabel(kind: AgingKind): string {
   return LABEL[kind]
 }
 
+/**
+ * iter400 refactor: items 群の最古 ageDays を返す reduce helper。
+ * `aged-hygiene-debt.ts` / `stale-urgent.ts` (formatStaleUrgentJa /
+ * computeStaleUrgentByPriority) の 3 callsite で同じ「null init → max-update」
+ * pattern を inline で書いていたのを 1 関数に集約。
+ *
+ * 仕様:
+ *   - 入力: items + (option) today
+ *   - 出力: 最古 ageDays (整数、床関数)、空配列 / 全 createdAt 不正 → null
+ *   - createdAt 不正 ('unknown' 判定) は skip (max 計算に含めない)
+ *   - 未来 createdAt は ageDays=0 (getItemAge の clamp 仕様)
+ */
+export function oldestAgeDaysOf<T extends { createdAt: Date | string | null | undefined }>(
+  items: readonly T[],
+  today: Date | string = new Date(),
+): number | null {
+  let oldest: number | null = null
+  for (const it of items) {
+    const { ageDays } = getItemAge(it.createdAt, today)
+    if (ageDays === undefined) continue
+    if (oldest === null || ageDays > oldest) oldest = ageDays
+  }
+  return oldest
+}
+
 export type AgingGroups<T> = Record<AgingKind, T[]>
 
 /**

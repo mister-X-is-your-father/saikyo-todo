@@ -9,6 +9,7 @@ import {
   formatAgingCounts,
   getItemAge,
   groupItemsByAge,
+  oldestAgeDaysOf,
 } from './backlog-aging'
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
@@ -271,5 +272,50 @@ describe('formatAgingByPriorityJa', () => {
     ]
     const r = countItemsByAgeByPriority(items, TODAY)
     expect(formatAgingByPriorityJa(r)).toBe('停滞: P3 1 件')
+  })
+})
+
+describe('oldestAgeDaysOf', () => {
+  it('returns max ageDays across items', () => {
+    const items = [
+      { createdAt: daysAgo(3, TODAY.getTime()) },
+      { createdAt: daysAgo(45, TODAY.getTime()) },
+      { createdAt: daysAgo(10, TODAY.getTime()) },
+    ]
+    expect(oldestAgeDaysOf(items, TODAY)).toBe(45)
+  })
+
+  it('returns null for empty array', () => {
+    expect(oldestAgeDaysOf([], TODAY)).toBeNull()
+  })
+
+  it('returns null when all createdAt are unknown (null / invalid)', () => {
+    const items = [
+      { createdAt: null },
+      { createdAt: 'garbage' as string },
+      { createdAt: undefined },
+    ]
+    expect(oldestAgeDaysOf(items, TODAY)).toBeNull()
+  })
+
+  it('skips unknown items, returns max of remaining valid', () => {
+    const items = [
+      { createdAt: null },
+      { createdAt: daysAgo(7, TODAY.getTime()) },
+      { createdAt: 'garbage' as string },
+      { createdAt: daysAgo(20, TODAY.getTime()) },
+    ]
+    expect(oldestAgeDaysOf(items, TODAY)).toBe(20)
+  })
+
+  it('single item returns its ageDays', () => {
+    const items = [{ createdAt: daysAgo(15, TODAY.getTime()) }]
+    expect(oldestAgeDaysOf(items, TODAY)).toBe(15)
+  })
+
+  it('future createdAt clamps to 0 (getItemAge contract)', () => {
+    // 未来 createdAt は ageDays=0 で扱われる
+    const future = new Date(TODAY.getTime() + 5 * MS_PER_DAY).toISOString()
+    expect(oldestAgeDaysOf([{ createdAt: future }], TODAY)).toBe(0)
   })
 })

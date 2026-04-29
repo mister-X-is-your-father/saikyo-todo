@@ -16,7 +16,7 @@
  *   - dashboard 専用 chip 候補 (次 iter で UI bind 予定)
  */
 
-import { getItemAge } from './backlog-aging'
+import { getItemAge, oldestAgeDaysOf } from './backlog-aging'
 import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
 import { computeUrgency, type UrgencyFields, urgencyTierOf } from './urgency'
 
@@ -75,14 +75,12 @@ export function formatStaleUrgentJa<T extends StaleUrgentFields>(
   const today = options.today ?? new Date()
   let critical = 0
   let high = 0
-  let oldest = 0
   for (const it of stale) {
     const tier = urgencyTierOf(it, today)
     if (tier === 'critical') critical += 1
     else if (tier === 'high') high += 1
-    const { ageDays } = getItemAge(it.createdAt, today)
-    if (ageDays !== undefined && ageDays > oldest) oldest = ageDays
   }
+  const oldest = oldestAgeDaysOf(stale, today) ?? 0
   const parts: string[] = []
   if (critical > 0) parts.push(`緊急 ${critical}`)
   if (high > 0) parts.push(`高 ${high}`)
@@ -113,12 +111,7 @@ export function computeStaleUrgentByPriority<T extends StaleUrgentFields>(
   return bucketByPriorityWith(items, (group) => {
     const stale = pickStaleUrgentItems(group, options)
     if (stale.length === 0) return { count: 0, oldestDays: null }
-    let oldest = 0
-    for (const it of stale) {
-      const { ageDays } = getItemAge(it.createdAt, today)
-      if (ageDays !== undefined && ageDays > oldest) oldest = ageDays
-    }
-    return { count: stale.length, oldestDays: oldest }
+    return { count: stale.length, oldestDays: oldestAgeDaysOf(stale, today) ?? 0 }
   })
 }
 
