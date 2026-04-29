@@ -37,10 +37,15 @@ export function LoginForm() {
     })
   }
 
+  function onInvalid(errors: typeof form.formState.errors) {
+    const firstError = Object.keys(errors)[0] as keyof LoginInput | undefined
+    if (firstError) form.setFocus(firstError)
+  }
+
   return (
     <form
       method="post"
-      onSubmit={form.handleSubmit(onSubmit)}
+      onSubmit={form.handleSubmit(onSubmit, onInvalid)}
       aria-labelledby="login-heading"
       aria-describedby="login-description"
       aria-busy={isPending || undefined}

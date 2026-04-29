@@ -37,10 +37,15 @@ export function SignupForm() {
     })
   }
 
+  function onInvalid(errors: typeof form.formState.errors) {
+    const firstError = Object.keys(errors)[0] as keyof SignupInput | undefined
+    if (firstError) form.setFocus(firstError)
+  }
+
   return (
     <form
       method="post"
-      onSubmit={form.handleSubmit(onSubmit)}
+      onSubmit={form.handleSubmit(onSubmit, onInvalid)}
       aria-labelledby="signup-heading"
       aria-describedby="signup-description"
       aria-busy={isPending || undefined}
