@@ -136,6 +136,10 @@ import {
   pickOverdueActiveItems,
 } from '@/features/item/overdue-active'
 import {
+  formatParentItemsProgressBriefJa,
+  pickIncompleteParentItems,
+} from '@/features/item/parent-items-progress'
+import {
   countNonEmptyCountPriorityBuckets,
   countNonEmptyPriorityBuckets,
   countNonEmptyPriorityBucketsBy,
@@ -412,6 +416,20 @@ export function DashboardView({ workspaceId }: Props) {
     const detail = `${summary}${priorityDetail}`
     return { entries, summary, detail, priorityBuckets }
   }, [itemsQ.data, blocksDepsQ.data])
+
+  // iter421 basics: workspace 内の進行中 parent (iter419 substrate) を bind。
+  // 「いま動いている案件 (parent + children) の進捗 list」を 1 行 chip で俯瞰。
+  // parent-items-progress entries は pctDone 昇順 (低進捗が先 = 注意必要順) なので
+  // chip text は「最も進捗が遅い案件」が先頭に来る。entries=0 (= 未完了 parent
+  // ゼロ = 全 parent 達成 or workspace に parent が無い) で chip 非表示で UI 静か。
+  // tone は neutral (= warning ではなく info、blocked-items の amber と区別)。
+  const parentItemsProgress = useMemo(() => {
+    if (!itemsQ.data) return null
+    const entries = pickIncompleteParentItems(itemsQ.data)
+    if (entries.length === 0) return null
+    const summary = formatParentItemsProgressBriefJa(entries, 3)
+    return { entries, summary }
+  }, [itemsQ.data])
 
   // iter368 basics: overdue-active (iter367) を bind。期限超過で未完了の item を
   // status 別 chip 表示。total=0 / severity='idle' で chip 非表示で UI 静か。
@@ -946,6 +964,19 @@ export function DashboardView({ workspaceId }: Props) {
             dataAttrs={{
               'data-blocked-count': blockedWorkspaceItems.entries.length,
               'data-priority-buckets': blockedWorkspaceItems.priorityBuckets,
+            }}
+          />
+        ) : null}
+        {parentItemsProgress ? (
+          <DashboardChip
+            testId="dashboard-parent-items-progress-chip"
+            toneClass={chipTone3Class('neutral')}
+            glyph="📋"
+            ariaLabel={`案件進捗: ${parentItemsProgress.summary}`}
+            title={parentItemsProgress.summary}
+            text={parentItemsProgress.summary}
+            dataAttrs={{
+              'data-parent-items-count': parentItemsProgress.entries.length,
             }}
           />
         ) : null}
