@@ -119,7 +119,7 @@ export function BudgetPanel({ workspaceId }: Props) {
             className="flex items-start gap-2 rounded border border-red-500/40 bg-red-500/10 p-2 text-xs text-red-700 dark:text-red-300"
             data-testid="budget-exceeded-alert"
           >
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
             <div>
               月次上限 ({limitLabel}) に達しました。Agent (Researcher / PM)
               の新規起動は来月までブロックされます。
