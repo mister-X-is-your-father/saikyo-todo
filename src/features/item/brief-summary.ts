@@ -162,6 +162,18 @@ export interface BriefSummary<T extends BriefItemFields> {
    * 区別可能、severity だけでは見えない nuance)。
    */
   activeAxis: BriefAxis | null
+  /**
+   * iter397 ai-automation: 現在 1+ 件 triggered な axes 全部を severity 順で並べた
+   * リスト (空配列 = 全 axis 0)。`activeAxis` は最深刻 1 軸のみだが、`activeAxes` は
+   * 同時発生中の全 axes を返すので「同時に 3 軸警報 = 危機的状態」のような状況を
+   * 1 値で観測可能。
+   *
+   * caller benefits:
+   *   - AI 朝 brief「今日は MUST 期限超過 + stuck WIP + stale 3 軸 同時発生 — 危機的」
+   *   - mobile UI で active axis 数 (= activeAxes.length) を chip badge で表示
+   *   - dashboard で「危機度メーター」(= 1 軸 / 2 軸 / 3 軸+ で警告強度を変える)
+   */
+  activeAxes: BriefAxis[]
 }
 
 /** iter394: BriefSummary の集約 severity (5 段階)。 */
@@ -248,6 +260,15 @@ export function buildBriefSummary<T extends BriefItemFields>(
     mustOverdue,
   })
 
+  const activeAxes = detectBriefActiveAxes({
+    topUrgent,
+    mustAtRisk,
+    stale,
+    stuckWip,
+    overdueActive,
+    mustOverdue,
+  })
+
   return {
     topUrgent,
     mustAtRisk,
@@ -263,6 +284,7 @@ export function buildBriefSummary<T extends BriefItemFields>(
     headlineWithTitles,
     severity,
     activeAxis,
+    activeAxes,
   }
 }
 
@@ -322,6 +344,33 @@ export function detectBriefActiveAxis<T extends BriefItemFields>(input: {
   if (input.stale.length > 0) return 'stale'
   if (input.topUrgent.length > 0) return 'topUrgent'
   return null
+}
+
+/**
+ * iter397 ai-automation: 現在 1+ 件 triggered な axes 全部を severity 順で返す。
+ * detectBriefActiveAxis は「最深刻 1 軸」のみだが、本 fn は「同時発生中の全 axes」を
+ * 返すので「3 軸 同時警報 = 危機的状態」のような multi-axis view を 1 fn で取得可。
+ *
+ * 順序は detectBriefActiveAxis と同じ severity 順 (mustOverdue → mustAtRisk →
+ * overdueActive → stuckWip → stale → topUrgent)。1+ 件の axis のみ含む (= 0 件の
+ * axis は除外)、空配列 = 全 axis 0 = 'idle' 状態。
+ */
+export function detectBriefActiveAxes<T extends BriefItemFields>(input: {
+  topUrgent: TopUrgentEntry<T>[]
+  mustAtRisk: MustRiskEntry<T>[]
+  stale: StaleItemEntry<T>[]
+  stuckWip: StuckWipEntry<T>[]
+  overdueActive: OverdueActiveStats
+  mustOverdue: MustOverdueStats
+}): BriefAxis[] {
+  const axes: BriefAxis[] = []
+  if (input.mustOverdue.total > 0) axes.push('mustOverdue')
+  if (input.mustAtRisk.length > 0) axes.push('mustAtRisk')
+  if (input.overdueActive.total > 0) axes.push('overdueActive')
+  if (input.stuckWip.length > 0) axes.push('stuckWip')
+  if (input.stale.length > 0) axes.push('stale')
+  if (input.topUrgent.length > 0) axes.push('topUrgent')
+  return axes
 }
 
 /**

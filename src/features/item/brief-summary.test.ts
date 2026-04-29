@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest'
 import {
   type BriefItemFields,
   buildBriefSummary,
+  detectBriefActiveAxes,
   detectBriefActiveAxis,
   formatTopUrgentLine,
 } from './brief-summary'
@@ -479,5 +480,66 @@ describe('detectBriefActiveAxis (export)', () => {
       mustOverdue: r.mustOverdue,
     })
     expect(axis).toBe('mustOverdue')
+  })
+})
+
+describe('buildBriefSummary — iter397 activeAxes (multi-axis)', () => {
+  it('mustOverdue item は MUST + overdueActive + topUrgent も同時 trigger (severity 順)', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'M', isMust: true, dueDate: '2026-04-13', title: '提出書類' }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    // MUST overdue は MUST + overdueActive + topUrgent を同時に trigger
+    expect(r.activeAxes[0]).toBe('mustOverdue')
+    expect(r.activeAxes).toContain('mustOverdue')
+    expect(r.activeAxes).toContain('overdueActive')
+    expect(r.activeAxis).toBe('mustOverdue')
+  })
+
+  it('複数 axes 同時 triggered → severity 順で全部含む', () => {
+    const items: BriefItemFields[] = [
+      // mustOverdue (must=true + overdue)
+      item({ id: 'M', isMust: true, dueDate: '2026-04-13', title: '提出書類' }),
+      // stuckWip (in_progress + 古い updatedAt)
+      item({
+        id: 'S',
+        status: 'in_progress',
+        updatedAt: new Date(2026, 3, 20),
+        title: '停滞 WIP',
+      }),
+      // stale (古い updatedAt + 未完)
+      item({ id: 'St', updatedAt: new Date(2026, 2, 1), title: '放置' }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    // mustOverdue + overdueActive (must も overdueActive 集計に入る) + stuckWip + stale が同時 ON
+    expect(r.activeAxes).toContain('mustOverdue')
+    expect(r.activeAxes).toContain('stuckWip')
+    expect(r.activeAxes).toContain('stale')
+    // severity 順: mustOverdue が先
+    expect(r.activeAxes[0]).toBe('mustOverdue')
+    // activeAxis (top-most) と activeAxes[0] は一致
+    expect(r.activeAxis).toBe(r.activeAxes[0])
+  })
+
+  it('全 axis 0 → activeAxes = 空配列', () => {
+    const r = buildBriefSummary([], {}, TODAY)
+    expect(r.activeAxes).toEqual([])
+  })
+
+  it('detectBriefActiveAxes export も同 input で同結果を返す', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'M', isMust: true, dueDate: '2026-04-13' }),
+      item({ id: 'St', updatedAt: new Date(2026, 2, 1) }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    const direct = detectBriefActiveAxes({
+      topUrgent: r.topUrgent,
+      mustAtRisk: r.mustAtRisk,
+      stale: r.stale,
+      stuckWip: r.stuckWip,
+      overdueActive: r.overdueActive,
+      mustOverdue: r.mustOverdue,
+    })
+    expect(direct).toEqual(r.activeAxes)
   })
 })
