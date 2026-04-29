@@ -40,6 +40,10 @@ import {
   formatCombinedHygieneJa,
 } from '@/features/item/combined-hygiene'
 import {
+  computeCombinedHygieneByPriority,
+  formatCombinedHygieneByPriorityJa,
+} from '@/features/item/combined-hygiene-by-priority'
+import {
   computeCompletionDaysByPriority,
   computePriorityLatencyGap,
   formatCompletionDaysByPriorityJa,
@@ -326,9 +330,23 @@ export function DashboardView({ workspaceId }: Props) {
       },
     })
     if (score.score === null) return null
+    const summary = formatCombinedHygieneJa(score)
+    // iter373 basics: priority 別 breakdown (iter372) を aria-label / title に同梱
+    // → SR / hover で「P1 100 / P3 30」が読める (visible chip は全体 score のまま、
+    // richer info は a11y / hover 経路でのみ提供、iter346/363/366 と同手法)。
+    // 複数 priority に未完了が分散している時のみ priority breakdown を tooltip に。
+    const byPriority = computeCombinedHygieneByPriority(itemsQ.data)
+    const eligibleBuckets = ([1, 2, 3, 4] as const).filter(
+      (k) => byPriority[k].score !== null,
+    ).length
+    const detail =
+      eligibleBuckets > 1
+        ? `${summary} — ${formatCombinedHygieneByPriorityJa(byPriority)}`
+        : summary
     return {
       score,
-      summary: formatCombinedHygieneJa(score),
+      summary,
+      detail,
       tone: combinedHygieneTone(score),
     }
   }, [itemsQ.data, dueCoverage, dodCoverage, descCoverage])
@@ -423,8 +441,8 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-hygiene-score-chip"
             toneClass={chipTone3Class(hygieneScore.tone)}
             glyph="🧭"
-            ariaLabel={hygieneScore.summary}
-            title={hygieneScore.summary}
+            ariaLabel={hygieneScore.detail}
+            title={hygieneScore.detail}
             text={`Hygiene ${hygieneScore.score.score}`}
             dataAttrs={{
               'data-hygiene-score': hygieneScore.score.score ?? 0,
