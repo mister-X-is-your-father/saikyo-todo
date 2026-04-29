@@ -464,14 +464,29 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
       </div>
 
       <div className="space-y-2 rounded border border-dashed p-2">
-        <Label htmlFor="subtasks-bulk">改行区切りで bulk 追加</Label>
+        <Label htmlFor="subtasks-bulk">改行区切りで bulk 追加 (Cmd/Ctrl+Enter で追加)</Label>
         <textarea
           id="subtasks-bulk"
           value={bulkText}
           onChange={(e) => setBulkText(e.target.value)}
+          // iter318: Cmd/Ctrl+Enter で bulk 追加 (iter313-317 と同 pattern、改行区切り
+          // 入力なので Enter は newline 必須、modifier 併用が必須)。空 / pending 中は noop。
+          onKeyDown={(e) => {
+            if (
+              (e.metaKey || e.ctrlKey) &&
+              e.key === 'Enter' &&
+              !e.nativeEvent.isComposing &&
+              bulkText.trim() &&
+              !create.isPending
+            ) {
+              e.preventDefault()
+              void handleBulkAdd()
+            }
+          }}
           rows={5}
           className="bg-background w-full rounded border px-2 py-1.5 font-mono text-sm"
           placeholder={'例:\n仕様書を読む\nスキーマ設計\nプロトタイプ実装'}
+          aria-label="子タスクを改行区切りで bulk 追加 (Cmd/Ctrl+Enter で追加)"
           data-testid="subtasks-bulk-input"
         />
         <div className="flex items-center justify-between">
