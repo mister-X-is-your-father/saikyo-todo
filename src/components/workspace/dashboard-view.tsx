@@ -40,6 +40,11 @@ import {
   formatCompletionDaysByPriorityJa,
 } from '@/features/item/completion-days-by-priority'
 import {
+  computeDueDateCoverage,
+  dueDateCoverageTone,
+  formatDueDateCoverageJa,
+} from '@/features/item/due-date-coverage'
+import {
   computeDueHitRate,
   computeDueHitRateByPriority,
   countNonEmptyPriorityBuckets,
@@ -154,6 +159,19 @@ export function DashboardView({ workspaceId }: Props) {
     return { stats, summary, severe }
   }, [itemsQ.data])
 
+  // iter351 basics: due-date-coverage (iter349) を bind。未完了 item の期限
+  // 設定率を chip 表示。total=0 (= 未完了 0 件) で chip 非表示。tone は 3 段階
+  // (>= 0.7 emerald 健全 / 0.3..0.7 muted 中立 / < 0.3 amber planning 漏れ)。
+  const dueCoverage = useMemo(() => {
+    if (!itemsQ.data) return null
+    const stats = computeDueDateCoverage(itemsQ.data)
+    if (stats.total === 0 || stats.coverageRate === null) return null
+    const summary = formatDueDateCoverageJa(stats)
+    const tone = dueDateCoverageTone(stats)
+    const pct = Math.round(stats.coverageRate * 100)
+    return { stats, summary, tone, pct }
+  }, [itemsQ.data])
+
   // iter338 basics: backlog-aging (iter337) を bind。Active (= 未完了 + 未 archive)
   // item を createdAt 年齢バケット別に件数集計、停滞気味 (7 日以上) を tone で警戒。
   const aging = useMemo(() => {
@@ -232,6 +250,27 @@ export function DashboardView({ workspaceId }: Props) {
               {trendGlyph(momentum.trend)}
             </span>
             <span aria-hidden="true">{momentum.line}</span>
+          </div>
+        ) : null}
+        {dueCoverage ? (
+          <div
+            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${
+              dueCoverage.tone === 'good'
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                : dueCoverage.tone === 'warn'
+                  ? 'border-amber-200 bg-amber-50 text-amber-700'
+                  : 'border-border bg-muted text-muted-foreground'
+            }`}
+            data-testid="dashboard-due-coverage-chip"
+            data-coverage-pct={dueCoverage.pct}
+            role="status"
+            aria-label={dueCoverage.summary}
+            title={dueCoverage.summary}
+          >
+            <span aria-hidden="true" className="font-mono">
+              📅
+            </span>
+            <span aria-hidden="true">{dueCoverage.summary}</span>
           </div>
         ) : null}
         {aging ? (
