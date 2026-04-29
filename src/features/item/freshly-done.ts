@@ -14,7 +14,7 @@
  * 0 件 sentinel `'完了 0 件 (直近 N 日)'`、title 欠落 `(無題)` fallback で
  * `formatStaleItemsSummary` と一貫した出力スタイル。
  */
-import { parseDateOrNull } from '@/lib/date/iso'
+import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 
 /** 完了抽出に必要な Item の structural subset。 */
 export interface FreshlyDoneItemFields {
@@ -54,7 +54,7 @@ export function selectFreshlyDoneItems<T extends FreshlyDoneItemFields>(
     if (!doneAt) continue
     const diffMs = todayDate.getTime() - doneAt.getTime()
     if (diffMs < 0) continue // 未来完了 (時計ズレ等) は除外
-    const daysSinceDone = Math.floor(diffMs / (24 * 60 * 60 * 1000))
+    const daysSinceDone = Math.floor(diffMs / MS_PER_DAY)
     if (daysSinceDone > thresholdDays) continue
     enriched.push({ entry: { item: it, daysSinceDone }, index: i })
   }

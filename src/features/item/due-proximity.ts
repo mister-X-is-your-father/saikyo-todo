@@ -23,7 +23,7 @@
  *  - 不正 ISO は `noDate` と同じ扱い (fail-soft)
  *  - `diffDays` は overdue で負、noDate で undefined
  */
-import { toLocalMidnight } from '@/lib/date/iso'
+import { MS_PER_DAY, toLocalMidnight } from '@/lib/date/iso'
 import { formatNonZeroCounts } from '@/lib/format-counts'
 
 export type DueProximityKind = 'overdue' | 'today' | 'tomorrow' | 'thisWeek' | 'later' | 'noDate'
@@ -55,7 +55,7 @@ export function getDueProximity(
   if (!todayDate || !dueParsed) {
     return { kind: 'noDate', diffDays: undefined, label: LABEL.noDate }
   }
-  const diffDays = Math.round((dueParsed.getTime() - todayDate.getTime()) / (24 * 60 * 60 * 1000))
+  const diffDays = Math.round((dueParsed.getTime() - todayDate.getTime()) / MS_PER_DAY)
   let kind: DueProximityKind
   if (diffDays < 0) kind = 'overdue'
   else if (diffDays === 0) kind = 'today'

@@ -20,7 +20,7 @@
  *   - dashboard widget で WIP-bias chip 隣に WIP-stuck chip
  */
 
-import { parseDateOrNull } from '@/lib/date/iso'
+import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 
 export interface StuckWipFields {
   id?: string
@@ -42,8 +42,6 @@ export interface SelectStuckWipOptions {
   thresholdDays?: number
 }
 
-const DAY_MS = 24 * 60 * 60 * 1000
-
 export function selectStuckWipItems<T extends StuckWipFields>(
   items: readonly T[],
   options: SelectStuckWipOptions = {},
@@ -63,7 +61,7 @@ export function selectStuckWipItems<T extends StuckWipFields>(
     if (!updatedAt) continue
     const diffMs = todayDate.getTime() - updatedAt.getTime()
     if (diffMs < 0) continue
-    const stuckDays = Math.floor(diffMs / DAY_MS)
+    const stuckDays = Math.floor(diffMs / MS_PER_DAY)
     if (stuckDays < thresholdDays) continue
     enriched.push({ entry: { item: it, stuckDays }, index: i })
   }

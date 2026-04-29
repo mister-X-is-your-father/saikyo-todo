@@ -6,6 +6,7 @@ import {
   formatUtcISO,
   isoDaysFromNow,
   isValidIsoDate,
+  MS_PER_DAY,
   parseDateOrNull,
   shiftIsoDate,
   todayISO,
@@ -244,5 +245,18 @@ describe('dueDateEndOfDayMs', () => {
     const start = new Date(2026, 3, 29, 0, 0, 0).getTime()
     expect(end).toBeGreaterThan(start)
     expect(end - start).toBe(24 * 60 * 60 * 1000 - 1) // 1 day - 1 ms
+  })
+})
+
+describe('MS_PER_DAY', () => {
+  it('= 24 × 60 × 60 × 1000 (1 day in ms)', () => {
+    expect(MS_PER_DAY).toBe(24 * 60 * 60 * 1000)
+    expect(MS_PER_DAY).toBe(86_400_000)
+  })
+
+  it('Date 差を日数に変換できる', () => {
+    const a = new Date(2026, 3, 29).getTime()
+    const b = new Date(2026, 3, 22).getTime()
+    expect(Math.round((a - b) / MS_PER_DAY)).toBe(7)
   })
 })

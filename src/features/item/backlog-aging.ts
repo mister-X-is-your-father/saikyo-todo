@@ -22,7 +22,7 @@
  *    未来 createdAt (時計ズレ) は ageDays=0 / kind='new' (clamp)
  */
 
-import { parseDateOrNull } from '@/lib/date/iso'
+import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { formatNonZeroCounts } from '@/lib/format-counts'
 
 import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
@@ -46,8 +46,6 @@ export interface ItemAge {
   /** 日本語 短ラベル */
   label: string
 }
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000
 
 function classifyAgeDays(ageDays: number): AgingKind {
   if (ageDays < 1) return 'new'

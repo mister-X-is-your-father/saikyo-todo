@@ -19,7 +19,7 @@
  *  - 不正 doneAt は除外 (fail-soft)、windowDays<=0 は空 result
  *  - archive 済 / deletedAt の done item は集計に含める (= 一度完了したものは消えない)
  */
-import { formatLocalISO, parseDateOrNull, toLocalMidnight } from '@/lib/date/iso'
+import { formatLocalISO, MS_PER_DAY, parseDateOrNull, toLocalMidnight } from '@/lib/date/iso'
 
 export interface VelocityFields {
   doneAt: Date | string | null | undefined
@@ -65,7 +65,7 @@ export function computeVelocity<T extends VelocityFields>(
   const dayCounts = new Map<string, number>()
   const dates: string[] = []
   for (let i = windowDays - 1; i >= 0; i--) {
-    const d = new Date(todayDate.getTime() - i * 24 * 60 * 60 * 1000)
+    const d = new Date(todayDate.getTime() - i * MS_PER_DAY)
     const key = formatLocalISO(d)
     dayCounts.set(key, 0)
     dates.push(key)

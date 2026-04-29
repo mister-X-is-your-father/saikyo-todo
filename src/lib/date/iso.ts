@@ -25,6 +25,14 @@ function pad(n: number): string {
 }
 
 /**
+ * iter360 refactor: 1 日 = 24 \* 60 \* 60 \* 1000 ms 定数。`features/item/` 配下で
+ * `MS_PER_DAY` / `DAY_MS` の同一定義 5 件 + inline `(24 * 60 * 60 * 1000)` 8 件
+ * 計 13 callsite が散らばっていたので 1 source of truth に集約。caller は
+ * `import { MS_PER_DAY } from '@/lib/date/iso'` で参照。
+ */
+export const MS_PER_DAY = 24 * 60 * 60 * 1000
+
+/**
  * iter340 refactor: ローカル TZ の Date を `YYYY-MM-DD` に整形。
  *
  * `velocity.ts#formatLocalISO` / `daily-summary.ts#formatISODate` /

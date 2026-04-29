@@ -18,7 +18,7 @@
  *  - 不正 ISO / 不正 doneAt/createdAt は集計から除外 (fail-soft)
  *  - from > to の場合は全 0 + null
  */
-import { parseDateOrNull } from '@/lib/date/iso'
+import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 
 /** 期間集計に必要な Item の structural subset。 */
 export interface PeriodCompletionFields {
@@ -64,7 +64,7 @@ export function summarizePeriodCompletion<T extends PeriodCompletionFields>(
     }
   }
   // to 側は「その日の終わり (23:59:59)」まで含める
-  const toEnd = new Date(toDate.getTime() + 24 * 60 * 60 * 1000 - 1)
+  const toEnd = new Date(toDate.getTime() + MS_PER_DAY - 1)
   const periodDays = Math.max(1, daysSpan(fromDate, toDate))
 
   let itemsCompleted = 0
@@ -97,8 +97,7 @@ export function summarizePeriodCompletion<T extends PeriodCompletionFields>(
   const avgCompletionDays =
     completedWithCreatedCount === 0
       ? null
-      : Math.round((totalCompletionMs / completedWithCreatedCount / (24 * 60 * 60 * 1000)) * 10) /
-        10
+      : Math.round((totalCompletionMs / completedWithCreatedCount / MS_PER_DAY) * 10) / 10
 
   return { itemsCompleted, mustCompletedCount, itemsAdded, avgCompletionDays, periodDays }
 }
@@ -132,5 +131,5 @@ export function formatPeriodCompletion(s: PeriodCompletionSummary): string {
 
 function daysSpan(from: Date, to: Date): number {
   const diffMs = to.getTime() - from.getTime()
-  return Math.floor(diffMs / (24 * 60 * 60 * 1000)) + 1
+  return Math.floor(diffMs / MS_PER_DAY) + 1
 }

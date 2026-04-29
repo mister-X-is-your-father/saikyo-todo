@@ -28,7 +28,7 @@
  * 不正で idle。
  */
 
-import { parseDateOrNull } from '@/lib/date/iso'
+import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 
 export interface MomentumFields {
   createdAt: Date | string | null | undefined
@@ -52,7 +52,6 @@ export interface ComputeMomentumOptions {
   windowDays?: number
 }
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000
 const BALANCED_THRESHOLD = 0.2
 
 function emptyResult(windowDays: number): WorkspaceMomentum {

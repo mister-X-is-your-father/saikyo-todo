@@ -15,7 +15,7 @@
  *
  * 戻り値は 古い順 (= 最も放置されている item が先頭) に並ぶ。同時刻は元配列順で stable。
  */
-import { parseDateOrNull } from '@/lib/date/iso'
+import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 
 /** stale 判定に必要な Item の structural subset。 */
 export interface StaleItemFields {
@@ -66,7 +66,7 @@ export function selectStaleItems<T extends StaleItemFields>(
     if (!updatedAt) continue
     const diffMs = todayDate.getTime() - updatedAt.getTime()
     if (diffMs < 0) continue // 未来更新 (時計ズレ等) は除外
-    const staleDays = Math.floor(diffMs / (24 * 60 * 60 * 1000))
+    const staleDays = Math.floor(diffMs / MS_PER_DAY)
     if (staleDays < thresholdDays) continue
     enriched.push({ entry: { item: it, staleDays }, index: i })
   }

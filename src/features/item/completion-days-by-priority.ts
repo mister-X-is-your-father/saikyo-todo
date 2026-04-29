@@ -24,7 +24,7 @@
  *   - since 不正 → 全件 (= since 未指定と同じ)
  */
 
-import { parseDateOrNull } from '@/lib/date/iso'
+import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 
 import { normalizePriority, PRIORITY_ORDER, type PriorityKey } from './priority'
 
@@ -67,8 +67,6 @@ function emptyStats(): CompletionDaysByPriority {
     4: { count: 0, avgDays: null },
   }
 }
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000
 
 export function computeCompletionDaysByPriority<T extends CompletionDaysFields>(
   items: readonly T[],

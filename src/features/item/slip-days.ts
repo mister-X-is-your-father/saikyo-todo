@@ -19,7 +19,7 @@
  *       maxDays = 最大 slip (count=0 → null)
  */
 
-import { dueDateEndOfDayMs, parseDateOrNull } from '@/lib/date/iso'
+import { dueDateEndOfDayMs, MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 
 import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
 
@@ -48,7 +48,6 @@ export interface ComputeSlipDaysOptions {
   since?: Date | string
 }
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000
 const EMPTY: SlipDaysStats = { count: 0, avgDays: null, medianDays: null, maxDays: null }
 
 // iter360 refactor: dueDateEndOfDayMs は lib/date/iso.ts に集約。
