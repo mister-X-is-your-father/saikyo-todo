@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  classifyRecentCompletedMomentum,
   computeRecentCompletedByPriority,
   formatRecentCompletedByPriorityJa,
+  formatRecentCompletedMomentumJa,
   formatRecentCompletedSummaryJa,
   type RecentCompletedEntry,
   type RecentCompletedFields,
@@ -270,5 +272,47 @@ describe('computeRecentCompletedByPriority / formatRecentCompletedByPriorityJa',
     }
     const r = computeRecentCompletedByPriority([entry], NOW)
     expect(r[1]?.latestMinutesAgo).toBe(0)
+  })
+})
+
+describe('classifyRecentCompletedMomentum / formatRecentCompletedMomentumJa (iter449)', () => {
+  type Item = { id: string; title: string; priority: number; doneAt: string }
+  const e = (id: string, minutesAgo: number): RecentCompletedEntry<Item> => {
+    const doneAt = new Date(NOW.getTime() - minutesAgo * 60 * 1000)
+    return {
+      item: { id, title: `T-${id}`, priority: 4, doneAt: doneAt.toISOString() },
+      priority: 4,
+      doneAt,
+    }
+  }
+
+  it('空 → idle / "今日の達成なし"', () => {
+    expect(classifyRecentCompletedMomentum([])).toBe('idle')
+    expect(formatRecentCompletedMomentumJa([])).toBe('今日の達成なし')
+  })
+
+  it('count 1-2 → mild', () => {
+    expect(classifyRecentCompletedMomentum([e('a', 30)])).toBe('mild')
+    expect(classifyRecentCompletedMomentum([e('a', 30), e('b', 60)])).toBe('mild')
+    expect(formatRecentCompletedMomentumJa([e('a', 30)])).toBe('少しずつ進行')
+  })
+
+  it('count 3-4 → steady', () => {
+    const r = [e('a', 30), e('b', 60), e('c', 90)]
+    expect(classifyRecentCompletedMomentum(r)).toBe('steady')
+    expect(formatRecentCompletedMomentumJa(r)).toBe('安定した動き')
+  })
+
+  it('count ≥ 5 → momentum / "勢いあり"', () => {
+    const r = Array.from({ length: 5 }, (_, i) => e(`a${i}`, 30))
+    expect(classifyRecentCompletedMomentum(r)).toBe('momentum')
+    expect(formatRecentCompletedMomentumJa(r)).toBe('勢いあり')
+  })
+
+  it('境界 count=4 → steady、count=5 → momentum', () => {
+    const r4 = [e('a', 1), e('b', 2), e('c', 3), e('d', 4)]
+    const r5 = [...r4, e('e', 5)]
+    expect(classifyRecentCompletedMomentum(r4)).toBe('steady')
+    expect(classifyRecentCompletedMomentum(r5)).toBe('momentum')
   })
 })

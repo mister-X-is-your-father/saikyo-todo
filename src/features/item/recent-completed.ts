@@ -178,3 +178,53 @@ export function formatRecentCompletedByPriorityJa(byPriority: RecentCompletedByP
     '今日の達成 0 件',
   )
 }
+
+/**
+ * iter449 ai-automation: recent-completed の momentum (= 勢い) を「1 word」で
+ * 表現する hint helper。
+ *
+ * iter424 (descendants-activity-hint) / iter439 (blocked-items-hint) / iter442
+ * (at-risk-parents-hint) / iter444 (parent-items-progress-hint) / iter447
+ * (backlog-aging-hint) と並ぶ「item axis 1-word state」シリーズの recent-completed
+ * 軸版 (6 弾目)。
+ *
+ * 設計差: 既存 hint 5 弾は「more bad = worse」(= severe = 最悪) の負方向だが、本 hint
+ * は「more wins = better」(= momentum = 最良) の **正方向**。`severe` ではなく
+ * `momentum` を最良 state として export。AI 朝 brief / Slack 通知が「勢いあり」を
+ * 1 word で出して positive feedback ループを回せる。
+ *
+ * 4 状態 (entries.length のみ — windowHours=24h 内なので freshness は副次的):
+ *  - 'idle'      → '今日の達成なし'    (entries 空)
+ *  - 'mild'      → '少しずつ進行'       (count 1-2)
+ *  - 'steady'    → '安定した動き'       (count 3-4)
+ *  - 'momentum'  → '勢いあり'           (count ≥ 5)
+ *
+ * caller benefits:
+ *  - dashboard recent-done chip glyph / tone を hint base で決める
+ *  - Slack 朝 brief 1 行 status (momentum で「P1 5 件達成」を讃える)
+ *  - AI prompt 1 word 状況把握 (= 'momentum' で前向き / 'idle' で励ましメッセージ)
+ *  - formatRecentCompletedSummaryJa (詳細 list) と相補
+ */
+export type RecentCompletedMomentumHint = 'idle' | 'mild' | 'steady' | 'momentum'
+
+export function classifyRecentCompletedMomentum<T extends RecentCompletedFields>(
+  entries: readonly RecentCompletedEntry<T>[],
+): RecentCompletedMomentumHint {
+  if (entries.length === 0) return 'idle'
+  if (entries.length >= 5) return 'momentum'
+  if (entries.length >= 3) return 'steady'
+  return 'mild'
+}
+
+const MOMENTUM_LABEL_JA: Record<RecentCompletedMomentumHint, string> = {
+  idle: '今日の達成なし',
+  mild: '少しずつ進行',
+  steady: '安定した動き',
+  momentum: '勢いあり',
+}
+
+export function formatRecentCompletedMomentumJa<T extends RecentCompletedFields>(
+  entries: readonly RecentCompletedEntry<T>[],
+): string {
+  return MOMENTUM_LABEL_JA[classifyRecentCompletedMomentum(entries)]
+}
