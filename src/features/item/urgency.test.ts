@@ -5,6 +5,7 @@ import {
   computeUrgency,
   countItemsByUrgencyTier,
   explainUrgency,
+  formatTopUrgentTitlesJa,
   formatUrgencyExplanation,
   formatUrgencyTierCounts,
   groupItemsByUrgencyTier,
@@ -524,5 +525,56 @@ describe('urgencyTierCountsSeverity', () => {
     expect(urgencyTierCountsSeverity({ critical: 0, high: 0, medium: 0, low: 0, none: 0 })).toBe(
       'idle',
     )
+  })
+})
+
+describe('formatTopUrgentTitlesJa', () => {
+  const titled = (overrides: Partial<UrgencyFields> & { title: string }) => ({
+    priority: 4 as const,
+    dueDate: null,
+    isMust: false,
+    doneAt: null,
+    archivedAt: null,
+    ...overrides,
+  })
+
+  it('上位 N 件を tier ラベル付きで 1 行に format', () => {
+    const items = [
+      titled({ title: 'やばい', priority: 1, dueDate: '2026-04-25', isMust: true }), // critical
+      titled({ title: '普通の作業', priority: 4 }), // low
+      titled({ title: '急ぎ', priority: 2 }), // high
+      titled({ title: '中程度', priority: 3 }), // medium
+    ]
+    expect(formatTopUrgentTitlesJa(items, 2, TODAY)).toBe('上位 urgent: やばい (緊急) / 急ぎ (高)')
+  })
+
+  it('全 done / archive (urgency=0) → 緊急対応 0 件', () => {
+    const items = [
+      titled({ title: '完了', priority: 1, doneAt: new Date('2026-04-26') }),
+      titled({ title: 'archive', priority: 2, archivedAt: new Date('2026-04-26') }),
+    ]
+    expect(formatTopUrgentTitlesJa(items, 3, TODAY)).toBe('緊急対応 0 件')
+  })
+
+  it('n <= 0 → 緊急対応 0 件', () => {
+    const items = [titled({ title: 'やばい', priority: 1 })]
+    expect(formatTopUrgentTitlesJa(items, 0, TODAY)).toBe('緊急対応 0 件')
+    expect(formatTopUrgentTitlesJa(items, -3, TODAY)).toBe('緊急対応 0 件')
+  })
+
+  it('n が件数より大きくても全件 format (短く)', () => {
+    const items = [titled({ title: 'A', priority: 1 }), titled({ title: 'B', priority: 4 })]
+    expect(formatTopUrgentTitlesJa(items, 100, TODAY)).toBe('上位 urgent: A (緊急) / B (低)')
+  })
+
+  it('空配列 → 緊急対応 0 件', () => {
+    expect(formatTopUrgentTitlesJa([], 5, TODAY)).toBe('緊急対応 0 件')
+  })
+
+  it('proximity bonus で tier 上昇した item も正しい tier で format', () => {
+    const items = [
+      titled({ title: '期限切れ p4', priority: 4, dueDate: '2026-04-26', isMust: true }), // 90 → high
+    ]
+    expect(formatTopUrgentTitlesJa(items, 1, TODAY)).toBe('上位 urgent: 期限切れ p4 (高)')
   })
 })

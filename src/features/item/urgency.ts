@@ -317,3 +317,33 @@ export function urgencyTierCountsSeverity(
   if (counts.high > 0) return 'warn'
   return 'idle'
 }
+
+/**
+ * iter394 ai-automation: AI 朝 brief / pm-agent prompt 用の「上位 urgent items」
+ * 1 行 summary。`selectTopUrgentItems` で top-N 抽出 → 各 item の title + tier 短ラベル
+ * を含む 1 行に format。dashboard chip / AI prompt 双方で同じ vocabulary。
+ *
+ * 仕様:
+ *   - input: items + n + (option) today
+ *   - 出力: '上位 urgent: タイトル1 (緊急) / タイトル2 (高) / タイトル3 (高)' 形式
+ *   - top.length === 0 (= 全 done / archive / urgency=0) → '緊急対応 0 件'
+ *   - n <= 0 → '緊急対応 0 件' (selectTopUrgentItems が空配列を返すので natural fallback)
+ *   - title は trim せずそのまま埋め込む (caller 責任、空文字 title は理論上 zod min(1) で防がれる)
+ */
+export interface UrgencyTitleFields {
+  title: string
+}
+
+export function formatTopUrgentTitlesJa<T extends UrgencyFields & UrgencyTitleFields>(
+  items: readonly T[],
+  n: number,
+  today: Date = new Date(),
+): string {
+  const top = selectTopUrgentItems(items, n, today)
+  if (top.length === 0) return '緊急対応 0 件'
+  const parts = top.map((it) => {
+    const tier = urgencyTier(computeUrgency(it, today))
+    return `${it.title} (${TIER_LABEL[tier]})`
+  })
+  return `上位 urgent: ${parts.join(' / ')}`
+}
