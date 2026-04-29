@@ -18,6 +18,7 @@
  */
 
 import { isValidIsoDate } from '@/lib/date/iso'
+import { rateToPct } from '@/lib/format-rate'
 
 import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
 
@@ -76,7 +77,7 @@ export function computeDueDateCoverage<T extends DueDateCoverageFields>(
  */
 export function formatDueDateCoverageJa(stats: DueDateCoverageStats): string {
   if (stats.total === 0 || stats.coverageRate === null) return '未完了 0 件 (該当なし)'
-  const pct = Math.round(stats.coverageRate * 100)
+  const pct = rateToPct(stats.coverageRate)
   if (pct === 100) {
     return `期限カバレッジ: 100% (${stats.withDueDate} / ${stats.total} 件)`
   }
@@ -113,7 +114,7 @@ export function formatDueDateCoverageByPriorityJa(byPriority: DueDateCoverageByP
   for (const k of PRIORITY_ORDER) {
     const stats = byPriority[k]
     if (stats.total === 0 || stats.coverageRate === null) continue
-    const pct = Math.round(stats.coverageRate * 100)
+    const pct = rateToPct(stats.coverageRate)
     parts.push(`P${k} ${pct}% (${stats.withDueDate}/${stats.total})`)
   }
   if (parts.length === 0) return '未完了 0 件 (該当なし)'

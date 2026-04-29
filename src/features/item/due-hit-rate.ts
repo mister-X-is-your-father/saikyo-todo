@@ -22,6 +22,7 @@
  */
 
 import { dueDateEndOfDayMs, parseDateOrNull } from '@/lib/date/iso'
+import { rateToPct } from '@/lib/format-rate'
 
 import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
 
@@ -116,7 +117,7 @@ export function formatDueHitRateByPriorityJa(byPriority: DueHitRateByPriority): 
   for (const k of PRIORITY_ORDER) {
     const stats = byPriority[k]
     if (stats.total === 0 || stats.hitRate === null) continue
-    const pct = Math.round(stats.hitRate * 100)
+    const pct = rateToPct(stats.hitRate)
     parts.push(`P${k} ${pct}% (${stats.hit}/${stats.total})`)
   }
   if (parts.length === 0) return '完了 0 件 (該当なし)'
@@ -150,7 +151,7 @@ export function dueHitRateTone(stats: DueHitRateStats): DueHitRateTone {
  */
 export function formatDueHitRateJa(stats: DueHitRateStats): string {
   if (stats.total === 0 || stats.hitRate === null) return '完了 0 件 (該当なし)'
-  const pct = Math.round(stats.hitRate * 100)
+  const pct = rateToPct(stats.hitRate)
   const tail = pct === 0 ? ' — 全て遅延' : ''
   return `期限達成率: ${pct}% (${stats.hit} / ${stats.total} 件${tail})`
 }

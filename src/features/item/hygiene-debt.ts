@@ -21,6 +21,7 @@
  */
 
 import { isValidIsoDate } from '@/lib/date/iso'
+import { rateToPct } from '@/lib/format-rate'
 
 import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
 
@@ -81,7 +82,7 @@ export function computeHygieneDebt<T extends HygieneDebtFields>(
 export function formatHygieneDebtJa(stats: HygieneDebtStats): string {
   if (stats.total === 0 || stats.rate === null) return '未完了 0 件 (該当なし)'
   if (stats.debtCount === 0) return 'Hygiene Debt: 0 件 (全 item に planning fields あり)'
-  const pct = Math.round(stats.rate * 100)
+  const pct = rateToPct(stats.rate)
   return `Hygiene Debt: ${stats.debtCount} / ${stats.total} 件 (${pct}%) — title だけ items が triage 待ち`
 }
 
@@ -141,7 +142,7 @@ export function formatHygieneDebtByPriorityJa(byPriority: HygieneDebtByPriority)
     const stats = byPriority[k]
     if (stats.total === 0 || stats.rate === null) continue
     if (stats.debtCount === 0) continue
-    const pct = Math.round(stats.rate * 100)
+    const pct = rateToPct(stats.rate)
     parts.push(`P${k} ${pct}% (${stats.debtCount}/${stats.total})`)
   }
   if (parts.length === 0) return '未完了 0 件 (該当なし)'

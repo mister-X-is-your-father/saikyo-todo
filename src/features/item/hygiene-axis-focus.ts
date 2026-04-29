@@ -17,6 +17,8 @@
  *   - 全軸 null → null
  */
 
+import { rateToPct } from '@/lib/format-rate'
+
 import type { CombinedHygieneScore } from './combined-hygiene'
 
 export type HygieneAxis = 'dueDate' | 'dod' | 'description'
@@ -55,7 +57,7 @@ export function pickWeakestHygieneAxis(score: CombinedHygieneScore): HygieneAxis
       best = {
         axis,
         rate,
-        pct: Math.round(rate * 100),
+        pct: rateToPct(rate),
         label: HYGIENE_AXIS_LABEL[axis],
       }
     }

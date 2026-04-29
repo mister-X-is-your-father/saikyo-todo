@@ -16,6 +16,8 @@
  *   - coverageRate = withDod / total (total=0 → null)
  */
 
+import { rateToPct } from '@/lib/format-rate'
+
 import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
 
 export interface DodCoverageFields {
@@ -75,7 +77,7 @@ export function computeDodCoverage<T extends DodCoverageFields>(
  */
 export function formatDodCoverageJa(stats: DodCoverageStats): string {
   if (stats.total === 0 || stats.coverageRate === null) return '未完了 0 件 (該当なし)'
-  const pct = Math.round(stats.coverageRate * 100)
+  const pct = rateToPct(stats.coverageRate)
   if (pct === 100) {
     return `DoD カバレッジ: 100% (${stats.withDod} / ${stats.total} 件)`
   }
@@ -111,7 +113,7 @@ export function formatDodCoverageByPriorityJa(byPriority: DodCoverageByPriority)
   for (const k of PRIORITY_ORDER) {
     const stats = byPriority[k]
     if (stats.total === 0 || stats.coverageRate === null) continue
-    const pct = Math.round(stats.coverageRate * 100)
+    const pct = rateToPct(stats.coverageRate)
     parts.push(`P${k} ${pct}% (${stats.withDod}/${stats.total})`)
   }
   if (parts.length === 0) return '未完了 0 件 (該当なし)'

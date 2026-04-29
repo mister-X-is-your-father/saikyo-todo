@@ -17,6 +17,8 @@
  *   - 全 3 軸 total=0 → score=null (= 未完了 0 件)
  */
 
+import { rateToPct } from '@/lib/format-rate'
+
 import type { DescriptionCoverageStats } from './description-coverage'
 import type { DodCoverageStats } from './dod-coverage'
 import type { DueDateCoverageStats } from './due-date-coverage'
@@ -60,7 +62,7 @@ export function combineHygieneScore(input: CombinedHygieneInput): CombinedHygien
 
   const avg = rates.reduce((s, v) => s + v, 0) / rates.length
   return {
-    score: Math.round(avg * 100),
+    score: rateToPct(avg),
     dueDateRate,
     dodRate,
     descriptionRate,
@@ -79,10 +81,10 @@ export function formatCombinedHygieneJa(score: CombinedHygieneScore): string {
     return 'Planning Hygiene 0 件 (該当なし)'
   }
   const parts: string[] = []
-  if (score.dueDateRate !== null) parts.push(`期限 ${Math.round(score.dueDateRate * 100)}%`)
-  if (score.dodRate !== null) parts.push(`DoD ${Math.round(score.dodRate * 100)}%`)
+  if (score.dueDateRate !== null) parts.push(`期限 ${rateToPct(score.dueDateRate)}%`)
+  if (score.dodRate !== null) parts.push(`DoD ${rateToPct(score.dodRate)}%`)
   if (score.descriptionRate !== null) {
-    parts.push(`説明文 ${Math.round(score.descriptionRate * 100)}%`)
+    parts.push(`説明文 ${rateToPct(score.descriptionRate)}%`)
   }
   return `Planning Hygiene: ${score.score} (${parts.join(' / ')})`
 }

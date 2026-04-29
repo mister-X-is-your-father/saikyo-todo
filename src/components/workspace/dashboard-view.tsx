@@ -26,6 +26,7 @@ import {
 
 import { shiftIsoDate, todayUtcISO } from '@/lib/date/iso'
 import { isAppError } from '@/lib/errors'
+import { rateToPct } from '@/lib/format-rate'
 import { trendGlyph, trendToneClass } from '@/lib/ui/trend-tone'
 
 import { useBurndown, useMustSummary } from '@/features/dashboard/hooks'
@@ -187,7 +188,7 @@ export function DashboardView({ workspaceId }: Props) {
     const stats = computeDueHitRate(itemsQ.data)
     if (stats.total === 0 || stats.hitRate === null) return null
     const summary = formatDueHitRateJa(stats)
-    const pct = Math.round(stats.hitRate * 100)
+    const pct = rateToPct(stats.hitRate)
     const tone = dueHitRateTone(stats)
     const byPriority = computeDueHitRateByPriority(itemsQ.data)
     // priority breakdown は「複数 priority に hit/miss が分散」時のみ tooltip に
@@ -223,7 +224,7 @@ export function DashboardView({ workspaceId }: Props) {
     if (stats.total === 0 || stats.coverageRate === null) return null
     const summary = formatDueDateCoverageJa(stats)
     const tone = dueDateCoverageTone(stats)
-    const pct = Math.round(stats.coverageRate * 100)
+    const pct = rateToPct(stats.coverageRate)
     const byPriority = computeDueDateCoverageByPriority(itemsQ.data)
     const detail =
       countNonEmptyPriorityBuckets(byPriority) > 1
@@ -244,7 +245,7 @@ export function DashboardView({ workspaceId }: Props) {
     if (stats.total === 0 || stats.coverageRate === null) return null
     const summary = formatDodCoverageJa(stats)
     const tone = dodCoverageTone(stats)
-    const pct = Math.round(stats.coverageRate * 100)
+    const pct = rateToPct(stats.coverageRate)
     const byPriority = computeDodCoverageByPriority(itemsQ.data)
     // 複数 priority に未完了が分散している時のみ priority breakdown を tooltip に。
     const detail =
@@ -303,7 +304,7 @@ export function DashboardView({ workspaceId }: Props) {
     if (stats.total === 0 || stats.coverageRate === null) return null
     const summary = formatDescriptionCoverageJa(stats)
     const tone = descriptionCoverageTone(stats)
-    const pct = Math.round(stats.coverageRate * 100)
+    const pct = rateToPct(stats.coverageRate)
     const byPriority = computeDescriptionCoverageByPriority(itemsQ.data)
     const detail =
       countNonEmptyPriorityBuckets(byPriority) > 1

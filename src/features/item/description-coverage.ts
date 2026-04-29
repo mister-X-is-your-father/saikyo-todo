@@ -15,6 +15,8 @@
  *   - total / coverageRate (total=0 → null)
  */
 
+import { rateToPct } from '@/lib/format-rate'
+
 import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
 
 export interface DescriptionCoverageFields {
@@ -78,7 +80,7 @@ export function computeDescriptionCoverage<T extends DescriptionCoverageFields>(
  */
 export function formatDescriptionCoverageJa(stats: DescriptionCoverageStats): string {
   if (stats.total === 0 || stats.coverageRate === null) return '未完了 0 件 (該当なし)'
-  const pct = Math.round(stats.coverageRate * 100)
+  const pct = rateToPct(stats.coverageRate)
   if (pct === 100) {
     return `説明文カバレッジ: 100% (${stats.withDescription} / ${stats.total} 件)`
   }
@@ -124,7 +126,7 @@ export function formatDescriptionCoverageByPriorityJa(
   for (const k of PRIORITY_ORDER) {
     const stats = byPriority[k]
     if (stats.total === 0 || stats.coverageRate === null) continue
-    const pct = Math.round(stats.coverageRate * 100)
+    const pct = rateToPct(stats.coverageRate)
     parts.push(`P${k} ${pct}% (${stats.withDescription}/${stats.total})`)
   }
   if (parts.length === 0) return '未完了 0 件 (該当なし)'
