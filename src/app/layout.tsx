@@ -31,6 +31,9 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: '最強TODO',
   },
+  // 社内チーム利用・社外非公開 (CLAUDE.md): search engine 全 page 不可視 default。
+  // 公開する page を将来追加する場合は当該 page の metadata で override する。
+  robots: { index: false, follow: false },
 }
 
 export const viewport = {
