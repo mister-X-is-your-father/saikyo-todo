@@ -502,6 +502,7 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
             aria-busy={create.isPending || undefined}
             onClick={() => void handleBulkAdd()}
             data-testid="subtasks-bulk-add-btn"
+            aria-keyshortcuts="Meta+Enter Control+Enter"
             aria-label={
               !bulkText.trim()
                 ? '子タスクを追加するには改行区切りで入力してください'

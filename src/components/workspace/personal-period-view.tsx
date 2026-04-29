@@ -174,8 +174,10 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
               type="button"
               size="sm"
               disabled={!dirty || upsertGoal.isPending}
+              aria-busy={upsertGoal.isPending || undefined}
               onClick={() => void handleSave()}
               data-testid={`period-goal-save-${period}`}
+              aria-keyshortcuts="Meta+Enter Control+Enter"
               aria-label={
                 !dirty
                   ? `${PERIOD_LABEL[period]}ゴールに変更がないため保存不要`

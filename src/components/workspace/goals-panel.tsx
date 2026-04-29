@@ -202,7 +202,9 @@ export function GoalsPanel({ workspaceId }: Props) {
               <Button
                 type="submit"
                 disabled={!title.trim() || createMut.isPending}
+                aria-busy={createMut.isPending || undefined}
                 data-testid="goal-create-btn"
+                aria-keyshortcuts="Meta+Enter Control+Enter"
                 aria-label={
                   !title.trim()
                     ? 'Goal を作成するにはタイトルを入力してください'

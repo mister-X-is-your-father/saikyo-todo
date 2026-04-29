@@ -90,8 +90,10 @@ export function TeamContextEditor({ workspaceId }: Props) {
             type="button"
             size="sm"
             disabled={!dirty || upd.isPending}
+            aria-busy={upd.isPending || undefined}
             onClick={() => void handleSave()}
             data-testid="team-context-save-btn"
+            aria-keyshortcuts="Meta+Enter Control+Enter"
             aria-label={
               !dirty
                 ? 'チームコンテキストに変更がないため保存不要'

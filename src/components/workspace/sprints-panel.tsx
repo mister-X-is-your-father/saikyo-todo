@@ -268,7 +268,9 @@ export function SprintsPanel({ workspaceId }: Props) {
               <Button
                 type="submit"
                 disabled={!name.trim() || createMut.isPending}
+                aria-busy={createMut.isPending || undefined}
                 data-testid="sprint-create-btn"
+                aria-keyshortcuts="Meta+Enter Control+Enter"
                 aria-label={
                   !name.trim()
                     ? 'Sprint を作成するには名前を入力してください'
