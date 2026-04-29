@@ -16,7 +16,7 @@
  * iter409 (stale-items) と並ぶ「title list with overflow」 substrate シリーズ
  * の dependency 軸版。formatTopWithOverflow を委譲して overflow tail を統一。
  */
-import { formatTopWithOverflow } from '@/lib/format-list'
+import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 
 import {
   formatPriorityBuckets,
@@ -118,10 +118,7 @@ export function formatBlockedItemsBriefJa(
   if (blocked.length === 0) return 'blocked 0 件'
   const body = formatTopWithOverflow(
     blocked,
-    (b) => {
-      const title = b.title.length > 0 ? b.title : '(無題)'
-      return `${title} [${b.openBlockerCount} 件待ち]`
-    },
+    (b) => `${titleOrUntitled(b.title)} [${b.openBlockerCount} 件待ち]`,
     limit,
   )
   return `blocked ${blocked.length} 件: ${body}`

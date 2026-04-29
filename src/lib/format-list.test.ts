@@ -3,7 +3,7 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import { formatTopWithOverflow } from './format-list'
+import { formatTopWithOverflow, titleOrUntitled } from './format-list'
 
 describe('formatTopWithOverflow', () => {
   it('items 空 → 空文字', () => {
@@ -62,5 +62,31 @@ describe('formatTopWithOverflow', () => {
 
   it('totalForOverflow option が items.length と等しい時は通常 join', () => {
     expect(formatTopWithOverflow(['x', 'y'], (s) => s, 5, { totalForOverflow: 2 })).toBe('x / y')
+  })
+})
+
+describe('titleOrUntitled', () => {
+  it('null → "(無題)"', () => {
+    expect(titleOrUntitled(null)).toBe('(無題)')
+  })
+
+  it('undefined → "(無題)"', () => {
+    expect(titleOrUntitled(undefined)).toBe('(無題)')
+  })
+
+  it('空文字 → "(無題)"', () => {
+    expect(titleOrUntitled('')).toBe('(無題)')
+  })
+
+  it('実値 string はそのまま', () => {
+    expect(titleOrUntitled('リリース準備')).toBe('リリース準備')
+  })
+
+  it('1 文字でも実値ならそのまま', () => {
+    expect(titleOrUntitled('a')).toBe('a')
+  })
+
+  it('スペース 1 文字は実値扱い (length > 0)', () => {
+    expect(titleOrUntitled(' ')).toBe(' ')
   })
 })

@@ -16,7 +16,7 @@
  */
 
 import { parseDateOrNull } from '@/lib/date/iso'
-import { formatTopWithOverflow } from '@/lib/format-list'
+import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 
 import { normalizePriority, type PriorityKey } from './priority'
 
@@ -91,11 +91,8 @@ export function formatRecentCompletedSummaryJa<T extends RecentCompletedFields>(
   limit: number = 3,
 ): string {
   if (totalCount === 0) return '今日の達成 0 件'
-  const body = formatTopWithOverflow(
-    entries,
-    (e) => (typeof e.item.title === 'string' && e.item.title.length > 0 ? e.item.title : '(無題)'),
-    limit,
-    { totalForOverflow: totalCount },
-  )
+  const body = formatTopWithOverflow(entries, (e) => titleOrUntitled(e.item.title), limit, {
+    totalForOverflow: totalCount,
+  })
   return `今日の達成: ${totalCount} 件 — ${body}`
 }

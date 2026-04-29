@@ -17,7 +17,7 @@
  * 1 関数で取り出せ、urgency / due-proximity / must-risk と組合わせて proactive な提案
  * (例: "今日 3 件着手可能、うち MUST 1 / 期限切れ 1") が組み立てられる。
  */
-import { formatTopWithOverflow } from '@/lib/format-list'
+import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 
 import { computeUrgency, type UrgencyFields } from './urgency'
 
@@ -76,10 +76,7 @@ export function formatStartableItemsSummary<T extends StartableItemFields & { ti
   if (items.length === 0) return '着手可能 0 件 (該当なし)'
   const body = formatTopWithOverflow(
     items,
-    (it) => {
-      const title = it.title ?? '(無題)'
-      return `${title} (p${it.priority ?? 4})`
-    },
+    (it) => `${titleOrUntitled(it.title)} (p${it.priority ?? 4})`,
     showTop,
   )
   return `着手可能 ${items.length} 件: ${body}`

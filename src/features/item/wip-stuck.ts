@@ -21,7 +21,7 @@
  */
 
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
-import { formatTopWithOverflow } from '@/lib/format-list'
+import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 
 import {
   bucketByPriorityWith,
@@ -104,9 +104,7 @@ export function formatStuckWipSummaryJa<T extends StuckWipFields>(
  * `(無題)` で fallback。
  */
 export function renderStuckEntry<T extends StuckWipFields>(e: StuckWipEntry<T>): string {
-  const title =
-    typeof e.item.title === 'string' && e.item.title.length > 0 ? e.item.title : '(無題)'
-  return `${title} ${e.stuckDays} 日`
+  return `${titleOrUntitled(e.item.title)} ${e.stuckDays} 日`
 }
 
 /**

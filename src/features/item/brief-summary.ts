@@ -27,6 +27,8 @@
  *     「今日は MUST at-risk なし」が伝わる方が静寂より親切
  */
 
+import { titleOrUntitled } from '@/lib/format-list'
+
 import {
   computeMustOverdue,
   formatMustOverdueJa,
@@ -605,9 +607,6 @@ export function formatTopUrgentLine<T extends BriefItemFields>(
   entries: readonly TopUrgentEntry<T>[],
 ): string {
   if (entries.length === 0) return 'urgent 上位 0 (該当なし)'
-  const parts = entries.map((e) => {
-    const title = e.item.title ?? '(無題)'
-    return `${title} (urgency ${e.urgency})`
-  })
+  const parts = entries.map((e) => `${titleOrUntitled(e.item.title)} (urgency ${e.urgency})`)
   return `urgent 上位 ${entries.length}: ${parts.join(' / ')}`
 }

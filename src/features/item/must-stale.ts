@@ -17,7 +17,7 @@
  *   - dashboard 専用 chip 候補 (severity 'critical' = red、他 must-* chip と区別)
  */
 
-import { formatTopWithOverflow } from '@/lib/format-list'
+import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 
 import { filterMustOnly } from './must-filter'
 import {
@@ -72,11 +72,7 @@ export function formatMustStaleJa<T extends MustStaleFields>(
   if (entries.length === 0) return 'MUST 古参 0 件'
   const body = formatTopWithOverflow(
     entries,
-    (e) => {
-      const title =
-        typeof e.item.title === 'string' && e.item.title.length > 0 ? e.item.title : '(無題)'
-      return `${title} ${e.staleDays} 日前`
-    },
+    (e) => `${titleOrUntitled(e.item.title)} ${e.staleDays} 日前`,
     limit,
   )
   return `MUST 古参: ${entries.length} 件 (${body})`

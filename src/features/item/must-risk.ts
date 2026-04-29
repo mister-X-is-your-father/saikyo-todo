@@ -20,6 +20,8 @@
  *
  * 戻り値は元 item と analysis を bundle した `{ item, proximity, urgency }`。
  */
+import { titleOrUntitled } from '@/lib/format-list'
+
 import { type DueProximity, type DueProximityKind, getDueProximity } from './due-proximity'
 import { computeUrgency, type UrgencyFields } from './urgency'
 
@@ -96,9 +98,8 @@ export function formatAtRiskMustSummary<T extends MustRiskFields>(
 ): string {
   if (entries.length === 0) return 'MUST at-risk 0 (該当なし)'
   const parts = entries.map((e) => {
-    const title = e.item.title ?? '(無題)'
     const priority = e.item.priority ?? 4
-    return `[${e.proximity.label}] ${title} (p${priority})`
+    return `[${e.proximity.label}] ${titleOrUntitled(e.item.title)} (p${priority})`
   })
   return `MUST at-risk ${entries.length}: ${parts.join(' / ')}`
 }

@@ -15,6 +15,7 @@
  * `formatStaleItemsSummary` と一貫した出力スタイル。
  */
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
+import { titleOrUntitled } from '@/lib/format-list'
 
 /** 完了抽出に必要な Item の structural subset。 */
 export interface FreshlyDoneItemFields {
@@ -80,9 +81,8 @@ export function formatFreshlyDoneSummary<T extends FreshlyDoneItemFields>(
 ): string {
   if (entries.length === 0) return `完了 0 件 (直近 ${thresholdDays} 日)`
   const parts = entries.map((e) => {
-    const title = e.item.title ?? '(無題)'
     const when = e.daysSinceDone === 0 ? '今日' : `${e.daysSinceDone} 日前`
-    return `${title} (${when})`
+    return `${titleOrUntitled(e.item.title)} (${when})`
   })
   return `完了 ${entries.length}: ${parts.join(' / ')}`
 }

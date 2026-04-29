@@ -19,7 +19,7 @@
  *  - 並び: pctDone 昇順 (= 進捗が遅い案件を先に見せる、最も注意が必要な順)、
  *    tie で title 昇順 (ja)
  */
-import { formatTopWithOverflow } from '@/lib/format-list'
+import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 
 import { type DescendantsProgress, summarizeDescendantsProgress } from './descendants-progress'
 
@@ -83,10 +83,8 @@ export function formatParentItemsProgressBriefJa<I extends ParentItemFields>(
   if (entries.length === 0) return '進行中の案件 0 件'
   const body = formatTopWithOverflow(
     entries,
-    (e) => {
-      const title = e.parent.title.length > 0 ? e.parent.title : '(無題)'
-      return `${title} ${e.progress.pctDone}% (${e.progress.done}/${e.progress.total})`
-    },
+    (e) =>
+      `${titleOrUntitled(e.parent.title)} ${e.progress.pctDone}% (${e.progress.done}/${e.progress.total})`,
     limit,
   )
   return `進行中: ${body}`

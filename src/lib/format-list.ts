@@ -84,12 +84,35 @@ export function formatTitleDaysListJa<E extends { item: { title?: string | null 
   if (entries.length === 0) return `${prefix} 0 件`
   const body = formatTopWithOverflow(
     entries,
-    (e) => {
-      const title =
-        typeof e.item.title === 'string' && e.item.title.length > 0 ? e.item.title : '(無題)'
-      return `${title} ${getDays(e)}日`
-    },
+    (e) => `${titleOrUntitled(e.item.title)} ${getDays(e)}日`,
     limit,
   )
   return `${prefix}: ${body}`
+}
+
+/**
+ * iter420 refactor: 「title 欠落 → '(無題)'」 fallback を 1 関数に集約。
+ *
+ * features/item / features/item-dependency / lib/format-list / components の 12 callsite
+ * で似たような 3 variant の `'(無題)'` fallback が散在していたので集約 (= iter325 /
+ * iter330 / ... / iter415 と同じ「同 shape の散在を 1 file に」方針 27 弾目)。
+ *
+ * 旧 variant:
+ *   - `title ?? '(無題)'` (5 callsite — null だけハンドル、空文字はそのまま空)
+ *   - `title.length > 0 ? title : '(無題)'` (3 callsite — null 想定外で type unsafe)
+ *   - `typeof title === 'string' && title.length > 0 ? title : '(無題)'` (4 callsite — 完全 defensive)
+ *
+ * 統一方針: **完全 defensive** (variant 3) を採用。null / undefined / 空文字
+ * すべてを '(無題)' に正規化。これで variant 1 callsite は「空文字で空が出る」
+ * silent bug が同時に解消される (= AI brief / dashboard tooltip で空文字 title が
+ * 通って空ラベル表示になっていた潜在 bug を fix)。
+ *
+ * 利用想定: AI brief / dashboard chip aria-label / pm-agent prompt の「title 行」
+ * 整形で必ず通す。視覚 UI ではなく文字列出力での fallback (UI 側は title 空 = empty
+ * とそのまま render する事もある)。
+ */
+export function titleOrUntitled(title: string | null | undefined): string {
+  if (typeof title !== 'string') return '(無題)'
+  if (title.length === 0) return '(無題)'
+  return title
 }

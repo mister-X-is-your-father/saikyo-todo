@@ -16,7 +16,7 @@
  * 戻り値は 古い順 (= 最も放置されている item が先頭) に並ぶ。同時刻は元配列順で stable。
  */
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
-import { formatTitleDaysListJa } from '@/lib/format-list'
+import { formatTitleDaysListJa, titleOrUntitled } from '@/lib/format-list'
 
 import {
   bucketByPriorityWith,
@@ -93,10 +93,7 @@ export function formatStaleItemsSummary<T extends StaleItemFields>(
   entries: readonly StaleItemEntry<T>[],
 ): string {
   if (entries.length === 0) return 'stale 0 (該当なし)'
-  const parts = entries.map((e) => {
-    const title = e.item.title ?? '(無題)'
-    return `${title} (${e.staleDays} 日前)`
-  })
+  const parts = entries.map((e) => `${titleOrUntitled(e.item.title)} (${e.staleDays} 日前)`)
   return `stale ${entries.length}: ${parts.join(' / ')}`
 }
 
