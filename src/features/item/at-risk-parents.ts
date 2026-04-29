@@ -1,0 +1,132 @@
+/**
+ * iter427 ai-automation: 「子孫の最終更新が古い parent」を抽出する pure helper。
+ *
+ * iter359 (selectStuckWipItems = 進行中個別 item の updatedAt 停滞) と iter419
+ * (pickIncompleteParentItems = 進捗 list) を組み合わせた **at-risk parent 軸** —
+ * parent 自身は動いていなくても、子孫の更新が古ければ「案件全体が停滞している」
+ * とみなす。
+ *
+ * 使い分け:
+ *   - selectStuckWipItems: in_progress の **個別 item** で updatedAt が古い (実装中
+ *     stalled)
+ *   - pickIncompleteParentItems: 子を持つ未完了 parent の **進捗 list** (進捗 list)
+ *   - 本 helper: parent 単位で **子孫全体** の updatedAt 経過を集約 (= 「この案件は
+ *     最近触られていない」を 1 行で出す)
+ *
+ * AI 朝 brief / pm-agent prompt / dashboard widget が「触れていない案件: A 14日 /
+ * B 8日 / 他 2 件」を 1 関数で出せる。
+ *
+ * 仕様:
+ *  - 入力: items (parentPath / status / updatedAt / doneAt 等) + thresholdDays (default 7)
+ *  - parent 候補 = `summarizeDescendantsProgress.total > 0` (= 子孫を 1 件以上持つ)
+ *  - 各 parent について子孫 (= ltree prefix match) の中で **最古 updatedAt** を取得
+ *    (doneAt 済 / cancelled は除外して active 子孫のみ対象、deletedAt も除外)
+ *  - 最古 updatedAt から today までの経過日数 (Math.floor で整数日) が thresholdDays
+ *    以上ならこの parent は「at-risk」 → 結果に含める
+ *  - parent 自身が `deletedAt != null` または `doneAt != null` (達成済) は除外
+ *  - 並びは maxStaleDays 降順 → parent.title ja 昇順
+ */
+import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
+import { fullPathOf } from '@/lib/db/ltree-path'
+import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
+
+export interface AtRiskParentEntry<I> {
+  parent: I
+  /** active 子孫のうち最古 updatedAt の経過日数 (Math.floor で整数) */
+  maxStaleDays: number
+  /** active 子孫の件数 (集計対象、cancelled / done / deleted を除外) */
+  activeDescendantCount: number
+}
+
+interface ParentItemFields {
+  id: string
+  title: string
+  parentPath: string
+  status: string | null | undefined
+  updatedAt: Date | string | null | undefined
+  doneAt?: Date | string | null
+  deletedAt?: Date | null
+}
+
+export interface SelectAtRiskParentsOptions {
+  /** at-risk と見なす最古 updatedAt 経過日数の閾値。default 7 (= 1 週間放置) */
+  thresholdDays?: number
+}
+
+/**
+ * `allItems` から「子孫の最古 updatedAt が thresholdDays 以上経過している parent」を抽出。
+ *
+ * stuck-wip と異なり parent 自身の status は問わない (parent は abstract 集約 task で
+ * status='todo' のままでも子孫が動いていれば OK、本 helper は「子孫が触れられて
+ * いない」が判定軸)。
+ */
+export function pickAtRiskParents<I extends ParentItemFields>(
+  allItems: readonly I[],
+  options: SelectAtRiskParentsOptions = {},
+  today: Date | string = new Date(),
+): AtRiskParentEntry<I>[] {
+  const thresholdDays = options.thresholdDays ?? 7
+  const todayDate = parseDateOrNull(today)
+  if (!todayDate) return []
+  const todayMs = todayDate.getTime()
+
+  const result: AtRiskParentEntry<I>[] = []
+  for (const candidate of allItems) {
+    if (candidate.deletedAt != null) continue
+    if (candidate.doneAt != null) continue
+
+    const parentFull = fullPathOf({ id: candidate.id, parentPath: candidate.parentPath })
+    const directPrefix = `${parentFull}.`
+
+    let oldestUpdatedAtMs: number | null = null
+    let activeDescendantCount = 0
+    for (const it of allItems) {
+      if (it.deletedAt != null) continue
+      const isDescendant = it.parentPath === parentFull || it.parentPath.startsWith(directPrefix)
+      if (!isDescendant) continue
+      // active 子孫のみ: cancelled / done は除外 (= 達成 / 諦めは「停滞」じゃない)
+      if (it.status === 'cancelled') continue
+      if (it.doneAt != null) continue
+      const updatedAt = parseDateOrNull(it.updatedAt)
+      if (!updatedAt) continue
+      activeDescendantCount += 1
+      const ms = updatedAt.getTime()
+      if (oldestUpdatedAtMs === null || ms < oldestUpdatedAtMs) {
+        oldestUpdatedAtMs = ms
+      }
+    }
+
+    if (oldestUpdatedAtMs === null || activeDescendantCount === 0) continue
+    const diffMs = todayMs - oldestUpdatedAtMs
+    if (diffMs < 0) continue
+    const maxStaleDays = Math.floor(diffMs / MS_PER_DAY)
+    if (maxStaleDays < thresholdDays) continue
+    result.push({ parent: candidate, maxStaleDays, activeDescendantCount })
+  }
+  result.sort((a, b) => {
+    if (a.maxStaleDays !== b.maxStaleDays) return b.maxStaleDays - a.maxStaleDays
+    return a.parent.title.localeCompare(b.parent.title, 'ja')
+  })
+  return result
+}
+
+/**
+ * AI brief / dashboard chip 用の 1 行 summary。
+ *
+ *   - 0 件 → '触れていない案件 0 件'
+ *   - 1+ 件 → '触れていない案件 N 件: A 14日 / B 8日 / 他 K 件'
+ *
+ * formatTopWithOverflow 委譲、title 空は '(無題)' に正規化、limit default 3。
+ */
+export function formatAtRiskParentsBriefJa<I extends ParentItemFields>(
+  entries: readonly AtRiskParentEntry<I>[],
+  limit: number = 3,
+): string {
+  if (entries.length === 0) return '触れていない案件 0 件'
+  const body = formatTopWithOverflow(
+    entries,
+    (e) => `${titleOrUntitled(e.parent.title)} ${e.maxStaleDays}日`,
+    limit,
+  )
+  return `触れていない案件 ${entries.length} 件: ${body}`
+}
