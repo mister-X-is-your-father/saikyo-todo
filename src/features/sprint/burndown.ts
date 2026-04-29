@@ -90,6 +90,22 @@ export function sprintProgressTone(
   return 'idle'
 }
 
+const SPRINT_PROGRESS_TONE_LABEL: Record<SprintProgressTone, string> = {
+  done: '達成',
+  onTrack: '順調',
+  behind: '遅れ気味',
+  idle: '進行中',
+}
+
+/**
+ * iter316 refactor: sprints-panel.tsx に inline で定義されていた tone → 日本語 label
+ * の map を burndown domain に集約。`goalHealthTierLabel` (iter299 並走 e0a4d20) と
+ * 対称な API。AI brief / dashboard widget も同 label を使えるよう pure 化。
+ */
+export function sprintProgressToneLabel(tone: SprintProgressTone): string {
+  return SPRINT_PROGRESS_TONE_LABEL[tone]
+}
+
 /**
  * iter307 ai-automation: 完了ペース (avgPerDay) を加味した「予想完了日」/「上振れ・下振れ日数」
  * を返す pure helper。

@@ -5,6 +5,7 @@ import {
   computeSprintProjection,
   formatSprintProjection,
   sprintProgressTone,
+  sprintProgressToneLabel,
 } from './burndown'
 
 describe('computeSprintBurndown', () => {
@@ -196,6 +197,20 @@ describe('sprintProgressTone', () => {
   it('境界: completionPct 99 は active なら onTrack/behind, 非 active なら idle', () => {
     expect(sprintProgressTone({ completionPct: 99, isOnTrack: true }, 'active')).toBe('onTrack')
     expect(sprintProgressTone({ completionPct: 99, isOnTrack: true }, 'planning')).toBe('idle')
+  })
+})
+
+describe('sprintProgressToneLabel', () => {
+  it('全 4 tone を日本語 label に対応付ける', () => {
+    expect(sprintProgressToneLabel('done')).toBe('達成')
+    expect(sprintProgressToneLabel('onTrack')).toBe('順調')
+    expect(sprintProgressToneLabel('behind')).toBe('遅れ気味')
+    expect(sprintProgressToneLabel('idle')).toBe('進行中')
+  })
+
+  it('sprintProgressTone と組み合わせて UI 表示用 label を返す', () => {
+    const tone = sprintProgressTone({ completionPct: 100, isOnTrack: true }, 'active')
+    expect(sprintProgressToneLabel(tone)).toBe('達成')
   })
 })
 

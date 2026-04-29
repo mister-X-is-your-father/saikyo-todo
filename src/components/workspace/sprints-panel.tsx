@@ -28,6 +28,7 @@ import {
   computeSprintBurndown,
   type SprintProgressTone,
   sprintProgressTone,
+  sprintProgressToneLabel,
 } from '@/features/sprint/burndown'
 import {
   useChangeSprintStatus,
@@ -83,18 +84,13 @@ const STATUS_COLOR: Record<SprintStatus, 'secondary' | 'default' | 'destructive'
 //   - onTrack 青↑ (順調)
 //   - behind  黄⚠ (遅延)
 //   - idle    zinc 無印 (未着手 / 完了済 / 中止)
+// iter316 refactor: tone → 日本語 label は `sprintProgressToneLabel` (burndown.ts) に
+// 集約済 (goalHealthTierLabel と対称)。bar class は Tailwind UI 結合なので inline 維持。
 const PROGRESS_TONE_BAR_CLASS: Record<SprintProgressTone, string> = {
   done: 'bg-emerald-500',
   onTrack: 'bg-blue-500',
   behind: 'bg-amber-500',
   idle: 'bg-primary',
-}
-
-const PROGRESS_TONE_LABEL: Record<SprintProgressTone, string> = {
-  done: '達成',
-  onTrack: '順調',
-  behind: '遅れ気味',
-  idle: '進行中',
 }
 
 // iter265 refactor: 6 個の純粋日付ヘルパを `@/features/sprint/sprint-date-helpers`
@@ -415,7 +411,7 @@ function SprintCard({
                       <ToneIcon aria-hidden="true" className={`h-3.5 w-3.5 ${toneIconClass}`} />
                     )}
                     <span>完了率</span>
-                    <span className="sr-only">({PROGRESS_TONE_LABEL[tone]})</span>
+                    <span className="sr-only">({sprintProgressToneLabel(tone)})</span>
                   </span>
                   <span
                     className={`font-mono ${
@@ -432,11 +428,11 @@ function SprintCard({
                 <div
                   className="bg-muted relative h-1.5 w-full overflow-hidden rounded-full"
                   role="progressbar"
-                  aria-label={`Sprint「${sprint.name}」完了率 (${PROGRESS_TONE_LABEL[tone]})`}
+                  aria-label={`Sprint「${sprint.name}」完了率 (${sprintProgressToneLabel(tone)})`}
                   aria-valuenow={pct}
                   aria-valuemin={0}
                   aria-valuemax={100}
-                  aria-valuetext={`${done}/${total} (${pct}%) — ${PROGRESS_TONE_LABEL[tone]}`}
+                  aria-valuetext={`${done}/${total} (${pct}%) — ${sprintProgressToneLabel(tone)}`}
                   data-testid={`sprint-progress-${sprint.id}`}
                   data-tone={tone}
                 >
