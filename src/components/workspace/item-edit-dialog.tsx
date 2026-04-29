@@ -546,6 +546,7 @@ function ItemEditDialogInner({
               variant="ghost"
               size="sm"
               disabled={unarchive.isPending}
+              aria-busy={unarchive.isPending || undefined}
               onClick={async () => {
                 try {
                   await unarchive.mutateAsync({ id: item.id, expectedVersion: item.version })
@@ -570,6 +571,7 @@ function ItemEditDialogInner({
               variant="ghost"
               size="sm"
               disabled={archive.isPending}
+              aria-busy={archive.isPending || undefined}
               onClick={async () => {
                 if (
                   !window.confirm('この Item をアーカイブしますか?\n(後で /archive から復元可能)')
@@ -599,6 +601,7 @@ function ItemEditDialogInner({
               variant="ghost"
               size="sm"
               disabled={setBaseline.isPending}
+              aria-busy={setBaseline.isPending || undefined}
               onClick={async () => {
                 try {
                   await setBaseline.mutateAsync({
@@ -643,6 +646,7 @@ function ItemEditDialogInner({
               variant="ghost"
               size="sm"
               disabled={clearBaseline.isPending}
+              aria-busy={clearBaseline.isPending || undefined}
               onClick={async () => {
                 if (!window.confirm('baseline をクリアしますか?\n(差分集計から外れます)')) return
                 try {
@@ -674,6 +678,7 @@ function ItemEditDialogInner({
             type="button"
             onClick={handleSave}
             disabled={update.isPending || !title.trim()}
+            aria-busy={update.isPending || undefined}
             data-testid="item-edit-save"
             aria-label={
               !title.trim()
