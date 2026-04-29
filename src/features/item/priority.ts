@@ -261,3 +261,36 @@ export function formatPriorityBucketsCountWithDays<S>(
     emptySentinel,
   )
 }
+
+/**
+ * iter435 refactor: 「formatPriorityBuckets の出力を `${prefix}: ${body}` で wrap、
+ * empty sentinel ならそのまま返す」 pattern を集約。slip-days / at-risk-parents /
+ * parent-items-progress / recent-completed / blocked-items の 5 callsite で同 shape
+ * の `body === emptySentinel ? body : \`${prefix}: ${body}\`` 三項演算子が散在して
+ * いたので 1 関数に集約 (= iter325 / iter330 / ... / iter430 と同じ「同 shape の
+ * 散在を 1 file に」方針 30 弾目)。
+ *
+ * 仕様:
+ *  - body = formatPriorityBuckets(byPriority, formatBucket, emptySentinel)
+ *  - body が emptySentinel と等しい (= 全 bucket null) → emptySentinel をそのまま返す
+ *  - それ以外 → `${prefix}: ${body}` (separator はハードコード ': ')
+ *
+ * 用途: parent-items-progress のように prefix ('進行中') と sentinel '進行中の案件 0 件'
+ * の文言が非対称な callsite も対応 (prefix と emptySentinel を独立に渡せる)。
+ *
+ * caller usage:
+ *   formatPriorityBucketsLabeled(byP, (k, s) => ..., '触れていない案件', '触れていない案件 0 件')
+ *
+ * 出力:
+ *   '触れていない案件: P1 1 件 (最大 14日) / P3 2 件 (最大 8日)' (= 1+ entry)
+ *   '触れていない案件 0 件' (= 全 bucket null)
+ */
+export function formatPriorityBucketsLabeled<S>(
+  byPriority: Record<PriorityKey, S>,
+  formatBucket: (k: PriorityKey, s: S) => string | null,
+  prefix: string,
+  emptySentinel: string,
+): string {
+  const body = formatPriorityBuckets(byPriority, formatBucket, emptySentinel)
+  return body === emptySentinel ? body : `${prefix}: ${body}`
+}

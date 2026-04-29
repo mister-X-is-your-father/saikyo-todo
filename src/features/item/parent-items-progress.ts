@@ -23,7 +23,7 @@ import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 
 import { type DescendantsProgress, summarizeDescendantsProgress } from './descendants-progress'
 import {
-  formatPriorityBuckets,
+  formatPriorityBucketsLabeled,
   normalizePriority,
   PRIORITY_ORDER,
   type PriorityKey,
@@ -240,11 +240,11 @@ export function computeParentItemsProgressByPriority<I>(
 export function formatParentItemsProgressByPriorityJa(
   byPriority: ParentItemsProgressByPriority,
 ): string {
-  const body = formatPriorityBuckets(
+  return formatPriorityBucketsLabeled(
     byPriority,
     (k, s) =>
       s.count === 0 || s.avgPctDone === null ? null : `P${k} ${s.count} 件 (平均 ${s.avgPctDone}%)`,
+    '進行中',
     '進行中の案件 0 件',
   )
-  return body === '進行中の案件 0 件' ? body : `進行中: ${body}`
 }

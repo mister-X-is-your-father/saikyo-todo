@@ -19,7 +19,7 @@
 import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 
 import {
-  formatPriorityBuckets,
+  formatPriorityBucketsLabeled,
   normalizePriority,
   type PriorityKey,
 } from '@/features/item/priority'
@@ -175,13 +175,13 @@ export function computeBlockedItemsByPriority(
  * 形式で SR / hover の長 label が一貫する。
  */
 export function formatBlockedItemsByPriorityJa(byPriority: BlockedItemsByPriority): string {
-  const body = formatPriorityBuckets(
+  return formatPriorityBucketsLabeled(
     byPriority,
     (k, s) =>
       s.count === 0 || s.maxOpenBlockerCount === null
         ? null
         : `P${k} ${s.count} 件 (最大 ${s.maxOpenBlockerCount} 件待ち)`,
+    '依存ブロック',
     '依存ブロック 0 件',
   )
-  return body === '依存ブロック 0 件' ? body : `依存ブロック: ${body}`
 }

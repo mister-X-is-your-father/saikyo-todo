@@ -8,6 +8,7 @@ import {
   countNonEmptyPriorityBucketsBy,
   formatPriorityBuckets,
   formatPriorityBucketsCountWithDays,
+  formatPriorityBucketsLabeled,
   formatPriorityCounts,
   groupItemsByPriority,
   priorityClass,
@@ -362,6 +363,63 @@ describe('countNonEmptyPriorityBuckets / countNonEmptyPriorityBucketsBy', () => 
         return 'expensive'
       })
       expect(called).toBe(1)
+    })
+  })
+
+  describe('formatPriorityBucketsLabeled (iter435)', () => {
+    const byP = {
+      1: { count: 2, days: 14 },
+      2: { count: 0, days: null as number | null },
+      3: { count: 1, days: 8 },
+      4: { count: 0, days: null as number | null },
+    }
+
+    it('全 bucket null → emptySentinel そのまま (prefix 付与なし)', () => {
+      const empty = {
+        1: { count: 0, days: null as number | null },
+        2: { count: 0, days: null as number | null },
+        3: { count: 0, days: null as number | null },
+        4: { count: 0, days: null as number | null },
+      }
+      expect(
+        formatPriorityBucketsLabeled(
+          empty,
+          (k, s) => (s.count > 0 && s.days !== null ? `P${k} ${s.count} 件` : null),
+          'XXX',
+          'XXX 0 件',
+        ),
+      ).toBe('XXX 0 件')
+    })
+
+    it('1+ entry → "${prefix}: ${body}" を返す', () => {
+      expect(
+        formatPriorityBucketsLabeled(
+          byP,
+          (k, s) => (s.count > 0 && s.days !== null ? `P${k} ${s.count} 件 (${s.days}日)` : null),
+          '遅延',
+          '遅延 0 件',
+        ),
+      ).toBe('遅延: P1 2 件 (14日) / P3 1 件 (8日)')
+    })
+
+    it('prefix と sentinel は非対称でも OK (例: parent-items-progress の "進行中" / "進行中の案件 0 件")', () => {
+      const empty = {
+        1: { count: 0, days: null as number | null },
+        2: { count: 0, days: null as number | null },
+        3: { count: 0, days: null as number | null },
+        4: { count: 0, days: null as number | null },
+      }
+      expect(formatPriorityBucketsLabeled(empty, () => null, '進行中', '進行中の案件 0 件')).toBe(
+        '進行中の案件 0 件',
+      )
+      expect(
+        formatPriorityBucketsLabeled(
+          { 1: { count: 1, days: 5 as number | null }, 2: empty[2], 3: empty[3], 4: empty[4] },
+          (k, s) => (s.count > 0 ? `P${k}: ${s.days}` : null),
+          '進行中',
+          '進行中の案件 0 件',
+        ),
+      ).toBe('進行中: P1: 5')
     })
   })
 })

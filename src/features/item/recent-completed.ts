@@ -18,7 +18,7 @@
 import { parseDateOrNull } from '@/lib/date/iso'
 import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 
-import { formatPriorityBuckets, normalizePriority, type PriorityKey } from './priority'
+import { formatPriorityBucketsLabeled, normalizePriority, type PriorityKey } from './priority'
 
 export interface RecentCompletedFields {
   id?: string
@@ -165,13 +165,13 @@ function formatLatestRelative(minutes: number): string {
  * '{label}: P1 ... / P3 ...' 形式。
  */
 export function formatRecentCompletedByPriorityJa(byPriority: RecentCompletedByPriority): string {
-  const body = formatPriorityBuckets(
+  return formatPriorityBucketsLabeled(
     byPriority,
     (k, s) =>
       s.count === 0 || s.latestMinutesAgo === null
         ? null
         : `P${k} ${s.count} 件 (最新 ${formatLatestRelative(s.latestMinutesAgo)})`,
+    '今日の達成',
     '今日の達成 0 件',
   )
-  return body === '今日の達成 0 件' ? body : `今日の達成: ${body}`
 }

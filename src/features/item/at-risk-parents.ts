@@ -30,7 +30,7 @@ import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { fullPathOf, isPathDescendantOf } from '@/lib/db/ltree-path'
 import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 
-import { formatPriorityBuckets, normalizePriority, type PriorityKey } from './priority'
+import { formatPriorityBucketsLabeled, normalizePriority, type PriorityKey } from './priority'
 
 export interface AtRiskParentEntry<I> {
   parent: I
@@ -188,13 +188,13 @@ export function computeAtRiskParentsByPriority<I>(
  * '{label}: P1 ... / P3 ...' 形式。
  */
 export function formatAtRiskParentsByPriorityJa(byPriority: AtRiskParentsByPriority): string {
-  const body = formatPriorityBuckets(
+  return formatPriorityBucketsLabeled(
     byPriority,
     (k, s) =>
       s.count === 0 || s.maxStaleDays === null
         ? null
         : `P${k} ${s.count} 件 (最大 ${s.maxStaleDays}日)`,
+    '触れていない案件',
     '触れていない案件 0 件',
   )
-  return body === '触れていない案件 0 件' ? body : `触れていない案件: ${body}`
 }
