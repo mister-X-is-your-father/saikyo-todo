@@ -72,6 +72,10 @@ export function EngineerTriggerButton({ item }: Props) {
         size="sm"
         variant="secondary"
         disabled={trigger.isPending}
+        // iter334: pending 中の SR 通知を「disabled」だけでなく「busy」にも伝達
+        // (disabled は禁止状態、aria-busy は処理進行中の意味で異なる、両方付ければ
+        // SR は適切に状態区別できる)。
+        aria-busy={trigger.isPending || undefined}
         onClick={() => void handleClick()}
         data-testid="engineer-trigger-btn"
         aria-label={
