@@ -11,7 +11,7 @@
  *
  * 通知の種別ごとのレンダリングは `formatNotification` に集約 (将来 mention / invite 追加時にここを拡張)。
  */
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { AlarmClock, AlertCircle, AtSign, Bell, CheckCheck, UserPlus } from 'lucide-react'
 import { parseAsString, useQueryState } from 'nuqs'
@@ -23,6 +23,10 @@ import {
   useNotifications,
   useUnreadNotificationCount,
 } from '@/features/notification/hooks'
+import {
+  formatNotificationActivitySummary,
+  groupNotificationsByType,
+} from '@/features/notification/notification-activity'
 import { useNotificationsRealtime } from '@/features/notification/realtime'
 import type { HeartbeatPayload, MentionPayload, Notification } from '@/features/notification/schema'
 import {
@@ -69,6 +73,17 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
     enabled: open,
   })
 
+  // iter323 basics: 未読 type 別 breakdown を popover header に出して
+  // 「期限近接 3 / メンション 2」が一瞬で読めるように。iter322 substrate (15/15
+  // PASS) を bind、unread 0 件 / 全 type 0 件は null 返しで chip 非表示。
+  const unreadBreakdown = useMemo(() => {
+    if (notifications.length === 0) return null
+    const counts = groupNotificationsByType(notifications, { onlyUnread: true })
+    const total = Object.values(counts).reduce((s, n) => s + n, 0)
+    if (total === 0) return null
+    return formatNotificationActivitySummary(counts)
+  }, [notifications])
+
   const markRead = useMarkNotificationRead(workspaceId)
   const markAllRead = useMarkAllNotificationsRead(workspaceId)
 
@@ -114,7 +129,19 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 max-w-[calc(100vw-1rem)] gap-0 p-0">
         <div className="flex items-center justify-between border-b px-3 py-2">
-          <span className="text-sm font-medium">通知</span>
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <span className="text-sm font-medium">通知</span>
+            {unreadBreakdown ? (
+              <span
+                className="text-muted-foreground truncate text-[10px]"
+                data-testid="notification-bell-breakdown"
+                aria-label={`未読内訳: ${unreadBreakdown}`}
+                title={unreadBreakdown}
+              >
+                {unreadBreakdown}
+              </span>
+            ) : null}
+          </div>
           <Button
             type="button"
             variant="ghost"
