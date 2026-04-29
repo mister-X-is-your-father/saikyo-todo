@@ -68,6 +68,10 @@ import {
   formatMustHygieneJa,
   mustHygieneSeverity,
 } from '@/features/item/must-hygiene'
+import {
+  formatRecentCompletedSummaryJa,
+  selectRecentCompleted,
+} from '@/features/item/recent-completed'
 import { computeSlipDays, formatSlipDaysJa, slipSeverity } from '@/features/item/slip-days'
 import { computeVelocity, formatVelocitySummary } from '@/features/item/velocity'
 import {
@@ -227,6 +231,20 @@ export function DashboardView({ workspaceId }: Props) {
     return { stats, summary, severity: sev }
   }, [itemsQ.data])
 
+  // iter361 basics: recent-completed (iter359) を bind。直近 24h 完了 item の
+  // title list を chip 表示。slip-days / must-hygiene の警告 chip と対比して
+  // positive UX (= 「今日の達成: 3 件」を見える化、頑張ったことを褒める)。
+  // count=0 で chip 非表示で UI 静か。tone は emerald (= 達成 = good)、glyph 🎉。
+  const recentDone = useMemo(() => {
+    if (!itemsQ.data) return null
+    const entries = selectRecentCompleted(itemsQ.data, { windowHours: 24, limit: 3 })
+    if (entries.length === 0) return null
+    // 全件カウントは limit 無しで再計算 (= "他 N 件" を出すため)
+    const total = selectRecentCompleted(itemsQ.data, { windowHours: 24 }).length
+    const summary = formatRecentCompletedSummaryJa(entries, total, 3)
+    return { entries, total, summary }
+  }, [itemsQ.data])
+
   // iter338 basics: backlog-aging (iter337) を bind。Active (= 未完了 + 未 archive)
   // item を createdAt 年齢バケット別に件数集計、停滞気味 (7 日以上) を tone で警戒。
   const aging = useMemo(() => {
@@ -278,6 +296,18 @@ export function DashboardView({ workspaceId }: Props) {
       {/* iter331 / iter336 basics: trend / hygiene chips (flex-wrap で同列)
        * iter355 refactor: 8 chip の JSX 重複を <DashboardChip> に集約 */}
       <div className="flex flex-wrap items-center gap-2">
+        {recentDone ? (
+          <DashboardChip
+            testId="dashboard-recent-done-chip"
+            toneClass={chipTone3Class('good')}
+            glyph="🎉"
+            ariaLabel={recentDone.summary}
+            title={recentDone.summary}
+            text={recentDone.summary}
+            truncateText
+            dataAttrs={{ 'data-recent-done-count': recentDone.total }}
+          />
+        ) : null}
         {velocity ? (
           <DashboardChip
             testId="dashboard-velocity-chip"
