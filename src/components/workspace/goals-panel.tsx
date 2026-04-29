@@ -169,13 +169,28 @@ export function GoalsPanel({ workspaceId }: Props) {
               </div>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="goal-desc">説明 (任意)</Label>
+              <Label htmlFor="goal-desc">説明 (任意、Cmd/Ctrl+Enter で作成)</Label>
               <Textarea
                 id="goal-desc"
                 rows={2}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                // iter315: Cmd/Ctrl+Enter で作成 (iter313/314 と同 pattern)。Textarea は
+                // form 内でも default Enter が改行のため modifier 必須。タイトル空 / pending 中は noop。
+                onKeyDown={(e) => {
+                  if (
+                    (e.metaKey || e.ctrlKey) &&
+                    e.key === 'Enter' &&
+                    !e.nativeEvent.isComposing &&
+                    title.trim() &&
+                    !createMut.isPending
+                  ) {
+                    e.preventDefault()
+                    void handleCreate()
+                  }
+                }}
                 maxLength={2000}
+                aria-label="Goal の説明 (任意、Cmd/Ctrl+Enter で作成)"
               />
             </div>
             <div className="flex justify-end">
