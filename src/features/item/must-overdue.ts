@@ -17,7 +17,7 @@
  *   - dashboard 専用 chip (severity 'critical' = red、must-stuck-wip と異なる軸)
  */
 
-import { formatTopWithOverflow } from '@/lib/format-list'
+import { formatTitleDaysListJa } from '@/lib/format-list'
 
 import { filterMustOnly } from './must-filter'
 import {
@@ -138,17 +138,7 @@ export function formatMustOverdueTitlesJa<T extends MustOverdueWithTitle>(
   entries: readonly MustOverdueEntry<T>[],
   limit: number = 3,
 ): string {
-  if (entries.length === 0) return 'MUST 期限超過 0 件'
-  const body = formatTopWithOverflow(
-    entries,
-    (e) => {
-      const title =
-        typeof e.item.title === 'string' && e.item.title.length > 0 ? e.item.title : '(無題)'
-      return `${title} ${e.overdueDays}日`
-    },
-    limit,
-  )
-  return `MUST 期限超過: ${body}`
+  return formatTitleDaysListJa(entries, (e) => e.overdueDays, 'MUST 期限超過', limit)
 }
 
 /** by-priority 集計の単 bucket 値: must-overdue 件数 + 最古超過日数 (count=0 → null)。 */

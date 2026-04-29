@@ -16,7 +16,7 @@
  * 戻り値は 古い順 (= 最も放置されている item が先頭) に並ぶ。同時刻は元配列順で stable。
  */
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
-import { formatTopWithOverflow } from '@/lib/format-list'
+import { formatTitleDaysListJa } from '@/lib/format-list'
 
 import {
   bucketByPriorityWith,
@@ -176,17 +176,7 @@ export function formatStaleItemsTitlesJa<T extends StaleItemFields>(
   entries: readonly StaleItemEntry<T>[],
   limit: number = 3,
 ): string {
-  if (entries.length === 0) return '古参 0 件'
-  const body = formatTopWithOverflow(
-    entries,
-    (e) => {
-      const title =
-        typeof e.item.title === 'string' && e.item.title.length > 0 ? e.item.title : '(無題)'
-      return `${title} ${e.staleDays}日`
-    },
-    limit,
-  )
-  return `古参: ${body}`
+  return formatTitleDaysListJa(entries, (e) => e.staleDays, '古参', limit)
 }
 
 // iter305 refactor: parseDateOrNull (lib/date/iso) に集約。

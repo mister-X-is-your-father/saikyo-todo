@@ -20,7 +20,7 @@
  */
 
 import { dueDateEndOfDayMs, MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
-import { formatTopWithOverflow } from '@/lib/format-list'
+import { formatTitleDaysListJa } from '@/lib/format-list'
 
 import { bucketByPriorityWith, formatPriorityBuckets, type PriorityKey } from './priority'
 
@@ -219,15 +219,5 @@ export function formatSlipDaysTitlesJa<T extends SlipDaysWithTitle>(
   entries: readonly SlipDaysEntry<T>[],
   limit: number = 3,
 ): string {
-  if (entries.length === 0) return '遅延完了 0 件'
-  const body = formatTopWithOverflow(
-    entries,
-    (e) => {
-      const title =
-        typeof e.item.title === 'string' && e.item.title.length > 0 ? e.item.title : '(無題)'
-      return `${title} ${e.slipDays}日`
-    },
-    limit,
-  )
-  return `遅延完了: ${body}`
+  return formatTitleDaysListJa(entries, (e) => e.slipDays, '遅延完了', limit)
 }

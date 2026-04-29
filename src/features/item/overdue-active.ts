@@ -26,7 +26,7 @@
 
 import { MS_PER_DAY, parseDateOrNull, parseIsoDateAsLocalMidnight } from '@/lib/date/iso'
 import { formatNonZeroCounts } from '@/lib/format-counts'
-import { formatTopWithOverflow } from '@/lib/format-list'
+import { formatTitleDaysListJa } from '@/lib/format-list'
 
 import {
   bucketByPriorityWith,
@@ -271,15 +271,5 @@ export function formatOverdueActiveTitlesJa<T extends OverdueActiveWithTitle>(
   entries: readonly OverdueActiveEntry<T>[],
   limit: number = 3,
 ): string {
-  if (entries.length === 0) return '期限超過 0 件'
-  const body = formatTopWithOverflow(
-    entries,
-    (e) => {
-      const title =
-        typeof e.item.title === 'string' && e.item.title.length > 0 ? e.item.title : '(無題)'
-      return `${title} ${e.overdueDays}日`
-    },
-    limit,
-  )
-  return `期限超過: ${body}`
+  return formatTitleDaysListJa(entries, (e) => e.overdueDays, '期限超過', limit)
 }
