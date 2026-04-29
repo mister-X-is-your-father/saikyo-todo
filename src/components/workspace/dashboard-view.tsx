@@ -162,8 +162,10 @@ import {
   priorityDetailSuffix,
 } from '@/features/item/priority'
 import {
+  classifyRecentCompletedMomentum,
   computeRecentCompletedByPriority,
   formatRecentCompletedByPriorityJa,
+  formatRecentCompletedMomentumJa,
   formatRecentCompletedSummaryJa,
   selectRecentCompleted,
 } from '@/features/item/recent-completed'
@@ -609,7 +611,13 @@ export function DashboardView({ workspaceId }: Props) {
     const detail = `${summary}${priorityDetailSuffix(priorityBuckets, () =>
       formatRecentCompletedByPriorityJa(byPriority),
     )}`
-    return { entries, total, summary, detail, priorityBuckets }
+    // iter451 basics: iter449 で追加した momentum hint (positive 方向: idle/mild/
+    // steady/momentum) を chip data attr + aria-label prefix に bind。chip series
+    // で初の positive-direction hint (= severe ではなく momentum を最良 state として
+    // 露出、達成讃え用 SR feedback)。
+    const momentum = classifyRecentCompletedMomentum(allEntries)
+    const momentumLabel = formatRecentCompletedMomentumJa(allEntries)
+    return { entries, total, summary, detail, priorityBuckets, momentum, momentumLabel }
   }, [itemsQ.data])
 
   // iter368 basics: description-coverage (iter367) を bind。未完了 item の説明文
@@ -874,13 +882,14 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-recent-done-chip"
             toneClass={chipTone3Class('good')}
             glyph="🎉"
-            ariaLabel={recentDone.detail}
-            title={recentDone.detail}
+            ariaLabel={`${recentDone.momentumLabel}: ${recentDone.detail}`}
+            title={`${recentDone.momentumLabel} — ${recentDone.detail}`}
             text={recentDone.summary}
             truncateText
             dataAttrs={{
               'data-recent-done-count': recentDone.total,
               'data-priority-buckets': recentDone.priorityBuckets,
+              'data-momentum-hint': recentDone.momentum,
             }}
           />
         ) : null}
