@@ -5,7 +5,14 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import { computeVelocity, formatVelocitySummary, type VelocityFields } from './velocity'
+import {
+  computeVelocity,
+  computeVelocityByPriority,
+  formatVelocityByPriorityJa,
+  formatVelocitySummary,
+  type VelocityByPriorityFields,
+  type VelocityFields,
+} from './velocity'
 
 const TODAY = new Date(2026, 3, 28) // 2026-04-28
 const DAY = 24 * 60 * 60 * 1000
@@ -136,5 +143,58 @@ describe('formatVelocitySummary', () => {
     const items = [mk(dt(0)), mk(dt(1)), mk(dt(2))] // 3 件 / 7 日 = 0.428...
     const r = computeVelocity(items, {}, TODAY)
     expect(formatVelocitySummary(r)).toContain('0.4 件/日')
+  })
+})
+
+describe('computeVelocityByPriority / formatVelocityByPriorityJa (iter452)', () => {
+  const mkP = (
+    doneAt: Date | string | null,
+    priority: number | null = 4,
+  ): VelocityByPriorityFields => ({ doneAt, priority })
+
+  it('空 → 全 bucket count=0 / avgPerDay=0', () => {
+    const r = computeVelocityByPriority([], {}, TODAY)
+    expect(r[1]).toEqual({ count: 0, avgPerDay: 0 })
+    expect(r[2]).toEqual({ count: 0, avgPerDay: 0 })
+    expect(r[3]).toEqual({ count: 0, avgPerDay: 0 })
+    expect(r[4]).toEqual({ count: 0, avgPerDay: 0 })
+    expect(formatVelocityByPriorityJa(r)).toBe('直近 7 日 velocity 0 件')
+  })
+
+  it('P1 3 件 + P3 5 件 → bucket 別 count + avgPerDay', () => {
+    const items: VelocityByPriorityFields[] = [
+      mkP(dt(0), 1),
+      mkP(dt(1), 1),
+      mkP(dt(2), 1),
+      mkP(dt(0), 3),
+      mkP(dt(0), 3),
+      mkP(dt(1), 3),
+      mkP(dt(2), 3),
+      mkP(dt(3), 3),
+    ]
+    const r = computeVelocityByPriority(items, {}, TODAY)
+    expect(r[1].count).toBe(3)
+    expect(r[3].count).toBe(5)
+    expect(r[1].avgPerDay).toBeCloseTo(3 / 7, 5)
+    expect(formatVelocityByPriorityJa(r)).toBe(
+      '直近 7 日 velocity: P1 3 件 (0.4件/日) / P3 5 件 (0.7件/日)',
+    )
+  })
+
+  it('単一 priority 偏在 → 1 行のみ', () => {
+    const items = [mkP(dt(0), 4), mkP(dt(1), 4)]
+    const r = computeVelocityByPriority(items, {}, TODAY)
+    expect(formatVelocityByPriorityJa(r)).toBe('直近 7 日 velocity: P4 2 件 (0.3件/日)')
+  })
+
+  it('windowDays オプションが sentinel に反映', () => {
+    const r = computeVelocityByPriority([], { windowDays: 14 }, TODAY)
+    expect(formatVelocityByPriorityJa(r, 14)).toBe('直近 14 日 velocity 0 件')
+  })
+
+  it('priority null/範囲外 → P4 集約', () => {
+    const items = [mkP(dt(0), null), mkP(dt(0), 99)]
+    const r = computeVelocityByPriority(items, {}, TODAY)
+    expect(r[4].count).toBe(2)
   })
 })

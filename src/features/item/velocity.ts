@@ -21,8 +21,14 @@
  */
 import { formatLocalISO, MS_PER_DAY, parseDateOrNull, toLocalMidnight } from '@/lib/date/iso'
 
+import { bucketByPriorityWith, formatPriorityBucketsLabeled, type PriorityKey } from './priority'
+
 export interface VelocityFields {
   doneAt: Date | string | null | undefined
+}
+
+export interface VelocityByPriorityFields extends VelocityFields {
+  priority: number | null | undefined
 }
 
 export interface VelocityDay {
@@ -126,3 +132,56 @@ export function formatVelocitySummary(summary: VelocitySummary, windowDays = 7):
 
 // iter305 refactor: parseDateOrNull (lib/date/iso) に集約 (3 callsite 重複削除)。
 // iter340 refactor: toLocalMidnight / formatLocalISO も lib/date/iso に集約。
+
+/**
+ * iter452 ai-automation: velocity を priority 別に集計する pure helper。
+ *
+ * iter386 / iter391 / iter406 / iter408 / iter414 / iter429 / iter432 / iter434 /
+ * iter437 と並ぶ「× priority」軸シリーズの velocity 軸版 (10 弾目)。AI 朝 brief /
+ * pm-agent prompt / dashboard widget が「直近 7 日: P1 done 3 件 / P3 done 5 件」
+ * のような P 別 完了ペースを 1 関数で取り出せる substrate。「高優先消化が遅い /
+ * 低優先ばかり消化」 bias 検出に使える (= iter354 wip-by-priority と相補、wip は
+ * 'in_progress' / 本 helper は 'done')。
+ *
+ * 仕様:
+ *  - 各 priority bucket で `computeVelocity` を呼び、count + avgPerDay を抽出
+ *  - count=0 でも全 4 bucket は必ず初期化 (undefined チェック不要)
+ *  - bucketByPriorityWith (iter365) を委譲
+ */
+export interface VelocityPriorityStats {
+  count: number
+  /** count / windowDays、小数点あり (= 件/日) */
+  avgPerDay: number
+}
+
+export type VelocityByPriority = Record<PriorityKey, VelocityPriorityStats>
+
+export function computeVelocityByPriority<T extends VelocityByPriorityFields>(
+  items: readonly T[],
+  options: VelocityOptions = {},
+  today: Date | string = new Date(),
+): VelocityByPriority {
+  return bucketByPriorityWith(items, (group) => {
+    const summary = computeVelocity(group, options, today)
+    return { count: summary.total, avgPerDay: summary.avgPerDay }
+  })
+}
+
+/**
+ * AI prompt / dashboard chip aria-label 用 priority 別 1 行サマリ:
+ *   '直近 7 日 velocity: P1 3 件 (0.4件/日) / P3 5 件 (0.7件/日)'
+ *
+ * count=0 bucket は省略、全 0 → '直近 7 日 velocity 0 件'。iter386/408/414/429/
+ * 432/434/437 と同じ '{label}: P1 ... / P3 ...' 形式。
+ */
+export function formatVelocityByPriorityJa(
+  byPriority: VelocityByPriority,
+  windowDays: number = 7,
+): string {
+  return formatPriorityBucketsLabeled(
+    byPriority,
+    (k, s) => (s.count === 0 ? null : `P${k} ${s.count} 件 (${s.avgPerDay.toFixed(1)}件/日)`),
+    `直近 ${windowDays} 日 velocity`,
+    `直近 ${windowDays} 日 velocity 0 件`,
+  )
+}
