@@ -20,7 +20,15 @@
  */
 import { useMemo, useState } from 'react'
 
-import { ArrowLeft, ArrowLeftRight, ArrowRight, type LucideIcon } from 'lucide-react'
+import {
+  ArrowLeft,
+  ArrowLeftRight,
+  ArrowRight,
+  Circle,
+  CircleCheck,
+  CirclePause,
+  type LucideIcon,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
@@ -33,7 +41,9 @@ import {
   useRemoveItemDependency,
 } from '@/features/item-dependency/hooks'
 import {
+  type DependencyReadinessIconKey,
   formatDependencyReadiness,
+  getDependencyReadinessVisual,
   summarizeDependencyReadiness,
 } from '@/features/item-dependency/readiness'
 import type { ItemDependencyType } from '@/features/item-dependency/schema'
@@ -42,6 +52,16 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { MustBadge } from '@/components/workspace/must-badge'
 import { StatusBadge } from '@/components/workspace/status-badge'
+
+/**
+ * iter411 basics: readiness-visual の iconKey を Lucide component に map。
+ * `STATUS_ICONS` (status-badge.tsx) / `ACTION_ICON` (activity-log.tsx) と同パターン。
+ */
+const READINESS_ICON: Record<DependencyReadinessIconKey, LucideIcon> = {
+  check: CircleCheck,
+  pause: CirclePause,
+  idle: Circle,
+}
 
 interface Props {
   workspaceId: string
@@ -104,27 +124,26 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
   // iter306 basics: iter297 で整備済の summarizeDependencyReadiness substrate を UI bind。
   // 依存タブを開いた時に「いま着手可能か / 何件残っているか」が一瞥で伝わる readiness chip を
   // 先頭に配置 (FEEDBACK_QUEUE「Item dependencies tab: 依存先を visual chain」候補の前段)。
+  // iter411 basics: tone (色 + Lucide icon) を `getDependencyReadinessVisual` に集約。
+  // 旧 inline ternary + unicode glyph (✓/⏸/·) を status-badge / sprint-progress と
+  // 同じ graphical pattern (Lucide icon + Tailwind class set) に統一。
   const readiness = summarizeDependencyReadiness({ blockedBy, blocking, related })
   const readinessSummary = formatDependencyReadiness(readiness)
-  const readinessToneClass = readiness.isBlocked
-    ? 'bg-amber-50 text-amber-900 ring-amber-200'
-    : readiness.blockedByCount === 0 &&
-        readiness.blockingCount === 0 &&
-        readiness.relatedCount === 0
-      ? 'bg-zinc-50 text-zinc-700 ring-zinc-200'
-      : 'bg-emerald-50 text-emerald-900 ring-emerald-200'
+  const readinessVisual = getDependencyReadinessVisual(readiness)
+  const ReadinessIcon = READINESS_ICON[readinessVisual.iconKey]
 
   return (
     <div className="space-y-5" data-testid="dependencies-panel">
       <div
-        className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs ring-1 ${readinessToneClass}`}
+        className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs ring-1 ring-inset ${readinessVisual.bgClass} ${readinessVisual.textClass} ${readinessVisual.ringClass}`}
         role="status"
         aria-live="polite"
-        aria-label={`依存サマリ: ${readinessSummary}`}
+        aria-label={`依存サマリ (${readinessVisual.toneLabel}): ${readinessSummary}`}
         data-testid="dep-readiness-chip"
         data-blocked={readiness.isBlocked}
+        data-tone={readinessVisual.tone}
       >
-        <span aria-hidden="true">{readiness.isBlocked ? '⏸' : readiness.isReady ? '✓' : '·'}</span>
+        <ReadinessIcon className="h-3 w-3 shrink-0" aria-hidden="true" />
         <span>{readinessSummary}</span>
       </div>
       <Section

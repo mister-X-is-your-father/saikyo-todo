@@ -90,3 +90,68 @@ export function formatDependencyReadiness(r: DependencyReadiness): string {
   }
   return parts.length === 0 ? '依存なし' : parts.join(' / ')
 }
+
+/**
+ * iter411 basics: readiness を graphical chip 用 tone (色 / icon variant key /
+ * 日本語 label) に変換する pure helper。
+ *
+ * `sprintProgressTone` (burndown.ts) / `goalHealthTier` (okr) と対称な API。
+ * 今までは `item-dependencies-panel.tsx` 内に inline ternary で書かれており
+ * unicode glyph (✓/⏸/·) を直書きしていたので、graphical 波及シリーズの一貫性
+ * (status-badge / must-badge / sprint-progress 同様) を持たせるべく集約。
+ *
+ * tone:
+ *  - `blocked`: 未完了の前提 1 件以上 (= isBlocked) → amber + Pause icon
+ *  - `idle`: 依存ゼロ (前提 / 後続 / 関連 すべて 0 件) → zinc + Circle icon
+ *  - `ready`: 依存解決済 or 後続/関連 のみ (= 自分は着手可能) → emerald + CircleCheck icon
+ */
+export type DependencyReadinessTone = 'blocked' | 'idle' | 'ready'
+
+export type DependencyReadinessIconKey = 'check' | 'pause' | 'idle'
+
+export interface DependencyReadinessVisual {
+  tone: DependencyReadinessTone
+  bgClass: string
+  textClass: string
+  ringClass: string
+  iconKey: DependencyReadinessIconKey
+  /** SR / aria-label / tooltip の補助 label (日本語) */
+  toneLabel: string
+}
+
+const TONE_VISUAL: Record<DependencyReadinessTone, DependencyReadinessVisual> = {
+  blocked: {
+    tone: 'blocked',
+    bgClass: 'bg-amber-50',
+    textClass: 'text-amber-900',
+    ringClass: 'ring-amber-200',
+    iconKey: 'pause',
+    toneLabel: 'ブロック中',
+  },
+  idle: {
+    tone: 'idle',
+    bgClass: 'bg-zinc-50',
+    textClass: 'text-zinc-700',
+    ringClass: 'ring-zinc-200',
+    iconKey: 'idle',
+    toneLabel: '依存なし',
+  },
+  ready: {
+    tone: 'ready',
+    bgClass: 'bg-emerald-50',
+    textClass: 'text-emerald-900',
+    ringClass: 'ring-emerald-200',
+    iconKey: 'check',
+    toneLabel: '着手可能',
+  },
+}
+
+export function dependencyReadinessTone(r: DependencyReadiness): DependencyReadinessTone {
+  if (r.isBlocked) return 'blocked'
+  if (r.blockedByCount === 0 && r.blockingCount === 0 && r.relatedCount === 0) return 'idle'
+  return 'ready'
+}
+
+export function getDependencyReadinessVisual(r: DependencyReadiness): DependencyReadinessVisual {
+  return TONE_VISUAL[dependencyReadinessTone(r)]
+}

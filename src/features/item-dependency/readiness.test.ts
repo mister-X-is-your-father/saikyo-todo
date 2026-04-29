@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatDependencyReadiness, summarizeDependencyReadiness } from './readiness'
+import {
+  dependencyReadinessTone,
+  formatDependencyReadiness,
+  getDependencyReadinessVisual,
+  summarizeDependencyReadiness,
+} from './readiness'
 import type { ItemDependencyGroup, ItemRef } from './schema'
 
 const ref = (id: string, overrides: Partial<ItemRef> = {}): ItemRef => ({
@@ -197,5 +202,69 @@ describe('formatDependencyReadiness', () => {
       }),
     )
     expect(s).toBe('依存解決済み / 後続 1 件 (全完了)')
+  })
+})
+
+describe('dependencyReadinessTone / getDependencyReadinessVisual', () => {
+  it('依存ゼロ → idle (zinc + Circle icon)', () => {
+    const r = summarizeDependencyReadiness(emptyGroup)
+    expect(dependencyReadinessTone(r)).toBe('idle')
+    const v = getDependencyReadinessVisual(r)
+    expect(v.tone).toBe('idle')
+    expect(v.iconKey).toBe('idle')
+    expect(v.bgClass).toContain('zinc')
+    expect(v.toneLabel).toBe('依存なし')
+  })
+
+  it('未完了 blocker あり → blocked (amber + Pause icon)', () => {
+    const r = summarizeDependencyReadiness({
+      ...emptyGroup,
+      blockedBy: [{ ref: ref('a'), createdAt: NOW }],
+    })
+    expect(dependencyReadinessTone(r)).toBe('blocked')
+    const v = getDependencyReadinessVisual(r)
+    expect(v.tone).toBe('blocked')
+    expect(v.iconKey).toBe('pause')
+    expect(v.bgClass).toContain('amber')
+    expect(v.toneLabel).toBe('ブロック中')
+  })
+
+  it('blocker 全 done → ready (emerald + Check icon)', () => {
+    const r = summarizeDependencyReadiness({
+      ...emptyGroup,
+      blockedBy: [{ ref: ref('a', { doneAt: NOW }), createdAt: NOW }],
+    })
+    expect(dependencyReadinessTone(r)).toBe('ready')
+    const v = getDependencyReadinessVisual(r)
+    expect(v.tone).toBe('ready')
+    expect(v.iconKey).toBe('check')
+    expect(v.bgClass).toContain('emerald')
+    expect(v.toneLabel).toBe('着手可能')
+  })
+
+  it('blocker ゼロ + 関連だけあり → ready (= 自分は着手可能)', () => {
+    const r = summarizeDependencyReadiness({
+      ...emptyGroup,
+      related: [{ ref: ref('p'), createdAt: NOW }],
+    })
+    expect(dependencyReadinessTone(r)).toBe('ready')
+  })
+
+  it('blocker ゼロ + 後続のみあり → ready (= 自分は着手可能)', () => {
+    const r = summarizeDependencyReadiness({
+      ...emptyGroup,
+      blocking: [{ ref: ref('x'), createdAt: NOW }],
+    })
+    expect(dependencyReadinessTone(r)).toBe('ready')
+  })
+
+  it('未完了 blocker + 後続混在 → blocked が最優先', () => {
+    const r = summarizeDependencyReadiness({
+      ...emptyGroup,
+      blockedBy: [{ ref: ref('a'), createdAt: NOW }],
+      blocking: [{ ref: ref('x'), createdAt: NOW }],
+      related: [{ ref: ref('p'), createdAt: NOW }],
+    })
+    expect(dependencyReadinessTone(r)).toBe('blocked')
   })
 })
