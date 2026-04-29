@@ -1022,6 +1022,7 @@ export function DashboardView({ workspaceId }: Props) {
             ariaLabel={`依存ブロック: ${blockedWorkspaceItems.detail}`}
             title={blockedWorkspaceItems.detail}
             text={blockedWorkspaceItems.summary}
+            truncateText
             dataAttrs={{
               'data-blocked-count': blockedWorkspaceItems.entries.length,
               'data-priority-buckets': blockedWorkspaceItems.priorityBuckets,
@@ -1036,6 +1037,7 @@ export function DashboardView({ workspaceId }: Props) {
             ariaLabel={`触れていない案件: ${atRiskParents.detail}`}
             title={atRiskParents.detail}
             text={atRiskParents.summary}
+            truncateText
             dataAttrs={{
               'data-at-risk-count': atRiskParents.entries.length,
               'data-priority-buckets': atRiskParents.priorityBuckets,
@@ -1050,6 +1052,7 @@ export function DashboardView({ workspaceId }: Props) {
             ariaLabel={`案件進捗: ${parentItemsProgress.detail}`}
             title={parentItemsProgress.detail}
             text={parentItemsProgress.summary}
+            truncateText
             dataAttrs={{
               'data-parent-items-count': parentItemsProgress.entries.length,
               'data-parent-avg-pct': parentItemsProgress.aggregate.avgPctDone,
