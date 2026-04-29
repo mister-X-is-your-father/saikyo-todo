@@ -26,9 +26,12 @@
 
 import { parseDateOrNull } from '@/lib/date/iso'
 
-import { PRIORITY_ORDER } from './priority'
+import { normalizePriority, PRIORITY_ORDER, type PriorityKey } from './priority'
 
-export type PriorityKey = 1 | 2 | 3 | 4
+// iter380 refactor: 重複していた local PriorityKey / normalizePriority を priority.ts
+// に集約。re-export で後方互換 (本 file の `PriorityKey` を import している callers
+// は将来 0 件になっても破綻しないように)。
+export type { PriorityKey }
 
 const PRIORITY_LABEL: Record<PriorityKey, string> = {
   1: 'P1',
@@ -63,11 +66,6 @@ function emptyStats(): CompletionDaysByPriority {
     3: { count: 0, avgDays: null },
     4: { count: 0, avgDays: null },
   }
-}
-
-function normalizePriority(p: number | null | undefined): PriorityKey {
-  if (p === 1 || p === 2 || p === 3) return p
-  return 4
 }
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
