@@ -110,6 +110,8 @@ import {
 } from '@/features/item/must-stuck-wip'
 import {
   computeOverdueActive,
+  computeOverdueActiveByPriority,
+  formatOverdueActiveByPriorityJa,
   formatOverdueActiveJa,
   overdueActiveSeverity,
 } from '@/features/item/overdue-active'
@@ -359,7 +361,13 @@ export function DashboardView({ workspaceId }: Props) {
     const sev = overdueActiveSeverity(stats)
     if (sev === 'idle') return null
     const summary = formatOverdueActiveJa(stats)
-    return { stats, summary, severity: sev }
+    // iter371 basics: priority breakdown を tooltip / aria-label に同梱
+    // (iter363/366/373/378/383/388/391/401/363 と同手法、priority bias を SR/hover で読める)
+    const byPriority = computeOverdueActiveByPriority(itemsQ.data)
+    const priorityBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)
+    const detail =
+      priorityBuckets > 1 ? `${summary} — ${formatOverdueActiveByPriorityJa(byPriority)}` : summary
+    return { stats, summary, severity: sev, detail }
   }, [itemsQ.data])
 
   // iter366 basics: must-stuck-wip (iter364) を bind。MUST かつ stuck WIP な
@@ -880,8 +888,8 @@ export function DashboardView({ workspaceId }: Props) {
                 : chipTone3Class('warn')
             }
             glyph="📅"
-            ariaLabel={overdueActive.summary}
-            title={overdueActive.summary}
+            ariaLabel={overdueActive.detail}
+            title={overdueActive.detail}
             text={overdueActive.summary}
             dataAttrs={{
               'data-severity': overdueActive.severity,
