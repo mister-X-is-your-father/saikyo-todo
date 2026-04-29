@@ -102,6 +102,7 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
           <Button
             onClick={handlePost}
             disabled={create.isPending || !body.trim()}
+            aria-busy={create.isPending || undefined}
             size="sm"
             data-testid="comment-post"
             aria-label={
@@ -222,6 +223,7 @@ function CommentItem({
               size="sm"
               onClick={handleSave}
               disabled={update.isPending || !body.trim()}
+              aria-busy={update.isPending || undefined}
               data-testid={`comment-save-${comment.id}`}
               aria-label={
                 !body.trim()
@@ -248,6 +250,7 @@ function CommentItem({
                   setEditing(true)
                 }}
                 disabled={softDelete.isPending}
+                aria-busy={softDelete.isPending || undefined}
                 data-testid={`comment-edit-${comment.id}`}
                 aria-label={`コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を編集`}
               >
@@ -258,6 +261,7 @@ function CommentItem({
                 className="hover:text-destructive text-muted-foreground text-xs disabled:opacity-50"
                 onClick={handleDelete}
                 disabled={softDelete.isPending}
+                aria-busy={softDelete.isPending || undefined}
                 data-testid={`comment-delete-${comment.id}`}
                 aria-label={
                   softDelete.isPending
