@@ -68,6 +68,7 @@ import { computeVelocity, formatVelocitySummary } from '@/features/item/velocity
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { chipTone3Class, DashboardChip } from '@/components/workspace/dashboard-chip'
 import { StatusBadge } from '@/components/workspace/status-badge'
 
 interface Props {
@@ -238,161 +239,120 @@ export function DashboardView({ workspaceId }: Props) {
         />
       </div>
 
-      {/* iter331 / iter336 basics: velocity + completion latency chips (flex-wrap で同列) */}
+      {/* iter331 / iter336 basics: trend / hygiene chips (flex-wrap で同列)
+       * iter355 refactor: 8 chip の JSX 重複を <DashboardChip> に集約 */}
       <div className="flex flex-wrap items-center gap-2">
         {velocity ? (
-          <div
-            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${trendToneClass(velocity.result.trend, 'positive')}`}
-            data-testid="dashboard-velocity-chip"
-            data-trend={velocity.result.trend}
-            role="status"
-            aria-label={velocity.line}
+          <DashboardChip
+            testId="dashboard-velocity-chip"
+            toneClass={trendToneClass(velocity.result.trend, 'positive')}
+            glyph={trendGlyph(velocity.result.trend)}
+            ariaLabel={velocity.line}
             title={velocity.line}
-          >
-            <span aria-hidden="true" className="font-mono">
-              {trendGlyph(velocity.result.trend)}
-            </span>
-            <span aria-hidden="true">{velocity.line}</span>
-          </div>
+            text={velocity.line}
+            dataAttrs={{ 'data-trend': velocity.result.trend }}
+          />
         ) : null}
         {momentum ? (
-          <div
-            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${trendToneClass(momentum.trend, 'negative')}`}
-            data-testid="dashboard-momentum-chip"
-            data-direction={momentum.result.direction}
-            role="status"
-            aria-label={momentum.line}
+          <DashboardChip
+            testId="dashboard-momentum-chip"
+            toneClass={trendToneClass(momentum.trend, 'negative')}
+            glyph={trendGlyph(momentum.trend)}
+            ariaLabel={momentum.line}
             title={momentum.line}
-          >
-            <span aria-hidden="true" className="font-mono">
-              {trendGlyph(momentum.trend)}
-            </span>
-            <span aria-hidden="true">{momentum.line}</span>
-          </div>
+            text={momentum.line}
+            dataAttrs={{ 'data-direction': momentum.result.direction }}
+          />
         ) : null}
         {dueCoverage ? (
-          <div
-            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${
-              dueCoverage.tone === 'good'
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                : dueCoverage.tone === 'warn'
-                  ? 'border-amber-200 bg-amber-50 text-amber-700'
-                  : 'border-border bg-muted text-muted-foreground'
-            }`}
-            data-testid="dashboard-due-coverage-chip"
-            data-coverage-pct={dueCoverage.pct}
-            role="status"
-            aria-label={dueCoverage.summary}
+          <DashboardChip
+            testId="dashboard-due-coverage-chip"
+            toneClass={chipTone3Class(dueCoverage.tone)}
+            glyph="📅"
+            ariaLabel={dueCoverage.summary}
             title={dueCoverage.summary}
-          >
-            <span aria-hidden="true" className="font-mono">
-              📅
-            </span>
-            <span aria-hidden="true">{dueCoverage.summary}</span>
-          </div>
+            text={dueCoverage.summary}
+            dataAttrs={{ 'data-coverage-pct': dueCoverage.pct }}
+          />
         ) : null}
         {dodCoverage ? (
-          <div
-            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${
-              dodCoverage.tone === 'good'
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                : dodCoverage.tone === 'warn'
-                  ? 'border-amber-200 bg-amber-50 text-amber-700'
-                  : 'border-border bg-muted text-muted-foreground'
-            }`}
-            data-testid="dashboard-dod-coverage-chip"
-            data-coverage-pct={dodCoverage.pct}
-            role="status"
-            aria-label={dodCoverage.summary}
+          <DashboardChip
+            testId="dashboard-dod-coverage-chip"
+            toneClass={chipTone3Class(dodCoverage.tone)}
+            glyph="✓"
+            ariaLabel={dodCoverage.summary}
             title={dodCoverage.summary}
-          >
-            <span aria-hidden="true" className="font-mono">
-              ✓
-            </span>
-            <span aria-hidden="true">{dodCoverage.summary}</span>
-          </div>
+            text={dodCoverage.summary}
+            dataAttrs={{ 'data-coverage-pct': dodCoverage.pct }}
+          />
         ) : null}
         {aging ? (
-          <div
-            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${aging.olderThanWeek > 0 ? trendToneClass('up', 'negative') : 'border-border bg-muted text-muted-foreground'}`}
-            data-testid="dashboard-backlog-aging-chip"
-            data-older-than-week={aging.olderThanWeek}
-            role="status"
-            aria-label={`Backlog 年齢: ${aging.summary}${aging.olderThanWeek > 0 ? ` — 7 日以上 ${aging.olderThanWeek} 件 (棚卸し対象)` : ''}`}
+          <DashboardChip
+            testId="dashboard-backlog-aging-chip"
+            toneClass={
+              aging.olderThanWeek > 0 ? trendToneClass('up', 'negative') : chipTone3Class('neutral')
+            }
+            glyph="⌛"
+            ariaLabel={`Backlog 年齢: ${aging.summary}${aging.olderThanWeek > 0 ? ` — 7 日以上 ${aging.olderThanWeek} 件 (棚卸し対象)` : ''}`}
             title={aging.summary}
-          >
-            <span aria-hidden="true" className="font-mono">
-              ⌛
-            </span>
-            <span aria-hidden="true" className="truncate">
-              Backlog: {aging.summary}
-              {aging.olderThanWeek > 0 ? ` — 7日+ ${aging.olderThanWeek}件` : ''}
-            </span>
-          </div>
+            text={
+              <>
+                Backlog: {aging.summary}
+                {aging.olderThanWeek > 0 ? ` — 7日+ ${aging.olderThanWeek}件` : ''}
+              </>
+            }
+            truncateText
+            dataAttrs={{ 'data-older-than-week': aging.olderThanWeek }}
+          />
         ) : null}
         {dueHitRate ? (
-          <div
-            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${
-              dueHitRate.tone === 'good'
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                : dueHitRate.tone === 'warn'
-                  ? 'border-amber-200 bg-amber-50 text-amber-700'
-                  : 'border-border bg-muted text-muted-foreground'
-            }`}
-            data-testid="dashboard-due-hit-rate-chip"
-            data-hit-rate={dueHitRate.pct}
-            role="status"
-            aria-label={dueHitRate.detail}
+          <DashboardChip
+            testId="dashboard-due-hit-rate-chip"
+            toneClass={chipTone3Class(dueHitRate.tone)}
+            glyph="◎"
+            ariaLabel={dueHitRate.detail}
             title={dueHitRate.detail}
-          >
-            <span aria-hidden="true" className="font-mono">
-              ◎
-            </span>
-            <span aria-hidden="true">{dueHitRate.summary}</span>
-          </div>
+            text={dueHitRate.summary}
+            dataAttrs={{ 'data-hit-rate': dueHitRate.pct }}
+          />
         ) : null}
         {slipDays ? (
-          <div
-            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${
+          <DashboardChip
+            testId="dashboard-slip-days-chip"
+            toneClass={
               slipDays.severe
                 ? 'border-red-200 bg-red-50 text-red-700'
                 : 'border-amber-200 bg-amber-50 text-amber-700'
-            }`}
-            data-testid="dashboard-slip-days-chip"
-            data-severe={slipDays.severe ? 'true' : 'false'}
-            data-max-days={slipDays.stats.maxDays ?? 0}
-            role="status"
-            aria-label={slipDays.summary}
+            }
+            glyph="⏰"
+            ariaLabel={slipDays.summary}
             title={slipDays.summary}
-          >
-            <span aria-hidden="true" className="font-mono">
-              ⏰
-            </span>
-            <span aria-hidden="true">{slipDays.summary}</span>
-          </div>
+            text={slipDays.summary}
+            dataAttrs={{
+              'data-severe': slipDays.severe ? 'true' : 'false',
+              'data-max-days': slipDays.stats.maxDays ?? 0,
+            }}
+          />
         ) : null}
         {completionGap ? (
-          <div
-            className="border-border bg-muted text-muted-foreground inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs"
-            data-testid="dashboard-completion-gap-chip"
-            data-gap-days={completionGap.gap?.gapDays ?? ''}
-            role="status"
-            aria-label={
+          <DashboardChip
+            testId="dashboard-completion-gap-chip"
+            toneClass={chipTone3Class('neutral')}
+            glyph="⏱"
+            ariaLabel={
               completionGap.gap
                 ? `${completionGap.summary} — gap ${completionGap.gap.gapDays}日 (P${completionGap.gap.lowKey} が P${completionGap.gap.highKey} より遅い)`
                 : completionGap.summary
             }
             title={completionGap.summary}
-          >
-            <span aria-hidden="true" className="font-mono">
-              ⏱
-            </span>
-            <span aria-hidden="true" className="truncate">
-              {completionGap.gap
+            text={
+              completionGap.gap
                 ? `完了所要 P${completionGap.gap.highKey} ${completionGap.gap.highDays}日 / P${completionGap.gap.lowKey} ${completionGap.gap.lowDays}日 (gap ${completionGap.gap.gapDays}日)`
-                : completionGap.summary}
-            </span>
-          </div>
+                : completionGap.summary
+            }
+            truncateText
+            dataAttrs={{ 'data-gap-days': completionGap.gap?.gapDays ?? '' }}
+          />
         ) : null}
       </div>
 
