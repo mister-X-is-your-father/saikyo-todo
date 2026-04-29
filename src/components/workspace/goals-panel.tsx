@@ -124,6 +124,7 @@ export function GoalsPanel({ workspaceId }: Props) {
         <CardContent>
           <form
             className="space-y-3"
+            noValidate
             onSubmit={(e) => {
               e.preventDefault()
               void handleCreate()
@@ -641,6 +642,7 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
 
       <form
         className="space-y-2 rounded border border-dashed p-2"
+        noValidate
         onSubmit={(e) => {
           e.preventDefault()
           void handleAdd()
