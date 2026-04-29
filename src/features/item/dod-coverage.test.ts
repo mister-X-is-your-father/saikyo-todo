@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest'
 
 import {
   computeDodCoverage,
+  computeDodCoverageByPriority,
+  type DodCoverageByPriorityFields,
   type DodCoverageFields,
   dodCoverageTone,
+  formatDodCoverageByPriorityJa,
   formatDodCoverageJa,
 } from './dod-coverage'
 
@@ -133,6 +136,61 @@ describe('dodCoverageTone', () => {
     expect(dodCoverageTone({ total: 0, withDod: 0, withoutDod: 0, coverageRate: null })).toBe(
       'neutral',
     )
+  })
+})
+
+describe('computeDodCoverageByPriority', () => {
+  it('returns zero stats for all priorities when items empty', () => {
+    const r = computeDodCoverageByPriority([])
+    for (const k of [1, 2, 3, 4] as const) {
+      expect(r[k]).toEqual({ total: 0, withDod: 0, withoutDod: 0, coverageRate: null })
+    }
+  })
+
+  it('groups by priority and computes per-bucket DoD coverage', () => {
+    const items: DodCoverageByPriorityFields[] = [
+      // P1: 2 / 2 = 100%
+      { priority: 1, doneAt: null, archivedAt: null, dod: 'a' },
+      { priority: 1, doneAt: null, archivedAt: null, dod: 'b' },
+      // P3: 1 / 2 = 50%
+      { priority: 3, doneAt: null, archivedAt: null, dod: 'c' },
+      { priority: 3, doneAt: null, archivedAt: null, dod: null },
+      // P4: 0 / 2 = 0%
+      { priority: 4, doneAt: null, archivedAt: null, dod: null },
+      { priority: 4, doneAt: null, archivedAt: null, dod: '' },
+    ]
+    const r = computeDodCoverageByPriority(items)
+    expect(r[1]).toEqual({ total: 2, withDod: 2, withoutDod: 0, coverageRate: 1 })
+    expect(r[3]).toEqual({ total: 2, withDod: 1, withoutDod: 1, coverageRate: 0.5 })
+    expect(r[4]).toEqual({ total: 2, withDod: 0, withoutDod: 2, coverageRate: 0 })
+  })
+
+  it('normalizes null/undefined/out-of-range priority to p4', () => {
+    const items: DodCoverageByPriorityFields[] = [
+      { priority: null, doneAt: null, archivedAt: null, dod: 'a' },
+      { priority: undefined, doneAt: null, archivedAt: null, dod: null },
+      { priority: 99, doneAt: null, archivedAt: null, dod: 'b' },
+    ]
+    const r = computeDodCoverageByPriority(items)
+    expect(r[4]).toEqual({ total: 3, withDod: 2, withoutDod: 1, coverageRate: 2 / 3 })
+  })
+})
+
+describe('formatDodCoverageByPriorityJa', () => {
+  it('formats per-priority entries (skips total=0)', () => {
+    const items: DodCoverageByPriorityFields[] = [
+      { priority: 1, doneAt: null, archivedAt: null, dod: 'a' },
+      { priority: 1, doneAt: null, archivedAt: null, dod: 'b' },
+      { priority: 3, doneAt: null, archivedAt: null, dod: 'c' },
+      { priority: 3, doneAt: null, archivedAt: null, dod: null },
+    ]
+    const r = computeDodCoverageByPriority(items)
+    expect(formatDodCoverageByPriorityJa(r)).toBe('DoD カバレッジ: P1 100% (2/2) / P3 50% (1/2)')
+  })
+
+  it('formats empty (all priorities total=0) as "未完了 0 件 (該当なし)"', () => {
+    const r = computeDodCoverageByPriority([])
+    expect(formatDodCoverageByPriorityJa(r)).toBe('未完了 0 件 (該当なし)')
   })
 })
 

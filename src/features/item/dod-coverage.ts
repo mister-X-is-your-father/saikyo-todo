@@ -16,10 +16,16 @@
  *   - coverageRate = withDod / total (total=0 → null)
  */
 
+import { normalizePriority, type PriorityKey } from './priority'
+
 export interface DodCoverageFields {
   doneAt: Date | string | null | undefined
   archivedAt: Date | string | null | undefined
   dod: string | null | undefined
+}
+
+export interface DodCoverageByPriorityFields extends DodCoverageFields {
+  priority: number | null | undefined
 }
 
 export interface DodCoverageStats {
@@ -77,6 +83,48 @@ export function formatDodCoverageJa(stats: DodCoverageStats): string {
     return `DoD カバレッジ: 0% (0 / ${stats.total} 件 — 全て未設定)`
   }
   return `DoD カバレッジ: ${pct}% (${stats.withDod} / ${stats.total} 件 — 未設定 ${stats.withoutDod} 件)`
+}
+
+/**
+ * iter362 ai-automation: priority 別の `DodCoverageStats` を計算する pure helper。
+ *
+ * iter344 (`computeDueHitRateByPriority`) と対称。「P1 DoD 100% / P3 DoD 50%」の
+ * ように priority 別に受入条件のカバレッジを出し、AI brief / pm-agent /
+ * dashboard widget で「低優先 ほど DoD 未設定 = scope 曖昧」 bias を検出可能に。
+ */
+export type DodCoverageByPriority = Record<PriorityKey, DodCoverageStats>
+
+export function computeDodCoverageByPriority<T extends DodCoverageByPriorityFields>(
+  items: readonly T[],
+): DodCoverageByPriority {
+  const buckets: Record<PriorityKey, T[]> = { 1: [], 2: [], 3: [], 4: [] }
+  for (const it of items) {
+    buckets[normalizePriority(it.priority)].push(it)
+  }
+  return {
+    1: computeDodCoverage(buckets[1]),
+    2: computeDodCoverage(buckets[2]),
+    3: computeDodCoverage(buckets[3]),
+    4: computeDodCoverage(buckets[4]),
+  }
+}
+
+/**
+ * AI prompt 用 1 行サマリ (priority 別):
+ *   `'DoD カバレッジ: P1 100% (3/3) / P2 80% (4/5) / P4 50% (1/2)'`
+ *
+ * total=0 の priority は省略。全 priority が total=0 → `'未完了 0 件 (該当なし)'`。
+ */
+export function formatDodCoverageByPriorityJa(byPriority: DodCoverageByPriority): string {
+  const parts: string[] = []
+  for (const k of [1, 2, 3, 4] as const) {
+    const stats = byPriority[k]
+    if (stats.total === 0 || stats.coverageRate === null) continue
+    const pct = Math.round(stats.coverageRate * 100)
+    parts.push(`P${k} ${pct}% (${stats.withDod}/${stats.total})`)
+  }
+  if (parts.length === 0) return '未完了 0 件 (該当なし)'
+  return `DoD カバレッジ: ${parts.join(' / ')}`
 }
 
 /**
