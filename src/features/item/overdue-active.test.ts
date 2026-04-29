@@ -8,6 +8,8 @@ import { describe, expect, it } from 'vitest'
 
 import {
   computeOverdueActive,
+  computeOverdueActiveByPriority,
+  formatOverdueActiveByPriorityJa,
   formatOverdueActiveJa,
   type OverdueActiveFields,
   overdueActiveSeverity,
@@ -171,5 +173,66 @@ describe('overdueActiveSeverity', () => {
     ]
     const stats = computeOverdueActive(items, TODAY)
     expect(overdueActiveSeverity(stats)).toBe('severe')
+  })
+})
+
+type OverdueActiveFieldsWithPriority = OverdueActiveFields & {
+  priority: number | null | undefined
+}
+
+function mkP(overrides: Partial<OverdueActiveFieldsWithPriority>): OverdueActiveFieldsWithPriority {
+  return {
+    status: overrides.status ?? 'todo',
+    dueDate: 'dueDate' in overrides ? overrides.dueDate : dueDateNDaysAgo(1),
+    doneAt: overrides.doneAt ?? null,
+    archivedAt: overrides.archivedAt ?? null,
+    priority: overrides.priority ?? 4,
+  }
+}
+
+describe('computeOverdueActiveByPriority', () => {
+  it('items 空 → 全 P bucket count=0', () => {
+    const result = computeOverdueActiveByPriority([], TODAY)
+    expect(result[1]).toEqual({ count: 0, oldestOverdueDays: null })
+    expect(result[2]).toEqual({ count: 0, oldestOverdueDays: null })
+    expect(result[3]).toEqual({ count: 0, oldestOverdueDays: null })
+    expect(result[4]).toEqual({ count: 0, oldestOverdueDays: null })
+  })
+
+  it('priority 別 overdue 集計 + 最古日数', () => {
+    const items = [
+      mkP({ priority: 1, dueDate: dueDateNDaysAgo(14), status: 'todo' }),
+      mkP({ priority: 1, dueDate: dueDateNDaysAgo(5), status: 'in_progress' }),
+      mkP({ priority: 3, dueDate: dueDateNDaysAgo(8), status: 'todo' }),
+    ]
+    const result = computeOverdueActiveByPriority(items, TODAY)
+    expect(result[1]).toEqual({ count: 2, oldestOverdueDays: 14 })
+    expect(result[3]).toEqual({ count: 1, oldestOverdueDays: 8 })
+    expect(result[2]).toEqual({ count: 0, oldestOverdueDays: null })
+  })
+
+  it('priority null/範囲外 は p4', () => {
+    const items = [
+      mkP({ priority: null, dueDate: dueDateNDaysAgo(3), status: 'todo' }),
+      mkP({ priority: 99 as number, dueDate: dueDateNDaysAgo(7), status: 'todo' }),
+    ]
+    const result = computeOverdueActiveByPriority(items, TODAY)
+    expect(result[4]).toEqual({ count: 2, oldestOverdueDays: 7 })
+  })
+})
+
+describe('formatOverdueActiveByPriorityJa', () => {
+  it('全 P count=0 → 期限超過 0 件', () => {
+    const empty = computeOverdueActiveByPriority([], TODAY)
+    expect(formatOverdueActiveByPriorityJa(empty)).toBe('期限超過 0 件')
+  })
+
+  it('複数 P 分散 → 番号順 / 区切り、count=0 P 省略', () => {
+    const items = [
+      mkP({ priority: 1, dueDate: dueDateNDaysAgo(14), status: 'todo' }),
+      mkP({ priority: 3, dueDate: dueDateNDaysAgo(5), status: 'todo' }),
+    ]
+    const byP = computeOverdueActiveByPriority(items, TODAY)
+    expect(formatOverdueActiveByPriorityJa(byP)).toBe('P1 1 件 (最古 14日) / P3 1 件 (最古 5日)')
   })
 })

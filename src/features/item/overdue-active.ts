@@ -27,6 +27,7 @@
 import { isValidIsoDate, MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { formatNonZeroCounts } from '@/lib/format-counts'
 
+import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
 import { normalizeStatus } from './status-visual'
 
 export interface OverdueActiveFields {
@@ -145,4 +146,52 @@ export function overdueActiveSeverity(stats: OverdueActiveStats): OverdueActiveS
   if ((stats.oldestOverdueDays ?? 0) >= 7) return 'severe'
   if (stats.total >= 5) return 'severe'
   return 'mild'
+}
+
+/** by-priority 集計の単 bucket 値: overdue active 件数 + 最古超過日数 (count=0 → null)。 */
+export interface OverdueActiveByPriorityStats {
+  count: number
+  oldestOverdueDays: number | null
+}
+
+/**
+ * iter369 ai-automation: overdue active items を priority 別に集計する pure helper。
+ * iter382 hygiene-debt-by-priority / iter387 slip-days-by-priority / iter389
+ * backlog-aging-by-priority / iter399 stale-urgent-by-priority / iter362
+ * wip-stuck-by-priority と並ぶ「× priority」軸 10 弾目。
+ *
+ * 「P1 期限超過 3 件 (最古 14 日) / P3 期限超過 2 件 (最古 5 日)」のように 高優先軸の
+ * overdue を分離して可視化、全体「期限超過 5 件」だけでは見えない priority bias を露出。
+ * computeOverdueActive の filter ロジックは bucketByPriorityWith 経由で priority 別に
+ * 再適用 (P1 のみ / P2 のみ ... の各 bucket 内で overdue 集計)。
+ */
+export function computeOverdueActiveByPriority<
+  T extends OverdueActiveFields & { priority: number | null | undefined },
+>(
+  items: readonly T[],
+  today: Date | string = new Date(),
+): Record<PriorityKey, OverdueActiveByPriorityStats> {
+  return bucketByPriorityWith(items, (group) => {
+    const stats = computeOverdueActive(group, today)
+    if (stats.total === 0) return { count: 0, oldestOverdueDays: null }
+    return { count: stats.total, oldestOverdueDays: stats.oldestOverdueDays }
+  })
+}
+
+/**
+ * priority 別 overdue active を 1 行 summary に。例:
+ *   'P1 3 件 (最古 14日) / P3 2 件 (最古 5日)' / count=0 P 省略 / 全 P 0 → '期限超過 0 件'
+ */
+export function formatOverdueActiveByPriorityJa(
+  byPriority: Record<PriorityKey, OverdueActiveByPriorityStats>,
+): string {
+  const parts: string[] = []
+  for (const k of PRIORITY_ORDER) {
+    const s = byPriority[k]
+    if (s.count > 0 && s.oldestOverdueDays !== null) {
+      parts.push(`P${k} ${s.count} 件 (最古 ${s.oldestOverdueDays}日)`)
+    }
+  }
+  if (parts.length === 0) return '期限超過 0 件'
+  return parts.join(' / ')
 }
