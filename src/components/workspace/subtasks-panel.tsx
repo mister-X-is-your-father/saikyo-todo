@@ -36,6 +36,11 @@ import { toast } from 'sonner'
 import { fullPathOf } from '@/lib/db/ltree-path'
 import { isAppError } from '@/lib/errors'
 
+import {
+  formatDescendantsActivityHintJa,
+  formatDescendantsProgressJa,
+  summarizeDescendantsProgress,
+} from '@/features/item/descendants-progress'
 import { useCreateItem, useItems, useMoveItem, useReorderItem } from '@/features/item/hooks'
 import type { Item } from '@/features/item/schema'
 
@@ -328,6 +333,14 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
   /** 再帰総数 (孫以下も含めた直接 + 間接 子孫の件数)。h3 に表示。iter300 で helper 化 */
   const totalDescendants = countDescendants(parent, allItems)
 
+  // iter426 basics: subtree 進捗 + activity hint を panel 先頭に表示。
+  // iter417 / iter424 substrate を bind、items.data 既取得済なので追加 query なし。
+  // total === 0 (子タスクなし) は panel 自体非表示で UI 静か。
+  const descendantsProgress = summarizeDescendantsProgress(
+    { id: parent.id, parentPath: parent.parentPath },
+    allItems,
+  )
+
   // DnD: backlog-view と同じ sensor 設定 (mouse 5px / touch 250ms 長押し)
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
@@ -406,6 +419,31 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
 
   return (
     <div className="space-y-4" data-testid="subtasks-panel">
+      {descendantsProgress.total > 0 ? (
+        <div
+          className={`rounded-md border px-3 py-2 ring-1 ring-inset ${
+            descendantsProgress.isComplete
+              ? 'border-emerald-200 bg-emerald-50 ring-emerald-200'
+              : descendantsProgress.blocked > 0
+                ? 'border-amber-200 bg-amber-50 ring-amber-200'
+                : 'border-slate-200 bg-slate-50 ring-slate-200'
+          }`}
+          role="status"
+          aria-live="polite"
+          aria-label={`サマリ: ${formatDescendantsActivityHintJa(descendantsProgress)} — ${formatDescendantsProgressJa(descendantsProgress)}`}
+          data-testid="subtasks-progress-summary"
+          data-pct-done={descendantsProgress.pctDone}
+        >
+          <div className="text-xs font-medium">
+            <span aria-hidden="true">📋 </span>
+            {formatDescendantsActivityHintJa(descendantsProgress)}
+          </div>
+          <div className="text-muted-foreground mt-0.5 text-[11px]" aria-hidden="true">
+            {formatDescendantsProgressJa(descendantsProgress)}
+          </div>
+        </div>
+      ) : null}
+
       <DecomposeProposalsPanel workspaceId={workspaceId} parentItemId={parent.id} />
 
       <div className="space-y-2" role="region" aria-labelledby="subtasks-existing-heading">
