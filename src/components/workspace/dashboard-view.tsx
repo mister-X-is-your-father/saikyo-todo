@@ -113,6 +113,8 @@ import {
   pickMustOverdueItems,
 } from '@/features/item/must-overdue'
 import {
+  computeMustStuckWipByPriority,
+  formatMustStuckWipByPriorityJa,
   formatMustStuckWipJa,
   mustStuckWipSeverity,
   pickMustStuckWipItems,
@@ -421,7 +423,14 @@ export function DashboardView({ workspaceId }: Props) {
     const sev = mustStuckWipSeverity(entries)
     if (sev === 'idle') return null
     const summary = formatMustStuckWipJa(entries, 3)
-    return { entries, summary, severity: sev }
+    // iter391 basics: iter389 で追加した computeMustStuckWipByPriority を SR / hover に bind
+    // (iter386 must-overdue chip と同手法、3 層情報設計の must-stuck-wip 版)。
+    // priorityBuckets > 1 の時のみ append、単一 P 偏在は冗長省略。
+    const byPriority = computeMustStuckWipByPriority(itemsQ.data)
+    const priorityBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)
+    const detail =
+      priorityBuckets > 1 ? `${summary} — ${formatMustStuckWipByPriorityJa(byPriority)}` : summary
+    return { entries, summary, detail, severity: sev }
   }, [itemsQ.data])
 
   // iter361 basics: recent-completed (iter359) を bind。直近 24h 完了 item の
@@ -863,8 +872,8 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-must-stuck-wip-chip"
             toneClass="border-red-300 bg-red-100 text-red-800"
             glyph="🚨"
-            ariaLabel={mustStuckWip.summary}
-            title={mustStuckWip.summary}
+            ariaLabel={mustStuckWip.detail}
+            title={mustStuckWip.detail}
             text={mustStuckWip.summary}
             attention
             dataAttrs={{
