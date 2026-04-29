@@ -15,6 +15,123 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ## 未処理 (新しい順)
 
+### 2026-04-29 — Template 登録機能 (タスク + サブタスクをまとめて) ★ 新規 ★
+
+- [ ] **Template 登録機能 — タスク + サブタスクをまとめて 1 つの Template として登録、再利用** — 分類: 実装要望 (中-大)
+  - 原文: 「テンプレート登録機能。タスクとサブタスクをまとめて登録できる」
+  - 仮解釈:
+    - 既存 `templates` table (Phase MVP の Template 機能) を拡張、または UI のみ追加
+    - parent task 1 件 + child subtask N 件 を 1 Template として保存
+    - 「Template から create」 button で workspace に instance 化 (新 Item として子孫含めて投入)
+    - 名前 / 説明 / category (PJ start / week start / etc) で管理
+  - 既存資産:
+    - `src/features/template/` (Phase MVP で実装済 — Template foundation)
+    - `src/components/workspace/templates-panel.tsx` 等で UI ある
+    - `subtasks-panel.tsx` の bulk add (`parseBulkSubtaskTitles`) は流用可能
+    - ltree path `parent_path` で子孫の階層を保持できる
+  - 設計案 3 scope:
+    - **A (最小)**: ItemEditDialog から「この Item と subtask を Template に保存」 button → 既存 templates テーブルに JSON で {parent, children[]} を保存。create 時に bulk insert
+    - **B (中)**: /<wsId>/templates 画面で Template 編集 UI (drag&drop で順序変更、subtask 追加/削除)、preview pane
+    - **C (大)**: AI 提案 — 過去の似た Item 集を analyze して Template 候補を提示、ボタン 1 つで保存
+  - **要追加質問**:
+    - (a) 既存 Template 機能 (Phase MVP) との関係 — 拡張? それとも別 entity?
+    - (b) 階層 — subtask の subtask まで再帰的に保持?
+    - (c) Template 起動時 — parent + child を一気に作るか、1 件ずつ確認するか?
+
+### 2026-04-29 — 案件の現状 + 着地プラン を 一目で分かる panel ★ 新規 ★
+
+- [ ] **「この案件、今どんな感じ？」「どう着地させるつもり？」を 1 画面で一目化** — 分類: 実装要望 (中-大、AI 寄り)
+  - 原文: 「『この案件、今どんな感じ？』『どう着地させるつもり？』というのが一目でわかるものにしたい」
+  - 仮解釈 (parent Item / プロジェクト粒度の視覚 status):
+    - **現状 sec**: 進捗 % (subtask done / total)、in_progress 子の数、blocked 子の数、直近 7 日の commit/comment 件数、最終 update 時刻
+    - **着地 sec**: 予定 end (子の dueDate 最遅 or critical path、ガント連携)、risk score (overdue 子比率 + blocked 比率 + 最終 update からの経過)、AI 1 段落要約 ("残 5 タスク中 3 件は X、ボトルネックは Y、来週金曜着地予定")
+    - **次の動き sec**: AI が「次にやるべき 3 件」を picking + 担当者 suggest
+  - 既存資産:
+    - `subtask-status.ts` (status helper)
+    - `formatDependencyReadiness` / `summarizeDependencyReadiness` (依存タブで実装済の readiness 集約)
+    - `gantt-view.tsx` の critical path 計算 (`computeCriticalPath`)
+    - `dashboard-view.tsx` (workspace 全体の bird's-eye)
+    - Researcher Agent (Anthropic SDK 経由で要約生成済の経験あり)
+  - 設計案 3 scope:
+    - **A (最小)**: ItemEditDialog に新 tab「サマリ」を追加、subtask 進捗 + readiness + 直近 activity を pure helper で集約 (AI 不使用、即実装可能 30-50 行 / 1-2 commit)
+    - **B (中)**: A + 着地予測 (critical path / 残 estimate sum / 過去 bias で校正) + risk score chip
+    - **C (大)**: B + AI 自動要約 (Researcher Agent で 1 段落生成、cost 制御で週 1 更新 cron)
+  - 表示 placement 案:
+    - (i) ItemEditDialog の新 tab (Item 単位で見たい時)
+    - (ii) Kanban カード上部の disclosure (一覧上で軽く見たい時)
+    - (iii) /dashboard の「進行中案件」 panel (workspace 横断で見たい時)
+    - 推奨: まず (i) から、次に (iii) に展開
+  - **要追加質問**:
+    - (a) 「案件」の単位は parent task か、AI 自動 cluster か、Goal/Sprint 単位か?
+    - (b) 「着地予測」は date 一発? それとも信頼区間 (P50/P90)?
+    - (c) AI 要約の更新頻度 — リアルタイム / on demand / 日次 cron?
+    - (d) risk score の閾値 — 緑/黄/赤 の境界値はチーム判断? デフォルトプリセットあり?
+  - 関連既存 candidate:
+    - 「依存タブの readiness chip」(iter306 で実装済) は本機能の縮小版に近い、それを Item 全体のサマリに昇華するイメージ
+
+### 2026-04-29 — チームメンバーの余裕時間 ぱっと一覧 ★ 新規 ★
+
+- [ ] **各チームメンバーの今日 / 今週の余裕時間を 1 画面で 一覧表示** — 分類: 実装要望 (中)
+  - 原文: 「各チームメンバーが今日、今週、どれくらい余裕な時間があるのかなども見れるようにしたい。ぱっと」
+  - 仮解釈:
+    - workspace の全 member を 1 画面に並べ、各 member の **今日 / 今週の利用可能時間 vs 既割当 estimateMinutes 合計** を progress bar / chip で可視化
+    - 「赤=オーバー / 黄=ギリ / 緑=余裕」を色分け (graphical 波及シリーズと整合)
+    - assignment / 期日変更時に即時反映 (TanStack Query で member 別に invalidate)
+    - 「割り振りすぎ」検知 → 余裕ある member への移管 suggestion
+  - 計算式 (案):
+    - working hours = 1 日 8h (member 別に上書き可、workspace_settings に default_member_capacity_minutes を将来追加)
+    - 今日の used = 今日の dueDate / scheduledFor を持つ未完了 Item の estimateMinutes 合計 (assignee=該当 member)
+    - 今週の used = 今週 ISO 週内の同上 (5 営業日 × 8h = 40h)
+    - 余裕 = capacity - used、負なら overload
+  - 既存資産:
+    - `extractEstimateMinutes` (description から 見積分数 取出、iter255 で pure 化)
+    - `workspaceMemberRepository` (member 一覧)
+    - `personal-period-goal` の daily/weekly view ロジック (期間 filter)
+    - `time_entries` (実測値、見積精度の校正に使える)
+  - 設計案 3 scope:
+    - **A (最小)**: workspace home に「余裕時間」 panel、各 member 1 行 (avatar + 今日 chip + 今週 chip)、見積無し Item は計算除外
+    - **B (中)**: A + 詳細 modal (member click → 今日の Item 一覧 + estimate 詳細 + 過去 N 週の actual vs estimate bias)
+    - **C (大)**: B + drag&drop で他 member へ Item 移管、AI suggestion (「田中さんが overload、佐藤さんが余裕、移管しますか?」)
+  - **要追加質問**:
+    - (a) 見積が無い Item をどう扱うか? 「未見積」counter で別表示? AI 自動見積で穴埋め?
+    - (b) capacity は 1 日 8h 固定 or member 別設定? 半休/休暇 (Calendar 連携) も考慮?
+    - (c) 「今週」の境界 — ISO 週 (月-日) / 業務週 (月-金) どちらが priority?
+    - (d) MUST item は別カウント? capacity から優先で引く?
+    - (e) Slack 通知 — 「明日 overload です」を朝 8 時に出すか?
+  - 既存に近い候補:
+    - Dashboard view (`/<wsId>/dashboard`) に member 別 panel を追加するのが自然
+    - Personal Period View (`/<wsId>/<period>`) は "自分用" 画面なので、team 用は新画面 `/<wsId>/team-capacity` or Dashboard 拡張
+
+### 2026-04-29 — Gantt DnD で期間を直接編集 ★ 新規 ★
+
+- [ ] **Gantt bar を DnD で move / resize、依存タスクごとまるまるシフト** — 分類: 実装要望 (大)
+  - 原文: 「ガントチャートの期間を直接ドラッグアンドドロップで移動・スタート位置やエンドの位置を自由に変えられたり、依存タスクごとまるまるずらせたり」
+  - 仮解釈 (TeamGantt / GanttPRO 並 UX):
+    - (1) **bar 中央を drag** → start/end を平行 shift (期間維持)、dueDate / scheduledFor を update
+    - (2) **bar 左 edge を drag** → start のみ変更 (resize)、scheduledFor だけ update
+    - (3) **bar 右 edge を drag** → end のみ変更 (resize)、dueDate だけ update
+    - (4) **Shift+drag (or 「依存ごと」 mode toggle) で前提/後続もまとめて shift** — `useWorkspaceBlocksDependencies` で依存 graph 取得 → 自分 + 後続 (transitive closure) を一括 update
+    - (5) snap to day boundary、drop 時に楽観ロックで update mutation、競合時は toast + revert
+  - 既存資産:
+    - `gantt-view.tsx` (583 行、bar render は既に role=button + keyboard 対応済 iter99)
+    - `GanttDependencyArrows` (SVG 線描画)
+    - `useWorkspaceBlocksDependencies` (workspace 横断 dep 取得)
+    - `@dnd-kit` 既導入 (subtasks / backlog で使用、Gantt bar にも適用可)
+    - `itemService.update` で楽観ロック付き dueDate / scheduledFor 変更可能
+  - 設計案 3 scope:
+    - **A (最小)**: bar 中央 drag → 期間平行 shift だけ実装 (左右 edge / 依存連動は後)
+    - **B (中)**: A + 左右 edge drag (resize) + snap to day grid + visual feedback
+    - **C (大)**: B + Shift+drag で transitive closure shift + critical path 強調更新 + collision 警告
+  - 既存制約 (考慮):
+    - cell width は zoom level (週/月) で可変、DnD は pixel→day 変換が必要
+    - 楽観ロックで version 不一致 → revert → conflict toast
+    - subtask の parent shift は連動するか? (`itemService.move` か別 logic か)
+  - **要追加質問**:
+    - (a) Shift+drag の依存連動範囲 — 直接の後続のみ? 全 transitive? Critical path のみ?
+    - (b) drag 中の visual — 半透明 ghost? 元位置に reset アニメーション (失敗時)?
+    - (c) day 未満の resolution は許容? (現状 dueDate / scheduledFor は date 型なので day 単位で十分?)
+    - (d) cron 範囲外への drag (= 過去日付 / 1 年先) は許容?
+
 ### ✅ 2026-04-29 完了 (旧 P0 最優先消化済)
 
 **TickTick タイマー Scope B (Document PiP) は iter315 で実装済**:
