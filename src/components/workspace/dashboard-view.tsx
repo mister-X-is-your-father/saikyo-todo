@@ -137,6 +137,8 @@ import {
   wipBiasKind,
 } from '@/features/item/wip-by-priority'
 import {
+  computeStuckWipByPriority,
+  formatStuckWipByPriorityJa,
   formatStuckWipSummaryJa,
   selectStuckWipItems,
   stuckWipSeverity,
@@ -328,7 +330,13 @@ export function DashboardView({ workspaceId }: Props) {
     const sev = stuckWipSeverity(entries)
     if (sev === 'idle') return null
     const summary = formatStuckWipSummaryJa(entries, 3)
-    return { entries, summary, severity: sev }
+    // iter363 basics: priority 別 breakdown を tooltip に同梱 (iter363/366/373/378/383
+    // /388/391/401 と同手法)。複数 P 分散時のみ append、単一 P 偏在は冗長省略。
+    const byPriority = computeStuckWipByPriority(itemsQ.data)
+    const priorityBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)
+    const detail =
+      priorityBuckets > 1 ? `${summary} — ${formatStuckWipByPriorityJa(byPriority)}` : summary
+    return { entries, summary, severity: sev, detail }
   }, [itemsQ.data])
 
   // iter361 basics: recent-completed (iter359) を bind。直近 24h 完了 item の
@@ -756,8 +764,8 @@ export function DashboardView({ workspaceId }: Props) {
                 : chipTone3Class('warn')
             }
             glyph="⏸"
-            ariaLabel={wipStuck.summary}
-            title={wipStuck.summary}
+            ariaLabel={wipStuck.detail}
+            title={wipStuck.detail}
             text={wipStuck.summary}
             dataAttrs={{
               'data-severity': wipStuck.severity,
