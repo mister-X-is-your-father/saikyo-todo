@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  computeRecentCompletedByPriority,
+  formatRecentCompletedByPriorityJa,
   formatRecentCompletedSummaryJa,
+  type RecentCompletedEntry,
   type RecentCompletedFields,
   selectRecentCompleted,
 } from './recent-completed'
@@ -206,5 +209,66 @@ describe('integration: items → select → format', () => {
     expect(formatRecentCompletedSummaryJa(all)).toBe(
       '今日の達成: 3 件 — タスクA / タスクB / タスクC',
     )
+  })
+})
+
+describe('computeRecentCompletedByPriority / formatRecentCompletedByPriorityJa', () => {
+  type Item = { id: string; title: string; priority: number; doneAt: string }
+  const e = (
+    id: string,
+    minutesAgo: number,
+    priority: 1 | 2 | 3 | 4,
+  ): RecentCompletedEntry<Item> => {
+    const doneAt = new Date(NOW.getTime() - minutesAgo * 60 * 1000)
+    return {
+      item: { id, title: `T-${id}`, priority, doneAt: doneAt.toISOString() },
+      priority,
+      doneAt,
+    }
+  }
+
+  it('空 → 全 bucket count=0 / latestMinutesAgo=null', () => {
+    const r = computeRecentCompletedByPriority([], NOW)
+    expect(r).toEqual({
+      1: { count: 0, latestMinutesAgo: null },
+      2: { count: 0, latestMinutesAgo: null },
+      3: { count: 0, latestMinutesAgo: null },
+      4: { count: 0, latestMinutesAgo: null },
+    })
+    expect(formatRecentCompletedByPriorityJa(r)).toBe('今日の達成 0 件')
+  })
+
+  it('P1 2 件 (3分前 / 30分前) + P3 1 件 (1時間前) → P1 latest=3 / P3 latest=60', () => {
+    const r = computeRecentCompletedByPriority([e('a', 3, 1), e('b', 30, 1), e('c', 60, 3)], NOW)
+    expect(r[1]).toEqual({ count: 2, latestMinutesAgo: 3 })
+    expect(r[2]).toEqual({ count: 0, latestMinutesAgo: null })
+    expect(r[3]).toEqual({ count: 1, latestMinutesAgo: 60 })
+    expect(r[4]).toEqual({ count: 0, latestMinutesAgo: null })
+    expect(formatRecentCompletedByPriorityJa(r)).toBe(
+      '今日の達成: P1 2 件 (最新 3分前) / P3 1 件 (最新 1時間前)',
+    )
+  })
+
+  it('単一 priority 偏在 → 1 行のみ (5時間前 = 300分)', () => {
+    const r = computeRecentCompletedByPriority([e('a', 300, 4)], NOW)
+    expect(formatRecentCompletedByPriorityJa(r)).toBe('今日の達成: P4 1 件 (最新 5時間前)')
+  })
+
+  it('60 分以上は時間表記、未満は分表記', () => {
+    const r1 = computeRecentCompletedByPriority([e('a', 59, 1)], NOW)
+    expect(formatRecentCompletedByPriorityJa(r1)).toBe('今日の達成: P1 1 件 (最新 59分前)')
+    const r2 = computeRecentCompletedByPriority([e('a', 60, 1)], NOW)
+    expect(formatRecentCompletedByPriorityJa(r2)).toBe('今日の達成: P1 1 件 (最新 1時間前)')
+  })
+
+  it('未来 doneAt は 0 分前へ clamp (defensive)', () => {
+    const future = new Date(NOW.getTime() + 5 * 60 * 1000)
+    const entry: RecentCompletedEntry<Item> = {
+      item: { id: 'f', title: 'F', priority: 1, doneAt: future.toISOString() },
+      priority: 1,
+      doneAt: future,
+    }
+    const r = computeRecentCompletedByPriority([entry], NOW)
+    expect(r[1]?.latestMinutesAgo).toBe(0)
   })
 })
