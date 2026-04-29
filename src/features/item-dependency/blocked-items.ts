@@ -199,23 +199,26 @@ export function formatBlockedItemsByPriorityJa(byPriority: BlockedItemsByPriorit
  *  - 'moderate'  → '依存中程度'               (count 3-4 または max 3-4)
  *  - 'severe'    → '依存深刻 (前提解消急務)'  (count ≥ 5 または max ≥ 5)
  *
+ * iter445 refactor: 判定ロジックは `classifyByCountAndMax` (lib/hint.ts) に
+ * 集約済 (at-risk-parents-hint と共通)。本 callsite は閾値 + getter のみ提供。
+ *
  * caller benefits: dashboard chip の glyph / tone を hint base で決める / Slack 1
  * 行 status / AI prompt の 1 word ヒント。formatBlockedItemsBriefJa (詳細 list)
  * と相補で「数値 vs 意味付け」を出し分け。
  */
-export type BlockedItemsHint = 'idle' | 'mild' | 'moderate' | 'severe'
+import { classifyByCountAndMax, type FourStateHint } from '@/lib/hint'
+
+export type BlockedItemsHint = FourStateHint
 
 export function classifyBlockedItemsHint(
   blocked: readonly WorkspaceBlockedItem[],
 ): BlockedItemsHint {
-  if (blocked.length === 0) return 'idle'
-  let maxBlockers = 0
-  for (const b of blocked) {
-    if (b.openBlockerCount > maxBlockers) maxBlockers = b.openBlockerCount
-  }
-  if (blocked.length >= 5 || maxBlockers >= 5) return 'severe'
-  if (blocked.length >= 3 || maxBlockers >= 3) return 'moderate'
-  return 'mild'
+  return classifyByCountAndMax(blocked, (b) => b.openBlockerCount, {
+    moderateCount: 3,
+    moderateMax: 3,
+    severeCount: 5,
+    severeMax: 5,
+  })
 }
 
 const HINT_LABEL_JA: Record<BlockedItemsHint, string> = {

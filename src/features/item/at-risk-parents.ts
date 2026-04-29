@@ -29,6 +29,7 @@
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { fullPathOf, isPathDescendantOf } from '@/lib/db/ltree-path'
 import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
+import { classifyByCountAndMax, type FourStateHint } from '@/lib/hint'
 
 import {
   formatPriorityBucketsLabeled,
@@ -216,25 +217,26 @@ export function formatAtRiskParentsByPriorityJa(byPriority: AtRiskParentsByPrior
  *  - 'moderate'  → '案件停滞多め'                     (count 3-4 または max 14-29)
  *  - 'severe'    → '案件深刻放置 (要 review)'         (count ≥ 5 または max ≥ 30)
  *
+ * iter445 refactor: 判定ロジックは `classifyByCountAndMax` (lib/hint.ts) に
+ * 集約済 (blocked-items-hint と共通)。本 callsite は閾値 + getter のみ提供。
+ *
  * caller benefits:
  *  - dashboard chip の glyph / tone を hint base で決める (severe = red 候補)
  *  - Slack 朝 brief の 1 行 status (severe で workspace-wide 警告)
  *  - AI prompt の 1 word 状況把握 (= 'severe' なら brief 先頭警告 / 'idle' なら省略)
  *  - formatAtRiskParentsBriefJa (詳細 list) と相補で「数値 vs 意味付け」を出し分け
  */
-export type AtRiskParentsHint = 'idle' | 'mild' | 'moderate' | 'severe'
+export type AtRiskParentsHint = FourStateHint
 
 export function classifyAtRiskParentsHint<I>(
   entries: readonly AtRiskParentEntry<I>[],
 ): AtRiskParentsHint {
-  if (entries.length === 0) return 'idle'
-  let maxStale = 0
-  for (const e of entries) {
-    if (e.maxStaleDays > maxStale) maxStale = e.maxStaleDays
-  }
-  if (entries.length >= 5 || maxStale >= 30) return 'severe'
-  if (entries.length >= 3 || maxStale >= 14) return 'moderate'
-  return 'mild'
+  return classifyByCountAndMax(entries, (e) => e.maxStaleDays, {
+    moderateCount: 3,
+    moderateMax: 14,
+    severeCount: 5,
+    severeMax: 30,
+  })
 }
 
 const HINT_LABEL_JA: Record<AtRiskParentsHint, string> = {
