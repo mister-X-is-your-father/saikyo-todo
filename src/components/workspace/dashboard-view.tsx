@@ -41,7 +41,9 @@ import {
 } from '@/features/item/completion-days-by-priority'
 import {
   computeDodCoverage,
+  computeDodCoverageByPriority,
   dodCoverageTone,
+  formatDodCoverageByPriorityJa,
   formatDodCoverageJa,
 } from '@/features/item/dod-coverage'
 import {
@@ -195,6 +197,9 @@ export function DashboardView({ workspaceId }: Props) {
   // iter353 basics: dod-coverage (iter352) を bind。未完了 item の DoD 設定率を
   // chip 表示。total=0 で chip 非表示。due-date-coverage chip と並列の「planning
   // hygiene 二軸」(期限 + DoD = 計画化 + 受入条件)。
+  // iter363 basics: priority 別 breakdown (iter362) を aria-label / title に同梱
+  // → SR / hover で「P1 100% / P3 50%」が読める (visible chip は全体集計のまま、
+  // richer info は a11y / hover 経路でのみ提供、iter346 hit-rate-tooltip と同手法)。
   const dodCoverage = useMemo(() => {
     if (!itemsQ.data) return null
     const stats = computeDodCoverage(itemsQ.data)
@@ -202,7 +207,12 @@ export function DashboardView({ workspaceId }: Props) {
     const summary = formatDodCoverageJa(stats)
     const tone = dodCoverageTone(stats)
     const pct = Math.round(stats.coverageRate * 100)
-    return { stats, summary, tone, pct }
+    const byPriority = computeDodCoverageByPriority(itemsQ.data)
+    // 複数 priority に未完了が分散している時のみ priority breakdown を tooltip に。
+    const nonEmptyBuckets = ([1, 2, 3, 4] as const).filter((k) => byPriority[k].total > 0).length
+    const detail =
+      nonEmptyBuckets > 1 ? `${summary} — ${formatDodCoverageByPriorityJa(byPriority)}` : summary
+    return { stats, summary, tone, pct, detail }
   }, [itemsQ.data])
 
   // iter356 basics: wip-by-priority (iter354) を bind。in_progress item の priority
@@ -346,8 +356,8 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-dod-coverage-chip"
             toneClass={chipTone3Class(dodCoverage.tone)}
             glyph="✓"
-            ariaLabel={dodCoverage.summary}
-            title={dodCoverage.summary}
+            ariaLabel={dodCoverage.detail}
+            title={dodCoverage.detail}
             text={dodCoverage.summary}
             dataAttrs={{ 'data-coverage-pct': dodCoverage.pct }}
           />
