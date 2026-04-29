@@ -15,6 +15,7 @@ import { AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
+import { trendGlyph, trendToneClass } from '@/lib/ui/trend-tone'
 
 import {
   useBudgetStatus,
@@ -23,7 +24,6 @@ import {
 } from '@/features/agent/cost-hooks'
 import {
   computeMonthlyCostTrend,
-  type CostMonthDirection,
   formatMonthlyCostTrendJa,
   rollupCostByMonth,
 } from '@/features/agent/cost-monthly-trend'
@@ -37,15 +37,9 @@ interface Props {
   workspaceId: string
 }
 
-// iter333 basics: 月次コスト trend chip の direction → tone / glyph map。
-// Dashboard velocity chip (iter331) や TopItemsByTimeChip trend (iter321) と同
-// vocabulary (up=blue↑ / flat=muted→ / down=red↓ / idle=muted·)。
-const COST_TREND_TONE: Record<CostMonthDirection, { glyph: string; class: string }> = {
-  up: { glyph: '↑', class: 'bg-amber-50 text-amber-700 border-amber-200' },
-  down: { glyph: '↓', class: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  flat: { glyph: '→', class: 'bg-muted text-muted-foreground border-border' },
-  idle: { glyph: '·', class: 'bg-muted text-muted-foreground border-border' },
-}
+// iter335 refactor: COST_TREND_TONE は lib/ui/trend-tone.ts に集約 (polarity='negative'、
+// up=amber 警戒 / down=emerald 安心)。Dashboard velocity (positive) と差別化する
+// ドメイン意味は polarity 引数で表現。
 
 export function BudgetPanel({ workspaceId }: Props) {
   const status = useBudgetStatus(workspaceId)
@@ -144,7 +138,7 @@ export function BudgetPanel({ workspaceId }: Props) {
           </div>
           {trendChip ? (
             <div
-              className={`inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-[11px] ${COST_TREND_TONE[trendChip.trend.direction].class}`}
+              className={`inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-[11px] ${trendToneClass(trendChip.trend.direction, 'negative')}`}
               data-testid="budget-cost-trend-chip"
               data-direction={trendChip.trend.direction}
               role="status"
@@ -152,7 +146,7 @@ export function BudgetPanel({ workspaceId }: Props) {
               title={trendChip.line}
             >
               <span aria-hidden="true" className="font-mono">
-                {COST_TREND_TONE[trendChip.trend.direction].glyph}
+                {trendGlyph(trendChip.trend.direction)}
               </span>
               <span aria-hidden="true">{trendChip.line}</span>
             </div>

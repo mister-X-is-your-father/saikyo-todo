@@ -25,6 +25,7 @@ import {
 } from 'recharts'
 
 import { isAppError } from '@/lib/errors'
+import { trendGlyph, trendToneClass } from '@/lib/ui/trend-tone'
 
 import { useBurndown, useMustSummary } from '@/features/dashboard/hooks'
 import { useItems } from '@/features/item/hooks'
@@ -53,18 +54,8 @@ function addDaysISO(baseISO: string, days: number): string {
   return d.toISOString().slice(0, 10)
 }
 
-// iter331 basics: velocity trend の direction を視覚的に意味付け。TopItemsByTimeChip の
-// TREND_TONE と整合 (up=blue 増加 / flat=zinc 横ばい / down=red 失速)。
-const VELOCITY_TONE: Record<'up' | 'flat' | 'down', string> = {
-  up: 'bg-blue-50 text-blue-700 border-blue-200',
-  flat: 'bg-muted text-muted-foreground border-border',
-  down: 'bg-red-50 text-red-700 border-red-200',
-}
-const VELOCITY_GLYPH: Record<'up' | 'flat' | 'down', string> = {
-  up: '↑',
-  flat: '→',
-  down: '↓',
-}
+// iter335 refactor: VELOCITY_TONE / VELOCITY_GLYPH は lib/ui/trend-tone.ts に集約。
+// 時間軸と同 polarity='positive' (up=blue 増加 / flat=muted 横ばい / down=red 失速)。
 
 export function DashboardView({ workspaceId }: Props) {
   const summary = useMustSummary(workspaceId)
@@ -126,7 +117,7 @@ export function DashboardView({ workspaceId }: Props) {
       {/* iter331 basics: velocity chip — 直近 7 日 done 件数 + 傾向 (up/flat/down) */}
       {velocity ? (
         <div
-          className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${VELOCITY_TONE[velocity.result.trend]}`}
+          className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${trendToneClass(velocity.result.trend, 'positive')}`}
           data-testid="dashboard-velocity-chip"
           data-trend={velocity.result.trend}
           role="status"
@@ -134,7 +125,7 @@ export function DashboardView({ workspaceId }: Props) {
           title={velocity.line}
         >
           <span aria-hidden="true" className="font-mono">
-            {VELOCITY_GLYPH[velocity.result.trend]}
+            {trendGlyph(velocity.result.trend)}
           </span>
           <span aria-hidden="true">{velocity.line}</span>
         </div>

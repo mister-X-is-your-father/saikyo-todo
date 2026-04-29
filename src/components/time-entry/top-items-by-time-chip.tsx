@@ -20,6 +20,7 @@ import { useMemo } from 'react'
 import { Flame } from 'lucide-react'
 
 import { isoDaysFromNow, todayISO } from '@/lib/date/iso'
+import { TREND_GLYPH, trendToneClass } from '@/lib/ui/trend-tone'
 
 import { useItems } from '@/features/item/hooks'
 import { formatMinutes } from '@/features/time-entry/category-summary'
@@ -36,7 +37,6 @@ import {
   computeWeeklyTimeTrend,
   formatWeeklyTimeTrendJa,
   splitTimeEntriesByWeek,
-  type WeeklyTimeDirection,
 } from '@/features/time-entry/weekly-time-trend'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -44,14 +44,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 const TOP_N = 5
 const WINDOW_DAYS = 7
 
-// iter321 basics: 稼働時間 trend の direction を視覚的に意味付け (色 + glyph)。
-// up=blue (忙しさ増)、down=red (失速)、flat=zinc (安定)、idle=muted (記録なし)。
-const TREND_TONE: Record<WeeklyTimeDirection, { glyph: string; class: string }> = {
-  up: { glyph: '↑', class: 'bg-blue-50 text-blue-700 border-blue-200' },
-  down: { glyph: '↓', class: 'bg-red-50 text-red-700 border-red-200' },
-  flat: { glyph: '→', class: 'bg-muted text-muted-foreground border-border' },
-  idle: { glyph: '·', class: 'bg-muted text-muted-foreground border-border' },
-}
+// iter335 refactor: TREND_TONE は lib/ui/trend-tone.ts に集約
+// (3 callsite 重複削除、polarity='positive' で時間軸 = 時間多い → blue)。
 
 export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
   const entriesQ = useTimeEntries(workspaceId)
@@ -92,7 +86,8 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
   }, [entriesQ.data, itemsQ.data])
 
   if (!summary) return null
-  const tone = TREND_TONE[summary.trend.direction]
+  const toneClass = trendToneClass(summary.trend.direction, 'positive')
+  const toneGlyph = TREND_GLYPH[summary.trend.direction]
   const peakLabel = summary.peak
     ? `曜日 peak: ${weekdayLabelJa(summary.peak.key)}曜 (${formatMinutes(summary.peak.minutes)})`
     : null
@@ -113,14 +108,14 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
       <CardContent>
         <div className="mb-2 flex flex-wrap items-center gap-1.5">
           <div
-            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${tone.class}`}
+            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${toneClass}`}
             data-testid="weekly-time-trend-chip"
             data-direction={summary.trend.direction}
             role="status"
             aria-label={summary.trendLine}
           >
             <span aria-hidden="true" className="font-mono">
-              {tone.glyph}
+              {toneGlyph}
             </span>
             <span aria-hidden="true">{summary.trendLine}</span>
           </div>
