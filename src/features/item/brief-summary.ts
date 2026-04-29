@@ -30,8 +30,10 @@
 import {
   computeMustOverdue,
   formatMustOverdueJa,
+  type MustOverdueEntry,
   type MustOverdueFields,
   type MustOverdueStats,
+  pickMustOverdueItems,
 } from './must-overdue'
 import {
   formatAtRiskMustSummary,
@@ -42,8 +44,10 @@ import {
 import {
   computeOverdueActive,
   formatOverdueActiveJa,
+  type OverdueActiveEntry,
   type OverdueActiveFields,
   type OverdueActiveStats,
+  pickOverdueActiveItems,
 } from './overdue-active'
 import {
   formatStaleItemsSummary,
@@ -103,6 +107,14 @@ export interface BriefSummary<T extends BriefItemFields> {
   overdueActive: OverdueActiveStats
   /** iter374 追加: MUST かつ期限超過の最深刻 item 集計 (= MVP 「絶対落とさない」原則違反) */
   mustOverdue: MustOverdueStats
+  /**
+   * iter387 追加: MUST × overdue な items の具体名 + overdueDays 一覧 (overdueDays desc 並び)。
+   * caller (AI brief / pm-agent / dashboard tooltip) は同じ buildBriefSummary 呼出から
+   * stats と entries を両方取り出せるので、items を 2 度 walk する必要が無い。
+   */
+  mustOverdueEntries: MustOverdueEntry<T>[]
+  /** iter387 追加: overdue active な items の具体名 + overdueDays 一覧 (must 限定でない全般)。 */
+  overdueActiveEntries: OverdueActiveEntry<T>[]
   /** AI prompt 用 7 行テキスト (同 today 同期済) */
   textSummary: string
   /**
@@ -142,6 +154,9 @@ export function buildBriefSummary<T extends BriefItemFields>(
   const stuckWip = selectStuckWipItems(items, { thresholdDays: stuckWipThresholdDays }, today)
   const overdueActive = computeOverdueActive(items, today)
   const mustOverdue = computeMustOverdue(items, today)
+  // iter387 ai-automation: 同 today で具体名 entries も同時に集約 (caller の重複 walk 回避)
+  const mustOverdueEntries = pickMustOverdueItems(items, today)
+  const overdueActiveEntries = pickOverdueActiveItems(items, today)
 
   const textSummary = [
     formatTopUrgentLine(topUrgent),
@@ -170,6 +185,8 @@ export function buildBriefSummary<T extends BriefItemFields>(
     stuckWip,
     overdueActive,
     mustOverdue,
+    mustOverdueEntries,
+    overdueActiveEntries,
     textSummary,
     headline,
   }

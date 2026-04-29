@@ -268,3 +268,50 @@ describe('buildBriefSummary — substrate 一貫性 (regression guard)', () => {
     expect(r.stale).toHaveLength(0)
   })
 })
+
+describe('buildBriefSummary — iter387 mustOverdueEntries / overdueActiveEntries', () => {
+  it('mustOverdueEntries は isMust + overdue な item の具体名 + overdueDays を返す', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'M1', isMust: true, dueDate: '2026-04-13', title: '提出書類' }), // 14 日 overdue
+      item({ id: 'M2', isMust: true, dueDate: '2026-04-22', title: '連絡' }), // 5 日 overdue
+      item({ id: 'X', isMust: false, dueDate: '2026-04-13', title: '通常タスク' }), // not must
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.mustOverdueEntries.length).toBe(2)
+    expect(r.mustOverdueEntries[0]!.item.title).toBe('提出書類') // overdueDays desc
+    expect(r.mustOverdueEntries[0]!.overdueDays).toBe(14)
+    expect(r.mustOverdueEntries[1]!.item.title).toBe('連絡')
+    expect(r.mustOverdueEntries[1]!.overdueDays).toBe(5)
+  })
+
+  it('overdueActiveEntries は must 関係なく overdue 全般を返す (must 含む)', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'M', isMust: true, dueDate: '2026-04-13', title: 'MUST 急ぎ' }),
+      item({ id: 'N', isMust: false, dueDate: '2026-04-22', title: '通常急ぎ' }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.overdueActiveEntries.length).toBe(2)
+    expect(r.overdueActiveEntries.map((e) => e.item.title)).toEqual(['MUST 急ぎ', '通常急ぎ'])
+  })
+
+  it('overdue が無ければ entries は空配列', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'F', dueDate: '2026-05-10', title: '未来' }),
+      item({ id: 'D', dueDate: '2026-04-20', doneAt: new Date(2026, 3, 25), title: '完了済' }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.mustOverdueEntries).toEqual([])
+    expect(r.overdueActiveEntries).toEqual([])
+  })
+
+  it('stats と entries が同 today で同期される (= mustOverdue.total === mustOverdueEntries.length)', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'A', isMust: true, dueDate: '2026-04-20' }),
+      item({ id: 'B', isMust: true, dueDate: '2026-04-25' }),
+      item({ id: 'C', dueDate: '2026-04-22' }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.mustOverdue.total).toBe(r.mustOverdueEntries.length)
+    expect(r.overdueActive.total).toBe(r.overdueActiveEntries.length)
+  })
+})
