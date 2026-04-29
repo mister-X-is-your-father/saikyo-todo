@@ -343,6 +343,7 @@ function ItemEditDialogInner({
                 aria-required="true"
                 minLength={1}
                 maxLength={500}
+                autoComplete="off"
               />
             </div>
             <div className="space-y-1.5">
@@ -352,6 +353,7 @@ function ItemEditDialogInner({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 maxLength={10_000}
+                autoComplete="off"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -503,6 +505,7 @@ function ItemEditDialogInner({
                   aria-required="true"
                   aria-describedby="editDod-hint"
                   data-testid="edit-item-dod"
+                  autoComplete="off"
                 />
                 <p
                   id="editDod-hint"
