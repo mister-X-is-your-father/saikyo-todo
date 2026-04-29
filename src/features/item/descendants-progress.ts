@@ -149,3 +149,40 @@ export function formatDescendantsProgressJa(p: DescendantsProgress): string {
   const body = parts.length > 0 ? `: ${parts.join(' / ')}` : ''
   return `進捗 ${p.pctDone}%${body} (全 ${p.total} 件)`
 }
+
+/**
+ * iter424 ai-automation: descendants-progress から「この parent の状態を 1 行で
+ * 表現する action hint」を返す pure helper。
+ *
+ * AI 朝 brief / pm-agent prompt / dashboard widget が「いま何が起きていて、次の
+ * action は何か」を 1 関数で出すための short hint substrate。formatDescendantsProgressJa
+ * が「進捗 60%: 完了 6 / ...」と数値情報を出すのに対し、本 helper は **意味付け** を
+ * 提供 (= 「停滞」「ブロック中」「仕上げ間近」)。
+ *
+ * 判定優先順位 (上から評価、最初に当てはまるもの):
+ *  1. total === 0 → '子タスクなし'
+ *  2. 全 cancelled (denom=0) → '全キャンセル'
+ *  3. isComplete (pctDone === 100) → '完了済'
+ *  4. blocked > 0 → 'ブロック中 (前提解消が先)'
+ *  5. pctDone === 0 (= done=0、in_progress=0、todo only) → '未着手'
+ *  6. pctDone < 25 → 'スタートが遅い'
+ *  7. inProgress === 0 (= done あるが現在動いていない) → '停滞気味'
+ *  8. pctDone < 50 → '前半遅延'
+ *  9. pctDone < 75 → '順調進行中'
+ * 10. pctDone < 100 → '仕上げ間近'
+ *
+ * 判定優先 4 (blocked) > 5 (未着手): blocked が 1 件でも残っていれば「未着手」より
+ * 「ブロック中」を優先 (= blocker 解決が action priority だから)。
+ */
+export function formatDescendantsActivityHintJa(p: DescendantsProgress): string {
+  if (p.total === 0) return '子タスクなし'
+  if (p.total - p.cancelled === 0) return '全キャンセル'
+  if (p.isComplete) return '完了済'
+  if (p.blocked > 0) return 'ブロック中 (前提解消が先)'
+  if (p.pctDone === 0 && p.inProgress === 0) return '未着手'
+  if (p.pctDone < 25) return 'スタートが遅い'
+  if (p.inProgress === 0) return '停滞気味'
+  if (p.pctDone < 50) return '前半遅延'
+  if (p.pctDone < 75) return '順調進行中'
+  return '仕上げ間近'
+}

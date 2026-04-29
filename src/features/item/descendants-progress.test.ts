@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest'
 
 import { uuidToLabel } from '@/lib/db/ltree-path'
 
-import { formatDescendantsProgressJa, summarizeDescendantsProgress } from './descendants-progress'
+import {
+  formatDescendantsActivityHintJa,
+  formatDescendantsProgressJa,
+  summarizeDescendantsProgress,
+} from './descendants-progress'
 
 const NOW = new Date('2026-04-29T00:00:00Z')
 
@@ -237,5 +241,90 @@ describe('formatDescendantsProgressJa', () => {
         isComplete: false,
       }),
     ).toBe('進捗 40%: 完了 2 / todo 3 (全 5 件)')
+  })
+})
+
+describe('formatDescendantsActivityHintJa', () => {
+  // baseline: 全 status counts を 0 に初期化、テスト個別に上書き
+  const p = (overrides: {
+    total?: number
+    done?: number
+    inProgress?: number
+    blocked?: number
+    todo?: number
+    cancelled?: number
+    unknown?: number
+    pctDone?: number
+    isComplete?: boolean
+  }) => ({
+    total: overrides.total ?? 0,
+    done: overrides.done ?? 0,
+    inProgress: overrides.inProgress ?? 0,
+    blocked: overrides.blocked ?? 0,
+    todo: overrides.todo ?? 0,
+    cancelled: overrides.cancelled ?? 0,
+    unknown: overrides.unknown ?? 0,
+    pctDone: overrides.pctDone ?? 0,
+    isComplete: overrides.isComplete ?? false,
+  })
+
+  it('total=0 → "子タスクなし"', () => {
+    expect(formatDescendantsActivityHintJa(p({}))).toBe('子タスクなし')
+  })
+
+  it('全 cancelled → "全キャンセル"', () => {
+    expect(formatDescendantsActivityHintJa(p({ total: 3, cancelled: 3 }))).toBe('全キャンセル')
+  })
+
+  it('isComplete → "完了済"', () => {
+    expect(
+      formatDescendantsActivityHintJa(p({ total: 5, done: 5, pctDone: 100, isComplete: true })),
+    ).toBe('完了済')
+  })
+
+  it('blocked > 0 → "ブロック中 (前提解消が先)" (未着手より優先)', () => {
+    expect(formatDescendantsActivityHintJa(p({ total: 5, blocked: 1, todo: 4, pctDone: 0 }))).toBe(
+      'ブロック中 (前提解消が先)',
+    )
+  })
+
+  it('全 todo (done=0 / inProgress=0) → "未着手"', () => {
+    expect(formatDescendantsActivityHintJa(p({ total: 5, todo: 5, pctDone: 0 }))).toBe('未着手')
+  })
+
+  it('pctDone < 25 で in_progress 1 → "スタートが遅い"', () => {
+    expect(
+      formatDescendantsActivityHintJa(p({ total: 10, inProgress: 1, todo: 9, pctDone: 0 })),
+    ).toBe('スタートが遅い')
+  })
+
+  it('pctDone >= 25 で inProgress=0 → "停滞気味"', () => {
+    expect(formatDescendantsActivityHintJa(p({ total: 10, done: 3, todo: 7, pctDone: 30 }))).toBe(
+      '停滞気味',
+    )
+  })
+
+  it('pctDone 30% で inProgress 1 → "前半遅延"', () => {
+    expect(
+      formatDescendantsActivityHintJa(
+        p({ total: 10, done: 3, inProgress: 1, todo: 6, pctDone: 30 }),
+      ),
+    ).toBe('前半遅延')
+  })
+
+  it('pctDone 60% で inProgress 1 → "順調進行中"', () => {
+    expect(
+      formatDescendantsActivityHintJa(
+        p({ total: 10, done: 6, inProgress: 1, todo: 3, pctDone: 60 }),
+      ),
+    ).toBe('順調進行中')
+  })
+
+  it('pctDone 80% → "仕上げ間近"', () => {
+    expect(
+      formatDescendantsActivityHintJa(
+        p({ total: 10, done: 8, inProgress: 1, todo: 1, pctDone: 80 }),
+      ),
+    ).toBe('仕上げ間近')
   })
 })
