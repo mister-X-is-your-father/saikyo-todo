@@ -39,6 +39,11 @@ import {
   formatCompletionDaysByPriorityJa,
 } from '@/features/item/completion-days-by-priority'
 import { useItems } from '@/features/item/hooks'
+import {
+  computeWorkspaceMomentum,
+  formatWorkspaceMomentumJa,
+  momentumDirectionToTrend,
+} from '@/features/item/momentum'
 import { computeVelocity, formatVelocitySummary } from '@/features/item/velocity'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
@@ -100,6 +105,16 @@ export function DashboardView({ workspaceId }: Props) {
     if (summary === '完了 0 件 (該当なし)') return null
     const gap = computePriorityLatencyGap(stats)
     return { stats, summary, gap }
+  }, [itemsQ.data])
+
+  // iter341 basics: workspace momentum (iter339) を bind。直近 7 日 intake vs done
+  // を 4 値分類で chip 表示。direction='idle' (= 7 日完全に活動なし) は chip 非表示。
+  const momentum = useMemo(() => {
+    if (!itemsQ.data) return null
+    const m = computeWorkspaceMomentum(itemsQ.data, { windowDays: 7 })
+    if (m.direction === 'idle') return null
+    const line = formatWorkspaceMomentumJa(m)
+    return { result: m, line, trend: momentumDirectionToTrend(m.direction) }
   }, [itemsQ.data])
 
   // iter338 basics: backlog-aging (iter337) を bind。Active (= 未完了 + 未 archive)
@@ -165,6 +180,21 @@ export function DashboardView({ workspaceId }: Props) {
               {trendGlyph(velocity.result.trend)}
             </span>
             <span aria-hidden="true">{velocity.line}</span>
+          </div>
+        ) : null}
+        {momentum ? (
+          <div
+            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${trendToneClass(momentum.trend, 'negative')}`}
+            data-testid="dashboard-momentum-chip"
+            data-direction={momentum.result.direction}
+            role="status"
+            aria-label={momentum.line}
+            title={momentum.line}
+          >
+            <span aria-hidden="true" className="font-mono">
+              {trendGlyph(momentum.trend)}
+            </span>
+            <span aria-hidden="true">{momentum.line}</span>
           </div>
         ) : null}
         {aging ? (

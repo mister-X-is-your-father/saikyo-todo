@@ -110,6 +110,22 @@ export function computeWorkspaceMomentum<T extends MomentumFields>(
 }
 
 /**
+ * iter341 basics: momentum direction を trend-tone 軸 (`'up' | 'down' | 'flat' |
+ * 'idle'`) にマップする糖衣。dashboard chip / AI brief で trend chip 共通基盤
+ * (`@/lib/ui/trend-tone`) に bind するために使う。`negative` polarity と組合せると
+ * growing=amber (警戒) / shrinking=emerald (改善) / balanced=muted / idle=muted
+ * になる (cost-trend chip iter333 と同じ意味付け)。
+ */
+export function momentumDirectionToTrend(
+  direction: MomentumDirection,
+): 'up' | 'down' | 'flat' | 'idle' {
+  if (direction === 'growing') return 'up'
+  if (direction === 'shrinking') return 'down'
+  if (direction === 'balanced') return 'flat'
+  return 'idle'
+}
+
+/**
  * AI prompt 用 1 行サマリ:
  *   `'モメンタム: 直近 7 日 +3 件 成長中 (新規 12 / 完了 9)'`
  *   `'モメンタム: 直近 7 日 -2 件 縮小中 (新規 5 / 完了 7)'`

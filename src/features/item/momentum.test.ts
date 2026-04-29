@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   computeWorkspaceMomentum,
   formatWorkspaceMomentumJa,
+  momentumDirectionToTrend,
   type MomentumFields,
 } from './momentum'
 
@@ -213,5 +214,14 @@ describe('integration: items → momentum → format', () => {
     expect(formatWorkspaceMomentumJa(m)).toBe(
       'モメンタム: 直近 7 日 +1 件 成長中 (新規 3 / 完了 2)',
     )
+  })
+})
+
+describe('momentumDirectionToTrend', () => {
+  it('maps growing → up / shrinking → down / balanced → flat / idle → idle', () => {
+    expect(momentumDirectionToTrend('growing')).toBe('up')
+    expect(momentumDirectionToTrend('shrinking')).toBe('down')
+    expect(momentumDirectionToTrend('balanced')).toBe('flat')
+    expect(momentumDirectionToTrend('idle')).toBe('idle')
   })
 })
