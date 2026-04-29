@@ -268,3 +268,52 @@ export function formatCompletionStreakJa(streak: number): string {
   if (streak === 1) return '完了 streak 1 日 (今日完了あり)'
   return `完了 streak ${streak} 日連続!`
 }
+
+/**
+ * iter459 ai-automation: byDay window 内の **最長連続 done 日数** (= best streak)
+ * を計算する pure helper。
+ *
+ * iter457 `computeCompletionStreak` は「末尾今日からの連続」 (= 現在 streak)、
+ * 本 helper は「window 全体での最長連続」 (= 過去最長記録)。AI 朝 brief / Slack
+ * 通知が「今週のベスト streak は 5 日連続でした」のような retroactive な達成
+ * を 1 関数で出せる。
+ *
+ * 仕様:
+ *  - byDay 空 → 0
+ *  - 全日 count=0 → 0
+ *  - 各 run (連続 count>0) の長さを集計、最長を返す
+ *  - 全日 count>0 → byDay.length
+ *
+ * 用途差分:
+ *  - computeCompletionStreak (iter457): 現在 (今日から遡って) 連続 → motivational
+ *  - computeBestStreak (本 helper): window 全体最長 → 達成感 retro brief
+ *
+ * 0 から始まる pure 関数、副作用なし。
+ */
+export function computeBestStreak(summary: VelocitySummary): number {
+  let best = 0
+  let current = 0
+  for (const day of summary.byDay) {
+    if (day.count > 0) {
+      current += 1
+      if (current > best) best = current
+    } else {
+      current = 0
+    }
+  }
+  return best
+}
+
+/**
+ * AI prompt 用 1 行サマリ:
+ *   '直近 7 日の最長連続: 0 日 (該当なし)'
+ *   '直近 7 日の最長連続: 1 日'
+ *   '直近 7 日の最長連続: 5 日!'
+ *
+ * 1 日と 2+ 日で言い回しを差別化 (= 1 日は "!" なし、2+ で達成感)。
+ */
+export function formatBestStreakJa(streak: number, windowDays: number = 7): string {
+  if (streak === 0) return `直近 ${windowDays} 日の最長連続: 0 日 (該当なし)`
+  if (streak === 1) return `直近 ${windowDays} 日の最長連続: 1 日`
+  return `直近 ${windowDays} 日の最長連続: ${streak} 日!`
+}

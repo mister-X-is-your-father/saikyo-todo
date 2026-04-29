@@ -7,9 +7,11 @@ import { describe, expect, it } from 'vitest'
 
 import {
   classifyVelocityHint,
+  computeBestStreak,
   computeCompletionStreak,
   computeVelocity,
   computeVelocityByPriority,
+  formatBestStreakJa,
   formatCompletionStreakJa,
   formatVelocityByPriorityJa,
   formatVelocityHintJa,
@@ -272,5 +274,47 @@ describe('computeCompletionStreak / formatCompletionStreakJa (iter457)', () => {
   it('途中 break → 末尾連続部分のみ', () => {
     // [1, 0, 1, 1, 1] → 末尾 3 日連続 (途中 0 で break するが末尾から遡って 3 まで)
     expect(computeCompletionStreak(mkByDay([1, 0, 1, 1, 1]))).toBe(3)
+  })
+})
+
+describe('computeBestStreak / formatBestStreakJa (iter459)', () => {
+  const mkByDay = (counts: number[]): VelocitySummary => ({
+    byDay: counts.map((count, i) => ({ date: `2026-04-${22 + i}`, count })),
+    total: counts.reduce((s, c) => s + c, 0),
+    avgPerDay: 0,
+    trend: 'flat',
+  })
+
+  it('byDay 空 → 0', () => {
+    expect(computeBestStreak(mkByDay([]))).toBe(0)
+    expect(formatBestStreakJa(0)).toBe('直近 7 日の最長連続: 0 日 (該当なし)')
+  })
+
+  it('全日 count=0 → 0', () => {
+    expect(computeBestStreak(mkByDay([0, 0, 0, 0]))).toBe(0)
+  })
+
+  it('単一連続 → そのまま', () => {
+    expect(computeBestStreak(mkByDay([0, 0, 1, 1, 0]))).toBe(2)
+    expect(formatBestStreakJa(2)).toBe('直近 7 日の最長連続: 2 日!')
+  })
+
+  it('複数 run の最長を返す', () => {
+    // [1, 0, 1, 1, 0, 1, 1, 1, 0] → runs: 1, 2, 3 → max=3
+    expect(computeBestStreak(mkByDay([1, 0, 1, 1, 0, 1, 1, 1, 0]))).toBe(3)
+  })
+
+  it('全日 count>0 → byDay.length', () => {
+    expect(computeBestStreak(mkByDay([1, 2, 3, 4, 5, 6, 7]))).toBe(7)
+    expect(formatBestStreakJa(7)).toBe('直近 7 日の最長連続: 7 日!')
+  })
+
+  it('windowDays オプション format に反映', () => {
+    expect(formatBestStreakJa(3, 14)).toBe('直近 14 日の最長連続: 3 日!')
+    expect(formatBestStreakJa(0, 30)).toBe('直近 30 日の最長連続: 0 日 (該当なし)')
+  })
+
+  it('1 日 → "!" なし', () => {
+    expect(formatBestStreakJa(1)).toBe('直近 7 日の最長連続: 1 日')
   })
 })
