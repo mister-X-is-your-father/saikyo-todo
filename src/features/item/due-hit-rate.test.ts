@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { computeDueHitRate, type DueHitRateFields, formatDueHitRateJa } from './due-hit-rate'
+import {
+  computeDueHitRate,
+  type DueHitRateFields,
+  dueHitRateTone,
+  formatDueHitRateJa,
+} from './due-hit-rate'
 
 const HOUR = 60 * 60 * 1000
 
@@ -130,6 +135,27 @@ describe('formatDueHitRateJa', () => {
     expect(formatDueHitRateJa({ total: 3, hit: 2, miss: 1, hitRate: 2 / 3 })).toBe(
       '期限達成率: 67% (2 / 3 件)',
     )
+  })
+})
+
+describe('dueHitRateTone', () => {
+  it('returns "good" when hitRate >= 0.8 (達成)', () => {
+    expect(dueHitRateTone({ total: 5, hit: 5, miss: 0, hitRate: 1 })).toBe('good')
+    expect(dueHitRateTone({ total: 5, hit: 4, miss: 1, hitRate: 0.8 })).toBe('good')
+  })
+
+  it('returns "neutral" when 0.5 <= hitRate < 0.8 (中立)', () => {
+    expect(dueHitRateTone({ total: 4, hit: 3, miss: 1, hitRate: 0.75 })).toBe('neutral')
+    expect(dueHitRateTone({ total: 2, hit: 1, miss: 1, hitRate: 0.5 })).toBe('neutral')
+  })
+
+  it('returns "warn" when hitRate < 0.5 (警戒)', () => {
+    expect(dueHitRateTone({ total: 5, hit: 2, miss: 3, hitRate: 0.4 })).toBe('warn')
+    expect(dueHitRateTone({ total: 3, hit: 0, miss: 3, hitRate: 0 })).toBe('warn')
+  })
+
+  it('returns "neutral" for empty (total=0 / hitRate=null)', () => {
+    expect(dueHitRateTone({ total: 0, hit: 0, miss: 0, hitRate: null })).toBe('neutral')
   })
 })
 

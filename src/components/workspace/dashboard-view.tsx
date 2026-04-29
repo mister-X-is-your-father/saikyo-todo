@@ -38,6 +38,7 @@ import {
   computePriorityLatencyGap,
   formatCompletionDaysByPriorityJa,
 } from '@/features/item/completion-days-by-priority'
+import { computeDueHitRate, dueHitRateTone, formatDueHitRateJa } from '@/features/item/due-hit-rate'
 import { useItems } from '@/features/item/hooks'
 import {
   computeWorkspaceMomentum,
@@ -115,6 +116,20 @@ export function DashboardView({ workspaceId }: Props) {
     if (m.direction === 'idle') return null
     const line = formatWorkspaceMomentumJa(m)
     return { result: m, line, trend: momentumDirectionToTrend(m.direction) }
+  }, [itemsQ.data])
+
+  // iter343 basics: due-hit-rate (iter342) を bind。完了 + dueDate 有効 item の
+  // 期限達成率を chip 表示。total=0 (= 期限付き完了 item 無し) は chip 非表示で UI 静か。
+  // hitRate >= 0.8 は emerald (達成)、0.5..0.8 は muted (中立)、<0.5 は amber (警戒)
+  // で 3 段階 tone (達成率は higher better なので「up=achievement」polarity='positive')。
+  const dueHitRate = useMemo(() => {
+    if (!itemsQ.data) return null
+    const stats = computeDueHitRate(itemsQ.data)
+    if (stats.total === 0 || stats.hitRate === null) return null
+    const summary = formatDueHitRateJa(stats)
+    const pct = Math.round(stats.hitRate * 100)
+    const tone = dueHitRateTone(stats)
+    return { stats, summary, pct, tone }
   }, [itemsQ.data])
 
   // iter338 basics: backlog-aging (iter337) を bind。Active (= 未完了 + 未 archive)
@@ -213,6 +228,27 @@ export function DashboardView({ workspaceId }: Props) {
               Backlog: {aging.summary}
               {aging.olderThanWeek > 0 ? ` — 7日+ ${aging.olderThanWeek}件` : ''}
             </span>
+          </div>
+        ) : null}
+        {dueHitRate ? (
+          <div
+            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${
+              dueHitRate.tone === 'good'
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                : dueHitRate.tone === 'warn'
+                  ? 'border-amber-200 bg-amber-50 text-amber-700'
+                  : 'border-border bg-muted text-muted-foreground'
+            }`}
+            data-testid="dashboard-due-hit-rate-chip"
+            data-hit-rate={dueHitRate.pct}
+            role="status"
+            aria-label={dueHitRate.summary}
+            title={dueHitRate.summary}
+          >
+            <span aria-hidden="true" className="font-mono">
+              ◎
+            </span>
+            <span aria-hidden="true">{dueHitRate.summary}</span>
           </div>
         ) : null}
         {completionGap ? (

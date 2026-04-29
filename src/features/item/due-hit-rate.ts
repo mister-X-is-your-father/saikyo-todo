@@ -84,6 +84,22 @@ export function computeDueHitRate<T extends DueHitRateFields>(
 }
 
 /**
+ * iter343 basics: hit rate を「達成 / 中立 / 警戒」の 3 値 tone bucket に分類する糖衣。
+ * dashboard chip の配色 (emerald / muted / amber) を割り当てるのに使う。
+ *
+ * 閾値: hitRate >= 0.8 → 'good'、0.5 ≤ rate < 0.8 → 'neutral'、< 0.5 → 'warn'。
+ * total=0 / hitRate=null は 'neutral' (中立)。
+ */
+export type DueHitRateTone = 'good' | 'neutral' | 'warn'
+
+export function dueHitRateTone(stats: DueHitRateStats): DueHitRateTone {
+  if (stats.total === 0 || stats.hitRate === null) return 'neutral'
+  if (stats.hitRate >= 0.8) return 'good'
+  if (stats.hitRate >= 0.5) return 'neutral'
+  return 'warn'
+}
+
+/**
  * AI prompt 用 1 行サマリ:
  *   `'期限達成率: 80% (12 / 15 件)'` (= hit/total)
  *   `'期限達成率: 100% (5 / 5 件)'`
