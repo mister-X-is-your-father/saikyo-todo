@@ -117,13 +117,27 @@ export function TemplatesPanel({ workspaceId }: Props) {
               </div>
             </div>
             <div>
-              <Label htmlFor="tmpl-desc">説明</Label>
+              <Label htmlFor="tmpl-desc">説明 (Cmd/Ctrl+Enter で作成)</Label>
               <Textarea
                 id="tmpl-desc"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                // iter330: Cmd/Ctrl+Enter で作成 (iter313-318/iter329 続編)。
+                onKeyDown={(e) => {
+                  if (
+                    (e.metaKey || e.ctrlKey) &&
+                    e.key === 'Enter' &&
+                    !e.nativeEvent.isComposing &&
+                    name.trim() &&
+                    !createMut.isPending
+                  ) {
+                    e.preventDefault()
+                    void handleCreate()
+                  }
+                }}
                 rows={2}
                 placeholder="このテンプレートが何を生成するか"
+                aria-label="Template の説明 (Cmd/Ctrl+Enter で作成)"
               />
             </div>
             {kind === 'recurring' ? (
