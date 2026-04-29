@@ -48,7 +48,9 @@ import {
 } from '@/features/item/dod-coverage'
 import {
   computeDueDateCoverage,
+  computeDueDateCoverageByPriority,
   dueDateCoverageTone,
+  formatDueDateCoverageByPriorityJa,
   formatDueDateCoverageJa,
 } from '@/features/item/due-date-coverage'
 import {
@@ -184,6 +186,9 @@ export function DashboardView({ workspaceId }: Props) {
   // iter351 basics: due-date-coverage (iter349) を bind。未完了 item の期限
   // 設定率を chip 表示。total=0 (= 未完了 0 件) で chip 非表示。tone は 3 段階
   // (>= 0.7 emerald 健全 / 0.3..0.7 muted 中立 / < 0.3 amber planning 漏れ)。
+  // iter366 basics: priority 別 breakdown (iter364) を aria-label / title に同梱
+  // → SR / hover で「P1 100% / P3 50%」が読める (iter346 hit-rate-tooltip / iter363
+  // dod-coverage-tooltip と同手法、3 chip で 2 層情報設計が完全に揃った)。
   const dueCoverage = useMemo(() => {
     if (!itemsQ.data) return null
     const stats = computeDueDateCoverage(itemsQ.data)
@@ -191,7 +196,13 @@ export function DashboardView({ workspaceId }: Props) {
     const summary = formatDueDateCoverageJa(stats)
     const tone = dueDateCoverageTone(stats)
     const pct = Math.round(stats.coverageRate * 100)
-    return { stats, summary, tone, pct }
+    const byPriority = computeDueDateCoverageByPriority(itemsQ.data)
+    const nonEmptyBuckets = ([1, 2, 3, 4] as const).filter((k) => byPriority[k].total > 0).length
+    const detail =
+      nonEmptyBuckets > 1
+        ? `${summary} — ${formatDueDateCoverageByPriorityJa(byPriority)}`
+        : summary
+    return { stats, summary, tone, pct, detail }
   }, [itemsQ.data])
 
   // iter353 basics: dod-coverage (iter352) を bind。未完了 item の DoD 設定率を
@@ -345,8 +356,8 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-due-coverage-chip"
             toneClass={chipTone3Class(dueCoverage.tone)}
             glyph="📅"
-            ariaLabel={dueCoverage.summary}
-            title={dueCoverage.summary}
+            ariaLabel={dueCoverage.detail}
+            title={dueCoverage.detail}
             text={dueCoverage.summary}
             dataAttrs={{ 'data-coverage-pct': dueCoverage.pct }}
           />
