@@ -77,6 +77,7 @@ import {
   formatDueHitRateJa,
 } from '@/features/item/due-hit-rate'
 import { useItems } from '@/features/item/hooks'
+import { formatHygieneFocusJa, pickWeakestHygienePriority } from '@/features/item/hygiene-focus'
 import {
   computeWorkspaceMomentum,
   formatWorkspaceMomentumJa,
@@ -349,6 +350,18 @@ export function DashboardView({ workspaceId }: Props) {
     }
   }, [itemsQ.data, dueCoverage, dodCoverage, descCoverage])
 
+  // iter376 basics: hygiene-focus (iter374) を bind。priority 別 hygiene score の
+  // 最弱バケットが warn tier (< 30) のときのみ「重点」 CTA chip を表示し、
+  // attention を集中させる。良好 / 中立は既存の hygiene-score chip と冗長なので
+  // 非表示 (= 「行動が必要なときだけ chip が出る」 progressive disclosure UX)。
+  const hygieneFocus = useMemo(() => {
+    if (!itemsQ.data) return null
+    const byPriority = computeCombinedHygieneByPriority(itemsQ.data)
+    const focus = pickWeakestHygienePriority(byPriority)
+    if (focus === null || focus.tone !== 'warn') return null
+    return { focus, summary: formatHygieneFocusJa(focus) }
+  }, [itemsQ.data])
+
   // iter338 basics: backlog-aging (iter337) を bind。Active (= 未完了 + 未 archive)
   // item を createdAt 年齢バケット別に件数集計、停滞気味 (7 日以上) を tone で警戒。
   const aging = useMemo(() => {
@@ -445,6 +458,20 @@ export function DashboardView({ workspaceId }: Props) {
             dataAttrs={{
               'data-hygiene-score': hygieneScore.score.score ?? 0,
               'data-eligible-axes': hygieneScore.score.eligibleAxes,
+            }}
+          />
+        ) : null}
+        {hygieneFocus ? (
+          <DashboardChip
+            testId="dashboard-hygiene-focus-chip"
+            toneClass={chipTone3Class('warn')}
+            glyph="⚠"
+            ariaLabel={hygieneFocus.summary}
+            title={hygieneFocus.summary}
+            text={`重点: P${hygieneFocus.focus.priority} Hygiene ${hygieneFocus.focus.score}`}
+            dataAttrs={{
+              'data-focus-priority': hygieneFocus.focus.priority,
+              'data-focus-score': hygieneFocus.focus.score,
             }}
           />
         ) : null}
