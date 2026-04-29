@@ -40,11 +40,13 @@ import {
   pickAtRiskParents,
 } from '@/features/item/at-risk-parents'
 import {
+  classifyBacklogAgingHint,
   countAgingItemsOlderThanWeek,
   countItemsByAge,
   countItemsByAgeByPriority,
   formatAgingByPriorityJa,
   formatAgingCounts,
+  formatBacklogAgingHintJa,
 } from '@/features/item/backlog-aging'
 import {
   combinedHygieneTone,
@@ -740,7 +742,11 @@ export function DashboardView({ workspaceId }: Props) {
     // 378/383/388 と同手法、visible chip text 不変)。
     const byPriority = countItemsByAgeByPriority(active)
     const stagnantBreakdown = olderThanWeek > 0 ? formatAgingByPriorityJa(byPriority) : null
-    return { counts, summary, olderThanWeek, stagnantBreakdown }
+    // iter448 basics: iter447 で追加した hint (fresh/mild/moderate/severe) を chip
+    // data attr + aria-label prefix に bind (= iter441 / iter443 / iter446 と同手法 4 弾目)。
+    const hint = classifyBacklogAgingHint(counts)
+    const hintLabel = formatBacklogAgingHintJa(counts)
+    return { counts, summary, olderThanWeek, stagnantBreakdown, hint, hintLabel }
   }, [itemsQ.data])
 
   // iter393 basics: urgency-tier counts (iter294 / iter392) を bind。priority +
@@ -1139,8 +1145,8 @@ export function DashboardView({ workspaceId }: Props) {
               aging.olderThanWeek > 0 ? trendToneClass('up', 'negative') : chipTone3Class('neutral')
             }
             glyph="⌛"
-            ariaLabel={`Backlog 年齢: ${aging.summary}${aging.olderThanWeek > 0 ? ` — 7 日以上 ${aging.olderThanWeek} 件 (棚卸し対象)` : ''}${aging.stagnantBreakdown && aging.stagnantBreakdown !== '停滞 0 件' ? ` — ${aging.stagnantBreakdown}` : ''}`}
-            title={aging.summary}
+            ariaLabel={`${aging.hintLabel}: Backlog 年齢: ${aging.summary}${aging.olderThanWeek > 0 ? ` — 7 日以上 ${aging.olderThanWeek} 件 (棚卸し対象)` : ''}${aging.stagnantBreakdown && aging.stagnantBreakdown !== '停滞 0 件' ? ` — ${aging.stagnantBreakdown}` : ''}`}
+            title={`${aging.hintLabel} — ${aging.summary}`}
             text={
               <>
                 Backlog: {aging.summary}
@@ -1148,7 +1154,10 @@ export function DashboardView({ workspaceId }: Props) {
               </>
             }
             truncateText
-            dataAttrs={{ 'data-older-than-week': aging.olderThanWeek }}
+            dataAttrs={{
+              'data-older-than-week': aging.olderThanWeek,
+              'data-aging-hint': aging.hint,
+            }}
           />
         ) : null}
         {dueHitRate ? (
