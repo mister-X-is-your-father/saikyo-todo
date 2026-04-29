@@ -21,10 +21,16 @@
 
 import { dueDateEndOfDayMs, parseDateOrNull } from '@/lib/date/iso'
 
+import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
+
 export interface SlipDaysFields {
   doneAt: Date | string | null | undefined
   /** 'YYYY-MM-DD' ISO date */
   dueDate: string | null | undefined
+}
+
+export interface SlipDaysByPriorityFields extends SlipDaysFields {
+  priority: number | null | undefined
 }
 
 export interface SlipDaysStats {
@@ -112,4 +118,40 @@ export function formatSlipDaysJa(stats: SlipDaysStats): string {
     return `遅延: 1 件 (${stats.maxDays}日)`
   }
   return `遅延: ${stats.count} 件 (平均 ${stats.avgDays}日 / 中央値 ${stats.medianDays}日 / 最大 ${stats.maxDays}日)`
+}
+
+/**
+ * iter387 ai-automation: priority 別の `SlipDaysStats` を計算する pure helper。
+ *
+ * iter344 due-hit-rate / iter362 dod-coverage / iter364 due-date-coverage /
+ * iter372 combined-hygiene / iter382 hygiene-debt と並ぶ「× priority」軸 6 弾目。
+ * AI brief / pm-agent / dashboard が「P1 が一番遅延、最大 14 日 / P3 平均 2 日」の
+ * ように 高優先タスクの遅延を分離して可視化できる substrate。
+ *
+ * options.since は全 priority 共通で適用 (caller が「直近 30 日」 window を切る用)。
+ */
+export type SlipDaysByPriority = Record<PriorityKey, SlipDaysStats>
+
+export function computeSlipDaysByPriority<T extends SlipDaysByPriorityFields>(
+  items: readonly T[],
+  options: ComputeSlipDaysOptions = {},
+): SlipDaysByPriority {
+  return bucketByPriorityWith(items, (group) => computeSlipDays(group, options))
+}
+
+/**
+ * AI prompt 用 1 行サマリ (priority 別):
+ *   `'遅延: P1 3 件 (最大 14日) / P3 2 件 (最大 5日)'`
+ *
+ * count=0 の priority は省略。全 priority count=0 → `'遅延 0 件'`。
+ */
+export function formatSlipDaysByPriorityJa(byPriority: SlipDaysByPriority): string {
+  const parts: string[] = []
+  for (const k of PRIORITY_ORDER) {
+    const stats = byPriority[k]
+    if (stats.count === 0 || stats.maxDays === null) continue
+    parts.push(`P${k} ${stats.count} 件 (最大 ${stats.maxDays}日)`)
+  }
+  if (parts.length === 0) return '遅延 0 件'
+  return `遅延: ${parts.join(' / ')}`
 }

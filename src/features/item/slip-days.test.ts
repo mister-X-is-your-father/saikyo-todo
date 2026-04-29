@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
-import { computeSlipDays, formatSlipDaysJa, type SlipDaysFields, slipSeverity } from './slip-days'
+import {
+  computeSlipDays,
+  computeSlipDaysByPriority,
+  formatSlipDaysByPriorityJa,
+  formatSlipDaysJa,
+  type SlipDaysByPriorityFields,
+  type SlipDaysFields,
+  slipSeverity,
+} from './slip-days'
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 
@@ -157,5 +165,65 @@ describe('integration: items → compute → format', () => {
     ]
     const stats = computeSlipDays(items)
     expect(formatSlipDaysJa(stats)).toBe('遅延: 2 件 (平均 3日 / 中央値 3日 / 最大 5日)')
+  })
+})
+
+describe('computeSlipDaysByPriority', () => {
+  it('returns empty buckets when no items', () => {
+    const r = computeSlipDaysByPriority([])
+    expect(r[1].count).toBe(0)
+    expect(r[2].count).toBe(0)
+    expect(r[3].count).toBe(0)
+    expect(r[4].count).toBe(0)
+  })
+
+  it('groups slip stats by priority', () => {
+    const items: SlipDaysByPriorityFields[] = [
+      // P1 missed 14 days
+      { priority: 1, doneAt: localEndOfDay('2026-04-29', 14).toISOString(), dueDate: '2026-04-29' },
+      // P1 missed 5 days
+      { priority: 1, doneAt: localEndOfDay('2026-04-29', 5).toISOString(), dueDate: '2026-04-29' },
+      // P3 missed 2 days
+      { priority: 3, doneAt: localEndOfDay('2026-04-29', 2).toISOString(), dueDate: '2026-04-29' },
+      // P3 done early (no slip)
+      { priority: 3, doneAt: '2026-04-25T10:00:00Z', dueDate: '2026-04-29' },
+    ]
+    const r = computeSlipDaysByPriority(items)
+    expect(r[1].count).toBe(2)
+    expect(r[1].maxDays).toBe(14)
+    expect(r[3].count).toBe(1)
+    expect(r[3].maxDays).toBe(2)
+    expect(r[2].count).toBe(0)
+    expect(r[4].count).toBe(0)
+  })
+
+  it('normalizes null/out-of-range priority to P4', () => {
+    const items: SlipDaysByPriorityFields[] = [
+      {
+        priority: null,
+        doneAt: localEndOfDay('2026-04-29', 3).toISOString(),
+        dueDate: '2026-04-29',
+      },
+      { priority: 9, doneAt: localEndOfDay('2026-04-29', 7).toISOString(), dueDate: '2026-04-29' },
+    ]
+    const r = computeSlipDaysByPriority(items)
+    expect(r[4].count).toBe(2)
+    expect(r[4].maxDays).toBe(7)
+  })
+})
+
+describe('formatSlipDaysByPriorityJa', () => {
+  it('formats per-priority summary with non-zero buckets only', () => {
+    const items: SlipDaysByPriorityFields[] = [
+      { priority: 1, doneAt: localEndOfDay('2026-04-29', 14).toISOString(), dueDate: '2026-04-29' },
+      { priority: 1, doneAt: localEndOfDay('2026-04-29', 5).toISOString(), dueDate: '2026-04-29' },
+      { priority: 3, doneAt: localEndOfDay('2026-04-29', 2).toISOString(), dueDate: '2026-04-29' },
+    ]
+    const r = computeSlipDaysByPriority(items)
+    expect(formatSlipDaysByPriorityJa(r)).toBe('遅延: P1 2 件 (最大 14日) / P3 1 件 (最大 2日)')
+  })
+
+  it('formats empty as "遅延 0 件"', () => {
+    expect(formatSlipDaysByPriorityJa(computeSlipDaysByPriority([]))).toBe('遅延 0 件')
   })
 })
