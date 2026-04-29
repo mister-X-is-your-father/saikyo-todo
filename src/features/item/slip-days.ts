@@ -94,6 +94,21 @@ export function computeSlipDays<T extends SlipDaysFields>(
 }
 
 /**
+ * iter348 basics: slip 日数の severity (重度遅延 / 中程度) を 1 関数で判定。
+ *
+ * dashboard chip / AI brief の配色 (red = 重度 / amber = 中程度) を割り当てる
+ * のに使う。閾値: maxDays >= 7 → 'severe' (1 週間以上の遅延)、それ未満 → 'mild'。
+ * count=0 / maxDays=null は 'mild' (中立、empty caller は別途 chip 非表示で
+ * 受ける想定)。
+ */
+export type SlipSeverity = 'severe' | 'mild'
+
+export function slipSeverity(stats: SlipDaysStats): SlipSeverity {
+  if (stats.count === 0 || stats.maxDays === null) return 'mild'
+  return stats.maxDays >= 7 ? 'severe' : 'mild'
+}
+
+/**
  * AI prompt 用 1 行サマリ:
  *   `'遅延: 5 件 (平均 3.4日 / 中央値 2日 / 最大 12日)'`
  *   `'遅延: 1 件 (1日)'` — 単一 miss は短縮形

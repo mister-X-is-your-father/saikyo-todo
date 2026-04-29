@@ -53,6 +53,7 @@ import {
   formatWorkspaceMomentumJa,
   momentumDirectionToTrend,
 } from '@/features/item/momentum'
+import { computeSlipDays, formatSlipDaysJa, slipSeverity } from '@/features/item/slip-days'
 import { computeVelocity, formatVelocitySummary } from '@/features/item/velocity'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
@@ -139,6 +140,18 @@ export function DashboardView({ workspaceId }: Props) {
         ? `${summary} — ${formatDueHitRateByPriorityJa(byPriority)}`
         : summary
     return { stats, summary, pct, tone, detail }
+  }, [itemsQ.data])
+
+  // iter348 basics: slip-days (iter347) を bind。期限超過 item の遅延日数 stat を
+  // chip 表示。count=0 (= 全完了 hit) で chip 非表示で UI 静か。amber tone で
+  // 警戒色 (= 「遅延 = bad」)、最大値が 7 日以上は red 強調 (= 「重度遅延」)。
+  const slipDays = useMemo(() => {
+    if (!itemsQ.data) return null
+    const stats = computeSlipDays(itemsQ.data)
+    if (stats.count === 0) return null
+    const summary = formatSlipDaysJa(stats)
+    const severe = slipSeverity(stats) === 'severe'
+    return { stats, summary, severe }
   }, [itemsQ.data])
 
   // iter338 basics: backlog-aging (iter337) を bind。Active (= 未完了 + 未 archive)
@@ -258,6 +271,26 @@ export function DashboardView({ workspaceId }: Props) {
               ◎
             </span>
             <span aria-hidden="true">{dueHitRate.summary}</span>
+          </div>
+        ) : null}
+        {slipDays ? (
+          <div
+            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs ${
+              slipDays.severe
+                ? 'border-red-200 bg-red-50 text-red-700'
+                : 'border-amber-200 bg-amber-50 text-amber-700'
+            }`}
+            data-testid="dashboard-slip-days-chip"
+            data-severe={slipDays.severe ? 'true' : 'false'}
+            data-max-days={slipDays.stats.maxDays ?? 0}
+            role="status"
+            aria-label={slipDays.summary}
+            title={slipDays.summary}
+          >
+            <span aria-hidden="true" className="font-mono">
+              ⏰
+            </span>
+            <span aria-hidden="true">{slipDays.summary}</span>
           </div>
         ) : null}
         {completionGap ? (

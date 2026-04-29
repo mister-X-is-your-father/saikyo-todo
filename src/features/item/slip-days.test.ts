@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { computeSlipDays, formatSlipDaysJa, type SlipDaysFields } from './slip-days'
+import { computeSlipDays, formatSlipDaysJa, type SlipDaysFields, slipSeverity } from './slip-days'
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 
@@ -126,6 +126,22 @@ describe('formatSlipDaysJa', () => {
     expect(formatSlipDaysJa({ count: 4, avgDays: 4.5, medianDays: 4, maxDays: 9 })).toBe(
       '遅延: 4 件 (平均 4.5日 / 中央値 4日 / 最大 9日)',
     )
+  })
+})
+
+describe('slipSeverity', () => {
+  it('returns "severe" when maxDays >= 7', () => {
+    expect(slipSeverity({ count: 1, avgDays: 7, medianDays: 7, maxDays: 7 })).toBe('severe')
+    expect(slipSeverity({ count: 3, avgDays: 5, medianDays: 4, maxDays: 14 })).toBe('severe')
+  })
+
+  it('returns "mild" when maxDays < 7', () => {
+    expect(slipSeverity({ count: 1, avgDays: 1, medianDays: 1, maxDays: 1 })).toBe('mild')
+    expect(slipSeverity({ count: 5, avgDays: 3, medianDays: 3, maxDays: 6 })).toBe('mild')
+  })
+
+  it('returns "mild" for empty (count=0 / maxDays=null)', () => {
+    expect(slipSeverity({ count: 0, avgDays: null, medianDays: null, maxDays: null })).toBe('mild')
   })
 })
 
