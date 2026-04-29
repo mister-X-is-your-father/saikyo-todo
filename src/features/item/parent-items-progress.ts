@@ -247,3 +247,56 @@ export function formatParentItemsProgressByPriorityJa(
     '進行中の案件 0 件',
   )
 }
+
+/**
+ * iter444 ai-automation: parent-items-progress の workspace-wide 進捗度合いを
+ * 「1 word」で表現する hint helper。
+ *
+ * iter424 (descendants-activity-hint, 個別 parent) / iter439 (blocked-items-hint,
+ * 依存 axis) / iter442 (at-risk-parents-hint, 停滞 axis) と並ぶ「item axis 1-word
+ * state」シリーズの parent-items-progress 軸版 (4 弾目)。AI 朝 brief / pm-agent /
+ * dashboard chip / Slack 通知が「workspace 全体の進捗状況」を 1 word で出せる
+ * substrate。
+ *
+ * 5 状態 (entries / avgPctDone / byTier の組み合わせ):
+ *  - 'idle'        → '進行案件なし'        (entries 空)
+ *  - 'stuck'       → '案件停滞気味'        (avgPctDone < 25 または stuck tier 過半)
+ *  - 'slow'        → '前半遅延'            (avgPctDone 25-49)
+ *  - 'healthy'     → '順調進行中'          (avgPctDone 50-74)
+ *  - 'almostDone'  → '仕上げ間近'          (avgPctDone ≥ 75)
+ *
+ * caller benefits:
+ *  - dashboard chip の glyph / tone を hint base で決める
+ *  - Slack 朝 brief 1 行 status (almostDone で達成見込み警告)
+ *  - AI prompt 1 word 状況把握 (= 'stuck' で focus 必要、'almostDone' で
+ *    push で完了 promote 候補)
+ *  - formatParentItemsProgressBriefJa (詳細 list) と相補で「数値 vs 意味付け」
+ */
+export type ParentItemsProgressHint = 'idle' | 'stuck' | 'slow' | 'healthy' | 'almostDone'
+
+export function classifyParentItemsProgressHint<I>(
+  entries: readonly ParentItemProgress<I>[],
+): ParentItemsProgressHint {
+  if (entries.length === 0) return 'idle'
+  const agg = summarizeParentItemsAggregate(entries)
+  // stuck tier 過半数 (= 案件の半分以上が < 25%) は avg に関係なく 'stuck' 警告
+  if (agg.byTier.stuck * 2 > agg.count) return 'stuck'
+  if (agg.avgPctDone < 25) return 'stuck'
+  if (agg.avgPctDone < 50) return 'slow'
+  if (agg.avgPctDone < 75) return 'healthy'
+  return 'almostDone'
+}
+
+const HINT_LABEL_JA: Record<ParentItemsProgressHint, string> = {
+  idle: '進行案件なし',
+  stuck: '案件停滞気味',
+  slow: '前半遅延',
+  healthy: '順調進行中',
+  almostDone: '仕上げ間近',
+}
+
+export function formatParentItemsProgressHintJa<I>(
+  entries: readonly ParentItemProgress<I>[],
+): string {
+  return HINT_LABEL_JA[classifyParentItemsProgressHint(entries)]
+}

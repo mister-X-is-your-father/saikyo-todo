@@ -3,10 +3,12 @@ import { describe, expect, it } from 'vitest'
 import { uuidToLabel } from '@/lib/db/ltree-path'
 
 import {
+  classifyParentItemsProgressHint,
   computeParentItemsProgressByPriority,
   formatAggregateParentItemsJa,
   formatParentItemsProgressBriefJa,
   formatParentItemsProgressByPriorityJa,
+  formatParentItemsProgressHintJa,
   type ParentItemProgress,
   pickIncompleteParentItems,
   summarizeParentItemsAggregate,
@@ -330,5 +332,57 @@ describe('computeParentItemsProgressByPriority / formatParentItemsProgressByPrio
   it('avgPctDone は Math.round で整数化 (33 + 67 → 50)', () => {
     const r = computeParentItemsProgressByPriority([e('a', 33, 2), e('b', 67, 2)])
     expect(r[2]?.avgPctDone).toBe(50)
+  })
+})
+
+describe('classifyParentItemsProgressHint / formatParentItemsProgressHintJa (iter444)', () => {
+  const entry = (
+    pct: number,
+    priority: 1 | 2 | 3 | 4 = 4,
+  ): ParentItemProgress<{ title: string }> => ({
+    parent: { title: `T-${pct}` },
+    progress: {
+      total: 10,
+      done: Math.round((pct / 100) * 10),
+      inProgress: 0,
+      blocked: 0,
+      todo: 10 - Math.round((pct / 100) * 10),
+      cancelled: 0,
+      unknown: 0,
+      pctDone: pct,
+      isComplete: pct === 100,
+    },
+    priority,
+  })
+
+  it('空 → idle / "進行案件なし"', () => {
+    expect(classifyParentItemsProgressHint([])).toBe('idle')
+    expect(formatParentItemsProgressHintJa([])).toBe('進行案件なし')
+  })
+
+  it('avg < 25 → stuck / "案件停滞気味"', () => {
+    expect(classifyParentItemsProgressHint([entry(10), entry(20)])).toBe('stuck')
+    expect(formatParentItemsProgressHintJa([entry(10)])).toBe('案件停滞気味')
+  })
+
+  it('avg 25-49 → slow / "前半遅延"', () => {
+    expect(classifyParentItemsProgressHint([entry(30), entry(40)])).toBe('slow')
+    expect(formatParentItemsProgressHintJa([entry(40)])).toBe('前半遅延')
+  })
+
+  it('avg 50-74 → healthy / "順調進行中"', () => {
+    expect(classifyParentItemsProgressHint([entry(60), entry(60)])).toBe('healthy')
+    expect(formatParentItemsProgressHintJa([entry(70)])).toBe('順調進行中')
+  })
+
+  it('avg ≥ 75 → almostDone / "仕上げ間近"', () => {
+    expect(classifyParentItemsProgressHint([entry(80), entry(90)])).toBe('almostDone')
+    expect(formatParentItemsProgressHintJa([entry(95)])).toBe('仕上げ間近')
+  })
+
+  it("stuck tier 過半数 → 'stuck' (avg に関係なく)", () => {
+    // 3 件中 2 件が pct < 25 → stuck tier 過半 (avg 高くても 'stuck' 警告)
+    const r = [entry(10), entry(20), entry(80)]
+    expect(classifyParentItemsProgressHint(r)).toBe('stuck')
   })
 })
