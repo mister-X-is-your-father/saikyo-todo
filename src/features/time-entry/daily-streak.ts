@@ -26,6 +26,8 @@
  * 状態 (例: 直近 90 日) で渡す想定。
  */
 
+import { shiftIsoDate } from '@/lib/date/iso'
+
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 export interface StreakEntry {
@@ -44,15 +46,7 @@ function safeMinutes(min: number): number {
   return min
 }
 
-function shiftDays(iso: string, days: number): string {
-  const [y, m, d] = iso.split('-').map(Number)
-  const t = Date.UTC(y!, m! - 1, d! + days)
-  const out = new Date(t)
-  const yyyy = out.getUTCFullYear()
-  const mm = String(out.getUTCMonth() + 1).padStart(2, '0')
-  const dd = String(out.getUTCDate()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd}`
-}
+// iter330 refactor: shiftDays は lib/date/iso.ts#shiftIsoDate に集約 (2 callsite 重複削除)。
 
 function buildActiveDateSet(entries: readonly StreakEntry[]): Set<string> {
   const totals = new Map<string, number>()
@@ -83,7 +77,7 @@ export function computeDailyStreak(entries: readonly StreakEntry[], today: strin
     let cursor = today
     while (active.has(cursor)) {
       currentStreak += 1
-      cursor = shiftDays(cursor, -1)
+      cursor = shiftIsoDate(cursor, -1)
     }
   }
 
@@ -93,7 +87,7 @@ export function computeDailyStreak(entries: readonly StreakEntry[], today: strin
   let run = 0
   let prev: string | null = null
   for (const d of sorted) {
-    if (prev !== null && shiftDays(prev, 1) === d) {
+    if (prev !== null && shiftIsoDate(prev, 1) === d) {
       run += 1
     } else {
       run = 1

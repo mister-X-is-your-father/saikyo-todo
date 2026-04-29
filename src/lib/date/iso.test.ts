@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { isoDaysFromNow, parseDateOrNull, todayISO } from './iso'
+import { isoDaysFromNow, parseDateOrNull, shiftIsoDate, todayISO } from './iso'
 
 describe('todayISO', () => {
   it('Date を YYYY-MM-DD ローカル化', () => {
@@ -71,5 +71,40 @@ describe('parseDateOrNull', () => {
   it('不正値文字列は null (fail-soft)', () => {
     expect(parseDateOrNull('not-a-date')).toBe(null)
     expect(parseDateOrNull('2026-99-99')).toBe(null)
+  })
+})
+
+describe('shiftIsoDate', () => {
+  it('+0 / +1 / -1', () => {
+    expect(shiftIsoDate('2026-04-27', 0)).toBe('2026-04-27')
+    expect(shiftIsoDate('2026-04-27', 1)).toBe('2026-04-28')
+    expect(shiftIsoDate('2026-04-27', -1)).toBe('2026-04-26')
+  })
+
+  it('月跨ぎ (前後双方向)', () => {
+    expect(shiftIsoDate('2026-04-30', 1)).toBe('2026-05-01')
+    expect(shiftIsoDate('2026-05-01', -1)).toBe('2026-04-30')
+  })
+
+  it('年跨ぎ (前後双方向)', () => {
+    expect(shiftIsoDate('2026-12-31', 1)).toBe('2027-01-01')
+    expect(shiftIsoDate('2026-01-01', -1)).toBe('2025-12-31')
+  })
+
+  it('長距離 shift (±60 日 等)', () => {
+    expect(shiftIsoDate('2026-04-27', 60)).toBe('2026-06-26')
+    expect(shiftIsoDate('2026-04-27', -60)).toBe('2026-02-26')
+  })
+
+  it('うるう年境界 (2024-02-28 → 2024-02-29)', () => {
+    expect(shiftIsoDate('2024-02-28', 1)).toBe('2024-02-29')
+    expect(shiftIsoDate('2024-02-29', 1)).toBe('2024-03-01')
+    // 平年は 2/28 → 3/1
+    expect(shiftIsoDate('2025-02-28', 1)).toBe('2025-03-01')
+  })
+
+  it('0 padding を保つ (1 月 / 5 日 等)', () => {
+    expect(shiftIsoDate('2026-01-05', 0)).toBe('2026-01-05')
+    expect(shiftIsoDate('2026-12-09', 0)).toBe('2026-12-09')
   })
 })

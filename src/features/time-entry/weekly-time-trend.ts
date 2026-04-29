@@ -26,6 +26,8 @@
  * workDate (空文字 / 形式違反) は除外。
  */
 
+import { shiftIsoDate } from '@/lib/date/iso'
+
 import { formatMinutes } from './category-summary'
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
@@ -54,16 +56,7 @@ function safeMinutes(min: number): number {
   return Math.round(min)
 }
 
-/** ISO `YYYY-MM-DD` を addDays。負値も可、UTC ベース計算 (TZ shift 無関係)。 */
-function shiftDays(iso: string, days: number): string {
-  const [y, m, d] = iso.split('-').map(Number)
-  const t = Date.UTC(y!, m! - 1, d! + days)
-  const out = new Date(t)
-  const yyyy = out.getUTCFullYear()
-  const mm = String(out.getUTCMonth() + 1).padStart(2, '0')
-  const dd = String(out.getUTCDate()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd}`
-}
+// iter330 refactor: shiftDays は lib/date/iso.ts#shiftIsoDate に集約 (2 callsite 重複削除)。
 
 export function splitTimeEntriesByWeek(
   entries: readonly WeeklyTimeEntry[],
@@ -72,10 +65,10 @@ export function splitTimeEntriesByWeek(
   if (!ISO_DATE_RE.test(today)) {
     return { thisWeek: [], priorWeek: [] }
   }
-  const thisStart = shiftDays(today, -6)
+  const thisStart = shiftIsoDate(today, -6)
   const thisEnd = today
-  const priorStart = shiftDays(today, -13)
-  const priorEnd = shiftDays(today, -7)
+  const priorStart = shiftIsoDate(today, -13)
+  const priorEnd = shiftIsoDate(today, -7)
 
   const thisWeek: WeeklyTimeEntry[] = []
   const priorWeek: WeeklyTimeEntry[] = []

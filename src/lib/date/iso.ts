@@ -59,3 +59,24 @@ export function parseDateOrNull(input: Date | string | null | undefined): Date |
   const d = new Date(input)
   return Number.isFinite(d.getTime()) ? d : null
 }
+
+/**
+ * iter330 refactor: ISO `YYYY-MM-DD` を UTC 基準で N 日 shift して `YYYY-MM-DD` に
+ * 戻す pure helper。`weekly-time-trend.ts#shiftDays` と `daily-streak.ts#shiftDays` で
+ * 同一実装が 2 callsite 重複していたので集約。caller は week 境界 (today-6, today-13)
+ * 計算 / streak の「前日」cursor 移動などで使う。
+ *
+ * - 負値も可。年跨ぎ / 月跨ぎは UTC 計算で TZ shift 無関係。
+ * - 入力 `iso` は `YYYY-MM-DD` validated 前提 (caller 側で `/^\d{4}-\d{2}-\d{2}$/`
+ *   match を済ませてから渡すこと)。形式不一致は実装的に NaN 経由で `'NaN-NaN-NaN'`
+ *   等を返す可能性があるが、これは既存 callsite の挙動と同じで behavior 互換。
+ */
+export function shiftIsoDate(iso: string, days: number): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  const t = Date.UTC(y!, m! - 1, d! + days)
+  const out = new Date(t)
+  const yyyy = out.getUTCFullYear()
+  const mm = String(out.getUTCMonth() + 1).padStart(2, '0')
+  const dd = String(out.getUTCDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
