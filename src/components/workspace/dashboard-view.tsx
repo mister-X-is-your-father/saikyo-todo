@@ -136,6 +136,11 @@ import {
   formatWipByPriorityJa,
   wipBiasKind,
 } from '@/features/item/wip-by-priority'
+import {
+  formatStuckWipSummaryJa,
+  selectStuckWipItems,
+  stuckWipSeverity,
+} from '@/features/item/wip-stuck'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -311,6 +316,19 @@ export function DashboardView({ workspaceId }: Props) {
     if (sev === 'idle') return null
     const summary = formatMustHygieneJa(stats)
     return { stats, summary, severity: sev }
+  }, [itemsQ.data])
+
+  // iter361 basics: wip-stuck (iter359) を bind。in_progress 中で updatedAt が
+  // 3 日以上動いていない「停滞 WIP」を chip 表示。entries=0 / severity='idle' で
+  // chip 非表示で UI 静か。severity 3 値で配色 (severe = 7 日以上 stuck 含む = red、
+  // mild = 3-6 日 stuck = amber)。stale-items より短い閾値で WIP に絞った早期警告。
+  const wipStuck = useMemo(() => {
+    if (!itemsQ.data) return null
+    const entries = selectStuckWipItems(itemsQ.data)
+    const sev = stuckWipSeverity(entries)
+    if (sev === 'idle') return null
+    const summary = formatStuckWipSummaryJa(entries, 3)
+    return { entries, summary, severity: sev }
   }, [itemsQ.data])
 
   // iter361 basics: recent-completed (iter359) を bind。直近 24h 完了 item の
@@ -727,6 +745,24 @@ export function DashboardView({ workspaceId }: Props) {
             title={wipBias.summary}
             text={wipBias.summary}
             dataAttrs={{ 'data-bias': wipBias.bias, 'data-wip-total': wipBias.stats.total }}
+          />
+        ) : null}
+        {wipStuck ? (
+          <DashboardChip
+            testId="dashboard-wip-stuck-chip"
+            toneClass={
+              wipStuck.severity === 'severe'
+                ? 'border-red-200 bg-red-50 text-red-700'
+                : chipTone3Class('warn')
+            }
+            glyph="⏸"
+            ariaLabel={wipStuck.summary}
+            title={wipStuck.summary}
+            text={wipStuck.summary}
+            dataAttrs={{
+              'data-severity': wipStuck.severity,
+              'data-stuck-count': wipStuck.entries.length,
+            }}
           />
         ) : null}
         {aging ? (
