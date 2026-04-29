@@ -105,6 +105,8 @@ import {
 } from '@/features/item/must-hygiene'
 import {
   computeMustOverdue,
+  computeMustOverdueByPriority,
+  formatMustOverdueByPriorityJa,
   formatMustOverdueJa,
   formatMustOverdueTitlesJa,
   mustOverdueSeverity,
@@ -395,12 +397,17 @@ export function DashboardView({ workspaceId }: Props) {
     const sev = mustOverdueSeverity(stats)
     if (sev === 'idle') return null
     const summary = formatMustOverdueJa(stats)
-    // iter381 basics: iter379 で追加した pickMustOverdueItems / formatMustOverdueTitlesJa を
-    // SR / hover 経路でのみ読める「2 層情報」として bind (iter371 / iter378 / iter383 等と同手法)。
-    // 視覚 chip text は stats summary のまま、aria-label / title だけ richer (titles 付き) に。
+    // iter381 / iter386 basics: 3 層情報設計 (iter383 overdue-active chip と同手法)。
+    // visible chip text は stats summary のまま、aria-label / title だけ richer
+    // (priority breakdown + titles) に。priorityBuckets > 1 の時のみ P-breakdown を append、
+    // entries.length > 0 の時のみ titles を append (= 0 件 fallback で過剰冗長を回避)。
+    const byPriority = computeMustOverdueByPriority(itemsQ.data)
+    const priorityBuckets = countNonEmptyPriorityBucketsBy(byPriority, (s) => s.count > 0)
+    const priorityDetail =
+      priorityBuckets > 1 ? ` — ${formatMustOverdueByPriorityJa(byPriority)}` : ''
     const entries = pickMustOverdueItems(itemsQ.data)
-    const titles = formatMustOverdueTitlesJa(entries, 3)
-    const detail = entries.length > 0 ? `${summary} — ${titles}` : summary
+    const titlesDetail = entries.length > 0 ? ` — ${formatMustOverdueTitlesJa(entries, 3)}` : ''
+    const detail = `${summary}${priorityDetail}${titlesDetail}`
     return { stats, summary, detail, severity: sev }
   }, [itemsQ.data])
 
