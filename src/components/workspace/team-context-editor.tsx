@@ -60,10 +60,24 @@ export function TeamContextEditor({ workspaceId }: Props) {
           id="team-context-textarea"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="例: 当チームは TDD。MUST タスクは PR 必須。Slack #team-x で進捗報告。"
+          // iter313: Cmd/Ctrl+Enter で保存 (comment-thread iter228 / Slack / GitHub /
+          // Notion 標準)。dirty + !pending のときだけ反応、IME 確定中は無視。
+          onKeyDown={(e) => {
+            if (
+              (e.metaKey || e.ctrlKey) &&
+              e.key === 'Enter' &&
+              !e.nativeEvent.isComposing &&
+              dirty &&
+              !upd.isPending
+            ) {
+              e.preventDefault()
+              void handleSave()
+            }
+          }}
+          placeholder="例: 当チームは TDD。MUST タスクは PR 必須。Slack #team-x で進捗報告。 (Cmd/Ctrl+Enter で保存)"
           rows={4}
           maxLength={4000}
-          aria-label="チームコンテキスト (workspace 全体)"
+          aria-label="チームコンテキスト (workspace 全体、Cmd/Ctrl+Enter で保存)"
           data-testid="team-context-textarea"
         />
         <div className="text-muted-foreground flex items-center justify-between text-[11px]">
