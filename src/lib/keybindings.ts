@@ -68,4 +68,14 @@ export const KEYBINDINGS: Keybinding[] = [
   { combo: 'Cmd+K / Ctrl+K', description: 'コマンドパレットを開く', group: 'グローバル' },
   { combo: '?', description: 'このショートカット一覧を開く', group: 'グローバル' },
   { combo: 'Esc', description: '開いているダイアログを閉じる', group: 'グローバル' },
+
+  // --- Textarea Cmd+Enter (iter228-iter318 で配備、iter356-357 で aria-keyshortcuts 化) ---
+  // 各 Textarea (comment / team-context / period-goal / goal-desc / sprint-goal /
+  // proposal edit / subtasks bulk-add / wf-desc / tmpl-desc) で同一 shortcut が動く。
+  {
+    combo: 'Cmd+Enter / Ctrl+Enter',
+    description:
+      'Textarea から保存 / 作成 / 投稿 (コメント / ゴール / Sprint / Goal / Template / 子タスク bulk)',
+    group: 'グローバル',
+  },
 ]
