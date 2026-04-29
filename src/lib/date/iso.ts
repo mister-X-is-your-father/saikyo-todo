@@ -65,6 +65,26 @@ export function toLocalMidnight(d: Date | null | undefined): Date | null {
 }
 
 /**
+ * iter345 refactor: Date を **UTC 基準** で `YYYY-MM-DD` に整形する糖衣。
+ *
+ * `formatLocalISO` (ローカル TZ) と対称。`new Date().toISOString().slice(0, 10)` の
+ * 1 行 idiom が dashboard / pdca / budget / agent / heartbeat 等で 10+ callsite に
+ * 散在していたので、明示的な API として固定する。caller は意図 (UTC vs ローカル)
+ * を import 名で判別できる。
+ *
+ * 不正 Date (NaN time) は `'Invalid Date'.slice(0,10) = 'Invalid Da'` を返す可能性
+ * があるが既存 idiom と完全互換 (caller 側で validated Date 前提)。
+ */
+export function formatUtcISO(d: Date): string {
+  return d.toISOString().slice(0, 10)
+}
+
+/** UTC 基準の今日 (`YYYY-MM-DD`)。`now` 省略で現在 */
+export function todayUtcISO(now: Date = new Date()): string {
+  return formatUtcISO(now)
+}
+
+/**
  * iter305 refactor: Date / ISO 文字列 / null / undefined / 不正値を Date | null に
  * 正規化する fail-soft parser。velocity / freshly-done / stale-items で 3 callsite
  * 同一実装が重複していたので集約。

@@ -9,6 +9,8 @@
  */
 import { parseAsInteger, useQueryState } from 'nuqs'
 
+import { shiftIsoDate, todayUtcISO } from '@/lib/date/iso'
+
 import { usePdcaSummary } from '@/features/pdca/hooks'
 
 import { ErrorState, Loading } from '@/components/shared/async-states'
@@ -19,10 +21,9 @@ interface Props {
   workspaceId: string
 }
 
+// iter345 refactor: isoDaysFromToday の inline 定義は lib/date/iso.ts に集約。
 function isoDaysFromToday(days: number): string {
-  const d = new Date()
-  d.setUTCDate(d.getUTCDate() + days)
-  return d.toISOString().slice(0, 10)
+  return shiftIsoDate(todayUtcISO(), days)
 }
 
 const PDCA_COLORS = {

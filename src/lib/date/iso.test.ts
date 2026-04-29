@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest'
 
 import {
   formatLocalISO,
+  formatUtcISO,
   isoDaysFromNow,
   parseDateOrNull,
   shiftIsoDate,
   todayISO,
+  todayUtcISO,
   toLocalMidnight,
 } from './iso'
 
@@ -129,6 +131,34 @@ describe('formatLocalISO', () => {
   it('todayISO と同値 (今日の Date を渡せば形式一致)', () => {
     const d = new Date(2026, 3, 27, 9, 0, 0)
     expect(formatLocalISO(d)).toBe(todayISO(d))
+  })
+})
+
+describe('formatUtcISO', () => {
+  it('UTC 基準の Date を YYYY-MM-DD に整形', () => {
+    expect(formatUtcISO(new Date('2026-04-27T15:30:00Z'))).toBe('2026-04-27')
+    expect(formatUtcISO(new Date('2026-04-27T00:00:00Z'))).toBe('2026-04-27')
+  })
+
+  it('UTC 日跨ぎを保持 (ローカル化しない)', () => {
+    // ローカル TZ 依存しない確認: 23:59 UTC は 4/27、翌 0:30 UTC は 4/28
+    expect(formatUtcISO(new Date('2026-04-27T23:59:00Z'))).toBe('2026-04-27')
+    expect(formatUtcISO(new Date('2026-04-28T00:30:00Z'))).toBe('2026-04-28')
+  })
+})
+
+describe('todayUtcISO', () => {
+  it('引数 Date を UTC YYYY-MM-DD に', () => {
+    expect(todayUtcISO(new Date('2026-04-27T15:30:00Z'))).toBe('2026-04-27')
+  })
+
+  it('省略時は現在時刻 — 形式のみ検証', () => {
+    expect(todayUtcISO()).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+
+  it('formatUtcISO と同値 (糖衣)', () => {
+    const d = new Date('2026-04-27T12:00:00Z')
+    expect(todayUtcISO(d)).toBe(formatUtcISO(d))
   })
 })
 

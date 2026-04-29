@@ -24,6 +24,7 @@ import {
   YAxis,
 } from 'recharts'
 
+import { shiftIsoDate, todayUtcISO } from '@/lib/date/iso'
 import { isAppError } from '@/lib/errors'
 import { trendGlyph, trendToneClass } from '@/lib/ui/trend-tone'
 
@@ -60,18 +61,9 @@ function formatDayShort(iso: string): string {
   return iso.slice(5).replace('-', '/')
 }
 
-function todayISO(): string {
-  return new Date().toISOString().slice(0, 10)
-}
-
-function addDaysISO(baseISO: string, days: number): string {
-  const d = new Date(`${baseISO}T00:00:00Z`)
-  d.setUTCDate(d.getUTCDate() + days)
-  return d.toISOString().slice(0, 10)
-}
-
 // iter335 refactor: VELOCITY_TONE / VELOCITY_GLYPH は lib/ui/trend-tone.ts に集約。
 // 時間軸と同 polarity='positive' (up=blue 増加 / flat=muted 横ばい / down=red 失速)。
+// iter345 refactor: todayISO / addDaysISO (UTC 系) は lib/date/iso.ts に集約。
 
 export function DashboardView({ workspaceId }: Props) {
   const summary = useMustSummary(workspaceId)
@@ -81,8 +73,8 @@ export function DashboardView({ workspaceId }: Props) {
   // iter331 basics: velocity (iter302) を bind — 直近 7 日 done 件数 + 傾向。
   const itemsQ = useItems(workspaceId)
 
-  const todayStr = todayISO()
-  const soonStr = addDaysISO(todayStr, 7)
+  const todayStr = todayUtcISO()
+  const soonStr = shiftIsoDate(todayStr, 7)
 
   const burndownData = useMemo(() => {
     return (burndown.data ?? []).map((p) => ({ ...p, label: formatDayShort(p.date) }))

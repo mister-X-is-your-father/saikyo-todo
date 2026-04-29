@@ -14,6 +14,7 @@ import { useMemo, useState } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { todayUtcISO } from '@/lib/date/iso'
 import { isAppError } from '@/lib/errors'
 import { trendGlyph, trendToneClass } from '@/lib/ui/trend-tone'
 
@@ -52,7 +53,7 @@ export function BudgetPanel({ workspaceId }: Props) {
   // iter333 basics: cost-monthly-trend (iter332) を bind — 先月比トレンド chip
   const trendChip = useMemo(() => {
     if (!monthly.data) return null
-    const todayIso = new Date().toISOString().slice(0, 10)
+    const todayIso = todayUtcISO()
     const rolled = rollupCostByMonth(monthly.data)
     const trend = computeMonthlyCostTrend(rolled, todayIso)
     if (trend.direction === 'idle') return null
