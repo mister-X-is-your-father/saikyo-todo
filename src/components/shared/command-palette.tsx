@@ -91,7 +91,12 @@ export function CommandPalette({ commands, items, onSelectItem }: CommandPalette
   const groups = useMemo(() => groupBy(commands, (c) => c.group ?? 'コマンド'), [commands])
 
   return (
-    <CommandDialog open={open} onOpenChange={handleOpenChange} title="コマンドパレット">
+    <CommandDialog
+      open={open}
+      onOpenChange={handleOpenChange}
+      title="コマンドパレット"
+      description="Cmd / Ctrl+K で開閉、コマンドを検索 or `?` でタスクを fuzzy 検索、Enter で実行、Esc で閉じる"
+    >
       <CommandInput
         placeholder="コマンド or ? でタスク検索…"
         value={query}
