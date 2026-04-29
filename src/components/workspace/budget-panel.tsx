@@ -194,7 +194,17 @@ export function BudgetPanel({ workspaceId }: Props) {
             </Button>
           </div>
         ) : (
-          <div className="space-y-2 rounded border border-dashed p-2">
+          // iter312: 旧 <div> ラッパで Enter キー submit 不可、aria-busy も無し。
+          // iter303-308 の noValidate sweep と同じく <form> 化 + zod 単一経路を踏襲。
+          <form
+            className="space-y-2 rounded border border-dashed p-2"
+            noValidate
+            aria-busy={update.isPending || undefined}
+            onSubmit={(e) => {
+              e.preventDefault()
+              void saveEdit()
+            }}
+          >
             <div className="space-y-1">
               <Label htmlFor="budget-limit" className="text-xs">
                 月次上限 (USD、空欄で無制限)
@@ -227,6 +237,7 @@ export function BudgetPanel({ workspaceId }: Props) {
             </div>
             <div className="flex justify-end gap-1.5">
               <Button
+                type="button"
                 size="sm"
                 variant="ghost"
                 onClick={() => setEditing(false)}
@@ -235,8 +246,8 @@ export function BudgetPanel({ workspaceId }: Props) {
                 キャンセル
               </Button>
               <Button
+                type="submit"
                 size="sm"
-                onClick={() => void saveEdit()}
                 disabled={update.isPending}
                 data-testid="budget-save-btn"
                 aria-label={
@@ -248,7 +259,7 @@ export function BudgetPanel({ workspaceId }: Props) {
                 {update.isPending ? '保存中…' : '保存'}
               </Button>
             </div>
-          </div>
+          </form>
         )}
       </CardContent>
     </Card>
