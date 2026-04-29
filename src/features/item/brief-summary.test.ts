@@ -315,3 +315,48 @@ describe('buildBriefSummary — iter387 mustOverdueEntries / overdueActiveEntrie
     expect(r.overdueActive.total).toBe(r.overdueActiveEntries.length)
   })
 })
+
+describe('buildBriefSummary — iter388 headlineWithTitles', () => {
+  it('mustOverdue がある → MUST 期限超過: <具体名 N日> / ... を headline で返す', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'M1', isMust: true, dueDate: '2026-04-13', title: '提出書類' }),
+      item({ id: 'M2', isMust: true, dueDate: '2026-04-22', title: '連絡' }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.headlineWithTitles).toBe('MUST 期限超過: 提出書類 14日 / 連絡 5日')
+    // headline (stats only) とは別フィールド = 文言が異なる
+    expect(r.headline).not.toBe(r.headlineWithTitles)
+    expect(r.headline).toMatch(/^MUST 期限超過 /) // stats only は count + space prefix
+  })
+
+  it('overdueActive のみ (must 無し) → 期限超過: <具体名 N日> を headline で返す', () => {
+    const items: BriefItemFields[] = [
+      item({ id: 'O', dueDate: '2026-04-22', title: '通常タスク', isMust: false }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.headlineWithTitles).toBe('期限超過: 通常タスク 5日')
+  })
+
+  it('mustAtRisk / stuckWip / stale 軸は headline と同一文言 (entries-based 軸はそのまま)', () => {
+    const items: BriefItemFields[] = [
+      item({
+        id: 'R',
+        priority: 1,
+        isMust: true,
+        dueDate: '2026-04-30', // 3 日後 (within 6 日)
+        updatedAt: '2026-04-26',
+        title: 'リスク MUST',
+      }),
+    ]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.headline).toBe(r.headlineWithTitles)
+    expect(r.headlineWithTitles).toMatch(/^MUST at-risk /)
+  })
+
+  it('全 axis idle → headline と headlineWithTitles は同一 (top urgent fallback)', () => {
+    const items: BriefItemFields[] = [item({ id: 'Z', priority: 4, title: 'のんびり' })]
+    const r = buildBriefSummary(items, {}, TODAY)
+    expect(r.headline).toBe(r.headlineWithTitles)
+    expect(r.headlineWithTitles).toMatch(/^urgent 上位 /)
+  })
+})

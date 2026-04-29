@@ -30,6 +30,7 @@
 import {
   computeMustOverdue,
   formatMustOverdueJa,
+  formatMustOverdueTitlesJa,
   type MustOverdueEntry,
   type MustOverdueFields,
   type MustOverdueStats,
@@ -44,6 +45,7 @@ import {
 import {
   computeOverdueActive,
   formatOverdueActiveJa,
+  formatOverdueActiveTitlesJa,
   type OverdueActiveEntry,
   type OverdueActiveFields,
   type OverdueActiveStats,
@@ -123,6 +125,20 @@ export interface BriefSummary<T extends BriefItemFields> {
    * 全 axis idle なら `'問題なし — 今日 top urgent: ...'` (= top urgent 列挙) を返す。
    */
   headline: string
+  /**
+   * iter388: headline と同じ severity 順だが、must-overdue / overdue-active 軸のとき
+   * iter387 で bundle した entries を使い「具体名 + overdueDays」で 1 行 alert を返す。
+   * 例: `'MUST 期限超過: 提出書類 14日 / 連絡 5日'` (= 何が overdue か即特定可能)
+   *
+   * `headline` (stats only) と並んで存在し、caller は用途で使い分け:
+   *   - mobile status bar / 短い通知 → `headline` (stats only、固定長)
+   *   - actionable AI brief / 通知 detail → `headlineWithTitles` (具体名、長さ可変)
+   *
+   * mustAtRisk / stale / topUrgent 軸 (= entries-based 軸) は元々 entries 経由で
+   * 整形しているので headline と同一文言に。差分が出るのは must-overdue / overdue-active
+   * 軸のみ (= stats-only headline → entries-based titles へ昇格)。
+   */
+  headlineWithTitles: string
 }
 
 /**
@@ -177,6 +193,17 @@ export function buildBriefSummary<T extends BriefItemFields>(
     mustOverdue,
   })
 
+  const headlineWithTitles = pickBriefHeadlineWithTitles({
+    topUrgent,
+    mustAtRisk,
+    stale,
+    stuckWip,
+    overdueActive,
+    mustOverdue,
+    mustOverdueEntries,
+    overdueActiveEntries,
+  })
+
   return {
     topUrgent,
     mustAtRisk,
@@ -189,6 +216,7 @@ export function buildBriefSummary<T extends BriefItemFields>(
     overdueActiveEntries,
     textSummary,
     headline,
+    headlineWithTitles,
   }
 }
 
@@ -220,6 +248,41 @@ function pickBriefHeadline<T extends BriefItemFields>(input: {
   }
   if (input.overdueActive.total > 0) {
     return formatOverdueActiveJa(input.overdueActive)
+  }
+  if (input.stuckWip.length > 0) {
+    return formatStuckWipSummaryJa(input.stuckWip)
+  }
+  if (input.stale.length > 0) {
+    return formatStaleItemsSummary(input.stale)
+  }
+  return formatTopUrgentLine(input.topUrgent)
+}
+
+/**
+ * iter388 basics: pickBriefHeadline と同じ severity 順だが、must-overdue / overdue-active
+ * 軸のとき stats でなく entries (具体名 + overdueDays) で 1 行 alert を返す。
+ *
+ * caller (mobile UI / 通知 detail / actionable AI brief) は「何が overdue なのか」を即特定可。
+ * stats-only headline とは別フィールドで保持 (両方 BriefSummary に bundle、用途で使い分け)。
+ */
+function pickBriefHeadlineWithTitles<T extends BriefItemFields>(input: {
+  topUrgent: TopUrgentEntry<T>[]
+  mustAtRisk: MustRiskEntry<T>[]
+  stale: StaleItemEntry<T>[]
+  stuckWip: StuckWipEntry<T>[]
+  overdueActive: OverdueActiveStats
+  mustOverdue: MustOverdueStats
+  mustOverdueEntries: MustOverdueEntry<T>[]
+  overdueActiveEntries: OverdueActiveEntry<T>[]
+}): string {
+  if (input.mustOverdue.total > 0) {
+    return formatMustOverdueTitlesJa(input.mustOverdueEntries)
+  }
+  if (input.mustAtRisk.length > 0) {
+    return formatAtRiskMustSummary(input.mustAtRisk)
+  }
+  if (input.overdueActive.total > 0) {
+    return formatOverdueActiveTitlesJa(input.overdueActiveEntries)
   }
   if (input.stuckWip.length > 0) {
     return formatStuckWipSummaryJa(input.stuckWip)
