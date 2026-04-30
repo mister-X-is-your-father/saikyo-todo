@@ -135,8 +135,17 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
 
         {/* status 分布 */}
         <div>
-          <div className="text-muted-foreground mb-1 text-xs">Status 分布</div>
-          <div className="flex flex-wrap gap-1.5 text-xs">
+          <h3
+            id="sprint-retro-status-heading"
+            className="text-muted-foreground mb-1 text-xs font-normal"
+          >
+            Status 分布
+          </h3>
+          <div
+            className="flex flex-wrap gap-1.5 text-xs"
+            role="group"
+            aria-labelledby="sprint-retro-status-heading"
+          >
             <StatusChip label="todo" count={breakdown.todo} />
             <StatusChip label="進行中" count={breakdown.inProgress} />
             <StatusChip label="blocked" count={breakdown.blocked} tone="warn" />
@@ -151,8 +160,17 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
           rc.cancelledMid > 0 ||
           rc.blockedAtClose > 0) && (
           <div>
-            <div className="text-muted-foreground mb-1 text-xs">落ちた item の主因</div>
-            <div className="flex flex-wrap gap-1.5">
+            <h3
+              id="sprint-retro-causes-heading"
+              className="text-muted-foreground mb-1 text-xs font-normal"
+            >
+              落ちた item の主因
+            </h3>
+            <div
+              className="flex flex-wrap gap-1.5"
+              role="group"
+              aria-labelledby="sprint-retro-causes-heading"
+            >
               {rc.incompleteOnTime > 0 && (
                 <SeverityChip
                   severity="danger"
