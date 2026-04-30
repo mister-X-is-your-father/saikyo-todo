@@ -153,6 +153,7 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
         />
         <Button
           type="button"
+          className="min-h-11"
           onClick={() => void submit()}
           disabled={create.isPending || !preview?.title || (preview?.isMust ?? false)}
           data-testid="quick-add-submit"
