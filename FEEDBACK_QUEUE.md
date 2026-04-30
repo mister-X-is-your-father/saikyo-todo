@@ -171,11 +171,7 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
       1. `pnpm add @xyflow/react` + import + 既存 dialog 内に Canvas 配置
       2. WorkflowGraph JSON ↔ React Flow nodes/edges の bi-directional 変換 helper (pure 関数 + test)
       3. Read-only viewer mode (まずは「見る」だけ実装、editor mode は scope B)
-    - **B (中、5-10 commit)**:
-      4. Drag&drop でノード作成 (palette toolbar + dnd-kit と統合 or React Flow native)
-      5. Edge drawing (port → port)、cycle detection は engine 側既製を流用
-      6. 右 sidebar でノード設定編集 (config を node type 別 form で)
-      7. 保存 button で React Flow state → JSON → action.update
+    - **B (中、5-10 commit)**: 4. Drag&drop でノード作成 (palette toolbar + dnd-kit と統合 or React Flow native) 5. Edge drawing (port → port)、cycle detection は engine 側既製を流用 6. 右 sidebar でノード設定編集 (config を node type 別 form で) 7. 保存 button で React Flow state → JSON → action.update
     - **C (大)**: workflow run 中の execution status を Canvas 上に live highlight (pending/running/done/failed を node 色で)
   - **要追加質問** (仮置きで進める):
     - (a) JSON textarea を完全に置換? それとも tab で切替可能 (advanced 用)?
@@ -188,6 +184,7 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ### 2026-04-30 — AI 自動実行モード (assignee=AI + plan 承認 + Slack escalation) ★★★ P0 最優先 ★★★
 
+- [x] **scope A 完了 (iter506-513、計 8 commit)** — 担当者を AI に割当 → 「Plan を生成」 button → Researcher が Plan を comment に post (🤖 marker 付き)。iter506: ai-assignee judging 6 helper / iter507: listByWorkspace + label 変換 / iter508: listAgentsAction + useWorkspaceAgents + toggle helper / iter509: AssigneePicker AI 選択肢 / iter510: agent-plan-prompt builder / iter511: researcherService.generatePlanForItem / iter512: generatePlanAction + useGeneratePlan + canGeneratePlan / iter513: ItemPlanGenerateButton + ItemEditDialog 配線。env (ANTHROPIC_API_KEY) 不要、累計 60 unit test PASS。scope B (承認/却下 button + 自動実行 cloud sandbox + Slack escalation) は別 entry。
 - [ ] **担当者 = AI に割当 → plan mode で「こうやるけどええか?」と確認 → 承認後 自動実行 → 困ったら Slack 相談 / escalation** — 分類: 実装要望 (大、AI + workflow + Slack 統合の中核)
   - 原文: 「自動実行モード搭載して。モードというか。担当者をAIにできる。そしたらプランモードでこうやるけどええか？って聞かれる。エスカレーションとか相談はSlackで」
   - **ユーザ強調**: 「優先度高く実装頼む」
@@ -210,14 +207,8 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
       1. schema: `items.assignee_kind` enum 追加 (`'user' | 'ai-researcher' | 'ai-engineer'`)、UI で assignee picker に「AI」選択肢
       2. assignee=AI な item で「Plan 生成」 button → Researcher が短い計画を生成 → comment として post (auto-implement なし、ユーザは見るだけ)
       3. comment に「✓ 承認 / ✗ 却下」 button (decompose-proposals 同パターン)
-    - **B (中、5-10 commit)**:
-      4. 承認 → pg-boss job enqueue → Engineer service が cloud sandbox で実行 → diff を comment + main へ commit (既存 cloud-engineer-adapter 流用)
-      5. 失敗時 (test fail / lint fail) → Slack 通知 + comment に "stuck: <理由>"、status を blocked に
-      6. cost cap で月次 上限 + 1 item あたり 上限 (既存 `cost-budget` 拡張)
-    - **C (大、長期)**:
-      7. AI 同士の会話 (Engineer ↔ Researcher で plan の妥当性議論)
-      8. plan diff preview (実行前に「この行を変える予定」を highlight)
-      9. Slack 双方向 (Slack 上で承認/却下 reply で control)
+    - **B (中、5-10 commit)**: 4. 承認 → pg-boss job enqueue → Engineer service が cloud sandbox で実行 → diff を comment + main へ commit (既存 cloud-engineer-adapter 流用) 5. 失敗時 (test fail / lint fail) → Slack 通知 + comment に "stuck: <理由>"、status を blocked に 6. cost cap で月次 上限 + 1 item あたり 上限 (既存 `cost-budget` 拡張)
+    - **C (大、長期)**: 7. AI 同士の会話 (Engineer ↔ Researcher で plan の妥当性議論) 8. plan diff preview (実行前に「この行を変える予定」を highlight) 9. Slack 双方向 (Slack 上で承認/却下 reply で control)
   - **段階目標 (本 P0 hoist の対象 = scope A)**:
     - iter1: schema migration `0XXX_assignee_kind.sql` + drizzle schema 同期 + zod schema 拡張 + 1 unit test
     - iter2: AssigneePicker UI に「AI Researcher / AI Engineer」選択肢追加 + repository / service の filter 対応
@@ -434,12 +425,13 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 詳細: pm-service / researcher-service の `executeToolLoop` を `runFlowViaClaude` (= claude-flow-runner.ts) ベースに置換。
 現状 `.env.local: ANTHROPIC_API_KEY=` (空) で PM Stand-up / AI 分解が失敗する症状は本件の暫定 ValidationError ガードで明確化済 (2910d50 系)。
 真の解は CLI 経路移行。Engineer は既に cloud-engineer-adapter.ts で CLI 経路あり、pattern 流用可。
+
 - iter1: pm-service.run の executeToolLoop を runFlowViaClaude へ置換 (input/output adapter helper を pure 関数として、test 含む)
 - iter2: researcher-service.run も同様に置換
 - iter3: tools (read_items / search_items / etc) を CLI 経路でも動くよう MCP server 化 (scripts/mcp-agent-server.ts 拡張)
 - iter4: agent_invocations の cost / tokens 集計を CLI 経路の outputs に合わせて修正
 - iter5: 既存 SDK 経路 (`executeToolLoop`) を deprecated に、テストも CLI mock に切替
-完了後: ANTHROPIC_API_KEY env を削除可能、SDK 依存も削除可能。
+  完了後: ANTHROPIC_API_KEY env を削除可能、SDK 依存も削除可能。
 
 ---
 
@@ -451,6 +443,7 @@ Capacity / Gantt DnD / Sprint swim-lane) は scope A 完了済 (iter460-478)、�
 
 **1. AI 自動実行モード (assignee=AI + plan 承認 + Slack escalation)**
 詳細: 本ファイル末尾近くの同名 section。scope A の 5 段階 (iter1-5):
+
 - iter1: schema migration `assignee_kind` enum 追加 + drizzle / zod 同期 + unit test
 - iter2: AssigneePicker UI に「AI Researcher / AI Engineer」選択肢追加
 - iter3: ItemEditDialog から「Plan を生成」 button (AI assignee 時のみ表示)
@@ -458,6 +451,7 @@ Capacity / Gantt DnD / Sprint swim-lane) は scope A 完了済 (iter460-478)、�
 - iter5: 承認後の Slack 通知 (まずは「Plan 承認されました」を Slack 投稿)
 
 仮置き判断 (ユーザ確認待ちで止めない):
+
 - AI assignee identifier は `users` に `kind='agent'` の system user 1 件
 - 承認権限は 作成者 + admin
 - Slack channel は workspace_settings に 1 個固定 (新列 `ai_escalation_channel`)
@@ -468,7 +462,8 @@ Capacity / Gantt DnD / Sprint swim-lane) は scope A 完了済 (iter460-478)、�
 typecheck/lint clean、shadcn UI 編集禁止、pure helper test 1-2 件追加 (該当時)。
 
 scope A 完了後、本 P0 section を「(空)」に戻して track 判定に復帰。scope B (auto-implement
-+ 失敗時 Slack 通知 + cost cap) / C (双方向 Slack control / AI 同士の plan 議論) は別 entry。
+
+- 失敗時 Slack 通知 + cost cap) / C (双方向 Slack control / AI 同士の plan 議論) は別 entry。
 
 <details>
 <summary>iter460-478 の P0 5 件消化記録 (履歴)</summary>
