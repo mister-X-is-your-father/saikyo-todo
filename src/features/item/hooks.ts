@@ -12,6 +12,7 @@ import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Fuse from 'fuse.js'
 
+import { positionsBetween } from '@/lib/db/fractional-position'
 import { unwrap } from '@/lib/result-unwrap'
 
 import {
@@ -182,25 +183,48 @@ export function useReorderItem(workspaceId: string) {
 }
 
 /**
- * 楽観更新用: position は知らないが、prev/next の相対位置に target を並べ替える。
- * - prev の後ろ (prev != null): prev の直後に target を置く
- * - next の前 (next != null かつ prev == null): next の直前
+ * 楽観更新用: 同 parent の sibling 全てに新 position を割り当てる。
+ *
+ * **重要**: array order だけ変えて position field を据え置きにすると、
+ * 描画側 (subtasks-panel など) が `compareSiblings` で position 基準に
+ * 再 sort して **元順序に戻す flicker** が発生する。
+ * したがって、target の position だけでなく **同 parent 全 sibling** に
+ * 新 position を均等再生成して付与する (server 側 bucket rebalance と同手法)。
+ *
+ * これでサーバ確定前でも UI の sort が新順序を維持する。
  */
 function reorderInArray(items: Item[], input: ReorderItemInput): Item[] {
   const target = items.find((i) => i.id === input.id)
   if (!target) return items
-  const without = items.filter((i) => i.id !== input.id)
-  if (input.prevSiblingId) {
-    const idx = without.findIndex((i) => i.id === input.prevSiblingId)
-    if (idx < 0) return items
-    return [...without.slice(0, idx + 1), target, ...without.slice(idx + 1)]
-  }
-  if (input.nextSiblingId) {
-    const idx = without.findIndex((i) => i.id === input.nextSiblingId)
-    if (idx < 0) return items
-    return [...without.slice(0, idx), target, ...without.slice(idx)]
-  }
-  return items
+  const sameParent = items.filter(
+    (i) => i.parentPath === target.parentPath && !i.deletedAt,
+  )
+  const others = items.filter(
+    (i) => !(i.parentPath === target.parentPath && !i.deletedAt),
+  )
+  // (position, id) で sort = UI の compareSiblings と一致
+  sameParent.sort(
+    (a, b) => a.position.localeCompare(b.position) || a.id.localeCompare(b.id),
+  )
+  const fromIdx = sameParent.findIndex((s) => s.id === target.id)
+  if (fromIdx < 0) return items
+  const moved = sameParent.splice(fromIdx, 1)[0]!
+  // prev/next ID から target index を決定
+  const prevIdx = input.prevSiblingId
+    ? sameParent.findIndex((s) => s.id === input.prevSiblingId)
+    : -1
+  const nextIdx = input.nextSiblingId
+    ? sameParent.findIndex((s) => s.id === input.nextSiblingId)
+    : -1
+  let toIdx: number
+  if (prevIdx >= 0) toIdx = prevIdx + 1
+  else if (nextIdx >= 0) toIdx = nextIdx
+  else toIdx = sameParent.length
+  sameParent.splice(toIdx, 0, moved)
+  // 全 sibling に均等な position を割り当て (server 側 bucket rebalance と同方針)
+  const newPositions = positionsBetween(null, null, sameParent.length)
+  const updatedSiblings = sameParent.map((s, i) => ({ ...s, position: newPositions[i]! }))
+  return [...others, ...updatedSiblings]
 }
 
 export function useMoveItem(workspaceId: string) {
