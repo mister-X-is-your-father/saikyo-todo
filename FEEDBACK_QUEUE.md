@@ -226,9 +226,16 @@ button disabled + reason aria-label。typecheck/lint 緑 (warning baseline 1)。
          latest-activity の 3 substrate を 1 panel に統合、scope A UI bind)
 
 3. **チームメンバー余裕時間 一覧** (詳細: 本ファイル下方、scope A から)
+   - 🚧 進行中 (iter465 で member-capacity substrate 着地、次 iter で UI bind)
    - 仮置き判断: capacity = 8h/day 固定、見積無し item は「未見積 N 件」 chip で別表示
    - workspace home に panel 追加、avatar + 今日 chip + 今週 chip (ISO 週)
    - MUST 別カウントは scope B 以降、Slack 通知も別件
+   - [x] iter465 (0686f5f): pure helper `computeMemberCapacityLoad` +
+         `formatMemberCapacityLoadJa` (4 load status / unknown sentinel /
+         未見積 chip / done 除外 / fail-soft) + 17 test
+   - [ ] 次: workspace home に MemberCapacityPanel + 各 member 1 行 (avatar +
+         今日 chip + 今週 chip)、scope A UI bind (期間 filter + assignee filter
+         を service / hook 層で実装)
 
 4. **Gantt DnD 期間編集** (詳細: 本ファイル下方、scope A から)
    - 仮置き判断: bar 中央 drag → 期間平行 shift のみ実装 (左右 edge / 依存連動は別 iter)
