@@ -34,7 +34,9 @@ HANDOFF.md §6 の末尾 80 行を読む (Read tool、offset を末尾近くに)
 - 純粋 unit test 1-2 件追加 (refactor は既存 green + 補強 1)
 - shadcn UI (`src/components/ui/`) 編集禁止
 - service 層は Result / audit / withUserDb / 失敗 path test 必須
-- UX 卓越基準 a-g (該当部のみ commit body に 1 行ずつ、4 個以下に抑える)
+- UX 卓越基準 a-g (手段層、該当部のみ commit body に 1 行ずつ、4 個以下に抑える)
+- **6 軸 (目的層、`docs/ux-excellence-charter.md`) も併記**: 該当軸を 1 行ずつ (4 個以下、該当のみ)。
+  軸: (1) 可視化 (2) 操作 (3) 認知負荷低減 (4) 漏れ防止 (5) やる気 (6) 効率化
 
 検証 (commit 前):
 ```bash

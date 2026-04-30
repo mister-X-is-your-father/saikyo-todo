@@ -6,10 +6,11 @@
 ## 読む順番
 
 1. **本書 (CLAUDE.md)** — まずここ
-2. 該当ドメインの `src/features/<name>/` 既存コード — パターン確認
-3. 不足あれば `ARCHITECTURE.md` の該当章 — 規約詳細
-4. 仕様の確認は `REQUIREMENTS.md`
-5. やらない機能リストは `POST_MVP.md`
+2. **目的層**: `docs/ux-excellence-charter.md` (6 軸憲章) — saikyo-todo は何のために作るか
+3. 該当ドメインの `src/features/<name>/` 既存コード — パターン確認
+4. 不足あれば `ARCHITECTURE.md` の該当章 — 規約詳細
+5. 仕様の確認は `REQUIREMENTS.md`
+6. やらない機能リストは `POST_MVP.md`
 
 ## プロジェクト要約
 
@@ -17,6 +18,19 @@
 - **誰**: 社内チーム利用・社外非公開 (Docker Compose 自前ホスト)
 - **目玉**: Kanban / Gantt / Backlog 切替 + Template (即実行ワークパッケージ) + MUST 絶対落とさない設計
 - **スタック**: Next.js 15+ + Supabase + Drizzle + pg-boss + Anthropic SDK + multilingual-e5 (自前 embedding)
+
+## プロジェクト目的 (6 軸、目的層) — `docs/ux-excellence-charter.md` 参照
+
+新機能を足すときに **WHY を 6 軸で自己評価** する。HOW (= UX 卓越基準 a-g) は手段層。
+
+1. **圧倒的な可視化性能** — 状態 / 量 / 関係 / 進捗 / 締切 が見て即わかる
+2. **グラフィカルで直観的な操作方法** — DnD / inline edit / hover / shortcut で迷わない
+3. **認知負荷の低減** — 1 画面の情報整理、smart default、選択肢を絞る
+4. **作業漏れの防止** — MUST / 期限 / blocked 解消を能動通知、隠れない
+5. **やる気アップ** — 完了 delight / 進捗バー / streak / 累積カウンタ
+6. **効率化** — shortcut / quick-add / bulk / template / AI 分解
+
+commit body には 6 軸該当部 を 1 行ずつ (4 個以下、該当のみ)。a-g と併記。詳細採点と派生 P0 は憲章参照。
 
 ## 新機能を足すとき
 

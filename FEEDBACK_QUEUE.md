@@ -142,9 +142,10 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ---
 
-### 2026-04-30 — saikyo-todo UX 卓越憲章 + iter prompt 統合 ★ P0 メタ ★
+### 2026-04-30 — saikyo-todo UX 卓越憲章 + iter prompt 統合 ★ P0 メタ ★ ✅ iter515 完了
 
-- [ ] **UX 卓越の 6 軸を「saikyo-todo の存在目的」として憲章化 + autonomous prompt に評価軸として組込み + 各 view の gap 分析と改善 P0 派生** — 分類: 設計憲章 + プロセス改善 (P0 メタ)
+- [x] **UX 卓越の 6 軸を「saikyo-todo の存在目的」として憲章化 + autonomous prompt に評価軸として組込み + 各 view の gap 分析と改善 P0 派生** — 分類: 設計憲章 + プロセス改善 (P0 メタ)
+  - **iter515 (2026-04-30) 完了**: `docs/ux-excellence-charter.md` 新規 (6 軸定義 + 良い/悪い例 + trade-off + view 別優先軸 + 13 view × 6 軸 採点表 + a-g との対応 + 運用ルール)、`CLAUDE.md` に「プロジェクト目的 (6 軸)」 section + 読む順番 #2 に憲章を追加、`scripts/autonomous/iter-instruction-autonomous.md` に commit body 6 軸併記ルール追加。派生 P0 は本 file 末尾に view × 軸 単位で 8 件投入 (Today×やる気 / Inbox×可視化 / Kanban×やる気 confetti / Backlog×やる気 / Dashboard×streak / Gantt×認知 zoom / Workflow×可視化 React Flow / Goals×可視化 chart)。
   - 原文 (2026-04-30): 「圧倒的な可視化性能とグラフィカルで直観的な操作方法、認知不可の低減や作業漏れの防止、やる気アップ、効率化に優れたものにするように、タスクを作ってp0に積んどいて。そもそもそういうのを目指すようにプログラムしたいね。」
   - **意図**: 個別 feature を作る前に、saikyo-todo の **目指す方向そのもの** を 6 軸で言語化し、以後すべての iter が **6 軸スコアで評価** されるよう iter prompt / CLAUDE.md に組込む。憲章ができれば「これって saikyo-todo の方向性に合う?」が常に判定できる。
 
@@ -646,21 +647,32 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 
 ### 🔥 次 iter で即実装 (P0 最優先、track 判定より優先) 🔥
 
-#### 🌟 新 P0 [優先度 1] (2026-04-30): saikyo-todo UX 卓越憲章 + iter prompt 統合
+#### ✅ 旧 P0 [優先度 1] (2026-04-30、iter515 完了): saikyo-todo UX 卓越憲章 + iter prompt 統合
 
-- 詳細は queue 上部 `2026-04-30 — saikyo-todo UX 卓越憲章` entry 参照
-- 成果物: `docs/ux-excellence-charter.md` (150-300 行) + iter-instruction / CLAUDE.md 更新 + queue 派生 P0
-- 期待 commit: `docs(ux): saikyo-todo UX 卓越憲章 + iter prompt 6 軸統合 (queue: ux-excellence charter)`
-- **目的層 (6 軸) を encode、以後すべての iter が 6 軸で自己評価される運用に切替**
-- これを最初に消化することで、後続の TaskChute/GTD plan も 6 軸で採点される (順序が効く)
+- `docs/ux-excellence-charter.md` 投下、`CLAUDE.md` / `iter-instruction-autonomous.md` 連携完了
+- 派生 P0 は queue 末尾に 8 件投入 (view × 軸 単位)、各 1 commit で消化
+- 6 軸 = 目的層、a-g = 手段層、commit body に併記する運用に切替
 
-#### 🌟 新 P0 [優先度 2] (2026-04-30): TaskChute / GTD methodology モード 実装プラン作成
+#### 🌟 新 P0 [優先度 1] (2026-04-30、繰上げ): TaskChute / GTD methodology モード 実装プラン作成
 
 - 詳細は queue 上部 `2026-04-30 — TaskChute モード / GTD モード 実装プラン作成` entry 参照
 - 成果物: `docs/methodology-modes-plan.md` (200-400 行)
 - 期待 commit: `docs(methodology): TaskChute / GTD モード 実装プラン (queue: methodology-modes plan)`
 - **plan のみ作成、実装はしない** (各 phase は別 P0 で plan 完成後に queue 投入)
-- 憲章 (優先度 1) ができた後にやると、6 軸で plan が採点されてより尖る
+- 憲章 (iter515) ができた後の commit なので、6 軸で plan が採点されてより尖る
+
+#### 🌟 新 P0 [優先度 2-9] (2026-04-30、iter515 派生): UX 卓越憲章の view × 軸 採点 1-2 由来 8 件
+
+各 1 commit (30-150 行) で消化、queue track 名で commit。`docs/ux-excellence-charter.md` の採点表参照。
+
+1. **Today × 軸5 やる気** — 今日合計時間 / 残時間 / 進捗 bar / 累計完了 chip
+2. **Inbox × 軸1 可視化** — タグ / プロジェクト / due 別 grouping toggle
+3. **Kanban × 軸5 やる気** — done drop で confetti + 累計完了 chip
+4. **Backlog × 軸5 やる気** — checkbox click 時の片付き micro-animation
+5. **Dashboard × 軸5 やる気** — 連続完了 streak (3/5/7 日 マイルストーン badge)
+6. **Gantt × 軸3 認知低減** — zoom level (日/週/月) smart default + 密度自動調整
+7. **Workflow × 軸1-2 可視化/操作** — React Flow graphical editor (queue 既存 entry「Workflow graphical 化」と統合)
+8. **Goals × 軸1 可視化** — KR 進捗 chart (recharts、queue 既存「ライブラリお着替え」と統合)
 
 ---
 
