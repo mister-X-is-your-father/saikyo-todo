@@ -601,6 +601,7 @@ function SprintCard({
                 <Button
                   type="button"
                   size="sm"
+                  className="min-h-11"
                   variant="ghost"
                   onClick={() => {
                     setEditing(false)
@@ -613,6 +614,7 @@ function SprintCard({
                 <Button
                   type="submit"
                   size="sm"
+                  className="min-h-11"
                   disabled={update.isPending}
                   aria-busy={update.isPending || undefined}
                   data-testid={`sprint-period-save-${sprint.id}`}
@@ -631,6 +633,7 @@ function SprintCard({
             {!editing && status !== 'cancelled' && status !== 'completed' && (
               <Button
                 size="sm"
+                className="min-h-11"
                 variant="outline"
                 onClick={() => setEditing(true)}
                 data-testid={`sprint-period-edit-btn-${sprint.id}`}
@@ -644,6 +647,7 @@ function SprintCard({
             {status === 'planning' && (
               <Button
                 size="sm"
+                className="min-h-11"
                 variant="outline"
                 disabled={changing}
                 onClick={() => onStatusChange('active')}
@@ -662,6 +666,7 @@ function SprintCard({
               <>
                 <Button
                   size="sm"
+                  className="min-h-11"
                   variant="outline"
                   disabled={changing}
                   onClick={() => onStatusChange('completed')}
@@ -677,6 +682,7 @@ function SprintCard({
                 </Button>
                 <Button
                   size="sm"
+                  className="min-h-11"
                   variant="outline"
                   disabled={changing}
                   onClick={() => onStatusChange('planning')}
@@ -694,6 +700,7 @@ function SprintCard({
             {status !== 'cancelled' && status !== 'completed' && (
               <Button
                 size="sm"
+                className="min-h-11"
                 variant="ghost"
                 disabled={changing}
                 onClick={() => {
@@ -717,6 +724,7 @@ function SprintCard({
             {(status === 'active' || status === 'completed') && (
               <Button
                 size="sm"
+                className="min-h-11"
                 variant="outline"
                 disabled={retroPending}
                 aria-busy={retroPending || undefined}
@@ -736,6 +744,7 @@ function SprintCard({
             {(status === 'planning' || status === 'active') && (
               <Button
                 size="sm"
+                className="min-h-11"
                 variant="outline"
                 disabled={premortemPending}
                 aria-busy={premortemPending || undefined}
@@ -829,6 +838,7 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
               type="button"
               variant="outline"
               size="sm"
+              className="min-h-11"
               onClick={() => setEditing(true)}
               data-testid="sprint-defaults-edit-btn"
               aria-label={`Sprint デフォルト (現在: ${DOW_JA[cur.startDow]}曜開始 / ${cur.lengthDays} 日) の編集モードを開く`}
@@ -888,6 +898,7 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
               <Button
                 type="button"
                 size="sm"
+                className="min-h-11"
                 variant="ghost"
                 onClick={() => {
                   setEditing(false)
@@ -900,6 +911,7 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
               <Button
                 type="submit"
                 size="sm"
+                className="min-h-11"
                 disabled={upd.isPending}
                 aria-busy={upd.isPending || undefined}
                 data-testid="sprint-defaults-save-btn"
