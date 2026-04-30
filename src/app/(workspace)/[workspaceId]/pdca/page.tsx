@@ -33,7 +33,7 @@ export default async function PdcaPage({ params }: PageProps) {
   const initialUnreadCount = unreadResult.ok ? unreadResult.value : 0
 
   return (
-    <main className="container mx-auto max-w-5xl space-y-6 p-4 md:p-6">
+    <main id="main-content" className="container mx-auto max-w-5xl space-y-6 p-4 md:p-6">
       <WorkspaceHeader
         title="PDCA"
         role={role}
