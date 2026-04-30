@@ -37,7 +37,7 @@ import type { Item } from '@/features/item/schema'
 import {
   buildTodayForecast,
   forecastSeverity,
-  forecastSeverityLabelJa,
+  formatTodayForecastJa,
 } from '@/features/today/forecast'
 import { buildOperationBoard } from '@/features/today/operation-board'
 
@@ -121,7 +121,7 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                   data-testid="operation-board-forecast"
                   data-severity={sev}
                   role="status"
-                  aria-label={`今日完了予測 ${forecastSeverityLabelJa(sev)}: 合計 ${forecast.totalEstimateMin} 分 / 残 ${forecast.remainingMinutesUntilEnd} 分${forecast.canFinishToday ? `、${-forecast.overflowMin} 分余裕` : `、${forecast.overflowMin} 分超過`}`}
+                  aria-label={`今日完了予測 ${formatTodayForecastJa(forecast)}`}
                 >
                   <Timer className="h-3.5 w-3.5" aria-hidden="true" />
                   <span className="font-medium tabular-nums">
