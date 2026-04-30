@@ -272,6 +272,7 @@ export function SprintsPanel({ workspaceId }: Props) {
             <div className="flex justify-end">
               <Button
                 type="submit"
+                className="min-h-11"
                 disabled={!name.trim() || createMut.isPending}
                 aria-busy={createMut.isPending || undefined}
                 data-testid="sprint-create-btn"
