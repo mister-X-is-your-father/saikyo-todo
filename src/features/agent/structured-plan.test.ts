@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   extractFirstJsonObject,
+  formatStructuredPlanJa,
   parseStructuredPlan,
   StructuredPlanSchema,
   validateDependencies,
@@ -196,6 +197,46 @@ Hope this helps.`
     expect(r.ok).toBe(true)
     if (r.ok) {
       expect(r.plan.totalEstMin).toBe(60)
+    }
+  })
+})
+
+describe('formatStructuredPlanJa', () => {
+  it('5 step / 合計 2h30m / DoD あり', () => {
+    const r = parseStructuredPlan({
+      steps: [
+        { title: 's1', est_min: 30, dod: '', dependencies: [] },
+        { title: 's2', est_min: 30, dod: '', dependencies: [] },
+        { title: 's3', est_min: 30, dod: '', dependencies: [] },
+        { title: 's4', est_min: 30, dod: '', dependencies: [] },
+        { title: 's5', est_min: 30, dod: '', dependencies: [] },
+      ],
+      dod_summary: 'ユーザ受入完了',
+    })
+    expect(r.ok).toBe(true)
+    if (r.ok) {
+      expect(formatStructuredPlanJa(r.plan)).toBe('5 step / 合計 2h30m — 「DoD: ユーザ受入完了」')
+    }
+  })
+
+  it('60 未満は分のみ / 60 ぴったりは h のみ', () => {
+    const r1 = parseStructuredPlan({
+      steps: [{ title: 's', est_min: 45, dod: '', dependencies: [] }],
+      dod_summary: 'X',
+    })
+    expect(r1.ok).toBe(true)
+    if (r1.ok) {
+      expect(formatStructuredPlanJa(r1.plan)).toContain('合計 45m')
+    }
+
+    const r2 = parseStructuredPlan({
+      steps: [{ title: 's', est_min: 60, dod: '', dependencies: [] }],
+      dod_summary: 'Y',
+    })
+    expect(r2.ok).toBe(true)
+    if (r2.ok) {
+      expect(formatStructuredPlanJa(r2.plan)).toContain('合計 1h')
+      expect(formatStructuredPlanJa(r2.plan)).not.toContain('1h0m')
     }
   })
 })

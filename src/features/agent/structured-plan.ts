@@ -132,6 +132,22 @@ export function parseStructuredPlan(input: unknown): ParseStructuredPlanResult {
   }
 }
 
+/**
+ * iter543 ai-automation polish: AI prompt / chip aria-label / Slack 通知用 1 行 plan summary。
+ *   '5 step / 合計 2h30m — 「DoD: ユーザ受入完了」'
+ *   '3 step / 合計 45m'  (= dod_summary 短縮なし)
+ *
+ * 詳細 step 一覧は widget が直 render する想定 (本 helper は header chip 用)。
+ */
+export function formatStructuredPlanJa(plan: NormalizedStructuredPlan): string {
+  const total = plan.totalEstMin
+  const hours = Math.floor(total / 60)
+  const mins = total % 60
+  const totalStr = hours === 0 ? `${mins}m` : mins === 0 ? `${hours}h` : `${hours}h${mins}m`
+  const dodPart = plan.dodSummary ? ` — 「DoD: ${plan.dodSummary}」` : ''
+  return `${plan.steps.length} step / 合計 ${totalStr}${dodPart}`
+}
+
 /** 入力 string から 1 つ目の JSON object (`{...}`) を切り出す。失敗時 null */
 function extractFirstJsonObject(s: string): string | null {
   const start = s.indexOf('{')
