@@ -59,7 +59,10 @@ export function TeamCapacityPanel({ workspaceId }: Props) {
         onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}
         data-testid="team-capacity-panel"
       >
-        <summary className="text-foreground inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium">
+        <summary
+          id="team-capacity-summary"
+          className="text-foreground inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium"
+        >
           <Users className="h-4 w-4" aria-hidden="true" />
           チームメンバー 余裕時間 (今日 / 今週)
         </summary>
@@ -121,7 +124,7 @@ function PanelBody({ workspaceId }: Props) {
   }
 
   return (
-    <ul className="mt-2 space-y-1.5">
+    <ul className="mt-2 space-y-1.5" aria-labelledby="team-capacity-summary">
       {rows.map((row) => {
         const name = row.member.displayName ?? row.member.actorId.slice(0, 8) + '…'
         const today = row.todayLoad
