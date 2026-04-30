@@ -121,7 +121,8 @@ export function TaskChuteView({ workspaceId, items }: Props) {
               {item.isMust ? <MustBadge /> : null}
               <span
                 className={`inline-flex shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${priorityClass(item.priority)}`}
-                aria-label={`優先度 ${priorityLabel(item.priority)}`}
+                role="img"
+                aria-label={priorityLabel(item.priority)}
               >
                 {priorityLabel(item.priority)}
               </span>
