@@ -12,7 +12,7 @@ import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Fuse from 'fuse.js'
 
-import { positionsBetween } from '@/lib/db/fractional-position'
+import { positionBetween, positionsBetween } from '@/lib/db/fractional-position'
 import { unwrap } from '@/lib/result-unwrap'
 
 import {
@@ -183,15 +183,19 @@ export function useReorderItem(workspaceId: string) {
 }
 
 /**
- * 楽観更新用: 同 parent の sibling 全てに新 position を割り当てる。
+ * 楽観更新用: server の reorder ロジックと **完全に同じ挙動** で position を予測。
  *
- * **重要**: array order だけ変えて position field を据え置きにすると、
- * 描画側 (subtasks-panel など) が `compareSiblings` で position 基準に
- * 再 sort して **元順序に戻す flicker** が発生する。
- * したがって、target の position だけでなく **同 parent 全 sibling** に
- * 新 position を均等再生成して付与する (server 側 bucket rebalance と同手法)。
+ * server (item/service.ts) の動作:
+ *   - prev.position < next.position (no collision): `positionBetween(prev, next)` で moved のみ更新
+ *   - collision (prev>=next): 同 parent 全 sibling を bucket rebalance (positionsBetween で均等再割当)
  *
- * これでサーバ確定前でも UI の sort が新順序を維持する。
+ * 楽観更新もこれを **正確にミラー** する。これで server refetch 時に他 sibling の
+ * position が変わらず、隣接 sibling の「ビクッ」 視覚不整合を防ぐ
+ * (2026-04-30 ユーザ報告: 「移動後 上側タスクがビクっと動く」 の根治)。
+ *
+ * 旧仕様 (常に bucket rebalance) は flicker は防げたが、server が surgical update
+ * をするので refetch で他 sibling の position が server 値に巻き戻り → 視覚的に
+ * 隣接 sibling が「微小に動いて見える」 という別 bug になっていた。
  */
 function reorderInArray(items: Item[], input: ReorderItemInput): Item[] {
   const target = items.find((i) => i.id === input.id)
@@ -206,10 +210,47 @@ function reorderInArray(items: Item[], input: ReorderItemInput): Item[] {
   sameParent.sort(
     (a, b) => a.position.localeCompare(b.position) || a.id.localeCompare(b.id),
   )
+  // prev / next item を pull
+  const prevItem = input.prevSiblingId
+    ? sameParent.find((s) => s.id === input.prevSiblingId)
+    : null
+  const nextItem = input.nextSiblingId
+    ? sameParent.find((s) => s.id === input.nextSiblingId)
+    : null
+  const prevPos = prevItem?.position ?? null
+  const nextPos = nextItem?.position ?? null
+  const collision =
+    prevPos !== null && nextPos !== null && prevPos.localeCompare(nextPos) >= 0
+
+  if (!collision) {
+    // 通常 path: target の position だけ更新 (server と一致)
+    let newPos: string
+    try {
+      newPos = positionBetween(prevPos, nextPos)
+    } catch {
+      // 想定外の path、念のため bucket rebalance に fallback
+      return bucketRebalanceClient(target, sameParent, others, input)
+    }
+    return items.map((i) => (i.id === target.id ? { ...i, position: newPos } : i))
+  }
+
+  // collision path: 全 sibling 再均等化 (server と一致)
+  return bucketRebalanceClient(target, sameParent, others, input)
+}
+
+/**
+ * collision 時の bucket rebalance (server item/service.ts の rebalance と同方針)。
+ * 全 sibling に positionsBetween(null, null, N) で均等位置を再割当。
+ */
+function bucketRebalanceClient(
+  target: Item,
+  sameParent: Item[],
+  others: Item[],
+  input: ReorderItemInput,
+): Item[] {
   const fromIdx = sameParent.findIndex((s) => s.id === target.id)
-  if (fromIdx < 0) return items
+  if (fromIdx < 0) return [...others, ...sameParent]
   const moved = sameParent.splice(fromIdx, 1)[0]!
-  // prev/next ID から target index を決定
   const prevIdx = input.prevSiblingId
     ? sameParent.findIndex((s) => s.id === input.prevSiblingId)
     : -1
@@ -221,7 +262,6 @@ function reorderInArray(items: Item[], input: ReorderItemInput): Item[] {
   else if (nextIdx >= 0) toIdx = nextIdx
   else toIdx = sameParent.length
   sameParent.splice(toIdx, 0, moved)
-  // 全 sibling に均等な position を割り当て (server 側 bucket rebalance と同方針)
   const newPositions = positionsBetween(null, null, sameParent.length)
   const updatedSiblings = sameParent.map((s, i) => ({ ...s, position: newPositions[i]! }))
   return [...others, ...updatedSiblings]
