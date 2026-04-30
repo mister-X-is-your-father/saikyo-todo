@@ -305,5 +305,42 @@ export function formatCriticalPathJa(criticalMin: number | null, totalMin: numbe
   return `最早 finish: ${fmt(criticalMin)} (${tail})`
 }
 
+/**
+ * iter512 ai-automation: 4 状態 hint シリーズ 14 弾目 — structured-plan の
+ * 「plan 健全性」分類。step 数 / total est_min / dod_summary 充実度で 4 段階分類。
+ *
+ * - 'idle'     : steps.length === 0 (= 空 plan、parser 通過しないが防御)
+ * - 'severe'   : totalEstMin > 600 (= 10h+ で巨大、要分割) OR dodSummary 1 行のみ
+ *                かつ steps.length === 1 (= plan として粗すぎ)
+ * - 'moderate' : totalEstMin > 240 (= 4h+) OR steps.length > 15 (= 過剰分割)
+ * - 'mild'     : それ以外 (= 健全 plan)
+ *
+ * 用途: AI plan 受信時の「plan 健全性」 chip / Slack 通知見出し / staging UI badge。
+ */
+import { type FourStateHint, makeHintLabelFormatter } from '@/lib/hint'
+
+export type StructuredPlanHint = FourStateHint
+
+export function classifyStructuredPlanHint(plan: NormalizedStructuredPlan): StructuredPlanHint {
+  if (plan.steps.length === 0) return 'idle'
+  if (plan.totalEstMin > 600 || (plan.steps.length === 1 && plan.dodSummary.length <= 20)) {
+    return 'severe'
+  }
+  if (plan.totalEstMin > 240 || plan.steps.length > 15) return 'moderate'
+  return 'mild'
+}
+
+const STRUCTURED_PLAN_HINT_LABEL_JA: Record<StructuredPlanHint, string> = {
+  idle: 'plan なし',
+  mild: '健全',
+  moderate: '要 review',
+  severe: '要分割',
+}
+
+export const formatStructuredPlanHintJa = makeHintLabelFormatter(
+  classifyStructuredPlanHint,
+  STRUCTURED_PLAN_HINT_LABEL_JA,
+)
+
 // 内部 helper を test しやすく named export
 export { extractFirstJsonObject }

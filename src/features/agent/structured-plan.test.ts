@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  classifyStructuredPlanHint,
   computePlanCriticalPathMin,
   extractFirstJsonObject,
   formatCriticalPathJa,
   formatLongestStepJa,
+  formatStructuredPlanHintJa,
   formatStructuredPlanJa,
   parseStructuredPlan,
   pickLongestStep,
@@ -414,5 +416,88 @@ describe('formatCriticalPathJa', () => {
     expect(formatCriticalPathJa(150, 300)).toBe(
       '最早 finish: 2h30m (合計 5h との差 2h30m = 並列化機会あり)',
     )
+  })
+})
+
+describe('classifyStructuredPlanHint', () => {
+  it('健全範囲 → mild', () => {
+    expect(
+      classifyStructuredPlanHint({
+        steps: [
+          { title: 'a', est_min: 30, dod: '', dependencies: [] },
+          { title: 'b', est_min: 60, dod: '', dependencies: [] },
+        ],
+        totalEstMin: 90,
+        dodSummary: 'ユーザ受入完了',
+      }),
+    ).toBe('mild')
+  })
+
+  it('totalEstMin 600+ → severe', () => {
+    expect(
+      classifyStructuredPlanHint({
+        steps: [{ title: 'a', est_min: 700, dod: '', dependencies: [] }],
+        totalEstMin: 700,
+        dodSummary: 'long',
+      }),
+    ).toBe('severe')
+  })
+
+  it('1 step + 短い dod → severe (粗すぎ)', () => {
+    expect(
+      classifyStructuredPlanHint({
+        steps: [{ title: 'a', est_min: 30, dod: '', dependencies: [] }],
+        totalEstMin: 30,
+        dodSummary: '完成',
+      }),
+    ).toBe('severe')
+  })
+
+  it('totalEstMin 4h+ → moderate', () => {
+    expect(
+      classifyStructuredPlanHint({
+        steps: [
+          { title: 'a', est_min: 150, dod: '', dependencies: [] },
+          { title: 'b', est_min: 150, dod: '', dependencies: [] },
+        ],
+        totalEstMin: 300,
+        dodSummary: 'detailed dod that is more than 20 chars',
+      }),
+    ).toBe('moderate')
+  })
+
+  it('steps 16+ → moderate (過剰分割)', () => {
+    const steps = Array.from({ length: 16 }, (_, i) => ({
+      title: `s${i}`,
+      est_min: 5,
+      dod: '',
+      dependencies: [],
+    }))
+    expect(
+      classifyStructuredPlanHint({
+        steps,
+        totalEstMin: 80,
+        dodSummary: 'detailed dod with enough chars',
+      }),
+    ).toBe('moderate')
+  })
+})
+
+describe('formatStructuredPlanHintJa', () => {
+  it('idle / mild / moderate / severe を 1 単語で返す', () => {
+    expect(
+      formatStructuredPlanHintJa({
+        steps: [],
+        totalEstMin: 0,
+        dodSummary: '',
+      }),
+    ).toBe('plan なし')
+    expect(
+      formatStructuredPlanHintJa({
+        steps: [{ title: 'a', est_min: 30, dod: '', dependencies: [] }],
+        totalEstMin: 700,
+        dodSummary: 'long',
+      }),
+    ).toBe('要分割')
   })
 })
