@@ -203,11 +203,17 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
           >
             {itemTitle || '(無題)'}
           </span>
+          {/*
+            aria-live は意図的に外す: 1 秒 tick で更新されるため "polite" でも
+            queue が連続発火し SR が「00:01 00:02 00:03 ...」を読み続ける
+            (a11y アンチパターン)。コンテナ側 `role="region"` の `aria-label`
+            に経過時間を含めてあるので SR ユーザは region にナビゲートすれば
+            on-demand に最新値を聞ける。
+          */}
           <span
             className={`font-mono tabular-nums ${inPip ? 'text-base' : 'text-sm'}`}
             data-testid="active-timer-elapsed"
-            aria-live="polite"
-            aria-atomic="true"
+            aria-hidden="true"
           >
             {formatElapsed(elapsedMs)}
           </span>
