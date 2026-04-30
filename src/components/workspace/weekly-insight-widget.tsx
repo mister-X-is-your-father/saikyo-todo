@@ -19,7 +19,7 @@
  */
 import { useMemo } from 'react'
 
-import { AlertTriangle, TrendingDown, TrendingUp } from 'lucide-react'
+import { AlertTriangle, Sparkles, TrendingDown, TrendingUp } from 'lucide-react'
 
 import { trendToneClass } from '@/lib/ui/trend-tone'
 import { severityChipClass } from '@/lib/widget/severity'
@@ -193,17 +193,26 @@ export function WeeklyInsightWidget({ items, now }: Props) {
         </div>
 
         {insight.anomalies.length > 0 && (
-          <ul className="space-y-1" aria-label="異常検知" data-testid="weekly-insight-anomalies">
-            {insight.anomalies.map((a) => (
-              <li
-                key={a.kind + a.message}
-                className="flex items-center gap-1.5 rounded bg-amber-50 px-2 py-1 text-xs text-amber-800"
-                data-anomaly-kind={a.kind}
-              >
-                <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span>{a.message}</span>
-              </li>
-            ))}
+          <ul className="space-y-1" aria-label="特筆事項" data-testid="weekly-insight-anomalies">
+            {insight.anomalies.map((a) => {
+              // iter504 ai-automation: highCompletionDay は positive anomaly (= 集中日)
+              // で emerald 配色、その他 (lowCompletionDay / overdueSpike) は amber 配色。
+              const isPositive = a.kind === 'highCompletionDay'
+              const tone = isPositive
+                ? 'bg-emerald-50 text-emerald-800'
+                : 'bg-amber-50 text-amber-800'
+              const Icon = isPositive ? Sparkles : AlertTriangle
+              return (
+                <li
+                  key={a.kind + a.message}
+                  className={`flex items-center gap-1.5 rounded px-2 py-1 text-xs ${tone}`}
+                  data-anomaly-kind={a.kind}
+                >
+                  <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span>{a.message}</span>
+                </li>
+              )
+            })}
           </ul>
         )}
       </CardContent>
