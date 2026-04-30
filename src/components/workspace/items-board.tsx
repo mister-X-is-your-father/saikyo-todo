@@ -302,7 +302,11 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
             onChange={(e) => setStatusFilter(e.target.value || null)}
             className="rounded border px-2 py-1 text-sm"
             data-testid="filter-status"
-            aria-label="ステータスで絞り込み"
+            aria-label={
+              statusFilter
+                ? `ステータスで絞り込み中 (現在: ${statusFilter})。「全ステータス」で解除`
+                : 'ステータスで絞り込み (todo / in_progress / done)'
+            }
           >
             <option value="">全ステータス</option>
             <option value="todo">TODO</option>
@@ -314,7 +318,11 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
             onChange={(e) => setSprintFilter(e.target.value || null)}
             className="rounded border px-2 py-1 text-sm"
             data-testid="filter-sprint"
-            aria-label="Sprint で絞り込み"
+            aria-label={
+              sprintFilter
+                ? `Sprint で絞り込み中 (現在: ${sprintFilter})。「全 Sprint」で解除`
+                : 'Sprint で絞り込み (active / 未割当 / 個別 sprint)'
+            }
           >
             <option value="">全 Sprint</option>
             <option value="active">稼働中の Sprint</option>
