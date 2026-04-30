@@ -16,13 +16,10 @@ import { itemKeys } from '@/features/item/hooks'
 
 import {
   cancelInvocationAction,
-  decomposeGoalAction,
   decomposeGoalViaClaudeAction,
-  decomposeItemAction,
   decomposeItemViaClaudeAction,
   generatePlanAction,
   listAgentsAction,
-  researchItemAction,
   researchItemViaClaudeAction,
 } from './actions'
 
@@ -76,26 +73,6 @@ export function useDecomposeItem(workspaceId: string) {
   })
 }
 
-/** SDK 直接利用 (proposal staging) で分解する旧経路。env (ANTHROPIC_API_KEY) 必須。 */
-export function useDecomposeItemViaSDK(workspaceId: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: async (vars: DecomposeItemVariables) =>
-      unwrap(
-        await decomposeItemAction({
-          workspaceId: vars.workspaceId,
-          itemId: vars.itemId,
-          extraHint: vars.extraHint,
-          idempotencyKey: vars.idempotencyKey,
-        }),
-      ),
-    onSuccess: (_data, vars) => {
-      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
-      void qc.invalidateQueries({ queryKey: proposalKeys.pendingByParent(vars.itemId) })
-    },
-  })
-}
-
 /**
  * Phase 6.15 iter130: Goal を Researcher で分解する hook。
  * 5〜10 件の Item が root 直下に作られるので items 全体を invalidate。
@@ -128,25 +105,6 @@ export function useDecomposeGoal(workspaceId: string) {
   })
 }
 
-/** SDK 直接利用の旧経路 (env 必須)。テスト / fallback 用に残置。 */
-export function useDecomposeGoalViaSDK(workspaceId: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: async (vars: DecomposeGoalVariables) =>
-      unwrap(
-        await decomposeGoalAction({
-          workspaceId: vars.workspaceId,
-          goalId: vars.goalId,
-          extraHint: vars.extraHint,
-          idempotencyKey: vars.idempotencyKey,
-        }),
-      ),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
-    },
-  })
-}
-
 export interface ResearchItemVariables {
   workspaceId: string
   itemId: string
@@ -159,27 +117,13 @@ export interface ResearchItemVariables {
 // factory 引数で workspace を bind する必要がない)
 //
 // iter520 (queue: researcher SDK→CLI run path): AI 調査も Claude Max OAuth + claude CLI
-// 経由 (env 不要) を default に切替。`useResearchItemViaSDK` は test / fallback 用に残置。
+// 経由 (env 不要) を default に切替。SDK fallback hook (useResearchItemViaSDK) は
+// iter533 で削除 (どこからも参照されておらず ANTHROPIC_API_KEY 利用は禁止方針のため)。
 export function useResearchItem() {
   return useMutation({
     mutationFn: async (vars: ResearchItemVariables) =>
       unwrap(
         await researchItemViaClaudeAction({
-          workspaceId: vars.workspaceId,
-          itemId: vars.itemId,
-          extraHint: vars.extraHint,
-          idempotencyKey: vars.idempotencyKey,
-        }),
-      ),
-  })
-}
-
-/** SDK 直接利用 (env 必須) で AI 調査する旧経路。fallback 用に残置。 */
-export function useResearchItemViaSDK() {
-  return useMutation({
-    mutationFn: async (vars: ResearchItemVariables) =>
-      unwrap(
-        await researchItemAction({
           workspaceId: vars.workspaceId,
           itemId: vars.itemId,
           extraHint: vars.extraHint,
