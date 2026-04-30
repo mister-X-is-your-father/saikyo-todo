@@ -157,6 +157,31 @@ describe('buildWeeklyInsight', () => {
     expect(r.anomalies.some((a) => a.kind === 'lowCompletionDay')).toBe(false)
   })
 
+  it('anomaly highCompletionDay: 今週合計 7+ で平均の 2 倍以上の曜日があれば検出', () => {
+    // 今週 8 件 平均 8/7=1.14、Mon に 5 件集中 → 5 >= 2.28 で検出
+    const items: WeeklyInsightItemFields[] = []
+    for (let i = 0; i < 5; i++) items.push(mk({ doneAt: '2026-04-27T10:00:00Z' })) // Mon
+    items.push(mk({ doneAt: '2026-04-28T10:00:00Z' })) // Tue
+    items.push(mk({ doneAt: '2026-04-29T10:00:00Z' })) // Wed
+    items.push(mk({ doneAt: '2026-04-30T10:00:00Z' })) // Thu
+    const r = buildWeeklyInsight(items, NOW)
+    expect(r.anomalies.some((a) => a.kind === 'highCompletionDay')).toBe(true)
+  })
+
+  it('anomaly highCompletionDay: 平均の 2 倍以下なら不発', () => {
+    // 7 件均等分散 (1/day) → 平均 1、各曜日 1 件、2*1=2 に達しない
+    const items: WeeklyInsightItemFields[] = []
+    items.push(mk({ doneAt: '2026-04-27T10:00:00Z' })) // Mon
+    items.push(mk({ doneAt: '2026-04-28T10:00:00Z' })) // Tue
+    items.push(mk({ doneAt: '2026-04-29T10:00:00Z' })) // Wed
+    items.push(mk({ doneAt: '2026-04-30T10:00:00Z' })) // Thu
+    items.push(mk({ doneAt: '2026-05-01T10:00:00Z' })) // Fri
+    items.push(mk({ doneAt: '2026-05-02T10:00:00Z' })) // Sat
+    items.push(mk({ doneAt: '2026-05-03T10:00:00Z' })) // Sun
+    const r = buildWeeklyInsight(items, NOW)
+    expect(r.anomalies.some((a) => a.kind === 'highCompletionDay')).toBe(false)
+  })
+
   it('anomaly overdueSpike: active で dueDate < weekStart の item 5 件以上で発動', () => {
     const items: WeeklyInsightItemFields[] = []
     for (let i = 0; i < 5; i++) {

@@ -157,7 +157,7 @@ export function buildWeeklyInsight(
       prevWeekTotal === 0 ? null : Math.round((currentWeekTotal / prevWeekTotal) * 100 - 100),
   }
 
-  // anomaly 検出 (1-2 件、純 algorithm)
+  // anomaly 検出 (1-3 件、純 algorithm)
   const anomalies: WeeklyInsightSummary['anomalies'] = []
   // (1) 今週どこかの曜日で「平均の半分以下」
   if (currentWeekTotal >= 7) {
@@ -171,6 +171,21 @@ export function buildWeeklyInsight(
           message: `${labels[i]} の完了が ${c} 件 (週平均 ${Math.round(avg * 10) / 10})`,
         })
         break // 1 件で止める
+      }
+    }
+  }
+  // (1b) iter503 basics: 今週どこかの曜日で「平均の 2 倍以上」 (= 集中日、positive anomaly)
+  // 同じ閾値ロジック (currentWeekTotal>=7) で activate、lowCompletion と同居 OK。
+  if (currentWeekTotal >= 7) {
+    const avg = currentWeekTotal / 7
+    for (let i = 0; i < 7; i++) {
+      const c = byDayCurrent[i] ?? 0
+      if (c >= avg * 2 && c - avg >= 1) {
+        anomalies.push({
+          kind: 'highCompletionDay',
+          message: `${labels[i]} に完了 ${c} 件 集中 (週平均 ${Math.round(avg * 10) / 10})`,
+        })
+        break
       }
     }
   }
