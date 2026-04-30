@@ -3,7 +3,12 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import { computeCostMonthProjection, formatCostMonthProjectionJa } from './cost-month-projection'
+import {
+  computeCostMonthProjection,
+  costMonthProjectionChipClasses,
+  costMonthProjectionTone,
+  formatCostMonthProjectionJa,
+} from './cost-month-projection'
 
 describe('computeCostMonthProjection (月末コスト線形予測)', () => {
   it('月初 10 日で $1、4月 30 日 → 月末予測 $3', () => {
@@ -172,5 +177,34 @@ describe('formatCostMonthProjectionJa', () => {
     expect(formatCostMonthProjectionJa(r)).toBe(
       '🚨 今月予測 $6.00 / 上限 $5.00 — 月末超過見込み (現在 $2.00 / 残 20 日)',
     )
+  })
+})
+
+describe('costMonthProjectionTone (graphical 波及 — risk → chip tone token)', () => {
+  it('over → danger / warn → warn / safe → info / idle → idle', () => {
+    expect(costMonthProjectionTone('over')).toBe('danger')
+    expect(costMonthProjectionTone('warn')).toBe('warn')
+    expect(costMonthProjectionTone('safe')).toBe('info')
+    expect(costMonthProjectionTone('idle')).toBe('idle')
+  })
+})
+
+describe('costMonthProjectionChipClasses (Tailwind 3 軸 class、iter481 dueProximity と整合)', () => {
+  it('over → rose 3 軸 (bg / text / ring)', () => {
+    const c = costMonthProjectionChipClasses('over')
+    expect(c.bgClass).toBe('bg-rose-100')
+    expect(c.textClass).toBe('text-rose-700')
+    expect(c.ringClass).toBe('ring-rose-300')
+  })
+
+  it('warn → amber 強 / safe → blue 薄 (urgent vs info の区別)', () => {
+    expect(costMonthProjectionChipClasses('warn').bgClass).toBe('bg-amber-100')
+    expect(costMonthProjectionChipClasses('safe').bgClass).toBe('bg-blue-50')
+  })
+
+  it('idle (today 不正) → slate (計算不能を視覚で控えめに表現)', () => {
+    const c = costMonthProjectionChipClasses('idle')
+    expect(c.textClass).toBe('text-slate-600')
+    expect(c.ringClass).toBe('ring-slate-200')
   })
 })

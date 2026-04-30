@@ -169,6 +169,71 @@ function formatUsd(usd: number): string {
  *  - warn → '⚠ 今月予測 $4.30 / 上限 $5.00 — 80% 超過見込み (現在 $1.40 / 残 22 日)'
  *  - over → '🚨 今月予測 $5.50 / 上限 $5.00 — 月末超過見込み (現在 $1.80 / 残 22 日)'
  */
+/**
+ * iter482 ai-automation (graphical 波及): riskLevel を「graphical chip tone」 token に
+ * 変換する pure helper。iter481 `dueProximityTone` と同じ 5 段階 vocabulary
+ * (danger / urgent / warn / info / idle) のうち 4 種を使用。AI コスト dashboard
+ * widget / Slack 通知 ペイロードで「赤=超過 / 橙=警告 / 青=安全 / 灰=不明」を
+ * 1 関数で揃える。
+ *
+ * 配色 token:
+ *  - 'danger' — over (rose、月末超過見込み)
+ *  - 'warn'   — warn (amber、警告ライン超過見込み)
+ *  - 'info'   — safe (blue、制限内、計画通り)
+ *  - 'idle'   — idle (slate、today 不正 = 計算不能)
+ *
+ * iter481 で定義した 5 段階のうち 'urgent' は使わない (= cost projection には
+ * 「行動喚起の最強」はない、warn の上は直接 over)。
+ */
+export type CostMonthProjectionTone = 'danger' | 'warn' | 'info' | 'idle'
+
+const RISK_TONE_MAP: Record<CostMonthProjectionRisk, CostMonthProjectionTone> = {
+  over: 'danger',
+  warn: 'warn',
+  safe: 'info',
+  idle: 'idle',
+}
+
+export function costMonthProjectionTone(risk: CostMonthProjectionRisk): CostMonthProjectionTone {
+  return RISK_TONE_MAP[risk]
+}
+
+export interface CostMonthProjectionChipClasses {
+  bgClass: string
+  textClass: string
+  ringClass: string
+}
+
+const TONE_CLASSES: Record<CostMonthProjectionTone, CostMonthProjectionChipClasses> = {
+  danger: {
+    bgClass: 'bg-rose-100',
+    textClass: 'text-rose-700',
+    ringClass: 'ring-rose-300',
+  },
+  warn: {
+    bgClass: 'bg-amber-100',
+    textClass: 'text-amber-800',
+    ringClass: 'ring-amber-300',
+  },
+  info: {
+    bgClass: 'bg-blue-50',
+    textClass: 'text-blue-700',
+    ringClass: 'ring-blue-200',
+  },
+  idle: {
+    bgClass: 'bg-slate-50',
+    textClass: 'text-slate-600',
+    ringClass: 'ring-slate-200',
+  },
+}
+
+/** Tone → Tailwind chip class 3 軸 (bg / text / ring) を 1 関数で。iter481 dueProximityChipClasses と整合。 */
+export function costMonthProjectionChipClasses(
+  risk: CostMonthProjectionRisk,
+): CostMonthProjectionChipClasses {
+  return TONE_CLASSES[RISK_TONE_MAP[risk]]
+}
+
 export function formatCostMonthProjectionJa(p: CostMonthProjection): string {
   if (p.riskLevel === 'idle') return 'AI コスト予測: 不明 (today 不正)'
   const cur = formatUsd(p.thisMonthUsd)
