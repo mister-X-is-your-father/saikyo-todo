@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter475 1/1] mobile sweep 続編 (16 件目)。CommentThread の 3 button (post / cancel 編集 / save 編集) が size="sm" h-8=32px → fix: `comment-thread.tsx` の 3 Button に `className="min-h-11"` 追加。1 ファイル ~3 行差分。typecheck 緑。mobile sweep 累計 **90 button 達成** (iter460-475 で 16 fix iter)。
 - ✅ [playwright-iter474 1/1] mobile sweep 続編 (15 件目)。ActiveTimerPanel の 4 timer button (pause / resume / pip / stop) が size="sm" h-8=32px、計測中の重要操作で頻繁にタップされる → fix: `active-timer-panel.tsx` の 4 Button に `className="min-h-11"` 追加。1 ファイル ~4 行差分。typecheck 緑。mobile sweep 累計 **87 button 達成** (iter460-474 で 15 fix iter)。
 - ✅ [playwright-iter473 1/1] mobile sweep 続編 (14 件目)。ItemEditDialog の 5 footer button (unarchive / archive / set-baseline / clear-baseline / save-as-template) が size="sm" h-8=32px → fix: `item-edit-dialog.tsx` の 5 Button に `className="min-h-11"` 追加 (既存 className との衝突は統合)。1 ファイル ~5 行差分。typecheck 緑。mobile sweep 累計 **83 button 達成** (iter460-473 で 14 fix iter)。
 - ✅ [playwright-iter472 1/1] mobile sweep 続編 (13 件目)。WorkflowsPanel の 10 inline button が size="sm" h-8=32px、Workflow card の各種 action (実行 / 編集 / 有効化 / 履歴 disclosure / node preset / trigger preset) で頻繁に使われる → fix: `workflows-panel.tsx` の 10 Button に `className="min-h-11"` 追加 (replace_all 4 pattern + 1 webhook button)。1 ファイル ~10 行差分。typecheck 緑。mobile sweep 累計 **78 button 達成** (iter460-472 で 13 fix iter)。
