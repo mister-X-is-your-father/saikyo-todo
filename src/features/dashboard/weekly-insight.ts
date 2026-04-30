@@ -17,8 +17,9 @@
  *   - byTagCurrentWeek: tag id → count (stacked bar 用、tag 無し item は '__notag' に集約)
  *   - currentWeekTotal / prevWeekTotal: 週合計 done 件数
  *   - weekDelta: { count: curr - prev, percent: (curr/prev*100 - 100) round, prev=0→null }
- *   - anomalies: 1-2 件の data-driven 警告 (純 algorithm、AI 不使用):
- *     - 'lowCompletionDay' / 'overdueSpike' / 'imbalanceByDay' 等
+ *   - anomalies: 1-3 件の data-driven 警告 / 集中日 highlight (純 algorithm、AI 不使用):
+ *     - 'lowCompletionDay' (= 平均 0.5x 以下) / 'highCompletionDay' (= 平均 2x 以上、
+ *       iter503) / 'overdueSpike' (= 期限超過 active 5 件以上)
  *
  * AI 不使用、副作用無し、依存なし。
  */
