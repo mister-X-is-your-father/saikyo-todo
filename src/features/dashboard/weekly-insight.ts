@@ -210,3 +210,36 @@ export function buildWeeklyInsight(
 
 // 内部 helper を test しやすく named export
 export { dateToISODate, dayIndexFromDate, weekStartUTC }
+
+/**
+ * iter481 basics: 今週の best day (= 完了 max の曜日) を抽出。
+ *
+ * - 今週合計 0 件 → null (chip 非表示で noise 削減)
+ * - 同点 (= 同 max 件数) なら早い曜日 (週起点に近い方) を採用
+ *
+ * 用途: WeeklyInsightWidget header の小 chip 「今週 ベスト: Mon (4 件)」
+ */
+export function pickBestDayInWeek(
+  insight: Pick<WeeklyInsightSummary, 'byDay' | 'currentWeekTotal'>,
+): { day: string; dayIndex: number; current: number } | null {
+  if (insight.currentWeekTotal === 0) return null
+  let best: { day: string; dayIndex: number; current: number } | null = null
+  for (const d of insight.byDay) {
+    if (d.current === 0) continue
+    if (best === null || d.current > best.current) {
+      best = { day: d.day, dayIndex: d.dayIndex, current: d.current }
+    }
+    // 同点は早い曜日採用 (= 既存 best を保持、上書きしない)
+  }
+  return best
+}
+
+/**
+ * iter481 basics: pickBestDayInWeek の出力を 1 行 ja 文に整形。
+ *
+ * null → '今週 完了なし' (chip 文言で 0 件状態も表現)、それ以外 → '今週 ベスト: <day> <n> 件'
+ */
+export function formatBestDayJa(best: { day: string; current: number } | null): string {
+  if (best === null) return '今週 完了なし'
+  return `今週 ベスト: ${best.day} ${best.current} 件`
+}

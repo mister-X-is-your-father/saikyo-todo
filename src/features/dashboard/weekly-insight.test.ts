@@ -4,6 +4,8 @@ import {
   buildWeeklyInsight,
   dateToISODate,
   dayIndexFromDate,
+  formatBestDayJa,
+  pickBestDayInWeek,
   type WeeklyInsightItemFields,
   weekStartUTC,
 } from './weekly-insight'
@@ -183,5 +185,49 @@ describe('buildWeeklyInsight', () => {
     const items = [mk({ doneAt: 'invalid' }), mk({ doneAt: '2026-04-27T10:00:00Z' })]
     const r = buildWeeklyInsight(items, NOW)
     expect(r.currentWeekTotal).toBe(1)
+  })
+})
+
+describe('pickBestDayInWeek', () => {
+  it('今週合計 0 件 → null', () => {
+    const r = buildWeeklyInsight([], NOW)
+    expect(pickBestDayInWeek(r)).toBeNull()
+  })
+
+  it('単独 max → その曜日を返す', () => {
+    const items = [
+      mk({ doneAt: '2026-04-27T10:00:00Z' }), // Mon
+      mk({ doneAt: '2026-04-29T10:00:00Z' }), // Wed
+      mk({ doneAt: '2026-04-29T15:00:00Z' }), // Wed
+    ]
+    const r = buildWeeklyInsight(items, NOW)
+    expect(pickBestDayInWeek(r)).toEqual({ day: 'Wed', dayIndex: 2, current: 2 })
+  })
+
+  it('同点 (= 同 max 件数) → 週起点に近い曜日を採用 (Mon vs Fri 同 2 件 → Mon)', () => {
+    const items = [
+      mk({ doneAt: '2026-04-27T10:00:00Z' }),
+      mk({ doneAt: '2026-04-27T15:00:00Z' }),
+      mk({ doneAt: '2026-05-01T10:00:00Z' }), // Fri
+      mk({ doneAt: '2026-05-01T15:00:00Z' }), // Fri
+    ]
+    const r = buildWeeklyInsight(items, NOW)
+    expect(pickBestDayInWeek(r)).toEqual({ day: 'Mon', dayIndex: 0, current: 2 })
+  })
+
+  it('0 件曜日は無視 (= max が確実に > 0)', () => {
+    const items = [mk({ doneAt: '2026-04-30T10:00:00Z' })] // Thu
+    const r = buildWeeklyInsight(items, NOW)
+    expect(pickBestDayInWeek(r)).toEqual({ day: 'Thu', dayIndex: 3, current: 1 })
+  })
+})
+
+describe('formatBestDayJa', () => {
+  it('null → 今週 完了なし', () => {
+    expect(formatBestDayJa(null)).toBe('今週 完了なし')
+  })
+
+  it('best 値 → 「今週 ベスト: <day> <n> 件」', () => {
+    expect(formatBestDayJa({ day: 'Mon', current: 4 })).toBe('今週 ベスト: Mon 4 件')
   })
 })
