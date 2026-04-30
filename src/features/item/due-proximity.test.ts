@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 
 import {
   countItemsByDueProximity,
+  dueProximityChipClasses,
   dueProximityLabel,
+  dueProximityTone,
   formatDueProximityCounts,
   getDueProximity,
   groupItemsByDueProximity,
@@ -226,5 +228,41 @@ describe('formatDueProximityCounts', () => {
         noDate: 0,
       }),
     ).toBe('今日 5')
+  })
+})
+
+describe('dueProximityTone (graphical 波及 — chip tone token)', () => {
+  it('overdue → danger (rose、強警戒)', () => {
+    expect(dueProximityTone('overdue')).toBe('danger')
+  })
+
+  it('today → urgent / tomorrow → warn (amber 系で行動喚起)', () => {
+    expect(dueProximityTone('today')).toBe('urgent')
+    expect(dueProximityTone('tomorrow')).toBe('warn')
+  })
+
+  it('thisWeek → info / later → idle / noDate → idle (計画余裕)', () => {
+    expect(dueProximityTone('thisWeek')).toBe('info')
+    expect(dueProximityTone('later')).toBe('idle')
+    expect(dueProximityTone('noDate')).toBe('idle')
+  })
+})
+
+describe('dueProximityChipClasses (tone → Tailwind 3 軸 class)', () => {
+  it('overdue → rose 系 (bg / text / ring)', () => {
+    const c = dueProximityChipClasses('overdue')
+    expect(c.bgClass).toBe('bg-rose-100')
+    expect(c.textClass).toBe('text-rose-700')
+    expect(c.ringClass).toBe('ring-rose-300')
+  })
+
+  it('today → amber 強、tomorrow → amber 薄 (urgent vs warn 区別)', () => {
+    expect(dueProximityChipClasses('today').bgClass).toBe('bg-amber-100')
+    expect(dueProximityChipClasses('tomorrow').bgClass).toBe('bg-amber-50')
+  })
+
+  it('thisWeek / noDate は別 tone でも class が定まっている', () => {
+    expect(dueProximityChipClasses('thisWeek').textClass).toBe('text-blue-700')
+    expect(dueProximityChipClasses('noDate').textClass).toBe('text-slate-600')
   })
 })

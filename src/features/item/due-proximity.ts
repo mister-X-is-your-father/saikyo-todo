@@ -141,3 +141,76 @@ export function countItemsByDueProximity(
 export function formatDueProximityCounts(counts: Record<DueProximityKind, number>): string {
   return formatNonZeroCounts(counts, KIND_ORDER, LABEL)
 }
+
+/**
+ * iter481 basics (graphical 波及): DueProximityKind を「graphical chip tone」 token に
+ * 変換する pure helper。Today / Backlog / Kanban / Item card / SR aria-label 等で
+ * 期限近接を 1 関数で意味のある配色 (赤=遅延 / 橙=今日 / 薄橙=明日 / 青=今週内 /
+ * 灰=今後・未設定) に揃えるための substrate。
+ *
+ * 「装飾でなく意味のある graphical」 (queue 「もっとグラフィカル / シンプル / 意味
+ * のあるデザイン」シリーズ、subtask-status / status-visual / member-capacity と整合)。
+ *
+ * 配色 token は 5 段階:
+ *  - 'danger'  — overdue (rose、強い警戒色 + ⚠ icon)
+ *  - 'urgent'  — today (amber、行動喚起)
+ *  - 'warn'    — tomorrow (amber-soft、注意)
+ *  - 'info'    — thisWeek (blue、計画範囲内)
+ *  - 'idle'    — later / noDate (slate / muted、計画余裕)
+ *
+ * tailwind class は `dueProximityChipClasses(kind)` で取り出す。bg / text / ring の
+ * 3 軸を 1 関数で揃える (= subtask-status, status-visual と同様の DRY パターン)。
+ */
+export type DueProximityTone = 'danger' | 'urgent' | 'warn' | 'info' | 'idle'
+
+const TONE_MAP: Record<DueProximityKind, DueProximityTone> = {
+  overdue: 'danger',
+  today: 'urgent',
+  tomorrow: 'warn',
+  thisWeek: 'info',
+  later: 'idle',
+  noDate: 'idle',
+}
+
+export function dueProximityTone(kind: DueProximityKind): DueProximityTone {
+  return TONE_MAP[kind]
+}
+
+export interface DueProximityChipClasses {
+  bgClass: string
+  textClass: string
+  ringClass: string
+}
+
+const TONE_CLASSES: Record<DueProximityTone, DueProximityChipClasses> = {
+  danger: {
+    bgClass: 'bg-rose-100',
+    textClass: 'text-rose-700',
+    ringClass: 'ring-rose-300',
+  },
+  urgent: {
+    bgClass: 'bg-amber-100',
+    textClass: 'text-amber-800',
+    ringClass: 'ring-amber-300',
+  },
+  warn: {
+    bgClass: 'bg-amber-50',
+    textClass: 'text-amber-700',
+    ringClass: 'ring-amber-200',
+  },
+  info: {
+    bgClass: 'bg-blue-50',
+    textClass: 'text-blue-700',
+    ringClass: 'ring-blue-200',
+  },
+  idle: {
+    bgClass: 'bg-slate-50',
+    textClass: 'text-slate-600',
+    ringClass: 'ring-slate-200',
+  },
+}
+
+/** Tone → Tailwind chip class 3 軸 (bg / text / ring) を 1 関数で。 */
+export function dueProximityChipClasses(kind: DueProximityKind): DueProximityChipClasses {
+  return TONE_CLASSES[TONE_MAP[kind]]
+}
