@@ -8,6 +8,7 @@ import {
   formatLongestStepJa,
   formatStructuredPlanHintJa,
   formatStructuredPlanJa,
+  hasParallelOpportunity,
   parseStructuredPlan,
   pickLongestStep,
   StructuredPlanSchema,
@@ -499,5 +500,43 @@ describe('formatStructuredPlanHintJa', () => {
         dodSummary: 'long',
       }),
     ).toBe('要分割')
+  })
+})
+
+describe('hasParallelOpportunity', () => {
+  it('1 step 以下 → false', () => {
+    expect(
+      hasParallelOpportunity({
+        steps: [{ title: 'a', est_min: 30, dod: '', dependencies: [] }],
+        totalEstMin: 30,
+        dodSummary: 'x',
+      }),
+    ).toBe(false)
+  })
+
+  it('依存無し (= 全並列可能) → true', () => {
+    expect(
+      hasParallelOpportunity({
+        steps: [
+          { title: 'a', est_min: 30, dod: '', dependencies: [] },
+          { title: 'b', est_min: 60, dod: '', dependencies: [] },
+        ],
+        totalEstMin: 90,
+        dodSummary: 'x',
+      }),
+    ).toBe(true)
+  })
+
+  it('線形依存 → false (= 並列化不可)', () => {
+    expect(
+      hasParallelOpportunity({
+        steps: [
+          { title: 'a', est_min: 30, dod: '', dependencies: [] },
+          { title: 'b', est_min: 60, dod: '', dependencies: ['a'] },
+        ],
+        totalEstMin: 90,
+        dodSummary: 'x',
+      }),
+    ).toBe(false)
   })
 })

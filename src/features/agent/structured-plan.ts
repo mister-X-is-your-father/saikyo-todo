@@ -342,5 +342,19 @@ export const formatStructuredPlanHintJa = makeHintLabelFormatter(
   STRUCTURED_PLAN_HINT_LABEL_JA,
 )
 
+/**
+ * iter513 basics: 並列実行機会があるかを 1 行判定。critical path < total est_min なら
+ * 並列化機会あり (true)、線形 / 全並列 / cycle なら false。
+ *
+ * 用途: caller が「この plan は並列で速くできる?」 を 1 行 boolean で判別、
+ * UI badge 表示 / Slack 通知の簡易フラグ。
+ */
+export function hasParallelOpportunity(plan: NormalizedStructuredPlan): boolean {
+  if (plan.steps.length <= 1) return false
+  const critical = computePlanCriticalPathMin(plan)
+  if (critical === null) return false // cycle
+  return critical < plan.totalEstMin
+}
+
 // 内部 helper を test しやすく named export
 export { extractFirstJsonObject }
