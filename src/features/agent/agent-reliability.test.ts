@@ -7,6 +7,7 @@ import {
   agentReliabilityChipClasses,
   agentReliabilityTone,
   computeAgentReliability,
+  formatAgentReliabilityCompactJa,
   formatAgentReliabilityJa,
 } from './agent-reliability'
 
@@ -105,6 +106,34 @@ describe('formatAgentReliabilityJa', () => {
   it('PM critical → 要調査文言', () => {
     const r = computeAgentReliability([{ role: 'pm', invocations: 10, completed: 5, failed: 5 }])
     expect(formatAgentReliabilityJa(r)).toContain('PM 5/10 (50%) 要調査')
+  })
+})
+
+describe('formatAgentReliabilityCompactJa (compact dashboard chip / Slack 通知 用)', () => {
+  it('idle → 記録なし sentinel', () => {
+    expect(formatAgentReliabilityCompactJa(computeAgentReliability([]))).toBe('AI 信頼性: 記録なし')
+  })
+
+  it('healthy 23/23 → 「健全 (23/23 完了、100%)」', () => {
+    const r = computeAgentReliability([
+      { role: 'pm', invocations: 15, completed: 15, failed: 0 },
+      { role: 'researcher', invocations: 8, completed: 8, failed: 0 },
+    ])
+    expect(formatAgentReliabilityCompactJa(r)).toBe('AI 信頼性: 健全 (23/23 完了、100%)')
+  })
+
+  it('warn 20/22 → 「注意 (20/22 完了、91%)」 (role 別詳細は省略)', () => {
+    const r = computeAgentReliability([
+      { role: 'pm', invocations: 12, completed: 11, failed: 1 },
+      { role: 'researcher', invocations: 10, completed: 9, failed: 1 },
+    ])
+    // total: 20/22 = 90.9% → warn (>= 80%)
+    expect(formatAgentReliabilityCompactJa(r)).toBe('AI 信頼性: 注意 (20/22 完了、91%)')
+  })
+
+  it('critical 6/10 → 「要調査 (6/10 完了、60%)」', () => {
+    const r = computeAgentReliability([{ role: 'pm', invocations: 10, completed: 6, failed: 4 }])
+    expect(formatAgentReliabilityCompactJa(r)).toBe('AI 信頼性: 要調査 (6/10 完了、60%)')
   })
 })
 

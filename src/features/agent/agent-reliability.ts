@@ -158,6 +158,27 @@ export function formatAgentReliabilityJa(stats: AgentReliability): string {
 }
 
 /**
+ * iter489 ai-automation: 全 role 集約のみの **compact** 1 行 ja-JP 文言。dashboard
+ * widget の小型 chip / Slack 通知 ペイロード / AI brief の冒頭 1 行で「AI 全体は
+ * 健全か?」を一目で判断するための簡潔版。
+ *
+ *  - idle → 'AI 信頼性: 記録なし' (formatAgentReliabilityJa と同 sentinel)
+ *  - else → 'AI 信頼性: 健全 (22/23 完了)' / 'AI 信頼性: 注意 (20/22 完了)' 等
+ *    role 別の詳細は省く (= caller が disclosure で `formatAgentReliabilityJa`
+ *    を出すパターン想定)
+ *
+ * iter479 `formatCostMonthProjectionJa` の冒頭 emoji (⚠ / 🚨) は本 helper では
+ * 使わず、tone は caller が `agentReliabilityChipClasses` で chip 配色する想定
+ * (= 文字側は素直なテキスト、視覚は chip 配色)。
+ */
+export function formatAgentReliabilityCompactJa(stats: AgentReliability): string {
+  if (stats.reliabilityLevel === 'idle') return 'AI 信頼性: 記録なし'
+  const pct = Math.round(stats.successRate * 100)
+  const levelLabel = LEVEL_LABEL_JA[stats.reliabilityLevel]
+  return `AI 信頼性: ${levelLabel} (${stats.completedCount}/${stats.totalInvocations} 完了、${pct}%)`
+}
+
+/**
  * graphical 波及: reliabilityLevel → ChipTone (severity 軸 + positive 軸の 'success'):
  *  - 'critical' → 'danger' (rose、要調査)
  *  - 'warn'     → 'warn' (amber 薄、注意)
