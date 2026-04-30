@@ -121,11 +121,13 @@ function SubtaskTreeNode({
     id: item.id,
     animateLayoutChanges: () => false,
   })
-  const sortableStyle = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1,
-  }
+  // 2026-04-30: drag 中のみ transform を適用、drop 後は **完全に空 style**。
+  // drop 直後に古い transform (drag 中の translateY(-100px) 等) が新 DOM 位置に
+  // 1 frame 残ると要素が「プル」 と飛んで戻る視覚 artifact になる。isDragging=false の
+  // 時は transform / transition も undefined にすることで artifact を完全消去。
+  const sortableStyle = isDragging
+    ? { transform: CSS.Transform.toString(transform), transition, opacity: 0.4 }
+    : {}
 
   /** Alt+←/→ keyboard で outdent/indent (focus は drag handle / row 全体)。 */
   function onRowKeyDown(e: ReactKeyboardEvent<HTMLLIElement>) {
