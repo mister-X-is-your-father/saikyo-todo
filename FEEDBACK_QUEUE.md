@@ -15,6 +15,43 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ## 未処理 (新しい順)
 
+### 2026-04-30 — 並び替え 根本設計 他社比較 + 改善 ★ 新規 ★
+
+- [ ] **並び替え (DnD reorder) を Notion / Linear / Asana / Trello / TickTick と比較し根本見直し** — 分類: 設計議論 → 段階実装
+  - 原文: 「並び替えが思い通りの場所に行かない / 多分ほかのタスク管理ツールの実装とかと比べた方がいい。根本的になんかおかしい」
+  - **現状の問題 (a93ef84 の表面 fix では足りない可能性)**:
+    - position 重複検知 + bucket rebalance は実装済 (b3f75ba)
+    - sort 関数の display ↔ drag handler の不一致は fix 済 (a93ef84)
+    - しかしユーザは「**根本的になんかおかしい**」と感じている → アーキテクチャ自体を疑う
+  - **業界標準パターン比較** (調査タスク):
+    | tool | reorder model | 同期方式 | 楽観 update |
+    |---|---|---|---|
+    | **Notion** | block fractional position (LSEQ-like) | sync via Yjs CRDT | optimistic |
+    | **Linear** | sortOrder (float64) + auto rebalance cron | event sourcing | optimistic, rollback on conflict |
+    | **Asana** | parent + before/after pointer (linked list) | optimistic + retry | server resolves order |
+    | **Trello** | float position + drift correction | optimistic | rebalance on collision |
+    | **TickTick** | sortOrder (long) + manual rebalance | optimistic + ack | snap to integer grid |
+    | **GitHub Projects v2** | sortOrder (positionalDouble) | optimistic + auto rebalance | hidden conflict |
+  - **saikyo-todo 現状**:
+    - `fractional-indexing` lib (LSEQ-like) で base62 string position
+    - 同期は TanStack Query invalidate (poll-based、 Realtime 未配線)
+    - 楽観 update は `useOptimisticUpdate` 一部のみ
+    - rebalance は collision 検出時のみ (bucket 単位)
+  - **比較で見える gap**:
+    - (1) **楽観 update が DnD で完全じゃない**: drag → server commit → invalidate → re-render の遅延で 「動いた」感が薄い
+    - (2) **conflict resolution が unclear**: 2 user が同時 reorder で どっちが勝つか UX 不明
+    - (3) **rebalance trigger が collision 時のみ**: 普段は遅延で OK だが、頻繁な reorder で fractional string が長くなる (e.g. 'a0V' → 'a0Vk' → ...)、cleanup なし
+    - (4) **Realtime を使ってない**: Notion/Linear のような「他人の reorder が即見える」が無い
+  - 設計案 3 scope:
+    - **A (即効、1-2 commit)**: drag end 時の **immediate optimistic UI update** を強化、TanStack Query setQueryData でキャッシュを先に書換、サーバ commit 待たずに新順で render。失敗時のみ rollback + toast。
+    - **B (中期、3-5 commit)**: Realtime channel 経由で reorder event を broadcast、他 user に即反映。conflict は last-write-wins で server 側 audit に残す。
+    - **C (大規模)**: CRDT (Yjs / Automerge) で完全 P2P 並列編集対応 (Notion 並)。POST_MVP 寄り。
+  - **要追加質問**:
+    - (a) 楽観 update の rollback 動作 — 「動いて戻る」 (= drag が見えない時間あり) か 「toast だけ」 (= drag は維持、エラー通知だけ)?
+    - (b) Realtime presence (誰が今 reorder してるか avatar 表示) は 必要 / POST_MVP どっち?
+    - (c) fractional-indexing の長さが 16 char 超えたら自動 rebalance cron 入れる?
+    - (d) 並び替え race の last-write-wins か、merge resolution UI か?
+
 ### 2026-04-30 — モバイル / スマホ表示 全面改善 (潰れ / overflow / touch UX) ★ 新規 ★
 
 - [ ] **スマホ表示が全体的に いけてない / 潰れる箇所がある を 全 view で 棚卸し + 段階修正** — 分類: UX (大、横断的)
