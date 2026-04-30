@@ -1,0 +1,165 @@
+/**
+ * iter550 (queue PDCA P-5 wire-up): cycle-check-stats を消費する Card 表示 component。
+ *
+ * PDCA cycle UI (P-1 schema / P-2 CRUD UI / P-3 4-tab phase UI) はまだ未着地だが、
+ * iter534 着地の `buildCycleCheckStats` (Check phase 自動集計 substrate) を消費する
+ * widget UI substrate を先行投下。P-3 で 4-tab UI (Plan / Do / Check / Act) を組む際、
+ * Check tab で本 component を直 import するだけで数値レポートが完結する。
+ *
+ * 設計目的 (FEEDBACK_QUEUE.md PDCA P-5):
+ *   - cycle 紐付き items の lead time / 完了率 / 期日遅延 を deterministic に表示
+ *   - AI 文章 (一般論 fluffy) を排除、actual_value 候補は本 component output を直消費
+ *
+ * 副作用なし、依存は `buildCycleCheckStats` + `DataWidgetCard` + `SeverityChip` のみ。
+ */
+import { Activity, AlertOctagon, Ban, Lock } from 'lucide-react'
+
+import {
+  buildCycleCheckStats,
+  type CycleCheckItemFields,
+  type CycleCheckOptions,
+} from '@/features/pdca/cycle-check-stats'
+
+import { DataWidgetCard } from '@/components/shared/data-widget-card'
+import { SeverityChip } from '@/components/shared/severity-chip'
+
+interface Props {
+  items: readonly CycleCheckItemFields[]
+  cycleStartedAt?: CycleCheckOptions['cycleStartedAt']
+  cycleEndedAt?: CycleCheckOptions['cycleEndedAt']
+  className?: string
+}
+
+function completionSeverity(rate: number): 'ok' | 'info' | 'warn' | 'danger' {
+  if (rate >= 75) return 'ok'
+  if (rate >= 50) return 'info'
+  if (rate >= 25) return 'warn'
+  return 'danger'
+}
+
+export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, className }: Props) {
+  const stats = buildCycleCheckStats(items, { cycleStartedAt, cycleEndedAt })
+  const sev = completionSeverity(stats.completionRate)
+
+  const sevBarCls =
+    sev === 'ok'
+      ? 'bg-emerald-500'
+      : sev === 'info'
+        ? 'bg-sky-500'
+        : sev === 'warn'
+          ? 'bg-amber-500'
+          : 'bg-rose-500'
+
+  return (
+    <DataWidgetCard
+      title="PDCA Check 数値レポート"
+      icon={<Activity className="text-primary h-4 w-4" aria-hidden="true" />}
+      count={stats.total}
+      empty={stats.total === 0}
+      emptyTitle="この cycle には item がありません"
+      emptyDescription="Do tab で item を紐付けると Check 集計が出ます"
+      className={className}
+      testId="cycle-check-stats-card"
+    >
+      <div className="space-y-4 text-sm">
+        {/* 完了率 progress bar */}
+        <div>
+          <div className="mb-1 flex items-center justify-between">
+            <span className="text-xs font-medium">完了率</span>
+            <span className="text-2xl font-semibold tabular-nums">
+              {stats.completionRate}
+              <span className="text-muted-foreground ml-0.5 text-sm">%</span>
+            </span>
+          </div>
+          <div
+            className="bg-muted h-2 w-full overflow-hidden rounded-full"
+            role="progressbar"
+            aria-valuenow={stats.completionRate}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`完了率 ${stats.completionRate}%`}
+          >
+            <div className={`h-full ${sevBarCls}`} style={{ width: `${stats.completionRate}%` }} />
+          </div>
+        </div>
+
+        {/* lead time */}
+        {stats.leadTimeAvgHours !== null ? (
+          <dl className="grid grid-cols-3 gap-2 text-xs">
+            <div>
+              <dt className="text-muted-foreground">平均 lead</dt>
+              <dd className="text-base font-semibold tabular-nums">{stats.leadTimeAvgHours}h</dd>
+            </div>
+            {stats.leadTimeMedianHours !== null ? (
+              <div>
+                <dt className="text-muted-foreground">中央 lead</dt>
+                <dd className="text-base font-semibold tabular-nums">
+                  {stats.leadTimeMedianHours}h
+                </dd>
+              </div>
+            ) : null}
+            <div>
+              <dt className="text-muted-foreground">期間 (日)</dt>
+              <dd className="text-base font-semibold tabular-nums">{stats.cycleDurationDays}d</dd>
+            </div>
+          </dl>
+        ) : null}
+
+        {/* status 分布 */}
+        <dl className="grid grid-cols-3 gap-2 text-xs">
+          <div>
+            <dt className="text-muted-foreground">完了</dt>
+            <dd className="font-semibold text-emerald-700 tabular-nums">{stats.done}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">未完了</dt>
+            <dd className="font-semibold tabular-nums">{stats.inProgressOrTodo}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">cancelled</dt>
+            <dd className="text-muted-foreground font-semibold tabular-nums">{stats.cancelled}</dd>
+          </div>
+        </dl>
+
+        {/* root cause chips */}
+        {(stats.lateCompletionCount > 0 || stats.inFlightOverdueCount > 0) && (
+          <div>
+            <div className="text-muted-foreground mb-1 text-xs">遅延 / 期限超過</div>
+            <div className="flex flex-wrap gap-1.5">
+              {stats.inFlightOverdueCount > 0 && (
+                <SeverityChip
+                  severity="danger"
+                  icon={<AlertOctagon className="h-3 w-3" aria-hidden="true" />}
+                  label="期限超過 active"
+                  delta={stats.inFlightOverdueCount}
+                  ariaLabel={`期限超過 active ${stats.inFlightOverdueCount} 件`}
+                  testId="cycle-cause-overdue"
+                />
+              )}
+              {stats.lateCompletionCount > 0 && (
+                <SeverityChip
+                  severity="warn"
+                  icon={<Lock className="h-3 w-3" aria-hidden="true" />}
+                  label="遅延完了"
+                  delta={stats.lateCompletionCount}
+                  ariaLabel={`遅延完了 ${stats.lateCompletionCount} 件`}
+                  testId="cycle-cause-late"
+                />
+              )}
+              {stats.cancelled > 0 && (
+                <SeverityChip
+                  severity="muted"
+                  icon={<Ban className="h-3 w-3" aria-hidden="true" />}
+                  label="cancelled"
+                  delta={stats.cancelled}
+                  ariaLabel={`cancelled ${stats.cancelled} 件`}
+                  testId="cycle-cause-cancelled"
+                />
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </DataWidgetCard>
+  )
+}
