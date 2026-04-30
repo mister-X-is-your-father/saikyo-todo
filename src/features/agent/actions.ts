@@ -214,6 +214,13 @@ export async function cancelInvocationAction(
   })
 }
 
+/**
+ * Phase 6.15 P0 「AI agent SDK→CLI migration」 iter5: Server Action は claude CLI
+ * 経路 (`runStandupViaClaude`) を主に呼ぶ。env (ANTHROPIC_API_KEY) 不要、Claude Max
+ * OAuth + claude CLI subprocess + MCP server で動く (CLAUDE.md 方針)。SDK 経路の
+ * `runStandup` は cron-workers / retro-service / premortem-service で当面残す
+ * (memory 履歴対話を要する用途)。
+ */
 export async function runStandupAction(input: unknown): Promise<Result<PmRunOutput>> {
   return await actionWrap(async () => {
     const parsed = StandupActionInputSchema.safeParse(input)
@@ -222,7 +229,7 @@ export async function runStandupAction(input: unknown): Promise<Result<PmRunOutp
     }
     await requireWorkspaceMember(parsed.data.workspaceId, 'member')
 
-    return await pmService.runStandup({
+    return await pmService.runStandupViaClaude({
       workspaceId: parsed.data.workspaceId,
       idempotencyKey: parsed.data.idempotencyKey ?? randomUUID(),
     })
