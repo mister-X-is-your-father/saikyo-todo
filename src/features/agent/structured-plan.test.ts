@@ -539,4 +539,32 @@ describe('hasParallelOpportunity', () => {
       }),
     ).toBe(false)
   })
+
+  it('cycle 検出 → false (computePlanCriticalPathMin null 時の防御)', () => {
+    expect(
+      hasParallelOpportunity({
+        steps: [
+          { title: 'a', est_min: 10, dod: '', dependencies: ['b'] },
+          { title: 'b', est_min: 10, dod: '', dependencies: ['a'] },
+        ],
+        totalEstMin: 20,
+        dodSummary: 'x',
+      }),
+    ).toBe(false)
+  })
+
+  it('diamond (a→b/c→d) → true (並列化機会あり)', () => {
+    expect(
+      hasParallelOpportunity({
+        steps: [
+          { title: 'a', est_min: 10, dod: '', dependencies: [] },
+          { title: 'b', est_min: 50, dod: '', dependencies: ['a'] },
+          { title: 'c', est_min: 80, dod: '', dependencies: ['a'] },
+          { title: 'd', est_min: 20, dod: '', dependencies: ['b', 'c'] },
+        ],
+        totalEstMin: 160,
+        dodSummary: 'x',
+      }),
+    ).toBe(true)
+  })
 })
