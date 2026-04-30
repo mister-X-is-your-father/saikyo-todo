@@ -155,10 +155,10 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
           >
             {forecast.quickWins.length > 0 && (
               <div className="space-y-0.5 rounded bg-emerald-50/60 p-1.5">
-                <div className="font-medium text-emerald-800">
+                <div className="font-medium text-emerald-800" id="op-board-quickwins-heading">
                   ⚡ Quick wins ({forecast.quickWins.length})
                 </div>
-                <ul className="space-y-0.5">
+                <ul className="space-y-0.5" aria-labelledby="op-board-quickwins-heading">
                   {forecast.quickWins.slice(0, 3).map((it) => (
                     <li key={it.id}>
                       <button
@@ -179,10 +179,10 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
             )}
             {forecast.focusBlocks.length > 0 && (
               <div className="space-y-0.5 rounded bg-sky-50/60 p-1.5">
-                <div className="font-medium text-sky-800">
+                <div className="font-medium text-sky-800" id="op-board-focus-heading">
                   🎯 集中ブロック ({forecast.focusBlocks.length})
                 </div>
-                <ul className="space-y-0.5">
+                <ul className="space-y-0.5" aria-labelledby="op-board-focus-heading">
                   {forecast.focusBlocks.slice(0, 2).map((it) => (
                     <li key={it.id}>
                       <button

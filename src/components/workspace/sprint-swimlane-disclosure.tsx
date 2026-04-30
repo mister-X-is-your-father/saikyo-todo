@@ -142,7 +142,7 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
       >
         {populationLabel}
       </div>
-      <ul className="space-y-1">
+      <ul className="space-y-1" aria-label={`Sprint Swimlane lane 一覧 ${rows.length} 件`}>
         {rows.map((row) => (
           <li
             key={row.laneKey ?? '__unassigned__'}
