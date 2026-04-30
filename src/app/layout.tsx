@@ -62,6 +62,18 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col">
+        {/*
+         * iter389: keyboard user 用の skip-to-main link。Tab で最初に focus が当たり、
+         * Enter で `#main-content` (各 page の <main>) にスキップ。focus 時のみ可視化、
+         * 通常時は sr-only で SR のみが認識。WCAG 2.4.1 Bypass Blocks 対応。
+         * 各 page の <main> 要素に `id="main-content"` を付与する必要がある。
+         */}
+        <a
+          href="#main-content"
+          className="bg-primary text-primary-foreground sr-only z-50 rounded px-3 py-2 text-sm font-medium focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+        >
+          メインコンテンツへスキップ
+        </a>
         <noscript>
           <div className="bg-destructive text-destructive-foreground p-4 text-center text-sm">
             最強TODO は JavaScript を必要とします。ブラウザで JavaScript を有効にしてください。
