@@ -16,6 +16,7 @@ import { decomposeItemActionPlugin } from './actions/decompose-item'
 import { reloadItemsAction } from './actions/reload-items'
 import { researchItemActionPlugin } from './actions/research-item'
 import { backlogViewPlugin } from './views/backlog'
+import { calendarViewPlugin } from './views/calendar'
 import { dashboardViewPlugin } from './views/dashboard'
 import { ganttViewPlugin } from './views/gantt'
 import { inboxViewPlugin } from './views/inbox'
@@ -31,6 +32,7 @@ export function registerCorePlugins(): void {
   registerAction(researchItemActionPlugin)
   // 並び順が switcher の並びになる
   registerView(todayViewPlugin)
+  registerView(calendarViewPlugin)
   registerView(inboxViewPlugin)
   registerView(kanbanViewPlugin)
   registerView(backlogViewPlugin)

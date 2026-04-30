@@ -1,0 +1,252 @@
+'use client'
+
+/**
+ * 二車線 Calendar view: 左=想定 (planned) / 右=実測 (actual)。
+ * - 左 lane で空 drag → planned slot 作成 (item picker)
+ * - 右 lane で空 drag → actual block 作成 (item / 割込み 選択)
+ * - drag/resize で move (`useMoveSchedule`)
+ * - クリックで delete confirm
+ * - 上部 chip: 想定 vs 実測 diff サマリ
+ */
+import { useMemo, useState } from 'react'
+
+import { addDays, format, startOfDay, subDays } from 'date-fns'
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+
+import { isAppError } from '@/lib/errors'
+import { useActiveTimerStore } from '@/lib/stores/active-timer'
+
+import { useItems } from '@/features/item/hooks'
+import {
+  useCreateSchedule,
+  useMoveSchedule,
+  useSchedulesByDate,
+  useSchedulesRealtime,
+  useSoftDeleteSchedule,
+} from '@/features/schedule/hooks'
+import type { Schedule } from '@/features/schedule/schema'
+
+import { Button } from '@/components/ui/button'
+
+import { DiffSummaryBar } from './diff-summary-bar'
+import { ScheduleItemPicker } from './schedule-item-picker'
+import { type ScheduleEvent, TimelineLane } from './timeline-lane'
+
+interface Props {
+  workspaceId: string
+}
+
+interface PendingSlot {
+  start: Date
+  end: Date
+  kind: 'planned' | 'actual'
+}
+
+function dateISO(d: Date): string {
+  return format(d, 'yyyy-MM-dd')
+}
+
+export function CalendarView({ workspaceId }: Props) {
+  const [date, setDate] = useState(() => startOfDay(new Date()))
+  const dateStr = dateISO(date)
+
+  useSchedulesRealtime(workspaceId, dateStr)
+  const { data: schedules = [], isLoading } = useSchedulesByDate(workspaceId, dateStr)
+  const { data: items = [] } = useItems(workspaceId)
+  const create = useCreateSchedule(workspaceId, dateStr)
+  const move = useMoveSchedule(workspaceId, dateStr)
+  const softDelete = useSoftDeleteSchedule(workspaceId, dateStr)
+
+  const itemTitleById = useMemo(() => {
+    const m = new Map<string, string>()
+    for (const it of items) m.set(it.id, it.title)
+    return m
+  }, [items])
+
+  const planned = useMemo(() => schedules.filter((s) => s.kind === 'planned'), [schedules])
+  const actual = useMemo(() => schedules.filter((s) => s.kind === 'actual'), [schedules])
+
+  const [pending, setPending] = useState<PendingSlot | null>(null)
+
+  // Active timer (Zustand) → live event を右 lane に注入
+  const timerItemId = useActiveTimerStore((s) => s.itemId)
+  const timerItemTitle = useActiveTimerStore((s) => s.itemTitle)
+  const timerStartedAt = useActiveTimerStore((s) => s.startedAt)
+  const timerRunning = useActiveTimerStore((s) => s.running)
+  const liveEvent: ScheduleEvent | null = useMemo(() => {
+    if (!timerItemId || !timerStartedAt || !timerRunning) return null
+    const start = new Date(timerStartedAt)
+    if (dateISO(start) !== dateStr) return null
+    return {
+      id: '__live__',
+      title: `▶ ${timerItemTitle ?? '(計測中)'}`,
+      start,
+      end: new Date(),
+      resource: {
+        id: '__live__',
+        workspaceId,
+        itemId: timerItemId,
+        kind: 'actual',
+        startAt: start,
+        endAt: new Date(),
+        note: null,
+        createdBy: '',
+        deletedAt: null,
+        version: 0,
+        createdAt: start,
+        updatedAt: start,
+      } as Schedule,
+    }
+  }, [timerItemId, timerItemTitle, timerStartedAt, timerRunning, dateStr, workspaceId])
+
+  function handleSelectSlot(kind: 'planned' | 'actual', start: Date, end: Date) {
+    setPending({ start, end, kind })
+  }
+
+  function commitPending(input: { itemId: string | null; note?: string | null }) {
+    if (!pending) return
+    create.mutate(
+      {
+        workspaceId,
+        itemId: input.itemId,
+        kind: pending.kind,
+        startAt: pending.start.toISOString(),
+        endAt: pending.end.toISOString(),
+        note: input.note ?? null,
+      },
+      {
+        onError: (e) => toast.error(isAppError(e) ? e.message : '作成に失敗しました'),
+        onSettled: () => setPending(null),
+      },
+    )
+  }
+
+  function handleMove(s: Schedule, startAt: Date, endAt: Date) {
+    if (s.id === '__live__') return // live event は drag 不可
+    move.mutate(
+      {
+        id: s.id,
+        expectedVersion: s.version,
+        startAt: startAt.toISOString(),
+        endAt: endAt.toISOString(),
+      },
+      {
+        onError: (e) => toast.error(isAppError(e) ? e.message : '移動に失敗しました'),
+      },
+    )
+  }
+
+  function handleSelectEvent(s: Schedule) {
+    if (s.id === '__live__') return
+    if (typeof window === 'undefined') return
+    if (!window.confirm('このスロットを削除しますか?')) return
+    softDelete.mutate(
+      { id: s.id, expectedVersion: s.version },
+      {
+        onError: (e) => toast.error(isAppError(e) ? e.message : '削除に失敗しました'),
+        onSuccess: () => toast.success('スロットを削除しました'),
+      },
+    )
+  }
+
+  function handleDiffSelect(itemId: string | null) {
+    if (!itemId) return
+    const target = schedules.find((s) => s.itemId === itemId)
+    if (!target) return
+    setDate(startOfDay(target.startAt))
+  }
+
+  return (
+    <div className="flex h-full min-h-[700px] flex-col gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon" onClick={() => setDate((d) => subDays(d, 1))}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="text-base font-semibold">{format(date, 'yyyy年 M月 d日 (eee)')}</div>
+          <Button variant="outline" size="icon" onClick={() => setDate((d) => addDays(d, 1))}>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setDate(startOfDay(new Date()))}>
+            今日
+          </Button>
+        </div>
+        <div className="text-muted-foreground text-xs">
+          想定 {planned.length} 件 / 実測 {actual.length} 件
+          {(create.isPending || move.isPending || softDelete.isPending) && (
+            <Loader2 className="ml-2 inline h-3 w-3 animate-spin" />
+          )}
+        </div>
+      </div>
+
+      <div className="bg-muted/40 -mx-3 rounded px-3">
+        <DiffSummaryBar
+          schedules={schedules}
+          itemTitleById={itemTitleById}
+          onSelect={handleDiffSelect}
+        />
+      </div>
+
+      <div className="grid min-h-0 flex-1 grid-cols-2 gap-3">
+        <div className="bg-background flex min-h-0 flex-col rounded-lg border">
+          <div className="border-b px-3 py-1.5 text-xs font-semibold tracking-wide text-indigo-700">
+            想定 (左 lane)
+          </div>
+          <div className="min-h-0 flex-1">
+            {isLoading ? (
+              <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                読み込み中...
+              </div>
+            ) : (
+              <TimelineLane
+                kind="planned"
+                date={date}
+                schedules={planned}
+                itemTitleById={itemTitleById}
+                onMoveOrResize={handleMove}
+                onSelectSlot={(s, e) => handleSelectSlot('planned', s, e)}
+                onSelectEvent={handleSelectEvent}
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="bg-background flex min-h-0 flex-col rounded-lg border">
+          <div className="border-b px-3 py-1.5 text-xs font-semibold tracking-wide text-emerald-700">
+            実測 (右 lane)
+          </div>
+          <div className="min-h-0 flex-1">
+            {isLoading ? (
+              <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                読み込み中...
+              </div>
+            ) : (
+              <TimelineLane
+                kind="actual"
+                date={date}
+                schedules={actual}
+                itemTitleById={itemTitleById}
+                onMoveOrResize={handleMove}
+                onSelectSlot={(s, e) => handleSelectSlot('actual', s, e)}
+                onSelectEvent={handleSelectEvent}
+                liveEvent={liveEvent}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {pending ? (
+        <ScheduleItemPicker
+          items={items}
+          allowInterrupt={pending.kind === 'actual'}
+          onPick={commitPending}
+          onCancel={() => setPending(null)}
+        />
+      ) : null}
+    </div>
+  )
+}
