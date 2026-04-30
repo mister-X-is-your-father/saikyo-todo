@@ -17,7 +17,9 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ### 2026-04-30 — Sprint 担当者 swim-lane Gantt ★ 新規 ★
 
-- [ ] **Sprint ごとに 担当者を縦に並べる Gantt 風ビュー (誰が何を いつ するか)** — 分類: 実装要望 (中-大)
+- 🚧 **Sprint ごとに 担当者を縦に並べる Gantt 風ビュー (誰が何を いつ するか)** — 分類: 実装要望 (中-大)
+  - 進行中 (iter468 で swimlane substrate 着地、次 iter で SprintCard UI 配線)
+  - [x] iter468 (b8b04c5): pure helper `computeSwimlaneBarPosition` + `groupItemsByAssigneeKey<T>` (sprint 期間内 % position 計算 + clip + 未割当 lane + actorType 衝突回避) + 15 test
   - 原文: 「スプリントごとに、担当者を縦に並べて何をするかをわかるような機能 (がんと的な)」
   - 仮解釈:
     - sprint detail ページに新 view 「assignee swim-lane」 を追加
