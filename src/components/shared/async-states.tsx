@@ -60,7 +60,13 @@ export function EmptyState({
     >
       {icon}
       <h3 className="text-lg font-semibold">{title}</h3>
-      {description && <p className="text-muted-foreground max-w-md text-sm">{description}</p>}
+      {description && (
+        // iter396: <p> から <div> に変更。description は ReactNode (iter273 で
+        // <code> や複数 <p> を含む JSX も渡せるように拡張済) のため `<p>` で
+        // wrap すると caller 側の <p> と nested で hydration error になる。
+        // text-sm + max-w 等の visual styling は `<div>` でも同等。
+        <div className="text-muted-foreground max-w-md text-sm">{description}</div>
+      )}
       {action}
     </div>
   )
