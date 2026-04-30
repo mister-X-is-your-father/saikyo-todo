@@ -212,3 +212,31 @@ export function formatRecoveryPlanJa(plan: RecoveryPlan): string {
 }
 
 export { dayDiffISO }
+
+/**
+ * iter489 ai-automation: 推奨 1 番目の救済 action を抽出 (= rank 1 = 最優先 candidate)。
+ *
+ * - isApplicable=false → null (= 救済不要)
+ * - actions[0] が rank 1、buildRecoveryPlan の slice(0,3) で先頭に来る
+ * - actions[] 空 → null (理論上 buildRecoveryPlan は最低 escalate 1 件返すが防御)
+ *
+ * 用途: chip 「次の一手: 依存先解消」、Slack escalation の最優先アクション提示、
+ * AI 朝 brief の MUST 救済セクション 1 行目。
+ */
+export function pickTopRecoveryAction(plan: RecoveryPlan): RecoveryAction | null {
+  if (!plan.isApplicable || plan.actions.length === 0) return null
+  return plan.actions[0] ?? null
+}
+
+/**
+ * iter489 ai-automation: pickTopRecoveryAction の出力を chip 文言に整形。
+ *   '次の一手: 依存先解消'
+ *   '次の一手: 担当再分配'
+ *   '次の一手: なし' (= 救済不要)
+ *
+ * caller は本文字列を chip aria-label / Slack 通知 / AI brief 1 行目に直 埋め込み。
+ */
+export function formatTopRecoveryActionJa(action: RecoveryAction | null): string {
+  if (action === null) return '次の一手: なし'
+  return `次の一手: ${recoveryActionKindLabelJa(action.kind)}`
+}

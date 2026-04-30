@@ -4,6 +4,8 @@ import {
   buildRecoveryPlan,
   dayDiffISO,
   formatRecoveryPlanJa,
+  formatTopRecoveryActionJa,
+  pickTopRecoveryAction,
   recoveryActionKindLabelJa,
   recoveryActionKindSeverity,
   type RecoveryPlanItemFields,
@@ -274,5 +276,57 @@ describe('formatRecoveryPlanJa', () => {
     expect(out).toContain('細分化')
     expect(out).toContain('期限再設定')
     expect(out.split(' / ').length).toBe(3)
+  })
+})
+
+describe('pickTopRecoveryAction', () => {
+  it('isApplicable=false → null', () => {
+    expect(pickTopRecoveryAction({ itemId: 'x', isApplicable: false, actions: [] })).toBeNull()
+  })
+
+  it('actions[0] (rank 1) を返す', () => {
+    const plan = buildRecoveryPlan(
+      mk({
+        id: 'i1',
+        isMust: true,
+        dueDate: '2026-04-25',
+        status: 'todo',
+        blockedByIds: ['b1'],
+      }),
+      { today: TODAY, heavyAssignees: [] },
+    )
+    const top = pickTopRecoveryAction(plan)
+    expect(top?.kind).toBe('unblock')
+    expect(top?.rank).toBe(1)
+  })
+
+  it('actions 空 (= 該当なし) → null', () => {
+    expect(pickTopRecoveryAction({ itemId: 'x', isApplicable: true, actions: [] })).toBeNull()
+  })
+})
+
+describe('formatTopRecoveryActionJa', () => {
+  it('null → 「次の一手: なし」', () => {
+    expect(formatTopRecoveryActionJa(null)).toBe('次の一手: なし')
+  })
+
+  it('action あり → 「次の一手: <kind label>」', () => {
+    expect(
+      formatTopRecoveryActionJa({
+        rank: 1,
+        kind: 'unblock',
+        title: 'X',
+        rationale: 'Y',
+      }),
+    ).toBe('次の一手: 依存先解消')
+
+    expect(
+      formatTopRecoveryActionJa({
+        rank: 1,
+        kind: 'reassign',
+        title: 'X',
+        rationale: 'Y',
+      }),
+    ).toBe('次の一手: 担当再分配')
   })
 })
