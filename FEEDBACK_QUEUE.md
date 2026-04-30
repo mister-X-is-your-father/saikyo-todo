@@ -321,6 +321,47 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ---
 
+### 2026-04-30 — 連絡待ちモード (Waiting For) + リマインド + Slack DM 連絡 シリーズ ★ P0 ★
+
+- [ ] **task を「連絡待ち」 状態に分類、依頼先 (チーム内 member / チーム外 contact) と経過日数を可視化、N 日経過で自動リマインド (in-app + Slack DM 送信)** — 分類: 機能拡張 + 外部統合 (P0、5-7 commit)
+  - 原文 (2026-04-30): 「連絡待ちモードとかもやりたいな。チーム内、チーム外への依頼事項がどんな感じか。リマインドとかも入れてくれる。あと、Slack で連絡してくれる機能欲しい。」
+  - **意図 (作業漏れ防止 + 効率化)**: 「相手待ち」 になった task が見えなくなって忘れる problem を撲滅。GTD の Waiting For list を強化、自動リマインド + Slack DM で「言ったまま放置」を不可能にする。
+  - **既存資産との関係**:
+    - GTD GT-1 が「list 5 種 (Next/Project/**Waiting For**/Someday/Reference) を workspace_statuses preset で導入」 を含む — 本 entry はその Waiting For を独立に深掘り
+    - Slack ワンポチでタスク化 entry (本 entry の下) と Slack OAuth 基盤を共有 (`slack_workspace_tokens` / `slack_user_links` table)
+    - 既存 `notifications` table + `pg-boss` worker (cron 経路で recurring template instantiation 動いてる)
+    - 既存 `severityFromOverdueDays` (lib/widget/severity.ts) で経過日数の色付けが流用可能
+  - **段階実装 (各 P0 candidate、依存順)**:
+    1. **WT-1 schema + service**: `items.waiting_for jsonb` (`{kind: 'internal'|'external', targetUserId?, targetContactId?, targetLabel: string, requestedAt: ts, reminderCadenceDays?: number, lastRemindedAt?: ts, slackChannelId?: string}`) + `setWaitingFor` / `clearWaitingFor` / `escalateWaiting` service + 楽観ロック + audit (`set_waiting_for`)
+    2. **WT-2 「連絡待ち」 view plugin**: Today / Inbox / Kanban の隣に登録、依頼先別 grouping (内部 = workspace member、外部 = contact)、経過日数 chip (`<3d ok / 3-7d warn / 7d+ danger`、`severityFromOverdueDays` 流用)、次リマインド予定時刻
+    3. **WT-3 contact 帳**: 新 table `workspace_external_contacts (id, workspace_id, name, email?, slack_user_id?, role, created_by, …)` — チーム外の人を保存して再利用、CRUD service + UI
+    4. **WT-4 リマインド worker**: pg-boss cron (1h tick) で `lastRemindedAt + cadenceDays` を超えた item を pull → notifications 発行 + lastRemindedAt 更新。複数同時 cadence に対応 (default 3d)
+    5. **WT-5 Slack DM 送信 service**: 既存 Slack OAuth (queue: Slack ワンポチ) の bot token で `chat.postMessage` を打つ thin wrapper、send-fail-soft (DB 書込みは成功させる)
+    6. **WT-6 連絡待ち開始時 Slack DM 自動送信**: setWaitingFor で `targetUserId` が Slack 連携済みなら DM 送信 (内容: item title + saikyo-todo link + 期限/依頼内容)、既存 `slack_user_links` table 流用
+    7. **WT-7 リマインド時 Slack DM 送信**: WT-4 worker が in-app notification と並行して、`slackChannelId` or `targetUserId` の Slack DM にリマインド送信 (重複送信防止: lastRemindedAt で gate)
+    8. **WT-8 quick-add に 「待ち」 toggle**: item 作成時に「相手待ち」 checkbox + 依頼先 picker (workspace member or external contact) を出して 1 step 投入
+  - **schema 追加**:
+    - `items.waiting_for jsonb` (nullable) — 単純 jsonb で柔軟性確保、専用テーブル化は次フェーズ
+    - `workspace_external_contacts` (WT-3 で追加)
+    - `slack_workspace_tokens` / `slack_user_links` は **Slack ワンポチ entry で先行 install**
+  - **6 軸スコア (期待)**: 可視化 5 (依頼先別 grouping + 経過日数 chip) / 操作 4 / 認知低減 4 / **漏れ防止 5** / やる気 3 / 効率化 5
+  - **設計哲学 直結**: 「思考力・段取り力を鍛える」 = 何を誰に頼んでるか / どれが返ってきてないか を **強制的に意識** させる UX。Slack 連絡は「言ったか言ってないか」を device free に解決
+  - **依存関係**:
+    - WT-1〜4 は Slack 不要 (in-app のみ) で先行可能 → ここで「連絡待ちモード」 自体は完結する
+    - WT-5,6,7 (Slack DM 連動) は **Slack ワンポチでタスク化 entry の OAuth flow が先行必要** (両 entry で `slack_workspace_tokens` / `slack_user_links` を共有)
+    - WT-8 は WT-1 後ならいつでも
+  - **期待 commit (8 commit、依存順)**:
+    1. `feat(item): waiting_for jsonb + service (queue: 連絡待ち WT-1)`
+    2. `feat(item): 連絡待ち view plugin — 依頼先別 grouping + 経過日数 (queue: 連絡待ち WT-2)`
+    3. `feat(workspace): external contacts table + service (queue: 連絡待ち WT-3)`
+    4. `feat(workflow): リマインド worker (cron 1h tick) (queue: 連絡待ち WT-4)`
+    5. `feat(slack): DM 送信 service (chat.postMessage wrapper) (queue: 連絡待ち WT-5 / Slack)`
+    6. `feat(item): waiting 開始時 Slack DM 自動送信 (queue: 連絡待ち WT-6)`
+    7. `feat(workflow): リマインド時 Slack DM 送信 (queue: 連絡待ち WT-7)`
+    8. `feat(item): quick-add に「待ち」 toggle + 依頼先 picker (queue: 連絡待ち WT-8)`
+
+---
+
 ### 2026-04-30 — Slack ワンポチでタスク化 ★ P0 ★
 
 - [ ] **Slack message から 1 click で saikyo-todo task を作成、message link は description に自動引用** — 分類: 外部統合 (P0、Slack app 設定要)
