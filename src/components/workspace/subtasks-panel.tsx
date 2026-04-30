@@ -19,6 +19,8 @@ import {
   DndContext,
   type DragEndEvent,
   MouseSensor,
+  pointerWithin,
+  rectIntersection,
   TouchSensor,
   useSensor,
   useSensors,
@@ -484,7 +486,18 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
         ) : (
           <DndContext
             sensors={sensors}
-            collisionDetection={closestCenter}
+            // 2026-04-30: pointerWithin → rectIntersection → closestCenter の hybrid。
+            // 子持ちの subtask は DOM 高さが大きく `closestCenter` 単独だと中心点が遠く、
+            // 「2 行分上に動かさないと押し退けが始まらない」 bug が発生。pointer 直下の
+            // droppable を最優先することで、子持ち row でも即時反応する。
+            // 参考: dnd-kit docs Custom collision detection algorithms
+            collisionDetection={(args) => {
+              const pointerCollisions = pointerWithin(args)
+              if (pointerCollisions.length > 0) return pointerCollisions
+              const intersections = rectIntersection(args)
+              if (intersections.length > 0) return intersections
+              return closestCenter(args)
+            }}
             onDragEnd={handleDragEnd}
           >
             <SortableContext
