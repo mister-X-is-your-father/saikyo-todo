@@ -192,6 +192,7 @@ export function SprintsPanel({ workspaceId }: Props) {
           <form
             className="space-y-3"
             noValidate
+            aria-label="Sprint 作成フォーム"
             aria-busy={createMut.isPending || undefined}
             onSubmit={(e) => {
               e.preventDefault()
@@ -493,6 +494,7 @@ function SprintCard({
             <form
               className="space-y-2 rounded border border-dashed p-2"
               noValidate
+              aria-label="Sprint 編集フォーム"
               aria-busy={update.isPending || undefined}
               onSubmit={async (e) => {
                 e.preventDefault()
@@ -785,6 +787,7 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
           <form
             className="flex flex-wrap items-end gap-2"
             noValidate
+            aria-label="Sprint デフォルト設定 編集フォーム"
             aria-busy={upd.isPending || undefined}
             onSubmit={(e) => {
               e.preventDefault()
