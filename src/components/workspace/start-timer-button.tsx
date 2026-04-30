@@ -52,16 +52,24 @@ export function StartTimerButton({ item, size = 'default' }: Props) {
   }, [isMine, running])
 
   if (isMine) {
+    // iter446: 旧 role="status" + aria-live="polite" は 1 秒 tick で SR queue を
+    // flood する anti-pattern (iter426 ActiveTimerPanel elapsed span と同問題)。
+    // role="img" + 集約 aria-label に切替えて on-demand 取得に変更、children を
+    // AT 上隠蔽することで再 announce 抑制。
     return (
       <div
         className="text-muted-foreground inline-flex items-center gap-1 text-xs"
         data-testid={`start-timer-active-${item.id}`}
-        role="status"
-        aria-live="polite"
+        role="img"
+        aria-label={`「${item.title}」を計測中 (経過 ${formatElapsed(elapsedFn())}、右下 panel で停止)`}
       >
         <Timer className="h-3.5 w-3.5 text-amber-500" aria-hidden="true" />
-        <span className="font-mono tabular-nums">{formatElapsed(elapsedFn())}</span>
-        <span className="text-[10px]">計測中 — 右下 panel で停止</span>
+        <span className="font-mono tabular-nums" aria-hidden="true">
+          {formatElapsed(elapsedFn())}
+        </span>
+        <span className="text-[10px]" aria-hidden="true">
+          計測中 — 右下 panel で停止
+        </span>
       </div>
     )
   }
