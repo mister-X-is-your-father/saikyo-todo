@@ -133,8 +133,17 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
         {/* root cause chips */}
         {(stats.lateCompletionCount > 0 || stats.inFlightOverdueCount > 0) && (
           <div>
-            <div className="text-muted-foreground mb-1 text-xs">遅延 / 期限超過</div>
-            <div className="flex flex-wrap gap-1.5">
+            <h3
+              id="cycle-check-cause-heading"
+              className="text-muted-foreground mb-1 text-xs font-normal"
+            >
+              遅延 / 期限超過
+            </h3>
+            <div
+              className="flex flex-wrap gap-1.5"
+              role="group"
+              aria-labelledby="cycle-check-cause-heading"
+            >
               {stats.inFlightOverdueCount > 0 && (
                 <SeverityChip
                   severity="danger"
