@@ -130,7 +130,11 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
       <PopoverContent align="end" className="w-80 max-w-[calc(100vw-1rem)] gap-0 p-0">
         <div className="flex items-center justify-between border-b px-3 py-2">
           <div className="flex min-w-0 flex-col gap-0.5">
-            <span className="text-sm font-medium">通知</span>
+            {/* SR の heading navigation で popover に到達した直後にラベルが
+                聞ける (visual サイズは text-sm 維持、heading 風 styling は不要) */}
+            <h2 className="text-sm font-medium" id="notification-bell-heading">
+              通知
+            </h2>
             {unreadBreakdown ? (
               <span
                 className="text-muted-foreground truncate text-[10px]"
@@ -179,7 +183,7 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
               通知はありません
             </div>
           ) : (
-            <ul className="divide-y">
+            <ul className="divide-y" aria-labelledby="notification-bell-heading">
               {notifications.map((n) => {
                 const visual = getNotificationTypeVisual(n.type)
                 const Icon = TYPE_ICON[visual.iconKey]
