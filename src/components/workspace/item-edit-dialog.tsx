@@ -42,6 +42,7 @@ import { useAssignItemToSprint, useSprints } from '@/features/sprint/hooks'
 import { useCreateTemplateFromItem } from '@/features/template/hooks'
 
 import { AiHandoffPhaseChip } from '@/components/agent/ai-handoff-phase-chip'
+import { RecoveryPlanSection } from '@/components/item/recovery-plan-section'
 import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
 import {
@@ -389,6 +390,23 @@ function ItemEditDialogInner({
           </TabsList>
 
           <TabsContent value="base" className="mt-4 space-y-4">
+            {/* iter549 (queue fluffy-5 wire-up): overdue MUST 救済 action 3 選 を表示。
+                isApplicable=false (= overdue MUST でない) なら component が null を返すので
+                通常 item では invisible。 */}
+            <RecoveryPlanSection
+              item={{
+                id: item.id,
+                title: item.title,
+                status: item.status,
+                dueDate: item.dueDate,
+                isMust: item.isMust,
+                priority: item.priority,
+                blockedByIds: depsQ.data?.blockedBy.map((d) => d.ref.id) ?? [],
+                assigneeIds: (assignees ?? [])
+                  .filter((a) => a.actorType === 'user')
+                  .map((a) => a.actorId),
+              }}
+            />
             <div className="bg-primary/5 flex items-start justify-between gap-3 rounded-lg border p-3">
               <div className="min-w-0">
                 <div className="text-sm font-semibold">
