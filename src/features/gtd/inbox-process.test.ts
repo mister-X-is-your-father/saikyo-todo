@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  classifyInboxHealthHint,
   classifyInboxItem,
   formatInboxBucketsJa,
+  formatInboxHealthHintJa,
   gtdBucketLabelJa,
   gtdBucketSeverity,
   type InboxItemFields,
@@ -225,5 +227,79 @@ describe('formatInboxBucketsJa', () => {
     expect(out).toContain('即実行 1')
     // 順序: project (3) が先に出る
     expect(out.indexOf('プロジェクト')).toBeLessThan(out.indexOf('次の action'))
+  })
+})
+
+describe('classifyInboxHealthHint', () => {
+  it('総数 0 → idle', () => {
+    const r = summarizeInbox([])
+    expect(classifyInboxHealthHint(r)).toBe('idle')
+  })
+
+  it('waiting-for >= 5 → severe', () => {
+    const items: InboxItemFields[] = []
+    for (let i = 0; i < 5; i++) {
+      // waiting-for = assignee 0 + stakeholder >= 1
+      items.push(
+        mk({
+          id: `w${i}`,
+          title: `w${i}`,
+          assigneeIds: [],
+          stakeholderIds: ['someone'],
+        }),
+      )
+    }
+    const r = summarizeInbox(items)
+    expect(classifyInboxHealthHint(r)).toBe('severe')
+  })
+
+  it('total >= 100 → severe', () => {
+    const items: InboxItemFields[] = []
+    for (let i = 0; i < 100; i++) {
+      items.push(mk({ id: `n${i}`, title: `t${i}` }))
+    }
+    const r = summarizeInbox(items)
+    expect(classifyInboxHealthHint(r)).toBe('severe')
+  })
+
+  it('total >= 30 で waiting-for < 5 → moderate', () => {
+    const items: InboxItemFields[] = []
+    for (let i = 0; i < 30; i++) {
+      items.push(mk({ id: `n${i}`, title: `t${i}` }))
+    }
+    const r = summarizeInbox(items)
+    expect(classifyInboxHealthHint(r)).toBe('moderate')
+  })
+
+  it('immediate >= 5 → moderate', () => {
+    const items: InboxItemFields[] = []
+    for (let i = 0; i < 5; i++) {
+      // immediate = estimateMin <= 2 で 2-min rule 候補
+      items.push(mk({ id: `i${i}`, title: `t${i}`, estimateMin: 1 }))
+    }
+    const r = summarizeInbox(items)
+    expect(classifyInboxHealthHint(r)).toBe('moderate')
+  })
+
+  it('健全範囲 → mild', () => {
+    const items = [
+      mk({ id: '1', title: 'a' }),
+      mk({ id: '2', title: 'b' }),
+      mk({ id: '3', title: 'c' }),
+    ]
+    const r = summarizeInbox(items)
+    expect(classifyInboxHealthHint(r)).toBe('mild')
+  })
+})
+
+describe('formatInboxHealthHintJa', () => {
+  it('idle / mild / moderate / severe を 1 単語で返す', () => {
+    const empty = summarizeInbox([])
+    expect(formatInboxHealthHintJa(empty)).toBe('空 (process 済)')
+
+    const items: InboxItemFields[] = []
+    for (let i = 0; i < 100; i++) items.push(mk({ id: `n${i}`, title: `t${i}` }))
+    const sev = summarizeInbox(items)
+    expect(formatInboxHealthHintJa(sev)).toBe('要 process')
   })
 })

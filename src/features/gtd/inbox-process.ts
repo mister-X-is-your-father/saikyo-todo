@@ -281,3 +281,44 @@ export function formatInboxBucketsJa<T extends InboxItemFields>(
   const parts = sorted.map((b) => `${gtdBucketLabelJa(b)} ${summary.counts[b]}`)
   return `Inbox ${total} 件: ${parts.join(' / ')}`
 }
+
+/**
+ * iter488 basics: Inbox 健全性 4 状態 hint (= GTD 流れの停滞度)。
+ *
+ * - 'idle'     : total=0 (= Inbox 完全 process 済)
+ * - 'severe'   : waiting-for >= 5 件 (= 連絡待ち多発、blocked) OR total >= 100 (= 完全停滞)
+ * - 'moderate' : total >= 30 件 (= process 滞留) OR immediate >= 5 (= 即実行待機 多)
+ * - 'mild'     : それ以外 (= 健全に流れている)
+ *
+ * 用途: dashboard chip 「Inbox 健全性: 注意 (溜まってます)」、AI 朝 brief の見出し、
+ * Slack 通知の severity 制御。
+ */
+import { type FourStateHint } from '@/lib/hint'
+
+export type InboxHealthHint = FourStateHint
+
+export function classifyInboxHealthHint<T extends InboxItemFields>(
+  summary: InboxBucketSummary<T>,
+): InboxHealthHint {
+  const total = (Object.keys(summary.counts) as GtdBucket[]).reduce(
+    (s, k) => s + summary.counts[k],
+    0,
+  )
+  if (total === 0) return 'idle'
+  if (summary.counts['waiting-for'] >= 5 || total >= 100) return 'severe'
+  if (total >= 30 || summary.counts.immediate >= 5) return 'moderate'
+  return 'mild'
+}
+
+const INBOX_HEALTH_LABEL_JA: Record<InboxHealthHint, string> = {
+  idle: '空 (process 済)',
+  mild: '健全',
+  moderate: '滞留気味',
+  severe: '要 process',
+}
+
+export function formatInboxHealthHintJa<T extends InboxItemFields>(
+  summary: InboxBucketSummary<T>,
+): string {
+  return INBOX_HEALTH_LABEL_JA[classifyInboxHealthHint(summary)]
+}
