@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 
 import {
   extractFirstJsonObject,
+  formatReviewSummaryJa,
   parseStructuredReview,
+  type ReviewSummary,
   statusGlyph,
   StructuredReviewSchema,
   summarizeReview,
@@ -184,5 +186,46 @@ describe('extractFirstJsonObject', () => {
     expect(extractFirstJsonObject('{"a":{"b":2}}')).toBe('{"a":{"b":2}}')
     expect(extractFirstJsonObject('{"s":"{not}"}')).toBe('{"s":"{not}"}')
     expect(extractFirstJsonObject('plain')).toBeNull()
+  })
+})
+
+describe('formatReviewSummaryJa', () => {
+  it('合格 (fail=0) かつ 全 status / 全 severity あり', () => {
+    const summary: ReviewSummary = {
+      byStatus: { ok: 5, warn: 1, fail: 0 },
+      bySeverity: { high: 0, medium: 1, low: 0 },
+      pass: true,
+    }
+    expect(formatReviewSummaryJa(summary)).toBe('合格 (✅5 ⚠1、改善 medium 1)')
+  })
+
+  it('不合格 (fail>0)', () => {
+    const summary: ReviewSummary = {
+      byStatus: { ok: 3, warn: 1, fail: 2 },
+      bySeverity: { high: 1, medium: 1, low: 0 },
+      pass: false,
+    }
+    expect(formatReviewSummaryJa(summary)).toBe('不合格 (✅3 ⚠1 ❌2、改善 high 1 / medium 1)')
+  })
+
+  it('改善 0 件 → "改善 0 件"', () => {
+    const summary: ReviewSummary = {
+      byStatus: { ok: 3, warn: 0, fail: 0 },
+      bySeverity: { high: 0, medium: 0, low: 0 },
+      pass: true,
+    }
+    expect(formatReviewSummaryJa(summary)).toBe('合格 (✅3、改善 0 件)')
+  })
+
+  it('count=0 status は省略', () => {
+    const summary: ReviewSummary = {
+      byStatus: { ok: 5, warn: 0, fail: 0 },
+      bySeverity: { high: 0, medium: 0, low: 0 },
+      pass: true,
+    }
+    const out = formatReviewSummaryJa(summary)
+    expect(out).toContain('✅5')
+    expect(out).not.toContain('⚠')
+    expect(out).not.toContain('❌')
   })
 })

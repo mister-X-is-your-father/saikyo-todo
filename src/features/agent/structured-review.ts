@@ -137,5 +137,30 @@ export function statusGlyph(status: ChecklistStatus): { glyph: string; label: st
   return { glyph: '❌', label: '要対策' }
 }
 
+/**
+ * iter542 ai-automation polish: AI prompt / chip aria-label / Slack 通知用 1 行 review summary。
+ *   '合格 (✅5 ⚠1 ❌0、改善 0 件)'
+ *   '不合格 (✅3 ⚠1 ❌2、改善 high 1 / medium 1)'
+ *   '合格 (✅3、改善 medium 1)'
+ *
+ * count=0 の status / severity は省略 (省略しない場合 "✅0 ⚠0 ❌0" で煩雑なので圧縮)。
+ */
+export function formatReviewSummaryJa(summary: ReviewSummary): string {
+  const verdict = summary.pass ? '合格' : '不合格'
+  const statusParts: string[] = []
+  if (summary.byStatus.ok > 0) statusParts.push(`✅${summary.byStatus.ok}`)
+  if (summary.byStatus.warn > 0) statusParts.push(`⚠${summary.byStatus.warn}`)
+  if (summary.byStatus.fail > 0) statusParts.push(`❌${summary.byStatus.fail}`)
+  const sevParts: string[] = []
+  if (summary.bySeverity.high > 0) sevParts.push(`high ${summary.bySeverity.high}`)
+  if (summary.bySeverity.medium > 0) sevParts.push(`medium ${summary.bySeverity.medium}`)
+  if (summary.bySeverity.low > 0) sevParts.push(`low ${summary.bySeverity.low}`)
+  const totalImprovements =
+    summary.bySeverity.high + summary.bySeverity.medium + summary.bySeverity.low
+  const impPart =
+    sevParts.length === 0 ? `改善 ${totalImprovements} 件` : `改善 ${sevParts.join(' / ')}`
+  return `${verdict} (${statusParts.join(' ')}、${impPart})`
+}
+
 // 内部 helper を test しやすく named export
 export { extractFirstJsonObject }
