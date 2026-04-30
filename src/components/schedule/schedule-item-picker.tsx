@@ -56,11 +56,20 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
       </div>
       <div className="max-h-72 overflow-auto">
         {filtered.length === 0 ? (
-          <div className="text-muted-foreground py-6 text-center text-sm">
+          <div
+            className="text-muted-foreground py-6 text-center text-sm"
+            role="status"
+            aria-live="polite"
+            data-testid="schedule-picker-empty"
+          >
             該当する task が見つかりません
           </div>
         ) : (
-          <ul className="flex flex-col gap-1">
+          <ul
+            className="flex flex-col gap-1"
+            aria-label={`検索結果 ${filtered.length} 件`}
+            data-testid="schedule-picker-list"
+          >
             {filtered.map((it) => (
               <li key={it.id}>
                 <button
