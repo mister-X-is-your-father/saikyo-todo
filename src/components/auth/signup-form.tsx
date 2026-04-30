@@ -57,6 +57,7 @@ export function SignupForm() {
         <IMEInput
           id="displayName"
           autoComplete="name"
+          enterKeyHint="next"
           autoFocus
           required
           aria-required="true"
@@ -81,6 +82,7 @@ export function SignupForm() {
           type="email"
           autoComplete="email"
           inputMode="email"
+          enterKeyHint="next"
           autoCorrect="off"
           spellCheck={false}
           autoCapitalize="none"

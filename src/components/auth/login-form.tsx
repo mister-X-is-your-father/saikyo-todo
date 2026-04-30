@@ -59,6 +59,7 @@ export function LoginForm() {
           type="email"
           autoComplete="email"
           inputMode="email"
+          enterKeyHint="next"
           autoCorrect="off"
           spellCheck={false}
           autoCapitalize="none"
