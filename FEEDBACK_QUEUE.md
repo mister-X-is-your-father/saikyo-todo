@@ -51,7 +51,12 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ### 2026-04-29 — Template 登録機能 (タスク + サブタスクをまとめて) ★ 新規 ★
 
-- [ ] **Template 登録機能 — タスク + サブタスクをまとめて 1 つの Template として登録、再利用** — 分類: 実装要望 (中-大)
+- [x] **Template 登録機能 — タスク + サブタスクをまとめて 1 つの Template として登録、再利用** — 分類: 実装要望 (中-大)
+  - **scope A 完了 (iter460 → 462、3 commit)**:
+    `e75e53f` (substrate) → `fd9da3a` (service+action) → `6893fe7` (hook+UI button)。
+    ItemEditDialog の「Template として保存」 ghost button から 1 click で parent +
+    全子孫 (深い階層 OK) を Template 化。再利用は既存 templateService.instantiate
+    で同階層に展開。scope B (drag&drop 編集 + preview) / C (AI 提案) は別 entry。
   - 原文: 「テンプレート登録機能。タスクとサブタスクをまとめて登録できる」
   - 仮解釈:
     - 既存 `templates` table (Phase MVP の Template 機能) を拡張、または UI のみ追加
@@ -187,7 +192,7 @@ button disabled + reason aria-label。typecheck/lint 緑 (warning baseline 1)。
 優先順位 (上から消化):
 
 1. **Template 登録機能** (詳細: 本ファイル下方の同名 section、scope A から)
-   - 🚧 進行中 (iter460/461 で substrate + service+action 着地、次 iter で UI button)
+   - ✅ scope A 完了 (iter460/461/462 で substrate + service + action + hook + UI bind、3 commit)
    - 仮置き判断: 既存 `templates` table 拡張、UI scope A は ItemEditDialog から
      「Template 保存」 button → `templates.body` JSON に `{parent:{...}, children:[{title,dod,...},...]}`
    - subtask の subtask は scope A では非対応 (フラット 2 階層のみ)
