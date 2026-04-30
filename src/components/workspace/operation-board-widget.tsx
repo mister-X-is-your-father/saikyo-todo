@@ -16,7 +16,7 @@
  *   4. 今日 scheduled (件数 + 時刻順 list) — 「今日の予定」
  *   5. 昨日 done (collapsed by default) — 「昨日の成果」
  */
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import {
   AlertOctagon,
@@ -26,12 +26,15 @@ import {
   ChevronRight,
   Crown,
   Target,
+  Timer,
 } from 'lucide-react'
 import { parseAsString, useQueryState } from 'nuqs'
 
 import { todayISO } from '@/lib/date/iso'
 
+import { extractEstimateMinutes } from '@/features/item/estimate'
 import type { Item } from '@/features/item/schema'
+import { buildTodayForecast } from '@/features/today/forecast'
 import { buildOperationBoard } from '@/features/today/operation-board'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -52,6 +55,21 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
   const board = buildOperationBoard(items, today)
   const [, setOpenItemId] = useQueryState('item', parseAsString)
   const [showDoneYesterday, setShowDoneYesterday] = useState(false)
+
+  // iter536 (queue fluffy-7 完結 wire-up): forecast を取得して header に summary line を表示
+  // active な item の集合は board の todayScheduled (= 今日対象 + active) を流用
+  const forecastInput = useMemo(
+    () =>
+      board.todayScheduled.items.map((it) => ({
+        id: it.id,
+        title: it.title,
+        estimateMin: extractEstimateMinutes(it.description) ?? null,
+        isMust: it.isMust,
+        priority: it.priority,
+      })),
+    [board.todayScheduled.items],
+  )
+  const forecast = useMemo(() => buildTodayForecast(forecastInput), [forecastInput])
 
   // 全セクションが空なら widget そのものを描画しない (Today 未利用 user に noise を出さない)
   const hasAnything =
@@ -82,6 +100,39 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
+        {forecast.totalEstimateMin > 0 ? (
+          <div
+            className={`flex items-center gap-2 rounded px-2 py-1 text-xs ${forecast.canFinishToday ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}
+            data-testid="operation-board-forecast"
+            role="status"
+            aria-label={
+              forecast.canFinishToday
+                ? `今日終わる予測: 残 ${forecast.remainingMinutesUntilEnd} 分中 ${forecast.totalEstimateMin} 分の見積、${-forecast.overflowMin} 分余裕`
+                : `今日終わらない予測: ${forecast.overflowMin} 分超過`
+            }
+          >
+            <Timer className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="font-medium tabular-nums">
+              {Math.floor(forecast.totalEstimateMin / 60)}h{forecast.totalEstimateMin % 60}m
+            </span>
+            <span className="text-[11px] opacity-80">の見積 / 残</span>
+            <span className="font-medium tabular-nums">
+              {Math.floor(forecast.remainingMinutesUntilEnd / 60)}h
+              {forecast.remainingMinutesUntilEnd % 60}m
+            </span>
+            <span className="ml-auto font-semibold">
+              {forecast.canFinishToday
+                ? `余裕 ${-forecast.overflowMin}m`
+                : `超過 ${forecast.overflowMin}m`}
+            </span>
+            {forecast.estimateUnknownCount > 0 ? (
+              <span className="text-[10px] opacity-70">
+                (見積無 {forecast.estimateUnknownCount})
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+
         {board.recommended ? (
           <Section
             icon={<Crown className="h-4 w-4 text-amber-500" aria-hidden="true" />}
