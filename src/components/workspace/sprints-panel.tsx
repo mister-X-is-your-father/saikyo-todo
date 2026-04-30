@@ -7,7 +7,7 @@
  *   - status 遷移ボタン: planning → active / active → completed / cancelled
  *   - 編集 (name / 期間 / goal) は inline edit を後回し、まず最小機能
  */
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   AlertTriangle,
@@ -24,6 +24,7 @@ import { toast } from 'sonner'
 import { isAppError } from '@/lib/errors'
 
 import { isInvalidDateRange } from '@/features/item/date-range'
+import { useItems } from '@/features/item/hooks'
 import {
   computeSprintBurndown,
   type SprintProgressTone,
@@ -54,6 +55,7 @@ import {
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { IMEInput } from '@/components/shared/ime-input'
+import { SprintRetroWidget } from '@/components/sprint/sprint-retro-widget'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -371,6 +373,23 @@ function SprintCard({
   // active / completed は進捗を取る (planning は未割当が多いので skip)
   const showProgress = status === 'active' || status === 'completed'
   const progress = useSprintProgress(showProgress ? sprint.id : null)
+  // iter547 (queue fluffy-3 wire-up): completed sprint で SprintRetroWidget を render するため
+  // workspace の全 items を取得 (useItems は各 view と queryKey 共通で dedupe される)。
+  // 取得した items を sprintId でフィルタ → SprintRetroItemFields shape へ map。
+  const allItems = useItems(sprint.workspaceId)
+  const sprintItems = useMemo(
+    () =>
+      status === 'completed'
+        ? (allItems.data ?? [])
+            .filter((it) => it.sprintId === sprint.id)
+            .map((it) => ({
+              status: it.status,
+              dueDate: it.dueDate,
+              doneAt: it.doneAt,
+            }))
+        : [],
+    [allItems.data, sprint.id, status],
+  )
   const total = progress.data?.total ?? 0
   const done = progress.data?.done ?? 0
   // iter285 refactor: pure helper `computeSprintBurndown` に集約 (テスト 11 件)
@@ -712,6 +731,9 @@ function SprintCard({
               </Button>
             )}
           </div>
+          {status === 'completed' && sprintItems.length > 0 ? (
+            <SprintRetroWidget items={sprintItems} sprintEndISO={sprint.endDate} className="mt-2" />
+          ) : null}
           <SprintSwimlaneDisclosure
             workspaceId={sprint.workspaceId}
             sprintId={sprint.id}
