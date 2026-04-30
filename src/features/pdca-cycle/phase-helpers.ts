@@ -1,0 +1,141 @@
+/**
+ * iter534 ai-automation (queue: PDCA P-1 polish): pdca_cycles の phase 関連 pure helper。
+ *
+ * 設計目的:
+ *   - PDCA mode の widget / chip / Slack 通知が「phase Japanese label」「phase severity
+ *     (= 進捗が滞ってないか)」「1 行 status 文字列」を 1 関数で取り出せる substrate
+ *   - service / repository には触らない、pure helper のみ
+ *
+ * AI 不使用、副作用無し、依存無し。pure helper + Vitest 単体 test で網羅。
+ */
+import type { PdcaCycleStatus } from './schema'
+
+const PHASE_LABEL_JA: Record<PdcaCycleStatus, string> = {
+  plan: '仮説立案 (Plan)',
+  do: '実行 (Do)',
+  check: '検証 (Check)',
+  act: '改善決定 (Act)',
+  closed: '完了',
+}
+
+export function pdcaCyclePhaseLabelJa(status: PdcaCycleStatus): string {
+  return PHASE_LABEL_JA[status]
+}
+
+/**
+ * phase ごとの「想定上限日数」 (= これを超えたら stale 警告)。
+ * Plan / Check / Act は短時間で終えるべき (= 思考の停滞を避ける)、Do は長め。
+ */
+const PHASE_DAY_LIMIT: Record<PdcaCycleStatus, number> = {
+  plan: 3,
+  do: 14,
+  check: 3,
+  act: 2,
+  closed: Infinity,
+}
+
+export type PdcaPhaseSeverity = 'closed' | 'fresh' | 'on_track' | 'stale' | 'overdue'
+
+export interface PdcaPhaseTimestamps {
+  status: PdcaCycleStatus
+  /** 各 phase 開始 / 終了タイムスタンプ。schema の Date | null と互換 */
+  planStartedAt?: Date | null
+  doStartedAt?: Date | null
+  checkStartedAt?: Date | null
+  /** schema には actStartedAt がないので closed への遷移時刻は updatedAt フォールバック */
+  updatedAt?: Date | null
+}
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+
+/**
+ * 現在 phase に入ってからの経過日数 (整数、Math.floor)。timestamp 不明なら null。
+ *
+ * - status='plan'   : planStartedAt 起点
+ * - status='do'     : doStartedAt 起点
+ * - status='check'  : checkStartedAt 起点
+ * - status='act'    : updatedAt 起点 (= 最後の遷移、actStartedAt 列が無いため)
+ * - status='closed' : null (= 経過追跡しない)
+ */
+export function phaseElapsedDays(
+  cycle: PdcaPhaseTimestamps,
+  now: Date = new Date(),
+): number | null {
+  if (cycle.status === 'closed') return null
+  let started: Date | null | undefined
+  switch (cycle.status) {
+    case 'plan':
+      started = cycle.planStartedAt
+      break
+    case 'do':
+      started = cycle.doStartedAt
+      break
+    case 'check':
+      started = cycle.checkStartedAt
+      break
+    case 'act':
+      started = cycle.updatedAt
+      break
+  }
+  if (!started) return null
+  const diffMs = now.getTime() - started.getTime()
+  if (!Number.isFinite(diffMs) || diffMs < 0) return 0
+  return Math.floor(diffMs / MS_PER_DAY)
+}
+
+/**
+ * phase severity (chip tone bind 用):
+ *   - 'closed'   : status='closed' (= 完了、neutral)
+ *   - 'fresh'    : 経過 0 日 (= 同日に遷移したばかり)
+ *   - 'on_track' : 経過 ≤ phase 上限 (= 想定内)
+ *   - 'stale'    : phase 上限 < 経過 ≤ 上限 × 2 (= 注意)
+ *   - 'overdue'  : 経過 > 上限 × 2 (= 警報、phase 進行を促す)
+ *
+ * timestamp 不明 (= phaseElapsedDays が null) は 'on_track' (= neutral fallback)。
+ */
+export function pdcaPhaseSeverity(
+  cycle: PdcaPhaseTimestamps,
+  now: Date = new Date(),
+): PdcaPhaseSeverity {
+  if (cycle.status === 'closed') return 'closed'
+  const elapsed = phaseElapsedDays(cycle, now)
+  if (elapsed === null) return 'on_track'
+  if (elapsed === 0) return 'fresh'
+  const limit = PHASE_DAY_LIMIT[cycle.status]
+  if (!Number.isFinite(limit)) return 'on_track'
+  if (elapsed <= limit) return 'on_track'
+  if (elapsed <= limit * 2) return 'stale'
+  return 'overdue'
+}
+
+const SEVERITY_LABEL_JA: Record<PdcaPhaseSeverity, string> = {
+  closed: '完了',
+  fresh: '開始直後',
+  on_track: '順調',
+  stale: '停滞気味',
+  overdue: '進行を促す',
+}
+
+export function pdcaPhaseSeverityLabelJa(sev: PdcaPhaseSeverity): string {
+  return SEVERITY_LABEL_JA[sev]
+}
+
+/**
+ * AI prompt / chip aria-label / Slack 通知用 1 行 phase status:
+ *   '実行 (Do) — 順調 (5 日)'
+ *   '改善決定 (Act) — 進行を促す (8 日)'
+ *   '完了'                                (= status='closed')
+ *   '仮説立案 (Plan) — 順調 (timestamp 未記録)'
+ */
+export function formatPdcaCyclePhaseStatusJa(
+  cycle: PdcaPhaseTimestamps,
+  now: Date = new Date(),
+): string {
+  const phase = pdcaCyclePhaseLabelJa(cycle.status)
+  if (cycle.status === 'closed') return phase
+  const sev = pdcaPhaseSeverity(cycle, now)
+  const sevLabel = pdcaPhaseSeverityLabelJa(sev)
+  const elapsed = phaseElapsedDays(cycle, now)
+  const tail = elapsed === null ? ' (timestamp 未記録)' : ` (${elapsed} 日)`
+  return `${phase} — ${sevLabel}${tail}`
+}
