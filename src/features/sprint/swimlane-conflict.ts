@@ -23,7 +23,7 @@
  *  - dueDate < startDate (不正範囲) は対象外 (= caller validation が responsibility)
  */
 
-import { parseIsoDateAsLocalMidnight } from '@/lib/date/iso'
+import { MS_PER_DAY, parseIsoDateAsLocalMidnight } from '@/lib/date/iso'
 
 export interface LaneItemSource {
   id: string
@@ -43,8 +43,6 @@ interface NormalizedItem {
   startMs: number
   endMs: number
 }
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000
 
 export function detectLaneConflicts(items: ReadonlyArray<LaneItemSource>): LaneConflictPair[] {
   const normalized: NormalizedItem[] = []
@@ -103,4 +101,65 @@ export function formatLaneConflictsJa(pairs: ReadonlyArray<LaneConflictPair>): s
   if (pairs.length === 0) return '時間重複なし'
   const totalDays = pairs.reduce((s, p) => s + p.overlapDays, 0)
   return `時間重複: ${pairs.length} ペア (合計 ${totalDays} 日)`
+}
+
+/**
+ * 1 lane の 「件数 + 見積合計 + 重複ペア」を 1 行で summary 化 (= UI lane header
+ * chip / AI brief 「田中 lane: 5 件 / 8h / 重複 2 ペア」共通)。
+ *
+ * 入力 items は同 lane 配列、estimateMinutesByItemId は caller が
+ * `extractEstimateMinutes(item.description)` 等で事前計算した Map。本 helper は
+ * 集計のみ、見積取得 logic は外に置く (= 拡張で AI 見積 / time_entries 実績等
+ * を caller が選べる)。
+ */
+export interface LaneLoadSummary {
+  itemCount: number
+  estimateMinutesTotal: number
+  conflictPairCount: number
+  conflictTotalDays: number
+}
+
+export function summarizeLaneLoad(
+  items: ReadonlyArray<LaneItemSource>,
+  estimateMinutesByItemId: ReadonlyMap<string, number>,
+): LaneLoadSummary {
+  const conflicts = detectLaneConflicts(items)
+  let estimateMinutesTotal = 0
+  for (const it of items) {
+    const m = estimateMinutesByItemId.get(it.id)
+    if (typeof m === 'number' && Number.isFinite(m) && m > 0) estimateMinutesTotal += m
+  }
+  const conflictTotalDays = conflicts.reduce((s, p) => s + p.overlapDays, 0)
+  return {
+    itemCount: items.length,
+    estimateMinutesTotal,
+    conflictPairCount: conflicts.length,
+    conflictTotalDays,
+  }
+}
+
+/**
+ * `LaneLoadSummary` を 1 行 ja-JP summary に。
+ *  '0 件 / 見積なし / 重複なし' (空 lane) /
+ *  '5 件 / 8h / 重複なし' (見積あり) /
+ *  '5 件 / 8h / 重複 2 ペア (合計 4 日)' (重複あり) /
+ *  '5 件 / 見積なし / 重複 2 ペア (合計 4 日)' (見積 0 でも重複あり)
+ */
+export function formatLaneLoadJa(summary: LaneLoadSummary): string {
+  const itemPart = `${summary.itemCount} 件`
+  const estimatePart =
+    summary.estimateMinutesTotal > 0 ? formatHoursMinutes(summary.estimateMinutesTotal) : '見積なし'
+  const conflictPart =
+    summary.conflictPairCount === 0
+      ? '重複なし'
+      : `重複 ${summary.conflictPairCount} ペア (合計 ${summary.conflictTotalDays} 日)`
+  return `${itemPart} / ${estimatePart} / ${conflictPart}`
+}
+
+function formatHoursMinutes(minutes: number): string {
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  if (h === 0) return `${m}min`
+  if (m === 0) return `${h}h`
+  return `${h}h ${m}min`
 }

@@ -7,6 +7,8 @@ import {
   collectConflictedItemIds,
   detectLaneConflicts,
   formatLaneConflictsJa,
+  formatLaneLoadJa,
+  summarizeLaneLoad,
 } from './swimlane-conflict'
 
 describe('detectLaneConflicts', () => {
@@ -116,6 +118,101 @@ describe('collectConflictedItemIds', () => {
     expect(ids.has('b')).toBe(true)
     expect(ids.has('c')).toBe(true)
     expect(ids.size).toBe(3)
+  })
+})
+
+describe('summarizeLaneLoad', () => {
+  it('空 lane → 全 0', () => {
+    const r = summarizeLaneLoad([], new Map())
+    expect(r).toEqual({
+      itemCount: 0,
+      estimateMinutesTotal: 0,
+      conflictPairCount: 0,
+      conflictTotalDays: 0,
+    })
+  })
+
+  it('見積あり / 重複なし', () => {
+    const items = [
+      { id: 'a', startDate: '2026-04-30', dueDate: '2026-05-01' },
+      { id: 'b', startDate: '2026-05-03', dueDate: '2026-05-04' },
+    ]
+    const est = new Map([
+      ['a', 240],
+      ['b', 240],
+    ])
+    const r = summarizeLaneLoad(items, est)
+    expect(r.itemCount).toBe(2)
+    expect(r.estimateMinutesTotal).toBe(480)
+    expect(r.conflictPairCount).toBe(0)
+  })
+
+  it('見積 + 重複あり', () => {
+    const items = [
+      { id: 'a', startDate: '2026-04-30', dueDate: '2026-05-02' },
+      { id: 'b', startDate: '2026-05-01', dueDate: '2026-05-03' },
+    ]
+    const est = new Map([
+      ['a', 240],
+      ['b', 120],
+    ])
+    const r = summarizeLaneLoad(items, est)
+    expect(r.estimateMinutesTotal).toBe(360)
+    expect(r.conflictPairCount).toBe(1)
+    expect(r.conflictTotalDays).toBe(2)
+  })
+
+  it('見積 不正 (NaN / 負 / 0) は集計除外', () => {
+    const items = [{ id: 'a', startDate: '2026-04-30', dueDate: '2026-05-02' }]
+    const est = new Map([['a', NaN]])
+    const r = summarizeLaneLoad(items, est)
+    expect(r.estimateMinutesTotal).toBe(0)
+  })
+})
+
+describe('formatLaneLoadJa', () => {
+  it('全 0 → "0 件 / 見積なし / 重複なし"', () => {
+    expect(
+      formatLaneLoadJa({
+        itemCount: 0,
+        estimateMinutesTotal: 0,
+        conflictPairCount: 0,
+        conflictTotalDays: 0,
+      }),
+    ).toBe('0 件 / 見積なし / 重複なし')
+  })
+
+  it('見積あり / 重複なし → "5 件 / 8h / 重複なし"', () => {
+    expect(
+      formatLaneLoadJa({
+        itemCount: 5,
+        estimateMinutesTotal: 480,
+        conflictPairCount: 0,
+        conflictTotalDays: 0,
+      }),
+    ).toBe('5 件 / 8h / 重複なし')
+  })
+
+  it('見積 + 重複あり', () => {
+    expect(
+      formatLaneLoadJa({
+        itemCount: 3,
+        estimateMinutesTotal: 270,
+        conflictPairCount: 2,
+        conflictTotalDays: 4,
+      }),
+    ).toBe('3 件 / 4h 30min / 重複 2 ペア (合計 4 日)')
+  })
+
+  it('30 分単位', () => {
+    expect(
+      formatLaneLoadJa({
+        itemCount: 1,
+        estimateMinutesTotal: 30,
+        conflictPairCount: 0,
+        conflictTotalDays: 0,
+      }),
+    ).toBe('1 件 / 30min / 重複なし')
   })
 })
 
