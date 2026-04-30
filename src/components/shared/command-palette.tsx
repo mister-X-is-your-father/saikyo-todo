@@ -131,12 +131,13 @@ export function CommandPalette({ commands, items, onSelectItem }: CommandPalette
                   />
                   <span className="truncate">{item.title}</span>
                   {item.dueDate && (
-                    <span
+                    <time
                       className="text-muted-foreground ml-2 shrink-0 text-[10px] tabular-nums"
-                      title={`期限 ${item.dueDate}`}
+                      dateTime={item.dueDate}
+                      aria-label={`期限 ${item.dueDate}`}
                     >
                       {formatFriendlyDate(item.dueDate, today)}
-                    </span>
+                    </time>
                   )}
                   {item.isMust && <MustBadge className="ml-auto" />}
                 </CommandItem>
