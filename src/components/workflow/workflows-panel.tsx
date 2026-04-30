@@ -188,7 +188,7 @@ export function WorkflowsPanel({ workspaceId }: Props) {
           action={
             <button
               type="button"
-              className="text-primary hover:bg-muted mt-2 rounded border px-3 py-1.5 text-xs hover:underline"
+              className="text-primary hover:bg-muted mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline"
               data-testid="workflows-empty-create"
               aria-label="Workflow 作成フォームの『名前』入力欄にフォーカス"
               onClick={() => {

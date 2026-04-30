@@ -76,7 +76,7 @@ export function InboxView({
         action={
           <button
             type="button"
-            className="text-primary hover:bg-muted mt-2 rounded border px-3 py-1.5 text-xs hover:underline"
+            className="text-primary hover:bg-muted mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline"
             data-testid="inbox-empty-quick-add"
             aria-label="クイック追加入力欄にフォーカス (q キーでも可)"
             onClick={() => {
