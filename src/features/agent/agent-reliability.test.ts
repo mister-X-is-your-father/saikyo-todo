@@ -7,6 +7,7 @@ import {
   agentReliabilityChipClasses,
   agentReliabilityTone,
   agentRoleLabelJa,
+  composeAgentBriefSignals,
   computeAgentReliability,
   dominantRole,
   formatAgentReliabilityCompactJa,
@@ -200,6 +201,40 @@ describe('formatDominantRoleJa', () => {
       { role: 'researcher', invocations: 8, completed: 8, failed: 0 },
     ])
     expect(formatDominantRoleJa(dominantRole(r))).toBe('主軸: PM (15 呼出、65%)')
+  })
+})
+
+describe('composeAgentBriefSignals (AI 朝 brief / Slack daily digest 用 1 関数集約)', () => {
+  it('idle → reliability=記録なし / dominant=null', () => {
+    const stats = computeAgentReliability([])
+    const sig = composeAgentBriefSignals(stats)
+    expect(sig.reliability.text).toBe('AI 信頼性: 記録なし')
+    expect(sig.reliability.tone).toBe('idle')
+    expect(sig.dominantRole).toBeNull()
+  })
+
+  it('healthy + dominant → 2 signal', () => {
+    const stats = computeAgentReliability([
+      { role: 'pm', invocations: 15, completed: 15, failed: 0 },
+      { role: 'researcher', invocations: 8, completed: 8, failed: 0 },
+    ])
+    const sig = composeAgentBriefSignals(stats)
+    expect(sig.reliability.text).toBe('AI 信頼性: 健全 (23/23 完了、100%)')
+    expect(sig.reliability.tone).toBe('success')
+    expect(sig.dominantRole).not.toBeNull()
+    expect(sig.dominantRole!.text).toBe('主軸: PM (15 呼出、65%)')
+    expect(sig.dominantRole!.tone).toBe('info')
+  })
+
+  it('critical 単独稼働 → reliability=danger / dominant 唯一稼働', () => {
+    const stats = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 },
+    ])
+    const sig = composeAgentBriefSignals(stats)
+    expect(sig.reliability.tone).toBe('danger')
+    expect(sig.reliability.text).toContain('要調査')
+    expect(sig.dominantRole!.text).toBe('主軸: PM (10 呼出、唯一稼働)')
+    expect(sig.dominantRole!.tone).toBe('info')
   })
 })
 

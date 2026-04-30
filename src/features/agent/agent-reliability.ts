@@ -218,6 +218,50 @@ export function formatDominantRoleJa(dominant: DominantRoleResult | null): strin
 }
 
 /**
+ * iter497 ai-automation: AI 朝 brief / Slack daily digest 用に「reliability + dominant
+ * role」 2 視点を 1 構造体に集約する compose helper。
+ *
+ * caller benefits: AI 朝 brief / dashboard widget で「stats から個別に reliability /
+ * dominant の 2 関数呼び」が「compose 1 関数で signals 配列が揃う」に変わる、UI で
+ * `signals.map(s => <Chip text={s.text} tone={s.tone} />)` のような 1 行 render。
+ *
+ * 仕様:
+ *  - 入力: AgentReliability (compute 済)
+ *  - 出力: AgentBriefSignals { reliability: {text, tone}, dominantRole: {text, tone} | null }
+ *  - reliability は 必ず 1 signal (idle 時も 'AI 信頼性: 記録なし' chip 表示)
+ *  - dominantRole は idle (= totalInvocations=0) 時 null、それ以外は dominantRole result
+ *  - tone は iter487/494 で確立した
+ *    `agentReliabilityTone` / 主軸の場合は 'info' (中立、informational signal) を採用
+ *  - signals 配列形式は AI brief / Slack 通知 / dashboard chip 共通 format
+ */
+export interface AgentBriefSignal {
+  text: string
+  tone: ChipTone
+}
+
+export interface AgentBriefSignals {
+  reliability: AgentBriefSignal
+  /** dominantRole は totalInvocations=0 時 null */
+  dominantRole: AgentBriefSignal | null
+}
+
+export function composeAgentBriefSignals(stats: AgentReliability): AgentBriefSignals {
+  const reliability: AgentBriefSignal = {
+    text: formatAgentReliabilityCompactJa(stats),
+    tone: agentReliabilityTone(stats.reliabilityLevel),
+  }
+  const dominant = dominantRole(stats)
+  const dominantSignal: AgentBriefSignal | null = dominant
+    ? {
+        text: formatDominantRoleJa(dominant),
+        // dominant role は informational (= 'info' tone)。severity は reliability 側で持つ
+        tone: 'info',
+      }
+    : null
+  return { reliability, dominantRole: dominantSignal }
+}
+
+/**
  * AI 朝 brief / chip 表示用に reliability を 1 行 ja-JP 文言で:
  *  - idle → 'AI 信頼性: 記録なし'
  *  - 全 role healthy → 'AI 信頼性: PM 14/15 (93%) 健全・Researcher 8/8 (100%) 健全'
