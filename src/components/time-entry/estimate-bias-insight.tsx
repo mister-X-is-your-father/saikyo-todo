@@ -92,7 +92,9 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
     return (
       <Card aria-busy="true" data-testid="estimate-bias-insight-loading">
         <CardHeader>
-          <CardTitle className="text-base">見積精度 (直近)</CardTitle>
+          <CardTitle className="text-base" role="heading" aria-level={2}>
+            見積精度 (直近)
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-xs">集計中...</p>
@@ -110,7 +112,7 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
   return (
     <Card data-testid="estimate-bias-insight">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
+        <CardTitle className="flex items-center gap-2 text-base" role="heading" aria-level={2}>
           <span>見積精度 (直近)</span>
           <span
             className={`rounded border px-2 py-0.5 text-[11px] ${tone}`}

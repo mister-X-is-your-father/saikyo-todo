@@ -21,7 +21,9 @@ export function TimeEntriesPanel({ workspaceId }: { workspaceId: string }) {
       <TopItemsByTimeChip workspaceId={workspaceId} />
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">新規 稼働記録</CardTitle>
+          <CardTitle className="text-base" role="heading" aria-level={2}>
+            新規 稼働記録
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <CreateTimeEntryForm workspaceId={workspaceId} />
@@ -30,7 +32,7 @@ export function TimeEntriesPanel({ workspaceId }: { workspaceId: string }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">
+          <CardTitle className="text-base" role="heading" aria-level={2}>
             <span aria-hidden="true">一覧 {q.data ? `(${q.data.length} 件)` : ''}</span>
             <span className="sr-only">{q.data ? `一覧 ${q.data.length} 件` : '一覧'}</span>
           </CardTitle>
