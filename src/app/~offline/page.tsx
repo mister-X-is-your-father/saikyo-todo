@@ -8,6 +8,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { cn } from '@/lib/utils'
+
 import { buttonVariants } from '@/components/ui/button'
 
 import { OfflineRetryButton } from './retry-button'
@@ -49,7 +51,7 @@ export default function OfflinePage() {
           href="/"
           prefetch={false}
           aria-label="ホームに戻る (アプリの起点画面に遷移、オンライン復帰後は最新状態を表示)"
-          className={buttonVariants({ variant: 'outline' })}
+          className={cn(buttonVariants({ variant: 'outline' }), 'h-11 px-4')}
         >
           ホームに戻る
         </Link>
