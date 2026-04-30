@@ -58,7 +58,11 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
     )
   }
   if (error) {
-    return <p className="text-destructive p-4 text-sm">アーカイブ一覧の取得に失敗しました</p>
+    return (
+      <p className="text-destructive p-4 text-sm" role="alert">
+        アーカイブ一覧の取得に失敗しました
+      </p>
+    )
   }
   if (archived.length === 0) {
     return (

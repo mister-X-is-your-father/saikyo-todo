@@ -556,7 +556,12 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
             </p>
           </div>
           {error && (
-            <p className="text-destructive text-xs" data-testid={`wf-editor-error-${wf.id}`}>
+            <p
+              id={`wf-editor-error-${wf.id}`}
+              className="text-destructive text-xs"
+              role="alert"
+              data-testid={`wf-editor-error-${wf.id}`}
+            >
               {error}
             </p>
           )}
