@@ -419,51 +419,25 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 
 ### 🔥 次 iter で即実装 (P0 最優先、track 判定より優先) 🔥
 
-ユーザ強調 (2026-04-30): **「ANTHROPIC_API_KEY は何があっても使わない。クロード MAX プランあるもん」**
+**(空)** — 直近 P0 2 件は scope A 完了 (iter501-513 の 13 commit、2026-04-30):
 
-→ **0. AI agent (pm / researcher / engineer) を Anthropic SDK 直叩きから claude CLI subprocess 経路へ完全 migration**
-詳細: pm-service / researcher-service の `executeToolLoop` を `runFlowViaClaude` (= claude-flow-runner.ts) ベースに置換。
-現状 `.env.local: ANTHROPIC_API_KEY=` (空) で PM Stand-up / AI 分解が失敗する症状は本件の暫定 ValidationError ガードで明確化済 (2910d50 系)。
-真の解は CLI 経路移行。Engineer は既に cloud-engineer-adapter.ts で CLI 経路あり、pattern 流用可。
+- ✅ **AI agent SDK→CLI migration (5 iter)** — pm/researcher を claude CLI 経路化、
+  ANTHROPIC_API_KEY 不要化。pm-flow-adapter / researcher-flow-adapter の pure helper +
+  pmService.runStandupViaClaude + runStandupAction CLI 切替で完了 (iter501-505)
+- ✅ **AI 自動実行モード scope A (8 iter)** — 担当=AI 設定 → 「Plan を生成」 button →
+  Researcher が Plan を comment post (🤖 marker)。AssigneePicker AI 選択肢 + 7 substrate +
+  ItemPlanGenerateButton 配線で完了 (iter506-513)
 
-- iter1: pm-service.run の executeToolLoop を runFlowViaClaude へ置換 (input/output adapter helper を pure 関数として、test 含む)
-- iter2: researcher-service.run も同様に置換
-- iter3: tools (read_items / search_items / etc) を CLI 経路でも動くよう MCP server 化 (scripts/mcp-agent-server.ts 拡張)
-- iter4: agent_invocations の cost / tokens 集計を CLI 経路の outputs に合わせて修正
-- iter5: 既存 SDK 経路 (`executeToolLoop`) を deprecated に、テストも CLI mock に切替
-  完了後: ANTHROPIC_API_KEY env を削除可能、SDK 依存も削除可能。
+次 iter からは judge.sh の track 判定 (iter % 5) に復帰。新規 P0 (ユーザ追加) が
+入ったら本 section に hoist して優先消化する。
 
----
+scope B 候補 (本 P0 section に **再 hoist する場合** に着手する):
 
-ユーザ指示 (2026-04-30): 「自動実行モード搭載して。担当者をAIにできる。プランモードで
-こうやるけどええか？って聞かれる。エスカレーションとか相談はSlackで。これ優先度高く実装頼む」
-
-→ 下記 1 件を **track 判定より優先して順次消化**。前回の 5 件 (Template / 案件サマリ /
-Capacity / Gantt DnD / Sprint swim-lane) は scope A 完了済 (iter460-478)、本件が次の P0。
-
-**1. AI 自動実行モード (assignee=AI + plan 承認 + Slack escalation)**
-詳細: 本ファイル末尾近くの同名 section。scope A の 5 段階 (iter1-5):
-
-- iter1: schema migration `assignee_kind` enum 追加 + drizzle / zod 同期 + unit test
-- iter2: AssigneePicker UI に「AI Researcher / AI Engineer」選択肢追加
-- iter3: ItemEditDialog から「Plan を生成」 button (AI assignee 時のみ表示)
-- iter4: Plan を comment にレンダリング + 承認/却下 button
-- iter5: 承認後の Slack 通知 (まずは「Plan 承認されました」を Slack 投稿)
-
-仮置き判断 (ユーザ確認待ちで止めない):
-
-- AI assignee identifier は `users` に `kind='agent'` の system user 1 件
-- 承認権限は 作成者 + admin
-- Slack channel は workspace_settings に 1 個固定 (新列 `ai_escalation_channel`)
-- cancellation は engineer service の既存 token を再利用
-- 24h タイムアウトで status=blocked + assignee を作成者に戻す
-
-各 iter は **1 commit + immediate push + HANDOFF.md 1 行** で `[iter<N> queue 1/1]` 形式。
-typecheck/lint clean、shadcn UI 編集禁止、pure helper test 1-2 件追加 (該当時)。
-
-scope A 完了後、本 P0 section を「(空)」に戻して track 判定に復帰。scope B (auto-implement
-
-- 失敗時 Slack 通知 + cost cap) / C (双方向 Slack control / AI 同士の plan 議論) は別 entry。
+- AI 自動実行モード scope B: 承認/却下 button + 自動実行 (cloud sandbox) + Slack escalation
+- AI agent CLI migration 残: cron-workers / retro / premortem の pmService.run も CLI 経路化
+- 並び替え 根本設計改善 (本ファイル別 entry、Notion/Linear/Asana 比較表完備)
+- モバイル / スマホ表示 全面改善 (本ファイル別 entry、playwright trigger と協調)
+- 自前実装 → ライブラリお着替え (本ファイル別 entry、Gantt / Workflow 等)
 
 <details>
 <summary>iter460-478 の P0 5 件消化記録 (履歴)</summary>
