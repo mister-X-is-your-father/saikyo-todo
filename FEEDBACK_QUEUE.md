@@ -15,6 +15,62 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ## 未処理 (新しい順)
 
+### 2026-04-30 — TaskChute モード / GTD モード 実装プラン作成 ★ P0 plan ★
+
+- [ ] **TaskChute (タスクシュート) と GTD の methodology モードを実装する前段の「プラン作成」タスク** — 分類: 設計プラン (P0)
+  - 原文 (2026-04-30): 「タスクシュートがしやすいモードとか、GTDがしやすいモードとか、そういうのも頼むよ。プラン作ってもいいけど。そういうプランを作るタスクをp0に入れようか。」
+  - **目標**: TaskChute / GTD それぞれの中核 concept を saikyo-todo の既存 feature にマップし、段階実装 phase を切る詳細プランを作成する。プラン本体を `docs/methodology-modes-plan.md` に書き、queue に [x] チェックして次の P0 (= 各 phase の実装) に渡す。
+
+  - **TaskChute mode の中核 (要 plan で詳細化)**:
+    - 1 列の **時間軸 linear timeline** (Today view を時刻順に並べる、すべて 1 列)
+    - 各 task に **開始時刻 + 所要時間 (実績)** を記録
+    - **ルーティン** (毎日/毎週) を template 化、自動 enqueue
+    - 終了時刻 = 次 task 開始時刻、累積で「今日終わるか」可視化
+    - **見積 vs 実績** の精度 を学習する (既存 `estimate.ts` + `time_entries` + iter254 variance toast 流用)
+    - 既存マッピング: Today view + start-timer-button + active-timer-panel + estimate.ts + time_entries + recurring task (要新規)
+    - 参考 UI: TaskChute Cloud / TaskChute Cloud 2 (公式)
+
+  - **GTD mode の中核 (要 plan で詳細化)**:
+    - 5 step flow: Inbox → Process → Organize → Review → Engage
+    - 主要 list: Next Actions / Projects / Waiting For / Someday-Maybe / Reference
+    - **Context tag** (@home / @office / @phone / @errands)
+    - **Weekly Review** がコア習慣 (リマインダー + checklist)
+    - **2-min rule** (2 分以内ならすぐやる) の UI hint
+    - Project = "outcome that needs >1 step" (= parent item with subtasks)
+    - 既存マッピング: Inbox view + tag-picker (context tag) + parent/subtask 階層 + notification-bell (Weekly Review reminder)
+
+  - **プラン成果物の期待 format**:
+    - `docs/methodology-modes-plan.md` を新規作成 (200-400 行、commit 1 件)
+    - 構成:
+      1. 各 methodology の中核 5-7 concept (上記より深掘り)
+      2. 既存 feature との **マッピング表** (TaskChute / GTD x 既存 file / hook / table)
+      3. **gap 分析** (新規必要 feature: recurring task / context tag / weekly review reminder / 1 列 timeline view 等)
+      4. **段階実装 phase** (各 4-8 件の P0 candidate)
+         - phase 1: TaskChute view skeleton (1 列 timeline、既存 today に option 追加)
+         - phase 2: 開始/終了 timestamp + 累積表示
+         - phase 3: 見積 vs 実績 inline display
+         - phase 4: recurring task (新規 schema + worker)
+         - phase 5: GTD Inbox view 強化 (5 step flow)
+         - phase 6: Context tag (既存 tag を拡張 or 専用)
+         - phase 7: Weekly Review (notification + checklist)
+      5. **mode switch UX** (workspace settings に「default mode」option、view-switcher に TaskChute/GTD tab 追加 vs 設定で切替 のどちらか)
+      6. **既存 user の影響** (mode 未選択時は今まで通り、opt-in)
+
+  - **期待 commit**:
+    - `docs(methodology): TaskChute / GTD モード 実装プラン (queue: methodology-modes plan)`
+    - 加えて FEEDBACK_QUEUE.md の本 entry を [x] + 実装 phase 別の新 P0 entry を queue に追加
+
+  - **重要**: プランだけで実装はしない。実装は plan の各 phase が個別 P0 として queue に入ってから別 iter で消化する。
+
+  - 関連既存 feature (cloud agent が plan で参照すべき file):
+    - `src/components/workspace/today-view.tsx` (TaskChute timeline の base)
+    - `src/components/workspace/inbox-view.tsx` (GTD Inbox の base)
+    - `src/features/item/estimate.ts` + `src/features/time-entry/*` (見積 vs 実績)
+    - `src/components/workspace/start-timer-button.tsx` + `active-timer-panel.tsx` (TaskChute の start/stop)
+    - `src/components/workspace/tag-picker.tsx` (GTD context tag の base)
+    - `src/features/notification/*` (Weekly Review reminder の base)
+    - `src/lib/db/schema/item.ts` (recurring task 追加検討、別 table or item 拡張)
+
 ### 2026-04-30 — 並び替え 根本設計 他社比較 + 改善 ★ 新規 ★
 
 - [ ] **並び替え (DnD reorder) を Notion / Linear / Asana / Trello / TickTick と比較し根本見直し** — 分類: 設計議論 → 段階実装
@@ -419,7 +475,16 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 
 ### 🔥 次 iter で即実装 (P0 最優先、track 判定より優先) 🔥
 
-**(空)** — 直近 P0 2 件は scope A 完了 (iter501-513 の 13 commit、2026-04-30):
+**新 P0 (2026-04-30): TaskChute / GTD methodology モード 実装プラン作成**
+
+- 詳細は queue 上部 `2026-04-30 — TaskChute モード / GTD モード 実装プラン作成` entry 参照
+- 成果物: `docs/methodology-modes-plan.md` (200-400 行)
+- 期待 commit: `docs(methodology): TaskChute / GTD モード 実装プラン (queue: methodology-modes plan)`
+- **plan のみ作成、実装はしない** (各 phase は別 P0 で plan 完成後に queue 投入)
+
+---
+
+**直近 P0 2 件は scope A 完了 (iter501-513 の 13 commit、2026-04-30):**
 
 - ✅ **AI agent SDK→CLI migration (5 iter)** — pm/researcher を claude CLI 経路化、
   ANTHROPIC_API_KEY 不要化。pm-flow-adapter / researcher-flow-adapter の pure helper +
