@@ -161,6 +161,18 @@ export function buildCycleCheckStats(
 }
 
 /**
+ * iter547 ai-automation polish: cycle Check 完了率 → SeverityChip tone bind。
+ * SprintRetro completionRateSeverity と同 thresholds (75/50/25) で揃える。
+ */
+export function cycleCheckSeverity(stats: CycleCheckStats): 'ok' | 'info' | 'warn' | 'danger' {
+  if (stats.total === 0) return 'warn' // empty cycle = まだ何も書かれてない、注意促す
+  if (stats.completionRate >= 75) return 'ok'
+  if (stats.completionRate >= 50) return 'info'
+  if (stats.completionRate >= 25) return 'warn'
+  return 'danger'
+}
+
+/**
  * iter540 ai-automation polish: AI prompt / chip aria-label / Slack 通知用 1 行 cycle
  * Check status summary。
  *   '完了率 80% (4/5) — 平均 lead 12h / 遅延完了 1 / 期限内 active 0'

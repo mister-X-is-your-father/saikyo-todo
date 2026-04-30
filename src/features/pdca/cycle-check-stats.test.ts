@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildCycleCheckStats,
   type CycleCheckItemFields,
+  cycleCheckSeverity,
   type CycleCheckStats,
   formatCycleCheckStatsJa,
   median,
@@ -267,5 +268,43 @@ describe('formatCycleCheckStatsJa', () => {
       cycleDurationDays: 5,
     }
     expect(formatCycleCheckStatsJa(stats)).toContain('平均 lead 未計測')
+  })
+})
+
+describe('cycleCheckSeverity', () => {
+  function mkStats(over: Partial<CycleCheckStats>): CycleCheckStats {
+    return {
+      total: 5,
+      done: 0,
+      cancelled: 0,
+      inProgressOrTodo: 0,
+      completionRate: 0,
+      leadTimeAvgHours: null,
+      leadTimeMedianHours: null,
+      lateCompletionCount: 0,
+      inFlightOverdueCount: 0,
+      cycleDurationDays: 7,
+      ...over,
+    }
+  }
+
+  it('total=0 → warn (empty cycle 注意)', () => {
+    expect(cycleCheckSeverity(mkStats({ total: 0 }))).toBe('warn')
+  })
+  it('completionRate >= 75 → ok', () => {
+    expect(cycleCheckSeverity(mkStats({ completionRate: 75 }))).toBe('ok')
+    expect(cycleCheckSeverity(mkStats({ completionRate: 100 }))).toBe('ok')
+  })
+  it('50-74 → info', () => {
+    expect(cycleCheckSeverity(mkStats({ completionRate: 50 }))).toBe('info')
+    expect(cycleCheckSeverity(mkStats({ completionRate: 74 }))).toBe('info')
+  })
+  it('25-49 → warn', () => {
+    expect(cycleCheckSeverity(mkStats({ completionRate: 25 }))).toBe('warn')
+    expect(cycleCheckSeverity(mkStats({ completionRate: 49 }))).toBe('warn')
+  })
+  it('< 25 → danger', () => {
+    expect(cycleCheckSeverity(mkStats({ completionRate: 0 }))).toBe('danger')
+    expect(cycleCheckSeverity(mkStats({ completionRate: 24 }))).toBe('danger')
   })
 })
