@@ -34,7 +34,11 @@ import { todayISO } from '@/lib/date/iso'
 
 import { extractEstimateMinutes } from '@/features/item/estimate'
 import type { Item } from '@/features/item/schema'
-import { buildTodayForecast } from '@/features/today/forecast'
+import {
+  buildTodayForecast,
+  forecastSeverity,
+  forecastSeverityLabelJa,
+} from '@/features/today/forecast'
 import { buildOperationBoard } from '@/features/today/operation-board'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -100,38 +104,48 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
-        {forecast.totalEstimateMin > 0 ? (
-          <div
-            className={`flex items-center gap-2 rounded px-2 py-1 text-xs ${forecast.canFinishToday ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}
-            data-testid="operation-board-forecast"
-            role="status"
-            aria-label={
-              forecast.canFinishToday
-                ? `今日終わる予測: 残 ${forecast.remainingMinutesUntilEnd} 分中 ${forecast.totalEstimateMin} 分の見積、${-forecast.overflowMin} 分余裕`
-                : `今日終わらない予測: ${forecast.overflowMin} 分超過`
-            }
-          >
-            <Timer className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="font-medium tabular-nums">
-              {Math.floor(forecast.totalEstimateMin / 60)}h{forecast.totalEstimateMin % 60}m
-            </span>
-            <span className="text-[11px] opacity-80">の見積 / 残</span>
-            <span className="font-medium tabular-nums">
-              {Math.floor(forecast.remainingMinutesUntilEnd / 60)}h
-              {forecast.remainingMinutesUntilEnd % 60}m
-            </span>
-            <span className="ml-auto font-semibold">
-              {forecast.canFinishToday
-                ? `余裕 ${-forecast.overflowMin}m`
-                : `超過 ${forecast.overflowMin}m`}
-            </span>
-            {forecast.estimateUnknownCount > 0 ? (
-              <span className="text-[10px] opacity-70">
-                (見積無 {forecast.estimateUnknownCount})
-              </span>
-            ) : null}
-          </div>
-        ) : null}
+        {forecast.totalEstimateMin > 0
+          ? (() => {
+              const sev = forecastSeverity(forecast)
+              const sevCls =
+                sev === 'ok'
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : sev === 'info'
+                    ? 'bg-sky-50 text-sky-700'
+                    : sev === 'warn'
+                      ? 'bg-amber-50 text-amber-700'
+                      : 'bg-rose-50 text-rose-700'
+              return (
+                <div
+                  className={`flex items-center gap-2 rounded px-2 py-1 text-xs ${sevCls}`}
+                  data-testid="operation-board-forecast"
+                  data-severity={sev}
+                  role="status"
+                  aria-label={`今日完了予測 ${forecastSeverityLabelJa(sev)}: 合計 ${forecast.totalEstimateMin} 分 / 残 ${forecast.remainingMinutesUntilEnd} 分${forecast.canFinishToday ? `、${-forecast.overflowMin} 分余裕` : `、${forecast.overflowMin} 分超過`}`}
+                >
+                  <Timer className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span className="font-medium tabular-nums">
+                    {Math.floor(forecast.totalEstimateMin / 60)}h{forecast.totalEstimateMin % 60}m
+                  </span>
+                  <span className="text-[11px] opacity-80">の見積 / 残</span>
+                  <span className="font-medium tabular-nums">
+                    {Math.floor(forecast.remainingMinutesUntilEnd / 60)}h
+                    {forecast.remainingMinutesUntilEnd % 60}m
+                  </span>
+                  <span className="ml-auto font-semibold">
+                    {forecast.canFinishToday
+                      ? `余裕 ${-forecast.overflowMin}m`
+                      : `超過 ${forecast.overflowMin}m`}
+                  </span>
+                  {forecast.estimateUnknownCount > 0 ? (
+                    <span className="text-[10px] opacity-70">
+                      (見積無 {forecast.estimateUnknownCount})
+                    </span>
+                  ) : null}
+                </div>
+              )
+            })()
+          : null}
 
         {/* iter541 (queue fluffy-7 expansion): forecast.quickWins / focusBlocks の compact 表示 */}
         {(forecast.quickWins.length > 0 || forecast.focusBlocks.length > 0) && (
