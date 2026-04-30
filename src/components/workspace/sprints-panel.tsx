@@ -327,7 +327,14 @@ export function SprintsPanel({ workspaceId }: Props) {
           }
         />
       ) : (
-        <ul className="space-y-3" data-testid="sprints-list">
+        // iter448: ul に aria-label を付与し SR list nav で
+        // 「Sprint 一覧 N 件」 が context 付きで聞き取れる (iter427 / iter428 /
+        // iter438 / iter447 と連続 9 件目の widget list heading 統一)。
+        <ul
+          className="space-y-3"
+          data-testid="sprints-list"
+          aria-label={`Sprint 一覧 ${list.data.length} 件`}
+        >
           {list.data.map((sp) => (
             <SprintCard
               key={sp.id}
