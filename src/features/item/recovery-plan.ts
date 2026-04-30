@@ -168,6 +168,34 @@ export function recoveryActionKindLabelJa(kind: RecoveryActionKind): string {
 }
 
 /**
+ * iter545 ai-automation polish: RecoveryActionKind → SeverityChip tone bridge。
+ * 「escalate」 が最深刻 (= 自動推論できなかった + 上位者判断必要)、unblock / reassign
+ * は中程度、split / reschedule は軽め。chip 配色決定用。
+ *
+ * 'unblock'    → 'warn'   (= 依存解消、他 item の影響あり)
+ * 'reassign'   → 'warn'   (= 担当移譲、コミュニケーション要)
+ * 'split'      → 'info'   (= 細分化、自分で完結する)
+ * 'reschedule' → 'info'   (= 期限調整、計画見直しのみ)
+ * 'escalate'   → 'danger' (= 自動推論不能 + 上位者へ)
+ */
+const ACTION_KIND_SEVERITY: Record<
+  RecoveryActionKind,
+  'ok' | 'info' | 'warn' | 'danger' | 'muted'
+> = {
+  unblock: 'warn',
+  reassign: 'warn',
+  split: 'info',
+  reschedule: 'info',
+  escalate: 'danger',
+}
+
+export function recoveryActionKindSeverity(
+  kind: RecoveryActionKind,
+): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
+  return ACTION_KIND_SEVERITY[kind]
+}
+
+/**
  * AI prompt / chip aria-label / Slack 通知用 1 行 recovery summary:
  *  '救済不要'                                    (= isApplicable=false)
  *  '救済 action 3 選: 依存先解消 / 担当再分配 / 期限再設定'

@@ -5,6 +5,7 @@ import {
   dayDiffISO,
   formatRecoveryPlanJa,
   recoveryActionKindLabelJa,
+  recoveryActionKindSeverity,
   type RecoveryPlanItemFields,
 } from './recovery-plan'
 
@@ -222,6 +223,20 @@ describe('recoveryActionKindLabelJa', () => {
     expect(recoveryActionKindLabelJa('split')).toBe('細分化')
     expect(recoveryActionKindLabelJa('reschedule')).toBe('期限再設定')
     expect(recoveryActionKindLabelJa('escalate')).toBe('エスカレーション')
+  })
+})
+
+describe('recoveryActionKindSeverity', () => {
+  it('escalate → danger (最深刻)', () => {
+    expect(recoveryActionKindSeverity('escalate')).toBe('danger')
+  })
+  it('unblock / reassign → warn (他 item / コミュニケーション)', () => {
+    expect(recoveryActionKindSeverity('unblock')).toBe('warn')
+    expect(recoveryActionKindSeverity('reassign')).toBe('warn')
+  })
+  it('split / reschedule → info (自完結)', () => {
+    expect(recoveryActionKindSeverity('split')).toBe('info')
+    expect(recoveryActionKindSeverity('reschedule')).toBe('info')
   })
 })
 
