@@ -17,13 +17,15 @@
 
 import { CronExpressionParser } from 'cron-parser'
 
+import { MS_PER_DAY } from '@/lib/date/iso'
+
 /**
  * Default lookback for first-time workspaces (lastFiredAt = null).
  * If the cron has fired anywhere within this window we still consider it
  * "should fire now" — otherwise we'd miss the very first tick after a workspace
  * is created. 24h works for daily and weekly schedules alike.
  */
-export const DEFAULT_FIRST_RUN_LOOKBACK_MS = 24 * 60 * 60 * 1000
+export const DEFAULT_FIRST_RUN_LOOKBACK_MS = MS_PER_DAY
 
 export interface ShouldFireParams {
   /** Standard 5-field cron expression in workspace-local time, e.g. `'0 9 * * *'`. */

@@ -13,6 +13,7 @@ import 'server-only'
 import { and, eq, gte, isNull, sql } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
 
+import { MS_PER_DAY } from '@/lib/date/iso'
 import { sprints } from '@/lib/db/schema'
 import { adminDb } from '@/lib/db/scoped-client'
 import { enqueueJob, type SprintRetroJobData } from '@/lib/jobs/queue'
@@ -73,7 +74,7 @@ export async function handleSprintRetroTick(
 ): Promise<void> {
   const lookbackDays = options.lookbackDays ?? 30
   const now = options.now ?? new Date()
-  const cutoff = new Date(now.getTime() - lookbackDays * 24 * 60 * 60 * 1000)
+  const cutoff = new Date(now.getTime() - lookbackDays * MS_PER_DAY)
   const cutoffISO = cutoff.toISOString().slice(0, 10) // YYYY-MM-DD (sprints.end_date は date 型)
 
   // 1) どの workspace で今 tick が発火するべきかを TZ-aware で評価。

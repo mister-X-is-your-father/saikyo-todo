@@ -19,6 +19,7 @@ import 'server-only'
 
 import { and, eq, isNotNull, isNull, sql } from 'drizzle-orm'
 
+import { MS_PER_DAY } from '@/lib/date/iso'
 import { items, notifications, workspaceMembers } from '@/lib/db/schema'
 import { adminDb } from '@/lib/db/scoped-client'
 import { ValidationError } from '@/lib/errors'
@@ -48,7 +49,7 @@ export function daysUntilDue(dueISO: string, today: Date): number {
   const [y, m, d] = dueISO.split('-').map(Number)
   const due = Date.UTC(y!, m! - 1, d!)
   const base = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
-  return Math.round((due - base) / (24 * 60 * 60 * 1000))
+  return Math.round((due - base) / MS_PER_DAY)
 }
 
 /** days → stage マップ。該当無しは null (通知不要)。 */

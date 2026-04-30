@@ -24,6 +24,7 @@ import 'server-only'
 import { and, eq, inArray, isNull, or } from 'drizzle-orm'
 
 import type { ToolLoopInput } from '@/lib/ai/tool-loop'
+import { MS_PER_DAY } from '@/lib/date/iso'
 import { itemDependencies, items, sprints } from '@/lib/db/schema'
 import { adminDb } from '@/lib/db/scoped-client'
 import { NotFoundError, ValidationError } from '@/lib/errors'
@@ -263,8 +264,7 @@ export function buildPremortemUserMessage(params: {
   const totalDays = Math.max(
     1,
     Math.round(
-      (new Date(params.endDate).getTime() - new Date(params.startDate).getTime()) /
-        (24 * 60 * 60 * 1000),
+      (new Date(params.endDate).getTime() - new Date(params.startDate).getTime()) / MS_PER_DAY,
     ) + 1,
   )
   const dependencies = params.dependencies ?? []

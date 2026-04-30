@@ -22,6 +22,8 @@
  * - 内部 `parseIsoDate` で範囲検査 (1000-9999 / 1-12 / 1-31) を一元化
  */
 
+import { MS_PER_DAY } from '@/lib/date/iso'
+
 /** 曜日名 (日=0, 月=1, ..., 土=6)。UI の select / aria-label 共用 */
 export const DOW_JA = ['日', '月', '火', '水', '木', '金', '土'] as const
 export type DowJa = (typeof DOW_JA)[number]
@@ -82,7 +84,7 @@ export function daysBetween(fromISO: string, toISO: string): number {
   if (!f || !t) return 0
   const fromUTC = Date.UTC(f.y, f.m - 1, f.d)
   const toUTC = Date.UTC(t.y, t.m - 1, t.d)
-  return Math.round((toUTC - fromUTC) / (24 * 60 * 60 * 1000))
+  return Math.round((toUTC - fromUTC) / MS_PER_DAY)
 }
 
 // --- internal helpers ---

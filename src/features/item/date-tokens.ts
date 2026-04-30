@@ -20,6 +20,8 @@
  *  10. 相対: `+3d` / `+2w`
  */
 
+import { MS_PER_DAY } from '@/lib/date/iso'
+
 const WEEKDAY_JA: Record<string, number> = {
   日: 0,
   月: 1,
@@ -165,7 +167,7 @@ export function formatFriendlyDate(iso: string, today: Date, locale: 'ja' | 'en'
   if (Number.isNaN(d.getTime())) return iso
   const baseToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
   const baseTarget = new Date(d.getFullYear(), d.getMonth(), d.getDate())
-  const diffDays = Math.round((baseTarget.getTime() - baseToday.getTime()) / (24 * 60 * 60 * 1000))
+  const diffDays = Math.round((baseTarget.getTime() - baseToday.getTime()) / MS_PER_DAY)
 
   if (locale === 'en') {
     if (diffDays === 0) return 'Today'

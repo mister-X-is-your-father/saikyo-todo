@@ -17,7 +17,7 @@ import 'server-only'
 import { and, eq, gte, isNotNull, isNull, lte, sql } from 'drizzle-orm'
 
 import { requireUser, requireWorkspaceMember } from '@/lib/auth/guard'
-import { formatUtcISO } from '@/lib/date/iso'
+import { formatUtcISO, MS_PER_DAY } from '@/lib/date/iso'
 import { items } from '@/lib/db/schema'
 import { withUserDb } from '@/lib/db/scoped-client'
 import { ValidationError } from '@/lib/errors'
@@ -113,7 +113,7 @@ export const pdcaService = {
         if (!row.doneAt) continue
         const doneISO = toISO(row.doneAt)
         daily.set(doneISO, (daily.get(doneISO) ?? 0) + 1)
-        const lead = (row.doneAt.getTime() - row.createdAt.getTime()) / (24 * 60 * 60 * 1000)
+        const lead = (row.doneAt.getTime() - row.createdAt.getTime()) / MS_PER_DAY
         leadTimes.push(Math.max(0, lead))
         if (row.doneAt >= checkBoundary) checkCount += 1
         else actCount += 1
