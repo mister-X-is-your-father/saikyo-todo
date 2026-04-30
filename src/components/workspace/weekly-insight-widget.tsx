@@ -1,0 +1,176 @@
+'use client'
+
+/**
+ * iter480 (queue fluffy-8 weekly→widget UI bind): Weekly Insight widget UI binding。
+ *
+ * fluffy 撲滅原則 (FEEDBACK_QUEUE.md META):
+ *   - AI 文章生成 (週次振り返り) を置き換える deterministic widget
+ *   - pure helper `buildWeeklyInsight` (iter531 で着地) を呼ぶだけ、副作用なし
+ *
+ * 表示内容 (見て即わかる):
+ *   - 今週合計 done 件数 + 前週比 % (緑↑ / 赤↓ / 灰横ばい)
+ *   - 7 日 × 2 (current / prev) の mini bar chart (CSS 内製、recharts 不要)
+ *   - anomaly 1-2 行 (lowCompletionDay / overdueSpike) があれば赤帯で警告
+ *
+ * 6 軸スコア:
+ *   - 軸 1 圧倒的可視化: 今週 vs 前週 を 1 画面 7 mini bar で見せる ★
+ *   - 軸 4 作業漏れ防止: overdueSpike anomaly を能動表示 ★
+ *   - 軸 5 やる気: weekDelta が正なら緑 ↑ で gain feeling
+ */
+import { useMemo } from 'react'
+
+import { AlertTriangle, TrendingDown, TrendingUp } from 'lucide-react'
+
+import { trendToneClass } from '@/lib/ui/trend-tone'
+
+import {
+  buildWeeklyInsight,
+  type WeeklyInsightItemFields,
+} from '@/features/dashboard/weekly-insight'
+import type { Item } from '@/features/item/schema'
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+interface Props {
+  items: Item[]
+  /** 省略時は new Date()。test 時に injection 用 */
+  now?: Date
+}
+
+/**
+ * 「Weekly Insight」widget (Dashboard 配置)。
+ *
+ * AI 不使用 — buildWeeklyInsight (純 algorithm) の output を直接 render。
+ */
+export function WeeklyInsightWidget({ items, now }: Props) {
+  const insightInput = useMemo<WeeklyInsightItemFields[]>(
+    () =>
+      items.map((it) => ({
+        doneAt: it.doneAt ?? null,
+        status: it.status ?? null,
+        dueDate: it.dueDate ?? null,
+        // tagIds は item.list で join されないので空配列 (= __notag に集約)
+        tagIds: [],
+      })),
+    [items],
+  )
+  const insight = useMemo(() => buildWeeklyInsight(insightInput, now), [insightInput, now])
+
+  // 何も活動がなければ widget 非表示 (noise 削減)
+  if (insight.currentWeekTotal === 0 && insight.prevWeekTotal === 0) return null
+
+  const peak = Math.max(
+    1, // 0 除算回避 + 0 件 day も最低 1px は確保
+    ...insight.byDay.flatMap((d) => [d.current, d.prev]),
+  )
+
+  const deltaTone =
+    insight.weekDelta.count > 0
+      ? trendToneClass('up', 'positive')
+      : insight.weekDelta.count < 0
+        ? trendToneClass('down', 'positive')
+        : trendToneClass('flat', 'positive')
+
+  const deltaIcon =
+    insight.weekDelta.count > 0 ? (
+      <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />
+    ) : insight.weekDelta.count < 0 ? (
+      <TrendingDown className="h-3.5 w-3.5" aria-hidden="true" />
+    ) : null
+
+  const deltaLabel =
+    insight.weekDelta.percent === null
+      ? `今週 ${insight.currentWeekTotal} 件 (前週 0 件、比較不可)`
+      : `今週 ${insight.currentWeekTotal} 件 / 前週 ${insight.prevWeekTotal} 件 (${
+          insight.weekDelta.count >= 0 ? '+' : ''
+        }${insight.weekDelta.count} 件、${insight.weekDelta.percent >= 0 ? '+' : ''}${
+          insight.weekDelta.percent
+        }%)`
+
+  return (
+    <Card
+      role="region"
+      aria-label={`週次 Insight: ${deltaLabel}`}
+      data-testid="weekly-insight-widget"
+    >
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-2 text-base" role="heading" aria-level={2}>
+          週次 Insight
+          <span className="text-muted-foreground text-xs font-normal">{insight.weekStart} 週</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm">
+        <div className="flex items-baseline gap-3">
+          <div className="text-2xl font-semibold tabular-nums">{insight.currentWeekTotal}</div>
+          <div className="text-muted-foreground text-xs">完了 / 今週</div>
+          <div
+            className={`ml-auto flex items-center gap-1 text-xs font-medium ${deltaTone}`}
+            data-testid="weekly-insight-delta"
+          >
+            {deltaIcon}
+            <span className="tabular-nums">
+              {insight.weekDelta.count >= 0 ? '+' : ''}
+              {insight.weekDelta.count}
+            </span>
+            {insight.weekDelta.percent !== null && (
+              <span className="tabular-nums opacity-80">
+                ({insight.weekDelta.percent >= 0 ? '+' : ''}
+                {insight.weekDelta.percent}%)
+              </span>
+            )}
+            <span className="text-muted-foreground ml-1">vs 前週</span>
+          </div>
+        </div>
+
+        <div
+          className="grid grid-cols-7 gap-1"
+          role="img"
+          aria-label={`曜日別完了件数 (今週 vs 前週): ${insight.byDay
+            .map((d) => `${d.day} 今週${d.current} / 前週${d.prev}`)
+            .join(', ')}`}
+          data-testid="weekly-insight-by-day"
+        >
+          {insight.byDay.map((d) => {
+            const currHeight = (d.current / peak) * 100
+            const prevHeight = (d.prev / peak) * 100
+            return (
+              <div key={d.dayIndex} className="flex flex-col items-center gap-0.5">
+                <div
+                  className="bg-muted/40 relative flex h-12 w-full items-end gap-0.5 rounded px-0.5"
+                  data-testid={`weekly-insight-bar-${d.day}`}
+                >
+                  <div
+                    className="bg-primary/80 w-1/2 rounded-sm"
+                    style={{ height: `${currHeight}%` }}
+                    title={`今週 ${d.day}: ${d.current}`}
+                  />
+                  <div
+                    className="bg-muted-foreground/40 w-1/2 rounded-sm"
+                    style={{ height: `${prevHeight}%` }}
+                    title={`前週 ${d.day}: ${d.prev}`}
+                  />
+                </div>
+                <div className="text-muted-foreground text-[10px]">{d.day}</div>
+              </div>
+            )
+          })}
+        </div>
+
+        {insight.anomalies.length > 0 && (
+          <ul className="space-y-1" aria-label="異常検知" data-testid="weekly-insight-anomalies">
+            {insight.anomalies.map((a) => (
+              <li
+                key={a.kind + a.message}
+                className="flex items-center gap-1.5 rounded bg-amber-50 px-2 py-1 text-xs text-amber-800"
+                data-anomaly-kind={a.kind}
+              >
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span>{a.message}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  )
+}

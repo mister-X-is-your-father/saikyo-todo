@@ -226,6 +226,7 @@ import { EmptyState, ErrorState, Loading } from '@/components/shared/async-state
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { chipTone3Class, DashboardChip } from '@/components/workspace/dashboard-chip'
 import { StatusBadge } from '@/components/workspace/status-badge'
+import { WeeklyInsightWidget } from '@/components/workspace/weekly-insight-widget'
 
 interface Props {
   workspaceId: string
@@ -1353,6 +1354,9 @@ export function DashboardView({ workspaceId }: Props) {
        * Claude Max OAuth (claude CLI) 前提なので API 課金は発生せず、コスト集計の意味がない。
        * 残された Researcher / PM 実行履歴の表示は POST_MVP の "監査ログ UI" にまとめる。
        */}
+
+      {/* iter480 (queue fluffy-8 weekly→widget UI bind): 週次 Insight widget */}
+      {itemsQ.data && <WeeklyInsightWidget items={itemsQ.data} />}
 
       {/* MUST 一覧 */}
       <Card role="region" aria-label={`MUST Item 一覧 ${s.items.length} 件`}>
