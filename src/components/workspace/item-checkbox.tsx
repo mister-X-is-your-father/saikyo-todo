@@ -48,6 +48,11 @@ export function ItemCheckbox({
 
   const colorClass = PRIORITY_CLASS[item.priority ?? 4] ?? PRIORITY_CLASS[4]
 
+  // iter505: tap target を 44x44 に拡張 (WCAG 2.5.5 AAA)。視覚 checkbox は h-5 w-5 (20x20)
+  // を維持するため、`::before` pseudo で透明な extension を visible 周囲に出す。
+  // Tailwind: `before:absolute before:-inset-3` で 12px ずつ外側に伸ばし合計 44x44。
+  // `relative` を button に付けて pseudo の anchor を確立、`disabled:before:hidden` で
+  // disabled 時は extension を隠して mouseover 等の anchor を消す。
   return (
     <button
       type="button"
@@ -57,7 +62,7 @@ export function ItemCheckbox({
       onPointerDown={(e) => e.stopPropagation()}
       onClick={handle}
       disabled={toggle.isPending}
-      className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${colorClass} ${className ?? ''}`}
+      className={`relative inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors before:absolute before:-inset-3 before:rounded-full before:content-[''] disabled:before:hidden ${colorClass} ${className ?? ''}`}
       data-testid={`item-checkbox-${item.id}`}
       aria-label={`「${item.title}」を${isDone ? '未完了に戻す' : '完了にする'}`}
       title={isDone ? '未完了に戻す' : '完了にする'}
