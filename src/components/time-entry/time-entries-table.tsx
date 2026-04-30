@@ -105,7 +105,12 @@ export function TimeEntriesTable({
         <tbody>
           {entries.map((e) => (
             <tr key={e.id} className="border-b align-top" data-testid={`time-entry-row-${e.id}`}>
-              <td className="py-2">{e.workDate}</td>
+              <td className="py-2">
+                {/* iter445: 旧 raw ISO span → <time dateTime> 要素で HTML5 date
+                    semantic 化 (iter435 / iter436 / iter437 / iter439 と同 pattern
+                    6 view 目水平展開、SR が日付 token として認識)。 */}
+                <time dateTime={e.workDate}>{e.workDate}</time>
+              </td>
               <td className="py-2">{categoryLabel(e.category)}</td>
               <td className="max-w-[320px] truncate py-2">{e.description || '—'}</td>
               <td className="py-2 text-right">{formatMinutes(e.durationMinutes)}</td>
