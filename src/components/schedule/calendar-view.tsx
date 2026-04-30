@@ -205,14 +205,27 @@ export function CalendarView({ workspaceId }: Props) {
       </div>
 
       <div className="grid min-h-0 flex-1 grid-cols-2 gap-3">
-        <div className="bg-background flex min-h-0 flex-col rounded-lg border">
-          <div className="border-b px-3 py-1.5 text-xs font-semibold tracking-wide text-indigo-700">
-            想定 (左 lane)
-          </div>
+        <section
+          className="bg-background flex min-h-0 flex-col rounded-lg border"
+          aria-labelledby="calendar-lane-planned-heading"
+        >
+          <h3
+            id="calendar-lane-planned-heading"
+            className="border-b px-3 py-1.5 text-xs font-semibold tracking-wide text-indigo-700"
+          >
+            想定タイムライン
+            <span className="text-muted-foreground ml-1 font-normal">
+              (左 lane / {planned.length} 件)
+            </span>
+          </h3>
           <div className="min-h-0 flex-1">
             {isLoading ? (
-              <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <div
+                className="text-muted-foreground flex h-full items-center justify-center text-sm"
+                role="status"
+                aria-live="polite"
+              >
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                 読み込み中...
               </div>
             ) : (
@@ -227,16 +240,29 @@ export function CalendarView({ workspaceId }: Props) {
               />
             )}
           </div>
-        </div>
+        </section>
 
-        <div className="bg-background flex min-h-0 flex-col rounded-lg border">
-          <div className="border-b px-3 py-1.5 text-xs font-semibold tracking-wide text-emerald-700">
-            実測 (右 lane)
-          </div>
+        <section
+          className="bg-background flex min-h-0 flex-col rounded-lg border"
+          aria-labelledby="calendar-lane-actual-heading"
+        >
+          <h3
+            id="calendar-lane-actual-heading"
+            className="border-b px-3 py-1.5 text-xs font-semibold tracking-wide text-emerald-700"
+          >
+            実測タイムライン
+            <span className="text-muted-foreground ml-1 font-normal">
+              (右 lane / {actual.length} 件)
+            </span>
+          </h3>
           <div className="min-h-0 flex-1">
             {isLoading ? (
-              <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <div
+                className="text-muted-foreground flex h-full items-center justify-center text-sm"
+                role="status"
+                aria-live="polite"
+              >
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                 読み込み中...
               </div>
             ) : (
@@ -252,7 +278,7 @@ export function CalendarView({ workspaceId }: Props) {
               />
             )}
           </div>
-        </div>
+        </section>
       </div>
 
       {pending ? (
