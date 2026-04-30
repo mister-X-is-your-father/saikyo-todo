@@ -162,5 +162,59 @@ export function formatReviewSummaryJa(summary: ReviewSummary): string {
   return `${verdict} (${statusParts.join(' ')}、${impPart})`
 }
 
+/**
+ * iter484 ai-automation: review の最深刻 issue (= 最初の fail item) を抽出。
+ *
+ * - fail なし → 最初の warn item
+ * - warn もなし → null (= 完璧 review)
+ * - 同 status 内では入力順 (= AI が並べた順、通常 importance 順) で先頭採用
+ *
+ * 用途: chip 「最重要: <point>」、Slack escalation 通知の見出し、AI 再 prompt の context。
+ */
+export function pickWorstChecklistFinding(
+  review: Pick<StructuredReview, 'checklist'>,
+): ChecklistItem | null {
+  for (const c of review.checklist) {
+    if (c.status === 'fail') return c
+  }
+  for (const c of review.checklist) {
+    if (c.status === 'warn') return c
+  }
+  return null
+}
+
+/**
+ * iter484 ai-automation: review の最重要 improvement (severity high > medium > low) を抽出。
+ *
+ * - high が複数あれば 入力順 (= AI が並べた順) 先頭
+ * - high なければ medium、それもなければ low、空なら null
+ *
+ * 用途: chip 「優先改善: <title>」、Slack 通知の 1 行アクション提示。
+ */
+export function pickTopImprovement(
+  review: Pick<StructuredReview, 'improvements'>,
+): Improvement | null {
+  if (review.improvements.length === 0) return null
+  const order: Improvement['severity'][] = ['high', 'medium', 'low']
+  for (const sev of order) {
+    const found = review.improvements.find((imp) => imp.severity === sev)
+    if (found) return found
+  }
+  return null
+}
+
+/**
+ * iter484 ai-automation: pickWorstChecklistFinding の出力を chip 文言に整形。
+ *   null → 'review 完璧 (要対応なし)'
+ *   fail → '❌ <point>' (200 文字以内、超過は ... 圧縮)
+ *   warn → '⚠ <point>'
+ */
+export function formatWorstChecklistFindingJa(finding: ChecklistItem | null): string {
+  if (finding === null) return 'review 完璧 (要対応なし)'
+  const { glyph } = statusGlyph(finding.status)
+  const truncated = finding.point.length > 80 ? `${finding.point.slice(0, 79)}…` : finding.point
+  return `${glyph} ${truncated}`
+}
+
 // 内部 helper を test しやすく named export
 export { extractFirstJsonObject }

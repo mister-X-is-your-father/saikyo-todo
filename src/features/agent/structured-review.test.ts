@@ -3,7 +3,10 @@ import { describe, expect, it } from 'vitest'
 import {
   extractFirstJsonObject,
   formatReviewSummaryJa,
+  formatWorstChecklistFindingJa,
   parseStructuredReview,
+  pickTopImprovement,
+  pickWorstChecklistFinding,
   type ReviewSummary,
   statusGlyph,
   StructuredReviewSchema,
@@ -227,5 +230,113 @@ describe('formatReviewSummaryJa', () => {
     expect(out).toContain('✅5')
     expect(out).not.toContain('⚠')
     expect(out).not.toContain('❌')
+  })
+})
+
+describe('pickWorstChecklistFinding', () => {
+  it('fail を最優先で返す', () => {
+    const r = pickWorstChecklistFinding({
+      checklist: [
+        { point: 'a', status: 'ok', comment: '' },
+        { point: 'b', status: 'warn', comment: '' },
+        { point: 'c', status: 'fail', comment: '理由' },
+      ],
+    })
+    expect(r?.point).toBe('c')
+  })
+
+  it('fail なし → 最初の warn', () => {
+    const r = pickWorstChecklistFinding({
+      checklist: [
+        { point: 'a', status: 'ok', comment: '' },
+        { point: 'b', status: 'warn', comment: '' },
+        { point: 'c', status: 'warn', comment: '' },
+      ],
+    })
+    expect(r?.point).toBe('b')
+  })
+
+  it('warn もなし → null', () => {
+    const r = pickWorstChecklistFinding({
+      checklist: [
+        { point: 'a', status: 'ok', comment: '' },
+        { point: 'b', status: 'ok', comment: '' },
+      ],
+    })
+    expect(r).toBeNull()
+  })
+
+  it('checklist 空 → null', () => {
+    expect(pickWorstChecklistFinding({ checklist: [] })).toBeNull()
+  })
+})
+
+describe('pickTopImprovement', () => {
+  it('high を最優先', () => {
+    const r = pickTopImprovement({
+      improvements: [
+        { title: 'A', rationale: 'x', severity: 'low' },
+        { title: 'B', rationale: 'x', severity: 'high' },
+        { title: 'C', rationale: 'x', severity: 'medium' },
+      ],
+    })
+    expect(r?.title).toBe('B')
+  })
+
+  it('high 無し → medium', () => {
+    const r = pickTopImprovement({
+      improvements: [
+        { title: 'A', rationale: 'x', severity: 'low' },
+        { title: 'B', rationale: 'x', severity: 'medium' },
+      ],
+    })
+    expect(r?.title).toBe('B')
+  })
+
+  it('low のみ', () => {
+    const r = pickTopImprovement({
+      improvements: [{ title: 'A', rationale: 'x', severity: 'low' }],
+    })
+    expect(r?.title).toBe('A')
+  })
+
+  it('空 → null', () => {
+    expect(pickTopImprovement({ improvements: [] })).toBeNull()
+  })
+
+  it('同 severity 複数 → 入力順 先頭', () => {
+    const r = pickTopImprovement({
+      improvements: [
+        { title: 'A', rationale: 'x', severity: 'high' },
+        { title: 'B', rationale: 'x', severity: 'high' },
+      ],
+    })
+    expect(r?.title).toBe('A')
+  })
+})
+
+describe('formatWorstChecklistFindingJa', () => {
+  it('null → 「review 完璧 (要対応なし)」', () => {
+    expect(formatWorstChecklistFindingJa(null)).toBe('review 完璧 (要対応なし)')
+  })
+
+  it('fail → ❌ + point', () => {
+    expect(formatWorstChecklistFindingJa({ point: 'DoD 未達', status: 'fail', comment: '' })).toBe(
+      '❌ DoD 未達',
+    )
+  })
+
+  it('warn → ⚠ + point', () => {
+    expect(formatWorstChecklistFindingJa({ point: 'test 不足', status: 'warn', comment: '' })).toBe(
+      '⚠️ test 不足',
+    )
+  })
+
+  it('長い point は 80 文字超で ... 圧縮', () => {
+    const longPoint = 'あ'.repeat(100)
+    const out = formatWorstChecklistFindingJa({ point: longPoint, status: 'fail', comment: '' })
+    expect(out).toContain('…')
+    // 8 字制限テスト 簡易
+    expect(out.length).toBeLessThanOrEqual(82)
   })
 })
