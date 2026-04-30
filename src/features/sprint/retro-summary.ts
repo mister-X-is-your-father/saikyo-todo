@@ -1,0 +1,178 @@
+/**
+ * iter523 (queue fluffy-3 retro→widget substrate): Sprint retrospective
+ * 数値レポート の pure data substrate。
+ *
+ * fluffy 撲滅原則 (FEEDBACK_QUEUE.md META):
+ *   - AI に KPT 感想文を書かせない (= retro-service.ts の現状はそれ、low-information)
+ *   - 完了率 / planned vs delivered / root cause 自動分類 を deterministic に出す
+ *   - widget は本 helper の output を直接 render するだけ (fluffy 文章不要)
+ *
+ * 集計内容:
+ *   - status 分布 (todo / in_progress / blocked / done / cancelled)
+ *   - completionRate = done / total (round, total=0 → 0)
+ *   - plannedVsDelivered = planned (= total - cancelled), delivered (= done), delta
+ *   - rootCauses = 落ちた item を 4 軸で自動分類 (overdueDelivery / incompleteOnTime /
+ *     cancelledMid / blockedAtClose)。各 item は重複カウント可 (cancelled かつ overdue 等)
+ *   - comparisonWithPrev = 前 sprint の同 helper output と完了率 delta / done delta を比較、
+ *     prev 未指定 → null
+ *
+ * AI 不使用、副作用なし、依存は status-visual.normalizeStatus のみ (status 正規化用)。
+ *
+ * 既存資産との関係:
+ *   - `computeSprintBurndown` (burndown.ts) は期間 / 経過率 / on-track 判定のみを担当
+ *     (本 helper と orthogonal、retro widget は両方を使う)。
+ *   - `groupItemsByStatus` も使えるが、本 helper は数値だけ返したいので独自集計。
+ */
+import { normalizeStatus } from '@/features/item/status-visual'
+
+export interface SprintRetroItemFields {
+  status: string | null | undefined
+  /** ISO YYYY-MM-DD or null。done 判定の delivery 期限比較に使う */
+  dueDate?: string | null | undefined
+  /** 完了時刻。string or Date、parse 失敗時は null として扱う */
+  doneAt?: Date | string | null | undefined
+}
+
+export interface SprintRetroSummary {
+  /** sprint に割当された item 件数 (cancelled 含む) */
+  total: number
+  /** status 分布 (重複なし、unknown は other に集約) */
+  statusBreakdown: {
+    todo: number
+    inProgress: number
+    blocked: number
+    done: number
+    cancelled: number
+    other: number
+  }
+  /** 完了率 0-100 (round)、total=0 → 0 */
+  completionRate: number
+  /** 計画件数 (= total - cancelled、cancelled は計画から外れたとみなす) と納品件数 (= done) */
+  plannedVsDelivered: {
+    planned: number
+    delivered: number
+    /** delivered - planned (負なら未達) */
+    delta: number
+  }
+  /** 落ちた item の自動分類 (1 item 複数該当可) */
+  rootCauses: {
+    /** done だが doneAt > dueDate (= 遅れて完了) */
+    overdueDelivery: number
+    /** 未完了 (todo/in_progress/blocked) で dueDate <= sprint 終了 (= 落ちた) */
+    incompleteOnTime: number
+    /** sprint 中に cancelled 化 (= 計画から外した) */
+    cancelledMid: number
+    /** sprint 終了時点で blocked 状態のまま (= 依存切れず) */
+    blockedAtClose: number
+  }
+  /** 前 sprint との比較。prev 未指定 → null */
+  comparisonWithPrev: {
+    trend: 'up' | 'down' | 'flat'
+    /** completionRate 差 (pct points、curr - prev、整数 round) */
+    completionDelta: number
+    /** done count 差 (curr - prev) */
+    doneDelta: number
+  } | null
+}
+
+export interface SprintRetroOptions {
+  /** 前 sprint の items (= 同 helper を再帰呼出す形で trend 算出) */
+  prevItems?: readonly SprintRetroItemFields[]
+  /** sprint 終了日 (ISO YYYY-MM-DD)。incompleteOnTime / overdueDelivery 判定の基準。
+   *  省略時は dueDate 単独 (= dueDate なら今日基準で「落ちた」と判定しない) */
+  sprintEndISO?: string
+}
+
+/** doneAt を Date に変換、不正値は null。 */
+function parseDoneAt(d: Date | string | null | undefined): Date | null {
+  if (!d) return null
+  const v = d instanceof Date ? d : new Date(d)
+  return Number.isFinite(v.getTime()) ? v : null
+}
+
+/** ISO `YYYY-MM-DD` string を Date (UTC midnight) に変換、不正値は null。 */
+function parseISODate(d: string | null | undefined): Date | null {
+  if (!d) return null
+  const v = new Date(`${d}T00:00:00Z`)
+  return Number.isFinite(v.getTime()) ? v : null
+}
+
+export function buildSprintRetroSummary(
+  items: readonly SprintRetroItemFields[],
+  options: SprintRetroOptions = {},
+): SprintRetroSummary {
+  const total = items.length
+  const breakdown = {
+    todo: 0,
+    inProgress: 0,
+    blocked: 0,
+    done: 0,
+    cancelled: 0,
+    other: 0,
+  }
+  let overdueDelivery = 0
+  let incompleteOnTime = 0
+  let cancelledMid = 0
+  let blockedAtClose = 0
+
+  const sprintEndDate = parseISODate(options.sprintEndISO)
+
+  for (const it of items) {
+    const s = normalizeStatus(it.status)
+    if (s === 'todo') breakdown.todo += 1
+    else if (s === 'in_progress') breakdown.inProgress += 1
+    else if (s === 'blocked') breakdown.blocked += 1
+    else if (s === 'done') breakdown.done += 1
+    else if (s === 'cancelled') breakdown.cancelled += 1
+    else breakdown.other += 1
+
+    // root cause 分類
+    if (s === 'cancelled') cancelledMid += 1
+    if (s === 'blocked') blockedAtClose += 1
+
+    if (s === 'done') {
+      // overdueDelivery: doneAt > dueDate → 遅れて完了
+      const due = parseISODate(it.dueDate)
+      const done = parseDoneAt(it.doneAt)
+      if (
+        due !== null &&
+        done !== null &&
+        done.getTime() > due.getTime() + 24 * 60 * 60 * 1000 - 1
+      ) {
+        overdueDelivery += 1
+      }
+    } else if (s === 'todo' || s === 'in_progress' || s === 'blocked') {
+      // incompleteOnTime: 未完了で sprint 終了 (or dueDate) を過ぎたか同日
+      const due = parseISODate(it.dueDate)
+      const closeBy = sprintEndDate ?? due
+      if (due !== null && closeBy !== null && due.getTime() <= closeBy.getTime()) {
+        incompleteOnTime += 1
+      }
+    }
+  }
+
+  const completionRate = total === 0 ? 0 : Math.round((breakdown.done / total) * 100)
+  const planned = total - breakdown.cancelled
+  const delivered = breakdown.done
+  const delta = delivered - planned
+
+  let comparisonWithPrev: SprintRetroSummary['comparisonWithPrev'] = null
+  if (options.prevItems !== undefined) {
+    const prev = buildSprintRetroSummary(options.prevItems, { sprintEndISO: options.sprintEndISO })
+    const completionDelta = completionRate - prev.completionRate
+    const doneDelta = breakdown.done - prev.statusBreakdown.done
+    let trend: 'up' | 'down' | 'flat' = 'flat'
+    if (completionDelta > 0) trend = 'up'
+    else if (completionDelta < 0) trend = 'down'
+    comparisonWithPrev = { trend, completionDelta, doneDelta }
+  }
+
+  return {
+    total,
+    statusBreakdown: breakdown,
+    completionRate,
+    plannedVsDelivered: { planned, delivered, delta },
+    rootCauses: { overdueDelivery, incompleteOnTime, cancelledMid, blockedAtClose },
+    comparisonWithPrev,
+  }
+}
