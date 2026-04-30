@@ -15,6 +15,8 @@ import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
 
+import { isPlanComment } from '@/features/agent/agent-plan-prompt'
+import { useItemComments } from '@/features/comment/hooks'
 import { isInvalidDateRange } from '@/features/item/date-range'
 import { formatFriendlyDate } from '@/features/item/date-tokens'
 import { summarizeDescendantsProgress } from '@/features/item/descendants-progress'
@@ -39,6 +41,7 @@ import { useAllKeyResultsByWorkspace, useAssignItemToKeyResult } from '@/feature
 import { useAssignItemToSprint, useSprints } from '@/features/sprint/hooks'
 import { useCreateTemplateFromItem } from '@/features/template/hooks'
 
+import { AiHandoffPhaseChip } from '@/components/agent/ai-handoff-phase-chip'
 import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
 import {
@@ -127,6 +130,14 @@ function ItemEditDialogInner({
 
   const { data: assignees } = useItemAssignees(item.id)
   const setAssignees = useSetItemAssignees(workspaceId, item.id)
+  // iter542 (queue AI 分業 AC-1 wire-up): AI hand-off phase chip 用に comment を fetch、
+  // hasPlanComment を isPlanComment marker で判定。useItemComments は他 caller (CommentTab)
+  // と queryKey 共通で dedupe される。chip は AI section 上部に配置。
+  const { data: itemComments } = useItemComments(item.id)
+  const hasPlanComment = useMemo(
+    () => (itemComments ?? []).some((c) => isPlanComment(c.body ?? '')),
+    [itemComments],
+  )
   // iter416 basics: 依存 tab の trigger に「未完了 blocker N 件」 badge を出す。
   // tab を開かなくても「いま依存ブロックされているか」が一瞥で伝わる UX。
   // useItemDependencies は ItemDependenciesPanel と queryKey 共通なので dedupe される
@@ -394,14 +405,18 @@ function ItemEditDialogInner({
                 表示。Researcher が「実行計画 (Plan)」を Markdown で書いて Item の comment
                 として post (🤖 marker 付き)。canGeneratePlan で内部 gate 済 (false なら null)。 */}
             <div className="bg-primary/5 flex items-start justify-between gap-3 rounded-lg border p-3">
-              <div className="min-w-0">
+              <div className="min-w-0 space-y-1.5">
                 <div className="text-sm font-semibold">
                   <span aria-hidden="true">🤖 </span>AI 担当の実行計画
                 </div>
-                <p className="text-muted-foreground text-xs">
-                  AI 担当に設定した時、実行前に Plan (目的 / アプローチ / リスク / 完了見込み) を
-                  comment に投下させ、ユーザが承認できるようにします。
-                </p>
+                {/* iter542 (queue AI 分業 AC-1 wire-up): handoff-phase chip で
+                    「今 AI hand-off の どの段階か」 を 6 phase で可視化。 */}
+                <AiHandoffPhaseChip
+                  item={{ status: item.status, assignees: assignees ?? [] }}
+                  signals={{ hasPlanComment, hasAiReviewComment: false }}
+                  showDescription
+                  testId="item-edit-ai-handoff-chip"
+                />
               </div>
               <ItemPlanGenerateButton
                 workspaceId={workspaceId}
