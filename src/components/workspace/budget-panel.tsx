@@ -186,6 +186,7 @@ export function BudgetPanel({ workspaceId }: Props) {
             </span>
             <Button
               size="sm"
+              className="min-h-11"
               variant="ghost"
               onClick={startEdit}
               data-testid="budget-edit-btn"
@@ -243,6 +244,7 @@ export function BudgetPanel({ workspaceId }: Props) {
               <Button
                 type="button"
                 size="sm"
+                className="min-h-11"
                 variant="ghost"
                 onClick={() => setEditing(false)}
                 disabled={update.isPending}
@@ -252,6 +254,7 @@ export function BudgetPanel({ workspaceId }: Props) {
               <Button
                 type="submit"
                 size="sm"
+                className="min-h-11"
                 disabled={update.isPending}
                 data-testid="budget-save-btn"
                 aria-label={
