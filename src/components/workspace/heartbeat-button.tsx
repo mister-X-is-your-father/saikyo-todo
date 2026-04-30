@@ -40,6 +40,7 @@ export function HeartbeatButton({ workspaceId }: Props) {
       type="button"
       variant="outline"
       size="sm"
+      className="min-h-11"
       disabled={scan.isPending}
       aria-busy={scan.isPending || undefined}
       onClick={() => void run()}

@@ -111,7 +111,7 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
           aria-label={`通知 (未読 ${unreadCount} 件)`}
           aria-expanded={open}
           aria-haspopup="dialog"
-          className="relative"
+          className="relative min-h-11 min-w-11"
           data-testid="notification-bell"
         >
           <Bell className="h-4 w-4" aria-hidden="true" />

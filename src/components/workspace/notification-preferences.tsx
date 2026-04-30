@@ -111,6 +111,7 @@ export function NotificationPreferencesButton({ Icon = Settings }: { Icon?: Luci
           size="icon"
           aria-label="通知設定 (メール通知 4 種を ON/OFF)"
           aria-haspopup="dialog"
+          className="min-h-11 min-w-11"
           data-testid="notification-preferences"
         >
           {/* iter332: lucide icon に aria-hidden を付与し SR の冗長 announce を抑制
