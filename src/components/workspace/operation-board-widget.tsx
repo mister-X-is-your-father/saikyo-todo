@@ -236,22 +236,33 @@ function ItemRow({
     (highlight ? 'font-semibold ' : '') +
     (tone === 'red' ? 'text-red-700 ' : '') +
     (muted ? 'text-muted-foreground line-through ' : '')
+  // visible text と同じ情報を SR にも届ける (色のみで意味伝達 = WCAG 1.4.1 違反を避け、
+  // 時刻 / 期限 / 状態 prefix を 1 行 aria-label に集約)
+  const statePrefix = tone === 'red' ? '期限超過: ' : muted ? '完了済: ' : highlight ? '推奨: ' : ''
+  const timePart = showTime && item.dueTime ? ` ${item.dueTime.slice(0, 5)}` : ''
+  const datePart = item.dueDate ? ` 期限 ${item.dueDate}` : ''
+  const ariaLabel = `${statePrefix}${item.title}${timePart}${datePart} を編集ダイアログで開く`
   return (
     <button
       type="button"
       onClick={() => onClick(item.id)}
       className={`hover:bg-muted/60 flex w-full items-center gap-2 truncate rounded px-1 py-0.5 text-left ${cls}`}
       data-testid={`operation-board-row-${item.id}`}
-      aria-label={`${item.title} を編集ダイアログで開く`}
+      aria-label={ariaLabel}
     >
       {showTime && item.dueTime ? (
-        <span className="text-muted-foreground text-xs tabular-nums">
+        <span className="text-muted-foreground text-xs tabular-nums" aria-hidden="true">
           {item.dueTime.slice(0, 5)}
         </span>
       ) : null}
-      <span className="truncate">{item.title}</span>
+      <span className="truncate" aria-hidden="true">
+        {item.title}
+      </span>
       {item.dueDate ? (
-        <span className="text-muted-foreground ml-auto pl-2 text-xs tabular-nums">
+        <span
+          className="text-muted-foreground ml-auto pl-2 text-xs tabular-nums"
+          aria-hidden="true"
+        >
           {item.dueDate}
         </span>
       ) : null}
