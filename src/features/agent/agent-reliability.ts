@@ -157,6 +157,66 @@ export function reliabilityLevelLabelJa(level: ReliabilityLevel): string {
 }
 
 /**
+ * iter494 ai-automation: 期間内で **invocations 数が最も多い role** (= 主軸 role) を
+ * 特定する pure helper。AI 朝 brief / dashboard widget で「今月は PM が主軸」
+ * 「Researcher が主軸」のような 1 行 chip を出す substrate。
+ *
+ * 仕様:
+ *  - 入力 `stats`: `AgentReliability` (compute 済の集計結果)
+ *  - 出力: `DominantRoleResult { role, invocations, share }` or null (= 全 idle)
+ *  - share = role.invocations / totalInvocations (0..1)
+ *  - tie (= 同 invocation 数) は role 名 alphabetical で先勝ち (pm > researcher)
+ *  - 全 role idle (totalInvocations=0) → null sentinel
+ *
+ * 使い分け:
+ *  - cost ベースの主軸 → caller が cost 比較 logic を別途実装 (本 helper は invocation
+ *    数のみ、= 「実行回数 = 主軸」の自然解釈)
+ */
+export interface DominantRoleResult {
+  role: AgentRole
+  invocations: number
+  /** 全体に占める比率 (0..1)、Math.round で 2 桁丸めしない (= 整数 % 化は caller 責任) */
+  share: number
+}
+
+export function dominantRole(stats: AgentReliability): DominantRoleResult | null {
+  if (stats.totalInvocations === 0) return null
+  let best: DominantRoleResult | null = null
+  for (const role of ['pm', 'researcher'] as const) {
+    const r = stats.byRole[role]
+    const candidate = {
+      role,
+      invocations: r.invocations,
+      share: r.invocations / stats.totalInvocations,
+    }
+    if (!best || candidate.invocations > best.invocations) {
+      best = candidate
+    }
+  }
+  return best
+}
+
+/**
+ * 主軸 role を ja-JP 1 行に整形 (chip / aria-label / AI brief 共通)。
+ *  - null → '主軸: 記録なし'
+ *  - else → '主軸: PM (15/23 呼出、65%)' / '主軸: Researcher (8/8 呼出、100%)'
+ *  - share=1 (= 唯一稼働) → '主軸: PM (15 呼出、唯一稼働)' (caller に「もう 1 つは
+ *    idle」を視覚的に伝える)
+ */
+export function formatDominantRoleJa(dominant: DominantRoleResult | null): string {
+  if (!dominant) return '主軸: 記録なし'
+  const label = ROLE_LABEL_JA[dominant.role]
+  if (dominant.share >= 1) {
+    return `主軸: ${label} (${dominant.invocations} 呼出、唯一稼働)`
+  }
+  const pct = Math.round(dominant.share * 100)
+  // share の denominator は totalInvocations 全体。caller が dominant 単独で
+  // formatDominantRoleJa を呼ぶときは AgentReliability の他 role 数まで
+  // 知らないので、ここでは dominant.invocations と % のみ表示。
+  return `主軸: ${label} (${dominant.invocations} 呼出、${pct}%)`
+}
+
+/**
  * AI 朝 brief / chip 表示用に reliability を 1 行 ja-JP 文言で:
  *  - idle → 'AI 信頼性: 記録なし'
  *  - 全 role healthy → 'AI 信頼性: PM 14/15 (93%) 健全・Researcher 8/8 (100%) 健全'

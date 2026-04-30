@@ -8,8 +8,10 @@ import {
   agentReliabilityTone,
   agentRoleLabelJa,
   computeAgentReliability,
+  dominantRole,
   formatAgentReliabilityCompactJa,
   formatAgentReliabilityJa,
+  formatDominantRoleJa,
   reliabilityLevelLabelJa,
 } from './agent-reliability'
 
@@ -136,6 +138,68 @@ describe('formatAgentReliabilityCompactJa (compact dashboard chip / Slack 通知
   it('critical 6/10 → 「要調査 (6/10 完了、60%)」', () => {
     const r = computeAgentReliability([{ role: 'pm', invocations: 10, completed: 6, failed: 4 }])
     expect(formatAgentReliabilityCompactJa(r)).toBe('AI 信頼性: 要調査 (6/10 完了、60%)')
+  })
+})
+
+describe('dominantRole (主軸 role 特定、AI brief 用)', () => {
+  it('全 idle → null sentinel', () => {
+    expect(dominantRole(computeAgentReliability([]))).toBeNull()
+  })
+
+  it('PM 15 / Researcher 8 → PM 主軸', () => {
+    const r = computeAgentReliability([
+      { role: 'pm', invocations: 15, completed: 14, failed: 1 },
+      { role: 'researcher', invocations: 8, completed: 8, failed: 0 },
+    ])
+    const d = dominantRole(r)
+    expect(d).not.toBeNull()
+    expect(d!.role).toBe('pm')
+    expect(d!.invocations).toBe(15)
+    expect(d!.share).toBeCloseTo(15 / 23, 3)
+  })
+
+  it('Researcher 多 → Researcher 主軸', () => {
+    const r = computeAgentReliability([
+      { role: 'pm', invocations: 3, completed: 3, failed: 0 },
+      { role: 'researcher', invocations: 12, completed: 12, failed: 0 },
+    ])
+    const d = dominantRole(r)
+    expect(d!.role).toBe('researcher')
+    expect(d!.invocations).toBe(12)
+  })
+
+  it('唯一稼働 → share=1', () => {
+    const r = computeAgentReliability([{ role: 'pm', invocations: 10, completed: 10, failed: 0 }])
+    const d = dominantRole(r)
+    expect(d!.role).toBe('pm')
+    expect(d!.share).toBe(1)
+  })
+
+  it('tie (同数) → role alphabetical で pm 勝ち', () => {
+    const r = computeAgentReliability([
+      { role: 'pm', invocations: 5, completed: 5, failed: 0 },
+      { role: 'researcher', invocations: 5, completed: 5, failed: 0 },
+    ])
+    expect(dominantRole(r)!.role).toBe('pm')
+  })
+})
+
+describe('formatDominantRoleJa', () => {
+  it('null → 主軸: 記録なし', () => {
+    expect(formatDominantRoleJa(null)).toBe('主軸: 記録なし')
+  })
+
+  it('唯一稼働 → 「主軸: PM (10 呼出、唯一稼働)」', () => {
+    const r = computeAgentReliability([{ role: 'pm', invocations: 10, completed: 10, failed: 0 }])
+    expect(formatDominantRoleJa(dominantRole(r))).toBe('主軸: PM (10 呼出、唯一稼働)')
+  })
+
+  it('混合 → 「主軸: PM (15 呼出、65%)」', () => {
+    const r = computeAgentReliability([
+      { role: 'pm', invocations: 15, completed: 14, failed: 1 },
+      { role: 'researcher', invocations: 8, completed: 8, failed: 0 },
+    ])
+    expect(formatDominantRoleJa(dominantRole(r))).toBe('主軸: PM (15 呼出、65%)')
   })
 })
 
