@@ -18,8 +18,16 @@ import {
   Trash2,
 } from 'lucide-react'
 
+import { severityClasses } from '@/lib/widget/severity'
+import { fourStateHintToSeverity } from '@/lib/widget/severity-bridges'
+
 import { type AuditActionIconKey, getAuditActionVisual } from '@/features/audit/action-visual'
-import { formatAuditActivityBrief } from '@/features/audit/audit-activity'
+import {
+  classifyAuditActivityHint,
+  formatAuditActivityBrief,
+  formatAuditActivityHintJa,
+  groupAuditByCategory,
+} from '@/features/audit/audit-activity'
 import { useAuditByTargetItem } from '@/features/audit/hooks'
 
 /** action-visual の iconKey から Lucide component に map (status-visual と同パターン)。 */
@@ -42,6 +50,14 @@ export function ActivityLog({ itemId }: { itemId: string }) {
   const summary = useMemo(() => {
     if (!data || data.length === 0) return null
     return formatAuditActivityBrief(data, { actorTypes: [] })
+  }, [data])
+  // iter498 basics: audit-activity hint chip (iter493 substrate + iter495 bridge)
+  const hint = useMemo(() => {
+    if (!data || data.length === 0) return null
+    const counts = groupAuditByCategory(data, { actorTypes: [] })
+    const label = formatAuditActivityHintJa(counts)
+    const severity = fourStateHintToSeverity(classifyAuditActivityHint(counts))
+    return { label, severity, classes: severityClasses(severity) }
   }, [data])
   if (isLoading) {
     return (
@@ -67,16 +83,28 @@ export function ActivityLog({ itemId }: { itemId: string }) {
   return (
     <div className="space-y-2">
       {summary ? (
-        <div
-          className="bg-muted/40 text-muted-foreground inline-flex items-center gap-1.5 rounded border px-2 py-1 text-[11px]"
-          role="status"
-          aria-live="polite"
-          aria-label={summary}
-          data-testid="activity-log-summary"
-          title={summary}
-        >
-          <ActivityIcon className="h-3 w-3" aria-hidden="true" />
-          <span aria-hidden="true">{summary}</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <div
+            className="bg-muted/40 text-muted-foreground inline-flex items-center gap-1.5 rounded border px-2 py-1 text-[11px]"
+            role="status"
+            aria-live="polite"
+            aria-label={summary}
+            data-testid="activity-log-summary"
+            title={summary}
+          >
+            <ActivityIcon className="h-3 w-3" aria-hidden="true" />
+            <span aria-hidden="true">{summary}</span>
+          </div>
+          {hint && (
+            <span
+              className={`rounded border px-2 py-0.5 text-[11px] font-medium ${hint.classes.bg} ${hint.classes.text} ${hint.classes.border}`}
+              data-testid="activity-log-hint"
+              data-severity={hint.severity}
+              aria-label={`Activity 状態: ${hint.label}`}
+            >
+              {hint.label}
+            </span>
+          )}
         </div>
       ) : null}
       <ul
