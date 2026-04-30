@@ -158,3 +158,40 @@ export function formatAuditActivityBrief(
   const breakdown = formatAuditActivitySummary(cat)
   return `活動 ${total} 件 (${actors} 名): ${breakdown}`
 }
+
+/**
+ * iter493 basics: workspace 活動量 4 状態 hint シリーズ 12 弾目 (= velocity / weekly-insight /
+ * inbox-process / notification-activity と同 FourStateHint 系列)。
+ *
+ * - 'idle'     : 全 0 件 (= 活動なし)
+ * - 'severe'   : 合計 >= 200 (= 1 日 200 操作 = 異常な activity 多発)
+ * - 'moderate' : 合計 >= 50 (= 活発、要 monitoring)
+ * - 'mild'     : それ以外 (= 通常範囲)
+ *
+ * 用途: dashboard chip 「活動 健全」 / AI 朝 brief 見出し / Slack daily digest 強調。
+ */
+import { type FourStateHint, makeHintLabelFormatter } from '@/lib/hint'
+
+export type AuditActivityHint = FourStateHint
+
+export function classifyAuditActivityHint(
+  counts: Readonly<AuditCategoryCounts>,
+): AuditActivityHint {
+  const total = CATEGORY_KEYS.reduce((s, k) => s + counts[k], 0)
+  if (total === 0) return 'idle'
+  if (total >= 200) return 'severe'
+  if (total >= 50) return 'moderate'
+  return 'mild'
+}
+
+const AUDIT_ACTIVITY_HINT_LABEL_JA: Record<AuditActivityHint, string> = {
+  idle: '活動なし',
+  mild: '通常',
+  moderate: '活発',
+  severe: '異常',
+}
+
+export const formatAuditActivityHintJa = makeHintLabelFormatter(
+  classifyAuditActivityHint,
+  AUDIT_ACTIVITY_HINT_LABEL_JA,
+)

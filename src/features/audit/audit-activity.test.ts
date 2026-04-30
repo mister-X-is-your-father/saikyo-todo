@@ -3,7 +3,10 @@ import { describe, expect, it } from 'vitest'
 import {
   auditActionCategoryLabel,
   type AuditActivityEntry,
+  type AuditCategoryCounts,
+  classifyAuditActivityHint,
   formatAuditActivityBrief,
+  formatAuditActivityHintJa,
   formatAuditActivitySummary,
   groupAuditByActor,
   groupAuditByCategory,
@@ -218,5 +221,58 @@ describe('formatAuditActivityBrief', () => {
       A('create', 'a2', undefined, 'agent'),
     ]
     expect(formatAuditActivityBrief(entries)).toBe('活動 1 件 (1 名): 作成 1')
+  })
+})
+
+describe('classifyAuditActivityHint', () => {
+  function counts(over: Partial<AuditCategoryCounts>): AuditCategoryCounts {
+    return {
+      create: 0,
+      update: 0,
+      transition: 0,
+      complete: 0,
+      reopen: 0,
+      delete: 0,
+      other: 0,
+      ...over,
+    }
+  }
+
+  it('全 0 → idle', () => {
+    expect(classifyAuditActivityHint(counts({}))).toBe('idle')
+  })
+
+  it('合計 >= 200 → severe', () => {
+    expect(classifyAuditActivityHint(counts({ create: 200 }))).toBe('severe')
+  })
+
+  it('合計 >= 50 → moderate', () => {
+    expect(classifyAuditActivityHint(counts({ create: 50 }))).toBe('moderate')
+  })
+
+  it('mild 範囲 → mild', () => {
+    expect(classifyAuditActivityHint(counts({ create: 10, update: 5 }))).toBe('mild')
+  })
+})
+
+describe('formatAuditActivityHintJa', () => {
+  function counts(over: Partial<AuditCategoryCounts>): AuditCategoryCounts {
+    return {
+      create: 0,
+      update: 0,
+      transition: 0,
+      complete: 0,
+      reopen: 0,
+      delete: 0,
+      other: 0,
+      ...over,
+    }
+  }
+
+  it('idle / mild / moderate / severe を 1 単語で返す', () => {
+    expect(formatAuditActivityHintJa(counts({}))).toBe('活動なし')
+    expect(formatAuditActivityHintJa(counts({ create: 10 }))).toBe('通常')
+    expect(formatAuditActivityHintJa(counts({ create: 50 }))).toBe('活発')
+    expect(formatAuditActivityHintJa(counts({ create: 200 }))).toBe('異常')
   })
 })
