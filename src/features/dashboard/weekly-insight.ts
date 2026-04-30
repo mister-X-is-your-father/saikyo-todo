@@ -300,3 +300,42 @@ export function formatBestDayJa(best: { day: string; current: number } | null): 
   if (best === null) return '今週 完了なし'
   return `今週 ベスト: ${best.day} ${best.current} 件`
 }
+
+/**
+ * iter508 basics: 今週の worst day (= 完了 0 / 最少 件数の曜日) を抽出。pickBestDayInWeek
+ * の対称 helper。0 件の日があればそれを返す (= サボった day を highlight)、全 day 1+
+ * なら min 件数の day。
+ *
+ * - 今週合計 0 件 → null (chip 非表示)
+ * - 同点 (= 同 min 件数) は早い曜日 (週起点に近い方) を採用 (= deterministic + 動機付け)
+ *
+ * 用途: WeeklyInsightWidget で「サボった day」 を amber chip で能動表示、
+ * lowCompletionDay anomaly が発動しない範囲 (合計<7) でも weakness を見せる。
+ */
+export function pickWorstDayInWeek(
+  insight: Pick<WeeklyInsightSummary, 'byDay' | 'currentWeekTotal'>,
+): { day: string; dayIndex: number; current: number } | null {
+  if (insight.currentWeekTotal === 0) return null
+  let worst: { day: string; dayIndex: number; current: number } | null = null
+  for (const d of insight.byDay) {
+    if (worst === null || d.current < worst.current) {
+      worst = { day: d.day, dayIndex: d.dayIndex, current: d.current }
+    }
+    // 同点は早い曜日 (= 既存 worst を keep)
+  }
+  return worst
+}
+
+/**
+ * iter508 basics: pickWorstDayInWeek の出力を chip 文言に整形。
+ *   '今週 サボり: <day> 0 件'
+ *   '今週 弱点: <day> 1 件'
+ *   '今週 完了なし'  (null)
+ *
+ * 0 件は 'サボり' で能動的に警告、1+ 件は 'min day' で軽い注意。
+ */
+export function formatWorstDayJa(worst: { day: string; current: number } | null): string {
+  if (worst === null) return '今週 完了なし'
+  if (worst.current === 0) return `今週 サボり: ${worst.day} 0 件`
+  return `今週 弱点: ${worst.day} ${worst.current} 件`
+}

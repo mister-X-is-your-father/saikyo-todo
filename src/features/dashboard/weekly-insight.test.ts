@@ -7,7 +7,9 @@ import {
   dayIndexFromDate,
   formatBestDayJa,
   formatWeeklyInsightHintJa,
+  formatWorstDayJa,
   pickBestDayInWeek,
+  pickWorstDayInWeek,
   type WeeklyInsightItemFields,
   weekStartUTC,
 } from './weekly-insight'
@@ -316,5 +318,55 @@ describe('formatWeeklyInsightHintJa', () => {
     items.push(mk({ doneAt: '2026-04-27T10:00:00Z' }))
     const sev = buildWeeklyInsight(items, NOW)
     expect(formatWeeklyInsightHintJa(sev)).toBe('異常')
+  })
+})
+
+describe('pickWorstDayInWeek', () => {
+  it('今週合計 0 件 → null', () => {
+    const r = buildWeeklyInsight([], NOW)
+    expect(pickWorstDayInWeek(r)).toBeNull()
+  })
+
+  it('0 件 day があればそれを worst として返す', () => {
+    // Mon 2 件、他 0 → worst = Tue (= 早い 0 件 day)
+    const items = [mk({ doneAt: '2026-04-27T10:00:00Z' }), mk({ doneAt: '2026-04-27T11:00:00Z' })]
+    const r = buildWeeklyInsight(items, NOW)
+    const worst = pickWorstDayInWeek(r)
+    expect(worst?.current).toBe(0)
+    expect(worst?.day).toBe('Tue')
+  })
+
+  it('全 day 1+ 件 → min 件数の day', () => {
+    // 全曜日 1 件 → worst は Mon (= 早い曜日)
+    const items: WeeklyInsightItemFields[] = []
+    for (const iso of [
+      '2026-04-27',
+      '2026-04-28',
+      '2026-04-29',
+      '2026-04-30',
+      '2026-05-01',
+      '2026-05-02',
+      '2026-05-03',
+    ]) {
+      items.push(mk({ doneAt: `${iso}T10:00:00Z` }))
+    }
+    const r = buildWeeklyInsight(items, NOW)
+    const worst = pickWorstDayInWeek(r)
+    expect(worst?.day).toBe('Mon')
+    expect(worst?.current).toBe(1)
+  })
+})
+
+describe('formatWorstDayJa', () => {
+  it('null → 「今週 完了なし」', () => {
+    expect(formatWorstDayJa(null)).toBe('今週 完了なし')
+  })
+
+  it('0 件 → 「今週 サボり: <day> 0 件」', () => {
+    expect(formatWorstDayJa({ day: 'Tue', current: 0 })).toBe('今週 サボり: Tue 0 件')
+  })
+
+  it('1+ 件 → 「今週 弱点: <day> <n> 件」', () => {
+    expect(formatWorstDayJa({ day: 'Mon', current: 2 })).toBe('今週 弱点: Mon 2 件')
   })
 })
