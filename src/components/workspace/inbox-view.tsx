@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 
 import { parseAsString, useQueryState } from 'nuqs'
 
-import { summarizeInbox } from '@/features/gtd/inbox-process'
+import { formatInboxHealthHintJa, summarizeInbox } from '@/features/gtd/inbox-process'
 import { extractEstimateMinutes } from '@/features/item/estimate'
 import { priorityClass, priorityLabel } from '@/features/item/priority'
 import type { Item } from '@/features/item/schema'
@@ -86,10 +86,22 @@ export function InboxView({
     )
   }
 
+  // iter494 (queue GT-3 polish): Inbox 健全性 hint を 1 単語 chip で header 右に表示
+  const healthLabel = formatInboxHealthHintJa(gtdSummary)
+
   return (
     <div className="space-y-1 rounded-lg border p-2" data-testid="inbox-view">
-      <div className="text-muted-foreground mb-1 px-2 text-xs">
-        {inbox.length} 件 — scheduledFor も期限も未設定
+      <div className="mb-1 flex items-center gap-2 px-2 text-xs">
+        <span className="text-muted-foreground">
+          {inbox.length} 件 — scheduledFor も期限も未設定
+        </span>
+        <span
+          className="ml-auto rounded-full border bg-slate-50 px-1.5 py-0.5 text-[11px] text-slate-700"
+          data-testid="inbox-health-hint"
+          aria-label={`Inbox 健全性: ${healthLabel}`}
+        >
+          {healthLabel}
+        </span>
       </div>
       {/* iter544 (queue GT-3 wire-up): GTD Inbox Process classification の bucket count chip 群 */}
       {(gtdSummary.counts.immediate > 0 ||
