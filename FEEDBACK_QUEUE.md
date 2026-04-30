@@ -79,7 +79,12 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ### 2026-04-29 — 案件の現状 + 着地プラン を 一目で分かる panel ★ 新規 ★
 
-- [ ] **「この案件、今どんな感じ？」「どう着地させるつもり？」を 1 画面で一目化** — 分類: 実装要望 (中-大、AI 寄り)
+- [x] **「この案件、今どんな感じ？」「どう着地させるつもり？」を 1 画面で一目化** — 分類: 実装要望 (中-大、AI 寄り)
+  - **scope A 完了 (iter463 → 464、2 commit)**: `6a1533d` (substrate `findLatestUpdatedAt` +
+    `formatLatestActivityJa`) → `dd5513a` (ItemSummaryPanel + 新 tab「サマリ」 配線、3 chip
+    既存 substrate 統合: descendants-progress / dependency-readiness / latest-activity)。
+    ItemEditDialog を開いた直後 base tab の隣に「サマリ」 tab、進捗 / 依存 / 動き の 3 軸を
+    1 画面で確認可能。scope B (risk score / 着地予測 / dueDate 集約) / C (AI 自動要約) は別 entry。
   - 原文: 「『この案件、今どんな感じ？』『どう着地させるつもり？』というのが一目でわかるものにしたい」
   - 仮解釈 (parent Item / プロジェクト粒度の視覚 status):
     - **現状 sec**: 進捗 % (subtask done / total)、in_progress 子の数、blocked 子の数、直近 7 日の commit/comment 件数、最終 update 時刻
@@ -209,7 +214,7 @@ button disabled + reason aria-label。typecheck/lint 緑 (warning baseline 1)。
          を配置、`useCreateTemplateFromItem` hook + toast feedback (scope A UI bind)
 
 2. **案件サマリ panel** (詳細: 本ファイル下方、scope A から)
-   - 🚧 進行中 (iter463 で latest-activity substrate 着地、次 iter で UI bind)
+   - ✅ scope A 完了 (iter463/464 で substrate + UI bind、2 commit)
    - 仮置き判断: 「案件」= parent task 単位、ItemEditDialog の新 tab「サマリ」
    - subtask 進捗 % + 既存 readiness chip + 直近 7 日の activity 件数 を pure helper で集約
    - AI 要約は scope C (今 iter は不使用)
