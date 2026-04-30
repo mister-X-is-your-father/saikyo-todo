@@ -126,9 +126,25 @@ function SubtaskTreeNode({
   //   - isDragging=true: 自身が drag されている (translateY 等で追従)
   //   - isSorting=true (isDragging=false): 別要素が drag 中、自身は make-way 移動
   //   - 両方 false (= drop 完了): transform 0、artifact 防止のため style 空
+  // 2026-04-30 追加: isDragging 時は subtree (子孫 inline 描画) を **maxHeight で
+  // 折り畳み** + overflow hidden で **header row のみ表示**。これがないと子持ち
+  // タスクを drag した時に subtree 全体 (= ぶ厚い slate 背景の box) が translate
+  // で動き、子持ち row 上を「またぐ」と「拡大されて見える」 視覚不整合になる。
+  // drag 中は概念上「単一行 chip」 として振る舞わせる方が直感的。
   const sortableStyle =
     isDragging || isSorting
-      ? { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }
+      ? {
+          transform: CSS.Transform.toString(transform),
+          transition,
+          opacity: isDragging ? 0.4 : 1,
+          ...(isDragging
+            ? {
+                maxHeight: '40px',
+                overflow: 'hidden' as const,
+                pointerEvents: 'none' as const,
+              }
+            : {}),
+        }
       : {}
 
   /** Alt+←/→ keyboard で outdent/indent (focus は drag handle / row 全体)。 */
