@@ -1,0 +1,153 @@
+/**
+ * iter465 P0 (queue: チームメンバー余裕時間 一覧 scope A substrate):
+ * 「member の今日 / 今週の利用可能時間 vs 既割当 estimateMinutes 合計」を
+ * pure 関数で計算する substrate。
+ *
+ * 「各チームメンバーが今日、今週、どれくらい余裕な時間があるのかなどもぱっと
+ * 見られるようにしたい」(2026-04-29 ユーザ要望) の scope A 最小実装。
+ *
+ * 役割使い分け:
+ *  - 本 helper: capacity (= 8h × N day 等の availability) と used (= 見積合計)
+ *    の差分計算 + load status 判定 (緑/黄/赤)
+ *  - caller: assignee filter / period filter / capacity 値の決定 (8h × 日数等) は
+ *    上位層 (UI / hooks)
+ *  - `extractEstimateMinutes` (item/estimate.ts): description から見積分数取出
+ *  - `personal-period-goal/period-window`: 期間 (今日 / 今週) の境界計算
+ *
+ * 仕様:
+ *  - 入力 items は **assignee + period で予めフィルタ済** な items 配列
+ *    (本 helper は assignee / period を解釈しない)
+ *  - estimateMinutes が null / undefined / NaN の Item は **未見積** count に集計
+ *    (capacity に算入しない、別 chip で表示する設計)
+ *  - estimateMinutes が 負 / Infinity は不正値として未見積扱い (fail-soft)
+ *  - status が doneStatusKeys に含まれる Item は **完了済** として used から除外
+ *    (capacity に余裕として加算)
+ *  - capacityMinutes <= 0 は no-capacity sentinel: utilization=0、load='unknown'
+ *  - load 判定 (utilization = used/capacity * 100):
+ *    - util < 60 → 'free' (緑、まだ余裕)
+ *    - 60 ≤ util < 90 → 'comfortable' (slate、適正範囲)
+ *    - 90 ≤ util ≤ 100 → 'tight' (amber、ほぼ満杯)
+ *    - util > 100 → 'overloaded' (red、オーバー)
+ */
+
+export type CapacityLoadStatus = 'free' | 'comfortable' | 'tight' | 'overloaded' | 'unknown'
+
+export interface CapacityItemInput {
+  estimateMinutes: number | null | undefined
+  status: string | null | undefined
+}
+
+export interface MemberCapacityLoad {
+  capacityMinutes: number
+  usedMinutes: number
+  remainingMinutes: number
+  utilizationPct: number
+  totalItemCount: number
+  estimatedItemCount: number
+  unestimatedCount: number
+  doneItemCount: number
+  loadStatus: CapacityLoadStatus
+}
+
+const ZERO_RESULT: MemberCapacityLoad = {
+  capacityMinutes: 0,
+  usedMinutes: 0,
+  remainingMinutes: 0,
+  utilizationPct: 0,
+  totalItemCount: 0,
+  estimatedItemCount: 0,
+  unestimatedCount: 0,
+  doneItemCount: 0,
+  loadStatus: 'unknown',
+}
+
+export function computeMemberCapacityLoad(
+  items: ReadonlyArray<CapacityItemInput>,
+  capacityMinutes: number,
+  doneStatusKeys: ReadonlySet<string>,
+): MemberCapacityLoad {
+  if (!Number.isFinite(capacityMinutes) || capacityMinutes <= 0) {
+    return { ...ZERO_RESULT, totalItemCount: items.length }
+  }
+
+  let usedMinutes = 0
+  let estimatedItemCount = 0
+  let unestimatedCount = 0
+  let doneItemCount = 0
+
+  for (const it of items) {
+    const status = it.status ?? ''
+    if (doneStatusKeys.has(status)) {
+      doneItemCount++
+      continue
+    }
+    const m = it.estimateMinutes
+    if (typeof m !== 'number' || !Number.isFinite(m) || m <= 0) {
+      unestimatedCount++
+      continue
+    }
+    usedMinutes += m
+    estimatedItemCount++
+  }
+
+  const remainingMinutes = capacityMinutes - usedMinutes
+  const utilizationPct = Math.round((usedMinutes / capacityMinutes) * 100)
+  const loadStatus: CapacityLoadStatus =
+    utilizationPct < 60
+      ? 'free'
+      : utilizationPct < 90
+        ? 'comfortable'
+        : utilizationPct <= 100
+          ? 'tight'
+          : 'overloaded'
+
+  return {
+    capacityMinutes,
+    usedMinutes,
+    remainingMinutes,
+    utilizationPct,
+    totalItemCount: items.length,
+    estimatedItemCount,
+    unestimatedCount,
+    doneItemCount,
+    loadStatus,
+  }
+}
+
+/**
+ * `MemberCapacityLoad` を ja-JP 1 行 summary に整形 (chip / aria-label / AI brief 共通)。
+ *  - 'unknown' → '余裕時間 算定不能'
+ *  - 'free' → '余裕あり: 残 X 時間 / capacity Y 時間 (Z%)'
+ *  - 'comfortable' → '適正: 残 X 時間 / capacity Y 時間 (Z%)'
+ *  - 'tight' → 'ギリギリ: 残 X 時間 / capacity Y 時間 (Z%)'
+ *  - 'overloaded' → 'オーバー: -X 時間オーバー / capacity Y 時間 (Z%)'
+ *  - 末尾に未見積 N 件 chip を付与 (>0 の時のみ)
+ */
+export function formatMemberCapacityLoadJa(load: MemberCapacityLoad): string {
+  if (load.loadStatus === 'unknown') {
+    const tail = load.totalItemCount > 0 ? ` / 全 ${load.totalItemCount} 件` : ''
+    return `余裕時間 算定不能${tail}`
+  }
+  const cap = formatHours(load.capacityMinutes)
+  const remain = formatHours(Math.abs(load.remainingMinutes))
+  const head =
+    load.loadStatus === 'free'
+      ? `余裕あり: 残 ${remain}`
+      : load.loadStatus === 'comfortable'
+        ? `適正: 残 ${remain}`
+        : load.loadStatus === 'tight'
+          ? `ギリギリ: 残 ${remain}`
+          : `オーバー: ${remain}超`
+  const body = `${head} / capacity ${cap} (${load.utilizationPct}%)`
+  const unestTail = load.unestimatedCount > 0 ? ` / 未見積 ${load.unestimatedCount} 件` : ''
+  return `${body}${unestTail}`
+}
+
+function formatHours(minutes: number): string {
+  if (minutes <= 0) return '0h'
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  if (h === 0) return `${m}min`
+  if (m === 0) return `${h}h`
+  return `${h}h ${m}min`
+}
