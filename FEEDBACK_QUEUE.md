@@ -704,56 +704,142 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 
 ### 🔥 次 iter で即実装 (P0 最優先、track 判定より優先) 🔥
 
-#### 🌟 新 P0 [優先度 0、最優先 0] (2026-04-30): PM Stand-up / AI 生成 Doc が UI で読めない致命的 UX gap を修正
+#### 🌟 新 P0 [優先度 0、最優先 0] (2026-04-30): fluffy AI テキスト生成 機能 8 件 を 最強 widget 化 シリーズ
 
-ユーザ指摘: 「PM Stand-up 完了: --- ## 本朝の Stand-up サマリ... 困難が右下に出ただけなのだが」
+ユーザ意図: 「fluffy じゃない、最強の機能にグレードアップする」「無理に最強版できないならウィジェット化だわ」
 
-**致命的 UX 問題**:
+**fluffy 撲滅原則 (META)**:
 
-- PM Stand-up button 押すと AI が markdown summary を生成 (1000+ chars)、`docs` テーブルに保存される
-- しかし UI 上は **Sonner toast (120 char head のみ) を 5 秒表示するだけ**
-- toast 消えたら全文が **どこからも読めない**
-- saikyo-todo に **`/{wsId}/docs` 一覧 view が存在しない** (確認済 — `find src/app -name docs` は空)
-- 結果: AI が貴重な要約を作っても **dead letter** になる (やる気アップ ↓、可視化性能 ↓、6 軸 4 軸違反)
+1. **AI に文章を書かせるのは原則 NG** (既知データの言い換えで fluffy 化、コスト消費、読み解き必要)
+2. **データ抽出 / 計算 / 並び替え** は widget で直接表示 (= **見て即わかる**、6 軸 1/3/6 全勝)
+3. AI を使うのは以下のみ:
+   - **structured output** (zod schema 強制、text 装飾 NG)
+   - **non-obvious correlation 抽出** (人が気付かない pattern、1-2 行)
+   - **RAG citation 付き調査** (workspace 内 Doc / Item を context、source link 必須)
+4. ユーザの読み時間 > 1 秒で得られる情報密度なら **widget 化が勝つ**
 
-**修正方針 (3 段階、別 commit)**:
+各 P0 は別 commit で消化、優先順は依存順 + コスト効果順。
 
-1. **即修正 (1 commit、20-40 行)**: stand-up button 完了時に **`<Dialog>` で full markdown を表示**
-   - 既存 Sonner toast を「Stand-up 完了 — ダイアログで全文表示」に置換
-   - markdown は `react-markdown` (既存依存) で render、サニタイズ込み
-   - dialog 内に「Doc 一覧で見る」 link + 「閉じる」 button
-   - 期待 commit: `feat(agent): PM Stand-up 結果を Dialog で全文表示 (queue: standup-doc-uxgap A/3)`
+##### 派生 P0-1: PM Stand-up → 「今日の作戦盤」 widget (★★★ fluffy 最大削減)
 
-2. **Docs 一覧 page (2-3 commits、150-300 行)**: `/{wsId}/docs` route 新設
-   - server: `docService.listDocs(workspaceId, { limit, offset, kind? })` 追加 (既存 service にあれば再利用)
-   - page: workspace 内 nav に「Docs」link 追加 (Goals / Sprints と同列)
-   - 一覧 row: 作成日時 / kind (standup / recovery / ai-research / decomposed) / title 先頭 60 char / 作成者 (PM Agent / Researcher / user)
-   - row click で `/{wsId}/docs/[docId]` に遷移
-   - filter: kind / 期間 / 作成者
-   - 期待 commit: `feat(doc): Docs 一覧 page を新設 (queue: standup-doc-uxgap B/3)`
+**現状**: AI が朝会要約 markdown 生成 (fluffy)、toast で 120 char しか見えない (UX gap も含む)。
+**最強版**:
+- Dashboard or Today 画面上部に **「今日の作戦盤」 widget** 常時表示 (button 不要、自動更新)
+- 内容 (algorithm 計算、AI 不要):
+  - **昨日 done**: 件数 + clickable list (collapsed by default)
+  - **今日の MUST**: count + 期日近接順、各 row clickable
+  - **overdue**: 赤色強調、件数 + 上位 3 件
+  - **Today scheduled / due-today**: 時刻順
+  - **Blocking dependencies**: 「item Y は item Z 待ち」 chain (top 3)
+  - **推奨第 1 タスク**: Eisenhower matrix で計算 (urgent × important × short-time)
+- AI は使わない (純 algorithm)、もしくは **「先週同曜日との比較で異常があれば 1 行警告」** だけ AI に問う
+- 既存 PM Stand-up button + service は **削除** (`pm-service.runStandup` / `runStandupViaClaude` / `standup-button.tsx` / `standup-actions` 全部)
+- 期待 commit:
+  - `feat(dashboard): 今日の作戦盤 widget — overdue/MUST/scheduled/blocking 自動集計 (queue: fluffy-1 stand-up→widget)`
+  - `chore(agent): PM Stand-up service / button 削除 (widget で代替) (queue: fluffy-1 cleanup)`
 
-3. **Doc viewer page (1 commit、80-150 行)**: `/{wsId}/docs/[docId]` route
-   - markdown render (react-markdown + GFM)
-   - metadata: 作成日時 / kind / 関連 Item link / 作成者
-   - 「再生成」button (PM Agent / Researcher 種類別、AI に再依頼)
-   - 「Edit」button (将来、user 編集対応)
-   - 「削除」button (soft delete)
-   - 期待 commit: `feat(doc): Doc viewer page (queue: standup-doc-uxgap C/3)`
+##### 派生 P0-2: PM Pre-mortem → 「Sprint リスクボード」 widget
 
-**関連 view の波及**:
+**現状**: AI が Sprint 開始前に「失敗候補 / 原因 / 対策」文章 (fluffy: 一般論)。
+**最強版**:
+- Sprint 詳細 page 上部に **リスクボード widget**
+- 内容:
+  - 各 item の **risk score** = (同 tag overdue 率 × estimated/残時間 × blocking 数)
+  - top 5 risk items を赤強調 + 数値根拠表示
+  - 過去 N sprint で同 tag/同 assignee item の overdue 割合
+  - assignee load (人当 item 数 + 累積 estimate)
+- AI 役割: **non-obvious correlation 1-2 行** だけ (例: 「item X と Y は同 tag、X 遅延時に Y も遅れる相関 0.7」)
+- `premortem-service` 文章生成は削除、structured score を service が返す
+- 期待 commit: `feat(sprint): リスクボード widget — score-driven (queue: fluffy-2 premortem→widget)`
 
-- workspace home の **Recent Docs widget** (直近 5 件、quick access) — 別 P0 派生 candidate
-- Item detail dialog の「関連 Doc」 tab — 別 P0 派生 candidate
-- Notification bell に「PM Stand-up が新 Doc 作成」を追加 — 別 P0 派生 candidate
+##### 派生 P0-3: Sprint Retrospective → 「Sprint 数値レポート」 widget
 
-**6 軸スコア (修正後の期待)**:
+**現状**: AI が Sprint 終了時に KPT 感想文 (fluffy: 「進捗良好でした」的)。
+**最強版**:
+- Sprint 終了後 自動生成 widget (existing retro page を置換)
+- 内容:
+  - 完了率 / planned vs delivered delta
+  - burndown 計画 vs 実績 graph
+  - assignee 別 throughput
+  - 同前 sprint との比較 (改善 ↑ / 悪化 ↓)
+  - overdue になった item の **root cause 自動分類** (dependency / load / 見積誤差)
+- AI 役割: **数値の story 化 1 行** (「今 sprint は X が成果、Y が課題」、絶対 1 行のみ)
+- `retro-service / retro-worker` の文章生成は削除
+- 期待 commit: `feat(sprint): Sprint 数値レポート widget — burndown / throughput / root cause 自動 (queue: fluffy-3 retro→widget)`
 
-- 軸 1 (圧倒的可視化): 4→5 (AI 生成物が必ず読める動線)
-- 軸 4 (作業漏れ防止): 3→5 (Stand-up で MUST/overdue 通知)
-- 軸 5 (やる気アップ): 2→5 (AI が朝会用 Doc 作ってくれる体験)
-- 軸 6 (効率化): 3→4 (1 click で daily summary)
+##### 派生 P0-4: AI 調査 → RAG citation 強化 もしくは削除
 
-**重要**: A/3 (Dialog 即修正) は 20 分以内に commit 可能。B/3 + C/3 は別 iter で。Cloud loop は **A/3 を最優先**、その後 B → C の順で消化。
+**現状**: ChatGPT 的 general knowledge を Doc 化 (fluffy)。saikyo-todo 内 context 不使用。
+**選択肢**:
+- 削除: ChatGPT 直叩きで十分、saikyo-todo 内に置く意味薄い
+- RAG 化: workspace 内 Doc / Item / comment を embedding 検索 → AI に context として渡す → **citation 付き Doc** を生成
+**おすすめ**: 削除。RAG 化は別途「ドキュメント参照 RAG」 entry (queue 既存) で対応。
+- 期待 commit: `chore(agent): AI 調査 (researcherService.run) を削除 — RAG 版で置換予定 (queue: fluffy-4 research削除)`
+
+##### 派生 P0-5: PM Recovery (MUST 救済) → 「救済プラン widget」
+
+**現状**: overdue MUST に AI が「遅延要因 / 代替案 / 代替担当」 comment (fluffy 中)。
+**最強版**:
+- Item edit dialog or Backlog 行で「救済プラン」 button (overdue MUST のみ enabled)
+- click で modal/widget 表示:
+  - 過去同種 (同 tag / 同 assignee) overdue 件 → 平均挽回時間
+  - 依存先 status → unblocking 候補 (依存先 done で本 item 動く)
+  - 代替 assignee 候補 (load + skill match score 順)
+- AI 役割: 上記 data を 統合した「**具体的アクション 3 選 (順位付き)**」 (純 text 文章 NG、structured output)
+- 期待 commit: `feat(item): MUST 救済プラン widget — data-driven action 3 選 (queue: fluffy-5 recovery→widget)`
+
+##### 派生 P0-6: Plan 生成 (assignee=AI) → structured output 強制
+
+**現状**: AI が「やること」 markdown 文章 comment (fluffy 化リスク)。
+**最強版**:
+- zod schema で **structured output 強制**:
+  - `steps: { title: string, est_min: number, dod: string, dependencies: string[] }[]`
+  - `total_est_min: number` (item.estimate との delta 表示)
+  - `dod_summary: string` (1 行)
+- 結果は subtasks 提案 (staging proposal) として出す → user 承認 で実 subtasks 登録
+- 純 text comment 禁止
+- 期待 commit: `feat(agent): generatePlanForItem を structured output 化 — staging subtasks 提案 (queue: fluffy-6 plan structured)`
+
+##### 派生 P0-7: AI 朝 brief → 「日次優先順位 algorithm」 (AI 削除)
+
+**現状**: queue 候補、未実装。AI 文章で「今日のおすすめ順」(高 fluffy 予測)。
+**最強版**:
+- **Eisenhower matrix algorithm** で自動 sort (純 algorithm、AI 不要)
+  - x 軸: Urgency = (due 経過率) × (overdue weight)
+  - y 軸: Importance = priority × dependent count × MUST flag
+- 完了予測 (累計 estimate vs 残時間)
+- 集中時間ブロック提案 (≤30 min = quick wins / ≥90 min = 集中ブロック)
+- Today view 上部に widget として常時表示
+- queue から「AI 朝 brief (AI 文章版)」 entry 削除
+- 期待 commit: `feat(today): 日次優先順位 algorithm — Eisenhower + 完了予測 (queue: fluffy-7 brief→algorithm)`
+
+##### 派生 P0-8: 週次振り返り → 「Weekly Insight Dashboard」 widget
+
+**現状**: queue 候補、未実装。AI 文章で retrospective 自動生成 (高 fluffy 予測)。
+**最強版**:
+- Dashboard 内 tab として「Weekly」 view
+- 内容:
+  - 週次完了 trend (line chart)
+  - 完了 by tag / project / assignee (stacked bar)
+  - 偏差 detection (どの曜日が忙しい / 完了少ない)
+  - 同前週との delta (% 表示)
+- AI 役割: **anomaly 1-2 件の指摘** (1 行ずつ、例: 「水曜の完了率が普段の 50%」)
+- queue から「週次振り返り (AI 文章版)」 entry 削除
+- 期待 commit: `feat(dashboard): Weekly Insight widget — trend / by-tag / anomaly (queue: fluffy-8 weekly→widget)`
+
+---
+
+**消化順**:
+1. fluffy-1 (PM Stand-up→widget) — ユーザ直近指摘、優先
+2. fluffy-7 (AI 朝 brief→algorithm) — 1 と統合可能 (今日の作戦盤に Eisenhower 取り込み)
+3. fluffy-2 (Pre-mortem→widget)
+4. fluffy-3 (Retro→widget)
+5. fluffy-5 (Recovery→widget)
+6. fluffy-6 (Plan→structured)
+7. fluffy-8 (Weekly→widget)
+8. fluffy-4 (AI 調査削除) — 最後
+
+各 1 commit で消化、6 軸採点を commit body に。「fluffy 撲滅原則」を CLAUDE.md / iter-instruction に追記する派生も視野。
 
 #### ✅ 旧 P0 [優先度 0、最優先 A] (2026-04-30、iter520 ai-automation 完了): AI 調査 が API key 要求してる regression を修正
 
