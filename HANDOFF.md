@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [iter480 refactor 1/1] queue fluffy-8 weekly→widget UI bind 消化。`buildWeeklyInsight` 純 algorithm (iter531 で着地、19 unit test) を Dashboard view に配線。新規 `weekly-insight-widget.tsx` (~140 行、Card + 2 行サマリ + 7 mini bar + anomaly 帯)、tagIds は item.list で join されないため空配列で渡す (将来 hooks 拡張で stacked bar に展開可)、recharts 追加なしで CSS divs 内製、0/0 件は非表示で noise 削減。typecheck/lint clean、weekly-insight test 19 件 PASS。6 軸: 軸 1 可視化 (今週 vs 前週 7 mini bar) ★ + 軸 4 漏れ防止 (overdueSpike anomaly 能動表示) ★ + 軸 5 やる気 (緑 ↑ delta)。
 - ✅ [playwright-iter479 1/1] mobile sweep 続編 (20 件目)。mock-timesheet の top nav 3 button (新規入力 / 入力一覧 / ログアウト) が size="sm" h-8=32px → fix: 1 ファイル ~3 行差分で各 Button に `className="min-h-11"` 追加。typecheck 緑。mobile sweep 累計 **105 button 達成** (iter460-479 で 20 fix iter)。
 - ✅ [playwright-iter478 1/1] mobile sweep 続編 (19 件目)。3 ファイルの 5 inline button が size="sm" h-8=32px: pdca-panel (集計期間 30/90 切替 x 2) / item-dependencies-panel (dep-add-btn / dep-remove-{id} x 2) / backlog-view (編集 x 1) → fix: 3 ファイル ~5 行差分で各 Button に `className="min-h-11"` 追加。typecheck 緑。**mobile sweep 累計 102 button 達成** (iter460-478 で 19 fix iter)、**100 button 越え 達成 / 最大 mobile WCAG 2.5.5 AAA sweep 完了**。
 - ✅ [playwright-iter477 1/1] mobile sweep 続編 (18 件目)。BudgetPanel の 3 inline button (上限変更 / cancel / 保存) が size="sm" h-8=32px、AI 月次コスト上限編集で使われる → fix: `budget-panel.tsx` の 3 Button に `className="min-h-11"` 追加。1 ファイル ~3 行差分。typecheck 緑。mobile sweep 累計 **97 button 達成** (iter460-477 で 18 fix iter)。

@@ -1100,7 +1100,7 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 - queue から「AI 朝 brief (AI 文章版)」 entry 削除
 - 期待 commit: `feat(today): 日次優先順位 algorithm — Eisenhower + 完了予測 (queue: fluffy-7 brief→algorithm)`
 
-##### 派生 P0-8: 週次振り返り → 「Weekly Insight Dashboard」 widget
+##### 派生 P0-8: 週次振り返り → 「Weekly Insight Dashboard」 widget ✅ scope A 完了 (iter531 substrate + iter480 UI bind)
 
 **現状**: queue 候補、未実装。AI 文章で retrospective 自動生成 (高 fluffy 予測)。
 **最強版**:
@@ -1114,6 +1114,7 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 - AI 役割: **anomaly 1-2 件の指摘** (1 行ずつ、例: 「水曜の完了率が普段の 50%」)
 - queue から「週次振り返り (AI 文章版)」 entry 削除
 - 期待 commit: `feat(dashboard): Weekly Insight widget — trend / by-tag / anomaly (queue: fluffy-8 weekly→widget)`
+- **iter531 (substrate) + iter480 (UI bind) で scope A 完了**: `buildWeeklyInsight` (純 algorithm) + 19 unit test → Dashboard `weekly-insight-widget.tsx` 配線済 (今週合計 / 前週比 % / 7 mini bar / anomaly 帯)。stacked by-tag は item.list が tagIds を join しないため未実装 (hooks 拡張時に展開、scope B)。AI anomaly は不採用 (lowCompletionDay / overdueSpike を純 algorithm で出している、AI 不要)。
 
 ---
 
