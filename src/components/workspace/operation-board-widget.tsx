@@ -261,7 +261,8 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
           <div>
             <button
               type="button"
-              className="hover:text-foreground text-muted-foreground flex items-center gap-1 text-xs"
+              // iter514: pseudo で tap target を 44x44 化 (visual text-xs 維持)
+              className="hover:text-foreground text-muted-foreground relative flex items-center gap-1 text-xs before:absolute before:-inset-3 before:content-['']"
               onClick={() => setShowDoneYesterday((v) => !v)}
               aria-expanded={showDoneYesterday}
               data-testid="operation-board-done-yesterday-toggle"

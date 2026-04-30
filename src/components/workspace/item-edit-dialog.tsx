@@ -300,7 +300,9 @@ function ItemEditDialogInner({
             </div>
             <button
               type="button"
-              className="shrink-0 rounded border border-amber-600/50 px-2 py-1 text-[11px] font-medium hover:bg-amber-600/20"
+              // iter514: pseudo で tap target を 44x44 化 (visual px-2 py-1 text-[11px] 維持、
+              // conflict banner row 内 layout を保持)
+              className="relative shrink-0 rounded border border-amber-600/50 px-2 py-1 text-[11px] font-medium before:absolute before:-inset-3 before:content-[''] hover:bg-amber-600/20"
               data-testid="item-edit-reload"
               aria-label="自分の編集内容を破棄してサーバの最新値を読み込み直す"
               onClick={() => {
