@@ -155,7 +155,8 @@ function SubtaskTreeNode({
     >
       <button
         type="button"
-        className="text-muted-foreground hover:text-foreground -ml-1 cursor-grab touch-none active:cursor-grabbing"
+        // iter508: pseudo で tap target を 44x44 化 (visual h-4 w-4 維持、drag 機能不変)
+        className="text-muted-foreground hover:text-foreground relative -ml-1 cursor-grab touch-none before:absolute before:-inset-3 before:content-[''] active:cursor-grabbing"
         aria-label={`「${item.title}」をドラッグで並び替え`}
         data-testid={`subtask-drag-${item.id}`}
         {...attributes}
@@ -193,7 +194,8 @@ function SubtaskTreeNode({
       {/* iter290 P0 (queue: subtask gap d/4): indent/outdent buttons + Alt+←/→ keyboard */}
       <button
         type="button"
-        className="text-muted-foreground hover:text-foreground disabled:opacity-30"
+        // iter508: pseudo で tap target を 44x44 化 (visual h-3.5 w-3.5 維持、disabled 時は anchor 消す)
+        className="text-muted-foreground hover:text-foreground relative before:absolute before:-inset-3 before:content-[''] disabled:opacity-30 disabled:before:hidden"
         onClick={() => onOutdent(item)}
         disabled={!canOutdent || movePending}
         aria-busy={movePending || undefined}
@@ -211,7 +213,8 @@ function SubtaskTreeNode({
       </button>
       <button
         type="button"
-        className="text-muted-foreground hover:text-foreground disabled:opacity-30"
+        // iter508: pseudo で tap target を 44x44 化 (visual h-3.5 w-3.5 維持、disabled 時は anchor 消す)
+        className="text-muted-foreground hover:text-foreground relative before:absolute before:-inset-3 before:content-[''] disabled:opacity-30 disabled:before:hidden"
         onClick={() => onIndent(item)}
         disabled={!canIndent || movePending}
         aria-busy={movePending || undefined}
