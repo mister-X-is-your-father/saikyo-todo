@@ -15,6 +15,163 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ## 未処理 (新しい順)
 
+### 2026-04-30 — PDCA mode 抜本再設計 (stats panel → 実 cycle workflow + AI assist) ★ P0 ★
+
+- [ ] **既存 PDCA panel (Plan/Do/Check/Act の単純 status カウント) を、「仮説 → 実行 → 検証 → 改善」の 1 cycle を貫通する workflow + AI 協業に再設計** — 分類: 機能追加 + UX 改善 + AI 統合 (P0、複数 commit)
+  - 原文 (2026-04-30): 「pdca モードを使いやすく、意味あるモードにしてくれ」「pdca に ai を絡めたり、そもそもpdca の基本機能を網羅したり ux 改善したり」
+  - **問題認識** (現状 = `src/features/pdca/` + `pdca-panel.tsx`):
+    - PDCA = 単に **item.status の文字を P/D/C/A に renamed しただけ**。「Plan = todo 件数」「Check = 直近 7 日 done 件数」は PDCA 方法論の意図 (= cycle で学習) を満たさない
+    - cycle ごとの「仮説 / 実測 / 学び / 次の改善」 を記録する場所がない → 学習が蓄積しない
+    - AI が一切絡んでない
+    - 既存 panel は dashboard 部品で、独立 mode として体験になっていない
+  - **再設計の中核**: **`pdca_cycles` を first-class entity に**。1 cycle = 「目標 + 仮説 + 期間 + 関連 items + 実測 + 学び + 次決定」 の閉じた record。Item は cycle に link されて、cycle 終了時に振り返り対象になる
+  - **新 schema 案**:
+
+    ```sql
+    create table pdca_cycles (
+      id uuid pk,
+      workspace_id uuid fk,
+      title text not null,                  -- 「Q2 リリース速度改善」
+      hypothesis text not null,             -- Plan: 「daily standup を朝→昼に変更で完了率上がる」
+      target_metric text,                   -- Plan: 「週次完了 item 数 / 平均 lead time」
+      target_value text,                    -- Plan: 「現状 12 → 16」 (自由記述、数値強制しない)
+      plan_started_at, plan_finished_at,    -- 各 phase の打刻 (任意)
+      do_started_at, do_finished_at,
+      check_started_at, check_finished_at,
+      actual_value text,                    -- Check: 実測値 (人間 or AI 集計)
+      check_findings text,                  -- Check: 学び (markdown)
+      act_decisions text,                   -- Act: 次 cycle に持ち越す改善決定 (markdown)
+      status enum('plan','do','check','act','closed') default 'plan',
+      next_cycle_id uuid fk null,           -- A → 次 cycle への chain
+      owner_id uuid fk,
+      created_at, updated_at, version,
+      deleted_at
+    );
+
+    create table pdca_cycle_items (
+      cycle_id uuid fk,
+      item_id uuid fk,
+      role enum('do','reference') default 'do',  -- 「この cycle で消化した item」 vs 「参考 item」
+      added_at,
+      primary key (cycle_id, item_id)
+    );
+    ```
+
+  - **基本機能網羅 (UX)**:
+    1. **mode 化**: workspace.default_mode に 'pdca' を追加 (既に WorkspaceModeSelector あり)。pdca mode 選択時の home は cycle list view
+    2. **cycle CRUD**: list / create / edit / close / chain (A → 次 P)
+    3. **phase 進行 UI**: 1 cycle を 4 タブ (Plan / Do / Check / Act) で表示、各タブで該当 field を編集。「次 phase へ」 button で status 進める (打刻自動)
+    4. **Item link**: Do タブで「この cycle で消化する item」 を multi-select picker で紐付け、cycle 中の進捗 (% 完了) を panel 上部に常時表示
+    5. **Check 自動集計**: 紐付け items の lead time / 完了率 / 期日遅延 を **算出 (純 algorithm)** して actual_value 候補として AI に渡す前に表示 (= fluffy 撲滅、widget 直表示)
+    6. **Act → 次 cycle**: Act 入力後「次 cycle 作成」 button、`hypothesis` 欄に「前 cycle の learning を踏まえて...」 が prefill される
+    7. **history view**: workspace 全 cycles の timeline、closed cycle の learnings を search 可能 (= 組織知)
+  - **AI 統合 (fluffy 撲滅原則準拠 = structured output のみ)**:
+    1. **Plan 生成補助**: title 入力 → AI が `{hypothesis, target_metric_candidates: string[], suggested_items: ItemRef[]}` を structured で提案。文章生成 NG、選択肢提示のみ
+    2. **Check 学び抽出**: actual_value + 紐付け items の audit_log を input → AI が `{wins: string[2-3], gaps: string[2-3], anomalies: string[1-2]}` を structured で出す。「この cycle 良かった」一行感想 NG
+    3. **Act 改善決定提案**: check_findings を input → AI が `{actions: { description, owner_candidate, est_min }[3] }` を structured で。最大 3 件、各々が次 cycle 開始時の Plan candidate になる
+    4. **anomaly 早期検知**: Do 中に lead time が target を **超えそう** な時 (= 完了 % vs 経過時間 % で算出) anomaly として 1 行通知。AI 不要、純 algorithm
+  - **6 軸スコア (期待)**: 可視化 5 / 操作 4 / 認知低減 4 / 漏れ防止 5 / やる気 4 / 効率化 4 — **軸 4 漏れ防止 + 軸 1 可視化が圧倒的本丸** (cycle で学んだことが消えない、次に活きる)
+  - **設計哲学 (memory project_saikyo_todo_philosophy)**: 「目標達成サポート + 段取り力 + 思考力」 三本柱の **思考力** に直結。仮説 → 実測 → 学び を強制する型 = saikyo-todo を「単なる TODO」 から「成長 system」 に格上げ
+  - **段階実装 commit 案** (各 1 commit):
+    - `feat(pdca-cycle): pdca_cycles + pdca_cycle_items schema + service skeleton (queue: PDCA P-1 substrate)`
+    - `feat(pdca-cycle): cycle list / create / detail page (queue: PDCA P-2 CRUD UI)`
+    - `feat(pdca-cycle): 4-tab phase UI (Plan/Do/Check/Act) + 進行 button (queue: PDCA P-3 phase UI)`
+    - `feat(pdca-cycle): item link picker + 進捗 % header (queue: PDCA P-4 link)`
+    - `feat(pdca-cycle): Check 自動集計 widget (lead time / 完了率 / 期日遅延) (queue: PDCA P-5 algorithm widget)`
+    - `feat(pdca-cycle): Act → 次 cycle chain + prefill (queue: PDCA P-6 chain)`
+    - `feat(pdca-cycle): history view + learning search (queue: PDCA P-7 history)`
+    - `feat(agent): PDCA Plan 生成補助 (structured: hypothesis + metric + items) (queue: PDCA AI-1)`
+    - `feat(agent): PDCA Check 学び抽出 (structured: wins/gaps/anomalies) (queue: PDCA AI-2)`
+    - `feat(agent): PDCA Act 改善決定提案 (structured: actions[3]) (queue: PDCA AI-3)`
+    - `feat(pdca-cycle): Do 中 anomaly 早期検知 (純 algorithm) (queue: PDCA AI-4)`
+    - `chore(pdca): 旧 PdcaPanel を mode-pdca の dashboard tab に降格、cycle が main view に (queue: PDCA P-8 cleanup)`
+  - **既存資産との関係**:
+    - 旧 `pdca-panel.tsx` (status counts) は cycle 内の Check 集計 widget に再利用 (=「dashboard tab」 として残す)
+    - workspace.default_mode の選択肢 / WorkspaceModeSelector に 'pdca' 追加 (既に TaskChute / GTD / Kanban 等あり)
+    - AI structured output 経路は fluffy widget 8 件で確立済み (`structured-output` helper / zod schema)
+    - cycle ↔ item link は item_dependencies と同じ M:N pattern (既存 repository 流用可)
+
+  **実装上の注意**:
+  - cycle status は **手動進行が default**、自動進行は controversial なので Phase 2 以降
+  - target_metric は **自由記述**。数値 metric の自動取得は「紐付け items の audit_log → 完了率」 ぐらいに留める (汎化禁止 = MVP scope 制御)
+  - AI structured output は **必ず zod schema 強制** (`generateObject` 風)、純 text comment 経由 NG
+  - Phase 進行時に `recordAudit(cycle, action='advance_phase', after={status})` を必ず書く
+  - `pdca_cycle_items.role='do'` は cycle close 時に readonly 化 (history で freeze)
+
+---
+
+### 2026-04-30 — 自動処理パーツ catalog + workflow node 統合 + MCP からの atomic 起動 ★ P0 ★
+
+- [ ] **「保存できる action 1 個 = 1 atomic part」 の catalog を作り、workflow node graph と MCP tool の両方から利用できる substrate にする** — 分類: 自動化基盤 (P0、複数 commit)
+  - 原文 (2026-04-30): 「自動処理パーツの作成とかも頼みたい。最終的にそれらを繋いだり mcp で ai に自動実行させたりしたい」
+  - **意図**: 既存 workflow (engine + node-presets) は「特定パターン」 が node-presets に hardcode されている。これを **「atomic part = 1 副作用 / 1 zod input / 1 zod output」 の小単位に分解** し、(1) workflow node の中身として composition、(2) MCP server の tool として AI 直叩き、の両方から使える共通 catalog にする
+  - **既存資産** (確認済 2026-04-30):
+    - `src/features/workflow/engine.ts` (DAG runner、node 実行 / approval / retry 込み)
+    - `src/features/workflow/nodes/` (node 種別ごと file、現状 ai/slack/email/script 等)
+    - `src/features/workflow/node-presets.ts` (node の sample preset)
+    - `src/features/agent/tools/` (read / write / template — 既に AI tool 形式の atomic 操作)
+    - `@modelcontextprotocol/sdk@1.29.0` (dev dep 既存)
+    - REST API + MCP queue entry (本ファイル別 entry、auth + key infra)
+  - **設計の中核**: 「atomic part」 を **3 layer** で表現する単一定義に集約:
+
+    ```ts
+    // src/features/automation-part/registry.ts (新規)
+    export interface AutomationPart<I, O> {
+      id: string                              // 'item.create' / 'slack.send' / 'ai.summarize'
+      label: string
+      category: 'item' | 'schedule' | 'time' | 'comment' | 'ai' | 'notify' | 'external'
+      input: ZodSchema<I>
+      output: ZodSchema<O>
+      side_effect: 'write' | 'read' | 'external'  // permission + audit に使う
+      run(input: I, ctx: PartContext): Promise<O>  // ctx = workspaceId / userId / db / audit
+    }
+
+    export const partRegistry = new Map<string, AutomationPart<unknown, unknown>>()
+    export function registerPart(p: AutomationPart<unknown, unknown>) { ... }
+    ```
+
+  - **layer 1 = Workflow node**: workflow engine が `partRegistry.get(node.partId)` で実行。node-presets を「part への薄い wrapper」 に置換
+  - **layer 2 = Agent tool**: `tools/index.ts` で part を Anthropic SDK tool definition に変換 (zod → JSON schema)。Claude が直接呼ぶ
+  - **layer 3 = MCP server tool**: `src/app/api/mcp/route.ts` で part を MCP tool として expose。Bearer auth + scope 確認 (REST API entry の `api_keys` 流用)
+  - **初期 part 一覧 (~15 件、既存機能を atomic 化)**:
+
+    | id                     | layer | input                  | output          | 既存 source                 |
+    | ---------------------- | ----- | ---------------------- | --------------- | --------------------------- |
+    | item.create            | 1/2/3 | CreateItemInput        | Item            | itemService.create          |
+    | item.update            | 1/2/3 | UpdateItemInput        | Item            | itemService.update          |
+    | item.complete          | 1/2/3 | { id, expectedVersion} | Item            | itemService.toggleComplete  |
+    | item.list_today        | 2/3   | { workspaceId }        | Item[]          | buildTodayGroups + repo     |
+    | item.list_overdue      | 2/3   | { workspaceId }        | Item[]          | overdue helper              |
+    | schedule.create        | 1/2/3 | CreateScheduleInput    | Schedule        | scheduleService.create      |
+    | schedule.start_timer   | 1/2/3 | { itemId }             | Schedule        | scheduleService.startTimer  |
+    | comment.create_on_item | 1/2/3 | CreateCommentInput     | CommentOnItem   | commentService.createOnItem |
+    | time_entry.create      | 1/2/3 | CreateTimeEntryInput   | TimeEntry       | timeEntryService.create     |
+    | notify.send            | 1/2/3 | { user_id, body }      | Notification    | notificationService.create  |
+    | slack.send_message     | 1/2/3 | { channel, text }      | { ts }          | dispatchSlack               |
+    | ai.summarize_item      | 1/2/3 | { itemId, focus? }     | { summary }     | researcher (structured)     |
+    | ai.decompose_item      | 1/2/3 | DecomposeInput         | StagingProposal | decompose-proposal          |
+    | ai.review_item         | 1/2/3 | { itemId }             | ReviewChecklist | (新規 = AC-2)               |
+    | external.webhook_post  | 1/2/3 | { url, body }          | { status }      | (新規)                      |
+
+  - **段階実装 commit 案**:
+    - `feat(automation-part): registry + AutomationPart interface + 5 part 移植 (item.*) (queue: AP-1 registry)`
+    - `feat(automation-part): schedule / time / comment / notify part 5 件 (queue: AP-2 batch)`
+    - `feat(automation-part): ai / slack / external part 5 件 (queue: AP-3 batch)`
+    - `feat(workflow): node-presets を part registry 経由に refactor (queue: AP-4 workflow integration)`
+    - `feat(agent): tool/index.ts で part registry → Anthropic tool definition 自動生成 (queue: AP-5 agent integration)`
+    - `feat(api/mcp): MCP server で part を tool として expose (queue: AP-6 MCP integration、REST API entry の Phase 5 と統合)`
+  - **6 軸スコア (期待)**: 可視化 2 / 操作 4 / 認知低減 3 / 漏れ防止 2 / やる気 2 / 効率化 5 — **軸 6 効率化が圧倒的本丸**、AI 自動実行 + workflow 組合せの基盤
+  - **MCP / REST API 既存 queue entry との関係**: 上記 entry が **auth / key infra (api_keys table + Bearer 認証)** を担当、本 entry が **tool 中身 (=どんな operation を expose するか) の catalog** を担当。両方揃うと「外部 AI が Bearer key で saikyo-todo の atomic part を組合せて自動実行」 が成立する
+
+  **実装上の注意**:
+  - part の `run` 内で `recordAudit` を必ず書く (workflow / agent / MCP どの経由でも audit が残る)
+  - workspace_id は **必ず ctx 経由**、part 入力に直接含めない (auth scope と矛盾するパターンを禁止)
+  - `side_effect: 'write'` の part は MCP の write scope key でのみ実行可
+  - structured output 系 AI part は zod schema 強制 (fluffy 撲滅原則)
+  - registry は **静的 register** (動的 plugin 化は POST_MVP)
+
+---
+
 ### 2026-04-30 — AI との高度で手軽な分業・協業 シリーズ ★ P0 ★
 
 - [ ] **AI を「同僚」として task に組み込み、1 click で任せる / 1 click で review してもらう / 提案 → 人間判断 のループを最小摩擦で回す体験を作る** — 分類: AI UX 設計 + 機能追加 (P0、複数 commit)
