@@ -187,10 +187,17 @@ button disabled + reason aria-label。typecheck/lint 緑 (warning baseline 1)。
 優先順位 (上から消化):
 
 1. **Template 登録機能** (詳細: 本ファイル下方の同名 section、scope A から)
+   - 🚧 進行中 (iter460 で substrate 着地、次 iter で UI bind)
    - 仮置き判断: 既存 `templates` table 拡張、UI scope A は ItemEditDialog から
      「Template 保存」 button → `templates.body` JSON に `{parent:{...}, children:[{title,dod,...},...]}`
    - subtask の subtask は scope A では非対応 (フラット 2 階層のみ)
    - Template 起動時は parent + child を一気に bulk insert (1 件確認モードは scope B 以降)
+   - [x] iter460 (e75e53f): pure helper `buildTemplateBlueprintFromItemTree` + 10 test —
+         items 世界の uuid label → template 世界の uuid label の re-mapping + parent
+         prefix 剥がし + depth 昇順 stable sort で `template_items.parent_path` を生成。
+         MVP scope A では position / due_date / agent_role / tags / assignees は不保持。
+   - [ ] 次: server action `createTemplateFromItemAction(itemId)` + ItemEditDialog
+         「Template に保存」 button (scope A UI bind)
 
 2. **案件サマリ panel** (詳細: 本ファイル下方、scope A から)
    - 仮置き判断: 「案件」= parent task 単位、ItemEditDialog の新 tab「サマリ」
@@ -214,6 +221,7 @@ button disabled + reason aria-label。typecheck/lint 緑 (warning baseline 1)。
    - capacity 計算は workspace default 8h × N day (member 別は別件)
 
 各 iter ルール:
+
 - 1 commit が 30-150 行、scope A の最小実装で typecheck/lint clean
 - shadcn UI (`src/components/ui/`) 編集禁止
 - pure helper には test 1-2 件追加
