@@ -12,7 +12,7 @@
  * Realtime 購読は MVP 不要 (1 トリガで Researcher が一気に proposals を吐く想定で、
  * decomposeItem mutation の onSuccess で invalidate しているため即時反映される)。
  */
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { RotateCw, Sparkles, X } from 'lucide-react'
 import { toast } from 'sonner'
@@ -290,14 +290,22 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
   const [isMust, setIsMust] = useState(proposal.isMust)
   const [dod, setDod] = useState(proposal.dod ?? '')
   const update = useUpdateProposal(parentItemId)
+  // iter500: validation 失敗 path で first invalid field に focus shift
+  // (iter499 CreateTimeEntryForm pattern を続編、manual handleSubmit 系 form の
+  // a11y 統一)。
+  const titleRef = useRef<HTMLInputElement>(null)
+  const dodRef = useRef<HTMLInputElement>(null)
 
   async function handleSaveEdit() {
     if (!title.trim()) {
       toast.error('タイトルを入力してください')
+      titleRef.current?.focus()
+      titleRef.current?.select()
       return
     }
     if (isMust && !dod.trim()) {
       toast.error('MUST には DoD が必要です')
+      dodRef.current?.focus()
       return
     }
     try {
@@ -352,11 +360,13 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
           <div className="space-y-1">
             <Label htmlFor={`p-title-${proposal.id}`}>タイトル</Label>
             <IMEInput
+              ref={titleRef}
               id={`p-title-${proposal.id}`}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
               aria-required="true"
+              aria-invalid={!title.trim() || undefined}
               minLength={1}
               maxLength={500}
             />
@@ -399,11 +409,13 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
             <div className="space-y-1">
               <Label htmlFor={`p-dod-${proposal.id}`}>DoD</Label>
               <IMEInput
+                ref={dodRef}
                 id={`p-dod-${proposal.id}`}
                 value={dod}
                 onChange={(e) => setDod(e.target.value)}
                 required
                 aria-required="true"
+                aria-invalid={(isMust && !dod.trim()) || undefined}
                 minLength={1}
                 maxLength={2000}
               />
