@@ -121,3 +121,17 @@ export function toggleAssigneeRef(refs: readonly AssigneeRef[], ref: AssigneeRef
   }
   return [...refs, ref]
 }
+
+/**
+ * Item が「Plan を生成」 button を出すべき状態かを判定。
+ * - status='done' は完了済なので Plan 不要
+ * - assignees に AI が居ないなら gate (AI 担当 Item のみ)
+ * UI button の disabled / 表示有無に使う。
+ */
+export function canGeneratePlan(params: {
+  status: string
+  assignees: readonly AssigneeRef[]
+}): boolean {
+  if (params.status === 'done') return false
+  return hasAiAssignee(params.assignees)
+}

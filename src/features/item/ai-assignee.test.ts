@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest'
 import {
   agentsToAssigneeRefs,
   assigneeRefEquals,
+  canGeneratePlan,
   countAssigneesByKind,
   extractAiAssignees,
   extractUserAssignees,
@@ -176,6 +177,27 @@ describe('ai-assignee', () => {
       const out = toggleAssigneeRef(input, aiRef)
       expect(input).toEqual([userRef])
       expect(out).not.toBe(input)
+    })
+  })
+
+  describe('canGeneratePlan', () => {
+    it('AI 担当 + 未完了 (todo) なら true', () => {
+      expect(canGeneratePlan({ status: 'todo', assignees: [aiRef] })).toBe(true)
+    })
+    it('AI 担当 + in_progress でも true', () => {
+      expect(canGeneratePlan({ status: 'in_progress', assignees: [aiRef] })).toBe(true)
+    })
+    it('AI 担当でも status=done なら false', () => {
+      expect(canGeneratePlan({ status: 'done', assignees: [aiRef] })).toBe(false)
+    })
+    it('AI 担当でない (user のみ) なら未完了でも false', () => {
+      expect(canGeneratePlan({ status: 'todo', assignees: [userRef] })).toBe(false)
+    })
+    it('未割当 (空配列) なら false', () => {
+      expect(canGeneratePlan({ status: 'todo', assignees: [] })).toBe(false)
+    })
+    it('mixed (AI + user) なら true (AI が居れば OK)', () => {
+      expect(canGeneratePlan({ status: 'todo', assignees: [aiRef, userRef] })).toBe(true)
     })
   })
 

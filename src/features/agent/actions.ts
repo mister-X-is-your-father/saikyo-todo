@@ -241,6 +241,37 @@ const ListAgentsActionInputSchema = z.object({
   workspaceId: z.string().uuid(),
 })
 
+const GeneratePlanActionInputSchema = z.object({
+  workspaceId: z.string().uuid(),
+  itemId: z.string().uuid(),
+  extraHint: z.string().max(500).optional(),
+  /** 省略時はサーバ側で randomUUID を生成。 */
+  idempotencyKey: z.string().uuid().optional(),
+})
+
+/**
+ * P0「AI 自動実行モード」 scope A iter7: AI 担当 Item に「実行計画 (Plan)」を生成。
+ * Researcher を CLI 経路で起動 (env 不要) → Plan を Markdown で書かせ →
+ * write_comment で本 Item に post → text を返す。UI button (ItemEditDialog) から呼ぶ。
+ *
+ * 権限: workspace member 以上。
+ */
+export async function generatePlanAction(input: unknown): Promise<Result<ResearcherRunOutput>> {
+  return await actionWrap(async () => {
+    const parsed = GeneratePlanActionInputSchema.safeParse(input)
+    if (!parsed.success) {
+      return err(new ValidationError('入力内容を確認してください', parsed.error))
+    }
+    await requireWorkspaceMember(parsed.data.workspaceId, 'member')
+    return await researcherService.generatePlanForItem({
+      workspaceId: parsed.data.workspaceId,
+      itemId: parsed.data.itemId,
+      ...(parsed.data.extraHint ? { extraHint: parsed.data.extraHint } : {}),
+      idempotencyKey: parsed.data.idempotencyKey ?? randomUUID(),
+    })
+  })
+}
+
 /**
  * FEEDBACK_QUEUE.md P0「AI 自動実行モード」 scope A iter3 substrate: workspace 内の
  * agent (pm / researcher / engineer / reviewer) を列挙する read-only action。

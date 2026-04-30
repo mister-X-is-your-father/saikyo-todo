@@ -20,6 +20,7 @@ import {
   decomposeGoalViaClaudeAction,
   decomposeItemAction,
   decomposeItemViaClaudeAction,
+  generatePlanAction,
   listAgentsAction,
   researchItemAction,
 } from './actions'
@@ -166,6 +167,39 @@ export function useResearchItem() {
           idempotencyKey: vars.idempotencyKey,
         }),
       ),
+  })
+}
+
+export interface GeneratePlanVariables {
+  workspaceId: string
+  itemId: string
+  extraHint?: string
+  idempotencyKey?: string
+}
+
+/**
+ * P0「AI 自動実行モード」 scope A: AI 担当 Item の「実行計画 (Plan)」を Researcher
+ * に書かせ、本 Item の comment に post する mutation。CLI 経路 (env 不要)。
+ * 完了時に該当 Item の comments query を invalidate (UI で plan comment が見える)。
+ */
+export function useGeneratePlan() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (vars: GeneratePlanVariables) =>
+      unwrap(
+        await generatePlanAction({
+          workspaceId: vars.workspaceId,
+          itemId: vars.itemId,
+          extraHint: vars.extraHint,
+          idempotencyKey: vars.idempotencyKey,
+        }),
+      ),
+    onSuccess: (_data, vars) => {
+      void qc.invalidateQueries({ queryKey: itemKeys.list(vars.workspaceId) })
+      // comment list は item key prefix で別途 invalidate されるが、明示的に
+      // comment scoped queryKey を持つ caller (ItemEditDialog) は再 fetch すべし。
+      void qc.invalidateQueries({ queryKey: ['comments', vars.itemId] })
+    },
   })
 }
 
