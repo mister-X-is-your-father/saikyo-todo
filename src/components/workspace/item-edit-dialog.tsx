@@ -690,6 +690,7 @@ function ItemEditDialogInner({
             <Button
               variant="ghost"
               size="sm"
+              className="mr-auto min-h-11"
               disabled={unarchive.isPending}
               aria-busy={unarchive.isPending || undefined}
               onClick={async () => {
@@ -702,7 +703,6 @@ function ItemEditDialogInner({
                 }
               }}
               data-testid="item-edit-unarchive"
-              className="mr-auto"
               aria-label={
                 unarchive.isPending
                   ? `「${item.title}」をアーカイブから復元中…`
@@ -715,6 +715,7 @@ function ItemEditDialogInner({
             <Button
               variant="ghost"
               size="sm"
+              className="text-muted-foreground mr-auto min-h-11"
               disabled={archive.isPending}
               aria-busy={archive.isPending || undefined}
               onClick={async () => {
@@ -731,7 +732,6 @@ function ItemEditDialogInner({
                 }
               }}
               data-testid="item-edit-archive"
-              className="text-muted-foreground mr-auto"
               aria-label={
                 archive.isPending
                   ? `「${item.title}」をアーカイブ中…`
@@ -745,6 +745,7 @@ function ItemEditDialogInner({
             <Button
               variant="ghost"
               size="sm"
+              className="text-muted-foreground min-h-11"
               disabled={setBaseline.isPending}
               aria-busy={setBaseline.isPending || undefined}
               onClick={async () => {
@@ -763,7 +764,6 @@ function ItemEditDialogInner({
                 }
               }}
               data-testid="item-edit-set-baseline"
-              className="text-muted-foreground"
               title={
                 item.baselineStartDate
                   ? // iter268 basics: title は hover 用なので friendly 表示。aria-label
@@ -790,6 +790,7 @@ function ItemEditDialogInner({
             <Button
               variant="ghost"
               size="sm"
+              className="text-muted-foreground min-h-11"
               disabled={clearBaseline.isPending}
               aria-busy={clearBaseline.isPending || undefined}
               onClick={async () => {
@@ -805,7 +806,6 @@ function ItemEditDialogInner({
                 }
               }}
               data-testid="item-edit-clear-baseline"
-              className="text-muted-foreground"
               title="baseline 列を NULL に戻す"
               aria-label={
                 clearBaseline.isPending
@@ -821,6 +821,7 @@ function ItemEditDialogInner({
               type="button"
               variant="ghost"
               size="sm"
+              className="text-muted-foreground min-h-11"
               disabled={createTemplateFromItem.isPending}
               aria-busy={createTemplateFromItem.isPending || undefined}
               onClick={async () => {
@@ -838,7 +839,6 @@ function ItemEditDialogInner({
                 }
               }}
               data-testid="item-edit-save-as-template"
-              className="text-muted-foreground"
               title="この Item と全ての子孫 (subtask) を Template として保存 (再利用可)"
               aria-label={
                 createTemplateFromItem.isPending
