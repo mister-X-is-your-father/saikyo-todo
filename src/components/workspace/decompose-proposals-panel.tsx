@@ -155,6 +155,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
             <Button
               type="button"
               size="sm"
+              className="min-h-11"
               variant="ghost"
               disabled={cancel.isPending}
               aria-busy={cancel.isPending || undefined}
@@ -179,6 +180,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                 <Button
                   type="button"
                   size="sm"
+                  className="min-h-11"
                   variant="outline"
                   disabled={accept.isPending || rejectAll.isPending || decompose.isPending}
                   aria-busy={accept.isPending || undefined}
@@ -195,6 +197,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                 <Button
                   type="button"
                   size="sm"
+                  className="min-h-11"
                   variant="ghost"
                   disabled={rejectAll.isPending || accept.isPending || decompose.isPending}
                   aria-busy={rejectAll.isPending || undefined}
@@ -215,7 +218,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               type="button"
               size="sm"
               variant="ghost"
-              className="gap-1"
+              className="min-h-11 gap-1"
               disabled={decompose.isPending || rejectAll.isPending}
               aria-busy={decompose.isPending || undefined}
               onClick={() => void handleRedecompose({ clearExisting: false })}
@@ -234,6 +237,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               <Button
                 type="button"
                 size="sm"
+                className="min-h-11"
                 variant="ghost"
                 disabled={decompose.isPending || rejectAll.isPending}
                 aria-busy={decompose.isPending || undefined}
@@ -409,6 +413,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
             <Button
               type="button"
               size="sm"
+              className="min-h-11"
               variant="ghost"
               onClick={() => setEditing(false)}
               disabled={update.isPending}
@@ -418,6 +423,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
             <Button
               type="submit"
               size="sm"
+              className="min-h-11"
               disabled={update.isPending}
               aria-busy={update.isPending || undefined}
               data-testid={`proposal-${proposal.id}-save`}
@@ -460,7 +466,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
         <Button
           size="sm"
           variant="default"
-          className="h-7 px-2"
+          className="min-h-11 px-2"
           disabled={disabled}
           onClick={() => void handleAccept()}
           data-testid={`proposal-${proposal.id}-accept`}
@@ -476,7 +482,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
         <Button
           size="sm"
           variant="ghost"
-          className="h-7 px-2"
+          className="min-h-11 px-2"
           disabled={disabled}
           onClick={() => void handleReject()}
           data-testid={`proposal-${proposal.id}-reject`}
