@@ -222,6 +222,34 @@ export function costMonthProjectionChipClasses(
   return getChipToneClasses(RISK_TO_SHARED_CHIP_TONE[risk])
 }
 
+/**
+ * iter498 basics: dashboard widget の小型 chip / Slack 通知 ペイロード 用の
+ * **compact** 1 行 ja-JP 文言。詳細 (現在/残日数) を省く short 版、emoji も控えめ
+ * (= caller が chip 配色で視覚補強)。
+ *
+ * 仕様:
+ *  - idle → 'AI コスト: 不明 (today 不正)'
+ *  - 制限なし → 'AI コスト: 今月予測 $1.20'
+ *  - safe → 'AI コスト: 安全 $1.20 / $5.00'
+ *  - warn → 'AI コスト: 警告 $4.50 / $5.00'
+ *  - over → 'AI コスト: 超過予測 $6.00 / $5.00'
+ *
+ * iter489 `formatAgentReliabilityCompactJa` と対称な短縮形式。caller が chip /
+ * Slack で配色 (iter482 `costMonthProjectionChipClasses`) と並列表示することで
+ * 視覚 + 文字の両軸で意味を伝える設計。
+ */
+export function formatCostMonthProjectionCompactJa(p: CostMonthProjection): string {
+  if (p.riskLevel === 'idle') return 'AI コスト: 不明 (today 不正)'
+  const proj = formatUsd(p.projectedUsd)
+  if (p.limitUsd == null) {
+    return `AI コスト: 今月予測 ${proj}`
+  }
+  const lim = formatUsd(p.limitUsd)
+  if (p.riskLevel === 'over') return `AI コスト: 超過予測 ${proj} / ${lim}`
+  if (p.riskLevel === 'warn') return `AI コスト: 警告 ${proj} / ${lim}`
+  return `AI コスト: 安全 ${proj} / ${lim}`
+}
+
 export function formatCostMonthProjectionJa(p: CostMonthProjection): string {
   if (p.riskLevel === 'idle') return 'AI コスト予測: 不明 (today 不正)'
   const cur = formatUsd(p.thisMonthUsd)

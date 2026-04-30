@@ -7,6 +7,7 @@ import {
   computeCostMonthProjection,
   costMonthProjectionChipClasses,
   costMonthProjectionTone,
+  formatCostMonthProjectionCompactJa,
   formatCostMonthProjectionJa,
 } from './cost-month-projection'
 
@@ -177,6 +178,49 @@ describe('formatCostMonthProjectionJa', () => {
     expect(formatCostMonthProjectionJa(r)).toBe(
       '🚨 今月予測 $6.00 / 上限 $5.00 — 月末超過見込み (現在 $2.00 / 残 20 日)',
     )
+  })
+})
+
+describe('formatCostMonthProjectionCompactJa (compact dashboard / Slack 用)', () => {
+  it('idle → 不明', () => {
+    const r = computeCostMonthProjection({ thisMonthUsd: 1, today: 'invalid' })
+    expect(formatCostMonthProjectionCompactJa(r)).toBe('AI コスト: 不明 (today 不正)')
+  })
+
+  it('制限なし → 今月予測のみ', () => {
+    const r = computeCostMonthProjection({
+      thisMonthUsd: 0.4,
+      today: '2026-04-10',
+      monthlyLimitUsd: null,
+    })
+    expect(formatCostMonthProjectionCompactJa(r)).toBe('AI コスト: 今月予測 $1.20')
+  })
+
+  it('safe → 「安全 X / Y」', () => {
+    const r = computeCostMonthProjection({
+      thisMonthUsd: 0.4,
+      today: '2026-04-10',
+      monthlyLimitUsd: 5,
+    })
+    expect(formatCostMonthProjectionCompactJa(r)).toBe('AI コスト: 安全 $1.20 / $5.00')
+  })
+
+  it('warn → 「警告 X / Y」', () => {
+    const r = computeCostMonthProjection({
+      thisMonthUsd: 1.5,
+      today: '2026-04-10',
+      monthlyLimitUsd: 5,
+    })
+    expect(formatCostMonthProjectionCompactJa(r)).toBe('AI コスト: 警告 $4.50 / $5.00')
+  })
+
+  it('over → 「超過予測 X / Y」', () => {
+    const r = computeCostMonthProjection({
+      thisMonthUsd: 2,
+      today: '2026-04-10',
+      monthlyLimitUsd: 5,
+    })
+    expect(formatCostMonthProjectionCompactJa(r)).toBe('AI コスト: 超過予測 $6.00 / $5.00')
   })
 })
 
