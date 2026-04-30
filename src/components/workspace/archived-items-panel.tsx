@@ -157,6 +157,7 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
                   type="button"
                   variant="outline"
                   size="sm"
+                  className="min-h-11"
                   data-testid={`archive-restore-${item.id}`}
                   disabled={unarchive.isPending}
                   aria-busy={unarchive.isPending || undefined}
