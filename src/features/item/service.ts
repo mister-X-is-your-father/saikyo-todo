@@ -542,6 +542,106 @@ export const itemService = {
     })
   },
 
+  /**
+   * iter520 (queue TC-2): TaskChute 打刻 ▶ — items.started_at = now() (まだ null のときのみ)。
+   * 既に started_at があれば「既に着手済」 ValidationError (二重打刻防止、UI で分岐済の前提)。
+   * doneAt とは独立 (status 遷移とは別軸)。
+   */
+  async markStarted(input: { id: string; expectedVersion: number }): Promise<Result<Item>> {
+    if (!input.id) return err(new ValidationError('id 必須'))
+    return await mutateWithGuard<Item>({
+      findById: (tx, id) => itemRepository.findById(tx, id),
+      id: input.id,
+      notFoundMessage: NOT_FOUND,
+      fn: async (tx, before, user) => {
+        if (before.startedAt) return err(new ValidationError('既に着手済みです'))
+        const now = new Date()
+        const updated = await itemRepository.updateWithLock(tx, input.id, input.expectedVersion, {
+          startedAt: now,
+        })
+        if (!updated) return err(new ConflictError())
+        await recordAudit(tx, {
+          workspaceId: before.workspaceId,
+          actorType: 'user',
+          actorId: user.id,
+          targetType: 'item',
+          targetId: updated.id,
+          action: 'mark_started',
+          before: { startedAt: before.startedAt },
+          after: { startedAt: now.toISOString() },
+        })
+        return ok(updated)
+      },
+    })
+  },
+
+  /**
+   * iter520 (queue TC-2): TaskChute 打刻 ■ — items.completed_at = now()。
+   * doneAt とは別軸 (status=done 遷移は別 path)。
+   * 既に completed_at があれば「既に完了打刻済」 ValidationError。
+   */
+  async markCompleted(input: { id: string; expectedVersion: number }): Promise<Result<Item>> {
+    if (!input.id) return err(new ValidationError('id 必須'))
+    return await mutateWithGuard<Item>({
+      findById: (tx, id) => itemRepository.findById(tx, id),
+      id: input.id,
+      notFoundMessage: NOT_FOUND,
+      fn: async (tx, before, user) => {
+        if (before.completedAt) return err(new ValidationError('既に完了打刻済みです'))
+        const now = new Date()
+        const updated = await itemRepository.updateWithLock(tx, input.id, input.expectedVersion, {
+          completedAt: now,
+        })
+        if (!updated) return err(new ConflictError())
+        await recordAudit(tx, {
+          workspaceId: before.workspaceId,
+          actorType: 'user',
+          actorId: user.id,
+          targetType: 'item',
+          targetId: updated.id,
+          action: 'mark_completed',
+          before: { completedAt: before.completedAt },
+          after: { completedAt: now.toISOString() },
+        })
+        return ok(updated)
+      },
+    })
+  },
+
+  /**
+   * iter520 (queue TC-2): 打刻のリセット (started_at / completed_at を NULL に戻す)。
+   * UI で「打刻取消」用、admin なしで本人 reset 可能。
+   */
+  async clearChuteMarks(input: { id: string; expectedVersion: number }): Promise<Result<Item>> {
+    if (!input.id) return err(new ValidationError('id 必須'))
+    return await mutateWithGuard<Item>({
+      findById: (tx, id) => itemRepository.findById(tx, id),
+      id: input.id,
+      notFoundMessage: NOT_FOUND,
+      fn: async (tx, before, user) => {
+        if (!before.startedAt && !before.completedAt) {
+          return err(new ValidationError('打刻されていません'))
+        }
+        const updated = await itemRepository.updateWithLock(tx, input.id, input.expectedVersion, {
+          startedAt: null,
+          completedAt: null,
+        })
+        if (!updated) return err(new ConflictError())
+        await recordAudit(tx, {
+          workspaceId: before.workspaceId,
+          actorType: 'user',
+          actorId: user.id,
+          targetType: 'item',
+          targetId: updated.id,
+          action: 'clear_chute_marks',
+          before: { startedAt: before.startedAt, completedAt: before.completedAt },
+          after: { startedAt: null, completedAt: null },
+        })
+        return ok(updated)
+      },
+    })
+  },
+
   /** Unarchive (アーカイブ復元)。archived_at を NULL に戻す。 */
   async unarchive(input: { id: string; expectedVersion: number }): Promise<Result<Item>> {
     if (!input.id) return err(new ValidationError('id 必須'))

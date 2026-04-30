@@ -71,6 +71,12 @@ export const items = pgTable(
     archivedAt: timestamp('archived_at', { withTimezone: true }),
     doneAt: timestamp('done_at', { withTimezone: true }),
     /**
+     * iter520 (TC-2): TaskChute mode 打刻 (▶/■)。doneAt (status 遷移時刻) とは別軸。
+     * 「明示的に着手 / 完了した時刻」 を残し、 段取り力の learning に使う。
+     */
+    startedAt: timestamp('started_at', { withTimezone: true }),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    /**
      * Phase 5.1: Sprint 割当 (nullable)。Sprint 削除 (cancelled) で外す方針なので
      * `set null` ではなく `restrict` 相当の意図はないが、sprints は cancelled で
      * soft delete 代替なので物理削除は cascade では起きない。`set null` で十分。

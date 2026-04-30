@@ -20,12 +20,15 @@ import {
   bulkSoftDeleteItemAction,
   bulkUpdateItemStatusAction,
   clearItemBaselineAction,
+  clearItemChuteMarksAction,
   createItemAction,
   listItemAssigneesAction,
   listItemsAction,
   listItemTagIdsAction,
   listSprintItemAssigneesAction,
   listWorkspaceItemAssigneesAction,
+  markItemCompletedAction,
+  markItemStartedAction,
   moveItemAction,
   reorderItemAction,
   setItemAssigneesAction,
@@ -205,12 +208,8 @@ export function useReorderItem(workspaceId: string) {
 function reorderInArray(items: Item[], input: ReorderItemInput): Item[] {
   const target = items.find((i) => i.id === input.id)
   if (!target) return items
-  const sameParent = items.filter(
-    (i) => i.parentPath === target.parentPath && !i.deletedAt,
-  )
-  const others = items.filter(
-    (i) => !(i.parentPath === target.parentPath && !i.deletedAt),
-  )
+  const sameParent = items.filter((i) => i.parentPath === target.parentPath && !i.deletedAt)
+  const others = items.filter((i) => !(i.parentPath === target.parentPath && !i.deletedAt))
   // (position, id) で **byte-order (ASCII)** sort = UI の compareSiblings と完全一致。
   // localeCompare だと 'Zz' < 'a0' が逆判定されて先頭挿入 bug の root cause になる。
   sameParent.sort((a, b) => {
@@ -221,16 +220,11 @@ function reorderInArray(items: Item[], input: ReorderItemInput): Item[] {
     return 0
   })
   // prev / next item を pull
-  const prevItem = input.prevSiblingId
-    ? sameParent.find((s) => s.id === input.prevSiblingId)
-    : null
-  const nextItem = input.nextSiblingId
-    ? sameParent.find((s) => s.id === input.nextSiblingId)
-    : null
+  const prevItem = input.prevSiblingId ? sameParent.find((s) => s.id === input.prevSiblingId) : null
+  const nextItem = input.nextSiblingId ? sameParent.find((s) => s.id === input.nextSiblingId) : null
   const prevPos = prevItem?.position ?? null
   const nextPos = nextItem?.position ?? null
-  const collision =
-    prevPos !== null && nextPos !== null && prevPos.localeCompare(nextPos) >= 0
+  const collision = prevPos !== null && nextPos !== null && prevPos.localeCompare(nextPos) >= 0
 
   if (!collision) {
     // 通常 path: target の position だけ更新 (server と一致)
@@ -314,6 +308,49 @@ export function useUnarchiveItem(workspaceId: string) {
   return useMutation({
     mutationFn: async (input: { id: string; expectedVersion: number }) =>
       unwrap(await unarchiveItemAction(input)),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
+}
+
+/**
+ * iter520 (queue TC-2): TaskChute 打刻 ▶ — items.started_at を now() にセット。
+ * doneAt とは独立、再打刻は不可 (二重打刻防止)。
+ */
+export function useMarkItemStarted(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: { id: string; expectedVersion: number }) =>
+      unwrap(await markItemStartedAction(input)),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
+}
+
+/**
+ * iter520 (queue TC-2): TaskChute 打刻 ■ — items.completed_at を now() にセット。
+ */
+export function useMarkItemCompleted(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: { id: string; expectedVersion: number }) =>
+      unwrap(await markItemCompletedAction(input)),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
+}
+
+/**
+ * iter520 (queue TC-2): 打刻取消 — started_at / completed_at を NULL に戻す。
+ */
+export function useClearItemChuteMarks(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: { id: string; expectedVersion: number }) =>
+      unwrap(await clearItemChuteMarksAction(input)),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
     },

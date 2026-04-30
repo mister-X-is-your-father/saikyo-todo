@@ -39,6 +39,31 @@ export async function archiveItemAction(input: {
   return await actionWrap(() => itemService.archive(input))
 }
 
+/**
+ * iter520 (queue TC-2): TaskChute 打刻 ▶ / ■ / 取消。
+ * docs/methodology-modes-plan.md §1 T-2 + §5 TC-2
+ */
+export async function markItemStartedAction(input: {
+  id: string
+  expectedVersion: number
+}): Promise<Result<Item>> {
+  return await actionWrap(() => itemService.markStarted(input))
+}
+
+export async function markItemCompletedAction(input: {
+  id: string
+  expectedVersion: number
+}): Promise<Result<Item>> {
+  return await actionWrap(() => itemService.markCompleted(input))
+}
+
+export async function clearItemChuteMarksAction(input: {
+  id: string
+  expectedVersion: number
+}): Promise<Result<Item>> {
+  return await actionWrap(() => itemService.clearChuteMarks(input))
+}
+
 export async function unarchiveItemAction(input: {
   id: string
   expectedVersion: number

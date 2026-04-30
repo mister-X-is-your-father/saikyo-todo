@@ -397,6 +397,90 @@ describe('itemService', () => {
     })
   })
 
+  describe('TaskChute 打刻 (markStarted / markCompleted / clearChuteMarks)', () => {
+    it('markStarted で startedAt がセットされる', async () => {
+      const item = await createItem({ title: 'to-start' })
+      const r = await itemService.markStarted({ id: item.id, expectedVersion: item.version })
+      expect(r.ok).toBe(true)
+      if (!r.ok) return
+      expect(r.value.startedAt).not.toBeNull()
+      expect(r.value.completedAt).toBeNull()
+    })
+
+    it('既に started の item を再 markStarted すると ValidationError', async () => {
+      const item = await createItem({ title: 'twice-start' })
+      const r1 = await itemService.markStarted({ id: item.id, expectedVersion: item.version })
+      expect(r1.ok).toBe(true)
+      if (!r1.ok) return
+      const r2 = await itemService.markStarted({
+        id: item.id,
+        expectedVersion: r1.value.version,
+      })
+      expect(r2.ok).toBe(false)
+      if (!r2.ok) expect(r2.error.code).toBe('VALIDATION')
+    })
+
+    it('markCompleted で completedAt がセットされる (startedAt とは独立)', async () => {
+      const item = await createItem({ title: 'to-complete' })
+      const r = await itemService.markCompleted({ id: item.id, expectedVersion: item.version })
+      expect(r.ok).toBe(true)
+      if (!r.ok) return
+      expect(r.value.completedAt).not.toBeNull()
+      expect(r.value.startedAt).toBeNull()
+      // doneAt も独立 (status 遷移は別 path)
+      expect(r.value.doneAt).toBeNull()
+    })
+
+    it('clearChuteMarks で 両方 NULL に戻る', async () => {
+      const item = await createItem({ title: 'reset-marks' })
+      const r1 = await itemService.markStarted({
+        id: item.id,
+        expectedVersion: item.version,
+      })
+      if (!r1.ok) throw new Error('precondition')
+      const r2 = await itemService.markCompleted({
+        id: item.id,
+        expectedVersion: r1.value.version,
+      })
+      if (!r2.ok) throw new Error('precondition')
+      const r3 = await itemService.clearChuteMarks({
+        id: item.id,
+        expectedVersion: r2.value.version,
+      })
+      expect(r3.ok).toBe(true)
+      if (!r3.ok) return
+      expect(r3.value.startedAt).toBeNull()
+      expect(r3.value.completedAt).toBeNull()
+    })
+
+    it('打刻無しで clearChuteMarks すると ValidationError', async () => {
+      const item = await createItem({ title: 'reset-virgin' })
+      const r = await itemService.clearChuteMarks({
+        id: item.id,
+        expectedVersion: item.version,
+      })
+      expect(r.ok).toBe(false)
+      if (!r.ok) expect(r.error.code).toBe('VALIDATION')
+    })
+
+    it('expectedVersion 不一致は ConflictError', async () => {
+      const item = await createItem({ title: 'conflict-mark' })
+      const r = await itemService.markStarted({ id: item.id, expectedVersion: 999 })
+      expect(r.ok).toBe(false)
+      if (!r.ok) expect(r.error.code).toBe('CONFLICT')
+    })
+
+    it('audit_log に mark_started が残る', async () => {
+      const item = await createItem({ title: 'audit-start' })
+      await itemService.markStarted({ id: item.id, expectedVersion: item.version })
+      const { data: audits } = await adminClient()
+        .from('audit_log')
+        .select('action, target_id')
+        .eq('target_id', item.id)
+      expect(audits?.some((a) => a.action === 'mark_started')).toBe(true)
+    })
+  })
+
   describe('archive / unarchive', () => {
     it('archive で archivedAt がセットされる', async () => {
       const item = await createItem({ title: 'to-archive' })
