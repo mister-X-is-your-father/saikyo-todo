@@ -15,6 +15,87 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ## 未処理 (新しい順)
 
+### 2026-04-30 — 自前実装 → ライブラリお着替え 棚卸し ★ 新規 ★
+
+- [ ] **既存自前実装を確立 ライブラリに段階的 移行 (品質 + メンテ性 向上)** — 分類: 設計議論 → 段階実装
+  - 原文: 「ここいらで、ライブラリ使えるところはライブラリにお着替えしようか。きっと自前実装よりええやろ？」
+  - **方針**: CLAUDE.md 「ライブラリ・モリモリ主義」 (memory:feedback_libraries_first) と整合、
+    **自前小実装 → 業界標準ライブラリ** に置換するチャンス棚卸し
+  - 候補 (現状 self-implemented vs 確立 lib):
+    | 領域 | 現状 (自前) | 候補 lib | 採用効果 |
+    |---|---|---|---|
+    | DAG editor | JSON textarea (workflows-panel) | **React Flow / @xyflow/react** | drag&drop / port 結線 / minimap (本ファイル別 entry) |
+    | Gantt 描画 | gantt-view.tsx 583 行 (自前 SVG bar + 線) | **frappe-gantt** / **gantt-task-react** / **dhtmlx-gantt (free)** | DnD resize / 期間 click / scroll virtualize built-in |
+    | Mind map / tree | 無し | **react-d3-tree** / **react-flow** | subtask graph 視覚化 (queue 別件 graphical 波及 と協調) |
+    | Markdown editor | BlockNote 既導入 | (既に 確立 lib) | n/a |
+    | Date picker | 無 (HTML date input) | **react-day-picker** / **shadcn DatePicker** | 範囲選択 / locale / disabled 日付 |
+    | Color picker | 無 | **react-colorful** | tag 配色 / member avatar 色 |
+    | Drag & drop | @dnd-kit 導入済 | (既に 確立 lib) | n/a |
+    | Toast | sonner 既導入 | (既に 確立 lib) | n/a |
+    | Form | react-hook-form 既導入 | (既に 確立 lib) | n/a |
+    | Table | TanStack Table 既導入 | (既に 確立 lib) | n/a |
+    | Virtualization | TanStack Virtual 既導入 (一部) | 全 list view に拡張 | 大量 item で fps 維持 |
+    | Charts (PDCA / dashboard) | 自前 div bar (PDCA DailyBars 等) | **recharts** / **chart.js with chartjs-react** | annotation / hover / export |
+    | Calendar view | 無し (POST_MVP) | **FullCalendar** / **react-big-calendar** | 月/週/agenda の 3 view 込み |
+    | i18n | 無し (現状 日本語 hardcode) | **next-intl** | EN/JP 切替 / locale-aware date |
+    | a11y test runner | 自前 explore-uiux script | **axe-core** / **playwright-axe** | WCAG 違反 自動検出 |
+  - 進め方 (1 候補 = 1 iter ペース、queue track):
+    - iter1: 棚卸し最終確定 (本リスト のうち どこを着替えるか user 判断、不要候補は除外)
+    - iter2-: 1 候補 = scope A (lib 導入 + 最小 1 view 移植) → scope B (全 view 横展開) の 2-3 commit ずつ
+  - **要追加質問** (仮置きで進める):
+    - (a) Gantt はどれ? frappe-gantt 軽量 / gantt-task-react 高機能 / dhtmlx 商用 free
+    - (b) Charts は recharts / chart.js / d3 直接? recharts 推奨 (shadcn 親和性)
+    - (c) Calendar は POST_MVP 寄り、入れる?
+    - (d) i18n は社内利用 (日本語のみ) なので不要? 英語業務委託あれば必要?
+    - (e) lib 追加で bundle size 大きくなるが OK? (Next.js code split で各 page 局所化)
+  - 推奨着手順 (impact 大 / 工数小 から):
+    1. **React Flow** (Workflow graphical、本ファイル別 entry P0 と統合) ★最大 impact
+    2. **recharts** (PDCA / dashboard / member capacity 等の chart 統合)
+    3. **gantt-task-react** (gantt-view.tsx 全置換、queue「Gantt DnD」と統合)
+    4. **react-day-picker** (date input UX 改善、軽量)
+    5. **playwright-axe** (a11y 自動検出、QA loop と統合)
+
+### 2026-04-30 — Workflow 機能を graphical 化 (React Flow 等 ライブラリ採用 OK) ★ 新規 ★
+
+- [ ] **Workflow editor を JSON textarea から graphical (DAG visual editor) に置き換え** — 分類: 実装要望 (大、外部ライブラリ採用前提)
+  - 原文: 「ワークフロー機能をもっとグラフィカルに頼むわ。他のライブラリ使ってもいいし」
+  - 仮解釈:
+    - 現状 `WorkflowEditorDialog` の graph / trigger は **JSON textarea で手書き** (iter118 で実装、JSON の zod parse のみ)
+    - これを **React Flow (= xyflow/react)** ベースの DAG visual editor に置換:
+      - ノードを drag&drop で配置 (palette から選ぶ)
+      - エッジは drag で結ぶ (1 ノード port → 別ノード port)
+      - ノード type 別配色 (noop/http/ai/slack/email/script、subtask-status と同 graphical pattern)
+      - ノード設定パネル (右 sidebar、選択 ノードの config を form で編集)
+      - 保存時に React Flow state → 既存 `WorkflowGraphSchema` JSON へ変換
+  - 既存資産 (流用):
+    - `workflows-panel.tsx` (847 行、editor dialog 含む)
+    - `WorkflowGraphSchema` / `WorkflowTriggerSchema` (zod)
+    - workflow engine (Kahn topological sort、5 node type 実装済)
+    - 自然な migration: JSON textarea を fallback に残しつつ visual を default に
+  - 推奨ライブラリ:
+    - **React Flow / xyflow/react** (de facto standard、TypeScript 完備、active maintenance、shadcn と相性良い)
+    - 代替: `reactflow` (旧 paquete name)、`react-flow-renderer` (deprecated)
+    - 不採用: `dagre-d3` (描画のみ、edit 不可)
+  - 設計案 3 scope:
+    - **A (最小、3-5 commit)**:
+      1. `pnpm add @xyflow/react` + import + 既存 dialog 内に Canvas 配置
+      2. WorkflowGraph JSON ↔ React Flow nodes/edges の bi-directional 変換 helper (pure 関数 + test)
+      3. Read-only viewer mode (まずは「見る」だけ実装、editor mode は scope B)
+    - **B (中、5-10 commit)**:
+      4. Drag&drop でノード作成 (palette toolbar + dnd-kit と統合 or React Flow native)
+      5. Edge drawing (port → port)、cycle detection は engine 側既製を流用
+      6. 右 sidebar でノード設定編集 (config を node type 別 form で)
+      7. 保存 button で React Flow state → JSON → action.update
+    - **C (大)**: workflow run 中の execution status を Canvas 上に live highlight (pending/running/done/failed を node 色で)
+  - **要追加質問** (仮置きで進める):
+    - (a) JSON textarea を完全に置換? それとも tab で切替可能 (advanced 用)?
+    - (b) layout — 自動配置 (dagre auto-layout)? それとも user が drag 配置?
+    - (c) palette ノード type — 5 種類すべて? それとも MVP で noop+http+ai だけ?
+    - (d) read-only と edit の境界 — workflow.enabled 中は edit 禁止?
+  - 関連既存 candidate:
+    - HANDOFF iter118 系で「次 iter で React Flow ベース graph editor」と予告あり、本件はその実現
+    - subtask graphical (Sprint swim-lane) と DAG エンジンの dual concern (両方 React Flow で書ける)
+
 ### 2026-04-30 — AI 自動実行モード (assignee=AI + plan 承認 + Slack escalation) ★★★ P0 最優先 ★★★
 
 - [ ] **担当者 = AI に割当 → plan mode で「こうやるけどええか?」と確認 → 承認後 自動実行 → 困ったら Slack 相談 / escalation** — 分類: 実装要望 (大、AI + workflow + Slack 統合の中核)
