@@ -286,12 +286,14 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           月次
         </Button>
         <div className="ml-4 flex items-center gap-2 text-sm">
-          <label className="flex items-center gap-1">
+          <label htmlFor="filter-must" className="flex items-center gap-1">
             <input
+              id="filter-must"
               type="checkbox"
               checked={must}
               onChange={(e) => setMust(e.target.checked || null)}
               data-testid="filter-must"
+              aria-label={must ? 'MUST のみ表示中 (クリックで解除)' : 'MUST のみ表示に絞り込む'}
             />
             MUST のみ
           </label>
