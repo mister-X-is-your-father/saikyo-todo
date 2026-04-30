@@ -253,12 +253,22 @@ function StatusChip({
         : tone === 'muted'
           ? 'border-slate-300 bg-slate-100 text-slate-600'
           : 'border-slate-200 bg-slate-50 text-slate-700'
+  // iter98 PDCA bar / iter417 TaskChute priority chip と同 pattern: role="img" +
+  // 集約 aria-label で chip を atomic 1 unit として読み上げ。tone (ok/warn/muted)
+  // を SR 文言に prefix し、色のみで意味伝達 (WCAG 1.4.1) を text 側で代替。
+  const toneLabel =
+    tone === 'ok' ? '完了' : tone === 'warn' ? '注意' : tone === 'muted' ? '中立' : '通常'
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] ${cls}`}
+      role="img"
+      aria-label={`${toneLabel}: ${label} ${count} 件`}
+      data-testid={`retro-status-chip-${label}`}
     >
-      <span>{label}</span>
-      <span className="font-semibold tabular-nums">{count}</span>
+      <span aria-hidden="true">{label}</span>
+      <span className="font-semibold tabular-nums" aria-hidden="true">
+        {count}
+      </span>
     </span>
   )
 }
