@@ -238,10 +238,12 @@ button disabled + reason aria-label。typecheck/lint 緑 (warning baseline 1)。
    - [x] iter466 (5fc07c3): pure helper `getIsoWeekRange` / `getDayRange` /
          `getRollingDayRange` / `isDueDateInRange` / `selectItemsByDueDateInRange<T>`
          (期間 filter substrate、generic で UI/service 横断再利用) + 18 test
-   - [ ] 次: workspace home に MemberCapacityPanel + 各 member 1 行 (avatar +
-         今日 chip + 今週 chip)、assignee bulk fetch hook 整備が課題 (現状
-         `useItemAssignees` は per-item で N+1、`listAllItemAssigneesByWorkspace`
-         server action 新設が必要)
+   - [x] iter469 (a77bc56): orchestrator `computeTeamCapacityLoads` +
+         `sortTeamCapacityLoadsByUrgency` (member×period×assignee の三軸統合、
+         今日/今週 row × N member、urgency sort) + 11 test。caller は本 helper
+         1 関数呼び出しで render data 揃う。
+   - [ ] 次: workspace home に MemberCapacityPanel UI 配線 (assignee bulk fetch
+         hook `useAllItemAssignees` 新設 → useMemo getAssignees → 本 helper)
 
 4. **Gantt DnD 期間編集** (詳細: 本ファイル下方、scope A から)
    - 🚧 進行中 (iter467 で bar-drag substrate 着地、次 iter で gantt-view UI 配線)
