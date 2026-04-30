@@ -81,7 +81,7 @@ export function MockLoginForm() {
       <Button
         id="tsLoginSubmit"
         type="submit"
-        className="w-full"
+        className="h-11 w-full"
         disabled={isPending}
         aria-label={isPending ? '認証中… (mock-timesheet 認証処理を実行中)' : undefined}
       >
