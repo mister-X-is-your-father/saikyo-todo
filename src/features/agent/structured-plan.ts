@@ -179,5 +179,95 @@ function extractFirstJsonObject(s: string): string | null {
   return null
 }
 
+/**
+ * iter482 ai-automation: 全 step を依存順に topological sort (Kahn)。
+ *
+ * - 依存ループ検出時 → null (= staging UI で「依存を直してください」 message)
+ * - 入力 plan は parseStructuredPlan 通過後を想定 (= 自参照 / 不明 dep は事前除外済)
+ * - 同 layer 内の順序は title alphabetical で deterministic (test 安定 + 表示順 一定)
+ *
+ * 用途: staging proposal で subtasks を実 insert する順序、Gantt swimlane 描画の layer 順
+ */
+export function topoSortPlanSteps(plan: Pick<NormalizedStructuredPlan, 'steps'>): number[] | null {
+  const n = plan.steps.length
+  if (n === 0) return []
+
+  const titleToIdx = new Map<string, number>()
+  plan.steps.forEach((s, i) => titleToIdx.set(s.title, i))
+
+  // 入次数 + 隣接 list (idx → 自分を依存している後続 idx[])
+  const inDegree = new Array<number>(n).fill(0)
+  const adj: number[][] = Array.from({ length: n }, () => [])
+  plan.steps.forEach((s, i) => {
+    for (const dep of s.dependencies) {
+      const depIdx = titleToIdx.get(dep)
+      if (depIdx === undefined || depIdx === i) continue // parser 通過済 plan では発生しないが防御
+      inDegree[i] = (inDegree[i] ?? 0) + 1
+      adj[depIdx]?.push(i)
+    }
+  })
+
+  // 起点候補 (= inDegree 0) を title alphabetical で並べる
+  const sortByTitleAlpha = (a: number, b: number): number =>
+    (plan.steps[a]?.title ?? '').localeCompare(plan.steps[b]?.title ?? '')
+
+  const queue: number[] = []
+  for (let i = 0; i < n; i++) {
+    if ((inDegree[i] ?? 0) === 0) queue.push(i)
+  }
+  queue.sort(sortByTitleAlpha)
+
+  const order: number[] = []
+  while (queue.length > 0) {
+    const cur = queue.shift() as number
+    order.push(cur)
+    const next: number[] = []
+    for (const child of adj[cur] ?? []) {
+      inDegree[child] = (inDegree[child] ?? 0) - 1
+      if ((inDegree[child] ?? 0) === 0) next.push(child)
+    }
+    next.sort(sortByTitleAlpha)
+    queue.push(...next)
+  }
+
+  if (order.length !== n) return null // cycle
+  return order
+}
+
+/**
+ * iter482 ai-automation: 最長 step (= 単 step の est_min max) を抽出。
+ *
+ * 用途: chip 「最長 step: <title> (Xh)」、AI plan 検査の bottleneck 早期表示。
+ * 同点は title alphabetical で先頭採用 (deterministic)。step 0 件 → null。
+ */
+export function pickLongestStep(
+  plan: Pick<NormalizedStructuredPlan, 'steps'>,
+): StructuredPlanStep | null {
+  if (plan.steps.length === 0) return null
+  let best: StructuredPlanStep | null = null
+  for (const s of plan.steps) {
+    if (
+      best === null ||
+      s.est_min > best.est_min ||
+      (s.est_min === best.est_min && s.title.localeCompare(best.title) < 0)
+    ) {
+      best = s
+    }
+  }
+  return best
+}
+
+/**
+ * iter482 ai-automation: pickLongestStep の出力を chip 文言に整形。
+ *   '最長 step: <title> (Xh)' / '...(Xh{Y}m)' / '...(Ym)'。null → '最長 step: なし'
+ */
+export function formatLongestStepJa(step: StructuredPlanStep | null): string {
+  if (step === null) return '最長 step: なし'
+  const h = Math.floor(step.est_min / 60)
+  const m = step.est_min % 60
+  const dur = h === 0 ? `${m}m` : m === 0 ? `${h}h` : `${h}h${m}m`
+  return `最長 step: ${step.title} (${dur})`
+}
+
 // 内部 helper を test しやすく named export
 export { extractFirstJsonObject }

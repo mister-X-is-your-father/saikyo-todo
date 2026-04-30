@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest'
 
 import {
   extractFirstJsonObject,
+  formatLongestStepJa,
   formatStructuredPlanJa,
   parseStructuredPlan,
+  pickLongestStep,
   StructuredPlanSchema,
+  topoSortPlanSteps,
   validateDependencies,
 } from './structured-plan'
 
@@ -238,5 +241,109 @@ describe('formatStructuredPlanJa', () => {
       expect(formatStructuredPlanJa(r2.plan)).toContain('合計 1h')
       expect(formatStructuredPlanJa(r2.plan)).not.toContain('1h0m')
     }
+  })
+})
+
+describe('topoSortPlanSteps', () => {
+  it('空 plan → 空 array', () => {
+    expect(topoSortPlanSteps({ steps: [] })).toEqual([])
+  })
+
+  it('依存無し: title alphabetical 順', () => {
+    const order = topoSortPlanSteps({
+      steps: [
+        { title: 'b', est_min: 1, dod: '', dependencies: [] },
+        { title: 'a', est_min: 1, dod: '', dependencies: [] },
+        { title: 'c', est_min: 1, dod: '', dependencies: [] },
+      ],
+    })
+    expect(order).toEqual([1, 0, 2]) // a(idx 1), b(0), c(2)
+  })
+
+  it('線形依存 a→b→c は a,b,c 順', () => {
+    const order = topoSortPlanSteps({
+      steps: [
+        { title: 'a', est_min: 1, dod: '', dependencies: [] },
+        { title: 'b', est_min: 1, dod: '', dependencies: ['a'] },
+        { title: 'c', est_min: 1, dod: '', dependencies: ['b'] },
+      ],
+    })
+    expect(order).toEqual([0, 1, 2])
+  })
+
+  it('cycle 検出 → null', () => {
+    // a→b→a (= cycle)。parser は通常弾くが防御テスト
+    const order = topoSortPlanSteps({
+      steps: [
+        { title: 'a', est_min: 1, dod: '', dependencies: ['b'] },
+        { title: 'b', est_min: 1, dod: '', dependencies: ['a'] },
+      ],
+    })
+    expect(order).toBeNull()
+  })
+
+  it('複雑な diamond: 同 layer は alphabetical', () => {
+    // a → b, a → c, b/c → d。order: a, b, c, d
+    const order = topoSortPlanSteps({
+      steps: [
+        { title: 'd', est_min: 1, dod: '', dependencies: ['b', 'c'] },
+        { title: 'a', est_min: 1, dod: '', dependencies: [] },
+        { title: 'b', est_min: 1, dod: '', dependencies: ['a'] },
+        { title: 'c', est_min: 1, dod: '', dependencies: ['a'] },
+      ],
+    })
+    expect(order).toEqual([1, 2, 3, 0])
+  })
+})
+
+describe('pickLongestStep', () => {
+  it('空 plan → null', () => {
+    expect(pickLongestStep({ steps: [] })).toBeNull()
+  })
+
+  it('単独 max', () => {
+    const longest = pickLongestStep({
+      steps: [
+        { title: 'a', est_min: 30, dod: '', dependencies: [] },
+        { title: 'b', est_min: 120, dod: '', dependencies: [] },
+        { title: 'c', est_min: 60, dod: '', dependencies: [] },
+      ],
+    })
+    expect(longest?.title).toBe('b')
+    expect(longest?.est_min).toBe(120)
+  })
+
+  it('同点は title alphabetical 先頭', () => {
+    const longest = pickLongestStep({
+      steps: [
+        { title: 'b', est_min: 60, dod: '', dependencies: [] },
+        { title: 'a', est_min: 60, dod: '', dependencies: [] },
+      ],
+    })
+    expect(longest?.title).toBe('a')
+  })
+})
+
+describe('formatLongestStepJa', () => {
+  it('null → 「最長 step: なし」', () => {
+    expect(formatLongestStepJa(null)).toBe('最長 step: なし')
+  })
+
+  it('60 未満 → 分のみ', () => {
+    expect(formatLongestStepJa({ title: 's', est_min: 45, dod: '', dependencies: [] })).toBe(
+      '最長 step: s (45m)',
+    )
+  })
+
+  it('60 ぴったり → h のみ', () => {
+    expect(formatLongestStepJa({ title: 's', est_min: 60, dod: '', dependencies: [] })).toBe(
+      '最長 step: s (1h)',
+    )
+  })
+
+  it('複合 → h + m', () => {
+    expect(formatLongestStepJa({ title: 's', est_min: 150, dod: '', dependencies: [] })).toBe(
+      '最長 step: s (2h30m)',
+    )
   })
 })
