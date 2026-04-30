@@ -15,6 +15,50 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ## 未処理 (新しい順)
 
+### 2026-04-30 — saikyo-todo UX 卓越憲章 + iter prompt 統合 ★ P0 メタ ★
+
+- [ ] **UX 卓越の 6 軸を「saikyo-todo の存在目的」として憲章化 + autonomous prompt に評価軸として組込み + 各 view の gap 分析と改善 P0 派生** — 分類: 設計憲章 + プロセス改善 (P0 メタ)
+  - 原文 (2026-04-30): 「圧倒的な可視化性能とグラフィカルで直観的な操作方法、認知不可の低減や作業漏れの防止、やる気アップ、効率化に優れたものにするように、タスクを作ってp0に積んどいて。そもそもそういうのを目指すようにプログラムしたいね。」
+  - **意図**: 個別 feature を作る前に、saikyo-todo の **目指す方向そのもの** を 6 軸で言語化し、以後すべての iter が **6 軸スコアで評価** されるよう iter prompt / CLAUDE.md に組込む。憲章ができれば「これって saikyo-todo の方向性に合う?」が常に判定できる。
+
+  - **6 軸 (ユーザ表現を尊重 + 1 件 typo 補正済み)**:
+    1. **圧倒的な可視化性能** — 状態 / 量 / 関係 / 進捗 / 締切 が 「見て即わかる」。グラフ・色・icon・空間配置で情報密度を上げる
+    2. **グラフィカルで直観的な操作方法** — DnD / inline edit / keyboard shortcut / hover で即操作。マウス・タッチ・キーボード で迷わない
+    3. **認知負荷の低減** (原文「認知不可」を typo 解釈) — 1 画面に出す情報を整理、smart default、不要な選択肢を出さない、未読バッジで「見るべき場所」を絞る
+    4. **作業漏れの防止** — MUST / 期限近接 / blocked 解消 / 依存先 done を能動的に通知。隠れない、忘れない、後回しにできない
+    5. **やる気アップ** — 完了時の delight (animation / 音 / 累積カウンタ)、進捗バー、streak、見積達成 toast、視覚的「片付いた感」
+    6. **効率化** — keyboard shortcut 網羅 / quick-add / bulk 操作 / template / AI 自動分解 / 賢い default で「クリック数を減らす」
+
+  - **deliverables (cloud agent が plan で生成する成果物)**:
+    1. `docs/ux-excellence-charter.md` (150-300 行、新規)
+       - 6 軸の定義 + 良い例 / 悪い例 / 既存 feature の自己採点
+       - 各 view (Today / Inbox / Kanban / Backlog / Gantt / Dashboard / ItemEditDialog 各タブ / Goals / Sprints) を 6 軸で **5 段階採点** したマップ
+       - 既存 UX 卓越基準 a-g (発見可能性 / アクセシビリティ / 状態網羅 / 速度感 / 細部 / レスポンシブ / 一貫性) との関係を整理 (a-g は表面層、6 軸は深層目的)
+    2. `scripts/autonomous/iter-instruction-autonomous.md` (or `LOOP.md`) に **6 軸チェック** を追加
+       - 各 commit body に「6 軸該当部」を 1 行ずつ書く運用 (該当なしは "n/a")
+       - a-g と 6 軸 を併記、a-g は手段、6 軸は目的、と区別
+    3. `CLAUDE.md` の冒頭にも 6 軸を「プロジェクト目的」として明示 (新機能を足す前に必ず読む節として)
+    4. `FEEDBACK_QUEUE.md` に **各 view × 軸 の改善 P0 entry を派生** 投入
+       - 例: 「Today view の 圧倒的可視化 強化 (今日の合計時間 / 残時間 / 見積累積 / 進捗グラフ)」
+       - 例: 「Kanban の やる気アップ — 完了時 confetti + 累積完了数表示」
+       - 例: 「Backlog の 認知負荷低減 — column 毎の重要度フィルタ default をスマートに」
+
+  - **plan のみ、実装はしない**:
+    各派生 P0 は別 iter で消化する。憲章ができた直後の iter ですぐ消化開始 OK。
+
+  - **期待 commit (1 commit でまとめる)**:
+    `docs(ux): saikyo-todo UX 卓越憲章 + iter prompt 6 軸統合 (queue: ux-excellence charter)`
+    + queue update commit (本 entry を [x] + 派生 P0 を投入)
+
+  - **既存基準との関係**:
+    - a-g は **手段層** (どう実装するか)、本 6 軸は **目的層** (何のために作るか)。両方を commit body に書く運用にする。
+    - 既存 「もっとグラフィカル / 意味のあるデザイン」 entry (2026-04-28) は 軸 1, 2 と重なる。憲章で吸収 + 個別 P0 派生時に既存 entry も更新。
+
+  - **重要 (cloud agent への注意)**:
+    - 軸 3 「認知負荷の低減」 はユーザの「認知不可」を typo 解釈した。憲章で「認知負荷」と表記、原文「認知不可」も注釈で残す。
+    - 6 軸は **互いに緊張関係** がある (例: 可視化 ↔ 認知負荷低減、やる気アップ ↔ 効率化)。憲章で trade-off を明示し、view ごとに優先軸を決める。
+    - **数値採点** は今の自分の主観で OK、ただし採点の根拠 (具体的な体験例) を 1-2 行ずつ書く。
+
 ### 2026-04-30 — TaskChute モード / GTD モード 実装プラン作成 ★ P0 plan ★
 
 - [ ] **TaskChute (タスクシュート) と GTD の methodology モードを実装する前段の「プラン作成」タスク** — 分類: 設計プラン (P0)
@@ -475,12 +519,21 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 
 ### 🔥 次 iter で即実装 (P0 最優先、track 判定より優先) 🔥
 
-**新 P0 (2026-04-30): TaskChute / GTD methodology モード 実装プラン作成**
+#### 🌟 新 P0 [優先度 1] (2026-04-30): saikyo-todo UX 卓越憲章 + iter prompt 統合
+
+- 詳細は queue 上部 `2026-04-30 — saikyo-todo UX 卓越憲章` entry 参照
+- 成果物: `docs/ux-excellence-charter.md` (150-300 行) + iter-instruction / CLAUDE.md 更新 + queue 派生 P0
+- 期待 commit: `docs(ux): saikyo-todo UX 卓越憲章 + iter prompt 6 軸統合 (queue: ux-excellence charter)`
+- **目的層 (6 軸) を encode、以後すべての iter が 6 軸で自己評価される運用に切替**
+- これを最初に消化することで、後続の TaskChute/GTD plan も 6 軸で採点される (順序が効く)
+
+#### 🌟 新 P0 [優先度 2] (2026-04-30): TaskChute / GTD methodology モード 実装プラン作成
 
 - 詳細は queue 上部 `2026-04-30 — TaskChute モード / GTD モード 実装プラン作成` entry 参照
 - 成果物: `docs/methodology-modes-plan.md` (200-400 行)
 - 期待 commit: `docs(methodology): TaskChute / GTD モード 実装プラン (queue: methodology-modes plan)`
 - **plan のみ作成、実装はしない** (各 phase は別 P0 で plan 完成後に queue 投入)
+- 憲章 (優先度 1) ができた後にやると、6 軸で plan が採点されてより尖る
 
 ---
 
