@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest'
 import {
   buildTodayForecast,
   type ForecastItemFields,
+  forecastSeverity,
+  forecastSeverityLabelJa,
+  formatTodayForecastJa,
   minutesUntilEndOfDay,
   parseHHMM,
 } from './forecast'
@@ -156,5 +159,70 @@ describe('buildTodayForecast', () => {
     const r = buildTodayForecast(items, NOW)
     expect(r.quickWins[0]?.id).toBe('b')
     expect(r.quickWins[1]?.id).toBe('a')
+  })
+})
+
+describe('forecastSeverity', () => {
+  it('canFinishToday=true → ok', () => {
+    const r = buildTodayForecast([mk({ id: 'a', estimateMin: 30 })], NOW)
+    expect(forecastSeverity(r)).toBe('ok')
+  })
+
+  it('overflow 30 分以下 → info', () => {
+    // NOW=09:00, end=18:00 → 残 540 分。total=570 → over 30
+    const items = Array.from({ length: 19 }, (_, i) => mk({ id: `i${i}`, estimateMin: 30 }))
+    const r = buildTodayForecast(items, NOW)
+    expect(r.overflowMin).toBe(30)
+    expect(forecastSeverity(r)).toBe('info')
+  })
+
+  it('overflow 30-120 → warn', () => {
+    // total = 600 → over 60
+    const items = Array.from({ length: 20 }, (_, i) => mk({ id: `i${i}`, estimateMin: 30 }))
+    const r = buildTodayForecast(items, NOW)
+    expect(r.overflowMin).toBe(60)
+    expect(forecastSeverity(r)).toBe('warn')
+  })
+
+  it('overflow 120 超 → danger', () => {
+    // total = 700 → over 160
+    const items = [mk({ id: 'a', estimateMin: 700 })]
+    const r = buildTodayForecast(items, NOW)
+    expect(r.overflowMin).toBe(160)
+    expect(forecastSeverity(r)).toBe('danger')
+  })
+})
+
+describe('forecastSeverityLabelJa', () => {
+  it('4 段の Japanese label', () => {
+    expect(forecastSeverityLabelJa('ok')).toBe('余裕')
+    expect(forecastSeverityLabelJa('info')).toBe('少しはみ出し')
+    expect(forecastSeverityLabelJa('warn')).toBe('要 トリアージ')
+    expect(forecastSeverityLabelJa('danger')).toBe('明らかに過剰')
+  })
+})
+
+describe('formatTodayForecastJa', () => {
+  it('余裕 ケース', () => {
+    const r = buildTodayForecast([mk({ id: 'a', estimateMin: 60 })], NOW)
+    const out = formatTodayForecastJa(r)
+    expect(out).toContain('余裕')
+    expect(out).toContain('合計 1h')
+    expect(out).toContain('残 9h')
+  })
+
+  it('超過時に "超過 Xh" tail', () => {
+    const r = buildTodayForecast([mk({ id: 'a', estimateMin: 700 })], NOW)
+    const out = formatTodayForecastJa(r)
+    expect(out).toContain('明らかに過剰')
+    expect(out).toContain('超過 2.7h')
+  })
+
+  it('estimate 不明件数を tail に明示', () => {
+    const r = buildTodayForecast(
+      [mk({ id: 'a', estimateMin: null }), mk({ id: 'b', estimateMin: null })],
+      NOW,
+    )
+    expect(formatTodayForecastJa(r)).toContain('2 件 見積なし')
   })
 })

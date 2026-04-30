@@ -142,5 +142,61 @@ export function buildTodayForecast<T extends ForecastItemFields>(
   }
 }
 
+/**
+ * iter536 ai-automation polish: forecast の severity (= 「終わるかどうか」軸 4 段) を
+ * SeverityChip tone bind 用に分類する pure helper。
+ *
+ * 閾値:
+ *  - 'ok'      : canFinishToday=true (= 余裕あり、overflowMin <= 0)
+ *  - 'info'    : overflowMin <= 30 (= 30 分以内のはみ出し、軽微)
+ *  - 'warn'    : overflowMin <= 120 (= 2 時間以内のはみ出し、注意)
+ *  - 'danger'  : overflowMin > 120 (= 2 時間超過、明らかに無理)
+ */
+export type ForecastSeverity = 'ok' | 'info' | 'warn' | 'danger'
+
+export function forecastSeverity<T extends ForecastItemFields>(
+  summary: ForecastSummary<T>,
+): ForecastSeverity {
+  if (summary.canFinishToday) return 'ok'
+  if (summary.overflowMin <= 30) return 'info'
+  if (summary.overflowMin <= 120) return 'warn'
+  return 'danger'
+}
+
+const SEVERITY_LABEL_JA: Record<ForecastSeverity, string> = {
+  ok: '余裕',
+  info: '少しはみ出し',
+  warn: '要 トリアージ',
+  danger: '明らかに過剰',
+}
+
+export function forecastSeverityLabelJa(sev: ForecastSeverity): string {
+  return SEVERITY_LABEL_JA[sev]
+}
+
+/**
+ * 1 行 forecast summary (AI prompt / chip aria-label / Slack 通知用):
+ *   '余裕 (合計 4h / 残 8h)'
+ *   '要 トリアージ (合計 6h / 残 4h、超過 2h)'
+ *   '余裕 (合計 0m、3 件 見積なし)'
+ *
+ * remainingMinutesUntilEnd = 0 (= 業務終了済) でも total > 0 なら超過扱い。
+ */
+export function formatTodayForecastJa<T extends ForecastItemFields>(
+  summary: ForecastSummary<T>,
+): string {
+  const sev = forecastSeverity(summary)
+  const label = forecastSeverityLabelJa(sev)
+  const totalH = (summary.totalEstimateMin / 60).toFixed(1).replace(/\.0$/, '')
+  const remH = (summary.remainingMinutesUntilEnd / 60).toFixed(1).replace(/\.0$/, '')
+  const overH =
+    summary.overflowMin > 0
+      ? `、超過 ${(summary.overflowMin / 60).toFixed(1).replace(/\.0$/, '')}h`
+      : ''
+  const unknown =
+    summary.estimateUnknownCount > 0 ? `、${summary.estimateUnknownCount} 件 見積なし` : ''
+  return `${label} (合計 ${totalH}h / 残 ${remH}h${overH}${unknown})`
+}
+
 // 内部 helper を test しやすく named export
 export { minutesUntilEndOfDay, parseHHMM }
