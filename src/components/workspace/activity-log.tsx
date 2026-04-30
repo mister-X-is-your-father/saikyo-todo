@@ -25,7 +25,10 @@ import {
   classifyAuditActivityHint,
   formatAuditActivityBrief,
   formatAuditActivityHintJa,
+  formatTopActorJa,
+  groupAuditByActor,
   groupAuditByCategory,
+  pickTopActor,
 } from '@/features/audit/audit-activity'
 import { useAuditByTargetItem } from '@/features/audit/hooks'
 
@@ -55,6 +58,12 @@ export function ActivityLog({ itemId }: { itemId: string }) {
     if (!data || data.length === 0) return null
     const counts = groupAuditByCategory(data, { actorTypes: [] })
     return buildFourStateHintChip(counts, classifyAuditActivityHint, formatAuditActivityHintJa)
+  }, [data])
+  // iter507 ai-automation: workspace の主軸 actor chip (iter506 substrate を UI 配線)
+  const topActor = useMemo(() => {
+    if (!data || data.length === 0) return null
+    const byActor = groupAuditByActor(data, { actorTypes: [] })
+    return pickTopActor(byActor)
   }, [data])
   if (isLoading) {
     return (
@@ -100,6 +109,16 @@ export function ActivityLog({ itemId }: { itemId: string }) {
               aria-label={`Activity 状態: ${hint.label}`}
             >
               {hint.label}
+            </span>
+          )}
+          {topActor && (
+            <span
+              className="inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] text-emerald-700"
+              data-testid="activity-log-top-actor"
+              aria-label={formatTopActorJa(topActor)}
+              title={formatTopActorJa(topActor)}
+            >
+              ⭐ {formatTopActorJa(topActor)}
             </span>
           )}
         </div>
