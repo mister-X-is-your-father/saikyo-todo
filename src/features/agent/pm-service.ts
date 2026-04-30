@@ -11,6 +11,7 @@
  */
 import 'server-only'
 
+import { runFlowViaClaude } from '@/lib/agent/claude-flow-runner'
 import { calculateCostUsd } from '@/lib/ai/pricing'
 import { executeToolLoop, type ToolLoopInput } from '@/lib/ai/tool-loop'
 import { recordAudit } from '@/lib/audit'
@@ -21,6 +22,7 @@ import { err, ok, type Result } from '@/lib/result'
 
 import { PM_ROLE } from './roles/pm'
 import { agentMemoryService } from './memory-service'
+import { buildPmFlowInput, mapClaudeFlowOutputToPmRunOutput } from './pm-flow-adapter'
 import { agentInvocationRepository } from './repository'
 import { type Agent } from './schema'
 import { agentService } from './service'
@@ -308,6 +310,39 @@ export const pmService = {
       idempotencyKey: params.idempotencyKey,
       ...(params.invoker ? { invoker: params.invoker } : {}),
     })
+  },
+
+  /**
+   * Phase 6.15 P0 「AI agent SDK→CLI migration」 iter4: PM Stand-up を Claude Max
+   * OAuth + claude CLI 経由で起動する CLI 版エントリ。`runFlowViaClaude` 内で
+   * agent_invocations の insert/update/audit + cost 集計を済ませるため、本 method
+   * は user message 組立 → adapter で input 変換 → CLI 呼び出し → output 変換、の
+   * 4 段に薄く保つ。env (ANTHROPIC_API_KEY) 不要。memory append 経路は無いので
+   * 履歴対話は持たない (stand-up は単発 batch なので問題なし)。
+   *
+   * `runStandup` (SDK 経路) と output shape は同一。UI / Server Action は invoker DI
+   * の有無で切替可能。SDK 経路の deprecation は iter5 で実施。
+   */
+  async runStandupViaClaude(params: {
+    workspaceId: string
+    idempotencyKey: string
+  }): Promise<Result<PmRunOutput>> {
+    if (!params.idempotencyKey) {
+      return err(new ValidationError('idempotencyKey は必須です'))
+    }
+    const userMessage = buildStandupUserMessage({ today: new Date() })
+    try {
+      const out = await runFlowViaClaude(
+        buildPmFlowInput({
+          workspaceId: params.workspaceId,
+          userMessage,
+          idempotencyKey: params.idempotencyKey,
+        }),
+      )
+      return ok(mapClaudeFlowOutputToPmRunOutput(out))
+    } catch (e) {
+      return err(new ExternalServiceError('claude-cli', e))
+    }
   },
 }
 
