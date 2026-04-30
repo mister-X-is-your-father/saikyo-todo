@@ -40,6 +40,54 @@ HANDOFF.md §9 の末尾 80 行を読む。
 - viewport 1280x800 で a11y / aria / focus / SR 周りの polish
 - 経路 A (MCP) または 経路 B (script)、`scripts/explore-uiux-<画面>-iter<N>.ts`
 
+**mode-F (Flicker detection、ユーザ要望 2026-04-30 対応)**:
+- 各 mutation 系 UI 操作 (DnD reorder / status toggle / archive / unarchive / bulk update / etc) を
+  発火 → **直後の DOM 変化を 100ms 単位で snapshot 取得** → state transition 中に
+  「一時的に元状態に戻る」 frame を検出
+- 検出方法 (Playwright):
+  ```ts
+  // 例: subtask reorder の flicker 検出
+  const beforeSnap = await page.locator('[data-testid^="subtask-"]')
+    .evaluateAll((els) => els.map(e => e.getAttribute('data-testid')))
+  // drag 実行
+  await page.dragAndDrop('[data-testid="subtask-id-X-handle"]', '[data-testid="subtask-id-Y"]')
+  // 直後 → 50ms → 100ms → 200ms → 500ms の 5 snapshot で order 取得
+  const snaps: string[][] = []
+  for (const ms of [0, 50, 100, 200, 500]) {
+    await page.waitForTimeout(ms === 0 ? 0 : ms)
+    const order = await page.locator('[data-testid^="subtask-"]')
+      .evaluateAll((els) => els.map(e => e.getAttribute('data-testid')))
+    snaps.push(order)
+  }
+  // flicker = 中間の snap が beforeSnap (元順序) に「逆戻り」したら検出
+  const expected = arrayMoveExpected(beforeSnap, ...)  // 期待される新順序
+  for (let i = 0; i < snaps.length; i++) {
+    if (JSON.stringify(snaps[i]) === JSON.stringify(beforeSnap) && i > 0) {
+      findings.push({
+        level: 'error',
+        source: 'observation',
+        message: `flicker 検出: ${i}-th snap (${[0,50,100,200,500][i]}ms 後) で元順序にスナップバック`,
+      })
+    }
+  }
+  ```
+- 探索対象 (mutation UI):
+  - subtasks-panel DnD reorder (今回の bug 直対象、回帰テスト)
+  - Today / Backlog / Kanban の status toggle (checkbox click)
+  - archive / unarchive button
+  - bulk action (multi-select → bulk update status)
+  - sprint period 編集
+  - dependency add / remove
+  - timer start / stop
+  - tag add / remove
+  - DnD で Kanban カラム間移動
+  - DnD で Backlog row reorder
+- 修正アプローチ (見つかったら):
+  - `useMutation` の onMutate に楽観 update がない → 追加
+  - 楽観 update が field の一部だけ更新 → 関連 field も予測的に更新
+  - 描画側 sort/filter が楽観 update 後にも 古い state を参照 → 描画ロジック修正
+  - TanStack Query の invalidate 後 refetch で古い data が一瞬出る → setQueryData で先回り
+
 **mode-M (Mobile audit、ユーザ要望 2026-04-30 対応)**:
 - viewport iPhone 13 (390x844) または iPhone SE (375x667)
 - 「潰れ / overflow / 44x44 click target / text truncate / chip 押し出し」を点検
@@ -70,10 +118,13 @@ HANDOFF.md §9 の末尾 80 行を読む。
   })
   ```
 
-**mode 選び方**:
-- 直近 3 iter で mode-D 連続 → mode-M 強制
-- 直近 3 iter で mode-M 連続 → mode-D に戻す
-- ユーザ要望「スマホ表示が全体的にいけてない」(2026-04-30) を消化する間は **mode-M を 50% 以上** にする
+**mode 選び方** (3 mode rotation):
+- 直近 3 iter で同一 mode 連続 → 別 mode へ強制切替
+- ユーザ要望優先度:
+  - 「並び順が一瞬戻る (flicker)」(2026-04-30) → **mode-F を 30% 以上**
+  - 「スマホ表示が潰れる」(2026-04-30) → **mode-M を 30% 以上**
+  - 残 40% は mode-D (a11y/UX 通常 polish)
+- mode-F は mutation UI が無い view (login / signup) では選ばない (探索対象が空)
 
 直近 3 iter で同じ画面が連続選択されてたら別画面を強制選択 (mode 問わず)。
 
