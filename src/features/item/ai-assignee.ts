@@ -77,6 +77,24 @@ export function countAssigneesByKind(refs: readonly AssigneeRef[]): AssigneeKind
 }
 
 /**
+ * AssigneeKindCounts を日本語短文で要約。
+ * - 0 件 → "未割当"
+ * - AI のみ → "AI N 件"
+ * - user のみ → "メンバー N 件"
+ * - mixed → "AI A / メンバー U (合計 T 件)"
+ *
+ * KanbanCard の "AI 担当" chip / Item summary panel / Sprint swimlane lane summary
+ * で使える共通フォーマット。formatAgentRoleLabelJa が role 単位の label に対し、
+ * 本 helper は item 全体の assignee 分布の概要 label。
+ */
+export function formatAssigneeKindSummaryJa(counts: AssigneeKindCounts): string {
+  if (counts.total === 0) return '未割当'
+  if (counts.ai > 0 && counts.user === 0) return `AI ${counts.ai} 件`
+  if (counts.user > 0 && counts.ai === 0) return `メンバー ${counts.user} 件`
+  return `AI ${counts.ai} / メンバー ${counts.user} (合計 ${counts.total} 件)`
+}
+
+/**
  * agents 行を AssigneeRef[] に map (actor_type='agent' / actor_id=agent.id)。
  * AssigneePicker で AI 選択肢を render する時、value 内の AI assignee と
  * 比較するために使う。

@@ -17,6 +17,7 @@ import {
   extractAiAssignees,
   extractUserAssignees,
   formatAgentRoleLabelJa,
+  formatAssigneeKindSummaryJa,
   hasAiAssignee,
   isAiAssignee,
   isFullyAiAssigned,
@@ -177,6 +178,26 @@ describe('ai-assignee', () => {
       const out = toggleAssigneeRef(input, aiRef)
       expect(input).toEqual([userRef])
       expect(out).not.toBe(input)
+    })
+  })
+
+  describe('formatAssigneeKindSummaryJa', () => {
+    it('total=0 なら "未割当"', () => {
+      expect(formatAssigneeKindSummaryJa({ ai: 0, user: 0, total: 0 })).toBe('未割当')
+    })
+    it('AI のみ → "AI N 件"', () => {
+      expect(formatAssigneeKindSummaryJa({ ai: 2, user: 0, total: 2 })).toBe('AI 2 件')
+    })
+    it('user のみ → "メンバー N 件"', () => {
+      expect(formatAssigneeKindSummaryJa({ ai: 0, user: 3, total: 3 })).toBe('メンバー 3 件')
+    })
+    it('mixed → "AI A / メンバー U (合計 T 件)"', () => {
+      expect(formatAssigneeKindSummaryJa({ ai: 1, user: 2, total: 3 })).toBe(
+        'AI 1 / メンバー 2 (合計 3 件)',
+      )
+    })
+    it('AI 1 のみ (単数) も "AI 1 件" (i18n は将来課題、MVP は単複同形)', () => {
+      expect(formatAssigneeKindSummaryJa({ ai: 1, user: 0, total: 1 })).toBe('AI 1 件')
     })
   })
 
