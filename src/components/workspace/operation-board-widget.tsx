@@ -97,7 +97,7 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
       data-testid="operation-board-widget"
     >
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-base">
+        <CardTitle className="flex items-center gap-2 text-base" role="heading" aria-level={2}>
           <Target className="text-primary h-4 w-4" aria-hidden="true" />
           今日の作戦盤
           <span className="text-muted-foreground text-xs font-normal">{today}</span>
