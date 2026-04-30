@@ -8,6 +8,7 @@ import type { Item } from '@/features/item/schema'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { MustBadge } from '@/components/workspace/must-badge'
 
 interface Props {
   items: Item[]
@@ -68,9 +69,7 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
                   className="hover:bg-accent flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm"
                 >
                   <span className="truncate">{it.title}</span>
-                  {it.isMust ? (
-                    <span className="text-[10px] font-bold text-rose-600">MUST</span>
-                  ) : null}
+                  {it.isMust ? <MustBadge data-testid={`schedule-picker-must-${it.id}`} /> : null}
                 </button>
               </li>
             ))}
