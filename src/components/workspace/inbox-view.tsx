@@ -98,7 +98,11 @@ export function InboxView({
         <div
           className="mb-1 flex flex-wrap items-center gap-1.5 px-2 text-[11px]"
           data-testid="inbox-gtd-summary"
-          role="status"
+          // iter443: 旧 role="status" は live region のため inbox 変更時に SR が
+          // 再 announce → noise。静的 classification chip 群には role="group" が
+          // 適切 (iter423 SeverityChip と同 pattern)。aria-label は集約 source の
+          // まま。
+          role="group"
           aria-label={`GTD 分類: 2 分以内 ${gtdSummary.counts.immediate} 件、Project ${gtdSummary.counts.project} 件、次の action ${gtdSummary.counts['next-action']} 件`}
         >
           {gtdSummary.counts.immediate > 0 && (
