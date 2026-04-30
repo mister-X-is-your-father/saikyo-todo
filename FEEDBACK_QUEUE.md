@@ -209,10 +209,16 @@ button disabled + reason aria-label。typecheck/lint 緑 (warning baseline 1)。
          を配置、`useCreateTemplateFromItem` hook + toast feedback (scope A UI bind)
 
 2. **案件サマリ panel** (詳細: 本ファイル下方、scope A から)
+   - 🚧 進行中 (iter463 で latest-activity substrate 着地、次 iter で UI bind)
    - 仮置き判断: 「案件」= parent task 単位、ItemEditDialog の新 tab「サマリ」
    - subtask 進捗 % + 既存 readiness chip + 直近 7 日の activity 件数 を pure helper で集約
    - AI 要約は scope C (今 iter は不使用)
    - risk score も scope B 以降
+   - [x] iter463 (6a1533d): pure helper `findLatestUpdatedAt` + `formatLatestActivityJa`
+         (parent + 子孫の最終更新時刻を ltree prefix match + deletedAt 除外で集計、
+         formatRelativeTime injection で test deterministic) + 12 test
+   - [ ] 次: ItemSummaryPanel + 新 tab「サマリ」 (descendants-progress + dependency-readiness +
+         latest-activity の 3 substrate を 1 panel に統合、scope A UI bind)
 
 3. **チームメンバー余裕時間 一覧** (詳細: 本ファイル下方、scope A から)
    - 仮置き判断: capacity = 8h/day 固定、見積無し item は「未見積 N 件」 chip で別表示
