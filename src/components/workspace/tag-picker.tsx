@@ -81,7 +81,7 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
           size="sm"
           disabled={disabled}
           data-testid="tag-picker-trigger"
-          className="h-8 justify-start gap-2"
+          className="min-h-11 justify-start gap-2"
           aria-label={
             selectedLabels.length === 0
               ? 'タグを選択 (現在なし)'
