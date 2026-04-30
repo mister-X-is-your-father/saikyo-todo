@@ -16,13 +16,15 @@
  */
 import { useMemo } from 'react'
 
-import { Clock4, Sparkles } from 'lucide-react'
+import { Clock4, Sparkles, Timer } from 'lucide-react'
 import { parseAsString, useQueryState } from 'nuqs'
 
 import { todayISO } from '@/lib/date/iso'
 
+import { extractEstimateMinutes } from '@/features/item/estimate'
 import { priorityClass, priorityLabel } from '@/features/item/priority'
 import type { Item } from '@/features/item/schema'
+import { buildTaskChuteTicker } from '@/features/taskchute/cumulative-remaining'
 import { sortForTimeline } from '@/features/taskchute/sort-for-timeline'
 
 import { EmptyState } from '@/components/shared/async-states'
@@ -55,6 +57,29 @@ export function TaskChuteView({ workspaceId, items }: Props) {
   const ordered = useMemo(() => sortForTimeline(targetItems), [targetItems])
   const [, setOpenItemId] = useQueryState('item', parseAsString)
 
+  // iter543 (queue methodology TC-3 wire-up): cumulative-remaining ticker を呼んで
+  // header summary + 各 row の累積残 / eta を計算 (sortForTimeline 後の順序を保つ)
+  const ticker = useMemo(() => {
+    const tickerInput = ordered.map(({ item }) => ({
+      id: item.id,
+      doneAt: item.doneAt ?? null,
+      status: item.status,
+      estimateMin: extractEstimateMinutes(item.description) ?? null,
+    }))
+    return buildTaskChuteTicker(tickerInput)
+  }, [ordered])
+  // item.id → row index で row 横の累積残 / eta を引けるように map 化
+  const tickerByItemId = useMemo(() => {
+    const m = new Map<string, { cumulativeRemainingMin: number; eta: string | null }>()
+    for (const row of ticker.rows) {
+      m.set(row.item.id, {
+        cumulativeRemainingMin: row.cumulativeRemainingMin,
+        eta: row.eta,
+      })
+    }
+    return m
+  }, [ticker.rows])
+
   if (ordered.length === 0) {
     return (
       <Card>
@@ -86,6 +111,33 @@ export function TaskChuteView({ workspaceId, items }: Props) {
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {ticker.totalEstimateMin > 0 ? (
+          <div
+            className="bg-muted/40 mb-3 flex items-center gap-2 rounded px-2 py-1.5 text-xs"
+            data-testid="taskchute-ticker-summary"
+            role="status"
+            aria-label={`合計 ${ticker.totalEstimateMin} 分 / 完了済 ${ticker.doneEstimateMin} 分 / 残 ${ticker.remainingEstimateMin} 分`}
+          >
+            <Timer className="text-muted-foreground h-3.5 w-3.5" aria-hidden="true" />
+            <span className="font-medium tabular-nums">
+              合計 {Math.floor(ticker.totalEstimateMin / 60)}h{ticker.totalEstimateMin % 60}m
+            </span>
+            <span className="text-muted-foreground">/ 完了</span>
+            <span className="font-medium text-emerald-700 tabular-nums">
+              {Math.floor(ticker.doneEstimateMin / 60)}h{ticker.doneEstimateMin % 60}m
+            </span>
+            <span className="text-muted-foreground">/ 残</span>
+            <span className="font-medium text-amber-700 tabular-nums">
+              {Math.floor(ticker.remainingEstimateMin / 60)}h{ticker.remainingEstimateMin % 60}m
+            </span>
+            {ticker.estimateUnknownCount > 0 ? (
+              <span className="text-muted-foreground ml-auto text-[10px]">
+                見積無 {ticker.estimateUnknownCount}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+
         <ol
           className="divide-border divide-y"
           aria-label="今日の task を時刻昇順で並べた 1 列 timeline"
@@ -134,6 +186,20 @@ export function TaskChuteView({ workspaceId, items }: Props) {
                 P{item.priority ?? 4}
               </span>
               <StatusBadge status={item.status} />
+              {(() => {
+                const tickerRow = tickerByItemId.get(item.id)
+                if (!tickerRow?.eta) return null
+                return (
+                  <span
+                    className="text-muted-foreground inline-flex shrink-0 items-center gap-0.5 font-mono text-[10px] tabular-nums"
+                    title={`予測完了 ${tickerRow.eta}`}
+                    aria-label={`予測完了時刻 ${tickerRow.eta}`}
+                    data-testid={`taskchute-eta-${item.id}`}
+                  >
+                    →{tickerRow.eta}
+                  </span>
+                )
+              })()}
               <StartTimerButton item={item} size="sm" />
             </li>
           ))}
