@@ -1,13 +1,13 @@
 import 'server-only'
 
-import { eq } from 'drizzle-orm'
+import { and, eq, isNull } from 'drizzle-orm'
 
 import { recordAudit } from '@/lib/audit'
 import { requireUser, requireWorkspaceMember } from '@/lib/auth/guard'
-import { positionBetween } from '@/lib/db/fractional-position'
+import { positionBetween, positionsBetween } from '@/lib/db/fractional-position'
 import { moveSubtree } from '@/lib/db/ltree'
 import { fullPathOf } from '@/lib/db/ltree-path'
-import { workspaceMembers } from '@/lib/db/schema'
+import { items, workspaceMembers } from '@/lib/db/schema'
 import { withUserDb } from '@/lib/db/scoped-client'
 import { ConflictError, NotFoundError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
@@ -312,23 +312,63 @@ export const itemService = {
 
         // Legacy bug で sibling 同士に同 position ('a0' 等) が残っているケースがある。
         // generateKeyBetween は prev>=next で throw するので、collision を検知したら
-        // 片側 null に fallback して place after prev (or before next) で救済する。
-        // (drag 直前の意図 = 「prev の直後 / next の直前」 を最大限保つ)
+        // **bucket rebalance** を実行: 同 parent の全 sibling を pull → (position, id)
+        // 順 (= 現状の表示順) に sort → 期待 target index に activeItem を挿入 → N 個の
+        // 位置を均等に再生成 → 全 sibling を batch UPDATE (audit / version は moved item
+        // のみ、他は data healing なので skip)。これでユーザが「ドラッグした位置に
+        // 行かない」問題が根治される (collision でも display order を尊重して配置)。
         let newPosition: string
         const prevPos = prev?.position ?? null
         const nextPos = next?.position ?? null
         const collision =
           prevPos !== null && nextPos !== null && prevPos.localeCompare(nextPos) >= 0
-        try {
-          if (collision) {
-            // 片側 null fallback: prev 側を優先 (= prev の後ろ)
-            // これで item は collision sibling 群の末尾に行くが、致命エラーは回避
-            newPosition = positionBetween(prevPos, null)
-          } else {
-            newPosition = positionBetween(prevPos, nextPos)
+        if (collision) {
+          // Bucket rebalance path
+          const siblings = await tx
+            .select()
+            .from(items)
+            .where(
+              and(
+                eq(items.workspaceId, before.workspaceId),
+                eq(items.parentPath, before.parentPath),
+                isNull(items.deletedAt),
+              ),
+            )
+          // 表示順 = (position, id) の lexicographic stable sort
+          siblings.sort(
+            (a, b) => a.position.localeCompare(b.position) || a.id.localeCompare(b.id),
+          )
+          const fromIdx = siblings.findIndex((s) => s.id === before.id)
+          if (fromIdx < 0) {
+            return err(new ValidationError('item not found in siblings (rebalance)'))
           }
-        } catch (e) {
-          return err(new ValidationError(`position 計算に失敗: ${(e as Error).message}`))
+          // arrayMove: activeItem を取り出して target index に挿入
+          const moved = siblings.splice(fromIdx, 1)[0]!
+          const prevIdxAfter = prev ? siblings.findIndex((s) => s.id === prev.id) : -1
+          const nextIdxAfter = next ? siblings.findIndex((s) => s.id === next.id) : -1
+          let toIdx: number
+          if (prevIdxAfter >= 0) toIdx = prevIdxAfter + 1
+          else if (nextIdxAfter >= 0) toIdx = nextIdxAfter
+          else toIdx = siblings.length
+          siblings.splice(toIdx, 0, moved)
+          // N 個の position を均等生成 ('a0', 'a1', ..., 'an')
+          const newPositions = positionsBetween(null, null, siblings.length)
+          // moved item 以外の sibling を batch UPDATE (audit / version は省略 = data healing)
+          for (let i = 0; i < siblings.length; i++) {
+            const s = siblings[i]!
+            if (s.id === before.id) continue
+            const newPos = newPositions[i]!
+            if (newPos === s.position) continue // 同じなら skip
+            await tx.update(items).set({ position: newPos }).where(eq(items.id, s.id))
+          }
+          newPosition = newPositions[toIdx]!
+        } else {
+          // 通常 path: prev/next の間に新 position を生成
+          try {
+            newPosition = positionBetween(prevPos, nextPos)
+          } catch (e) {
+            return err(new ValidationError(`position 計算に失敗: ${(e as Error).message}`))
+          }
         }
 
         const updated = await itemRepository.updateWithLock(

@@ -314,35 +314,53 @@ describe('itemService', () => {
       if (!result.ok) expect(result.error.code).toBe('VALIDATION')
     })
 
-    // Legacy bug 救済: 同 parent の sibling 同士が同 position ('a0' 等) を共有
-    // しているとき、prev>=next で `generateKeyBetween` は throw する (旧仕様で
-    // ValidationError "position 計算に失敗" を返していた)。今は片側 null fallback
-    // して place after prev で救済する。
-    it('prev.position == next.position (legacy collision) でも reorder 成功する', async () => {
+    // Legacy bug 救済 (v2): 同 parent の sibling 同士が同 position を共有していても、
+    // bucket rebalance によって display order を尊重した正しい位置に置かれる。
+    // 旧 v1 fix は「片側 null fallback」で末尾に置くだけだったが、ユーザは
+    // 「思った位置に行かない」と報告 → bucket rebalance で根治。
+    it('prev.position == next.position (legacy collision) でも target 位置に置かれる (bucket rebalance)', async () => {
       const a = await createItem({ title: 'A' })
       const b = await createItem({ title: 'B' })
       const c = await createItem({ title: 'C' })
-      // a と c に同 position 'a0' を強制 (= 旧バグ再現)。b は別 'a1' に。
+      const d = await createItem({ title: 'D' })
+      // 全 4 sibling を同 position 'a0' に強制 (= legacy データ最悪ケース)
       await adminClient().from('items').update({ position: 'a0' }).eq('id', a.id)
-      await adminClient().from('items').update({ position: 'a1' }).eq('id', b.id)
+      await adminClient().from('items').update({ position: 'a0' }).eq('id', b.id)
       await adminClient().from('items').update({ position: 'a0' }).eq('id', c.id)
+      await adminClient().from('items').update({ position: 'a0' }).eq('id', d.id)
       const fresh = await adminClient()
         .from('items')
-        .select('id, version')
-        .in('id', [a.id, b.id, c.id])
-      const bFresh = fresh.data!.find((x) => x.id === b.id)!
-      // b を a (prev='a0') と c (next='a0') の間に置く → 旧仕様は throw、今は救済
+        .select('id, version, position')
+        .in('id', [a.id, b.id, c.id, d.id])
+      const dFresh = fresh.data!.find((x) => x.id === d.id)!
+      // 表示順は (position='a0', id 順) → 4 つとも 'a0' なので id 順
+      // d を a と b の間に移動 (a の直後)
       const result = await itemService.reorder({
-        id: b.id,
-        expectedVersion: bFresh.version,
+        id: d.id,
+        expectedVersion: dFresh.version,
         prevSiblingId: a.id,
-        nextSiblingId: c.id,
+        nextSiblingId: b.id,
       })
       expect(result.ok).toBe(true)
-      if (result.ok) {
-        // collision 救済: prev='a0' の後ろに置かれる (= 'a0' < newPosition)
-        expect(result.value.position.localeCompare('a0')).toBeGreaterThan(0)
-      }
+      // bucket rebalance 後の全 sibling の position が distinct で順序正しいこと
+      const after = await adminClient()
+        .from('items')
+        .select('id, position')
+        .in('id', [a.id, b.id, c.id, d.id])
+      const positionsByItem = new Map<string, string>()
+      for (const r of after.data!) positionsByItem.set(r.id, r.position)
+      const aPos = positionsByItem.get(a.id)!
+      const bPos = positionsByItem.get(b.id)!
+      const cPos = positionsByItem.get(c.id)!
+      const dPos = positionsByItem.get(d.id)!
+      // 全部 distinct
+      const distinct = new Set([aPos, bPos, cPos, dPos])
+      expect(distinct.size).toBe(4)
+      // d は a と b の間に挿入されたので: aPos < dPos < bPos
+      expect(aPos.localeCompare(dPos)).toBeLessThan(0)
+      expect(dPos.localeCompare(bPos)).toBeLessThan(0)
+      // c は変わらず b の後 (元 id 順 c が d の後だったが d が抜けて a/b/c の順、d insert 後は a/d/b/c)
+      expect(bPos.localeCompare(cPos)).toBeLessThan(0)
     })
   })
 
