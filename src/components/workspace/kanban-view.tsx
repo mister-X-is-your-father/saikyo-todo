@@ -171,7 +171,11 @@ export function KanbanView({ workspaceId, items }: Props) {
 
   return (
     <>
-      <DndContext sensors={sensors} collisionDetection={pointerFirstCollision} onDragEnd={handleDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={pointerFirstCollision}
+        onDragEnd={handleDragEnd}
+      >
         {/*
          * 横スクロールを内部 (この div) で完結させる。body を横長にしないことで
          * 1) スマホで右切れ防止、2) `position: fixed` Dialog が viewport 中央に正しく出る、
@@ -342,9 +346,11 @@ function KanbanCard({
             // item の編集 button か SR で判別不能だった、複数 card の同 button を
             // 連続 announce すると区別できない)。✎ char には aria-hidden を付与し
             // unicode 名 (U+270E LOWER RIGHT PENCIL) の冗長読み上げを抑制。
+            // iter506: pseudo で tap target を 44x44 化 (visual ✎ icon size 維持)、
+            // iter505 ItemCheckbox pattern と同 pseudo `::before` 拡張。
             aria-label={`「${item.title}」を編集`}
             title={`「${item.title}」を編集`}
-            className="text-muted-foreground hover:text-foreground rounded px-1 text-xs"
+            className="text-muted-foreground hover:text-foreground relative rounded px-1 text-xs before:absolute before:-inset-3 before:content-['']"
             data-testid={`kanban-edit-${item.id}`}
           >
             <span aria-hidden="true">✎</span>

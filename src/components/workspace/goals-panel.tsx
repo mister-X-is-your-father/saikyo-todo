@@ -659,7 +659,8 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
                       }
                       title="KR を削除 (soft delete)"
                       data-testid={`kr-delete-${kr.id}`}
-                      className="text-muted-foreground hover:text-destructive text-xs disabled:opacity-50"
+                      // iter506: pseudo で tap target を 44x44 化 (visual ✕ icon size 維持)
+                      className="text-muted-foreground hover:text-destructive relative text-xs before:absolute before:-inset-3 before:content-[''] disabled:opacity-50 disabled:before:hidden"
                     >
                       <span aria-hidden="true">✕</span>
                     </button>
