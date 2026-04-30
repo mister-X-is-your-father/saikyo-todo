@@ -161,12 +161,24 @@ export function CalendarView({ workspaceId }: Props) {
     <div className="flex h-full min-h-[700px] flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => setDate((d) => subDays(d, 1))}>
-            <ChevronLeft className="h-4 w-4" />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setDate((d) => subDays(d, 1))}
+            aria-label="前日"
+          >
+            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
           </Button>
-          <div className="text-base font-semibold">{format(date, 'yyyy年 M月 d日 (eee)')}</div>
-          <Button variant="outline" size="icon" onClick={() => setDate((d) => addDays(d, 1))}>
-            <ChevronRight className="h-4 w-4" />
+          <h2 aria-live="polite" aria-atomic="true" className="text-base font-semibold">
+            {format(date, 'yyyy年 M月 d日 (eee)')}
+          </h2>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setDate((d) => addDays(d, 1))}
+            aria-label="翌日"
+          >
+            <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </Button>
           <Button variant="ghost" size="sm" onClick={() => setDate(startOfDay(new Date()))}>
             今日
@@ -175,7 +187,11 @@ export function CalendarView({ workspaceId }: Props) {
         <div className="text-muted-foreground text-xs">
           想定 {planned.length} 件 / 実測 {actual.length} 件
           {(create.isPending || move.isPending || softDelete.isPending) && (
-            <Loader2 className="ml-2 inline h-3 w-3 animate-spin" />
+            <Loader2
+              className="ml-2 inline h-3 w-3 animate-spin"
+              aria-label="保存中"
+              role="status"
+            />
           )}
         </div>
       </div>
