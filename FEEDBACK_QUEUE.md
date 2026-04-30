@@ -15,6 +15,133 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ## 未処理 (新しい順)
 
+### 2026-04-30 — Calendar 機能完成、追加 5 規望を P0 投入 (Calendar conv 由来)
+
+- [x] **二車線 Calendar view (想定 vs 実測 timeline)** — 完了 (commit 8624154)
+  - item_schedules table 新設 / features/schedule layer / 27 test pass / Realtime + 楽観ロック
+  - `src/components/schedule/`, `src/features/schedule/`, plugin 登録、active-timer と接続
+
+以下 5 件は同 conversation で連続して来た規望を分類して P0 化したもの。
+**設計哲学** (memory `project_saikyo_todo_philosophy.md` 反映): 「目標達成・思考力・段取り力を鍛える道具」。各 P0 はこの軸 + 6 軸 (UX 卓越憲章) で評価。
+
+---
+
+### 2026-04-30 — タスク metadata 拡張 (input/output/goal/関係者/レビュー/添付) ★ P0 ★
+
+- [ ] **各 task に input / output / goal / 関係者 (stakeholders) / 添付 (URL or file) / レビュー依頼 を設定でき、output↔input マッチで依存関係を自動推論し、関係者には Web UI 通知が届く** — 分類: 機能拡張 (P0)
+  - 原文 (2026-04-30 conversation):
+    - 「タスクにインプットとアウトプットを設定できる機能つけたい。それで依存関係もわかるし!!」
+    - 「インプットとアウトプットは各タスクごとに設定できるように!」
+    - 「タスクのゴールもね。」
+    - 「関係者とかも。」
+    - 「関係者にwebui上で通知行くねん」
+    - 「メールのccみたいなもんや」
+    - 「成果物のurlやファイルを添付や記入出来るのも頼む。」
+    - 「あとレビュー依頼できる機能もね。」
+  - **意図 (思考力・段取り力)**: タスクを作る時に「何が要るか / 何を出すか / 何のためか」を強制的に言語化させる。output↔input が一致したら自動で依存推論 → 段取り思考が育つ。
+  - **schema 追加**:
+    1. `items.goal text` 列 (達成目的、dod=完了基準とは別軸。例: goal="チームに浸透させる", dod="議事録に承認サインが入る")
+    2. `item_io_artifacts (id, item_id, kind 'input'|'output', label, url, file_path, mime, created_by, created_at)` 中間テーブル
+    3. `item_stakeholders (item_id, user_id, added_at)` 中間テーブル (assignees とは別軸、CC 的)
+    4. `item_review_requests (id, item_id, requested_by, requested_at, status 'pending'|'approved'|'changes_requested', resolved_at, resolved_by)` テーブル
+  - **service 層**:
+    - `setItemIoArtifacts / setItemStakeholders / requestReview / resolveReview` を items service に追加
+    - **依存推論**: pure helper `inferDependenciesFromIO(items, ioArtifacts)` で output.label が他 item の input.label と一致すれば `item_dependencies` に `blocks` を suggest (自動挿入は別 confirm UI、最初は提案のみ)
+    - 関係者追加 / review request 時に **既存 notifications テーブル経由で in-app 通知** 発火 (受信者は stakeholder / requester)
+  - **UI 拡張**:
+    - ItemEditDialog (`src/components/workspace/item-edit-dialog.tsx`) に新タブ「I/O & ゴール」追加
+    - goal 入力 (textarea) / inputs リスト / outputs リスト / 関係者 picker / レビュー依頼 button + 履歴
+    - 添付: URL は text input、file は Supabase Storage upload (新規 bucket `item-artifacts`)
+  - **段階実装 (commit を分ける)**:
+    1. schema + migration + repo (1 commit)
+    2. service + zod + test (1 commit)
+    3. UI タブ (1 commit)
+    4. 依存推論 helper + 提案 UI (1 commit)
+    5. 関係者通知 + レビュー依頼 UI (1 commit)
+    6. file upload (Supabase Storage) (1 commit、後続 iter でも OK)
+  - **6 軸スコア (期待)**: 可視化 4 / 操作 3 / 認知負荷低減 4 / 作業漏れ防止 5 / やる気 3 / 効率化 4
+
+---
+
+### 2026-04-30 — 全員 broadcast 依頼 (この設定各 PC でやっといて 風) ★ P0 ★
+
+- [ ] **チーム全員に同じ task を一斉配布、各人がチェックリスト的に消化、進捗を集約 view で見られる** — 分類: 機能拡張 (P0)
+  - 原文 (2026-04-30): 「全員にタスク頼みたいとき (この設定各pcでやっといて) みたいなのとかも簡単にできるようにしたい!わかる?」
+  - **意図 (作業漏れ防止 + 効率化)**: チーム運用で頻出する「全員これ確認して」「全員 PC でこの設定やって」を 1 click で全員に配布、誰がやった/やってないが一目で分かる。
+  - **設計案 (要 plan で詳細化)**:
+    - **方式 A**: 既存の item を **template 化** + workspace member 全員に template instantiate (1 task/member)。集約 view で member × 完了状態を見る
+    - **方式 B**: 1 item に複数 assignee (既存 `item_assignees` で可能) + 「assignee ごとに done state」を持つ新 table `item_assignee_progress (item_id, actor_type, actor_id, done_at)`
+    - 方式 B が schema 追加少ない、UI シンプル。**方式 B を採用**
+  - **schema 追加**: `item_assignee_progress (item_id, actor_type, actor_id, done_at)` (PK = 3 列)
+  - **UI**:
+    - quick-add に「全員に頼む」option (作成と同時に全 member を assignee + progress 行 init)
+    - item card / kanban tile に「3/5 完了」badge
+    - 集約 view: 「broadcast 進捗」専用 tab (member × broadcast item の matrix、green/grey)
+    - 各 member は自分の行で「自分の済」だけ check (他人のは disable)
+  - **段階実装**:
+    1. schema + repo (1 commit)
+    2. quick-add に option + service (1 commit)
+    3. progress badge + matrix view (1 commit)
+  - **6 軸スコア**: 可視化 5 / 操作 4 / 認知負荷低減 3 / 作業漏れ防止 5 / やる気 3 / 効率化 5
+
+---
+
+### 2026-04-30 — Slack ワンポチでタスク化 ★ P0 ★
+
+- [ ] **Slack message から 1 click で saikyo-todo task を作成、message link は description に自動引用** — 分類: 外部統合 (P0、Slack app 設定要)
+  - 原文 (2026-04-30): 「Slackワンポチでタスク化できる機能も欲しい!!」
+  - **意図 (効率化 + 作業漏れ防止)**: Slack でタスク化したいやり取りが流れる前に拾う。
+  - **必要なもの**:
+    1. Slack app 登録 (user 側で設定。app manifest を `docs/slack-app-manifest.yaml` に置く)
+    2. OAuth flow (workspace ↔ Slack workspace の紐付け、tokens は `slack_workspace_tokens` table に AES 暗号化保存)
+    3. Message Action (saikyo-todo にタスク化) ボタンを Slack 側に追加
+    4. webhook 受信エンドポイント `/api/integrations/slack/actions` (signature 検証必須)
+    5. Slack user → saikyo-todo user の対応表 (`slack_user_links`、初回は email match で auto link)
+  - **schema 追加**:
+    - `slack_workspace_tokens (workspace_id, slack_team_id, bot_token_enc, app_token_enc, installed_by, ...)`
+    - `slack_user_links (workspace_id, user_id, slack_user_id, slack_team_id)`
+  - **段階実装**:
+    1. schema + repo + 暗号化 helper (1 commit)
+    2. webhook endpoint + signature 検証 + Slash command (`/saikyo`) (1 commit)
+    3. Message Action → item 作成 (1 commit)
+    4. OAuth installer flow + workspace 設定 UI (1 commit)
+  - **環境変数**: `SLACK_SIGNING_SECRET`, `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET` (空なら全機能 disable)
+  - **6 軸スコア**: 可視化 2 / 操作 5 / 認知負荷低減 3 / 作業漏れ防止 5 / やる気 2 / 効率化 5
+
+---
+
+### 2026-04-30 — 目標達成サポート + 繰り返しタスク ★ P0 ★
+
+- [ ] **目標 (Goal) を起点に「そのために何をするか」を分解、繰り返しタスクで習慣化、達成度を可視化** — 分類: 機能拡張 (P0)
+  - 原文 (2026-04-30):
+    - 「目標達成もサポートできるようにしたいんだ。」
+    - 「そのためには何をするのかだったり、繰り返しタスクだったりとかもやれるようにしたいし。」
+  - **意図 (思考力・段取り力)**: 目標 (週次/月次) → 「そのために何をするか」を AI 補助つきで分解 → 繰り返しタスクで習慣化 → 振り返りで段取り精度向上。設計哲学の本丸。
+  - **既存資産との関係**:
+    - `personal_period_goals (period day/week/month, period_key, text)` 既存 — UI 強化と AI 分解 hook 追加
+    - `templates` 既存 — recurring template に拡張
+  - **schema 追加**:
+    1. `goal_action_items (goal_id, item_id, weight, created_at)` — goal と それを実現する item を紐付ける中間テーブル (1 goal : N item)
+    2. `item_recurrences (item_id, rule_rrule, next_run_at, last_run_at, paused, ...)` — RFC 5545 RRULE で表現 (`FREQ=DAILY;BYHOUR=9` 等)
+    3. worker: `pg-boss` の cron job で `next_run_at <= now()` の rule を回し、template から item 生成 → next_run_at を rrule で計算
+  - **UI**:
+    - goals-panel (既存) に「この目標を実現する task」セクション + 「AI に分解させる」 button
+    - item edit dialog に「繰り返し」タブ (rrule builder UI、daily/weekdays/weekly/monthly)
+    - dashboard に「目標達成度」chart (週/月で goal x action items の done 比率)
+  - **AI 分解 prompt** (Researcher / PM agent の system prompt 拡張):
+    - 入力: goal text + 関連既存 item
+    - 出力: action item 候補 5-10 件 (title + estimate + 期日提案)
+    - 既存 `decomposeItem` パターンと同じ proposal review flow を流用
+  - **段階実装**:
+    1. item_recurrences schema + worker (1 commit、cron 1 件)
+    2. goal_action_items schema + UI 紐付け (1 commit)
+    3. 繰り返しタブ UI (rrule builder) (1 commit)
+    4. AI 分解 hook (proposal review 流用) (1 commit)
+    5. dashboard chart (1 commit)
+  - **6 軸スコア**: 可視化 5 / 操作 4 / 認知負荷低減 3 / 作業漏れ防止 5 / やる気 5 / 効率化 5
+
+---
+
 ### 2026-04-30 — saikyo-todo UX 卓越憲章 + iter prompt 統合 ★ P0 メタ ★
 
 - [ ] **UX 卓越の 6 軸を「saikyo-todo の存在目的」として憲章化 + autonomous prompt に評価軸として組込み + 各 view の gap 分析と改善 P0 派生** — 分類: 設計憲章 + プロセス改善 (P0 メタ)
@@ -48,7 +175,7 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
   - **期待 commit (1 commit でまとめる)**:
     `docs(ux): saikyo-todo UX 卓越憲章 + iter prompt 6 軸統合 (queue: ux-excellence charter)`
-    + queue update commit (本 entry を [x] + 派生 P0 を投入)
+    - queue update commit (本 entry を [x] + 派生 P0 を投入)
 
   - **既存基準との関係**:
     - a-g は **手段層** (どう実装するか)、本 6 軸は **目的層** (何のために作るか)。両方を commit body に書く運用にする。
