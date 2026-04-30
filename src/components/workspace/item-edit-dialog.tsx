@@ -58,6 +58,7 @@ import { CommentThread } from './comment-thread'
 import { EngineerTriggerButton } from './engineer-trigger-button'
 import { ItemDecomposeButton } from './item-decompose-button'
 import { ItemDependenciesPanel } from './item-dependencies-panel'
+import { ItemSummaryPanel } from './item-summary-panel'
 import { MustBadge } from './must-badge'
 import { StartTimerButton } from './start-timer-button'
 import { SubtasksPanel } from './subtasks-panel'
@@ -98,9 +99,9 @@ function ItemEditDialogInner({
   onOpenChange: (open: boolean) => void
   currentUserId?: string
 }) {
-  const [tab, setTab] = useState<'base' | 'subtasks' | 'dependencies' | 'comments' | 'activity'>(
-    'base',
-  )
+  const [tab, setTab] = useState<
+    'base' | 'summary' | 'subtasks' | 'dependencies' | 'comments' | 'activity'
+  >('base')
   const [title, setTitle] = useState(item.title)
   const [description, setDescription] = useState(item.description ?? '')
   const [startDate, setStartDate] = useState(item.startDate ?? '')
@@ -310,6 +311,13 @@ function ItemEditDialogInner({
           <TabsList className="w-full" aria-label="Item 編集タブ">
             <TabsTrigger value="base" data-testid="tab-base">
               基本
+            </TabsTrigger>
+            <TabsTrigger
+              value="summary"
+              data-testid="tab-summary"
+              aria-label="サマリ タブ — この案件の進捗 / 依存 / 最終更新を一目で確認"
+            >
+              サマリ
             </TabsTrigger>
             <TabsTrigger
               value="subtasks"
@@ -590,6 +598,10 @@ function ItemEditDialogInner({
                 </p>
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="summary" className="mt-4">
+            <ItemSummaryPanel workspaceId={workspaceId} item={item} />
           </TabsContent>
 
           <TabsContent value="subtasks" className="mt-4">
