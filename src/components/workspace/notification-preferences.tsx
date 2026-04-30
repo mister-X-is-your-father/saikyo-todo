@@ -120,12 +120,17 @@ export function NotificationPreferencesButton({ Icon = Settings }: { Icon?: Luci
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 max-w-[calc(100vw-1rem)] gap-0 p-0">
         <div className="border-b px-3 py-2">
-          <p className="text-sm font-medium">通知設定 (メール)</p>
+          {/* SR の heading navigation (h ショートカット) で popover に到達した
+              直後にラベルが聞ける (iter427 NotificationBell と同 pattern)。
+              visual サイズ text-sm 維持、heading semantic だけ追加。 */}
+          <h2 id="notification-preferences-heading" className="text-sm font-medium">
+            通知設定 (メール)
+          </h2>
           <p className="text-muted-foreground mt-0.5 text-[10px]">
             実 SMTP / Resend 連携前のため現状はモック outbox に記録されます
           </p>
         </div>
-        <ul className="divide-y">
+        <ul className="divide-y" aria-labelledby="notification-preferences-heading">
           {TOGGLES.map((spec) => {
             const checked = data ? Boolean(data[spec.key]) : false
             const visual = getNotificationTypeVisual(spec.type)
