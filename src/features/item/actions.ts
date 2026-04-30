@@ -104,6 +104,22 @@ export async function listItemAssigneesAction(itemId: string): Promise<Result<As
   }
 }
 
+/**
+ * iter474: sprint 配下 items の assignees を bulk fetch (sprint swim-lane Gantt
+ * 用、N+1 query 回避)。要 viewer 権限、RLS で見えない items は結果から落ちる。
+ */
+export async function listSprintItemAssigneesAction(input: {
+  workspaceId: string
+  sprintId: string
+}): Promise<Result<Record<string, AssigneeRef[]>>> {
+  try {
+    return ok(await itemService.listAssigneesForSprintItems(input.workspaceId, input.sprintId))
+  } catch (e) {
+    if (isAppError(e)) return err(e)
+    throw e
+  }
+}
+
 export async function listItemTagIdsAction(itemId: string): Promise<Result<string[]>> {
   try {
     return ok(await itemService.listTagIds(itemId))

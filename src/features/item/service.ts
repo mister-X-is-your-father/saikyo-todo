@@ -15,6 +15,7 @@ import { mutateWithGuard } from '@/lib/service-mutate'
 
 import { dispatchItemEvent } from '@/features/workflow/dispatcher'
 
+import { groupAssigneesByItemId } from './group-assignees'
 import { violatesMustDodInvariant } from './must-dod'
 import { type AssigneeRef, itemRepository } from './repository'
 import {
@@ -598,6 +599,24 @@ export const itemService = {
       if (!item) return []
       await requireWorkspaceMember(item.workspaceId, 'viewer')
       return await itemRepository.listAssignees(tx, itemId)
+    })
+  },
+
+  /**
+   * iter474: sprint 配下 items の assignees を bulk fetch して itemId ごとに
+   * group 化。Sprint swim-lane Gantt UI の getAssignees callback 用 (N+1
+   * query 回避)。要 viewer 権限。RLS で見えない items は inner join で
+   * 結果から落ちる (情報漏洩なし)。grouping は pure helper に分離 (test deterministic)。
+   */
+  async listAssigneesForSprintItems(
+    workspaceId: string,
+    sprintId: string,
+  ): Promise<Record<string, AssigneeRef[]>> {
+    const user = await requireUser()
+    await requireWorkspaceMember(workspaceId, 'viewer')
+    return await withUserDb(user.id, async (tx) => {
+      const rows = await itemRepository.listAssigneesForSprintItems(tx, sprintId)
+      return groupAssigneesByItemId(rows)
     })
   },
 

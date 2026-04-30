@@ -152,6 +152,27 @@ export const itemRepository = {
     return rows as AssigneeRef[]
   },
 
+  /**
+   * iter474: sprint 配下 items の assignees を 1 query で bulk fetch。
+   * sprint swim-lane / member-capacity UI の N+1 query 回避用。RLS で
+   * 見えない items は inner join で結果から落ちるので情報漏洩なし。
+   */
+  async listAssigneesForSprintItems(
+    tx: Tx,
+    sprintId: string,
+  ): Promise<Array<{ itemId: string; actorType: ActorType; actorId: string }>> {
+    const rows = await tx
+      .select({
+        itemId: itemAssignees.itemId,
+        actorType: itemAssignees.actorType,
+        actorId: itemAssignees.actorId,
+      })
+      .from(itemAssignees)
+      .innerJoin(items, eq(itemAssignees.itemId, items.id))
+      .where(and(eq(items.sprintId, sprintId), isNull(items.deletedAt)))
+    return rows as Array<{ itemId: string; actorType: ActorType; actorId: string }>
+  },
+
   /** Item の assignees を置換。差分 insert/delete。 */
   async setAssignees(tx: Tx, itemId: string, next: AssigneeRef[]): Promise<AssigneeRef[]> {
     await tx.delete(itemAssignees).where(eq(itemAssignees.itemId, itemId))

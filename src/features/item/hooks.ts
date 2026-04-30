@@ -23,6 +23,7 @@ import {
   listItemAssigneesAction,
   listItemsAction,
   listItemTagIdsAction,
+  listSprintItemAssigneesAction,
   moveItemAction,
   reorderItemAction,
   setItemAssigneesAction,
@@ -276,6 +277,20 @@ export function useItemAssignees(itemId: string | undefined) {
     queryKey: itemId ? itemRelationKeys.assignees(itemId) : ['items', 'assignees', 'noop'],
     queryFn: async () => unwrap(await listItemAssigneesAction(itemId!)),
     enabled: Boolean(itemId),
+  })
+}
+
+/**
+ * iter474: sprint 配下 items の assignees を bulk fetch (Sprint swim-lane Gantt
+ * UI 用、N+1 query 回避)。caller は `data?.[itemId] ?? []` で getAssignees
+ * callback として渡せる。sprintId が null/undefined なら disabled。
+ */
+export function useSprintItemAssignees(workspaceId: string, sprintId: string | null | undefined) {
+  return useQuery({
+    queryKey: ['items', 'sprint-assignees', workspaceId, sprintId ?? 'none'] as const,
+    queryFn: async () =>
+      unwrap(await listSprintItemAssigneesAction({ workspaceId, sprintId: sprintId! })),
+    enabled: Boolean(workspaceId && sprintId),
   })
 }
 
