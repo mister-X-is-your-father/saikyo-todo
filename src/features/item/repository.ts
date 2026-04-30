@@ -173,6 +173,28 @@ export const itemRepository = {
     return rows as Array<{ itemId: string; actorType: ActorType; actorId: string }>
   },
 
+  /**
+   * iter476: workspace 全 items の assignees を 1 query で bulk fetch。
+   * member-capacity (P0 entry 3) UI bind の N+1 query 回避用、sprint 横断。
+   * RLS で見えない items は inner join で結果から落ちるので情報漏洩なし、
+   * deleted_at IS NULL filter (live items のみ)。
+   */
+  async listAssigneesForWorkspace(
+    tx: Tx,
+    workspaceId: string,
+  ): Promise<Array<{ itemId: string; actorType: ActorType; actorId: string }>> {
+    const rows = await tx
+      .select({
+        itemId: itemAssignees.itemId,
+        actorType: itemAssignees.actorType,
+        actorId: itemAssignees.actorId,
+      })
+      .from(itemAssignees)
+      .innerJoin(items, eq(itemAssignees.itemId, items.id))
+      .where(and(eq(items.workspaceId, workspaceId), isNull(items.deletedAt)))
+    return rows as Array<{ itemId: string; actorType: ActorType; actorId: string }>
+  },
+
   /** Item の assignees を置換。差分 insert/delete。 */
   async setAssignees(tx: Tx, itemId: string, next: AssigneeRef[]): Promise<AssigneeRef[]> {
     await tx.delete(itemAssignees).where(eq(itemAssignees.itemId, itemId))

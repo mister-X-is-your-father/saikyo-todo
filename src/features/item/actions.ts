@@ -120,6 +120,21 @@ export async function listSprintItemAssigneesAction(input: {
   }
 }
 
+/**
+ * iter476: workspace 全 items の assignees を bulk fetch (member-capacity 用、
+ * sprint 横断、N+1 回避)。要 viewer 権限、RLS で見えない items は結果から落ちる。
+ */
+export async function listWorkspaceItemAssigneesAction(
+  workspaceId: string,
+): Promise<Result<Record<string, AssigneeRef[]>>> {
+  try {
+    return ok(await itemService.listAssigneesForWorkspace(workspaceId))
+  } catch (e) {
+    if (isAppError(e)) return err(e)
+    throw e
+  }
+}
+
 export async function listItemTagIdsAction(itemId: string): Promise<Result<string[]>> {
   try {
     return ok(await itemService.listTagIds(itemId))

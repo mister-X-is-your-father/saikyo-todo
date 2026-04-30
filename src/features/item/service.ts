@@ -620,6 +620,20 @@ export const itemService = {
     })
   },
 
+  /**
+   * iter476: workspace 全 items の assignees を bulk fetch (member-capacity
+   * P0 entry 3 UI bind 用、sprint 横断、N+1 回避)。要 viewer 権限、grouping
+   * は pure helper 共通化。
+   */
+  async listAssigneesForWorkspace(workspaceId: string): Promise<Record<string, AssigneeRef[]>> {
+    const user = await requireUser()
+    await requireWorkspaceMember(workspaceId, 'viewer')
+    return await withUserDb(user.id, async (tx) => {
+      const rows = await itemRepository.listAssigneesForWorkspace(tx, workspaceId)
+      return groupAssigneesByItemId(rows)
+    })
+  },
+
   async listTagIds(itemId: string): Promise<string[]> {
     const user = await requireUser()
     return await withUserDb(user.id, async (tx) => {

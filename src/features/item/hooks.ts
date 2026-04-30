@@ -24,6 +24,7 @@ import {
   listItemsAction,
   listItemTagIdsAction,
   listSprintItemAssigneesAction,
+  listWorkspaceItemAssigneesAction,
   moveItemAction,
   reorderItemAction,
   setItemAssigneesAction,
@@ -291,6 +292,19 @@ export function useSprintItemAssignees(workspaceId: string, sprintId: string | n
     queryFn: async () =>
       unwrap(await listSprintItemAssigneesAction({ workspaceId, sprintId: sprintId! })),
     enabled: Boolean(workspaceId && sprintId),
+  })
+}
+
+/**
+ * iter476: workspace 全 items の assignees を bulk fetch (member-capacity 用、
+ * sprint 横断 N+1 回避)。caller は `data?.[itemId] ?? []` で getAssignees
+ * callback として渡せる。
+ */
+export function useWorkspaceItemAssignees(workspaceId: string) {
+  return useQuery({
+    queryKey: ['items', 'workspace-assignees', workspaceId] as const,
+    queryFn: async () => unwrap(await listWorkspaceItemAssigneesAction(workspaceId)),
+    enabled: Boolean(workspaceId),
   })
 }
 
