@@ -2,18 +2,27 @@
 
 import { AlertTriangle, CheckCircle2, MinusCircle, TrendingUp, Zap } from 'lucide-react'
 
+import { type Severity } from '@/lib/widget/severity'
+
 import { type DiffRow, summarizeDiff } from '@/features/schedule/diff-summary'
 import type { Schedule } from '@/features/schedule/schema'
 
-const SEVERITY_STYLE: Record<DiffRow['severity'], string> = {
-  ok: 'border-emerald-300 bg-emerald-50 text-emerald-700',
-  warn: 'border-amber-300 bg-amber-50 text-amber-800',
-  danger: 'border-rose-300 bg-rose-50 text-rose-700',
-  not_done: 'border-slate-300 bg-slate-100 text-slate-600',
-  interrupt: 'border-purple-300 bg-purple-50 text-purple-700',
+import { SeverityChip } from '@/components/shared/severity-chip'
+
+/**
+ * diff-summary 5 値 (`ok|warn|danger|not_done|interrupt`) を
+ * widget 共通 5 値 Severity (`ok|info|warn|danger|muted`) に縮約する。
+ * - ok / warn / danger は同じ
+ * - not_done (= 想定あり実測 0) → muted (灰色、未実行軸)
+ * - interrupt (= 割込み) → info (sky、別 category)
+ */
+function toSeverity(s: DiffRow['severity']): Severity {
+  if (s === 'not_done') return 'muted'
+  if (s === 'interrupt') return 'info'
+  return s
 }
 
-const SEVERITY_ICON: Record<DiffRow['severity'], React.ReactNode> = {
+const ICON_BY_DIFF_SEVERITY: Record<DiffRow['severity'], React.ReactNode> = {
   ok: <CheckCircle2 className="h-3 w-3" aria-hidden="true" />,
   warn: <TrendingUp className="h-3 w-3" aria-hidden="true" />,
   danger: <AlertTriangle className="h-3 w-3" aria-hidden="true" />,
@@ -60,31 +69,21 @@ export function DiffSummaryBar({ schedules, itemTitleById, onSelect }: Props) {
     <div className="flex flex-wrap items-center gap-2 py-2">
       {rows.map((r) => {
         const title = r.itemId ? (itemTitleById.get(r.itemId) ?? '(不明)') : '割込み / その他'
-        const cls = SEVERITY_STYLE[r.severity]
         const sevLabel = SEVERITY_LABEL_JA[r.severity]
-        const deltaText =
-          r.severity !== 'interrupt' && r.plannedMinutes > 0
-            ? ` 差分 ${deltaLabel(r.deltaMinutes)}`
-            : ''
+        const showDelta = r.severity !== 'interrupt' && r.plannedMinutes > 0
+        const deltaText = showDelta ? ` 差分 ${deltaLabel(r.deltaMinutes)}` : ''
         return (
-          <button
+          <SeverityChip
             key={r.itemId ?? '__interrupt__'}
-            type="button"
-            onClick={() => onSelect?.(r.itemId)}
-            className={`inline-flex max-w-[260px] items-center gap-1 rounded-full border px-2.5 py-1 text-xs ${cls} hover:opacity-90`}
-            aria-label={`${sevLabel}: ${title} 想定 ${fmtMin(r.plannedMinutes)} 実測 ${fmtMin(r.actualMinutes)}${deltaText}`}
-          >
-            {SEVERITY_ICON[r.severity]}
-            <span className="truncate font-medium">{title}</span>
-            <span className="shrink-0 text-[10px] opacity-80">
-              {fmtMin(r.plannedMinutes)} → {fmtMin(r.actualMinutes)}
-            </span>
-            {r.severity !== 'interrupt' && r.plannedMinutes > 0 ? (
-              <span className="shrink-0 text-[10px] font-semibold">
-                {deltaLabel(r.deltaMinutes)}
-              </span>
-            ) : null}
-          </button>
+            severity={toSeverity(r.severity)}
+            icon={ICON_BY_DIFF_SEVERITY[r.severity]}
+            label={`${title}  ${fmtMin(r.plannedMinutes)} → ${fmtMin(r.actualMinutes)}`}
+            delta={showDelta ? deltaLabel(r.deltaMinutes) : undefined}
+            ariaLabel={`${sevLabel}: ${title} 想定 ${fmtMin(r.plannedMinutes)} 実測 ${fmtMin(r.actualMinutes)}${deltaText}`}
+            className="max-w-[260px]"
+            onClick={onSelect ? () => onSelect(r.itemId) : undefined}
+            testId={`diff-chip-${r.itemId ?? 'interrupt'}`}
+          />
         )
       })}
     </div>

@@ -15,6 +15,52 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ## 未処理 (新しい順)
 
+### 2026-04-30 — REST API + MCP server 化 (saikyo-todo を外部から叩けるように) ★ P0 ★
+
+- [ ] **saikyo-todo の主要 entity (item / schedule / goal / template / time-entry) を REST API として外部公開、加えて MCP server として AI agent / Claude Desktop 等から直接叩けるようにする** — 分類: 外部統合 (P0)
+  - 原文 (2026-04-30 conversation 中): 「APIやMCP化をしてほしい」
+  - **意図**: saikyo-todo の data / 操作を 「AI agent から自然に組合せられる component」 にする。既存 internal Server Action は UI 専用 (Result<T>)、外部から叩くには公開 API + auth scope + rate limit が必要。MCP は Claude Desktop / AI Agent SDK が最適化されたプロトコル、AI 駆動運用 (= プロジェクトの哲学「AI 自動実行」) に直結。
+  - **設計案 (要 plan で詳細化)**:
+    1. **REST API layer** (`/api/v1/*`):
+       - 既存 service 層を re-use (auth は Bearer token = `api_keys` 新 table、scope は workspace_id + role)
+       - resource: items / item-schedules / time-entries / goals / templates / comments
+       - OpenAPI 3.1 spec 自動生成 (`zod-to-openapi`、既存 zod schema 流用)
+       - Next.js Route Handlers (`src/app/api/v1/...`)
+       - 公式 SDK 候補: TypeScript / Python (auto-generate from OpenAPI)
+    2. **MCP server** (`src/app/api/mcp/route.ts` or 別 process):
+       - `@modelcontextprotocol/sdk` (既に dev dep にある: `^1.29.0`) を使う
+       - tool 化対象 (read 系を最初): `list_items` / `get_item` / `list_today_schedule` / `get_goals`
+       - tool 化 (write 系、scope=member): `create_item` / `update_item_status` / `add_time_entry`
+       - workspace 認証: Bearer token (REST API と同じ `api_keys` table)
+       - tool spec は zod schema → MCP tool input schema へ変換 (helper)
+    3. **schema 追加**: `api_keys (id, workspace_id, label, key_hash, scopes text[], created_by, last_used_at, revoked_at, expires_at)`
+       - key 生成は base64url(32 bytes)、保存は SHA-256 hash のみ (一度切りの平文表示)
+       - scopes: 'read' / 'write' / 'admin' を text[] で
+  - **段階実装 (phase ごと別 P0)**:
+    1. `api_keys` schema + service (create / revoke / list 自分の rows)
+    2. `withApiAuth` middleware (Bearer 検証 + scope check) + 1 endpoint smoke (`GET /api/v1/items?workspace_id=...`)
+    3. items REST CRUD (list / get / create / update / delete) — read first, write next iter
+    4. item-schedules / time-entries / goals REST
+    5. MCP server skeleton (read-only tools 5 件)
+    6. MCP write tools (member scope のみ)
+    7. OpenAPI 3.1 spec 自動生成 + `/api/v1/openapi.json` endpoint
+    8. workspace settings UI で API key 発行 / revoke
+  - **環境変数**: `MCP_SERVER_PUBLIC_URL` (Claude Desktop config で参照、default 自分の domain)
+  - **6 軸スコア (期待)**: 可視化 1 / 操作 4 / 認知負荷低減 2 / 漏れ防止 4 / やる気 2 / 効率化 5 — **5 軸 効率化が圧倒的本丸** (AI 経由で saikyo-todo を batch 操作できる)。
+
+  **関連既存資産**:
+  - `@modelcontextprotocol/sdk@1.29.0` (dev dep)
+  - 既存 service / Server Action layer (Result<T>) を thin wrap で API 化可能
+  - `zod` schema は OpenAPI / MCP tool spec に直接変換可能 (`zod-to-openapi` pkg 既存無し、要 install)
+  - audit_log は既に全 mutation で記録 → API 経由も同じ audit が残る
+
+  **重要 (cloud agent 注意)**:
+  - **既存 Server Action を直接 export しない**。auth context が UI session 前提なので、Bearer 検証して `withUserDb(api_key.workspace_member.user_id)` で別 path を作る
+  - rate limit は最初は memory ベース (token bucket per api_key、1 process 内)、本番は Redis 化 (POST_MVP)
+  - MCP server は **Streamable HTTP transport** (sse/stdio ではない、Next.js Route Handler で実装)
+
+---
+
 ### 2026-04-30 — Calendar 機能完成、追加 5 規望を P0 投入 (Calendar conv 由来)
 
 - [x] **二車線 Calendar view (想定 vs 実測 timeline)** — 完了 (commit 8624154)
@@ -724,6 +770,7 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 
 **現状**: AI が朝会要約 markdown 生成 (fluffy)、toast で 120 char しか見えない (UX gap も含む)。
 **最強版**:
+
 - Dashboard or Today 画面上部に **「今日の作戦盤」 widget** 常時表示 (button 不要、自動更新)
 - 内容 (algorithm 計算、AI 不要):
   - **昨日 done**: 件数 + clickable list (collapsed by default)
@@ -742,6 +789,7 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 
 **現状**: AI が Sprint 開始前に「失敗候補 / 原因 / 対策」文章 (fluffy: 一般論)。
 **最強版**:
+
 - Sprint 詳細 page 上部に **リスクボード widget**
 - 内容:
   - 各 item の **risk score** = (同 tag overdue 率 × estimated/残時間 × blocking 数)
@@ -756,6 +804,7 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 
 **現状**: AI が Sprint 終了時に KPT 感想文 (fluffy: 「進捗良好でした」的)。
 **最強版**:
+
 - Sprint 終了後 自動生成 widget (existing retro page を置換)
 - 内容:
   - 完了率 / planned vs delivered delta
@@ -771,15 +820,17 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 
 **現状**: ChatGPT 的 general knowledge を Doc 化 (fluffy)。saikyo-todo 内 context 不使用。
 **選択肢**:
+
 - 削除: ChatGPT 直叩きで十分、saikyo-todo 内に置く意味薄い
 - RAG 化: workspace 内 Doc / Item / comment を embedding 検索 → AI に context として渡す → **citation 付き Doc** を生成
-**おすすめ**: 削除。RAG 化は別途「ドキュメント参照 RAG」 entry (queue 既存) で対応。
+  **おすすめ**: 削除。RAG 化は別途「ドキュメント参照 RAG」 entry (queue 既存) で対応。
 - 期待 commit: `chore(agent): AI 調査 (researcherService.run) を削除 — RAG 版で置換予定 (queue: fluffy-4 research削除)`
 
 ##### 派生 P0-5: PM Recovery (MUST 救済) → 「救済プラン widget」
 
 **現状**: overdue MUST に AI が「遅延要因 / 代替案 / 代替担当」 comment (fluffy 中)。
 **最強版**:
+
 - Item edit dialog or Backlog 行で「救済プラン」 button (overdue MUST のみ enabled)
 - click で modal/widget 表示:
   - 過去同種 (同 tag / 同 assignee) overdue 件 → 平均挽回時間
@@ -792,6 +843,7 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 
 **現状**: AI が「やること」 markdown 文章 comment (fluffy 化リスク)。
 **最強版**:
+
 - zod schema で **structured output 強制**:
   - `steps: { title: string, est_min: number, dod: string, dependencies: string[] }[]`
   - `total_est_min: number` (item.estimate との delta 表示)
@@ -804,6 +856,7 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 
 **現状**: queue 候補、未実装。AI 文章で「今日のおすすめ順」(高 fluffy 予測)。
 **最強版**:
+
 - **Eisenhower matrix algorithm** で自動 sort (純 algorithm、AI 不要)
   - x 軸: Urgency = (due 経過率) × (overdue weight)
   - y 軸: Importance = priority × dependent count × MUST flag
@@ -817,6 +870,7 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 
 **現状**: queue 候補、未実装。AI 文章で retrospective 自動生成 (高 fluffy 予測)。
 **最強版**:
+
 - Dashboard 内 tab として「Weekly」 view
 - 内容:
   - 週次完了 trend (line chart)
@@ -830,6 +884,7 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 ---
 
 **消化順**:
+
 1. fluffy-1 (PM Stand-up→widget) — ユーザ直近指摘、優先
 2. fluffy-7 (AI 朝 brief→algorithm) — 1 と統合可能 (今日の作戦盤に Eisenhower 取り込み)
 3. fluffy-2 (Pre-mortem→widget)
