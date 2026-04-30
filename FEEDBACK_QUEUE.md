@@ -15,6 +15,55 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ## 未処理 (新しい順)
 
+### 2026-04-30 — AI 自動実行モード (assignee=AI + plan 承認 + Slack escalation) ★★★ P0 最優先 ★★★
+
+- [ ] **担当者 = AI に割当 → plan mode で「こうやるけどええか?」と確認 → 承認後 自動実行 → 困ったら Slack 相談 / escalation** — 分類: 実装要望 (大、AI + workflow + Slack 統合の中核)
+  - 原文: 「自動実行モード搭載して。モードというか。担当者をAIにできる。そしたらプランモードでこうやるけどええか？って聞かれる。エスカレーションとか相談はSlackで」
+  - **ユーザ強調**: 「優先度高く実装頼む」
+  - 仮解釈:
+    - Item.assignee に **`'ai-engineer'` / `'ai-researcher'` の特殊値** を許可 (or `assignee_kind: 'ai' | 'user'` 列追加)
+    - assignee=AI な item を pg-boss キューが拾う → Researcher Agent で **plan を生成** → comment に「実行計画 (案)」として post + 承認 button
+    - 承認 click → Engineer / Researcher Agent が自動実行 (既存 Engineer service / claude CLI subprocess を流用)
+    - 実行中 stuck (test fail / 仕様不明) → Slack に escalation message + ItemEditDialog の comment にも残す → 人間 reply 待ち or fallback
+    - 完了 → status=done + 実行ログを comment に残す
+  - 既存資産 (流用ベースが豊富):
+    - Engineer Agent (`engineer-service.ts` / `engineer-worker.ts` / cloud sandbox 経由 claude CLI subprocess)
+    - Researcher Agent (Anthropic SDK 直叩き、staging proposal の経験あり)
+    - Slack MCP (`mcp__slack__slack_send_message` 等) + `dispatchSlack` helper
+    - Workflow engine (ai / slack / email / script node、approval flow を node graph で組める)
+    - Comment thread (item ごとの `comments` table、AI コメントは `actor_type='agent'`)
+    - `decompose-proposals-panel.tsx` (staging UI patternの参考、承認/却下 picker 既製)
+    - Cost budget (`cost-budget.ts`、AI 起動の monthly cap、暴走防止)
+  - 設計案 3 scope (段階実装):
+    - **A (最小、3-5 commit)**:
+      1. schema: `items.assignee_kind` enum 追加 (`'user' | 'ai-researcher' | 'ai-engineer'`)、UI で assignee picker に「AI」選択肢
+      2. assignee=AI な item で「Plan 生成」 button → Researcher が短い計画を生成 → comment として post (auto-implement なし、ユーザは見るだけ)
+      3. comment に「✓ 承認 / ✗ 却下」 button (decompose-proposals 同パターン)
+    - **B (中、5-10 commit)**:
+      4. 承認 → pg-boss job enqueue → Engineer service が cloud sandbox で実行 → diff を comment + main へ commit (既存 cloud-engineer-adapter 流用)
+      5. 失敗時 (test fail / lint fail) → Slack 通知 + comment に "stuck: <理由>"、status を blocked に
+      6. cost cap で月次 上限 + 1 item あたり 上限 (既存 `cost-budget` 拡張)
+    - **C (大、長期)**:
+      7. AI 同士の会話 (Engineer ↔ Researcher で plan の妥当性議論)
+      8. plan diff preview (実行前に「この行を変える予定」を highlight)
+      9. Slack 双方向 (Slack 上で承認/却下 reply で control)
+  - **段階目標 (本 P0 hoist の対象 = scope A)**:
+    - iter1: schema migration `0XXX_assignee_kind.sql` + drizzle schema 同期 + zod schema 拡張 + 1 unit test
+    - iter2: AssigneePicker UI に「AI Researcher / AI Engineer」選択肢追加 + repository / service の filter 対応
+    - iter3: ItemEditDialog から「Plan を生成」 button (AI assignee 時のみ表示) + Researcher 起動
+    - iter4: Plan を comment にレンダリング + 承認/却下 button (pure helper + small UI)
+    - iter5: 承認後の Slack 通知 (まずは「Plan 承認されました」を Slack 投稿、自動実行は scope B)
+  - **要追加質問** (仮置きで進める):
+    - (a) AI assignee の identifier — system user として `users` に行を作る? それとも特殊文字列? → 仮: `users` に `kind='agent'` の system user 1 件 (既存パターンと整合)
+    - (b) plan 承認権限 — 任意 member? それとも作成者 / admin のみ? → 仮: 作成者 + admin (Item 作成権限と同等)
+    - (c) Slack channel — workspace settings に「AI escalation channel」 1 個 を保存? それとも item ごと? → 仮: workspace settings に 1 個固定
+    - (d) 自動実行の cancellation — 開始後 user が「やめろ」 を送ったらどう止める? → 仮: 既存 cancellation token (engineer service にあり) を使う
+    - (e) AI が依存解決できない時の 振る舞い — エスカレーション後 タイムアウトしたら? → 仮: 24h タイムアウトで status=blocked + assignee を作成者に戻す
+  - 制約 (重要):
+    - **Cloud env で Anthropic CCR sandbox から Engineer の cloud-sandbox が動くか未検証**。scope A は AI が plan 生成のみ (auto-implement なし) なので比較的安全
+    - cost budget は既存 `cost-budget.ts` で workspace 月次キャップ (scope B 移行時に必須拡張)
+    - Slack は既存 MCP / dispatchSlack で送信のみ (双方向は scope C)
+
 ### 2026-04-30 — Sprint 担当者 swim-lane Gantt ★ 新規 ★
 
 - 🚧 **Sprint ごとに 担当者を縦に並べる Gantt 風ビュー (誰が何を いつ するか)** — 分類: 実装要望 (中-大)
@@ -208,7 +257,32 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 
 ### 🔥 次 iter で即実装 (P0 最優先、track 判定より優先) 🔥
 
-(空) — 5 件 全 entry scope A 完了済、track 判定に復帰。
+ユーザ指示 (2026-04-30): 「自動実行モード搭載して。担当者をAIにできる。プランモードで
+こうやるけどええか？って聞かれる。エスカレーションとか相談はSlackで。これ優先度高く実装頼む」
+
+→ 下記 1 件を **track 判定より優先して順次消化**。前回の 5 件 (Template / 案件サマリ /
+Capacity / Gantt DnD / Sprint swim-lane) は scope A 完了済 (iter460-478)、本件が次の P0。
+
+**1. AI 自動実行モード (assignee=AI + plan 承認 + Slack escalation)**
+詳細: 本ファイル末尾近くの同名 section。scope A の 5 段階 (iter1-5):
+- iter1: schema migration `assignee_kind` enum 追加 + drizzle / zod 同期 + unit test
+- iter2: AssigneePicker UI に「AI Researcher / AI Engineer」選択肢追加
+- iter3: ItemEditDialog から「Plan を生成」 button (AI assignee 時のみ表示)
+- iter4: Plan を comment にレンダリング + 承認/却下 button
+- iter5: 承認後の Slack 通知 (まずは「Plan 承認されました」を Slack 投稿)
+
+仮置き判断 (ユーザ確認待ちで止めない):
+- AI assignee identifier は `users` に `kind='agent'` の system user 1 件
+- 承認権限は 作成者 + admin
+- Slack channel は workspace_settings に 1 個固定 (新列 `ai_escalation_channel`)
+- cancellation は engineer service の既存 token を再利用
+- 24h タイムアウトで status=blocked + assignee を作成者に戻す
+
+各 iter は **1 commit + immediate push + HANDOFF.md 1 行** で `[iter<N> queue 1/1]` 形式。
+typecheck/lint clean、shadcn UI 編集禁止、pure helper test 1-2 件追加 (該当時)。
+
+scope A 完了後、本 P0 section を「(空)」に戻して track 判定に復帰。scope B (auto-implement
++ 失敗時 Slack 通知 + cost cap) / C (双方向 Slack control / AI 同士の plan 議論) は別 entry。
 
 <details>
 <summary>iter460-478 の P0 5 件消化記録 (履歴)</summary>
