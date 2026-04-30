@@ -1,7 +1,11 @@
 'use client'
 
+import { useMemo } from 'react'
+
 import { parseAsString, useQueryState } from 'nuqs'
 
+import { summarizeInbox } from '@/features/gtd/inbox-process'
+import { extractEstimateMinutes } from '@/features/item/estimate'
 import { priorityClass, priorityLabel } from '@/features/item/priority'
 import type { Item } from '@/features/item/schema'
 
@@ -28,6 +32,23 @@ export function InboxView({
   const inbox = items
     .filter((i) => !i.doneAt && !i.scheduledFor && !i.dueDate)
     .sort((a, b) => (a.priority ?? 4) - (b.priority ?? 4))
+
+  // iter544 (queue methodology GT-3 wire-up): GTD Inbox Process classification の
+  // bucket count summary を上部に表示。1 click で「2 分 rule で即やる候補」 が即視認。
+  const gtdSummary = useMemo(
+    () =>
+      summarizeInbox(
+        inbox.map((it) => ({
+          id: it.id,
+          title: it.title,
+          dod: it.dod,
+          estimateMin: extractEstimateMinutes(it.description) ?? null,
+          // assignees / stakeholders / hasSubtasks は別 hook 必要なのでまず default 値で運用、
+          // 精緻化は AC-1 wire-up (iter542) と同様 useItemAssignees 利用で次 iter
+        })),
+      ),
+    [inbox],
+  )
 
   if (inbox.length === 0) {
     return (
@@ -70,6 +91,35 @@ export function InboxView({
       <div className="text-muted-foreground mb-1 px-2 text-xs">
         {inbox.length} 件 — scheduledFor も期限も未設定
       </div>
+      {/* iter544 (queue GT-3 wire-up): GTD Inbox Process classification の bucket count chip 群 */}
+      {(gtdSummary.counts.immediate > 0 ||
+        gtdSummary.counts.project > 0 ||
+        gtdSummary.counts['next-action'] > 0) && (
+        <div
+          className="mb-1 flex flex-wrap items-center gap-1.5 px-2 text-[11px]"
+          data-testid="inbox-gtd-summary"
+          role="status"
+          aria-label={`GTD 分類: 2 分以内 ${gtdSummary.counts.immediate} 件、Project ${gtdSummary.counts.project} 件、次の action ${gtdSummary.counts['next-action']} 件`}
+        >
+          {gtdSummary.counts.immediate > 0 && (
+            <span className="inline-flex items-center gap-0.5 rounded-full border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-emerald-700">
+              <span aria-hidden="true">⚡</span>
+              <span>2 分 rule {gtdSummary.counts.immediate}</span>
+            </span>
+          )}
+          {gtdSummary.counts.project > 0 && (
+            <span className="inline-flex items-center gap-0.5 rounded-full border border-sky-300 bg-sky-50 px-1.5 py-0.5 text-sky-700">
+              <span aria-hidden="true">🗂</span>
+              <span>Project {gtdSummary.counts.project}</span>
+            </span>
+          )}
+          {gtdSummary.counts['next-action'] > 0 && (
+            <span className="inline-flex items-center gap-0.5 rounded-full border border-slate-300 bg-slate-50 px-1.5 py-0.5 text-slate-700">
+              <span>Next action {gtdSummary.counts['next-action']}</span>
+            </span>
+          )}
+        </div>
+      )}
       {inbox.map((it) => (
         <div
           key={it.id}
