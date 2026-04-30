@@ -235,9 +235,17 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
                     <StatusBadge status={it.status} />
                   </div>
                   {it.dueDate && (
-                    <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+                    // iter437: 旧 raw ISO `<span>2026-04-30</span>` は SR が
+                    // dueDate semantic として認識しないため `<time dateTime>` 要素
+                    // に格上げ + aria-label で「期限 ${ISO}」を SR に届ける
+                    // (iter435 / iter436 と同 pattern、3 → 4 view で統一)。
+                    <time
+                      className="text-muted-foreground shrink-0 text-xs tabular-nums"
+                      dateTime={it.dueDate}
+                      aria-label={`期限 ${it.dueDate}`}
+                    >
                       {it.dueDate}
-                    </span>
+                    </time>
                   )}
                 </li>
               ))}
