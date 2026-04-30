@@ -242,9 +242,13 @@ button disabled + reason aria-label。typecheck/lint 緑 (warning baseline 1)。
          server action 新設が必要)
 
 4. **Gantt DnD 期間編集** (詳細: 本ファイル下方、scope A から)
+   - 🚧 進行中 (iter467 で bar-drag substrate 着地、次 iter で gantt-view UI 配線)
    - 仮置き判断: bar 中央 drag → 期間平行 shift のみ実装 (左右 edge / 依存連動は別 iter)
    - day 単位 snap、@dnd-kit で実装 (既導入)
    - 失敗時 ghost reset + toast、楽観ロック衝突は revert
+   - [x] iter467 (dbb6e96): pure helper `computeBarDragShift` + `computeBarLeftEdgeShift` + `computeBarRightEdgeShift` (snap to day / clamp / fail-soft 全網羅) + 14 test。scope B 左右 edge も sibling 関数として先行整備。
+   - [ ] 次: gantt-view.tsx の bar に dnd-kit Sortable + onDragEnd 配線、
+         optimistic lock + ConflictError 時 revert + toast (UI bind)
 
 5. **Sprint 担当者 swim-lane Gantt** (詳細: 本ファイル下方、scope A から)
    - 仮置き判断: sprint detail の inline disclosure (新 tab ではない)、未 assignee lane 表示
