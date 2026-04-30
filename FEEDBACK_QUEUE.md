@@ -15,6 +15,59 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ## 未処理 (新しい順)
 
+### 2026-04-30 — モバイル / スマホ表示 全面改善 (潰れ / overflow / touch UX) ★ 新規 ★
+
+- [ ] **スマホ表示が全体的に いけてない / 潰れる箇所がある を 全 view で 棚卸し + 段階修正** — 分類: UX (大、横断的)
+  - 原文: 「スマホ表示が全体的にいけてない。潰れたりもするし」
+  - 仮解釈:
+    - 320-414px (iPhone SE / 13/15 系) で破綻している view を **片端から探索 → 修正**
+    - iter104/107/109 で Kanban / Dialog の overflow / svh fix は実施済だが、それ以降に追加された
+      view (Sprint / Goal / Workflow / Integration / TimeEntry / Subtasks panel / etc) は本格的な
+      モバイル audit を経ていない可能性
+  - **想定不具合 (チェックリスト)**:
+    - layout 潰れ:
+      - flex / grid が 320px で wrap せず横スクロール
+      - text の `truncate` が効かず親 width を超えて押し出す
+      - table が cell を `min-w-` で固定して横スクロール
+      - dialog の max-w が画面より大きい (iter104 fix の漏れ)
+      - sticky header の z-index が他要素と衝突
+      - bottom nav と active-timer-panel が重なる
+    - touch UX:
+      - click target < 44x44px (icon button が 32px などで親指タップ難)
+      - hover-only のツールチップが mobile で見えない
+      - DnD の長押し timeout が短い / スクロール誤発動
+      - swipe 系操作が無い (TickTick は swipe で完了 / 削除)
+    - 入力:
+      - keyboard に inputMode hint 不足 (一部 iter で対応済、漏れ確認)
+      - 仮想キーボード起動時に input が画面下に隠れる
+      - IME 中 Enter で誤送信 (`IMEInput` 漏れ箇所あれば修正)
+    - 視覚:
+      - chip / badge の text が hyphenate せず溢れる
+      - subtask 番号 + status icon + title で 320px が破綻
+      - Gantt / swim-lane が横スクロール必須なのに hint 無し
+  - 進め方 (1 view = 1 commit、5-30 行 fix、playwright iPhone 13 emulation で前後確認):
+    - **scope A (探索 + 修正のセット iter)**: playwright trigger と統合、iPhone 13 (390x844) 専用
+      script を新設、各 view で「DOM が viewport 内収まるか」「click target が 44x44 以上か」
+      「overflow:hidden で text 押し出し無いか」を assert、見つけ次第 fix。
+    - **scope B (横展開)**: scope A で見つけたパターンを 全 view 横展開 (例: chip text-truncate を
+      全 chip に適用、table を `overflow-x-auto + min-w-0` rules に統一)
+    - **scope C (リッチ化)**: bottom nav 追加 / swipe 操作 / floating action button (FAB) で
+      QuickAdd 主要機能の片手アクセス
+  - 既存資産:
+    - playwright-iter で既に「mobile keyboard hint」「<main> tabIndex」等の a11y 改善が走っている
+      (iter401-405 系) → 本件は同じ playwright trigger に **モバイル emulation 専用 iter** を
+      hint として誘導すれば自然に消化される
+    - iter103 の long-press DnD、iter104 の Kanban overflow、iter107 の html-body clip は基盤
+  - **要追加質問** (仮置きで進める):
+    - (a) primary device — iPhone 系 (390/430)? Android 系 (360/412)? → 仮: iPhone 13 (390x844)
+      を主、iPhone SE (375x667) を min target
+    - (b) bottom nav 追加 — 必須? 当面 hamburger menu 維持?
+    - (c) FAB (浮動アクション button) を入れる? 入れるなら QuickAdd / 計測開始 / 検索 のどれ?
+    - (d) swipe 操作 — 完了 (Today で swipe right) / 削除 (swipe left) / 編集 modal (swipe up)?
+  - 関連既存 candidate:
+    - playwright explore script (`scripts/explore-uiux-runner.ts`) は viewport 切替可能 → mobile mode 専用 script を
+      `scripts/explore-uiux-mobile-<view>-iter<N>.ts` で連番作成すれば自然に検出 + commit に至る
+
 ### 2026-04-30 — 自前実装 → ライブラリお着替え 棚卸し ★ 新規 ★
 
 - [ ] **既存自前実装を確立 ライブラリに段階的 移行 (品質 + メンテ性 向上)** — 分類: 設計議論 → 段階実装
