@@ -1,0 +1,176 @@
+/**
+ * iter479 cost-month-projection の unit test。pure helper のみ、DB / DOM 非依存。
+ */
+import { describe, expect, it } from 'vitest'
+
+import { computeCostMonthProjection, formatCostMonthProjectionJa } from './cost-month-projection'
+
+describe('computeCostMonthProjection (月末コスト線形予測)', () => {
+  it('月初 10 日で $1、4月 30 日 → 月末予測 $3', () => {
+    const r = computeCostMonthProjection({
+      thisMonthUsd: 1,
+      today: '2026-04-10',
+      monthlyLimitUsd: 5,
+    })
+    expect(r.thisMonthUsd).toBe(1)
+    expect(r.daysElapsed).toBe(10)
+    expect(r.daysInMonth).toBe(30)
+    expect(r.daysRemaining).toBe(20)
+    expect(r.projectedUsd).toBe(3) // 1 / 10 * 30
+    expect(r.riskLevel).toBe('safe') // 3 < 5 * 0.8 = 4
+    expect(r.warnTriggered).toBe(false)
+  })
+
+  it('limit*warn 超過 → riskLevel=warn', () => {
+    const r = computeCostMonthProjection({
+      thisMonthUsd: 1.5,
+      today: '2026-04-10',
+      monthlyLimitUsd: 5,
+    })
+    // projected = 1.5/10*30 = 4.5、warn = 5*0.8 = 4 ≤ 4.5 < 5 = limit
+    expect(r.projectedUsd).toBe(4.5)
+    expect(r.riskLevel).toBe('warn')
+    expect(r.warnTriggered).toBe(true)
+    expect(r.exceedsLimit).toBe(false)
+  })
+
+  it('limit 超過予測 → riskLevel=over', () => {
+    const r = computeCostMonthProjection({
+      thisMonthUsd: 2,
+      today: '2026-04-10',
+      monthlyLimitUsd: 5,
+    })
+    // projected = 2/10*30 = 6 >= 5 = over
+    expect(r.projectedUsd).toBe(6)
+    expect(r.riskLevel).toBe('over')
+    expect(r.exceedsLimit).toBe(true)
+  })
+
+  it('limit=null → safe 固定 + projection だけ返す', () => {
+    const r = computeCostMonthProjection({
+      thisMonthUsd: 100,
+      today: '2026-04-10',
+      monthlyLimitUsd: null,
+    })
+    expect(r.limitUsd).toBeNull()
+    expect(r.riskLevel).toBe('safe')
+    expect(r.projectedUsd).toBe(300)
+  })
+
+  it('today 不正 → idle (projection なし)', () => {
+    const r = computeCostMonthProjection({
+      thisMonthUsd: 1,
+      today: 'not-a-date',
+      monthlyLimitUsd: 5,
+    })
+    expect(r.riskLevel).toBe('idle')
+    expect(r.daysElapsed).toBe(0)
+    expect(r.projectedUsd).toBe(0)
+  })
+
+  it('thisMonthUsd<=0 / NaN → 0 にクランプ + projection=0', () => {
+    const r1 = computeCostMonthProjection({
+      thisMonthUsd: -5,
+      today: '2026-04-10',
+      monthlyLimitUsd: 5,
+    })
+    expect(r1.thisMonthUsd).toBe(0)
+    expect(r1.projectedUsd).toBe(0)
+    expect(r1.riskLevel).toBe('safe')
+
+    const r2 = computeCostMonthProjection({
+      thisMonthUsd: NaN,
+      today: '2026-04-10',
+    })
+    expect(r2.thisMonthUsd).toBe(0)
+    expect(r2.projectedUsd).toBe(0)
+  })
+
+  it('月末当日 → daysRemaining=0、projected≈thisMonthUsd', () => {
+    const r = computeCostMonthProjection({
+      thisMonthUsd: 4.5,
+      today: '2026-04-30',
+      monthlyLimitUsd: 5,
+    })
+    expect(r.daysElapsed).toBe(30)
+    expect(r.daysInMonth).toBe(30)
+    expect(r.daysRemaining).toBe(0)
+    expect(r.projectedUsd).toBe(4.5)
+    expect(r.riskLevel).toBe('warn') // 4.5 >= 5*0.8 = 4
+  })
+
+  it('うるう年 2 月 (29 日)', () => {
+    const r = computeCostMonthProjection({
+      thisMonthUsd: 1,
+      today: '2024-02-10',
+      monthlyLimitUsd: 5,
+    })
+    expect(r.daysInMonth).toBe(29)
+    // projected = 1/10*29 = 2.9
+    expect(r.projectedUsd).toBeCloseTo(2.9, 5)
+  })
+
+  it('warnThresholdRatio カスタム (0.5) → 早めに warn', () => {
+    const r = computeCostMonthProjection({
+      thisMonthUsd: 1,
+      today: '2026-04-10',
+      monthlyLimitUsd: 5,
+      warnThresholdRatio: 0.5,
+    })
+    // projected = 3、warn = 5*0.5 = 2.5 ≤ 3 < 5
+    expect(r.riskLevel).toBe('warn')
+  })
+})
+
+describe('formatCostMonthProjectionJa', () => {
+  it('idle → 不明文言', () => {
+    const r = computeCostMonthProjection({
+      thisMonthUsd: 1,
+      today: 'invalid',
+    })
+    expect(formatCostMonthProjectionJa(r)).toBe('AI コスト予測: 不明 (today 不正)')
+  })
+
+  it('limit なし → 「今月予測 X (現在 Y / 残 Z 日)」', () => {
+    const r = computeCostMonthProjection({
+      thisMonthUsd: 0.4,
+      today: '2026-04-10',
+      monthlyLimitUsd: null,
+    })
+    // projected = 0.4/10*30 = 1.2
+    expect(formatCostMonthProjectionJa(r)).toBe('今月予測 $1.20 (現在 $0.400 / 残 20 日)')
+  })
+
+  it('safe → 「今月予測 X / 上限 Y (現在 Z / 残 N 日)」', () => {
+    const r = computeCostMonthProjection({
+      thisMonthUsd: 0.4,
+      today: '2026-04-10',
+      monthlyLimitUsd: 5,
+    })
+    expect(formatCostMonthProjectionJa(r)).toBe(
+      '今月予測 $1.20 / 上限 $5.00 (現在 $0.400 / 残 20 日)',
+    )
+  })
+
+  it('warn → ⚠ 警告ライン文言', () => {
+    const r = computeCostMonthProjection({
+      thisMonthUsd: 1.5,
+      today: '2026-04-10',
+      monthlyLimitUsd: 5,
+    })
+    expect(formatCostMonthProjectionJa(r)).toBe(
+      '⚠ 今月予測 $4.50 / 上限 $5.00 — 警告ライン超過見込み (現在 $1.50 / 残 20 日)',
+    )
+  })
+
+  it('over → 🚨 月末超過文言', () => {
+    const r = computeCostMonthProjection({
+      thisMonthUsd: 2,
+      today: '2026-04-10',
+      monthlyLimitUsd: 5,
+    })
+    expect(formatCostMonthProjectionJa(r)).toBe(
+      '🚨 今月予測 $6.00 / 上限 $5.00 — 月末超過見込み (現在 $2.00 / 残 20 日)',
+    )
+  })
+})
