@@ -185,10 +185,12 @@ function ActivityRow({
       {hasDetail && (
         <button
           type="button"
-          className="text-muted-foreground mt-1 text-[11px] underline"
+          // iter507: pseudo で tap target を 44x44 化 (visual text-[11px] underline 維持)
+          className="text-muted-foreground relative mt-1 text-[11px] underline before:absolute before:-inset-3 before:content-['']"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-controls={detailId}
+          data-testid={`activity-detail-toggle-${entry.id}`}
         >
           {open ? '詳細を閉じる' : '詳細を見る'}
         </button>

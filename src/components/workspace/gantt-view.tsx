@@ -366,7 +366,9 @@ export function GanttView({
             type="button"
             data-testid="gantt-jump-today"
             onClick={() => scrollToToday('smooth')}
-            className="text-foreground hover:bg-muted rounded border px-2 py-0.5 text-xs"
+            // iter507: pseudo で tap target を 44x44 化 (visual px-2 py-0.5 text-xs 維持、
+            // gantt-summary banner の sibling chip / checkbox と垂直 align も保持)
+            className="text-foreground hover:bg-muted relative rounded border px-2 py-0.5 text-xs before:absolute before:-inset-3 before:content-['']"
             title="今日の縦線まで横スクロール"
             aria-label="Gantt timeline を今日の縦線まで横スクロール"
           >
