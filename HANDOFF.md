@@ -763,6 +763,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter477 1/1] mobile sweep 続編 (18 件目)。BudgetPanel の 3 inline button (上限変更 / cancel / 保存) が size="sm" h-8=32px、AI 月次コスト上限編集で使われる → fix: `budget-panel.tsx` の 3 Button に `className="min-h-11"` 追加。1 ファイル ~3 行差分。typecheck 緑。mobile sweep 累計 **97 button 達成** (iter460-477 で 18 fix iter)。
+- ✅ [playwright-iter476 1/1] mobile sweep 続編 (17 件目)。IntegrationsPanel の 4 source card inline button (Pull / 無効化 / 削除 / 履歴) が size="sm" h-8=32px → fix: `integrations-panel.tsx` の 4 Button に `className="min-h-11"` 追加 (replace_all 2 pattern)。1 ファイル ~4 行差分。typecheck 緑。mobile sweep 累計 **94 button 達成** (iter460-476 で 17 fix iter)。
 - ✅ [playwright-iter475 1/1] mobile sweep 続編 (16 件目)。CommentThread の 3 button (post / cancel 編集 / save 編集) が size="sm" h-8=32px → fix: `comment-thread.tsx` の 3 Button に `className="min-h-11"` 追加。1 ファイル ~3 行差分。typecheck 緑。mobile sweep 累計 **90 button 達成** (iter460-475 で 16 fix iter)。
 - ✅ [playwright-iter474 1/1] mobile sweep 続編 (15 件目)。ActiveTimerPanel の 4 timer button (pause / resume / pip / stop) が size="sm" h-8=32px、計測中の重要操作で頻繁にタップされる → fix: `active-timer-panel.tsx` の 4 Button に `className="min-h-11"` 追加。1 ファイル ~4 行差分。typecheck 緑。mobile sweep 累計 **87 button 達成** (iter460-474 で 15 fix iter)。
 - ✅ [playwright-iter473 1/1] mobile sweep 続編 (14 件目)。ItemEditDialog の 5 footer button (unarchive / archive / set-baseline / clear-baseline / save-as-template) が size="sm" h-8=32px → fix: `item-edit-dialog.tsx` の 5 Button に `className="min-h-11"` 追加 (既存 className との衝突は統合)。1 ファイル ~5 行差分。typecheck 緑。mobile sweep 累計 **83 button 達成** (iter460-473 で 14 fix iter)。
