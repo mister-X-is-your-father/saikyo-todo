@@ -3,16 +3,22 @@
 /**
  * Assignee picker (Item.assignees 用 combobox)。
  * - Popover + cmdk (Command) の combobox パターン
- * - workspace member (user) 複数選択、actor_type='user' のみ (agent は POST_MVP)
+ * - workspace member (user) と AI agent (actor_type='agent') の両方を選択可能
  * - 保存は親からの onChange で即時反映
+ *
+ * P0「AI 自動実行モード」 scope A iter4 (iter509): AI agent を選択肢に追加。
+ * iter508 で整備した `useWorkspaceAgents` / `assigneeRefEquals` /
+ * `toggleAssigneeRef` / `formatAgentRoleLabelJa` を組み合わせる。
  */
 import { useMemo, useState } from 'react'
 
-import { CheckIcon, UserIcon } from 'lucide-react'
+import { BotIcon, CheckIcon, UserIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { cn } from '@/lib/utils'
 
+import { useWorkspaceAgents } from '@/features/agent/hooks'
+import { formatAgentRoleLabelJa, toggleAssigneeRef } from '@/features/item/ai-assignee'
 import type { AssigneeRef } from '@/features/item/repository'
 import { useWorkspaceMembers } from '@/features/workspace/hooks'
 
@@ -35,31 +41,37 @@ interface Props {
 }
 
 export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props) {
-  const { data: members, isLoading } = useWorkspaceMembers(workspaceId)
+  const { data: members, isLoading: membersLoading } = useWorkspaceMembers(workspaceId)
+  const { data: agents, isLoading: agentsLoading } = useWorkspaceAgents(workspaceId)
   const [open, setOpen] = useState(false)
+
+  const isLoading = membersLoading || agentsLoading
 
   const selectedUserIds = useMemo(
     () => new Set(value.filter((v) => v.actorType === 'user').map((v) => v.actorId)),
     [value],
   )
+  const selectedAgentIds = useMemo(
+    () => new Set(value.filter((v) => v.actorType === 'agent').map((v) => v.actorId)),
+    [value],
+  )
 
-  const labelFor = (userId: string) =>
+  const userLabelFor = (userId: string) =>
     members?.find((m) => m.userId === userId)?.displayName ?? userId.slice(0, 6)
+  const agentLabelFor = (agentId: string) => {
+    const a = agents?.find((x) => x.id === agentId)
+    return a ? formatAgentRoleLabelJa(a.role) : `AI ${agentId.slice(0, 6)}`
+  }
 
   const selectedLabels = useMemo(() => {
-    return Array.from(selectedUserIds).map(labelFor)
+    const userLabels = Array.from(selectedUserIds).map(userLabelFor)
+    const agentLabels = Array.from(selectedAgentIds).map(agentLabelFor)
+    return [...userLabels, ...agentLabels]
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedUserIds, members])
+  }, [selectedUserIds, selectedAgentIds, members, agents])
 
-  async function toggle(userId: string) {
-    const isSelected = selectedUserIds.has(userId)
-    const nextUserIds = new Set(selectedUserIds)
-    if (isSelected) nextUserIds.delete(userId)
-    else nextUserIds.add(userId)
-    const next: AssigneeRef[] = Array.from(nextUserIds).map((id) => ({
-      actorType: 'user',
-      actorId: id,
-    }))
+  async function toggle(ref: AssigneeRef) {
+    const next = toggleAssigneeRef(value, ref)
     try {
       await onChange(next)
     } catch (e) {
@@ -95,19 +107,22 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
       </PopoverTrigger>
       <PopoverContent className="w-64 p-0" align="start">
         <Command>
-          <CommandInput placeholder="メンバーを検索…" />
+          <CommandInput placeholder="メンバー / AI を検索…" />
           <CommandList>
-            <CommandEmpty>{isLoading ? '読み込み中…' : 'メンバーが見つかりません'}</CommandEmpty>
+            <CommandEmpty>
+              {isLoading ? '読み込み中…' : 'メンバー / AI が見つかりません'}
+            </CommandEmpty>
             <CommandGroup heading="ワークスペース メンバー">
               {(members ?? []).map((m) => {
                 const checked = selectedUserIds.has(m.userId)
                 const label = m.displayName ?? m.userId.slice(0, 6)
+                const ref: AssigneeRef = { actorType: 'user', actorId: m.userId }
                 return (
                   <CommandItem
                     key={m.userId}
                     value={`${label} ${m.userId}`}
                     onSelect={() => {
-                      void toggle(m.userId)
+                      void toggle(ref)
                     }}
                     data-testid={`assignee-option-${m.userId}`}
                   >
@@ -120,6 +135,32 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
                 )
               })}
             </CommandGroup>
+            {(agents ?? []).length > 0 && (
+              <CommandGroup heading="AI エージェント">
+                {(agents ?? []).map((a) => {
+                  const checked = selectedAgentIds.has(a.id)
+                  const label = formatAgentRoleLabelJa(a.role)
+                  const ref: AssigneeRef = { actorType: 'agent', actorId: a.id }
+                  return (
+                    <CommandItem
+                      key={a.id}
+                      value={`${label} ${a.role} ${a.id}`}
+                      onSelect={() => {
+                        void toggle(ref)
+                      }}
+                      data-testid={`assignee-option-agent-${a.role}`}
+                    >
+                      <CheckIcon
+                        className={cn('mr-2 size-4', checked ? 'opacity-100' : 'opacity-0')}
+                        aria-hidden="true"
+                      />
+                      <BotIcon className="text-muted-foreground mr-2 size-4" aria-hidden="true" />
+                      {label}
+                    </CommandItem>
+                  )
+                })}
+              </CommandGroup>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>
