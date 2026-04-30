@@ -32,6 +32,7 @@
  *    warn→'warn' / critical→'danger' (= positive 軸 'success' を使用、iter486 で追加)
  */
 
+import { rateToPct } from '@/lib/format-rate'
 import { type ChipTone, type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
 export type AgentRole = 'pm' | 'researcher'
@@ -209,7 +210,7 @@ export function formatDominantRoleJa(dominant: DominantRoleResult | null): strin
   if (dominant.share >= 1) {
     return `主軸: ${label} (${dominant.invocations} 呼出、唯一稼働)`
   }
-  const pct = Math.round(dominant.share * 100)
+  const pct = rateToPct(dominant.share)
   // share の denominator は totalInvocations 全体。caller が dominant 単独で
   // formatDominantRoleJa を呼ぶときは AgentReliability の他 role 数まで
   // 知らないので、ここでは dominant.invocations と % のみ表示。
@@ -232,7 +233,7 @@ export function formatAgentReliabilityJa(stats: AgentReliability): string {
     if (r.reliabilityLevel === 'idle') {
       parts.push(`${label} 記録なし`)
     } else {
-      const pct = Math.round(r.successRate * 100)
+      const pct = rateToPct(r.successRate)
       const levelLabel = LEVEL_LABEL_JA[r.reliabilityLevel]
       parts.push(`${label} ${r.completed}/${r.invocations} (${pct}%) ${levelLabel}`)
     }
@@ -256,7 +257,7 @@ export function formatAgentReliabilityJa(stats: AgentReliability): string {
  */
 export function formatAgentReliabilityCompactJa(stats: AgentReliability): string {
   if (stats.reliabilityLevel === 'idle') return 'AI 信頼性: 記録なし'
-  const pct = Math.round(stats.successRate * 100)
+  const pct = rateToPct(stats.successRate)
   const levelLabel = LEVEL_LABEL_JA[stats.reliabilityLevel]
   return `AI 信頼性: ${levelLabel} (${stats.completedCount}/${stats.totalInvocations} 完了、${pct}%)`
 }

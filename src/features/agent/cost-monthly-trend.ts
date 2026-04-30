@@ -23,6 +23,8 @@
  * (`/^\d{4}-\d{2}$/` 不一致) は entry 除外、不正 today も entry 除外で idle 返す。
  */
 
+import { rateToPct } from '@/lib/format-rate'
+
 const ISO_MONTH_RE = /^\d{4}-\d{2}$/
 const ISO_DATE_PREFIX_RE = /^\d{4}-\d{2}/
 
@@ -119,7 +121,7 @@ export function computeMonthlyCostTrend(
   const deltaUsd = thisMonthUsd - priorMonthUsd
   let deltaPct: number | null = null
   if (priorMonthUsd > 0) {
-    deltaPct = Math.round((deltaUsd / priorMonthUsd) * 100)
+    deltaPct = rateToPct(deltaUsd / priorMonthUsd)
   }
 
   let direction: CostMonthDirection
