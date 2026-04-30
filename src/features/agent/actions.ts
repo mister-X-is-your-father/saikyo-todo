@@ -3,7 +3,11 @@
  *
  * - `decomposeItemAction`: AI 分解 (Item → 子 Item 群, Researcher)
  * - `researchItemAction`: AI 調査 (Item → Doc 生成, Researcher)
- * - `runStandupAction`: PM Daily Stand-up 実行
+ *
+ * iter525: `runStandupAction` は fluffy AI 文章 PM Stand-up が「今日の作戦盤」 widget
+ * (operation-board) に置換されたため削除。`pmService.runStandup` / `runStandupViaClaude`
+ * 自体は cron-worker (pg-boss `pm-standup`) から呼ばれ続けている (Doc 自動生成、widget
+ * とは別経路)。
  *
  * 長時間処理 (最大 ~30s) なので将来 pg-boss 経由の非同期化 + realtime push に移行予定。
  * MVP は inline でレスポンス返却で十分。
@@ -20,7 +24,6 @@ import { adminDb } from '@/lib/db/scoped-client'
 import { NotFoundError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 
-import { type PmRunOutput, pmService } from './pm-service'
 import { agentInvocationRepository, agentRepository } from './repository'
 import { type ResearcherRunOutput, researcherService } from './researcher-service'
 import type { Agent } from './schema'
@@ -178,11 +181,6 @@ export async function researchItemViaClaudeAction(
   })
 }
 
-const StandupActionInputSchema = z.object({
-  workspaceId: z.string().uuid(),
-  idempotencyKey: z.string().uuid().optional(),
-})
-
 const CancelInvocationInputSchema = z.object({
   invocationId: z.string().uuid(),
 })
@@ -235,28 +233,6 @@ export async function cancelInvocationAction(
       })
     })
     return ok<CancelInvocationOutput>({ invocationId: inv.id, status: 'cancelled' })
-  })
-}
-
-/**
- * Phase 6.15 P0 「AI agent SDK→CLI migration」 iter5: Server Action は claude CLI
- * 経路 (`runStandupViaClaude`) を主に呼ぶ。env (ANTHROPIC_API_KEY) 不要、Claude Max
- * OAuth + claude CLI subprocess + MCP server で動く (CLAUDE.md 方針)。SDK 経路の
- * `runStandup` は cron-workers / retro-service / premortem-service で当面残す
- * (memory 履歴対話を要する用途)。
- */
-export async function runStandupAction(input: unknown): Promise<Result<PmRunOutput>> {
-  return await actionWrap(async () => {
-    const parsed = StandupActionInputSchema.safeParse(input)
-    if (!parsed.success) {
-      return err(new ValidationError('入力内容を確認してください', parsed.error))
-    }
-    await requireWorkspaceMember(parsed.data.workspaceId, 'member')
-
-    return await pmService.runStandupViaClaude({
-      workspaceId: parsed.data.workspaceId,
-      idempotencyKey: parsed.data.idempotencyKey ?? randomUUID(),
-    })
   })
 }
 
