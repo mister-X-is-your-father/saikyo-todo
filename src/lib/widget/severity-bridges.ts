@@ -9,6 +9,8 @@
  *
  * 副作用なし、依存は本 file が import する各 domain file のみ。pure helper + Vitest 単体 test で網羅。
  */
+import type { FourStateHint } from '@/lib/hint'
+
 import type { PdcaPhaseSeverity } from '@/features/pdca-cycle/phase-helpers'
 import type { AssigneeLoadSeverity } from '@/features/sprint/risk-board'
 
@@ -75,5 +77,33 @@ export function improvementSeverityToSeverity(sev: 'high' | 'medium' | 'low'): S
       return 'warn'
     case 'low':
       return 'info'
+  }
+}
+
+/**
+ * iter495 refactor: 4 状態 hint (`FourStateHint` 'idle' | 'mild' | 'moderate' | 'severe') →
+ * 共通 `Severity` bridge。
+ *
+ * 'idle'     → 'muted'  (= 該当なし、neutral)
+ * 'mild'     → 'ok'     (= 健全、安全側)
+ * 'moderate' → 'warn'   (= 注意、要 monitoring)
+ * 'severe'   → 'danger' (= 異常、要対応)
+ *
+ * iter439 / iter442 / iter444 / iter447 / iter449 / iter454 / iter458 / iter483
+ * weekly-insight / iter488 inbox-process / iter491 notification-activity / iter492
+ * structured-review / iter493 audit-activity と続く 12+ FourStateHint domain で
+ * 「hint → SeverityChip tone」 を 1 関数で取れるように。各 caller は domain 固有の
+ * `classifyXxxHint(input)` で hint を取り、本 bridge に渡せば chip 配色決定。
+ */
+export function fourStateHintToSeverity(hint: FourStateHint): Severity {
+  switch (hint) {
+    case 'idle':
+      return 'muted'
+    case 'mild':
+      return 'ok'
+    case 'moderate':
+      return 'warn'
+    case 'severe':
+      return 'danger'
   }
 }

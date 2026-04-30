@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   assigneeLoadSeverityToSeverity,
+  fourStateHintToSeverity,
   improvementSeverityToSeverity,
   pdcaPhaseSeverityToSeverity,
 } from './severity-bridges'
@@ -48,5 +49,20 @@ describe('improvementSeverityToSeverity', () => {
   })
   it('low → info', () => {
     expect(improvementSeverityToSeverity('low')).toBe('info')
+  })
+})
+
+describe('fourStateHintToSeverity', () => {
+  it('idle → muted', () => {
+    expect(fourStateHintToSeverity('idle')).toBe('muted')
+  })
+  it('mild → ok', () => {
+    expect(fourStateHintToSeverity('mild')).toBe('ok')
+  })
+  it('moderate → warn', () => {
+    expect(fourStateHintToSeverity('moderate')).toBe('warn')
+  })
+  it('severe → danger', () => {
+    expect(fourStateHintToSeverity('severe')).toBe('danger')
   })
 })
