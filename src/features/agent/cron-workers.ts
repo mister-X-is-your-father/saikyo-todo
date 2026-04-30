@@ -160,7 +160,10 @@ export async function handlePmStandup(
         console.log(`[pm-standup] skip (already done) workspace=${workspaceId} date=${dateKey}`)
         continue
       }
-      const r = await pmService.runStandup({
+      // iter526: cron も Claude Max OAuth + claude CLI 経路 (env 不要) に揃える。
+      // CLI には memory 履歴対話は無いが stand-up は単発 batch なので問題なし
+      // (pm-service.ts L320-321 注記)。SDK 経路 (`runStandup`) は将来削除予定。
+      const r = await pmService.runStandupViaClaude({
         workspaceId,
         idempotencyKey: randomUUID(),
       })
