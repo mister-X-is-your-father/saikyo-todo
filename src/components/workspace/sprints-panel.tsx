@@ -412,7 +412,9 @@ function SprintCard({
                 className="text-muted-foreground mt-0.5 text-xs"
                 data-testid={`sprint-period-${sprint.id}`}
               >
-                {formatDateJa(sprint.startDate)} 〜 {formatDateJa(sprint.endDate)}
+                <time dateTime={sprint.startDate}>{formatDateJa(sprint.startDate)}</time>
+                {' 〜 '}
+                <time dateTime={sprint.endDate}>{formatDateJa(sprint.endDate)}</time>
               </p>
             </div>
             <Badge

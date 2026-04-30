@@ -354,7 +354,9 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                 {goal.title}
               </CardTitle>
               <p className="text-muted-foreground mt-0.5 text-xs">
-                {goal.period} · {goal.startDate} 〜 {goal.endDate}
+                {goal.period} · <time dateTime={goal.startDate}>{goal.startDate}</time>
+                {' 〜 '}
+                <time dateTime={goal.endDate}>{goal.endDate}</time>
               </p>
               {goalPct !== null && (
                 <div className="mt-1.5 space-y-0.5">
