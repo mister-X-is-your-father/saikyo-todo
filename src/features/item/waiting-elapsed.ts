@@ -16,6 +16,7 @@
  *
  * AI 不使用、副作用無し、依存無し。pure helper + Vitest 単体 test で網羅。
  */
+import { parseDateOrNull } from '@/lib/date/iso'
 import type { Severity } from '@/lib/widget/severity'
 
 export interface WaitingItemFields {
@@ -29,11 +30,8 @@ export interface WaitingItemFields {
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 
-function parseDate(d: Date | string | null | undefined): Date | null {
-  if (!d) return null
-  const v = d instanceof Date ? d : new Date(d)
-  return Number.isFinite(v.getTime()) ? v : null
-}
+// iter490 refactor: parseDate 系の重複を `lib/date/iso.ts#parseDateOrNull` に集約 (38 弾目)
+const parseDate = parseDateOrNull
 
 /**
  * 依頼から now までの経過日数 (整数、Math.floor)。

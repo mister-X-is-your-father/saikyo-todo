@@ -69,6 +69,8 @@ export interface WeeklyInsightOptions {
   weekStartsOnMonday?: boolean
 }
 
+import { parseDateOrNull } from '@/lib/date/iso'
+
 const DAY_LABELS_MON_FIRST = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
 const DAY_LABELS_SUN_FIRST = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 
@@ -99,11 +101,8 @@ function weekStartUTC(now: Date, weekStartsOnMonday: boolean): Date {
   return d
 }
 
-function parseDateLike(d: Date | string | null | undefined): Date | null {
-  if (!d) return null
-  const v = d instanceof Date ? d : new Date(d)
-  return Number.isFinite(v.getTime()) ? v : null
-}
+// iter490 refactor: parseDate 系の重複を `lib/date/iso.ts#parseDateOrNull` に集約 (38 弾目)
+const parseDateLike = parseDateOrNull
 
 /** 0..6 index (週起点が weekStartsOnMonday に従う) */
 function dayIndexFromDate(d: Date, weekStartsOnMonday: boolean): number {

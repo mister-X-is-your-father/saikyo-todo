@@ -26,6 +26,7 @@
  *
  * AI 不使用、副作用無し、依存無し。pure helper + Vitest 単体 test で網羅。
  */
+import { parseDateOrNull } from '@/lib/date/iso'
 
 export interface CycleCheckItemFields {
   id: string
@@ -64,15 +65,9 @@ export interface CycleCheckOptions {
   cycleEndedAt?: Date | string
 }
 
-function parseDateLike(d: Date | string | null | undefined): Date | null {
-  if (!d) return null
-  if (d instanceof Date) {
-    return Number.isFinite(d.getTime()) ? d : null
-  }
-  // ISO string、UTC midnight も許容するためそのまま new Date
-  const v = new Date(d)
-  return Number.isFinite(v.getTime()) ? v : null
-}
+// iter490 refactor: parseDate 系の重複を `lib/date/iso.ts#parseDateOrNull` に集約 (38 弾目)。
+// 既存の test ('parseDateLike' を import) を維持するため public alias で re-export 維持。
+const parseDateLike = parseDateOrNull
 
 function median(sorted: number[]): number | null {
   if (sorted.length === 0) return null
