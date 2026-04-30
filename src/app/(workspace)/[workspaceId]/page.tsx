@@ -16,7 +16,6 @@ import { HeartbeatButton } from '@/components/workspace/heartbeat-button'
 import { ItemsBoard } from '@/components/workspace/items-board'
 import { NotificationBell } from '@/components/workspace/notification-bell'
 import { NotificationPreferencesButton } from '@/components/workspace/notification-preferences'
-import { StandupButton } from '@/components/workspace/standup-button'
 import { TeamCapacityPanel } from '@/components/workspace/team-capacity-panel'
 import { WorkspaceHeader } from '@/components/workspace/workspace-header'
 
@@ -50,7 +49,7 @@ export default async function WorkspacePage({ params }: PageProps) {
     <main
       id="main-content"
       tabIndex={-1}
-      className="container mx-auto max-w-5xl space-y-6 p-4 md:p-6 focus-visible:outline-none"
+      className="container mx-auto max-w-5xl space-y-6 p-4 focus-visible:outline-none md:p-6"
     >
       <WorkspaceHeader
         title={displayName}
@@ -59,7 +58,6 @@ export default async function WorkspacePage({ params }: PageProps) {
         pageActions={
           <>
             <HeartbeatButton workspaceId={workspaceId} />
-            <StandupButton workspaceId={workspaceId} />
             <nav
               aria-label="ワークスペース内ナビゲーション"
               className="flex flex-wrap items-center gap-2"
