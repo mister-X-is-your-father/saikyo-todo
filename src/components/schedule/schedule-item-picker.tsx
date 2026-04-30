@@ -31,12 +31,23 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
     <div
       role="dialog"
       aria-modal="true"
+      aria-labelledby="schedule-picker-title"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          e.stopPropagation()
+          onCancel()
+        }
+      }}
       className="bg-card fixed inset-0 z-50 m-auto flex h-fit max-h-[80vh] w-full max-w-md flex-col gap-3 rounded-lg border p-4 shadow-2xl"
     >
+      <h2 id="schedule-picker-title" className="sr-only">
+        {allowInterrupt ? '実績 / 割込みを記録する task を選択' : '想定する task を選択'}
+      </h2>
       <div className="flex items-center gap-2">
-        <Search className="text-muted-foreground h-4 w-4" />
+        <Search className="text-muted-foreground h-4 w-4" aria-hidden="true" />
         <Input
           autoFocus
+          aria-label="task を検索"
           placeholder="task を検索…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -68,11 +79,15 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
       </div>
       {allowInterrupt ? (
         <div className="border-t pt-2">
-          <label className="text-muted-foreground mb-1 block text-xs">
+          <label
+            htmlFor="schedule-picker-interrupt-note"
+            className="text-muted-foreground mb-1 block text-xs"
+          >
             割込み / 休憩 として記録 (task に紐付けない)
           </label>
           <div className="flex gap-2">
             <Input
+              id="schedule-picker-interrupt-note"
               placeholder="例: 急な電話 / 昼休み"
               value={interruptNote}
               onChange={(e) => setInterruptNote(e.target.value)}
