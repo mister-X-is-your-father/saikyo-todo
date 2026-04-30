@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildRecoveryPlan, dayDiffISO, type RecoveryPlanItemFields } from './recovery-plan'
+import {
+  buildRecoveryPlan,
+  dayDiffISO,
+  formatRecoveryPlanJa,
+  recoveryActionKindLabelJa,
+  type RecoveryPlanItemFields,
+} from './recovery-plan'
 
 const TODAY = '2026-04-30'
 
@@ -206,5 +212,52 @@ describe('dayDiffISO', () => {
     expect(dayDiffISO('2026-04-30', '2026-05-01')).toBe(1)
     expect(dayDiffISO('2026-04-30', '2026-04-30')).toBe(0)
     expect(dayDiffISO('2026-04-30', '2026-04-25')).toBe(-5)
+  })
+})
+
+describe('recoveryActionKindLabelJa', () => {
+  it('5 種すべて Japanese label を返す', () => {
+    expect(recoveryActionKindLabelJa('unblock')).toBe('依存先解消')
+    expect(recoveryActionKindLabelJa('reassign')).toBe('担当再分配')
+    expect(recoveryActionKindLabelJa('split')).toBe('細分化')
+    expect(recoveryActionKindLabelJa('reschedule')).toBe('期限再設定')
+    expect(recoveryActionKindLabelJa('escalate')).toBe('エスカレーション')
+  })
+})
+
+describe('formatRecoveryPlanJa', () => {
+  it('isApplicable=false → 救済不要', () => {
+    const plan = buildRecoveryPlan(mk({ id: 'a' }), { today: TODAY })
+    expect(formatRecoveryPlanJa(plan)).toBe('救済不要')
+  })
+
+  it('単一 escalate (該当 action 無しで最終手段) → 救済 action 1 件', () => {
+    const plan = buildRecoveryPlan(
+      mk({ id: 'b', isMust: true, dueDate: '2026-04-25', priority: 4 }),
+      { today: TODAY },
+    )
+    // dueDate 5 日超過 → reschedule が出る
+    const out = formatRecoveryPlanJa(plan)
+    expect(out).toMatch(/^救済 action /)
+  })
+
+  it('複数 action は "/" 区切り', () => {
+    const plan = buildRecoveryPlan(
+      mk({
+        id: 'c',
+        isMust: true,
+        dueDate: '2026-04-25',
+        blockedByIds: ['x', 'y'],
+        priority: 1,
+        estimateMinutes: 120,
+      }),
+      { today: TODAY },
+    )
+    const out = formatRecoveryPlanJa(plan)
+    expect(out).toContain('救済 action')
+    expect(out).toContain('依存先解消')
+    expect(out).toContain('細分化')
+    expect(out).toContain('期限再設定')
+    expect(out.split(' / ').length).toBe(3)
   })
 })

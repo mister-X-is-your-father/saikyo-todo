@@ -151,4 +151,36 @@ export function buildRecoveryPlan(
   return { itemId: item.id, isApplicable: true, actions: top }
 }
 
+/**
+ * iter529 ai-automation (queue: fluffy-5 recovery polish): RecoveryActionKind ごとに
+ * 短い Japanese label を返す pure helper。chip / aria-label / Slack 通知で再利用。
+ */
+const ACTION_KIND_LABEL_JA: Record<RecoveryActionKind, string> = {
+  unblock: '依存先解消',
+  reassign: '担当再分配',
+  split: '細分化',
+  reschedule: '期限再設定',
+  escalate: 'エスカレーション',
+}
+
+export function recoveryActionKindLabelJa(kind: RecoveryActionKind): string {
+  return ACTION_KIND_LABEL_JA[kind]
+}
+
+/**
+ * AI prompt / chip aria-label / Slack 通知用 1 行 recovery summary:
+ *  '救済不要'                                    (= isApplicable=false)
+ *  '救済 action 3 選: 依存先解消 / 担当再分配 / 期限再設定'
+ *  '救済 action 1 件: エスカレーション'           (= 該当無しで escalate のみ)
+ *
+ * caller は本文字列をそのまま chip に埋められる。詳細は plan.actions を直接読む。
+ */
+export function formatRecoveryPlanJa(plan: RecoveryPlan): string {
+  if (!plan.isApplicable) return '救済不要'
+  if (plan.actions.length === 0) return '救済 action 候補なし'
+  const labels = plan.actions.map((a) => recoveryActionKindLabelJa(a.kind))
+  if (labels.length === 1) return `救済 action 1 件: ${labels[0]}`
+  return `救済 action ${labels.length} 選: ${labels.join(' / ')}`
+}
+
 export { dayDiffISO }
