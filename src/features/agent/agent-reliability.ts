@@ -245,6 +245,48 @@ export interface AgentBriefSignals {
   dominantRole: AgentBriefSignal | null
 }
 
+/**
+ * iter499 ai-automation: 最も信頼性の低い (= reliabilityLevel='critical' or 'warn') role を
+ * 1 件返す pure helper。pm-recovery / Slack alert / pre-flight に「どの agent が
+ * 最も問題か」を 1 関数で取り出す substrate。
+ *
+ * 仕様:
+ *  - 1 つでも 'critical' role があれば critical role を返す (= 緊急優先)
+ *  - critical 不在で 'warn' role があれば warn role を返す
+ *  - 全て healthy / idle なら null
+ *  - 同 level 複数 (例: PM critical + Researcher critical) → role alphabetical で
+ *    pm 勝ち (stable)
+ *
+ * `dominantRole` (iter494) は invocation 数最多の role (= 「主に動いている」)、
+ * 本 helper は **信頼性が最低の role** (= 「最も問題」)。両者は別軸:
+ *  - dominantRole: 主軸 (= 計画 / 期待される稼働量)
+ *  - mostConcerningRole: 弱点 (= 失敗が多い / 調査必要)
+ */
+export interface ConcerningRoleResult {
+  role: AgentRole
+  level: ReliabilityLevel
+  successRate: number
+}
+
+export function mostConcerningRole(stats: AgentReliability): ConcerningRoleResult | null {
+  const roles: AgentRole[] = ['pm', 'researcher']
+  // 1 pass: critical を探す
+  for (const role of roles) {
+    const r = stats.byRole[role]
+    if (r.reliabilityLevel === 'critical') {
+      return { role, level: 'critical', successRate: r.successRate }
+    }
+  }
+  // 2 pass: warn を探す
+  for (const role of roles) {
+    const r = stats.byRole[role]
+    if (r.reliabilityLevel === 'warn') {
+      return { role, level: 'warn', successRate: r.successRate }
+    }
+  }
+  return null
+}
+
 export function composeAgentBriefSignals(stats: AgentReliability): AgentBriefSignals {
   const reliability: AgentBriefSignal = {
     text: formatAgentReliabilityCompactJa(stats),

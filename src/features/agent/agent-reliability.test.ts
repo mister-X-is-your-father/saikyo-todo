@@ -13,6 +13,7 @@ import {
   formatAgentReliabilityCompactJa,
   formatAgentReliabilityJa,
   formatDominantRoleJa,
+  mostConcerningRole,
   reliabilityLevelLabelJa,
 } from './agent-reliability'
 
@@ -201,6 +202,59 @@ describe('formatDominantRoleJa', () => {
       { role: 'researcher', invocations: 8, completed: 8, failed: 0 },
     ])
     expect(formatDominantRoleJa(dominantRole(r))).toBe('主軸: PM (15 呼出、65%)')
+  })
+})
+
+describe('mostConcerningRole (信頼性最低 role 検出、pm-recovery/Slack alert 用)', () => {
+  it('全 healthy → null (= alarm 不要)', () => {
+    const r = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 10, failed: 0 },
+      { role: 'researcher', invocations: 8, completed: 8, failed: 0 },
+    ])
+    expect(mostConcerningRole(r)).toBeNull()
+  })
+
+  it('全 idle → null', () => {
+    expect(mostConcerningRole(computeAgentReliability([]))).toBeNull()
+  })
+
+  it('PM critical → PM 検出', () => {
+    const r = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 }, // critical
+      { role: 'researcher', invocations: 8, completed: 8, failed: 0 },
+    ])
+    const c = mostConcerningRole(r)
+    expect(c).not.toBeNull()
+    expect(c!.role).toBe('pm')
+    expect(c!.level).toBe('critical')
+  })
+
+  it('PM healthy + Researcher warn → Researcher (warn) 検出', () => {
+    const r = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 10, failed: 0 },
+      { role: 'researcher', invocations: 15, completed: 13, failed: 2 }, // 86.6% warn
+    ])
+    const c = mostConcerningRole(r)
+    expect(c!.role).toBe('researcher')
+    expect(c!.level).toBe('warn')
+  })
+
+  it('両方 critical → role alphabetical で pm 勝ち', () => {
+    const r = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 },
+      { role: 'researcher', invocations: 10, completed: 4, failed: 6 },
+    ])
+    expect(mostConcerningRole(r)!.role).toBe('pm')
+  })
+
+  it('critical を warn より優先 (= 緊急優先)', () => {
+    const r = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 9, failed: 1 }, // 90% warn
+      { role: 'researcher', invocations: 10, completed: 5, failed: 5 }, // 50% critical
+    ])
+    const c = mostConcerningRole(r)
+    expect(c!.role).toBe('researcher')
+    expect(c!.level).toBe('critical')
   })
 })
 
