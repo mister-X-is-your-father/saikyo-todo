@@ -334,10 +334,16 @@ export const itemService = {
                 isNull(items.deletedAt),
               ),
             )
-          // 表示順 = (position, id) の lexicographic stable sort
-          siblings.sort(
-            (a, b) => a.position.localeCompare(b.position) || a.id.localeCompare(b.id),
-          )
+          // 表示順 = (position, id) の **byte-order (ASCII)** stable sort
+          // `localeCompare` だと fractional-indexing が生成する 'Zz' (大文字始まり、
+          // 'a0' の前) が誤って後ろに sort される。compareSiblings と同じ ASCII 比較を使う。
+          siblings.sort((a, b) => {
+            if (a.position < b.position) return -1
+            if (a.position > b.position) return 1
+            if (a.id < b.id) return -1
+            if (a.id > b.id) return 1
+            return 0
+          })
           const fromIdx = siblings.findIndex((s) => s.id === before.id)
           if (fromIdx < 0) {
             return err(new ValidationError('item not found in siblings (rebalance)'))

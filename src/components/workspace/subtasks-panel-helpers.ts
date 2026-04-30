@@ -33,10 +33,20 @@ export type LtreeNode = Pick<Item, 'id' | 'parentPath' | 'position' | 'deletedAt
 /**
  * iter290 P0 (queue: subtask gap d): siblings 比較。
  * position asc + id asc tie-break で、同 position が race で起こり得ても決定的な順序を保つ。
+ *
+ * **重要**: `localeCompare` ではなく **byte-order (ASCII) 比較** を使う。
+ * `fractional-indexing` は base62 (0-9 < A-Z < a-z) で order が決まる文字列を生成し、
+ * 「先頭挿入」 で 'Zz' のような大文字始まりを返すことがある (← 'a0' の前に来る)。
+ * `localeCompare` は default locale で 'Zz' > 'a0' と判定し、移動先 position が
+ * 反映されない bug が発生する (2026-04-30 ユーザ報告: 「下から上に移動させた
+ * タスクの並びが反映されない」 root cause)。
  */
 export function compareSiblings(a: LtreeNode, b: LtreeNode): number {
-  const c = a.position.localeCompare(b.position)
-  return c !== 0 ? c : a.id.localeCompare(b.id)
+  if (a.position < b.position) return -1
+  if (a.position > b.position) return 1
+  if (a.id < b.id) return -1
+  if (a.id > b.id) return 1
+  return 0
 }
 
 /**

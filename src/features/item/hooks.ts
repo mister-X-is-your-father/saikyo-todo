@@ -163,8 +163,13 @@ export function useReorderItem(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: ReorderItemInput) => unwrap(await reorderItemAction(input)),
-    onMutate: async (input) => {
-      await qc.cancelQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    onMutate: (input) => {
+      // **重要**: cancelQueries は `await` せず fire-and-forget で。
+      // `await` で microtask 境界が生まれると setQueryData が次 tick まで遅延し、
+      // ユーザに「ドラッグ確定の一瞬だけ古い順序が見える」 flicker が発生する
+      // (2026-04-30 ユーザ報告 root cause)。setQueryData を **synchronously** 走らせ
+      // ることで、drop と同 frame で新順序が描画される。
+      void qc.cancelQueries({ queryKey: [...itemKeys.all, workspaceId] })
       const snapshots = qc.getQueriesData<Item[]>({ queryKey: [...itemKeys.all, workspaceId] })
       for (const [key, prev] of snapshots) {
         if (!prev) continue
@@ -206,10 +211,15 @@ function reorderInArray(items: Item[], input: ReorderItemInput): Item[] {
   const others = items.filter(
     (i) => !(i.parentPath === target.parentPath && !i.deletedAt),
   )
-  // (position, id) で sort = UI の compareSiblings と一致
-  sameParent.sort(
-    (a, b) => a.position.localeCompare(b.position) || a.id.localeCompare(b.id),
-  )
+  // (position, id) で **byte-order (ASCII)** sort = UI の compareSiblings と完全一致。
+  // localeCompare だと 'Zz' < 'a0' が逆判定されて先頭挿入 bug の root cause になる。
+  sameParent.sort((a, b) => {
+    if (a.position < b.position) return -1
+    if (a.position > b.position) return 1
+    if (a.id < b.id) return -1
+    if (a.id > b.id) return 1
+    return 0
+  })
   // prev / next item を pull
   const prevItem = input.prevSiblingId
     ? sameParent.find((s) => s.id === input.prevSiblingId)
