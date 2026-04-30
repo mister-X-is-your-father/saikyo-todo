@@ -173,6 +173,7 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
             <Button
               type="button"
               size="sm"
+              className="min-h-11"
               disabled={!dirty || upsertGoal.isPending}
               aria-busy={upsertGoal.isPending || undefined}
               onClick={() => void handleSave()}

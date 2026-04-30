@@ -89,6 +89,7 @@ export function TeamContextEditor({ workspaceId }: Props) {
           <Button
             type="button"
             size="sm"
+            className="min-h-11"
             disabled={!dirty || upd.isPending}
             aria-busy={upd.isPending || undefined}
             onClick={() => void handleSave()}
