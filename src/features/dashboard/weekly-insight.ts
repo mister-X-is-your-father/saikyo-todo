@@ -232,8 +232,7 @@ export { dateToISODate, dayIndexFromDate, weekStartUTC }
  *
  * 用途: WeeklyInsightWidget aria-label / chip に 1 単語 state を埋める、Slack 通知の見出し。
  */
-import type { FourStateHint } from '@/lib/hint'
-import { makeHintLabelFormatter } from '@/lib/hint'
+import { type FourStateHint, makeHintLabelFormatter } from '@/lib/hint'
 
 export type WeeklyInsightHint = FourStateHint
 
