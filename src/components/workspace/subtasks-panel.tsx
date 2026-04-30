@@ -113,8 +113,13 @@ function SubtaskTreeNode({
   const canOutdent = findGrandparentId(item, allItems) !== null
 
   // DnD: row 自体を sortable に。drag handle のみが pointer hold/drag を起動。
+  // 2026-04-30: `animateLayoutChanges: () => false` で **layout 変動時の自動 animation を無効化**。
+  // これがないと、楽観 update で array 順が変わった瞬間に dnd-kit が古い transform を
+  // 残したまま新 DOM 位置に適用し、要素が「上に飛んでから戻ってくる」 視覚 artifact が発生する
+  // (ユーザ報告 2026-04-30 の root cause)。drag 中の他要素 push 動作には影響しない。
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
+    animateLayoutChanges: () => false,
   })
   const sortableStyle = {
     transform: CSS.Transform.toString(transform),
