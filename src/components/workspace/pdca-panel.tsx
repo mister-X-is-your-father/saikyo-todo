@@ -233,9 +233,15 @@ function DailyBars({
         })}
       </div>
       <div className="text-muted-foreground flex justify-between text-[10px]">
-        <span>{data[0]?.date.slice(5)}</span>
+        {(() => {
+          const first = data[0]?.date
+          return first ? <time dateTime={first}>{first.slice(5)}</time> : <span />
+        })()}
         <span>max {max}</span>
-        <span>{data[data.length - 1]?.date.slice(5)}</span>
+        {(() => {
+          const last = data[data.length - 1]?.date
+          return last ? <time dateTime={last}>{last.slice(5)}</time> : <span />
+        })()}
       </div>
     </div>
   )
