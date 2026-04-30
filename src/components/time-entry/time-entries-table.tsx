@@ -131,6 +131,7 @@ export function TimeEntriesTable({
                 {e.syncStatus !== 'synced' && (
                   <Button
                     size="sm"
+                    className="min-h-11"
                     variant="outline"
                     disabled={sync.isPending}
                     aria-busy={sync.isPending || undefined}
