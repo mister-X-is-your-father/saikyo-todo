@@ -202,7 +202,11 @@ export function WorkflowsPanel({ workspaceId }: Props) {
           }
         />
       ) : (
-        <ul className="space-y-3" data-testid="workflows-list">
+        <ul
+          className="space-y-3"
+          data-testid="workflows-list"
+          aria-label={`Workflow 一覧 ${list.data!.length} 件`}
+        >
           {list.data!.map((wf) => (
             <li key={wf.id}>
               <WorkflowCard workspaceId={workspaceId} wf={wf} />
@@ -760,7 +764,11 @@ function WorkflowNodeRunsList({ runId }: { runId: string }) {
     )
   }
   return (
-    <ul className="space-y-1.5" data-testid={`wf-node-runs-${runId}`}>
+    <ul
+      className="space-y-1.5"
+      data-testid={`wf-node-runs-${runId}`}
+      aria-label={`Workflow node 実行履歴 ${rows.length} 件`}
+    >
       {rows.map((nr) => (
         <li
           key={nr.id}
