@@ -195,3 +195,35 @@ export const formatAuditActivityHintJa = makeHintLabelFormatter(
   classifyAuditActivityHint,
   AUDIT_ACTIVITY_HINT_LABEL_JA,
 )
+
+/**
+ * iter506 basics: 最も操作数の多い actor (= top contributor) を抽出。
+ *
+ * - 空 Map → null
+ * - max 値が複数 actor に同点なら、insertion order (= 最初に出現した actor) を採用
+ * - 用途: dashboard chip 「主軸: <actorId> (N 操作)」、AI 朝 brief の見出し
+ */
+export function pickTopActor(
+  byActor: ReadonlyMap<string, number>,
+): { actorId: string; count: number } | null {
+  if (byActor.size === 0) return null
+  let best: { actorId: string; count: number } | null = null
+  for (const [actorId, count] of byActor) {
+    if (best === null || count > best.count) {
+      best = { actorId, count }
+    }
+  }
+  return best
+}
+
+/**
+ * iter506 basics: pickTopActor の出力を chip 文言に整形。
+ *   '主軸: alice (12 操作)'
+ *   '主軸: なし (該当 actor なし)'
+ *
+ * actorId は表示用 (UI 側で名前解決する場合は本 helper を使わず別途 format)。
+ */
+export function formatTopActorJa(top: { actorId: string; count: number } | null): string {
+  if (top === null) return '主軸: なし (該当 actor なし)'
+  return `主軸: ${top.actorId} (${top.count} 操作)`
+}

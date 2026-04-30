@@ -8,8 +8,10 @@ import {
   formatAuditActivityBrief,
   formatAuditActivityHintJa,
   formatAuditActivitySummary,
+  formatTopActorJa,
   groupAuditByActor,
   groupAuditByCategory,
+  pickTopActor,
 } from './audit-activity'
 
 const A = (
@@ -274,5 +276,38 @@ describe('formatAuditActivityHintJa', () => {
     expect(formatAuditActivityHintJa(counts({ create: 10 }))).toBe('通常')
     expect(formatAuditActivityHintJa(counts({ create: 50 }))).toBe('活発')
     expect(formatAuditActivityHintJa(counts({ create: 200 }))).toBe('異常')
+  })
+})
+
+describe('pickTopActor', () => {
+  it('空 Map → null', () => {
+    expect(pickTopActor(new Map())).toBeNull()
+  })
+
+  it('単独 max', () => {
+    const m = new Map([
+      ['alice', 5],
+      ['bob', 12],
+      ['carol', 3],
+    ])
+    expect(pickTopActor(m)).toEqual({ actorId: 'bob', count: 12 })
+  })
+
+  it('同点は insertion order 先頭', () => {
+    const m = new Map([
+      ['alice', 5],
+      ['bob', 5],
+    ])
+    expect(pickTopActor(m)?.actorId).toBe('alice')
+  })
+})
+
+describe('formatTopActorJa', () => {
+  it('null → 「主軸: なし」', () => {
+    expect(formatTopActorJa(null)).toBe('主軸: なし (該当 actor なし)')
+  })
+
+  it('top あり → 「主軸: <id> (<n> 操作)」', () => {
+    expect(formatTopActorJa({ actorId: 'alice', count: 12 })).toBe('主軸: alice (12 操作)')
   })
 })
