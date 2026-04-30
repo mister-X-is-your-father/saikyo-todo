@@ -180,7 +180,14 @@ export function CalendarView({ workspaceId }: Props) {
           >
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => setDate(startOfDay(new Date()))}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="min-h-11"
+            onClick={() => setDate(startOfDay(new Date()))}
+            aria-label="表示日を今日にリセット"
+            data-testid="calendar-today-btn"
+          >
             今日
           </Button>
         </div>
