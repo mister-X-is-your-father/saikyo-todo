@@ -58,3 +58,22 @@ export function pdcaPhaseSeverityToSeverity(sev: PdcaPhaseSeverity): Severity {
       return 'muted'
   }
 }
+
+/**
+ * iter548 ai-automation polish: structured-review の `Improvement.severity` ('high' /
+ * 'medium' / 'low') → Severity bridge。AI review 結果の改善提案を chip 配色に bind する用。
+ *
+ * 'high'   → 'danger' (= 必ず対応する改善、影響大)
+ * 'medium' → 'warn'   (= 検討対象、影響中)
+ * 'low'    → 'info'   (= nice-to-have、影響小)
+ */
+export function improvementSeverityToSeverity(sev: 'high' | 'medium' | 'low'): Severity {
+  switch (sev) {
+    case 'high':
+      return 'danger'
+    case 'medium':
+      return 'warn'
+    case 'low':
+      return 'info'
+  }
+}

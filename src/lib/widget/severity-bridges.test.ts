@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { assigneeLoadSeverityToSeverity, pdcaPhaseSeverityToSeverity } from './severity-bridges'
+import {
+  assigneeLoadSeverityToSeverity,
+  improvementSeverityToSeverity,
+  pdcaPhaseSeverityToSeverity,
+} from './severity-bridges'
 
 describe('assigneeLoadSeverityToSeverity', () => {
   it('overloaded → danger', () => {
@@ -32,5 +36,17 @@ describe('pdcaPhaseSeverityToSeverity', () => {
   })
   it('closed → muted', () => {
     expect(pdcaPhaseSeverityToSeverity('closed')).toBe('muted')
+  })
+})
+
+describe('improvementSeverityToSeverity', () => {
+  it('high → danger', () => {
+    expect(improvementSeverityToSeverity('high')).toBe('danger')
+  })
+  it('medium → warn', () => {
+    expect(improvementSeverityToSeverity('medium')).toBe('warn')
+  })
+  it('low → info', () => {
+    expect(improvementSeverityToSeverity('low')).toBe('info')
   })
 })
