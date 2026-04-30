@@ -212,6 +212,49 @@ export function buildWeeklyInsight(
 export { dateToISODate, dayIndexFromDate, weekStartUTC }
 
 /**
+ * iter483 basics: WeeklyInsight の 4 状態 hint 分類 (= velocity-hint / blocked-items-hint /
+ * at-risk-parents-hint と同 shape の `FourStateHint` シリーズ)。
+ *
+ * - 'idle'     : 今週/前週とも 0 件 (=活動なし)
+ * - 'severe'   : overdueSpike anomaly 検出 (= 期限超過 active 5 件以上)
+ * - 'moderate' : lowCompletionDay anomaly あり OR weekDelta が -30% 以下
+ * - 'mild'     : それ以外 (= 健常範囲)
+ *
+ * 用途: WeeklyInsightWidget aria-label / chip に 1 単語 state を埋める、Slack 通知の見出し。
+ */
+import type { FourStateHint } from '@/lib/hint'
+import { makeHintLabelFormatter } from '@/lib/hint'
+
+export type WeeklyInsightHint = FourStateHint
+
+export function classifyWeeklyInsightHint(
+  insight: Pick<
+    WeeklyInsightSummary,
+    'currentWeekTotal' | 'prevWeekTotal' | 'anomalies' | 'weekDelta'
+  >,
+): WeeklyInsightHint {
+  if (insight.currentWeekTotal === 0 && insight.prevWeekTotal === 0) return 'idle'
+  const hasOverdueSpike = insight.anomalies.some((a) => a.kind === 'overdueSpike')
+  if (hasOverdueSpike) return 'severe'
+  const hasLowDay = insight.anomalies.some((a) => a.kind === 'lowCompletionDay')
+  const sharpDrop = insight.weekDelta.percent !== null && insight.weekDelta.percent <= -30
+  if (hasLowDay || sharpDrop) return 'moderate'
+  return 'mild'
+}
+
+const WEEKLY_INSIGHT_HINT_LABEL_JA: Record<WeeklyInsightHint, string> = {
+  idle: '活動なし',
+  mild: '健常',
+  moderate: '注意',
+  severe: '異常',
+}
+
+export const formatWeeklyInsightHintJa = makeHintLabelFormatter(
+  classifyWeeklyInsightHint,
+  WEEKLY_INSIGHT_HINT_LABEL_JA,
+)
+
+/**
  * iter481 basics: 今週の best day (= 完了 max の曜日) を抽出。
  *
  * - 今週合計 0 件 → null (chip 非表示で noise 削減)

@@ -26,6 +26,7 @@ import { trendToneClass } from '@/lib/ui/trend-tone'
 import {
   buildWeeklyInsight,
   formatBestDayJa,
+  formatWeeklyInsightHintJa,
   pickBestDayInWeek,
   type WeeklyInsightItemFields,
 } from '@/features/dashboard/weekly-insight'
@@ -92,11 +93,14 @@ export function WeeklyInsightWidget({ items, now }: Props) {
   // iter481 basics: 今週 ベスト曜日 chip — 軸 5 やる気 (ハイライト「うまくいった日」)
   const bestDay = pickBestDayInWeek(insight)
   const bestDayLabel = formatBestDayJa(bestDay)
+  // iter483 basics: 4 状態 hint で chip / aria-label に 1 単語 state を埋める
+  const hintLabel = formatWeeklyInsightHintJa(insight)
 
   return (
     <Card
       role="region"
-      aria-label={`週次 Insight: ${deltaLabel}。${bestDayLabel}`}
+      aria-label={`週次 Insight (${hintLabel}): ${deltaLabel}。${bestDayLabel}`}
+      data-weekly-insight-hint={hintLabel}
       data-testid="weekly-insight-widget"
     >
       <CardHeader className="pb-2">

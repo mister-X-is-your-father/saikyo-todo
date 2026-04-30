@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest'
 
 import {
   buildWeeklyInsight,
+  classifyWeeklyInsightHint,
   dateToISODate,
   dayIndexFromDate,
   formatBestDayJa,
+  formatWeeklyInsightHintJa,
   pickBestDayInWeek,
   type WeeklyInsightItemFields,
   weekStartUTC,
@@ -229,5 +231,65 @@ describe('formatBestDayJa', () => {
 
   it('best 値 → 「今週 ベスト: <day> <n> 件」', () => {
     expect(formatBestDayJa({ day: 'Mon', current: 4 })).toBe('今週 ベスト: Mon 4 件')
+  })
+})
+
+describe('classifyWeeklyInsightHint', () => {
+  it('今週/前週とも 0 件 → idle', () => {
+    const r = buildWeeklyInsight([], NOW)
+    expect(classifyWeeklyInsightHint(r)).toBe('idle')
+  })
+
+  it('overdueSpike anomaly あり → severe', () => {
+    const items: WeeklyInsightItemFields[] = []
+    for (let i = 0; i < 5; i++) {
+      items.push(mk({ status: 'todo', dueDate: '2026-04-25', doneAt: null }))
+    }
+    items.push(mk({ doneAt: '2026-04-27T10:00:00Z' })) // 今週 1 件 (= idle 回避)
+    const r = buildWeeklyInsight(items, NOW)
+    expect(classifyWeeklyInsightHint(r)).toBe('severe')
+  })
+
+  it('lowCompletionDay anomaly あり → moderate', () => {
+    // 今週 7+ 件で平均の半分以下の曜日があるパターン (lowCompletionDay)
+    const items: WeeklyInsightItemFields[] = []
+    for (let i = 0; i < 4; i++) items.push(mk({ doneAt: '2026-04-27T10:00:00Z' })) // Mon
+    for (let i = 0; i < 3; i++) items.push(mk({ doneAt: '2026-04-29T10:00:00Z' })) // Wed
+    const r = buildWeeklyInsight(items, NOW)
+    expect(classifyWeeklyInsightHint(r)).toBe('moderate')
+  })
+
+  it('weekDelta -30% 以下 → moderate', () => {
+    const items: WeeklyInsightItemFields[] = []
+    // 前週 10 件、今週 1 件 → -90%
+    for (let i = 0; i < 10; i++) items.push(mk({ doneAt: '2026-04-20T10:00:00Z' }))
+    items.push(mk({ doneAt: '2026-04-27T10:00:00Z' }))
+    const r = buildWeeklyInsight(items, NOW)
+    expect(classifyWeeklyInsightHint(r)).toBe('moderate')
+  })
+
+  it('健常範囲 → mild', () => {
+    const items = [
+      mk({ doneAt: '2026-04-20T10:00:00Z' }),
+      mk({ doneAt: '2026-04-27T10:00:00Z' }),
+      mk({ doneAt: '2026-04-28T10:00:00Z' }),
+    ]
+    const r = buildWeeklyInsight(items, NOW)
+    expect(classifyWeeklyInsightHint(r)).toBe('mild')
+  })
+})
+
+describe('formatWeeklyInsightHintJa', () => {
+  it('idle / mild / moderate / severe を 1 単語で返す', () => {
+    const empty = buildWeeklyInsight([], NOW)
+    expect(formatWeeklyInsightHintJa(empty)).toBe('活動なし')
+
+    const items: WeeklyInsightItemFields[] = []
+    for (let i = 0; i < 5; i++) {
+      items.push(mk({ status: 'todo', dueDate: '2026-04-25', doneAt: null }))
+    }
+    items.push(mk({ doneAt: '2026-04-27T10:00:00Z' }))
+    const sev = buildWeeklyInsight(items, NOW)
+    expect(formatWeeklyInsightHintJa(sev)).toBe('異常')
   })
 })
