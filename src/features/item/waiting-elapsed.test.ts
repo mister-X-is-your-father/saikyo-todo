@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest'
 import {
   elapsedWaitingDays,
   formatWaitingStatusJa,
+  formatWaitingSummaryJa,
   nextReminderInDays,
+  summarizeWaitingItems,
   waitingElapsedSeverity,
   type WaitingItemFields,
 } from './waiting-elapsed'
@@ -115,5 +117,90 @@ describe('formatWaitingStatusJa', () => {
 
   it('cadence なし + 1 日経過', () => {
     expect(formatWaitingStatusJa({ requestedAt: days(1) }, NOW)).toBe('依頼から 1 日経過')
+  })
+})
+
+describe('summarizeWaitingItems', () => {
+  it('空 → 全 0、oldestDays null', () => {
+    const r = summarizeWaitingItems([], NOW)
+    expect(r.total).toBe(0)
+    expect(r.bySeverity).toEqual({ ok: 0, warn: 0, danger: 0, muted: 0 })
+    expect(r.oldestDays).toBeNull()
+    expect(r.dueRemindCount).toBe(0)
+  })
+
+  it('混在: severity 別件数 + oldestDays', () => {
+    const r = summarizeWaitingItems(
+      [
+        { requestedAt: days(1) }, // ok
+        { requestedAt: days(4) }, // warn
+        { requestedAt: days(10) }, // danger
+        { requestedAt: days(12) }, // danger
+        { requestedAt: null }, // muted
+      ],
+      NOW,
+    )
+    expect(r.total).toBe(5)
+    expect(r.bySeverity).toEqual({ ok: 1, warn: 1, danger: 2, muted: 1 })
+    expect(r.oldestDays).toBe(12)
+  })
+
+  it('dueRemindCount: nextReminderInDays === 0 を数える', () => {
+    const r = summarizeWaitingItems(
+      [
+        // lastRemindedAt が cadence 超過 = nxt 0 (リマインド時期)
+        { requestedAt: days(5), lastRemindedAt: days(10), reminderCadenceDays: 3 },
+        // not yet, cadence 中 = nxt > 0
+        { requestedAt: days(2), lastRemindedAt: days(1), reminderCadenceDays: 5 },
+      ],
+      NOW,
+    )
+    expect(r.dueRemindCount).toBe(1)
+  })
+})
+
+describe('formatWaitingSummaryJa', () => {
+  it('total 0 → 「連絡待ちなし」', () => {
+    expect(
+      formatWaitingSummaryJa({
+        total: 0,
+        bySeverity: { ok: 0, warn: 0, danger: 0, muted: 0 },
+        oldestDays: null,
+        dueRemindCount: 0,
+      }),
+    ).toBe('連絡待ちなし')
+  })
+
+  it('escalate あり → 「連絡待ち N 件 (escalate Y、最長 D 日)」', () => {
+    expect(
+      formatWaitingSummaryJa({
+        total: 5,
+        bySeverity: { ok: 1, warn: 1, danger: 2, muted: 1 },
+        oldestDays: 12,
+        dueRemindCount: 3,
+      }),
+    ).toBe('連絡待ち 5 件 (escalate 2、最長 12 日)')
+  })
+
+  it('escalate なし + リマインド推奨 → 「連絡待ち N 件 (リマインド推奨 X)」', () => {
+    expect(
+      formatWaitingSummaryJa({
+        total: 3,
+        bySeverity: { ok: 1, warn: 2, danger: 0, muted: 0 },
+        oldestDays: 4,
+        dueRemindCount: 2,
+      }),
+    ).toBe('連絡待ち 3 件 (リマインド推奨 2)')
+  })
+
+  it('健全のみ → 「連絡待ち N 件」', () => {
+    expect(
+      formatWaitingSummaryJa({
+        total: 1,
+        bySeverity: { ok: 1, warn: 0, danger: 0, muted: 0 },
+        oldestDays: 1,
+        dueRemindCount: 0,
+      }),
+    ).toBe('連絡待ち 1 件')
   })
 })

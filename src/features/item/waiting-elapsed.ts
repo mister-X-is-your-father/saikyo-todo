@@ -82,6 +82,75 @@ export function nextReminderInDays(item: WaitingItemFields, now: Date = new Date
 }
 
 /**
+ * iter486 basics: workspace 全体の連絡待ち item の集計。
+ *
+ * 用途: dashboard chip 「連絡待ち N 件 (escalate Y 件)」、Slack 通知の見出し、
+ * WT-2 view plugin の grouping panel header。
+ *
+ * 仕様:
+ *   - total: 全 waiting item 件数 (= input.length)
+ *   - byseverity: 'ok' / 'warn' / 'danger' / 'muted' (= requestedAt null) の件数
+ *   - oldestDays: 最大 elapsedDays (null は除外)、空 → null
+ *   - dueRemindCount: nextReminderInDays === 0 の件数 (= 即リマインド推奨)
+ */
+export interface WaitingSummary {
+  total: number
+  /** waitingElapsedSeverity が返す 4 値 (ok / warn / danger / muted) のみ集計、info は使用しない */
+  bySeverity: Record<'ok' | 'warn' | 'danger' | 'muted', number>
+  oldestDays: number | null
+  dueRemindCount: number
+}
+
+export function summarizeWaitingItems(
+  items: readonly WaitingItemFields[],
+  now: Date = new Date(),
+): WaitingSummary {
+  const bySeverity: WaitingSummary['bySeverity'] = { ok: 0, warn: 0, danger: 0, muted: 0 }
+  let oldestDays: number | null = null
+  let dueRemindCount = 0
+  for (const it of items) {
+    const d = elapsedWaitingDays(it, now)
+    const sev = waitingElapsedSeverity(d)
+    // sev は型上 Severity (= info を含む 5 値) だが、waitingElapsedSeverity の実装では
+    // 'info' を返さない (= ok / warn / danger / muted の 4 値のみ)。型を絞る。
+    if (sev === 'ok' || sev === 'warn' || sev === 'danger' || sev === 'muted') {
+      bySeverity[sev] += 1
+    }
+    if (d !== null && (oldestDays === null || d > oldestDays)) {
+      oldestDays = d
+    }
+    const nxt = nextReminderInDays(it, now)
+    if (nxt === 0) dueRemindCount += 1
+  }
+  return { total: items.length, bySeverity, oldestDays, dueRemindCount }
+}
+
+/**
+ * iter486 basics: summarizeWaitingItems の出力を chip 文言に整形。
+ *   '連絡待ちなし'                             (total=0)
+ *   '連絡待ち 5 件 (escalate 2、最長 12 日)'   (danger > 0)
+ *   '連絡待ち 3 件 (リマインド推奨 2)'         (escalate=0 + dueRemind > 0)
+ *   '連絡待ち 1 件'                           (健全のみ)
+ *
+ * caller は本文字列を chip / aria-label / Slack 通知に直 埋め込み。
+ */
+export function formatWaitingSummaryJa(summary: WaitingSummary): string {
+  if (summary.total === 0) return '連絡待ちなし'
+  const parts: string[] = []
+  if (summary.bySeverity.danger > 0) {
+    parts.push(`escalate ${summary.bySeverity.danger}`)
+  }
+  if (summary.dueRemindCount > 0 && summary.bySeverity.danger === 0) {
+    parts.push(`リマインド推奨 ${summary.dueRemindCount}`)
+  }
+  if (summary.oldestDays !== null && summary.bySeverity.danger > 0) {
+    parts.push(`最長 ${summary.oldestDays} 日`)
+  }
+  if (parts.length === 0) return `連絡待ち ${summary.total} 件`
+  return `連絡待ち ${summary.total} 件 (${parts.join('、')})`
+}
+
+/**
  * AI prompt / chip aria-label / Slack 通知用 1 行 waiting status:
  *   '依頼から 5 日経過 (次リマインド 1 日後)'
  *   '依頼から 8 日経過 (escalate 検討)'
