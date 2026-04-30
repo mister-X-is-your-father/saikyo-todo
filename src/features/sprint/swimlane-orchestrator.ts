@@ -135,3 +135,90 @@ function parseAssigneeKey(key: string): SwimlaneAssigneeRef | null {
   if (idx <= 0 || idx === key.length - 1) return null
   return { actorType: key.slice(0, idx), actorId: key.slice(idx + 1) }
 }
+
+/**
+ * iter473 続編: sprint 全体の swim-lane summary を 1 構造体に集約。SprintCard
+ * の disclosure header 部に「5 lane / 12 件 / 80h / 重複 3 lane」を表示するため
+ * の 1 行 substrate (= UI bind が `formatSprintSwimlanePopulationJa(pop)` 1 関数
+ * 呼び出しで chip 完成)。
+ *
+ * laneCount は assignee lane 数 (= 未割当 lane を含む)、totalItemCount は
+ * **lane 重複を含めた延べ count** (= 1 item を 2 assignee で持つと 2 件 count)、
+ * uniqueItemCount は実 item 数 (Set で重複除外)。estimateMinutesTotal も延べ。
+ * conflictedLaneCount は重複ペアを少なくとも 1 件持つ lane 数 (= UI で「重複
+ * 3 lane」 alert chip)。
+ */
+export interface SprintSwimlanePopulation {
+  laneCount: number
+  unassignedLaneCount: number
+  totalItemCount: number
+  uniqueItemCount: number
+  estimateMinutesTotal: number
+  conflictedLaneCount: number
+  conflictPairTotal: number
+}
+
+export function summarizeSprintSwimlanePopulation<T extends { id: string }>(
+  rows: ReadonlyArray<SprintSwimlaneRow<T>>,
+): SprintSwimlanePopulation {
+  const uniqueIds = new Set<string>()
+  let totalItemCount = 0
+  let estimateMinutesTotal = 0
+  let conflictedLaneCount = 0
+  let conflictPairTotal = 0
+  let unassignedLaneCount = 0
+  for (const row of rows) {
+    if (row.laneKey === null) unassignedLaneCount += 1
+    totalItemCount += row.loadSummary.itemCount
+    estimateMinutesTotal += row.loadSummary.estimateMinutesTotal
+    if (row.loadSummary.conflictPairCount > 0) conflictedLaneCount += 1
+    conflictPairTotal += row.loadSummary.conflictPairCount
+    for (const it of row.items) uniqueIds.add(it.item.id)
+  }
+  return {
+    laneCount: rows.length,
+    unassignedLaneCount,
+    totalItemCount,
+    uniqueItemCount: uniqueIds.size,
+    estimateMinutesTotal,
+    conflictedLaneCount,
+    conflictPairTotal,
+  }
+}
+
+/**
+ * `SprintSwimlanePopulation` を 1 行 ja-JP summary に整形 (chip / aria-label 用)。
+ * 例:
+ *  - 空 sprint: '0 lane / 0 件'
+ *  - 通常: '3 lane / 12 件 (延べ 14) / 80h'
+ *  - 重複あり: '3 lane / 12 件 (延べ 14) / 80h / 重複 2 lane (3 ペア)'
+ *  - 見積なし: '3 lane / 12 件 / 見積なし'
+ *  - 未割当 lane あり: 末尾に '・未割当 N lane' を付ける (UI 注意喚起)
+ */
+export function formatSprintSwimlanePopulationJa(pop: SprintSwimlanePopulation): string {
+  if (pop.laneCount === 0) return '0 lane / 0 件'
+  const parts: string[] = []
+  parts.push(`${pop.laneCount} lane`)
+  if (pop.uniqueItemCount === pop.totalItemCount) {
+    parts.push(`${pop.uniqueItemCount} 件`)
+  } else {
+    parts.push(`${pop.uniqueItemCount} 件 (延べ ${pop.totalItemCount})`)
+  }
+  parts.push(
+    pop.estimateMinutesTotal > 0 ? formatHoursMinutes(pop.estimateMinutesTotal) : '見積なし',
+  )
+  if (pop.conflictedLaneCount > 0) {
+    parts.push(`重複 ${pop.conflictedLaneCount} lane (${pop.conflictPairTotal} ペア)`)
+  }
+  let out = parts.join(' / ')
+  if (pop.unassignedLaneCount > 0) out += `・未割当 ${pop.unassignedLaneCount} lane`
+  return out
+}
+
+function formatHoursMinutes(minutes: number): string {
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  if (h === 0) return `${m}min`
+  if (m === 0) return `${h}h`
+  return `${h}h ${m}min`
+}

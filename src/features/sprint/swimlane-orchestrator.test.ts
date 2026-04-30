@@ -3,7 +3,12 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import { computeSprintSwimlane, type SprintSwimlaneInput } from './swimlane-orchestrator'
+import {
+  computeSprintSwimlane,
+  formatSprintSwimlanePopulationJa,
+  type SprintSwimlaneInput,
+  summarizeSprintSwimlanePopulation,
+} from './swimlane-orchestrator'
 
 const SPRINT = { startDate: '2026-04-27', endDate: '2026-05-10' } // 14 日
 
@@ -190,5 +195,203 @@ describe('computeSprintSwimlane', () => {
       }),
     )
     expect(rows[0]!.assigneeRef).toEqual({ actorType: 'user', actorId: 'a:b:c' })
+  })
+})
+
+describe('summarizeSprintSwimlanePopulation', () => {
+  it('rows 空 → 全 0', () => {
+    const pop = summarizeSprintSwimlanePopulation([])
+    expect(pop).toEqual({
+      laneCount: 0,
+      unassignedLaneCount: 0,
+      totalItemCount: 0,
+      uniqueItemCount: 0,
+      estimateMinutesTotal: 0,
+      conflictedLaneCount: 0,
+      conflictPairTotal: 0,
+    })
+  })
+
+  it('1 lane 1 item (見積 480) → unique=1 / total=1 / 480 分', () => {
+    const rows = computeSprintSwimlane(
+      makeInput(
+        [{ id: 'i1', startDate: '2026-04-27', dueDate: '2026-04-30' }],
+        { i1: [{ actorType: 'user', actorId: 'u1' }] },
+        { i1: 480 },
+      ),
+    )
+    const pop = summarizeSprintSwimlanePopulation(rows)
+    expect(pop.laneCount).toBe(1)
+    expect(pop.unassignedLaneCount).toBe(0)
+    expect(pop.totalItemCount).toBe(1)
+    expect(pop.uniqueItemCount).toBe(1)
+    expect(pop.estimateMinutesTotal).toBe(480)
+    expect(pop.conflictedLaneCount).toBe(0)
+    expect(pop.conflictPairTotal).toBe(0)
+  })
+
+  it('1 item 2 assignee → totalItemCount=2 / uniqueItemCount=1 (重複除外)', () => {
+    const rows = computeSprintSwimlane(
+      makeInput([{ id: 'shared', startDate: '2026-04-27', dueDate: '2026-04-30' }], {
+        shared: [
+          { actorType: 'user', actorId: 'u1' },
+          { actorType: 'user', actorId: 'u2' },
+        ],
+      }),
+    )
+    const pop = summarizeSprintSwimlanePopulation(rows)
+    expect(pop.laneCount).toBe(2)
+    expect(pop.totalItemCount).toBe(2)
+    expect(pop.uniqueItemCount).toBe(1)
+  })
+
+  it('未割当 lane あり → unassignedLaneCount に算入', () => {
+    const rows = computeSprintSwimlane(
+      makeInput(
+        [
+          { id: 'a', startDate: '2026-04-27', dueDate: '2026-04-29' },
+          { id: 'unassigned', startDate: '2026-04-27', dueDate: '2026-04-29' },
+        ],
+        {
+          a: [{ actorType: 'user', actorId: 'u1' }],
+          unassigned: [],
+        },
+      ),
+    )
+    const pop = summarizeSprintSwimlanePopulation(rows)
+    expect(pop.laneCount).toBe(2)
+    expect(pop.unassignedLaneCount).toBe(1)
+  })
+
+  it('lane 内 重複あり → conflictedLaneCount + conflictPairTotal 算入', () => {
+    const rows = computeSprintSwimlane(
+      makeInput(
+        [
+          { id: 'a', startDate: '2026-04-27', dueDate: '2026-05-02' },
+          { id: 'b', startDate: '2026-04-30', dueDate: '2026-05-05' },
+        ],
+        {
+          a: [{ actorType: 'user', actorId: 'u1' }],
+          b: [{ actorType: 'user', actorId: 'u1' }],
+        },
+      ),
+    )
+    const pop = summarizeSprintSwimlanePopulation(rows)
+    expect(pop.conflictedLaneCount).toBe(1)
+    expect(pop.conflictPairTotal).toBe(1)
+  })
+})
+
+describe('formatSprintSwimlanePopulationJa', () => {
+  it('空 sprint → "0 lane / 0 件"', () => {
+    expect(
+      formatSprintSwimlanePopulationJa({
+        laneCount: 0,
+        unassignedLaneCount: 0,
+        totalItemCount: 0,
+        uniqueItemCount: 0,
+        estimateMinutesTotal: 0,
+        conflictedLaneCount: 0,
+        conflictPairTotal: 0,
+      }),
+    ).toBe('0 lane / 0 件')
+  })
+
+  it('通常 sprint → "3 lane / 12 件 / 80h"', () => {
+    expect(
+      formatSprintSwimlanePopulationJa({
+        laneCount: 3,
+        unassignedLaneCount: 0,
+        totalItemCount: 12,
+        uniqueItemCount: 12,
+        estimateMinutesTotal: 4800,
+        conflictedLaneCount: 0,
+        conflictPairTotal: 0,
+      }),
+    ).toBe('3 lane / 12 件 / 80h')
+  })
+
+  it('延べ count が unique と異なる場合は両方表記', () => {
+    expect(
+      formatSprintSwimlanePopulationJa({
+        laneCount: 3,
+        unassignedLaneCount: 0,
+        totalItemCount: 14,
+        uniqueItemCount: 12,
+        estimateMinutesTotal: 4800,
+        conflictedLaneCount: 0,
+        conflictPairTotal: 0,
+      }),
+    ).toBe('3 lane / 12 件 (延べ 14) / 80h')
+  })
+
+  it('重複あり → "重複 N lane (M ペア)" 末尾追加', () => {
+    expect(
+      formatSprintSwimlanePopulationJa({
+        laneCount: 3,
+        unassignedLaneCount: 0,
+        totalItemCount: 12,
+        uniqueItemCount: 12,
+        estimateMinutesTotal: 4800,
+        conflictedLaneCount: 2,
+        conflictPairTotal: 3,
+      }),
+    ).toBe('3 lane / 12 件 / 80h / 重複 2 lane (3 ペア)')
+  })
+
+  it('見積 0 → "見積なし"', () => {
+    expect(
+      formatSprintSwimlanePopulationJa({
+        laneCount: 3,
+        unassignedLaneCount: 0,
+        totalItemCount: 12,
+        uniqueItemCount: 12,
+        estimateMinutesTotal: 0,
+        conflictedLaneCount: 0,
+        conflictPairTotal: 0,
+      }),
+    ).toBe('3 lane / 12 件 / 見積なし')
+  })
+
+  it('未割当 lane あり → "・未割当 N lane" 末尾追加', () => {
+    expect(
+      formatSprintSwimlanePopulationJa({
+        laneCount: 3,
+        unassignedLaneCount: 1,
+        totalItemCount: 12,
+        uniqueItemCount: 12,
+        estimateMinutesTotal: 4800,
+        conflictedLaneCount: 0,
+        conflictPairTotal: 0,
+      }),
+    ).toBe('3 lane / 12 件 / 80h・未割当 1 lane')
+  })
+
+  it('全部入り (重複 + 未割当 + 延べ != unique)', () => {
+    expect(
+      formatSprintSwimlanePopulationJa({
+        laneCount: 4,
+        unassignedLaneCount: 1,
+        totalItemCount: 14,
+        uniqueItemCount: 12,
+        estimateMinutesTotal: 4830, // 80h 30min
+        conflictedLaneCount: 2,
+        conflictPairTotal: 3,
+      }),
+    ).toBe('4 lane / 12 件 (延べ 14) / 80h 30min / 重複 2 lane (3 ペア)・未割当 1 lane')
+  })
+
+  it('estimateMinutesTotal < 60 → "Nmin" 表記', () => {
+    expect(
+      formatSprintSwimlanePopulationJa({
+        laneCount: 1,
+        unassignedLaneCount: 0,
+        totalItemCount: 1,
+        uniqueItemCount: 1,
+        estimateMinutesTotal: 45,
+        conflictedLaneCount: 0,
+        conflictPairTotal: 0,
+      }),
+    ).toBe('1 lane / 1 件 / 45min')
   })
 })
