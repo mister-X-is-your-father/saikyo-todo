@@ -29,7 +29,9 @@ import {
   classifyWeeklyInsightHint,
   formatBestDayJa,
   formatWeeklyInsightHintJa,
+  formatWorstDayJa,
   pickBestDayInWeek,
+  pickWorstDayInWeek,
   type WeeklyInsightItemFields,
 } from '@/features/dashboard/weekly-insight'
 import type { Item } from '@/features/item/schema'
@@ -95,6 +97,9 @@ export function WeeklyInsightWidget({ items, now }: Props) {
   // iter481 basics: 今週 ベスト曜日 chip — 軸 5 やる気 (ハイライト「うまくいった日」)
   const bestDay = pickBestDayInWeek(insight)
   const bestDayLabel = formatBestDayJa(bestDay)
+  // iter509 ai-automation: 今週 worst 曜日 chip — 軸 4 漏れ防止 (サボった日 highlight)。
+  // best と並列表示、0 件なら amber、1+ なら slate (= 軽い注意)
+  const worstDay = pickWorstDayInWeek(insight)
   // iter505 simplification: 4 行 chip 構築 → buildFourStateHintChip で 1 行化
   const hint = buildFourStateHintChip(insight, classifyWeeklyInsightHint, formatWeeklyInsightHintJa)
 
@@ -126,6 +131,17 @@ export function WeeklyInsightWidget({ items, now }: Props) {
               data-testid="weekly-insight-best-day"
             >
               ⭐ {bestDayLabel}
+            </span>
+          )}
+          {worstDay !== null && worstDay.dayIndex !== bestDay?.dayIndex && (
+            <span
+              className={`rounded px-2 py-0.5 text-[11px] font-medium ${
+                worstDay.current === 0 ? 'bg-amber-50 text-amber-700' : 'bg-slate-50 text-slate-700'
+              }`}
+              data-testid="weekly-insight-worst-day"
+              data-worst-current={worstDay.current}
+            >
+              {worstDay.current === 0 ? '😴' : '⚠'} {formatWorstDayJa(worstDay)}
             </span>
           )}
         </CardTitle>
