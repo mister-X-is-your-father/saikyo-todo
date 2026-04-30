@@ -23,6 +23,7 @@ export const metadata: Metadata = {
 export default function OfflinePage() {
   return (
     <main
+      id="main-content"
       aria-labelledby="offline-heading"
       aria-describedby="offline-description offline-secondary"
       className="flex min-h-dvh flex-col items-center justify-center gap-4 p-8 text-center"
