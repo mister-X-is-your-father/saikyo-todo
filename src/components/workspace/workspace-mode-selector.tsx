@@ -9,6 +9,8 @@
  * - mutation で server 側 PermissionError (admin 以上必要)
  * - URL `?mode=` の override は別 hook で対応 (本 component は workspace 設定のみ)
  */
+import { useRef } from 'react'
+
 import { ListChecks, Sparkles, Square, Timer } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -60,6 +62,7 @@ export function WorkspaceModeSelector({ workspaceId }: Props) {
   const upd = useUpdateWorkspaceDefaultMode(workspaceId)
 
   const current: WorkspaceMode = q.data?.defaultMode ?? 'none'
+  const buttonsRef = useRef<Array<HTMLButtonElement | null>>([])
 
   async function handleSelect(next: WorkspaceMode) {
     if (next === current || upd.isPending) return
@@ -75,6 +78,26 @@ export function WorkspaceModeSelector({ workspaceId }: Props) {
     }
   }
 
+  // WAI-ARIA radiogroup: 矢印 / Home / End で focus 巡回 (roving tabindex と組合せ)
+  function handleKeyDown(e: React.KeyboardEvent<HTMLButtonElement>, index: number) {
+    let nextIndex: number | null = null
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      nextIndex = (index + 1) % MODE_OPTIONS.length
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      nextIndex = (index - 1 + MODE_OPTIONS.length) % MODE_OPTIONS.length
+    } else if (e.key === 'Home') {
+      nextIndex = 0
+    } else if (e.key === 'End') {
+      nextIndex = MODE_OPTIONS.length - 1
+    }
+    if (nextIndex !== null) {
+      e.preventDefault()
+      buttonsRef.current[nextIndex]?.focus()
+      const target = MODE_OPTIONS[nextIndex]
+      if (target) void handleSelect(target.value)
+    }
+  }
+
   return (
     <Card data-testid="workspace-mode-selector">
       <CardHeader className="pb-2">
@@ -87,20 +110,26 @@ export function WorkspaceModeSelector({ workspaceId }: Props) {
         <div
           role="radiogroup"
           aria-label="workspace の default 作業モード"
+          aria-busy={upd.isPending || undefined}
           className="grid grid-cols-1 gap-2 sm:grid-cols-3"
         >
-          {MODE_OPTIONS.map((opt) => {
+          {MODE_OPTIONS.map((opt, index) => {
             const Icon = opt.icon
             const selected = current === opt.value
             return (
               <button
                 key={opt.value}
+                ref={(el) => {
+                  buttonsRef.current[index] = el
+                }}
                 type="button"
                 role="radio"
                 aria-checked={selected}
                 aria-label={`${opt.label}: ${opt.description}`}
+                tabIndex={selected ? 0 : -1}
                 disabled={upd.isPending}
                 onClick={() => void handleSelect(opt.value)}
+                onKeyDown={(e) => handleKeyDown(e, index)}
                 className={cn(
                   'flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition',
                   'hover:border-primary/50 hover:bg-accent/40',
