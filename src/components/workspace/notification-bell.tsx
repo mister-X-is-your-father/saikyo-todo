@@ -16,6 +16,9 @@ import { useMemo, useState } from 'react'
 import { AlarmClock, AlertCircle, AtSign, Bell, CheckCheck, UserPlus } from 'lucide-react'
 import { parseAsString, useQueryState } from 'nuqs'
 
+import { severityClasses } from '@/lib/widget/severity'
+import { fourStateHintToSeverity } from '@/lib/widget/severity-bridges'
+
 import { formatNotificationBody, formatRelativeTime } from '@/features/notification/format'
 import {
   useMarkAllNotificationsRead,
@@ -24,6 +27,8 @@ import {
   useUnreadNotificationCount,
 } from '@/features/notification/hooks'
 import {
+  classifyNotificationActivityHint,
+  formatNotificationActivityHintJa,
   formatNotificationActivitySummary,
   groupNotificationsByType,
 } from '@/features/notification/notification-activity'
@@ -84,6 +89,19 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
     return formatNotificationActivitySummary(counts)
   }, [notifications])
 
+  // iter499 ai-automation: notification-activity hint chip (iter491 substrate +
+  // iter495 bridge)。popover header に「通知 健全性」 chip を表示、配色は
+  // sync-failure / flood で rose に切り替わる。
+  const hint = useMemo(() => {
+    if (notifications.length === 0) return null
+    const counts = groupNotificationsByType(notifications, { onlyUnread: true })
+    const total = Object.values(counts).reduce((s, n) => s + n, 0)
+    if (total === 0) return null
+    const label = formatNotificationActivityHintJa(counts)
+    const severity = fourStateHintToSeverity(classifyNotificationActivityHint(counts))
+    return { label, severity, classes: severityClasses(severity) }
+  }, [notifications])
+
   const markRead = useMarkNotificationRead(workspaceId)
   const markAllRead = useMarkAllNotificationsRead(workspaceId)
 
@@ -132,8 +150,21 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
           <div className="flex min-w-0 flex-col gap-0.5">
             {/* SR の heading navigation で popover に到達した直後にラベルが
                 聞ける (visual サイズは text-sm 維持、heading 風 styling は不要) */}
-            <h2 className="text-sm font-medium" id="notification-bell-heading">
+            <h2
+              className="flex items-center gap-2 text-sm font-medium"
+              id="notification-bell-heading"
+            >
               通知
+              {hint && (
+                <span
+                  className={`rounded border px-1.5 py-0 text-[10px] font-normal ${hint.classes.bg} ${hint.classes.text} ${hint.classes.border}`}
+                  data-testid="notification-bell-hint"
+                  data-severity={hint.severity}
+                  aria-label={`通知 健全性: ${hint.label}`}
+                >
+                  {hint.label}
+                </span>
+              )}
             </h2>
             {unreadBreakdown ? (
               <span
