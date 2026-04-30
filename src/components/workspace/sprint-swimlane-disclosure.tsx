@@ -1,0 +1,198 @@
+'use client'
+
+/**
+ * iter475 P0 (queue: Sprint 担当者 swim-lane Gantt scope A continued):
+ * SprintCard の「担当者ビュー」 disclosure UI bind。iter472 orchestrator
+ * `computeSprintSwimlane` + iter473 population summary + iter474 bulk
+ * assignee fetch hook を 1 component で繋ぎ、sprint 配下 items を 担当者×時間
+ * の swim-lane Gantt として render。
+ *
+ * 構成:
+ *  - <details> で disclosure (shadcn Collapsible は他箇所で使ってるが、シンプル
+ *    化のため details/summary native pattern。SR / keyboard 完全対応)
+ *  - 開いた時のみ useItems / useSprintItemAssignees を fetch (lazy で server 負荷軽減)
+ *  - lane = member 1 行、bar は inline style (left% / width%) で描画
+ *  - lane header chip に loadSummaryJa / conflictsJa を表示
+ *  - sprint header に population summary chip
+ *  - assignee 名前は workspace member の displayName で逆引き、無ければ actorId 短縮
+ */
+
+import { useMemo, useState } from 'react'
+
+import { Users } from 'lucide-react'
+
+import { extractEstimateMinutes } from '@/features/item/estimate'
+import { useItems, useSprintItemAssignees } from '@/features/item/hooks'
+import {
+  computeSprintSwimlane,
+  formatSprintSwimlanePopulationJa,
+  type SprintSwimlaneRow,
+  summarizeSprintSwimlanePopulation,
+} from '@/features/sprint/swimlane-orchestrator'
+import { useWorkspaceMembers } from '@/features/workspace/hooks'
+
+import { Loading } from '@/components/shared/async-states'
+
+interface Props {
+  workspaceId: string
+  sprintId: string
+  sprintName: string
+  sprintStart: string
+  sprintEnd: string
+}
+
+export function SprintSwimlaneDisclosure({
+  workspaceId,
+  sprintId,
+  sprintName,
+  sprintStart,
+  sprintEnd,
+}: Props) {
+  const [open, setOpen] = useState(false)
+  return (
+    <details
+      className="border-t pt-2"
+      onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}
+      data-testid={`sprint-swimlane-${sprintId}`}
+    >
+      <summary className="text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center gap-1.5 text-xs">
+        <Users className="h-3.5 w-3.5" aria-hidden="true" />
+        担当者ビュー (swim-lane Gantt)
+      </summary>
+      {open && (
+        <SwimlaneBody
+          workspaceId={workspaceId}
+          sprintId={sprintId}
+          sprintName={sprintName}
+          sprintStart={sprintStart}
+          sprintEnd={sprintEnd}
+        />
+      )}
+    </details>
+  )
+}
+
+function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEnd }: Props) {
+  const itemsQ = useItems(workspaceId)
+  const assigneesQ = useSprintItemAssignees(workspaceId, sprintId)
+  const membersQ = useWorkspaceMembers(workspaceId)
+
+  const memberNameByUserId = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const m of membersQ.data ?? []) {
+      if (m.displayName) map.set(m.userId, m.displayName)
+    }
+    return map
+  }, [membersQ.data])
+
+  const rows = useMemo<SprintSwimlaneRow<{ id: string; title: string }>[]>(() => {
+    if (!itemsQ.data || !assigneesQ.data) return []
+    const sprintItems = itemsQ.data
+      .filter((it) => it.sprintId === sprintId)
+      .map((it) => ({
+        id: it.id,
+        title: it.title,
+        startDate: it.startDate ?? null,
+        dueDate: it.dueDate ?? null,
+        description: it.description,
+      }))
+    const estimateMap = new Map<string, number>()
+    for (const it of sprintItems) {
+      const est = extractEstimateMinutes(it.description)
+      if (typeof est === 'number') estimateMap.set(it.id, est)
+    }
+    const assignees = assigneesQ.data
+    return computeSprintSwimlane({
+      sprint: { startDate: sprintStart, endDate: sprintEnd },
+      items: sprintItems,
+      getAssignees: (id) => assignees[id] ?? [],
+      estimateMinutesByItemId: estimateMap,
+    })
+  }, [itemsQ.data, assigneesQ.data, sprintId, sprintStart, sprintEnd])
+
+  const population = useMemo(() => summarizeSprintSwimlanePopulation(rows), [rows])
+
+  if (itemsQ.isLoading || assigneesQ.isLoading) {
+    return (
+      <div className="mt-2">
+        <Loading />
+      </div>
+    )
+  }
+  if (rows.length === 0) {
+    return (
+      <p className="text-muted-foreground mt-2 text-xs" data-testid="sprint-swimlane-empty">
+        この sprint に割当 item がありません
+      </p>
+    )
+  }
+
+  const populationLabel = formatSprintSwimlanePopulationJa(population)
+
+  return (
+    <div
+      className="mt-2 space-y-1.5"
+      role="group"
+      aria-label={`Sprint「${sprintName}」 担当者 swim-lane`}
+    >
+      <div
+        className="text-muted-foreground text-[11px]"
+        aria-label={`Sprint 全体: ${populationLabel}`}
+        data-testid="sprint-swimlane-population"
+      >
+        {populationLabel}
+      </div>
+      <ul className="space-y-1">
+        {rows.map((row) => (
+          <li
+            key={row.laneKey ?? '__unassigned__'}
+            className="bg-card/50 rounded border px-2 py-1.5"
+            data-testid={`swimlane-row-${row.laneKey ?? 'unassigned'}`}
+          >
+            <div className="flex items-baseline justify-between gap-2 text-[11px]">
+              <span className="font-medium">
+                {row.assigneeRef
+                  ? (memberNameByUserId.get(row.assigneeRef.actorId) ??
+                    `${row.assigneeRef.actorType}:${row.assigneeRef.actorId.slice(0, 8)}…`)
+                  : '未割当'}
+              </span>
+              <span
+                className={
+                  row.loadSummary.conflictPairCount > 0 ? 'text-amber-700' : 'text-muted-foreground'
+                }
+                aria-label={`lane: ${row.loadSummaryJa} / ${row.conflictsJa}`}
+              >
+                {row.loadSummaryJa}
+              </span>
+            </div>
+            <div
+              className="bg-muted relative mt-1 h-3 w-full overflow-hidden rounded-sm"
+              role="img"
+              aria-label={`bar 数 ${row.items.length} 件`}
+            >
+              {row.items.map((it) => (
+                <span
+                  key={it.item.id}
+                  title={`${it.item.title} (${it.position.visibleStart}〜${it.position.visibleEnd}${
+                    it.conflicted ? ' / 重複あり' : ''
+                  })`}
+                  className={
+                    it.conflicted
+                      ? 'absolute top-0 h-full bg-amber-500/70 ring-1 ring-amber-700'
+                      : 'absolute top-0 h-full bg-blue-500/70'
+                  }
+                  style={{
+                    left: `${it.position.leftPct}%`,
+                    width: `${Math.max(it.position.widthPct, 0.5)}%`,
+                  }}
+                  data-testid={`swimlane-bar-${it.item.id}`}
+                  data-conflicted={it.conflicted ? 'true' : 'false'}
+                />
+              ))}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}

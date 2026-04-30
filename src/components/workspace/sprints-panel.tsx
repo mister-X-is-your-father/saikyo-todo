@@ -60,6 +60,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { SprintSwimlaneDisclosure } from '@/components/workspace/sprint-swimlane-disclosure'
 
 interface Props {
   workspaceId: string
@@ -709,6 +710,13 @@ function SprintCard({
               </Button>
             )}
           </div>
+          <SprintSwimlaneDisclosure
+            workspaceId={sprint.workspaceId}
+            sprintId={sprint.id}
+            sprintName={sprint.name}
+            sprintStart={sprint.startDate}
+            sprintEnd={sprint.endDate}
+          />
         </CardContent>
       </Card>
     </li>
