@@ -140,6 +140,7 @@ export function WorkflowsPanel({ workspaceId }: Props) {
             <div className="flex justify-end">
               <Button
                 type="submit"
+                className="min-h-11"
                 disabled={!name.trim() || create.isPending}
                 aria-busy={create.isPending || undefined}
                 data-testid="wf-create-btn"
@@ -605,11 +606,17 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
           )}
         </div>
         <DialogFooter>
-          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button
+            type="button"
+            variant="ghost"
+            className="min-h-11"
+            onClick={() => onOpenChange(false)}
+          >
             キャンセル
           </Button>
           <Button
             type="button"
+            className="min-h-11"
             disabled={saving}
             onClick={() => void handleSave()}
             data-testid={`wf-editor-save-${wf.id}`}

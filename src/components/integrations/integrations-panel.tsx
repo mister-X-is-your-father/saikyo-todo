@@ -460,6 +460,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
           <div className="flex justify-end">
             <Button
               type="submit"
+              className="min-h-11"
               disabled={!name.trim() || create.isPending}
               aria-busy={create.isPending || undefined}
               data-testid="src-create-btn"

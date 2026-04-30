@@ -860,11 +860,17 @@ function ItemEditDialogInner({
               {createTemplateFromItem.isPending ? '保存中…' : 'Template として保存'}
             </Button>
           )}
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            className="min-h-11"
+            onClick={() => onOpenChange(false)}
+          >
             キャンセル
           </Button>
           <Button
             type="button"
+            className="min-h-11"
             onClick={handleSave}
             disabled={update.isPending || !title.trim()}
             aria-busy={update.isPending || undefined}

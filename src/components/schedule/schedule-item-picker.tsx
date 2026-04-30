@@ -103,6 +103,7 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
             <Button
               type="button"
               variant="secondary"
+              className="min-h-11"
               onClick={() => onPick({ itemId: null, note: interruptNote || '割込み' })}
             >
               割込みとして追加
@@ -111,7 +112,7 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
         </div>
       ) : null}
       <div className="flex justify-end gap-2 border-t pt-2">
-        <Button type="button" variant="ghost" onClick={onCancel}>
+        <Button type="button" variant="ghost" className="min-h-11" onClick={onCancel}>
           キャンセル
         </Button>
       </div>
