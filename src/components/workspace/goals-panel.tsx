@@ -127,6 +127,7 @@ export function GoalsPanel({ workspaceId }: Props) {
           <form
             className="space-y-3"
             noValidate
+            aria-label="Goal 作成フォーム"
             aria-busy={createMut.isPending || undefined}
             onSubmit={(e) => {
               e.preventDefault()
@@ -676,6 +677,7 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
       <form
         className="space-y-2 rounded border border-dashed p-2"
         noValidate
+        aria-label="Key Result 追加フォーム"
         aria-busy={create.isPending || undefined}
         onSubmit={(e) => {
           e.preventDefault()
