@@ -110,6 +110,62 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ---
 
+### 2026-04-30 — 相談特化機能 (フォーマット化された quick 相談) ★ P0 ★
+
+- [ ] **チーム内で相談したいときに「背景 / 選択肢 / 期限 / 決めたいこと」フォーマットで投稿、関係者に通知、決定が記録される** — 分類: 機能拡張 (P0)
+  - 原文 (2026-04-30): 「相談のフォーマット化とかでサクッと相談したりとか、相談にも特化した機能も作りたい!」
+  - **意図 (思考力)**: 雑な「これどうしよう?」を構造化フォーマットに強制 → 相談する側が論点を整理できる。受ける側も判断しやすい。決定が記録に残る。
+  - **設計案**:
+    - 相談 = 特殊な item kind (`customFields.consultation` jsonb で持つ、専用列 追加せず柔軟に)
+    - **フォーマット**: 背景 (markdown) / 選択肢 (1-N 個) / 期限 / 決めたいこと (1 行 question) / 関係者 (= 既存 stakeholders 流用)
+    - 関係者は voting 可能、最終決定は requester が「これに決めた」 button で確定
+    - 決定すると相談 item は close、決定内容と理由が item description に追記
+  - **schema 追加**:
+    - `consultation_votes (item_id, option_index, user_id, voted_at)` 中間テーブル
+  - **段階実装**:
+    1. customFields.consultation 形式の zod + 既存 item 経由で作成 (1 commit)
+    2. consultation_votes + service + UI (1 commit)
+    3. 相談専用 view tab (1 commit)
+  - **6 軸スコア**: 可視化 4 / 操作 5 / 認知負荷低減 5 / 作業漏れ防止 4 / やる気 3 / 効率化 5
+
+---
+
+### 2026-04-30 — Schedule の public / private (バッファ時間モード) ★ P0 ★
+
+- [ ] **Calendar の schedule slot に「公開 / プライベート」を持たせ、private は本人だけに見える** — 分類: 機能拡張 (P0)
+  - 原文 (2026-04-30): 「表向きの予定 (公開) と、プライベート予定 (人間ならこういうのやるもん!)。上司や他メンバーに見えないバッファの時間を設定したいときに便利なモード。それがあると学習や前倒しタスクが裏で進めやすくなる。結果的に成果に繋がる。」
+  - **意図 (やる気アップ + 段取り力)**: 「学習」「前倒し」のような他人に開示しづらい時間を堂々とブロックできる安心感。表向き予定とのバランス調整も容易に。
+  - **設計案 (item_schedules の拡張)**:
+    - `item_schedules.visibility text` 列追加 (default `'workspace'` = 全員見える、`'private'` = 本人のみ)
+    - RLS SELECT 拡張: `visibility = 'workspace' OR created_by = auth.uid()`
+    - Calendar UI: private は鍵 icon + 薄色、本人のみ表示。他 user の view では完全に非表示
+    - quick-add に「プライベート」 toggle (デフォルト workspace 共有、checked で private)
+  - **段階実装**:
+    1. schema migration + RLS 更新 (1 commit)
+    2. service / hooks に visibility パラメータ追加 (1 commit)
+    3. UI toggle + 鍵 icon 表示 (1 commit)
+  - **6 軸スコア**: 可視化 4 / 操作 4 / 認知負荷低減 4 / 作業漏れ防止 3 / やる気 5 / 効率化 4
+
+---
+
+### 2026-04-30 — 関連情報・必要情報への simple アクセス ★ P0 ★
+
+- [ ] **task ごとに関連 doc / 過去議事録 / リンク集を 1 panel で見せる、AI で関連情報を自動収集** — 分類: 機能拡張 (P0)
+  - 原文 (2026-04-30): 「関連情報や必要情報に簡単にアクセスできる機能とか。」
+  - **意図 (認知負荷低減 + 効率化)**: タスク実行中に「あの doc どこだっけ」「過去どう決めた」を毎回探さない。task の context として固定表示。
+  - **設計案**:
+    - 既存 `docs` テーブル + `doc_chunks` (HNSW embedding) があるので、task title / description から **意味検索 + tag マッチ** で関連 doc を自動抽出
+    - item edit dialog に「関連情報」タブ (auto-suggested + 手動 pin)
+    - `item_related_resources (item_id, kind 'doc'|'url'|'item'|'comment', resource_id, label, pinned, score)` 中間テーブル (auto は score 高い順、pinned は手動)
+    - 既存 `doc_chunks` semantic search を流用 (Researcher agent と同じ機構)
+  - **段階実装**:
+    1. schema + repo (1 commit)
+    2. auto-suggest service (既存 embedding 流用) (1 commit)
+    3. UI tab + pin/unpin (1 commit)
+  - **6 軸スコア**: 可視化 4 / 操作 4 / 認知負荷低減 5 / 作業漏れ防止 3 / やる気 3 / 効率化 5
+
+---
+
 ### 2026-04-30 — 目標達成サポート + 繰り返しタスク ★ P0 ★
 
 - [ ] **目標 (Goal) を起点に「そのために何をするか」を分解、繰り返しタスクで習慣化、達成度を可視化** — 分類: 機能拡張 (P0)

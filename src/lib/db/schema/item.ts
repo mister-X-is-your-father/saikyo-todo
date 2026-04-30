@@ -60,6 +60,12 @@ export const items = pgTable(
     priority: smallint('priority').notNull().default(4), // 1 = highest, 4 = none
     isMust: boolean('is_must').notNull().default(false),
     dod: text('dod'), // Definition of Done (MUST は service 層でバリデーション強制)
+    /**
+     * 達成目的 (Goal)。dod (完了基準) とは別軸。
+     * 例: dod="議事録に承認サインが入る" / goal="チームに新方針を浸透させる"
+     * 思考力・段取り力を鍛える設計哲学に基づき、タスク作成時に「何のためか」を強制的に言語化させる。
+     */
+    goal: text('goal'),
     position: text('position').notNull().default('a0'),
     customFields: jsonb('custom_fields').notNull().default({}),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
