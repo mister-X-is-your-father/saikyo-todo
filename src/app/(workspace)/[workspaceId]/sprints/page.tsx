@@ -39,14 +39,14 @@ export default async function SprintsPage({ params }: PageProps) {
     <main
       id="main-content"
       tabIndex={-1}
-      className="container mx-auto max-w-5xl space-y-6 p-4 md:p-6 focus-visible:outline-none"
+      className="container mx-auto max-w-5xl space-y-6 p-4 focus-visible:outline-none md:p-6"
     >
       <WorkspaceHeader
         title="Sprint"
         role={role}
         subtitle={`計画 → 稼働 → 完了 · ${user.email ?? ''}`}
         pageActions={
-          <Button variant="outline" asChild size="sm">
+          <Button variant="outline" asChild size="sm" className="min-h-11">
             <Link href={`/${workspaceId}`}>← Workspace</Link>
           </Button>
         }
