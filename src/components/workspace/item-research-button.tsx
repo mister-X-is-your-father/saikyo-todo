@@ -37,6 +37,7 @@ export function ItemResearchButton({ workspaceId, item }: Props) {
     <Button
       type="button"
       size="sm"
+      className="min-h-11"
       variant="outline"
       disabled={research.isPending || item.status === 'done'}
       aria-busy={research.isPending || undefined}

@@ -46,6 +46,7 @@ export function ItemDecomposeButton({ workspaceId, item }: Props) {
     <Button
       type="button"
       size="sm"
+      className="min-h-11"
       variant="outline"
       disabled={decompose.isPending || item.status === 'done'}
       aria-busy={decompose.isPending || undefined}
