@@ -207,6 +207,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         <Button
           variant={view === 'today' ? 'default' : 'outline'}
           size="sm"
+          className="min-h-11"
           onClick={() => setView('today')}
           data-testid="view-today-btn"
           aria-pressed={view === 'today'}
@@ -216,6 +217,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         <Button
           variant={view === 'inbox' ? 'default' : 'outline'}
           size="sm"
+          className="min-h-11"
           onClick={() => setView('inbox')}
           data-testid="view-inbox-btn"
           aria-pressed={view === 'inbox'}
@@ -225,6 +227,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         <Button
           variant={view === 'kanban' ? 'default' : 'outline'}
           size="sm"
+          className="min-h-11"
           onClick={() => setView('kanban')}
           data-testid="view-kanban-btn"
           aria-pressed={view === 'kanban'}
@@ -234,6 +237,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         <Button
           variant={view === 'backlog' ? 'default' : 'outline'}
           size="sm"
+          className="min-h-11"
           onClick={() => setView('backlog')}
           data-testid="view-backlog-btn"
           aria-pressed={view === 'backlog'}
@@ -243,6 +247,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         <Button
           variant={view === 'gantt' ? 'default' : 'outline'}
           size="sm"
+          className="min-h-11"
           onClick={() => setView('gantt')}
           data-testid="view-gantt-btn"
           aria-pressed={view === 'gantt'}
@@ -252,6 +257,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         <Button
           variant={view === 'dashboard' ? 'default' : 'outline'}
           size="sm"
+          className="min-h-11"
           onClick={() => setView('dashboard')}
           data-testid="view-dashboard-btn"
           aria-pressed={view === 'dashboard'}
@@ -261,6 +267,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         <Button
           variant={view === 'daily' ? 'default' : 'outline'}
           size="sm"
+          className="min-h-11"
           onClick={() => setView('daily')}
           data-testid="view-daily-btn"
           aria-pressed={view === 'daily'}
@@ -270,6 +277,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         <Button
           variant={view === 'weekly' ? 'default' : 'outline'}
           size="sm"
+          className="min-h-11"
           onClick={() => setView('weekly')}
           data-testid="view-weekly-btn"
           aria-pressed={view === 'weekly'}
@@ -279,6 +287,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         <Button
           variant={view === 'monthly' ? 'default' : 'outline'}
           size="sm"
+          className="min-h-11"
           onClick={() => setView('monthly')}
           data-testid="view-monthly-btn"
           aria-pressed={view === 'monthly'}
