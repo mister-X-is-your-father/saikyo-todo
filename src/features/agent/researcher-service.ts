@@ -31,6 +31,7 @@ import { err, ok, type Result } from '@/lib/result'
 import { itemRepository } from '@/features/item/repository'
 
 import { RESEARCHER_ROLE } from './roles/researcher'
+import { buildPlanGenerationUserMessage } from './agent-plan-prompt'
 import { checkBudget } from './cost-budget'
 import { agentMemoryService } from './memory-service'
 import { agentInvocationRepository } from './repository'
@@ -613,6 +614,60 @@ export const researcherService = {
         role: 'researcher',
         userMessage,
         allowedToolNames: ['read_items', 'read_docs', 'search_items', 'search_docs', 'create_item'],
+        idempotencyKey: params.idempotencyKey,
+      })
+      return ok(mapClaudeFlowOutputToResearcherRunOutput(out))
+    } catch (e) {
+      return err(new ExternalServiceError('claude-cli', e))
+    }
+  },
+
+  /**
+   * P0「AI 自動実行モード」 scope A iter6 (queue 完結手前): AI 担当 Item に
+   * 「実行計画 (Plan)」を生成させる。Researcher は read 4 + write_comment の
+   * subset tool で動き、Plan を Markdown で書いて本 Item の comment として post する。
+   * comment 先頭に `🤖 実行計画 (案)` marker を入れさせ、UI 側 (将来 iter) で
+   * 「承認 / 却下」 button を出す判定に使う。
+   *
+   * env (ANTHROPIC_API_KEY) 不要 (Claude Max OAuth + claude CLI subprocess + MCP)。
+   * staging は使わない (write_comment は Item に直接 post)。
+   */
+  async generatePlanForItem(params: {
+    workspaceId: string
+    itemId: string
+    extraHint?: string
+    idempotencyKey: string
+  }): Promise<Result<ResearcherRunOutput>> {
+    if (!params.idempotencyKey) {
+      return err(new ValidationError('idempotencyKey は必須です'))
+    }
+    const item = await adminDb.transaction((tx) => itemRepository.findById(tx, params.itemId))
+    if (!item) return err(new NotFoundError('Item が見つかりません'))
+    if (item.workspaceId !== params.workspaceId) {
+      return err(new ValidationError('Item が指定 workspace に属していません'))
+    }
+
+    const userMessage = buildPlanGenerationUserMessage({
+      itemId: item.id,
+      title: item.title,
+      description: item.description ?? '',
+      dod: item.dod,
+      ...(params.extraHint ? { extraHint: params.extraHint } : {}),
+    })
+
+    try {
+      const out = await runFlowViaClaude({
+        workspaceId: params.workspaceId,
+        role: 'researcher',
+        userMessage,
+        allowedToolNames: [
+          'read_items',
+          'read_docs',
+          'search_items',
+          'search_docs',
+          'write_comment',
+        ],
+        targetItemId: item.id,
         idempotencyKey: params.idempotencyKey,
       })
       return ok(mapClaudeFlowOutputToResearcherRunOutput(out))
