@@ -28,6 +28,8 @@
  *  - estimateMinutesByItemId 未指定は空 Map と同等 (= 全 lane で見積なし)
  */
 
+import { formatMinutes } from '@/lib/format-duration'
+
 import {
   computeSwimlaneBarPosition,
   groupItemsByAssigneeKey,
@@ -204,21 +206,11 @@ export function formatSprintSwimlanePopulationJa(pop: SprintSwimlanePopulation):
   } else {
     parts.push(`${pop.uniqueItemCount} 件 (延べ ${pop.totalItemCount})`)
   }
-  parts.push(
-    pop.estimateMinutesTotal > 0 ? formatHoursMinutes(pop.estimateMinutesTotal) : '見積なし',
-  )
+  parts.push(pop.estimateMinutesTotal > 0 ? formatMinutes(pop.estimateMinutesTotal) : '見積なし')
   if (pop.conflictedLaneCount > 0) {
     parts.push(`重複 ${pop.conflictedLaneCount} lane (${pop.conflictPairTotal} ペア)`)
   }
   let out = parts.join(' / ')
   if (pop.unassignedLaneCount > 0) out += `・未割当 ${pop.unassignedLaneCount} lane`
   return out
-}
-
-function formatHoursMinutes(minutes: number): string {
-  const h = Math.floor(minutes / 60)
-  const m = minutes % 60
-  if (h === 0) return `${m}min`
-  if (m === 0) return `${h}h`
-  return `${h}h ${m}min`
 }

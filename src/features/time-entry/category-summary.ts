@@ -22,6 +22,8 @@
  * 不正 category は 'other' に集約。
  */
 
+import { formatMinutes as formatMinutesShared } from '@/lib/format-duration'
+
 import { categoryLabel, TIME_ENTRY_CATEGORIES, type TimeEntryCategoryKey } from './categories'
 
 /** 集計に必要な最小 structural subset (TimeEntry のサブセット)。 */
@@ -76,15 +78,8 @@ export function groupTimeEntriesByCategory(
   return totals
 }
 
-/** 分を `'4h 30min'` / `'30min'` / `'2h'` / `'0min'` に整形。 */
-export function formatMinutes(min: number): string {
-  const safe = Number.isFinite(min) ? Math.max(0, Math.round(min)) : 0
-  const h = Math.floor(safe / 60)
-  const m = safe % 60
-  if (h === 0) return `${m}min`
-  if (m === 0) return `${h}h`
-  return `${h}h ${m}min`
-}
+/** 分を `'4h 30min'` / `'30min'` / `'2h'` / `'0min'` に整形。 iter490 で `lib/format-duration` に集約済、本 export は後方互換 re-export。 */
+export const formatMinutes = formatMinutesShared
 
 export interface FormatCategorySummaryOptions {
   /** 0 分カテゴリを省略するか (default true)。false で全 5 カテゴリを表示 */

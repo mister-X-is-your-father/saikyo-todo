@@ -24,6 +24,7 @@
  */
 
 import { MS_PER_DAY, parseIsoDateAsLocalMidnight } from '@/lib/date/iso'
+import { formatMinutes } from '@/lib/format-duration'
 
 export interface LaneItemSource {
   id: string
@@ -148,18 +149,10 @@ export function summarizeLaneLoad(
 export function formatLaneLoadJa(summary: LaneLoadSummary): string {
   const itemPart = `${summary.itemCount} 件`
   const estimatePart =
-    summary.estimateMinutesTotal > 0 ? formatHoursMinutes(summary.estimateMinutesTotal) : '見積なし'
+    summary.estimateMinutesTotal > 0 ? formatMinutes(summary.estimateMinutesTotal) : '見積なし'
   const conflictPart =
     summary.conflictPairCount === 0
       ? '重複なし'
       : `重複 ${summary.conflictPairCount} ペア (合計 ${summary.conflictTotalDays} 日)`
   return `${itemPart} / ${estimatePart} / ${conflictPart}`
-}
-
-function formatHoursMinutes(minutes: number): string {
-  const h = Math.floor(minutes / 60)
-  const m = minutes % 60
-  if (h === 0) return `${m}min`
-  if (m === 0) return `${h}h`
-  return `${h}h ${m}min`
 }
