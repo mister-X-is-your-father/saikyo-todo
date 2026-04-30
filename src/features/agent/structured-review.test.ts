@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  classifyReviewVerdictHint,
   extractFirstJsonObject,
   formatReviewSummaryJa,
+  formatReviewVerdictHintJa,
+  formatTopImprovementJa,
   formatWorstChecklistFindingJa,
   parseStructuredReview,
   pickTopImprovement,
@@ -338,5 +341,69 @@ describe('formatWorstChecklistFindingJa', () => {
     expect(out).toContain('…')
     // 8 字制限テスト 簡易
     expect(out.length).toBeLessThanOrEqual(82)
+  })
+})
+
+describe('formatTopImprovementJa', () => {
+  it('null → 「優先改善: なし」', () => {
+    expect(formatTopImprovementJa(null)).toBe('優先改善: なし')
+  })
+
+  it('high → ❗ glyph + [high]', () => {
+    expect(formatTopImprovementJa({ title: 'XSS 対策', rationale: 'r', severity: 'high' })).toBe(
+      '❗ 優先改善: XSS 対策 [high]',
+    )
+  })
+
+  it('medium → ⚠ glyph', () => {
+    expect(formatTopImprovementJa({ title: 'doc 補強', rationale: 'r', severity: 'medium' })).toBe(
+      '⚠ 優先改善: doc 補強 [medium]',
+    )
+  })
+
+  it('low → · glyph (控えめ)', () => {
+    expect(formatTopImprovementJa({ title: 'lint 修正', rationale: 'r', severity: 'low' })).toBe(
+      '· 優先改善: lint 修正 [low]',
+    )
+  })
+
+  it('長い title は 80 文字超で … 圧縮', () => {
+    const longTitle = 'あ'.repeat(100)
+    const out = formatTopImprovementJa({ title: longTitle, rationale: 'r', severity: 'high' })
+    expect(out).toContain('…')
+    expect(out.length).toBeLessThanOrEqual(120) // glyph + prefix + suffix の余裕込み
+  })
+})
+
+describe('classifyReviewVerdictHint', () => {
+  it('全 0 → idle', () => {
+    expect(classifyReviewVerdictHint({ byStatus: { ok: 0, warn: 0, fail: 0 } })).toBe('idle')
+  })
+
+  it('fail >= 1 → severe', () => {
+    expect(classifyReviewVerdictHint({ byStatus: { ok: 5, warn: 0, fail: 1 } })).toBe('severe')
+  })
+
+  it('warn >= 3 (fail=0) → moderate', () => {
+    expect(classifyReviewVerdictHint({ byStatus: { ok: 1, warn: 3, fail: 0 } })).toBe('moderate')
+  })
+
+  it('warn 1-2 (fail=0) → mild', () => {
+    expect(classifyReviewVerdictHint({ byStatus: { ok: 5, warn: 2, fail: 0 } })).toBe('mild')
+  })
+
+  it('ok のみ → mild', () => {
+    expect(classifyReviewVerdictHint({ byStatus: { ok: 5, warn: 0, fail: 0 } })).toBe('mild')
+  })
+})
+
+describe('formatReviewVerdictHintJa', () => {
+  it('idle / mild / moderate / severe を 1 単語で返す', () => {
+    expect(formatReviewVerdictHintJa({ byStatus: { ok: 0, warn: 0, fail: 0 } })).toBe('review なし')
+    expect(formatReviewVerdictHintJa({ byStatus: { ok: 5, warn: 0, fail: 0 } })).toBe('健全 pass')
+    expect(formatReviewVerdictHintJa({ byStatus: { ok: 1, warn: 3, fail: 0 } })).toBe(
+      '多数注意 (pass)',
+    )
+    expect(formatReviewVerdictHintJa({ byStatus: { ok: 0, warn: 0, fail: 1 } })).toBe('不合格')
   })
 })

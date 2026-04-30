@@ -187,5 +187,61 @@ export function formatWorstChecklistFindingJa(finding: ChecklistItem | null): st
   return `${glyph} ${truncated}`
 }
 
+/**
+ * iter492 ai-automation: pickTopImprovement の出力を chip 文言に整形。
+ *
+ *   '優先改善: <title> [high]'
+ *   '優先改善: <title> [medium]'
+ *   '優先改善: なし'           (= 改善 0 件 = 完璧 review)
+ *
+ * severity 略号: high → ❗ / medium → ⚠ / low → · (意図的に控えめ glyph)。
+ * caller は本文字列を chip aria-label / Slack 通知 / AI brief 1 行目に直 埋め込み。
+ * 80 字超は ... 圧縮。
+ */
+export function formatTopImprovementJa(improvement: Improvement | null): string {
+  if (improvement === null) return '優先改善: なし'
+  const sevGlyph =
+    improvement.severity === 'high' ? '❗' : improvement.severity === 'medium' ? '⚠' : '·'
+  const truncated =
+    improvement.title.length > 80 ? `${improvement.title.slice(0, 79)}…` : improvement.title
+  return `${sevGlyph} 優先改善: ${truncated} [${improvement.severity}]`
+}
+
+/**
+ * iter492 ai-automation: review verdict 4 状態 hint (= summarizeReview 経由の合否)。
+ *
+ * - 'idle'     : checklist 空 (= schema で reject されるが防御)
+ * - 'severe'   : fail >= 1 (= 不合格、要対応)
+ * - 'moderate' : warn >= 3 (= 多数注意点だが pass)
+ * - 'mild'     : それ以外 (= 健全 pass)
+ *
+ * 用途: chip aria-label に「不合格 / 多数注意 / 健全」 を 1 単語で。
+ */
+import { type FourStateHint, makeHintLabelFormatter } from '@/lib/hint'
+
+export type ReviewVerdictHint = FourStateHint
+
+export function classifyReviewVerdictHint(
+  summary: Pick<ReviewSummary, 'byStatus'>,
+): ReviewVerdictHint {
+  const total = summary.byStatus.ok + summary.byStatus.warn + summary.byStatus.fail
+  if (total === 0) return 'idle'
+  if (summary.byStatus.fail >= 1) return 'severe'
+  if (summary.byStatus.warn >= 3) return 'moderate'
+  return 'mild'
+}
+
+const REVIEW_VERDICT_LABEL_JA: Record<ReviewVerdictHint, string> = {
+  idle: 'review なし',
+  mild: '健全 pass',
+  moderate: '多数注意 (pass)',
+  severe: '不合格',
+}
+
+export const formatReviewVerdictHintJa = makeHintLabelFormatter(
+  classifyReviewVerdictHint,
+  REVIEW_VERDICT_LABEL_JA,
+)
+
 // 内部 helper を test しやすく named export
 export { extractFirstJsonObject }
