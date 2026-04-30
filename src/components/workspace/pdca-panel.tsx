@@ -59,6 +59,7 @@ export function PdcaPanel({ workspaceId }: Props) {
           <div className="flex gap-1" role="group" aria-label="集計期間">
             <Button
               size="sm"
+              className="min-h-11"
               variant={days === 30 ? 'default' : 'outline'}
               onClick={() => setDays(30)}
               data-testid="pdca-period-30"
@@ -68,6 +69,7 @@ export function PdcaPanel({ workspaceId }: Props) {
             </Button>
             <Button
               size="sm"
+              className="min-h-11"
               variant={days === 90 ? 'default' : 'outline'}
               onClick={() => setDays(90)}
               data-testid="pdca-period-90"

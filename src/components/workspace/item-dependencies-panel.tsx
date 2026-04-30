@@ -214,6 +214,7 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
           <Button
             type="button"
             size="sm"
+            className="min-h-11"
             disabled={!pickId || add.isPending}
             onClick={() => void handleAdd()}
             data-testid="dep-add-btn"
@@ -319,6 +320,7 @@ function Section({
                 type="button"
                 variant="ghost"
                 size="sm"
+                className="min-h-11"
                 onClick={() => onRemove(ref)}
                 disabled={removing}
                 data-testid={`dep-remove-${ref.id}`}

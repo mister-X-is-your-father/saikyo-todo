@@ -167,6 +167,7 @@ function buildColumns(
           <Button
             variant="outline"
             size="sm"
+            className="min-h-11"
             onClick={(e) => {
               e.stopPropagation()
               onEdit(row.original)
