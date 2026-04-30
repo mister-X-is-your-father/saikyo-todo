@@ -88,7 +88,7 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
           size="sm"
           disabled={disabled}
           data-testid="assignee-picker-trigger"
-          className="h-8 justify-start gap-2"
+          className="min-h-11 justify-start gap-2"
           aria-label={
             selectedLabels.length === 0
               ? 'アサインを選択 (現在未アサイン)'
