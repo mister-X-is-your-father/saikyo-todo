@@ -187,7 +187,7 @@ button disabled + reason aria-label。typecheck/lint 緑 (warning baseline 1)。
 優先順位 (上から消化):
 
 1. **Template 登録機能** (詳細: 本ファイル下方の同名 section、scope A から)
-   - 🚧 進行中 (iter460 で substrate 着地、次 iter で UI bind)
+   - 🚧 進行中 (iter460/461 で substrate + service+action 着地、次 iter で UI button)
    - 仮置き判断: 既存 `templates` table 拡張、UI scope A は ItemEditDialog から
      「Template 保存」 button → `templates.body` JSON に `{parent:{...}, children:[{title,dod,...},...]}`
    - subtask の subtask は scope A では非対応 (フラット 2 階層のみ)
@@ -196,8 +196,12 @@ button disabled + reason aria-label。typecheck/lint 緑 (warning baseline 1)。
          items 世界の uuid label → template 世界の uuid label の re-mapping + parent
          prefix 剥がし + depth 昇順 stable sort で `template_items.parent_path` を生成。
          MVP scope A では position / due_date / agent_role / tags / assignees は不保持。
-   - [ ] 次: server action `createTemplateFromItemAction(itemId)` + ItemEditDialog
-         「Template に保存」 button (scope A UI bind)
+   - [x] iter461 (fd9da3a): service `templateService.createFromItem` + action
+         `createTemplateFromItemAction` — RLS で parent + 子孫取得 + workspace 二重防御 +
+         1 Tx で bulk insert + recordAudit (action='create_from_item')。schema
+         `CreateTemplateFromItemInputSchema` (itemId / name? / description?) 追加。
+   - [ ] 次: ItemEditDialog (or KanbanCard 右クリック menu) に「Template に保存」 button
+         を配置、`useCreateTemplateFromItem` hook + toast feedback (scope A UI bind)
 
 2. **案件サマリ panel** (詳細: 本ファイル下方、scope A から)
    - 仮置き判断: 「案件」= parent task 単位、ItemEditDialog の新 tab「サマリ」
