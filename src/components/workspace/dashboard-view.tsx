@@ -1369,7 +1369,7 @@ export function DashboardView({ workspaceId }: Props) {
               description="絶対に落とせないタスクに MUST を立ててください"
             />
           ) : (
-            <ul className="divide-y text-sm">
+            <ul className="divide-y text-sm" aria-label={`MUST Item 一覧 ${s.items.length} 件`}>
               {s.items.map((item) => {
                 const overdue = item.dueDate && item.dueDate < todayStr && !item.doneAt
                 const soon =
