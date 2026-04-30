@@ -127,7 +127,7 @@ export function SignupForm() {
       </div>
       <Button
         type="submit"
-        className="w-full"
+        className="h-11 w-full"
         disabled={isPending}
         aria-label={isPending ? 'アカウント作成中…' : 'アカウントを作成 (サインアップ)'}
       >
