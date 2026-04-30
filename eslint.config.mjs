@@ -85,6 +85,10 @@ const eslintConfig = defineConfig([
       // External source pull worker + actions: cron / manual trigger 経由、ws 横断 admin 操作
       'src/features/external-source/worker.ts',
       'src/features/external-source/actions.ts',
+      // API key verify: REST API / MCP の入口で auth 確立前に key を検証する必要があり、
+      // user context が無い段階で adminDb 経由で keyHash lookup を行う (verifyPlaintext のみ)。
+      // create / list / revoke は requireWorkspaceMember 経由なので RLS 通過。
+      'src/features/api-key/service.ts',
       // テストとフィクスチャは無視
       '**/*.test.ts',
       '**/__tests__/**',

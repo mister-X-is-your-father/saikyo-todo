@@ -4,6 +4,7 @@
  */
 export * from './_shared'
 export * from './agent'
+export * from './api-key'
 export * from './audit'
 export * from './comment'
 export * from './doc'
