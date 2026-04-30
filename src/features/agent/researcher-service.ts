@@ -34,6 +34,10 @@ import { RESEARCHER_ROLE } from './roles/researcher'
 import { checkBudget } from './cost-budget'
 import { agentMemoryService } from './memory-service'
 import { agentInvocationRepository } from './repository'
+import {
+  buildResearcherFlowInput,
+  mapClaudeFlowOutputToResearcherRunOutput,
+} from './researcher-flow-adapter'
 import { type Agent } from './schema'
 import { agentService } from './service'
 import { buildDecomposeTools, buildResearcherTools } from './tools'
@@ -447,35 +451,17 @@ export const researcherService = {
       staging: true,
     })
     try {
-      const out = await runFlowViaClaude({
-        workspaceId: params.workspaceId,
-        role: 'researcher',
-        userMessage,
-        allowedToolNames: [
-          'read_items',
-          'read_docs',
-          'search_items',
-          'search_docs',
-          'propose_child_item',
-        ],
-        targetItemId: item.id,
-        idempotencyKey: params.idempotencyKey,
-        decomposeParentItemId: item.id,
-      })
-      return ok({
-        invocationId: out.invocationId,
-        agentId: out.agentId,
-        text: out.finalText,
-        toolCalls: [],
-        iterations: out.numTurns,
-        usage: {
-          inputTokens: out.inputTokens,
-          outputTokens: out.outputTokens,
-          cacheCreationTokens: out.cacheCreationTokens,
-          cacheReadTokens: out.cacheReadTokens,
-        },
-        costUsd: out.totalCostUsd,
-      })
+      const out = await runFlowViaClaude(
+        buildResearcherFlowInput({
+          workspaceId: params.workspaceId,
+          userMessage,
+          idempotencyKey: params.idempotencyKey,
+          targetItemId: item.id,
+          toolMode: 'decompose',
+          decomposeParentItemId: item.id,
+        }),
+      )
+      return ok(mapClaudeFlowOutputToResearcherRunOutput(out))
     } catch (e) {
       return err(new ExternalServiceError('claude-cli', e))
     }
@@ -619,6 +605,9 @@ export const researcherService = {
       ...(params.extraHint ? { extraHint: params.extraHint } : {}),
     })
     try {
+      // decomposeGoalViaClaude は read 4 + create_item の subset を使うので
+      // 標準 RESEARCHER_FLOW_TOOL_NAMES (8 本) を切り詰める形で adapter を組まず
+      // インライン allowedToolNames を維持する。output mapping は共通 adapter を使用。
       const out = await runFlowViaClaude({
         workspaceId: params.workspaceId,
         role: 'researcher',
@@ -626,20 +615,7 @@ export const researcherService = {
         allowedToolNames: ['read_items', 'read_docs', 'search_items', 'search_docs', 'create_item'],
         idempotencyKey: params.idempotencyKey,
       })
-      return ok({
-        invocationId: out.invocationId,
-        agentId: out.agentId,
-        text: out.finalText,
-        toolCalls: [],
-        iterations: out.numTurns,
-        usage: {
-          inputTokens: out.inputTokens,
-          outputTokens: out.outputTokens,
-          cacheCreationTokens: out.cacheCreationTokens,
-          cacheReadTokens: out.cacheReadTokens,
-        },
-        costUsd: out.totalCostUsd,
-      })
+      return ok(mapClaudeFlowOutputToResearcherRunOutput(out))
     } catch (e) {
       return err(new ExternalServiceError('claude-cli', e))
     }
