@@ -233,9 +233,13 @@ button disabled + reason aria-label。typecheck/lint 緑 (warning baseline 1)。
    - [x] iter465 (0686f5f): pure helper `computeMemberCapacityLoad` +
          `formatMemberCapacityLoadJa` (4 load status / unknown sentinel /
          未見積 chip / done 除外 / fail-soft) + 17 test
+   - [x] iter466 (5fc07c3): pure helper `getIsoWeekRange` / `getDayRange` /
+         `getRollingDayRange` / `isDueDateInRange` / `selectItemsByDueDateInRange<T>`
+         (期間 filter substrate、generic で UI/service 横断再利用) + 18 test
    - [ ] 次: workspace home に MemberCapacityPanel + 各 member 1 行 (avatar +
-         今日 chip + 今週 chip)、scope A UI bind (期間 filter + assignee filter
-         を service / hook 層で実装)
+         今日 chip + 今週 chip)、assignee bulk fetch hook 整備が課題 (現状
+         `useItemAssignees` は per-item で N+1、`listAllItemAssigneesByWorkspace`
+         server action 新設が必要)
 
 4. **Gantt DnD 期間編集** (詳細: 本ファイル下方、scope A から)
    - 仮置き判断: bar 中央 drag → 期間平行 shift のみ実装 (左右 edge / 依存連動は別 iter)
