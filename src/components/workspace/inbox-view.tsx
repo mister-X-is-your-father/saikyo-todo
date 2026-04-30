@@ -4,7 +4,14 @@ import { useMemo } from 'react'
 
 import { parseAsString, useQueryState } from 'nuqs'
 
-import { formatInboxHealthHintJa, summarizeInbox } from '@/features/gtd/inbox-process'
+import { severityClasses } from '@/lib/widget/severity'
+import { fourStateHintToSeverity } from '@/lib/widget/severity-bridges'
+
+import {
+  classifyInboxHealthHint,
+  formatInboxHealthHintJa,
+  summarizeInbox,
+} from '@/features/gtd/inbox-process'
 import { extractEstimateMinutes } from '@/features/item/estimate'
 import { priorityClass, priorityLabel } from '@/features/item/priority'
 import type { Item } from '@/features/item/schema'
@@ -88,6 +95,9 @@ export function InboxView({
 
   // iter494 (queue GT-3 polish): Inbox 健全性 hint を 1 単語 chip で header 右に表示
   const healthLabel = formatInboxHealthHintJa(gtdSummary)
+  // iter497 ai-automation: severity bridge (iter495) で chip 配色を 4 tone に
+  const healthSeverity = fourStateHintToSeverity(classifyInboxHealthHint(gtdSummary))
+  const healthClasses = severityClasses(healthSeverity)
 
   return (
     <div className="space-y-1 rounded-lg border p-2" data-testid="inbox-view">
@@ -96,8 +106,9 @@ export function InboxView({
           {inbox.length} 件 — scheduledFor も期限も未設定
         </span>
         <span
-          className="ml-auto rounded-full border bg-slate-50 px-1.5 py-0.5 text-[11px] text-slate-700"
+          className={`ml-auto rounded-full border px-1.5 py-0.5 text-[11px] ${healthClasses.bg} ${healthClasses.text} ${healthClasses.border}`}
           data-testid="inbox-health-hint"
+          data-severity={healthSeverity}
           aria-label={`Inbox 健全性: ${healthLabel}`}
         >
           {healthLabel}
