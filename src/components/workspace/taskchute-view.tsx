@@ -119,12 +119,19 @@ export function TaskChuteView({ workspaceId, items }: Props) {
                 {item.title}
               </button>
               {item.isMust ? <MustBadge /> : null}
+              {/*
+                iter434 mode-M: visible text を "優先度: 最優先 (p1)" (10 char,
+                ~90px @10px) → "P{n}" (3 char, ~24px) に compact 化。フル text は
+                aria-label に温存し SR 読み上げは劣化なし、mobile 375px 幅で title
+                truncate に余裕 (~66px 解放)。`role="img"` で children を AT 上隠蔽
+                (iter98 PDCA / iter417 TaskChute aria-label 重複 prefix と同 pattern)。
+              */}
               <span
                 className={`inline-flex shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${priorityClass(item.priority)}`}
                 role="img"
                 aria-label={priorityLabel(item.priority)}
               >
-                {priorityLabel(item.priority)}
+                P{item.priority ?? 4}
               </span>
               <StatusBadge status={item.status} />
               <StartTimerButton item={item} size="sm" />
