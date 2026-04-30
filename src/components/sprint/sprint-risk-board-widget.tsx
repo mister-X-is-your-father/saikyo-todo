@@ -120,16 +120,21 @@ export function SprintRiskBoardWidget<T extends RiskBoardItemFields>({
                       <div className="flex items-center gap-2 px-1 py-1">{inner}</div>
                     )}
                     {entry.reasons.length > 0 && (
-                      <div className="flex flex-wrap gap-1 pl-1.5">
+                      <ul
+                        className="flex flex-wrap gap-1 pl-1.5"
+                        role="list"
+                        aria-label={`「${entry.item.title}」のリスク理由 ${entry.reasons.length} 件`}
+                        data-testid={`risk-reasons-${entry.item.id}`}
+                      >
                         {entry.reasons.map((reason, i) => (
-                          <span
+                          <li
                             key={`${entry.item.id}-${i}`}
                             className="text-muted-foreground rounded bg-slate-100 px-1.5 py-0.5 text-[10px]"
                           >
                             {reason}
-                          </span>
+                          </li>
                         ))}
-                      </div>
+                      </ul>
                     )}
                   </li>
                 )
