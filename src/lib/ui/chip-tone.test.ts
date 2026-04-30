@@ -3,7 +3,12 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import { type ChipTone, getChipToneClasses } from './chip-tone'
+import {
+  type ChipTone,
+  chipToneAttentionRank,
+  compareChipTones,
+  getChipToneClasses,
+} from './chip-tone'
 
 describe('getChipToneClasses', () => {
   it('6 tone × 3 軸の class が定まっている (iter486 で success 追加)', () => {
@@ -40,5 +45,30 @@ describe('getChipToneClasses', () => {
     expect(c.bgClass).toBe('bg-emerald-50')
     expect(c.textClass).toBe('text-emerald-700')
     expect(c.ringClass).toBe('ring-emerald-200')
+  })
+})
+
+describe('chipToneAttentionRank (sort 用 attention 数値)', () => {
+  it('danger=5 / urgent=4 / warn=3 / info=2 / idle=1 / success=0 (= 危ない順)', () => {
+    expect(chipToneAttentionRank('danger')).toBe(5)
+    expect(chipToneAttentionRank('urgent')).toBe(4)
+    expect(chipToneAttentionRank('warn')).toBe(3)
+    expect(chipToneAttentionRank('info')).toBe(2)
+    expect(chipToneAttentionRank('idle')).toBe(1)
+    expect(chipToneAttentionRank('success')).toBe(0)
+  })
+})
+
+describe('compareChipTones (sort comparator、危ない順)', () => {
+  it('danger > urgent > warn > info > idle > success の順で sort', () => {
+    const tones: ChipTone[] = ['idle', 'danger', 'success', 'warn', 'urgent', 'info']
+    const sorted = [...tones].sort(compareChipTones)
+    expect(sorted).toEqual(['danger', 'urgent', 'warn', 'info', 'idle', 'success'])
+  })
+
+  it('同 tone は元順保持 (stable sort)', () => {
+    const tones: ChipTone[] = ['warn', 'warn', 'danger', 'warn']
+    const sorted = [...tones].sort(compareChipTones)
+    expect(sorted).toEqual(['danger', 'warn', 'warn', 'warn'])
   })
 })

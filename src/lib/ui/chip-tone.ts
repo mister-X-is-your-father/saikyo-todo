@@ -90,3 +90,45 @@ const TONE_CLASSES: Record<ChipTone, ChipToneClasses> = {
 export function getChipToneClasses(tone: ChipTone): ChipToneClasses {
   return TONE_CLASSES[tone]
 }
+
+/**
+ * iter488 basics: tone を「要対応度 (attention rank)」 数値に変換する pure helper。
+ *
+ * 用途: 「危ない順」「成功を最後に」 sort のための数値 key。caller が Array.sort
+ * のキーとして使う想定。
+ *
+ * ランク (大きいほど「対応すべき」):
+ *  - danger = 5 (赤、強警戒、最優先で見せる)
+ *  - urgent = 4 (橙強、行動喚起)
+ *  - warn   = 3 (橙薄、注意)
+ *  - info   = 2 (青、計画範囲内)
+ *  - idle   = 1 (灰、対象外・計算不能、UI 静か)
+ *  - success = 0 (緑、達成 / 余裕、視覚で「完了」を最後に並べる)
+ *
+ * 注: severity 軸 (danger..idle) は単調順、success は positive 軸で「視覚的に静か」
+ * だが「対応不要」の意味で最低ランクに置く (= 「要対応 sort」での一貫した最下位)。
+ */
+const TONE_ATTENTION_RANK: Record<ChipTone, number> = {
+  danger: 5,
+  urgent: 4,
+  warn: 3,
+  info: 2,
+  idle: 1,
+  success: 0,
+}
+
+export function chipToneAttentionRank(tone: ChipTone): number {
+  return TONE_ATTENTION_RANK[tone]
+}
+
+/**
+ * `Array.sort` のための comparator。a の attention rank が高い (= 危ない / 要対応) ほど
+ * 前 (=index 小) に並ぶ。同 rank は元順保持 (stable sort 前提、Array.sort は ES2019+
+ * 規約で stable)。
+ *
+ * 例: items.sort((a, b) => compareChipTones(toneOf(a), toneOf(b)))
+ *     → danger > urgent > warn > info > idle > success の順で並ぶ
+ */
+export function compareChipTones(a: ChipTone, b: ChipTone): number {
+  return TONE_ATTENTION_RANK[b] - TONE_ATTENTION_RANK[a]
+}
