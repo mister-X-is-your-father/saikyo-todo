@@ -147,6 +147,7 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
         <div className="flex flex-wrap gap-1.5">
           <Button
             size="sm"
+            className="min-h-11"
             variant="outline"
             onClick={() => void handlePull()}
             disabled={!src.enabled || trigger.isPending}
@@ -166,6 +167,7 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
           </Button>
           <Button
             size="sm"
+            className="min-h-11"
             variant="ghost"
             onClick={() => void toggleEnabled()}
             disabled={update.isPending}
@@ -181,6 +183,7 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
           </Button>
           <Button
             size="sm"
+            className="min-h-11"
             variant="ghost"
             onClick={() => setImportsOpen((v) => !v)}
             aria-expanded={importsOpen}
@@ -196,6 +199,7 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
           </Button>
           <Button
             size="sm"
+            className="min-h-11"
             variant="ghost"
             onClick={() => void handleDelete()}
             disabled={del.isPending}
