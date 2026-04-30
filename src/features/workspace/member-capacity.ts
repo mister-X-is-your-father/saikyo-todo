@@ -30,6 +30,8 @@
  *    - util > 100 → 'overloaded' (red、オーバー)
  */
 
+import { type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
+
 export type CapacityLoadStatus = 'free' | 'comfortable' | 'tight' | 'overloaded' | 'unknown'
 
 export interface CapacityItemInput {
@@ -150,4 +152,40 @@ function formatHours(minutes: number): string {
   if (h === 0) return `${m}min`
   if (m === 0) return `${h}h`
   return `${h}h ${m}min`
+}
+
+/**
+ * iter486 basics (graphical 波及): CapacityLoadStatus を「graphical chip tone」 token に
+ * 変換する pure helper。iter485 で集約した `lib/ui/chip-tone.ts` の 6 段階 vocabulary
+ * (danger/urgent/warn/info/idle/success) を utilize、特に **'success' tone (emerald)
+ * を 'free' (時間に余裕) にマップ** = severity 軸と直交する positive 軸を導入
+ * (iter486 で chip-tone vocab に追加)。
+ *
+ * 配色 token:
+ *  - 'danger'  — overloaded (rose、オーバー、危険)
+ *  - 'urgent'  — tight (amber 強、ほぼ満杯、警戒)
+ *  - 'info'    — comfortable (blue 薄、適正範囲、計画通り)
+ *  - 'success' — free (emerald、余裕あり、健全)
+ *  - 'idle'    — unknown (slate 薄、計算不能)
+ */
+export type MemberCapacityTone = 'danger' | 'urgent' | 'info' | 'success' | 'idle'
+
+const STATUS_TONE_MAP: Record<CapacityLoadStatus, MemberCapacityTone> = {
+  overloaded: 'danger',
+  tight: 'urgent',
+  comfortable: 'info',
+  free: 'success',
+  unknown: 'idle',
+}
+
+export function memberCapacityTone(status: CapacityLoadStatus): MemberCapacityTone {
+  return STATUS_TONE_MAP[status]
+}
+
+/** alias to `ChipToneClasses` (`@/lib/ui/chip-tone`)。caller の import path を維持。 */
+export type MemberCapacityChipClasses = ChipToneClasses
+
+/** Tone → Tailwind chip class 3 軸 (bg / text / ring) を 1 関数で。iter485 集約済 helper に委譲。 */
+export function memberCapacityChipClasses(status: CapacityLoadStatus): MemberCapacityChipClasses {
+  return getChipToneClasses(STATUS_TONE_MAP[status])
 }

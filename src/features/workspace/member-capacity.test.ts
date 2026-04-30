@@ -3,7 +3,12 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import { computeMemberCapacityLoad, formatMemberCapacityLoadJa } from './member-capacity'
+import {
+  computeMemberCapacityLoad,
+  formatMemberCapacityLoadJa,
+  memberCapacityChipClasses,
+  memberCapacityTone,
+} from './member-capacity'
 
 const DONE = new Set(['done', 'cancelled'])
 
@@ -146,5 +151,37 @@ describe('formatMemberCapacityLoadJa', () => {
   it('tight 95% → "ギリギリ"', () => {
     const r = computeMemberCapacityLoad([{ estimateMinutes: 456, status: 'todo' }], 480, DONE)
     expect(formatMemberCapacityLoadJa(r)).toContain('ギリギリ')
+  })
+})
+
+describe('memberCapacityTone (graphical 波及 — load status → chip tone token)', () => {
+  it('5 status → 5 tone (success が free に登場)', () => {
+    expect(memberCapacityTone('overloaded')).toBe('danger')
+    expect(memberCapacityTone('tight')).toBe('urgent')
+    expect(memberCapacityTone('comfortable')).toBe('info')
+    expect(memberCapacityTone('free')).toBe('success')
+    expect(memberCapacityTone('unknown')).toBe('idle')
+  })
+})
+
+describe('memberCapacityChipClasses (Tailwind 3 軸 class、iter485 chip-tone と整合)', () => {
+  it('overloaded → rose、free → emerald (success tone 初登場)', () => {
+    const overloaded = memberCapacityChipClasses('overloaded')
+    expect(overloaded.bgClass).toBe('bg-rose-100')
+    expect(overloaded.textClass).toBe('text-rose-700')
+
+    const free = memberCapacityChipClasses('free')
+    expect(free.bgClass).toBe('bg-emerald-50')
+    expect(free.textClass).toBe('text-emerald-700')
+    expect(free.ringClass).toBe('ring-emerald-200')
+  })
+
+  it('tight (強amber) と comfortable (blue) で区別', () => {
+    expect(memberCapacityChipClasses('tight').bgClass).toBe('bg-amber-100')
+    expect(memberCapacityChipClasses('comfortable').textClass).toBe('text-blue-700')
+  })
+
+  it('unknown → slate (計算不能)', () => {
+    expect(memberCapacityChipClasses('unknown').textClass).toBe('text-slate-600')
   })
 })

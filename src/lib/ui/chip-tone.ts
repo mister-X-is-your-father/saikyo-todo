@@ -26,7 +26,14 @@
  * 反転) があり別軸の helper、本 file の `ChipTone` は severity 軸の絶対 token。
  */
 
-export type ChipTone = 'danger' | 'urgent' | 'warn' | 'info' | 'idle'
+/**
+ * iter486 basics: 'success' tone を追加 (5 → 6 段階)。
+ *  - severity 軸 (danger / urgent / warn / info / idle) は単調順
+ *  - 'success' は **severity と直交する positive 軸** (達成 / 余裕 / 完了 / 健全)
+ *  - 例: member-capacity 'free' (時間に余裕)、subtask-status 'done' (完了)、
+ *    goal-progress (達成済)、sprint progress 'onTrack' 等
+ */
+export type ChipTone = 'danger' | 'urgent' | 'warn' | 'info' | 'idle' | 'success'
 
 export interface ChipToneClasses {
   /** chip 背景の Tailwind class (例: `bg-rose-100`) */
@@ -62,6 +69,11 @@ const TONE_CLASSES: Record<ChipTone, ChipToneClasses> = {
     bgClass: 'bg-slate-50',
     textClass: 'text-slate-600',
     ringClass: 'ring-slate-200',
+  },
+  success: {
+    bgClass: 'bg-emerald-50',
+    textClass: 'text-emerald-700',
+    ringClass: 'ring-emerald-200',
   },
 }
 

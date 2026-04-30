@@ -6,8 +6,8 @@ import { describe, expect, it } from 'vitest'
 import { type ChipTone, getChipToneClasses } from './chip-tone'
 
 describe('getChipToneClasses', () => {
-  it('5 tone × 3 軸の class が定まっている', () => {
-    const tones: ChipTone[] = ['danger', 'urgent', 'warn', 'info', 'idle']
+  it('6 tone × 3 軸の class が定まっている (iter486 で success 追加)', () => {
+    const tones: ChipTone[] = ['danger', 'urgent', 'warn', 'info', 'idle', 'success']
     for (const tone of tones) {
       const c = getChipToneClasses(tone)
       expect(c.bgClass).toMatch(/^bg-/)
@@ -33,5 +33,12 @@ describe('getChipToneClasses', () => {
   it('info → blue 薄 (計画範囲内)、idle → slate 薄 (対象外)', () => {
     expect(getChipToneClasses('info').textClass).toBe('text-blue-700')
     expect(getChipToneClasses('idle').textClass).toBe('text-slate-600')
+  })
+
+  it('success → emerald 薄 (達成 / 余裕 / 完了 / 健全、severity 軸と直交)', () => {
+    const c = getChipToneClasses('success')
+    expect(c.bgClass).toBe('bg-emerald-50')
+    expect(c.textClass).toBe('text-emerald-700')
+    expect(c.ringClass).toBe('ring-emerald-200')
   })
 })
