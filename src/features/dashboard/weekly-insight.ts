@@ -69,18 +69,14 @@ export interface WeeklyInsightOptions {
   weekStartsOnMonday?: boolean
 }
 
-import { parseDateOrNull } from '@/lib/date/iso'
+import { formatUtcISO, parseDateOrNull } from '@/lib/date/iso'
 
 const DAY_LABELS_MON_FIRST = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
 const DAY_LABELS_SUN_FIRST = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 
-function pad2(n: number): string {
-  return n < 10 ? `0${n}` : String(n)
-}
-
-function dateToISODate(d: Date): string {
-  return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCDate())}`
-}
+// iter510 refactor: 手動 UTC 整形 → `lib/date/iso.ts#formatUtcISO` に集約 (39 弾目)。
+// 既存 test が `dateToISODate` named import しているため public alias で re-export 維持。
+const dateToISODate = formatUtcISO
 
 /**
  * 週の起点 (Date、UTC midnight) を返す。
