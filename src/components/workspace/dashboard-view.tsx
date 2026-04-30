@@ -1413,7 +1413,11 @@ export function DashboardView({ workspaceId }: Props) {
                             : 'text-muted-foreground text-xs'
                       }
                     >
-                      {item.dueDate ?? '期限なし'}
+                      {item.dueDate ? (
+                        <time dateTime={item.dueDate}>{item.dueDate}</time>
+                      ) : (
+                        '期限なし'
+                      )}
                     </span>
                     <span className="text-muted-foreground text-xs">
                       {item.doneAt ? '完了' : overdue ? '期限超過' : soon ? '期日近' : ''}
