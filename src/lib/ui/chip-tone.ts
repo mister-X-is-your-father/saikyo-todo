@@ -166,3 +166,55 @@ const TONE_LABEL_JA: Record<ChipTone, string> = {
 export function chipToneLabelJa(tone: ChipTone): string {
   return TONE_LABEL_JA[tone]
 }
+
+/**
+ * iter493 basics: 任意 items 配列を ChipTone 別に件数集計する pure helper。
+ * caller は getTone(item) で各 item の tone を返すだけ (= caller の domain 固有
+ * tone helper を渡す: dueProximityTone / urgencyTierTone / memberCapacityTone 等)。
+ *
+ * 出力: 6 tone 全部 0 で初期化された Record (= caller は undefined check 不要、
+ * Object.entries で安全にループ可)。
+ */
+export function countItemsByTone<T>(
+  items: ReadonlyArray<T>,
+  getTone: (item: T) => ChipTone,
+): Record<ChipTone, number> {
+  const counts: Record<ChipTone, number> = {
+    danger: 0,
+    urgent: 0,
+    warn: 0,
+    info: 0,
+    idle: 0,
+    success: 0,
+  }
+  for (const it of items) {
+    counts[getTone(it)] += 1
+  }
+  return counts
+}
+
+const TONE_DISPLAY_ORDER: readonly ChipTone[] = [
+  'danger',
+  'urgent',
+  'warn',
+  'info',
+  'idle',
+  'success',
+] as const
+
+/**
+ * tone counts を ja-JP 1 行 summary に整形 (chip / aria-label / AI brief 共通)。
+ *  - 全部 0 → '0 件'
+ *  - それ以外 → '緊急 3 / 要対応 5 / 注意 2 / 通常 8 / 達成 12' 形式 (0 件 tone は省略)
+ *  - 順序: 危ない順 (danger → urgent → warn → info → idle → success)、
+ *    iter488 chipToneAttentionRank と整合
+ */
+export function formatToneCountsJa(counts: Record<ChipTone, number>): string {
+  const parts: string[] = []
+  for (const tone of TONE_DISPLAY_ORDER) {
+    const n = counts[tone]
+    if (n > 0) parts.push(`${TONE_LABEL_JA[tone]} ${n}`)
+  }
+  if (parts.length === 0) return '0 件'
+  return parts.join(' / ')
+}

@@ -8,6 +8,8 @@ import {
   chipToneAttentionRank,
   chipToneLabelJa,
   compareChipTones,
+  countItemsByTone,
+  formatToneCountsJa,
   getChipToneClasses,
 } from './chip-tone'
 
@@ -88,5 +90,57 @@ describe('chipToneLabelJa (SR aria-label / 修飾語 ja-JP)', () => {
     // 例として「期限切れ」 + tone label 'danger' = '緊急'
     const composite = `期限切れ (${chipToneLabelJa('danger')})`
     expect(composite).toBe('期限切れ (緊急)')
+  })
+})
+
+describe('countItemsByTone (任意 items × getTone callback で集計)', () => {
+  it('空 items → 全 tone 0', () => {
+    const counts = countItemsByTone<{ id: string }>([], () => 'danger')
+    expect(counts).toEqual({
+      danger: 0,
+      urgent: 0,
+      warn: 0,
+      info: 0,
+      idle: 0,
+      success: 0,
+    })
+  })
+
+  it('混合 → tone 別件数', () => {
+    type Item = { tone: ChipTone }
+    const items: Item[] = [
+      { tone: 'danger' },
+      { tone: 'urgent' },
+      { tone: 'warn' },
+      { tone: 'warn' },
+      { tone: 'success' },
+    ]
+    const counts = countItemsByTone(items, (it) => it.tone)
+    expect(counts.danger).toBe(1)
+    expect(counts.urgent).toBe(1)
+    expect(counts.warn).toBe(2)
+    expect(counts.info).toBe(0)
+    expect(counts.idle).toBe(0)
+    expect(counts.success).toBe(1)
+  })
+})
+
+describe('formatToneCountsJa (1 行 summary、危ない順)', () => {
+  it('全 0 → 「0 件」', () => {
+    expect(
+      formatToneCountsJa({ danger: 0, urgent: 0, warn: 0, info: 0, idle: 0, success: 0 }),
+    ).toBe('0 件')
+  })
+
+  it('混合 → 「緊急 3 / 要対応 1 / 達成 12」 (0 件 tone は省略)', () => {
+    expect(
+      formatToneCountsJa({ danger: 3, urgent: 1, warn: 0, info: 0, idle: 0, success: 12 }),
+    ).toBe('緊急 3 / 要対応 1 / 達成 12')
+  })
+
+  it('順序は 危ない順 (danger → urgent → warn → info → idle → success)', () => {
+    expect(
+      formatToneCountsJa({ danger: 1, urgent: 2, warn: 3, info: 4, idle: 5, success: 6 }),
+    ).toBe('緊急 1 / 要対応 2 / 注意 3 / 通常 4 / 対象外 5 / 達成 6')
   })
 })
