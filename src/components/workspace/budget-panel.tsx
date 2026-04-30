@@ -160,6 +160,9 @@ export function BudgetPanel({ workspaceId }: Props) {
               aria-valuenow={ratioPct}
               aria-valuemin={0}
               aria-valuemax={100}
+              aria-valuetext={`${ratioPct}% — ${s.exceeded ? '上限到達' : s.warnTriggered ? '警告' : '正常'}`}
+              data-testid="budget-progress"
+              data-budget-state={s.exceeded ? 'exceeded' : s.warnTriggered ? 'warn' : 'normal'}
               className="bg-muted relative h-2 w-full overflow-hidden rounded-full"
             >
               <div
