@@ -73,6 +73,18 @@ export function WorkflowGraphCanvas({ graph, className, testId }: Props) {
     return { nodes: styledNodes, edges: flow.edges }
   }, [graph])
 
+  // SR 用に node type 別件数を 1 行 summary 化 (例: "noop 2, http 1, slack 1")
+  // — React Flow は SVG canvas で内部 node を AT に expose しないため、container
+  //   の aria-label に集約情報を載せて補完する。
+  const nodeTypeSummary = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const n of graph.nodes) counts[n.type] = (counts[n.type] ?? 0) + 1
+    return Object.entries(counts)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([type, count]) => `${type} ${count}`)
+      .join(', ')
+  }, [graph.nodes])
+
   // 空 graph は EmptyState 相当 (ReactFlow は描画するが viewport が空になる)
   if (graph.nodes.length === 0) {
     return (
@@ -105,7 +117,7 @@ export function WorkflowGraphCanvas({ graph, className, testId }: Props) {
       className={`overflow-hidden rounded border ${className ?? 'h-64'}`}
       data-testid={testId}
       role="img"
-      aria-label={`Workflow graph: ${graph.nodes.length} nodes, ${graph.edges.length} edges`}
+      aria-label={`Workflow graph: ${graph.nodes.length} nodes (${nodeTypeSummary}), ${graph.edges.length} edges`}
     >
       <ReactFlow {...props}>
         <Background gap={16} size={1} />
