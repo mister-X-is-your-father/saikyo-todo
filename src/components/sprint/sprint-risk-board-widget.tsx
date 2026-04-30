@@ -149,12 +149,24 @@ export function SprintRiskBoardWidget<T extends RiskBoardItemFields>({
               担当者負荷 ({loadEntries.length} 名)
             </h3>
             <table className="w-full text-xs" aria-labelledby="sprint-risk-load-heading">
+              <caption className="sr-only">
+                担当者ごとの負荷一覧 ({loadEntries.length} 名 / 担当 / 件数 / MUST 件数 /
+                負荷スコア合計)
+              </caption>
               <thead>
                 <tr className="text-muted-foreground border-b">
-                  <th className="py-1 text-left font-normal">担当</th>
-                  <th className="py-1 text-right font-normal">件数</th>
-                  <th className="py-1 text-right font-normal">MUST</th>
-                  <th className="py-1 text-right font-normal">負荷</th>
+                  <th scope="col" className="py-1 text-left font-normal">
+                    担当
+                  </th>
+                  <th scope="col" className="py-1 text-right font-normal">
+                    件数
+                  </th>
+                  <th scope="col" className="py-1 text-right font-normal">
+                    MUST
+                  </th>
+                  <th scope="col" className="py-1 text-right font-normal">
+                    負荷
+                  </th>
                 </tr>
               </thead>
               <tbody>
