@@ -179,15 +179,19 @@ function Section({
 }) {
   const labelTone =
     tone === 'red' ? 'text-red-700' : tone === 'amber' ? 'text-amber-700' : 'text-foreground'
+  // SR の heading shortcut で 4 sub-section (推奨/期限超過/MUST/予定/昨日 done)
+  // に直行可能。visual サイズ text-xs / font-medium 維持。iter427 / iter428 /
+  // iter430 / iter431 / iter432 と同 pattern (widget heading semantic 統一 6 件目)。
+  const headingId = `operation-section-${label.replace(/[^a-zA-Z0-9]/g, '-')}`
   return (
-    <div className="space-y-1">
-      <div className={`flex items-center gap-1.5 text-xs font-medium ${labelTone}`}>
+    <div className="space-y-1" role="group" aria-labelledby={headingId}>
+      <h3 id={headingId} className={`flex items-center gap-1.5 text-xs font-medium ${labelTone}`}>
         {icon}
         <span>{label}</span>
         {typeof count === 'number' ? (
-          <span className="text-muted-foreground tabular-nums">({count})</span>
+          <span className="text-muted-foreground font-normal tabular-nums">({count})</span>
         ) : null}
-      </div>
+      </h3>
       <div className="pl-5">{children}</div>
     </div>
   )
