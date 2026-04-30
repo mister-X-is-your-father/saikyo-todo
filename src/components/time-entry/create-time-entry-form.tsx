@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { toast } from 'sonner'
 
@@ -24,11 +24,16 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
   const [durationMinutes, setDurationMinutes] = useState<number>(30)
 
   const create = useCreateTimeEntry(workspaceId)
+  const minutesRef = useRef<HTMLInputElement>(null)
 
   async function handleSubmit(e?: React.FormEvent) {
     if (e) e.preventDefault()
     if (durationMinutes <= 0) {
       toast.error('時間 (分) は 1 以上')
+      // iter499: validation 失敗時 first invalid field に focus shift (auth /
+      // workspace form の onInvalid pattern を非 react-hook-form にも展開)。
+      minutesRef.current?.focus()
+      minutesRef.current?.select()
       return
     }
     try {
@@ -110,6 +115,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           分
         </Label>
         <IMEInput
+          ref={minutesRef}
           id="teMinutes"
           type="number"
           min={1}
@@ -120,6 +126,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           className="w-24"
           required
           aria-required="true"
+          aria-invalid={durationMinutes <= 0 || undefined}
           inputMode="numeric"
         />
       </div>
