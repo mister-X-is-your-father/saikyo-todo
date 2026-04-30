@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
@@ -11,6 +12,8 @@ import { Button } from '@/components/ui/button'
 import { WorkflowsPanel } from '@/components/workflow/workflows-panel'
 import { NotificationBell } from '@/components/workspace/notification-bell'
 import { WorkspaceHeader } from '@/components/workspace/workspace-header'
+
+export const metadata: Metadata = { title: 'Workflows' }
 
 interface PageProps {
   params: Promise<{ workspaceId: string }>
