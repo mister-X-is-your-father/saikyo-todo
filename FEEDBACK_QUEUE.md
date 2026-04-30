@@ -755,25 +755,10 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 
 **重要**: A/3 (Dialog 即修正) は 20 分以内に commit 可能。B/3 + C/3 は別 iter で。Cloud loop は **A/3 を最優先**、その後 B → C の順で消化。
 
-#### 🌟 新 P0 [優先度 0、最優先 A] (2026-04-30): AI 調査 / 分解 が API key 要求してる regression を修正
+#### ✅ 旧 P0 [優先度 0、最優先 A] (2026-04-30、iter520 ai-automation 完了): AI 調査 が API key 要求してる regression を修正
 
-ユーザ指摘: 「AI調査がまたAPIキー使えって言われるんだが それはダメだろう」
-
-`src/features/agent/researcher-service.ts:99-117` で `process.env.ANTHROPIC_API_KEY` ガードが iter146 で再導入されてる。コメントには「真の修正は claude CLI 経路への migration (queue 済)」と書いてあるが、iter501-505 の SDK→CLI migration は **pm-service / standup と一部 researcher 経路 のみ** で、`researcherService.run` (= AI 調査 / AI 分解 ボタンの本流) は **未着手**。
-
-**修正方針**:
-
-- `researcherService.run` を `decomposeItemViaClaude` (iter251 で動いてる claude-flow-runner 経路) と同じ CLI subprocess 経路に移行
-- env 検出ガード (line 105-117) を撤去
-- `researcher-flow-adapter` 既存 helper を `run` でも流用
-- agentMemoryService の load / append は CLI 経路でも継続
-- tool budget / cost record / agent_invocation の audit は維持
-- service test を CLI subprocess mock (`vi.mock('node:child_process')`) に書換
-
-**期待 commit (1-2 commits)**:
-
-1. `feat(agent): researcherService.run を CLI subprocess 経路に移行 — API key 不要化 (queue: researcher SDK→CLI run path)`
-2. `chore(agent): researcher-service.ts の env ガードを撤去 — CLI 経路に統一 (queue: researcher SDK→CLI run path)`
+- [x] commit beec85e で完了 — `useResearchItem` を `researchItemViaClaudeAction` 経路に切替 (env 不要、Claude Max OAuth + claude CLI subprocess)。`RESEARCH_FLOW_TOOL_NAMES` (read 4 + create_doc) を adapter に追加、`researcherService.researchItemViaClaude` 新設、test 18 件 green。
+- 残り: `decomposeItemAction` (SDK fallback、useDecomposeItemViaSDK) と `researcherService.run` 自体の env ガードはまだ残る (使われていないが migration 完成は次 P0 で)。`researcher-worker.ts` (pg-boss) は `decomposeItem` (SDK) を呼ぶため、worker 起動には env 必要のまま — 別 P0 で migration。
 
 #### 🌟 新 P0 [優先度 0、最優先 B] (2026-04-30): DnD reorder の flicker を **全 view 点検 + 修正**
 
