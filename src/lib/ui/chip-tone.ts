@@ -218,3 +218,31 @@ export function formatToneCountsJa(counts: Record<ChipTone, number>): string {
   if (parts.length === 0) return '0 件'
   return parts.join(' / ')
 }
+
+/**
+ * iter496 basics: tones 配列から **最高 severity** (= 最も attention rank の高い) 1 tone を
+ * 抽出する pure helper。
+ *
+ * 用途: 複数の domain tone を同時に持つ caller (例: 「Item は dueProximity=warn かつ
+ * urgencyTier=danger」) で「カードの border tone はどれを採用するか」を一意に決めたい
+ * 時、attention rank が最大 (= 最も危ない) tone を採る。
+ *
+ * 仕様:
+ *  - 空配列 → null sentinel (= caller は chip 非表示判断)
+ *  - 同 rank が複数 → 最初 (= 配列順) を採用 (stable)
+ *  - rank 比較は `chipToneAttentionRank` (= danger=5 / urgent=4 / ... / success=0)
+ *
+ * 注: severity が高い = '対応が必要' という意味。'success' (rank=0、positive 軸)
+ * と他 tone (severity 軸) が混在しても、severity 軸が常に prioritize される。
+ */
+export function pickHighestSeverityTone(tones: ReadonlyArray<ChipTone>): ChipTone | null {
+  if (tones.length === 0) return null
+  let best: ChipTone = tones[0]!
+  for (let i = 1; i < tones.length; i++) {
+    const candidate = tones[i]!
+    if (TONE_ATTENTION_RANK[candidate] > TONE_ATTENTION_RANK[best]) {
+      best = candidate
+    }
+  }
+  return best
+}

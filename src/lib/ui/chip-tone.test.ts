@@ -11,6 +11,7 @@ import {
   countItemsByTone,
   formatToneCountsJa,
   getChipToneClasses,
+  pickHighestSeverityTone,
 } from './chip-tone'
 
 describe('getChipToneClasses', () => {
@@ -142,5 +143,33 @@ describe('formatToneCountsJa (1 行 summary、危ない順)', () => {
     expect(
       formatToneCountsJa({ danger: 1, urgent: 2, warn: 3, info: 4, idle: 5, success: 6 }),
     ).toBe('緊急 1 / 要対応 2 / 注意 3 / 通常 4 / 対象外 5 / 達成 6')
+  })
+})
+
+describe('pickHighestSeverityTone (最悪 tone 抽出、カード border tone 決定用)', () => {
+  it('空配列 → null sentinel', () => {
+    expect(pickHighestSeverityTone([])).toBeNull()
+  })
+
+  it('単一 tone → そのまま返す', () => {
+    expect(pickHighestSeverityTone(['warn'])).toBe('warn')
+    expect(pickHighestSeverityTone(['idle'])).toBe('idle')
+  })
+
+  it('複数 tone → attention rank 最大 (= 最も危ない) を採用', () => {
+    expect(pickHighestSeverityTone(['warn', 'danger', 'info'])).toBe('danger')
+    expect(pickHighestSeverityTone(['idle', 'urgent', 'warn'])).toBe('urgent')
+  })
+
+  it('success と severity 系混在 → severity 系 prioritize (= success は positive 軸で rank 最低)', () => {
+    expect(pickHighestSeverityTone(['success', 'warn'])).toBe('warn')
+    expect(pickHighestSeverityTone(['success', 'idle'])).toBe('idle')
+    // success のみ → severity 軸候補なしなので success 自体が返る
+    expect(pickHighestSeverityTone(['success', 'success'])).toBe('success')
+  })
+
+  it('同 rank 複数 → 配列順で最初を採用 (stable)', () => {
+    expect(pickHighestSeverityTone(['warn', 'warn'])).toBe('warn')
+    expect(pickHighestSeverityTone(['danger', 'danger', 'urgent'])).toBe('danger')
   })
 })
