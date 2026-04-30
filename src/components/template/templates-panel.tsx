@@ -160,6 +160,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
             ) : null}
             <Button
               type="submit"
+              className="min-h-11"
               disabled={createMut.isPending || !name.trim()}
               aria-busy={createMut.isPending || undefined}
               aria-label={

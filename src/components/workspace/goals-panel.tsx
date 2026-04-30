@@ -204,6 +204,7 @@ export function GoalsPanel({ workspaceId }: Props) {
             <div className="flex justify-end">
               <Button
                 type="submit"
+                className="min-h-11"
                 disabled={!title.trim() || createMut.isPending}
                 aria-busy={createMut.isPending || undefined}
                 data-testid="goal-create-btn"
@@ -739,6 +740,7 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
           <Button
             type="submit"
             size="sm"
+            className="min-h-11"
             disabled={!krTitle.trim() || create.isPending}
             data-testid={`kr-add-btn-${goalId}`}
             aria-label={
