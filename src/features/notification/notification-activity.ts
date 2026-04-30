@@ -98,3 +98,41 @@ export function formatNotificationActivitySummary(
 ): string {
   return formatNonZeroCounts(counts, NOTIFICATION_TYPE_KEYS, NOTIFICATION_TYPE_LABEL, emptySentinel)
 }
+
+/**
+ * iter491 basics: notification 量 4 状態 hint シリーズ 10 弾目 (= velocity / blocked-items /
+ * at-risk-parents / weekly-insight / inbox-process と同 FourStateHint 系列)。
+ *
+ * - 'idle'     : 全 0 件 (= 通知なし)
+ * - 'severe'   : sync-failure >= 1 件 (= 同期失敗、即対応) OR 合計 >= 50 (= flood)
+ * - 'moderate' : 合計 >= 20 OR mention >= 5 (= 多数 mention 待ち応答)
+ * - 'mild'     : それ以外 (= 通常範囲)
+ *
+ * 用途: notification-bell badge tone / dashboard chip / Slack daily digest 見出し。
+ */
+import { type FourStateHint, makeHintLabelFormatter } from '@/lib/hint'
+
+export type NotificationActivityHint = FourStateHint
+
+export function classifyNotificationActivityHint(
+  counts: Readonly<NotificationCountByType>,
+): NotificationActivityHint {
+  const total =
+    counts.heartbeat + counts.mention + counts.invite + counts['sync-failure'] + counts.unknown
+  if (total === 0) return 'idle'
+  if (counts['sync-failure'] >= 1 || total >= 50) return 'severe'
+  if (total >= 20 || counts.mention >= 5) return 'moderate'
+  return 'mild'
+}
+
+const NOTIFICATION_HINT_LABEL_JA: Record<NotificationActivityHint, string> = {
+  idle: '通知なし',
+  mild: '通常',
+  moderate: '多め',
+  severe: '異常',
+}
+
+export const formatNotificationActivityHintJa = makeHintLabelFormatter(
+  classifyNotificationActivityHint,
+  NOTIFICATION_HINT_LABEL_JA,
+)

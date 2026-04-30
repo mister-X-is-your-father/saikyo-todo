@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  classifyNotificationActivityHint,
+  formatNotificationActivityHintJa,
   formatNotificationActivitySummary,
   groupNotificationsByType,
   NOTIFICATION_TYPE_KEYS,
   type NotificationActivityEntry,
+  type NotificationCountByType,
   notificationTypeLabel,
 } from './notification-activity'
 
@@ -185,5 +188,48 @@ describe('統合: group → format', () => {
       { onlyUnread: true, since },
     )
     expect(formatNotificationActivitySummary(counts)).toBe('期限近接 2 / 招待 1')
+  })
+})
+
+describe('classifyNotificationActivityHint', () => {
+  function counts(over: Partial<NotificationCountByType>): NotificationCountByType {
+    return { heartbeat: 0, mention: 0, invite: 0, 'sync-failure': 0, unknown: 0, ...over }
+  }
+
+  it('全 0 → idle', () => {
+    expect(classifyNotificationActivityHint(counts({}))).toBe('idle')
+  })
+
+  it('sync-failure >= 1 → severe', () => {
+    expect(classifyNotificationActivityHint(counts({ 'sync-failure': 1 }))).toBe('severe')
+  })
+
+  it('合計 >= 50 → severe', () => {
+    expect(classifyNotificationActivityHint(counts({ heartbeat: 50 }))).toBe('severe')
+  })
+
+  it('合計 >= 20 → moderate', () => {
+    expect(classifyNotificationActivityHint(counts({ heartbeat: 20 }))).toBe('moderate')
+  })
+
+  it('mention >= 5 → moderate', () => {
+    expect(classifyNotificationActivityHint(counts({ mention: 5 }))).toBe('moderate')
+  })
+
+  it('健全範囲 → mild', () => {
+    expect(classifyNotificationActivityHint(counts({ heartbeat: 3, mention: 2 }))).toBe('mild')
+  })
+})
+
+describe('formatNotificationActivityHintJa', () => {
+  function counts(over: Partial<NotificationCountByType>): NotificationCountByType {
+    return { heartbeat: 0, mention: 0, invite: 0, 'sync-failure': 0, unknown: 0, ...over }
+  }
+
+  it('idle / mild / moderate / severe を 1 単語で返す', () => {
+    expect(formatNotificationActivityHintJa(counts({}))).toBe('通知なし')
+    expect(formatNotificationActivityHintJa(counts({ heartbeat: 3 }))).toBe('通常')
+    expect(formatNotificationActivityHintJa(counts({ mention: 5 }))).toBe('多め')
+    expect(formatNotificationActivityHintJa(counts({ 'sync-failure': 1 }))).toBe('異常')
   })
 })
