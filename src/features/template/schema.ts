@@ -101,6 +101,25 @@ export type UpdateTemplateItemInput = z.infer<typeof UpdateTemplateItemInputSche
 export const RemoveTemplateItemInputSchema = z.object({ id: z.string().uuid() })
 export type RemoveTemplateItemInput = z.infer<typeof RemoveTemplateItemInputSchema>
 
+/**
+ * 既存 Item ツリー (parent + 子孫) を Template として保存する入力。
+ *
+ * scope A: position / dueOffsetDays / agent_role_to_invoke / tags / assignees は
+ * 保持しない。subtask の subtask 等の深い階層は ltree で正しく保持される
+ * (= フラット 2 階層に限定しない、意外と汎用)。
+ *
+ * - itemId: 元になる parent Item の id (子孫 = parent_path が parent のフル path
+ *   で始まる items)
+ * - name: template.name (省略時は parent.title)
+ * - description: template.description (省略時は parent.description)
+ */
+export const CreateTemplateFromItemInputSchema = z.object({
+  itemId: z.string().uuid(),
+  name: z.string().min(1).max(200).optional(),
+  description: z.string().max(2000).optional(),
+})
+export type CreateTemplateFromItemInput = z.infer<typeof CreateTemplateFromItemInputSchema>
+
 /** Template を実 Item ツリーに展開する (instantiate)。 */
 export const InstantiateTemplateInputSchema = z.object({
   templateId: z.string().uuid(),

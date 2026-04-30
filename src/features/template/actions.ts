@@ -11,6 +11,10 @@ export async function createTemplateAction(input: unknown): Promise<Result<Templ
   return await actionWrap(() => templateService.create(input))
 }
 
+export async function createTemplateFromItemAction(input: unknown): Promise<Result<Template>> {
+  return await actionWrap(() => templateService.createFromItem(input))
+}
+
 export async function updateTemplateAction(input: unknown): Promise<Result<Template>> {
   return await actionWrap(() => templateService.update(input))
 }

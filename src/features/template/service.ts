@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm'
 
 import { type ActorType, recordAudit } from '@/lib/audit'
 import { requireUser, requireWorkspaceMember } from '@/lib/auth/guard'
+import { fullPathOf, isPathDescendantOf } from '@/lib/db/ltree-path'
 import { items, templateInstantiations } from '@/lib/db/schema'
 import { adminDb, type Tx, withUserDb } from '@/lib/db/scoped-client'
 import { ConflictError, NotFoundError, ValidationError } from '@/lib/errors'
@@ -11,10 +12,14 @@ import { enqueueJob } from '@/lib/jobs/queue'
 import { err, ok, type Result } from '@/lib/result'
 import { mutateWithGuard } from '@/lib/service-mutate'
 
+import { itemRepository } from '@/features/item/repository'
+
+import { buildTemplateBlueprintFromItemTree } from './build-from-items'
 import { buildInstantiationPlan } from './instantiate-plan'
 import { templateItemRepository, templateRepository } from './repository'
 import {
   AddTemplateItemInputSchema,
+  CreateTemplateFromItemInputSchema,
   CreateTemplateInputSchema,
   type InstantiateResult,
   InstantiateTemplateInputSchema,
@@ -58,6 +63,102 @@ export const templateService = {
         after: t,
       })
       return ok(t)
+    })
+  },
+
+  /**
+   * 既存 Item ツリー (parent + 子孫 items) を Template として保存する。
+   * FEEDBACK_QUEUE 「Template 登録機能 (タスク + サブタスクをまとめて)」 scope A の本体。
+   *
+   * 流れ:
+   *   1. parent item を `withUserDb` (RLS) で取得 → 見えなければ NotFound
+   *   2. workspace の全 items を list、parent の フル path を起点に in-memory 子孫
+   *      フィルタ (`isPathDescendantOf`)。既存 descendants-progress / at-risk-parents
+   *      と同じ pattern (cross-feature itemRepository import OK)
+   *   3. requireWorkspaceMember で member 権限を確認 (RLS で取れた = ws 所属だが二重防御)
+   *   4. `buildTemplateBlueprintFromItemTree` で template + template_items の Blueprint を構築
+   *   5. 1 Tx で templates + template_items[] を bulk insert + recordAudit
+   *
+   * scope A 制限: dueOffsetDays / agent_role_to_invoke / defaultAssignees / tags は
+   * 保持しない (= scope B 以降で追加)。kind は manual 固定 (recurring は別 UI)。
+   */
+  async createFromItem(input: unknown): Promise<Result<Template>> {
+    const parsed = CreateTemplateFromItemInputSchema.safeParse(input)
+    if (!parsed.success) return err(new ValidationError('入力内容を確認してください', parsed.error))
+
+    const authUser = await requireUser()
+    const ctx = await withUserDb(authUser.id, async (tx) => {
+      const parent = await itemRepository.findById(tx, parsed.data.itemId)
+      if (!parent) return null
+      const all = await itemRepository.list(tx, { workspaceId: parent.workspaceId, limit: 5000 })
+      const parentFull = fullPathOf({ id: parent.id, parentPath: parent.parentPath })
+      const descendants = all.filter(
+        (it) => it.id !== parent.id && isPathDescendantOf(it.parentPath, parentFull),
+      )
+      return { parent, descendants, workspaceId: parent.workspaceId }
+    })
+    if (!ctx) return err(new NotFoundError('Item が見つかりません'))
+
+    const { user } = await requireWorkspaceMember(ctx.workspaceId, 'member')
+
+    const blueprint = buildTemplateBlueprintFromItemTree({
+      parent: {
+        id: ctx.parent.id,
+        title: parsed.data.name ?? ctx.parent.title,
+        description: parsed.data.description ?? ctx.parent.description ?? '',
+        parentPath: ctx.parent.parentPath,
+      },
+      descendants: ctx.descendants.map((d) => ({
+        id: d.id,
+        title: d.title,
+        description: d.description ?? '',
+        parentPath: d.parentPath,
+        statusInitial: d.status,
+        isMust: d.isMust,
+        dod: d.dod,
+      })),
+    })
+
+    return await withUserDb(user.id, async (tx) => {
+      const template = await templateRepository.insert(tx, {
+        workspaceId: ctx.workspaceId,
+        name: blueprint.template.name,
+        description: blueprint.template.description,
+        kind: 'manual',
+        scheduleCron: null,
+        variablesSchema: {},
+        tags: [],
+        createdBy: user.id,
+      })
+      for (const ti of blueprint.templateItems) {
+        await templateItemRepository.insert(tx, {
+          id: ti.id,
+          templateId: template.id,
+          parentPath: ti.parentPath,
+          title: ti.title,
+          description: ti.description,
+          statusInitial: ti.statusInitial,
+          dueOffsetDays: null,
+          isMust: ti.isMust,
+          dod: ti.dod,
+          defaultAssignees: [],
+          agentRoleToInvoke: null,
+        })
+      }
+      await recordAudit(tx, {
+        workspaceId: ctx.workspaceId,
+        actorType: 'user',
+        actorId: user.id,
+        targetType: 'template',
+        targetId: template.id,
+        action: 'create_from_item',
+        after: {
+          templateId: template.id,
+          sourceItemId: ctx.parent.id,
+          itemCount: 1 + blueprint.templateItems.length,
+        },
+      })
+      return ok(template)
     })
   },
 
