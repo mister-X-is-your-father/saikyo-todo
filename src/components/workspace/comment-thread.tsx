@@ -107,6 +107,7 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
             disabled={create.isPending || !body.trim()}
             aria-busy={create.isPending || undefined}
             size="sm"
+            className="min-h-11"
             data-testid="comment-post"
             // iter356: aria-keyshortcuts で SR / voice control に shortcut を expose。
             // WCAG 2.1.4 (Character Key Shortcuts) ARIA 1.2 attribute、modifier 必須形式。
@@ -221,12 +222,19 @@ function CommentItem({
             data-testid={`comment-edit-input-${comment.id}`}
           />
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => setEditing(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="min-h-11"
+              onClick={() => setEditing(false)}
+            >
               キャンセル
             </Button>
             <Button
               type="button"
               size="sm"
+              className="min-h-11"
               onClick={handleSave}
               disabled={update.isPending || !body.trim()}
               aria-busy={update.isPending || undefined}
