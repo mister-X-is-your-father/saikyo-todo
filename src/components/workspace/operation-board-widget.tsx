@@ -133,6 +133,63 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
           </div>
         ) : null}
 
+        {/* iter541 (queue fluffy-7 expansion): forecast.quickWins / focusBlocks の compact 表示 */}
+        {(forecast.quickWins.length > 0 || forecast.focusBlocks.length > 0) && (
+          <div
+            className="grid grid-cols-2 gap-2 text-xs"
+            data-testid="operation-board-forecast-tactics"
+          >
+            {forecast.quickWins.length > 0 && (
+              <div className="space-y-0.5 rounded bg-emerald-50/60 p-1.5">
+                <div className="font-medium text-emerald-800">
+                  ⚡ Quick wins ({forecast.quickWins.length})
+                </div>
+                <ul className="space-y-0.5">
+                  {forecast.quickWins.slice(0, 3).map((it) => (
+                    <li key={it.id}>
+                      <button
+                        type="button"
+                        onClick={() => openItem(it.id)}
+                        className="hover:bg-muted/60 flex w-full items-center gap-1 truncate rounded px-1 py-0.5 text-left"
+                        aria-label={`${it.title} を開く (見積 ${it.estimateMin}分)`}
+                      >
+                        <span className="text-muted-foreground text-[10px] tabular-nums">
+                          {it.estimateMin}m
+                        </span>
+                        <span className="truncate">{it.title}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {forecast.focusBlocks.length > 0 && (
+              <div className="space-y-0.5 rounded bg-sky-50/60 p-1.5">
+                <div className="font-medium text-sky-800">
+                  🎯 集中ブロック ({forecast.focusBlocks.length})
+                </div>
+                <ul className="space-y-0.5">
+                  {forecast.focusBlocks.slice(0, 2).map((it) => (
+                    <li key={it.id}>
+                      <button
+                        type="button"
+                        onClick={() => openItem(it.id)}
+                        className="hover:bg-muted/60 flex w-full items-center gap-1 truncate rounded px-1 py-0.5 text-left"
+                        aria-label={`${it.title} を開く (集中 ${it.estimateMin}分)`}
+                      >
+                        <span className="text-muted-foreground text-[10px] tabular-nums">
+                          {it.estimateMin}m
+                        </span>
+                        <span className="truncate">{it.title}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
         {board.recommended ? (
           <Section
             icon={<Crown className="h-4 w-4 text-amber-500" aria-hidden="true" />}
