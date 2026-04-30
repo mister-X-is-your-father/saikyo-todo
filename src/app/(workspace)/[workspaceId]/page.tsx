@@ -62,31 +62,31 @@ export default async function WorkspacePage({ params }: PageProps) {
               aria-label="ワークスペース内ナビゲーション"
               className="flex flex-wrap items-center gap-2"
             >
-              <Button variant="outline" asChild size="sm">
+              <Button variant="outline" asChild size="sm" className="min-h-11">
                 <Link href={`/${workspaceId}/goals`}>Goals</Link>
               </Button>
-              <Button variant="outline" asChild size="sm">
+              <Button variant="outline" asChild size="sm" className="min-h-11">
                 <Link href={`/${workspaceId}/sprints`}>Sprints</Link>
               </Button>
-              <Button variant="outline" asChild size="sm">
+              <Button variant="outline" asChild size="sm" className="min-h-11">
                 <Link href={`/${workspaceId}/pdca`}>PDCA</Link>
               </Button>
-              <Button variant="outline" asChild size="sm">
+              <Button variant="outline" asChild size="sm" className="min-h-11">
                 <Link href={`/${workspaceId}/templates`}>Templates</Link>
               </Button>
-              <Button variant="outline" asChild size="sm">
+              <Button variant="outline" asChild size="sm" className="min-h-11">
                 <Link href={`/${workspaceId}/workflows`}>Workflows</Link>
               </Button>
-              <Button variant="outline" asChild size="sm">
+              <Button variant="outline" asChild size="sm" className="min-h-11">
                 <Link href={`/${workspaceId}/integrations`}>API 連携</Link>
               </Button>
-              <Button variant="outline" asChild size="sm">
+              <Button variant="outline" asChild size="sm" className="min-h-11">
                 <Link href={`/${workspaceId}/time-entries`}>Time Entries</Link>
               </Button>
-              <Button variant="outline" asChild size="sm">
+              <Button variant="outline" asChild size="sm" className="min-h-11">
                 <Link href={`/${workspaceId}/archive`}>Archive</Link>
               </Button>
-              <Button variant="outline" asChild size="sm">
+              <Button variant="outline" asChild size="sm" className="min-h-11">
                 <Link href="/" aria-label="Workspace 一覧へ戻る">
                   <span aria-hidden="true">← </span>一覧
                 </Link>
