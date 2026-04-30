@@ -32,6 +32,18 @@ function fmt(v: Date | string | null | undefined): string {
   return isValid(d) ? format(d, 'yyyy-MM-dd HH:mm') : '-'
 }
 
+/**
+ * date セルを `<time dateTime>` で wrap (機械可読 ISO + 表示文字列)。
+ * 値が無効/null なら plain '-' を返し time element を出さない (dateTime 必須属性
+ * のため空文字 dateTime は invalid)。
+ */
+function FmtTime({ value }: { value: Date | string | null | undefined }) {
+  if (!value) return <>-</>
+  const d = typeof value === 'string' ? parseISO(value) : value
+  if (!isValid(d)) return <>-</>
+  return <time dateTime={d.toISOString()}>{format(d, 'yyyy-MM-dd HH:mm')}</time>
+}
+
 export function ArchivedItemsPanel({ workspaceId }: Props) {
   const { data: allItems, isLoading, error } = useItems(workspaceId)
   const unarchive = useUnarchiveItem(workspaceId)
@@ -134,8 +146,12 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
                 {/* iter291 basics: 生 enum 文字列 → StatusBadge で graphical 化 (iter261 の波及) */}
                 <StatusBadge status={item.status} className="text-[10px]" />
               </td>
-              <td className="px-3 py-2 text-xs">{fmt(item.dueDate)}</td>
-              <td className="text-muted-foreground px-3 py-2 text-xs">{fmt(item.archivedAt)}</td>
+              <td className="px-3 py-2 text-xs">
+                <FmtTime value={item.dueDate} />
+              </td>
+              <td className="text-muted-foreground px-3 py-2 text-xs">
+                <FmtTime value={item.archivedAt} />
+              </td>
               <td className="px-3 py-2 text-right">
                 <Button
                   type="button"
