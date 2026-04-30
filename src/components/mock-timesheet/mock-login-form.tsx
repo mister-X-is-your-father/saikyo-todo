@@ -41,6 +41,8 @@ export function MockLoginForm() {
     <form
       method="post"
       onSubmit={form.handleSubmit(onSubmit, onInvalid)}
+      aria-label="Mock Timesheet ログインフォーム"
+      aria-busy={isPending || undefined}
       noValidate
       className="space-y-4"
     >

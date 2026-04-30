@@ -57,6 +57,8 @@ export function MockSubmitForm() {
     <form
       method="post"
       onSubmit={form.handleSubmit(onSubmit, onInvalid)}
+      aria-label="Mock Timesheet 工数送信フォーム"
+      aria-busy={isPending || undefined}
       noValidate
       className="space-y-4"
       data-testid="mock-submit-form"
