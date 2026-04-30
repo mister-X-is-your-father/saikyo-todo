@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   agentsToAssigneeRefs,
+  assigneeRefEquals,
   countAssigneesByKind,
   extractAiAssignees,
   extractUserAssignees,
@@ -19,6 +20,7 @@ import {
   isAiAssignee,
   isFullyAiAssigned,
   isMixedAssignment,
+  toggleAssigneeRef,
 } from './ai-assignee'
 import type { AssigneeRef } from './repository'
 
@@ -139,6 +141,41 @@ describe('ai-assignee', () => {
 
     it('未知 role は AI + 原文 で fallback', () => {
       expect(formatAgentRoleLabelJa('custom-role-x')).toBe('AI custom-role-x')
+    })
+  })
+
+  describe('assigneeRefEquals', () => {
+    it('actor_type + actor_id 両方一致なら true', () => {
+      expect(assigneeRefEquals(aiRef, { actorType: 'agent', actorId: 'agent-1' })).toBe(true)
+    })
+    it('actor_id 違いなら false', () => {
+      expect(assigneeRefEquals(aiRef, aiRef2)).toBe(false)
+    })
+    it('actor_type 違いなら false (同じ id でも)', () => {
+      expect(
+        assigneeRefEquals(
+          { actorType: 'agent', actorId: 'shared-id' },
+          { actorType: 'user', actorId: 'shared-id' },
+        ),
+      ).toBe(false)
+    })
+  })
+
+  describe('toggleAssigneeRef', () => {
+    it('未含有なら末尾に追加', () => {
+      expect(toggleAssigneeRef([userRef], aiRef)).toEqual([userRef, aiRef])
+    })
+    it('既含有なら除去 (他要素は順序保持)', () => {
+      expect(toggleAssigneeRef([userRef, aiRef, userRef2], aiRef)).toEqual([userRef, userRef2])
+    })
+    it('空配列に追加', () => {
+      expect(toggleAssigneeRef([], aiRef)).toEqual([aiRef])
+    })
+    it('input を破壊しない (immutable)', () => {
+      const input: AssigneeRef[] = [userRef]
+      const out = toggleAssigneeRef(input, aiRef)
+      expect(input).toEqual([userRef])
+      expect(out).not.toBe(input)
     })
   })
 

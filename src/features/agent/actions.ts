@@ -21,8 +21,9 @@ import { NotFoundError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 
 import { type PmRunOutput, pmService } from './pm-service'
-import { agentInvocationRepository } from './repository'
+import { agentInvocationRepository, agentRepository } from './repository'
 import { type ResearcherRunOutput, researcherService } from './researcher-service'
+import type { Agent } from './schema'
 
 const DecomposeItemActionInputSchema = z.object({
   workspaceId: z.string().uuid(),
@@ -233,5 +234,31 @@ export async function runStandupAction(input: unknown): Promise<Result<PmRunOutp
       workspaceId: parsed.data.workspaceId,
       idempotencyKey: parsed.data.idempotencyKey ?? randomUUID(),
     })
+  })
+}
+
+const ListAgentsActionInputSchema = z.object({
+  workspaceId: z.string().uuid(),
+})
+
+/**
+ * FEEDBACK_QUEUE.md P0「AI 自動実行モード」 scope A iter3 substrate: workspace 内の
+ * agent (pm / researcher / engineer / reviewer) を列挙する read-only action。
+ * AssigneePicker の AI 選択肢列挙、KanbanCard の "AI 担当" badge 等で使う。
+ *
+ * 権限: workspace member 以上 (read-only なので viewer も許可しても良いが、
+ * 既存 action と同様に member 一律で揃える)。mutation は無いので audit / Tx 不要。
+ */
+export async function listAgentsAction(input: unknown): Promise<Result<Agent[]>> {
+  return await actionWrap(async () => {
+    const parsed = ListAgentsActionInputSchema.safeParse(input)
+    if (!parsed.success) {
+      return err(new ValidationError('入力内容を確認してください', parsed.error))
+    }
+    await requireWorkspaceMember(parsed.data.workspaceId, 'member')
+    const rows = await adminDb.transaction((tx) =>
+      agentRepository.listByWorkspace(tx, parsed.data.workspaceId),
+    )
+    return ok(rows)
   })
 }

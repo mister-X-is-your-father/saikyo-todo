@@ -103,3 +103,21 @@ export function formatAgentRoleLabelJa(role: string): string {
   }
   return `AI ${role}`
 }
+
+/** 2 つの AssigneeRef が同一 actor を指すか (actor_type + actor_id 両方一致)。 */
+export function assigneeRefEquals(a: AssigneeRef, b: AssigneeRef): boolean {
+  return a.actorType === b.actorType && a.actorId === b.actorId
+}
+
+/**
+ * AssigneeRef[] に ref が含まれていたら除き、無ければ末尾に追加する toggle。
+ * AssigneePicker の click ハンドラで使用 (user / agent どちらの kind でも同じ logic)。
+ * input は readonly、新しい配列を返す (immutable パターン)。
+ */
+export function toggleAssigneeRef(refs: readonly AssigneeRef[], ref: AssigneeRef): AssigneeRef[] {
+  const idx = refs.findIndex((r) => assigneeRefEquals(r, ref))
+  if (idx >= 0) {
+    return [...refs.slice(0, idx), ...refs.slice(idx + 1)]
+  }
+  return [...refs, ref]
+}

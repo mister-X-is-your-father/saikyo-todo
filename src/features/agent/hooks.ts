@@ -7,7 +7,7 @@
  * 同期待ちのため isPending が長く (数秒〜30s) なるので、呼び出し側は
  * pending 中は UI をスピナー表示すべし。
  */
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { unwrap } from '@/lib/result-unwrap'
 
@@ -20,8 +20,28 @@ import {
   decomposeGoalViaClaudeAction,
   decomposeItemAction,
   decomposeItemViaClaudeAction,
+  listAgentsAction,
   researchItemAction,
 } from './actions'
+
+export const agentKeys = {
+  all: ['agents'] as const,
+  list: (workspaceId: string) => ['agents', workspaceId, 'list'] as const,
+}
+
+/**
+ * P0「AI 自動実行モード」 scope A iter3: workspace 内の AI agent を listing する
+ * read-only query。AssigneePicker の AI 選択肢、KanbanCard の "AI 担当" badge 等で
+ * 使う。1 ws あたり高々 4 行 (pm/researcher/engineer/reviewer) なので staleTime 長め。
+ */
+export function useWorkspaceAgents(workspaceId: string) {
+  return useQuery({
+    queryKey: agentKeys.list(workspaceId),
+    queryFn: async () => unwrap(await listAgentsAction({ workspaceId })),
+    enabled: !!workspaceId,
+    staleTime: 60_000,
+  })
+}
 
 export interface DecomposeItemVariables {
   workspaceId: string
