@@ -25,6 +25,7 @@
  */
 import { MS_PER_DAY, parseIsoDateAsLocalMidnight, toLocalMidnight } from '@/lib/date/iso'
 import { formatNonZeroCounts } from '@/lib/format-counts'
+import { type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
 export type DueProximityKind = 'overdue' | 'today' | 'tomorrow' | 'thisWeek' | 'later' | 'noDate'
 
@@ -176,41 +177,10 @@ export function dueProximityTone(kind: DueProximityKind): DueProximityTone {
   return TONE_MAP[kind]
 }
 
-export interface DueProximityChipClasses {
-  bgClass: string
-  textClass: string
-  ringClass: string
-}
+/** alias to ChipToneClasses (`@/lib/ui/chip-tone`)。caller の import path を維持。 */
+export type DueProximityChipClasses = ChipToneClasses
 
-const TONE_CLASSES: Record<DueProximityTone, DueProximityChipClasses> = {
-  danger: {
-    bgClass: 'bg-rose-100',
-    textClass: 'text-rose-700',
-    ringClass: 'ring-rose-300',
-  },
-  urgent: {
-    bgClass: 'bg-amber-100',
-    textClass: 'text-amber-800',
-    ringClass: 'ring-amber-300',
-  },
-  warn: {
-    bgClass: 'bg-amber-50',
-    textClass: 'text-amber-700',
-    ringClass: 'ring-amber-200',
-  },
-  info: {
-    bgClass: 'bg-blue-50',
-    textClass: 'text-blue-700',
-    ringClass: 'ring-blue-200',
-  },
-  idle: {
-    bgClass: 'bg-slate-50',
-    textClass: 'text-slate-600',
-    ringClass: 'ring-slate-200',
-  },
-}
-
-/** Tone → Tailwind chip class 3 軸 (bg / text / ring) を 1 関数で。 */
+/** iter485 refactor: 共通 `getChipToneClasses` (lib/ui/chip-tone) に委譲。class 値の string 重複は本 module からゼロに。 */
 export function dueProximityChipClasses(kind: DueProximityKind): DueProximityChipClasses {
-  return TONE_CLASSES[TONE_MAP[kind]]
+  return getChipToneClasses(TONE_MAP[kind])
 }

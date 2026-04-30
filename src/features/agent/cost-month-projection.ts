@@ -33,6 +33,8 @@
  *   - AI invocation の頻度が均等でない場合 (例: 月末集中) は projection が低めに出る
  */
 
+import { type ChipTone, type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
+
 const ISO_DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/
 
 const DEFAULT_WARN_THRESHOLD = 0.8
@@ -198,40 +200,26 @@ export function costMonthProjectionTone(risk: CostMonthProjectionRisk): CostMont
   return RISK_TONE_MAP[risk]
 }
 
-export interface CostMonthProjectionChipClasses {
-  bgClass: string
-  textClass: string
-  ringClass: string
+/** alias to ChipToneClasses (`@/lib/ui/chip-tone`)。caller の import path を維持。 */
+export type CostMonthProjectionChipClasses = ChipToneClasses
+
+/**
+ * iter485 refactor: 共通 `getChipToneClasses` に委譲、class 値の string 重複ゼロ。
+ * cost-month-projection の local 'warn' tone は **chip 配色上は強 amber** (= 共通
+ * vocab の 'urgent') にマップ (= 4 段階モデルなので 'urgent' 不在、'warn' が 2 番目に
+ * 強い severity = 共通 'urgent' と class 同じ)。
+ */
+const RISK_TO_SHARED_CHIP_TONE: Record<CostMonthProjectionRisk, ChipTone> = {
+  over: 'danger',
+  warn: 'urgent',
+  safe: 'info',
+  idle: 'idle',
 }
 
-const TONE_CLASSES: Record<CostMonthProjectionTone, CostMonthProjectionChipClasses> = {
-  danger: {
-    bgClass: 'bg-rose-100',
-    textClass: 'text-rose-700',
-    ringClass: 'ring-rose-300',
-  },
-  warn: {
-    bgClass: 'bg-amber-100',
-    textClass: 'text-amber-800',
-    ringClass: 'ring-amber-300',
-  },
-  info: {
-    bgClass: 'bg-blue-50',
-    textClass: 'text-blue-700',
-    ringClass: 'ring-blue-200',
-  },
-  idle: {
-    bgClass: 'bg-slate-50',
-    textClass: 'text-slate-600',
-    ringClass: 'ring-slate-200',
-  },
-}
-
-/** Tone → Tailwind chip class 3 軸 (bg / text / ring) を 1 関数で。iter481 dueProximityChipClasses と整合。 */
 export function costMonthProjectionChipClasses(
   risk: CostMonthProjectionRisk,
 ): CostMonthProjectionChipClasses {
-  return TONE_CLASSES[RISK_TONE_MAP[risk]]
+  return getChipToneClasses(RISK_TO_SHARED_CHIP_TONE[risk])
 }
 
 export function formatCostMonthProjectionJa(p: CostMonthProjection): string {

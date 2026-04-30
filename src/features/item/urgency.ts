@@ -23,6 +23,7 @@
  * sort 用に `compareUrgency(a, b)` も提供 (高 → 低)。
  */
 import { formatNonZeroCounts } from '@/lib/format-counts'
+import { type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
 import { type DueProximityKind, getDueProximity } from './due-proximity'
 import type { Item } from './schema'
@@ -251,43 +252,12 @@ export function urgencyTierTone(tier: UrgencyTier): UrgencyTierTone {
   return TIER_TONE_MAP[tier]
 }
 
-export interface UrgencyTierChipClasses {
-  bgClass: string
-  textClass: string
-  ringClass: string
-}
+/** alias to ChipToneClasses (`@/lib/ui/chip-tone`)。caller の import path を維持。 */
+export type UrgencyTierChipClasses = ChipToneClasses
 
-const TIER_TONE_CLASSES: Record<UrgencyTierTone, UrgencyTierChipClasses> = {
-  danger: {
-    bgClass: 'bg-rose-100',
-    textClass: 'text-rose-700',
-    ringClass: 'ring-rose-300',
-  },
-  urgent: {
-    bgClass: 'bg-amber-100',
-    textClass: 'text-amber-800',
-    ringClass: 'ring-amber-300',
-  },
-  warn: {
-    bgClass: 'bg-amber-50',
-    textClass: 'text-amber-700',
-    ringClass: 'ring-amber-200',
-  },
-  info: {
-    bgClass: 'bg-blue-50',
-    textClass: 'text-blue-700',
-    ringClass: 'ring-blue-200',
-  },
-  idle: {
-    bgClass: 'bg-slate-50',
-    textClass: 'text-slate-600',
-    ringClass: 'ring-slate-200',
-  },
-}
-
-/** Tier → Tailwind chip class 3 軸 (bg / text / ring) を 1 関数で。iter481/482 と整合。 */
+/** iter485 refactor: 共通 `getChipToneClasses` に委譲、class 値の string 重複ゼロ。 */
 export function urgencyTierChipClasses(tier: UrgencyTier): UrgencyTierChipClasses {
-  return TIER_TONE_CLASSES[TIER_TONE_MAP[tier]]
+  return getChipToneClasses(TIER_TONE_MAP[tier])
 }
 
 /**
