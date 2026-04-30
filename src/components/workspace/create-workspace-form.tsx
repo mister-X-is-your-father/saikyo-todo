@@ -95,7 +95,7 @@ export function CreateWorkspaceForm() {
           </p>
         )}
       </div>
-      <Button type="submit" className="w-full" disabled={isPending}>
+      <Button type="submit" className="h-11 w-full" disabled={isPending}>
         {isPending ? '作成中...' : '作成'}
       </Button>
     </form>
