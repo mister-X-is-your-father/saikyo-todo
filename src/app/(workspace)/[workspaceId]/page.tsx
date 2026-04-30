@@ -17,6 +17,7 @@ import { ItemsBoard } from '@/components/workspace/items-board'
 import { NotificationBell } from '@/components/workspace/notification-bell'
 import { NotificationPreferencesButton } from '@/components/workspace/notification-preferences'
 import { StandupButton } from '@/components/workspace/standup-button'
+import { TeamCapacityPanel } from '@/components/workspace/team-capacity-panel'
 import { WorkspaceHeader } from '@/components/workspace/workspace-header'
 
 interface PageProps {
@@ -105,6 +106,7 @@ export default async function WorkspacePage({ params }: PageProps) {
       />
 
       <GlobalShortcuts workspaceId={workspaceId} />
+      <TeamCapacityPanel workspaceId={workspaceId} />
       <ItemsBoard workspaceId={workspaceId} currentUserId={user.id} />
       <ActiveTimerPanel workspaceId={workspaceId} />
     </main>
