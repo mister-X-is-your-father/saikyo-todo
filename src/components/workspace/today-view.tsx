@@ -222,11 +222,11 @@ export function TodayView({
                           <span className="tabular-nums">{it.dueTime.slice(0, 5)}</span>
                         )}
                         {it.dueDate && it.dueDate !== today && (
-                          <span
-                            className="text-red-600"
-                            title={it.dueDate}
-                            aria-label={`期限 ${it.dueDate}`}
-                          >
+                          // iter436: 旧 outer `title={dueDate}` (mouse only) 削除、
+                          // inner `<time dateTime>` が HTML5 semantic として SR / AT
+                          // に伝える単一 source。iter435 / iter436 で title= 系 date
+                          // 表示を統一。
+                          <span className="text-red-600" aria-label={`期限 ${it.dueDate}`}>
                             期限{' '}
                             <time dateTime={it.dueDate}>
                               {formatFriendlyDate(it.dueDate, todayDate)}

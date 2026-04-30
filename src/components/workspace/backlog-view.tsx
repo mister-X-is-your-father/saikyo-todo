@@ -130,14 +130,15 @@ function buildColumns(
       header: '期限',
       size: 110,
       // iter261 basics: ISO `2026-04-30` を `今日` / `明日` / `4/30 (木)` に整形。
-      // 元 ISO は title / aria-label に残し SR と hover で正確な日付を保持。
+      // iter436: <span title> から <time dateTime> 要素に格上げ (HTML5 semantic
+      // で SR が日付情報として認識、iter435 command-palette と同 pattern)。
       cell: ({ getValue }) => {
         const v = getValue() as string | null
         if (!v) return '—'
         return (
-          <span title={v} aria-label={`期限 ${v}`}>
+          <time dateTime={v} aria-label={`期限 ${v}`}>
             {formatFriendlyDate(v, today)}
-          </span>
+          </time>
         )
       },
     },
@@ -283,7 +284,11 @@ export function BacklogView({ workspaceId, items }: Props) {
         </span>
       </div>
       <div data-testid="backlog-view" className="max-h-[600px] overflow-auto rounded-lg border">
-        <DndContext sensors={sensors} collisionDetection={pointerFirstCollision} onDragEnd={handleDragEnd}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={pointerFirstCollision}
+          onDragEnd={handleDragEnd}
+        >
           <table className="w-full border-collapse text-sm">
             <caption className="sr-only">
               バックログ一覧 (DnD で並び替え可能 / 列ヘッダ click で sort)
