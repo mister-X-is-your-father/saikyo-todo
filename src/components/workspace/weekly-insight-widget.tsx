@@ -103,10 +103,16 @@ export function WeeklyInsightWidget({ items, now }: Props) {
   // iter505 simplification: 4 行 chip 構築 → buildFourStateHintChip で 1 行化
   const hint = buildFourStateHintChip(insight, classifyWeeklyInsightHint, formatWeeklyInsightHintJa)
 
+  // iter511 basics: aria-label に worstDay 情報も含めて SR で完全な状態を読める
+  const worstDayAriaPart =
+    worstDay !== null && worstDay.dayIndex !== bestDay?.dayIndex
+      ? `。${formatWorstDayJa(worstDay)}`
+      : ''
+
   return (
     <Card
       role="region"
-      aria-label={`週次 Insight (${hint.label}): ${deltaLabel}。${bestDayLabel}`}
+      aria-label={`週次 Insight (${hint.label}): ${deltaLabel}。${bestDayLabel}${worstDayAriaPart}`}
       data-weekly-insight-hint={hint.label}
       data-testid="weekly-insight-widget"
     >
