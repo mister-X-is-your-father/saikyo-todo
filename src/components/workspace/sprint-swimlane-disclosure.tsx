@@ -168,7 +168,14 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
             <div
               className="bg-muted relative mt-1 h-3 w-full overflow-hidden rounded-sm"
               role="img"
-              aria-label={`bar 数 ${row.items.length} 件`}
+              aria-label={(() => {
+                // iter442: 競合 (conflicted) 件数を aria-label に含めて WCAG 1.4.1
+                // 「色のみで意味伝達」 を回避。amber bar は SR で identifiable に。
+                const conflicted = row.items.filter((it) => it.conflicted).length
+                return conflicted > 0
+                  ? `bar 数 ${row.items.length} 件 (うち競合あり ${conflicted} 件)`
+                  : `bar 数 ${row.items.length} 件`
+              })()}
             >
               {row.items.map((it) => (
                 <span
