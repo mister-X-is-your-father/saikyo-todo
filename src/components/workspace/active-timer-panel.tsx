@@ -186,11 +186,14 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
             </span>
           ) : null}
           {calibrated && calibrated.deltaMinutes !== 0 ? (
+            // iter440: title= は mouse hover only で SR / keyboard 不可達。aria-label
+            // に校正値 + 中央値の factor 情報を集約 (factor は SR ユーザにも価値ある
+            // signal、データ source の透明性 UX)。
             <span
               className="ml-1 rounded border border-cyan-200 bg-cyan-50 px-1 text-[9px] text-cyan-600"
               data-testid="active-timer-estimate-calibrated"
-              title={`直近の見積精度に基づく校正値 (中央値 ${calibrationFactor?.toFixed(2)}×)`}
-              aria-label={`校正後 ${calibrated.calibratedMinutes}分 (${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分)`}
+              role="img"
+              aria-label={`校正後 ${calibrated.calibratedMinutes}分 (${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正)`}
             >
               → {calibrated.calibratedMinutes}分
             </span>
@@ -199,7 +202,7 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
         <div className="flex items-center gap-2">
           <span
             className={`max-w-[160px] truncate font-medium ${inPip ? 'text-sm' : 'text-xs'}`}
-            title={itemTitle ?? ''}
+            title={itemTitle || undefined}
           >
             {itemTitle || '(無題)'}
           </span>
