@@ -4,6 +4,7 @@ import type { AssigneeRef } from '@/features/item/repository'
 
 import {
   type AiHandoffPhase,
+  formatHandoffPhaseStatusJa,
   getAiHandoffPhase,
   getHandoffPhaseDescriptor,
   type HandoffItemFields,
@@ -119,5 +120,32 @@ describe('getHandoffPhaseDescriptor', () => {
   it('severity: completed=ok, no-ai=muted', () => {
     expect(getHandoffPhaseDescriptor('completed').severity).toBe('ok')
     expect(getHandoffPhaseDescriptor('no-ai').severity).toBe('muted')
+  })
+})
+
+describe('formatHandoffPhaseStatusJa', () => {
+  it('chip label と description を " — " で連結', () => {
+    expect(formatHandoffPhaseStatusJa('no-ai')).toBe(
+      '人間担当 — AssigneePicker で AI を選ぶと「AI に任せた」モードに切替',
+    )
+  })
+  it('completed phase', () => {
+    expect(formatHandoffPhaseStatusJa('completed')).toBe(
+      '完了済 — AI と人間の協業 cycle が完了した item',
+    )
+  })
+  it('全 6 phase が non-empty 文字列', () => {
+    const phases: AiHandoffPhase[] = [
+      'no-ai',
+      'pending-handoff',
+      'plan-ready-for-review',
+      'in-execution',
+      'review-requested',
+      'completed',
+    ]
+    for (const p of phases) {
+      expect(formatHandoffPhaseStatusJa(p).length).toBeGreaterThan(0)
+      expect(formatHandoffPhaseStatusJa(p)).toContain(' — ')
+    }
   })
 })

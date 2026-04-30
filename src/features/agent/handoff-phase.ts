@@ -131,3 +131,18 @@ const DESCRIPTORS: Record<AiHandoffPhase, PhaseDescriptor> = {
 export function getHandoffPhaseDescriptor(phase: AiHandoffPhase): PhaseDescriptor {
   return DESCRIPTORS[phase]
 }
+
+/**
+ * iter538 ai-automation polish: AI handoff phase の 1 行 status (chip aria-label /
+ * AI prompt / Slack 通知 用)。
+ *   '人間担当 — AssigneePicker で AI を選ぶと「AI に任せた」モードに切替'
+ *   'AI hand-off 待ち — Plan 生成を click すると AI が実行計画を comment 投稿'
+ *   '完了済 — AI と人間の協業 cycle が完了した item'
+ *
+ * caller (= chip aria-label / AI prompt / Slack 通知) は本文字列をそのまま埋め込める。
+ * 詳細 button label は `getHandoffPhaseDescriptor(phase).primaryActionLabel` で個別に取得。
+ */
+export function formatHandoffPhaseStatusJa(phase: AiHandoffPhase): string {
+  const d = DESCRIPTORS[phase]
+  return `${d.chipLabel} — ${d.description}`
+}
