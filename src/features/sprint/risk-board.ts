@@ -175,5 +175,69 @@ export function buildSprintRiskBoard<T extends RiskBoardItemFields>(
   return { all, topRisk, assigneeLoad }
 }
 
+/**
+ * iter527 ai-automation (queue: fluffy-2 risk-board polish): assignee 1 人当たりの load を
+ * 4 段 severity に分類する pure helper。SeverityChip の tone bind に使える共通分類軸。
+ *
+ * 閾値 (totalScore = 担当 item 群の risk score 累積):
+ *  - 'overloaded' >= 100  (= 高 risk MUST × 複数 / blocked 多発、即 escalation)
+ *  - 'busy'       >= 50   (= 通常+α、注意)
+ *  - 'normal'     >= 20   (= 健全)
+ *  - 'light'      <  20   (= 余裕、引き受け候補)
+ *
+ * itemCount だけでは「ぜんぶ low risk な小タスク N 件」と「高 risk MUST 1 件」が同 weight
+ * になるので totalScore (= 重み付き合計) を主指標にする。0 件 → 'light' (= 受け入れ余裕)。
+ */
+export type AssigneeLoadSeverity = 'overloaded' | 'busy' | 'normal' | 'light'
+
+export function assigneeLoadSeverity(load: RiskBoardAssigneeLoad): AssigneeLoadSeverity {
+  if (load.itemCount === 0) return 'light'
+  if (load.totalScore >= 100) return 'overloaded'
+  if (load.totalScore >= 50) return 'busy'
+  if (load.totalScore >= 20) return 'normal'
+  return 'light'
+}
+
+const SEVERITY_LABEL_JA: Record<AssigneeLoadSeverity, string> = {
+  overloaded: '高負荷',
+  busy: '繁忙',
+  normal: '通常',
+  light: '余裕',
+}
+
+/**
+ * AI prompt / chip aria-label / SR 用 1 行サマリ:
+ *   '高負荷 (item 5 件 / MUST 2 件 / 累積 score 120)'
+ *   '余裕 (item 0 件)' (= 担当無し履歴)
+ */
+export function formatAssigneeLoadJa(load: RiskBoardAssigneeLoad): string {
+  const sev = assigneeLoadSeverity(load)
+  const label = SEVERITY_LABEL_JA[sev]
+  if (load.itemCount === 0) return `${label} (item 0 件)`
+  return `${label} (item ${load.itemCount} 件 / MUST ${load.mustCount} 件 / 累積 score ${load.totalScore})`
+}
+
+/**
+ * AI prompt / dashboard chip 用 sprint 全体の board サマリ 1 行:
+ *   'リスクあり 5 件 (top: 期限超過 12 日 score 60 / 今日が期限 score 50)'
+ *   '安全 (リスク item なし)' (= 全 score 0)
+ *
+ * 上位 entry 2 件を「reason 先頭 + score」で並べる (詳細は widget 側で展開)。
+ */
+export function formatSprintRiskBoardJa<T extends RiskBoardItemFields>(
+  summary: SprintRiskBoardSummary<T>,
+): string {
+  const risky = summary.all.filter((e) => e.riskScore > 0)
+  if (risky.length === 0) return '安全 (リスク item なし)'
+  const top = summary.topRisk.slice(0, 2)
+  const tops = top
+    .map((e) => {
+      const head = e.reasons[0] ?? '(reason 不明)'
+      return `${head} score ${e.riskScore}`
+    })
+    .join(' / ')
+  return `リスクあり ${risky.length} 件 (top: ${tops})`
+}
+
 // 内部 helper を test しやすく named export
 export { computeRiskScore, dayDiffISO }

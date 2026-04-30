@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  assigneeLoadSeverity,
   buildSprintRiskBoard,
   computeRiskScore,
   dayDiffISO,
+  formatAssigneeLoadJa,
+  formatSprintRiskBoardJa,
   type RiskBoardItemFields,
 } from './risk-board'
 
@@ -178,5 +181,71 @@ describe('buildSprintRiskBoard', () => {
     const items = [mk({ id: 'b', dueDate: TODAY }), mk({ id: 'a', dueDate: TODAY })]
     const r = buildSprintRiskBoard(items, { today: TODAY })
     expect(r.all.map((e) => e.item.id)).toEqual(['a', 'b'])
+  })
+})
+
+describe('assigneeLoadSeverity', () => {
+  it('score 100+ → overloaded', () => {
+    expect(assigneeLoadSeverity({ itemCount: 3, mustCount: 2, totalScore: 100 })).toBe('overloaded')
+    expect(assigneeLoadSeverity({ itemCount: 5, mustCount: 0, totalScore: 250 })).toBe('overloaded')
+  })
+
+  it('score 50-99 → busy', () => {
+    expect(assigneeLoadSeverity({ itemCount: 2, mustCount: 0, totalScore: 50 })).toBe('busy')
+    expect(assigneeLoadSeverity({ itemCount: 4, mustCount: 1, totalScore: 99 })).toBe('busy')
+  })
+
+  it('score 20-49 → normal', () => {
+    expect(assigneeLoadSeverity({ itemCount: 1, mustCount: 0, totalScore: 20 })).toBe('normal')
+    expect(assigneeLoadSeverity({ itemCount: 2, mustCount: 0, totalScore: 49 })).toBe('normal')
+  })
+
+  it('score 0-19 → light', () => {
+    expect(assigneeLoadSeverity({ itemCount: 1, mustCount: 0, totalScore: 0 })).toBe('light')
+    expect(assigneeLoadSeverity({ itemCount: 2, mustCount: 0, totalScore: 19 })).toBe('light')
+  })
+
+  it('itemCount=0 は totalScore 関係なく light', () => {
+    expect(assigneeLoadSeverity({ itemCount: 0, mustCount: 0, totalScore: 0 })).toBe('light')
+  })
+})
+
+describe('formatAssigneeLoadJa', () => {
+  it('item 0 件 → "余裕 (item 0 件)"', () => {
+    expect(formatAssigneeLoadJa({ itemCount: 0, mustCount: 0, totalScore: 0 })).toBe(
+      '余裕 (item 0 件)',
+    )
+  })
+
+  it('overloaded で MUST 込み', () => {
+    expect(formatAssigneeLoadJa({ itemCount: 5, mustCount: 2, totalScore: 120 })).toBe(
+      '高負荷 (item 5 件 / MUST 2 件 / 累積 score 120)',
+    )
+  })
+
+  it('normal label', () => {
+    expect(formatAssigneeLoadJa({ itemCount: 2, mustCount: 0, totalScore: 30 })).toBe(
+      '通常 (item 2 件 / MUST 0 件 / 累積 score 30)',
+    )
+  })
+})
+
+describe('formatSprintRiskBoardJa', () => {
+  it('全 score 0 → "安全 (リスク item なし)"', () => {
+    const summary = buildSprintRiskBoard([mk({ id: 'a' })], { today: TODAY })
+    expect(formatSprintRiskBoardJa(summary)).toBe('安全 (リスク item なし)')
+  })
+
+  it('top 2 reason + score を 1 行', () => {
+    const items = [
+      mk({ id: 'a', dueDate: '2026-04-20' }), // overdue 10
+      mk({ id: 'b', dueDate: TODAY }), // today
+      mk({ id: 'c' }), // 0
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    const out = formatSprintRiskBoardJa(summary)
+    expect(out).toMatch(/^リスクあり 2 件 \(top: /)
+    expect(out).toContain('期限超過 10 日')
+    expect(out).toContain('今日が期限')
   })
 })
