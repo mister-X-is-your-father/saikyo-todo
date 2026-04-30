@@ -37,6 +37,14 @@ function completionSeverity(rate: number): 'ok' | 'info' | 'warn' | 'danger' {
   return 'danger'
 }
 
+/** iter454 (iter424 pattern 水平展開): 進捗 bar の aria-valuetext に severity 文字 */
+function severityLabelJa(sev: 'ok' | 'info' | 'warn' | 'danger'): string {
+  if (sev === 'ok') return '順調'
+  if (sev === 'info') return '良好'
+  if (sev === 'warn') return '注意'
+  return '要対策'
+}
+
 export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, className }: Props) {
   const stats = buildCycleCheckStats(items, { cycleStartedAt, cycleEndedAt })
   const sev = completionSeverity(stats.completionRate)
@@ -77,7 +85,8 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
             aria-valuenow={stats.completionRate}
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-label={`完了率 ${stats.completionRate}%`}
+            aria-label="完了率"
+            aria-valuetext={`${stats.completionRate}% (${severityLabelJa(sev)})`}
           >
             <div className={`h-full ${sevBarCls}`} style={{ width: `${stats.completionRate}%` }} />
           </div>
