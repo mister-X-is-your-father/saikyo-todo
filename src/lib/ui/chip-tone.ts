@@ -132,3 +132,37 @@ export function chipToneAttentionRank(tone: ChipTone): number {
 export function compareChipTones(a: ChipTone, b: ChipTone): number {
   return TONE_ATTENTION_RANK[b] - TONE_ATTENTION_RANK[a]
 }
+
+/**
+ * iter491 basics: tone を「ja-JP 1 単語ラベル」に変換する pure helper。
+ *
+ * 用途: SR aria-label / Slack 通知 ペイロード / AI brief 等で「(緊急対応)」
+ * 「(注意)」「(達成)」のような **修飾語** を付与したい時、tone から直接ラベルが
+ * 取れる (= caller の switch 文を排除)。
+ *
+ * 6 段階のラベル:
+ *  - danger  → '緊急'  (= 即対応、強警戒)
+ *  - urgent  → '要対応' (= 行動喚起、今日対応)
+ *  - warn    → '注意'  (= 軽い警戒、明日対応)
+ *  - info    → '通常'  (= 計画範囲内)
+ *  - idle    → '対象外' (= 計算不能 / 未設定)
+ *  - success → '達成'  (= 完了 / 余裕、positive 軸)
+ *
+ * 注: domain 固有ラベル (urgencyTier の '緊急/高/中/低/対象外'、dueProximity の
+ * '期限切れ/今日/明日/今週内/今後/未設定') と衝突しないよう、本 helper は
+ * **tone (= 視覚配色軸)** のラベル。caller は domain ラベルと組み合わせて使う:
+ *   `${dueProximityLabel(kind)} (${chipToneLabelJa(dueProximityTone(kind))})`
+ *   → '期限切れ (緊急)' / '今日 (要対応)' / '今週内 (通常)' 等
+ */
+const TONE_LABEL_JA: Record<ChipTone, string> = {
+  danger: '緊急',
+  urgent: '要対応',
+  warn: '注意',
+  info: '通常',
+  idle: '対象外',
+  success: '達成',
+}
+
+export function chipToneLabelJa(tone: ChipTone): string {
+  return TONE_LABEL_JA[tone]
+}

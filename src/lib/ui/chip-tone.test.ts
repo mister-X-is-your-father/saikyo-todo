@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 import {
   type ChipTone,
   chipToneAttentionRank,
+  chipToneLabelJa,
   compareChipTones,
   getChipToneClasses,
 } from './chip-tone'
@@ -70,5 +71,22 @@ describe('compareChipTones (sort comparator、危ない順)', () => {
     const tones: ChipTone[] = ['warn', 'warn', 'danger', 'warn']
     const sorted = [...tones].sort(compareChipTones)
     expect(sorted).toEqual(['danger', 'warn', 'warn', 'warn'])
+  })
+})
+
+describe('chipToneLabelJa (SR aria-label / 修飾語 ja-JP)', () => {
+  it('6 tone × 1 label の map', () => {
+    expect(chipToneLabelJa('danger')).toBe('緊急')
+    expect(chipToneLabelJa('urgent')).toBe('要対応')
+    expect(chipToneLabelJa('warn')).toBe('注意')
+    expect(chipToneLabelJa('info')).toBe('通常')
+    expect(chipToneLabelJa('idle')).toBe('対象外')
+    expect(chipToneLabelJa('success')).toBe('達成')
+  })
+
+  it('caller pattern: domain label + tone label の組み合わせ (例: 「期限切れ (緊急)」)', () => {
+    // 例として「期限切れ」 + tone label 'danger' = '緊急'
+    const composite = `期限切れ (${chipToneLabelJa('danger')})`
+    expect(composite).toBe('期限切れ (緊急)')
   })
 })
