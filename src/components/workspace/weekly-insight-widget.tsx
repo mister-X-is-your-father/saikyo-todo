@@ -22,8 +22,7 @@ import { useMemo } from 'react'
 import { AlertTriangle, Sparkles, TrendingDown, TrendingUp } from 'lucide-react'
 
 import { trendToneClass } from '@/lib/ui/trend-tone'
-import { severityChipClass } from '@/lib/widget/severity'
-import { fourStateHintToSeverity } from '@/lib/widget/severity-bridges'
+import { buildFourStateHintChip } from '@/lib/widget/severity-bridges'
 
 import {
   buildWeeklyInsight,
@@ -96,18 +95,14 @@ export function WeeklyInsightWidget({ items, now }: Props) {
   // iter481 basics: 今週 ベスト曜日 chip — 軸 5 やる気 (ハイライト「うまくいった日」)
   const bestDay = pickBestDayInWeek(insight)
   const bestDayLabel = formatBestDayJa(bestDay)
-  // iter483 basics: 4 状態 hint で chip / aria-label に 1 単語 state を埋める
-  const hintLabel = formatWeeklyInsightHintJa(insight)
-  // iter496 basics: hint → Severity bridge (iter495) → severityChipClass で chip 配色
-  // iter501 simplification: severityClasses(...).bg/.text/.border → severityChipClass で 1 行化
-  const hintSeverity = fourStateHintToSeverity(classifyWeeklyInsightHint(insight))
-  const hintClass = severityChipClass(hintSeverity)
+  // iter505 simplification: 4 行 chip 構築 → buildFourStateHintChip で 1 行化
+  const hint = buildFourStateHintChip(insight, classifyWeeklyInsightHint, formatWeeklyInsightHintJa)
 
   return (
     <Card
       role="region"
-      aria-label={`週次 Insight (${hintLabel}): ${deltaLabel}。${bestDayLabel}`}
-      data-weekly-insight-hint={hintLabel}
+      aria-label={`週次 Insight (${hint.label}): ${deltaLabel}。${bestDayLabel}`}
+      data-weekly-insight-hint={hint.label}
       data-testid="weekly-insight-widget"
     >
       <CardHeader className="pb-2">
@@ -119,11 +114,11 @@ export function WeeklyInsightWidget({ items, now }: Props) {
           週次 Insight
           <span className="text-muted-foreground text-xs font-normal">{insight.weekStart} 週</span>
           <span
-            className={`ml-auto rounded border px-2 py-0.5 text-[11px] font-medium ${hintClass}`}
+            className={`ml-auto rounded border px-2 py-0.5 text-[11px] font-medium ${hint.chipClass}`}
             data-testid="weekly-insight-hint"
-            data-severity={hintSeverity}
+            data-severity={hint.severity}
           >
-            {hintLabel}
+            {hint.label}
           </span>
           {bestDay !== null && (
             <span

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   assigneeLoadSeverityToSeverity,
+  buildFourStateHintChip,
   fourStateHintToSeverity,
   improvementSeverityToSeverity,
   pdcaPhaseSeverityToSeverity,
@@ -64,5 +65,28 @@ describe('fourStateHintToSeverity', () => {
   })
   it('severe → danger', () => {
     expect(fourStateHintToSeverity('severe')).toBe('danger')
+  })
+})
+
+describe('buildFourStateHintChip', () => {
+  it('classify + format から {label, severity, chipClass} 3 件を返す', () => {
+    const r = buildFourStateHintChip(
+      { count: 5 },
+      (i) => (i.count >= 5 ? 'severe' : 'mild'),
+      (i) => `${i.count} 件`,
+    )
+    expect(r.label).toBe('5 件')
+    expect(r.severity).toBe('danger')
+    expect(r.chipClass).toContain('rose')
+  })
+
+  it('idle → muted (slate)', () => {
+    const r = buildFourStateHintChip(
+      0,
+      () => 'idle',
+      () => '空',
+    )
+    expect(r.severity).toBe('muted')
+    expect(r.chipClass).toContain('slate')
   })
 })

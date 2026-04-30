@@ -4,8 +4,7 @@ import { useMemo } from 'react'
 
 import { parseAsString, useQueryState } from 'nuqs'
 
-import { severityChipClass } from '@/lib/widget/severity'
-import { fourStateHintToSeverity } from '@/lib/widget/severity-bridges'
+import { buildFourStateHintChip } from '@/lib/widget/severity-bridges'
 
 import {
   classifyInboxHealthHint,
@@ -93,12 +92,12 @@ export function InboxView({
     )
   }
 
-  // iter494 (queue GT-3 polish): Inbox 健全性 hint を 1 単語 chip で header 右に表示
-  const healthLabel = formatInboxHealthHintJa(gtdSummary)
-  // iter497 ai-automation: severity bridge (iter495) で chip 配色を 4 tone に
-  // iter501 simplification: severityChipClass (iter500) で 1 行化
-  const healthSeverity = fourStateHintToSeverity(classifyInboxHealthHint(gtdSummary))
-  const healthChipClass = severityChipClass(healthSeverity)
+  // iter494 (queue GT-3 polish) + iter505 simplification: buildFourStateHintChip で 1 行化
+  const healthChip = buildFourStateHintChip(
+    gtdSummary,
+    classifyInboxHealthHint,
+    formatInboxHealthHintJa,
+  )
 
   return (
     <div className="space-y-1 rounded-lg border p-2" data-testid="inbox-view">
@@ -107,12 +106,12 @@ export function InboxView({
           {inbox.length} 件 — scheduledFor も期限も未設定
         </span>
         <span
-          className={`ml-auto rounded-full border px-1.5 py-0.5 text-[11px] ${healthChipClass}`}
+          className={`ml-auto rounded-full border px-1.5 py-0.5 text-[11px] ${healthChip.chipClass}`}
           data-testid="inbox-health-hint"
-          data-severity={healthSeverity}
-          aria-label={`Inbox 健全性: ${healthLabel}`}
+          data-severity={healthChip.severity}
+          aria-label={`Inbox 健全性: ${healthChip.label}`}
         >
-          {healthLabel}
+          {healthChip.label}
         </span>
       </div>
       {/* iter544 (queue GT-3 wire-up): GTD Inbox Process classification の bucket count chip 群 */}

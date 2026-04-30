@@ -18,8 +18,7 @@ import {
   Trash2,
 } from 'lucide-react'
 
-import { severityChipClass } from '@/lib/widget/severity'
-import { fourStateHintToSeverity } from '@/lib/widget/severity-bridges'
+import { buildFourStateHintChip } from '@/lib/widget/severity-bridges'
 
 import { type AuditActionIconKey, getAuditActionVisual } from '@/features/audit/action-visual'
 import {
@@ -55,9 +54,7 @@ export function ActivityLog({ itemId }: { itemId: string }) {
   const hint = useMemo(() => {
     if (!data || data.length === 0) return null
     const counts = groupAuditByCategory(data, { actorTypes: [] })
-    const label = formatAuditActivityHintJa(counts)
-    const severity = fourStateHintToSeverity(classifyAuditActivityHint(counts))
-    return { label, severity, chipClass: severityChipClass(severity) }
+    return buildFourStateHintChip(counts, classifyAuditActivityHint, formatAuditActivityHintJa)
   }, [data])
   if (isLoading) {
     return (

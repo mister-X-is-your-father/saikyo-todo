@@ -107,3 +107,35 @@ export function fourStateHintToSeverity(hint: FourStateHint): Severity {
       return 'danger'
   }
 }
+
+import { severityChipClass } from './severity'
+
+/**
+ * iter505 refactor: 4 状態 hint chip 用の {label, severity, chipClass} を 1 関数で取得。
+ *
+ * iter496 / iter497 / iter498 / iter499 で 4 chip wire-up caller (WeeklyInsightWidget /
+ * InboxView / ActivityLog / NotificationBell) が同 shape の構築を inline で書いていた:
+ *
+ *   const label = formatXxxHintJa(input)
+ *   const severity = fourStateHintToSeverity(classifyXxxHint(input))
+ *   const chipClass = severityChipClass(severity)
+ *   return { label, severity, chipClass }
+ *
+ * 本 helper で 1 呼出に集約。caller の boilerplate を 4 行 → 1 行に。
+ */
+export interface FourStateHintChipProps {
+  label: string
+  severity: Severity
+  chipClass: string
+}
+
+export function buildFourStateHintChip<T>(
+  input: T,
+  classify: (input: T) => FourStateHint,
+  format: (input: T) => string,
+): FourStateHintChipProps {
+  const label = format(input)
+  const severity = fourStateHintToSeverity(classify(input))
+  const chipClass = severityChipClass(severity)
+  return { label, severity, chipClass }
+}
