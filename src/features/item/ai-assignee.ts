@@ -13,7 +13,21 @@
  *
  * pure 関数のみ (DB / I/O 無し) — vitest で単体検証可能。
  */
+import type { AgentRole } from '@/features/agent/schema'
+
 import type { AssigneeRef } from './repository'
+
+/**
+ * agentRepository.listByWorkspace の返り値が必要な field だけを取り出した
+ * 軽量 shape (test では生のオブジェクトリテラルで mock しやすい)。
+ * 完全な Agent 型は server-only な drizzle 派生で client 不可なので、ここでは
+ * 構造的部分型で受ける。
+ */
+export interface AgentLikeForAssignee {
+  id: string
+  role: string
+  displayName?: string | null
+}
 
 /** AssigneeRef が AI agent (actor_type='agent') を指しているか。 */
 export function isAiAssignee(ref: AssigneeRef): boolean {
@@ -60,4 +74,32 @@ export function countAssigneesByKind(refs: readonly AssigneeRef[]): AssigneeKind
     else if (r.actorType === 'user') user += 1
   }
   return { ai, user, total: refs.length }
+}
+
+/**
+ * agents 行を AssigneeRef[] に map (actor_type='agent' / actor_id=agent.id)。
+ * AssigneePicker で AI 選択肢を render する時、value 内の AI assignee と
+ * 比較するために使う。
+ */
+export function agentsToAssigneeRefs(agents: readonly AgentLikeForAssignee[]): AssigneeRef[] {
+  return agents.map((a) => ({ actorType: 'agent', actorId: a.id }))
+}
+
+const AGENT_ROLE_LABEL_JA: Record<AgentRole, string> = {
+  pm: 'PM',
+  researcher: 'リサーチャー',
+  engineer: 'エンジニア',
+  reviewer: 'レビューワー',
+}
+
+/**
+ * Agent.role の表示用日本語ラベル。AssigneePicker の選択肢 / KanbanCard の
+ * 「AI 担当」 chip 等で使う。未知の role は "AI" + role 文字列で fallback
+ * (将来 role enum 拡張時にも壊れない)。
+ */
+export function formatAgentRoleLabelJa(role: string): string {
+  if (role in AGENT_ROLE_LABEL_JA) {
+    return `AI ${AGENT_ROLE_LABEL_JA[role as AgentRole]}`
+  }
+  return `AI ${role}`
 }

@@ -10,9 +10,11 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  agentsToAssigneeRefs,
   countAssigneesByKind,
   extractAiAssignees,
   extractUserAssignees,
+  formatAgentRoleLabelJa,
   hasAiAssignee,
   isAiAssignee,
   isFullyAiAssigned,
@@ -97,6 +99,46 @@ describe('ai-assignee', () => {
     })
     it('空配列 → false', () => {
       expect(isMixedAssignment([])).toBe(false)
+    })
+  })
+
+  describe('agentsToAssigneeRefs', () => {
+    it('agent rows → AssigneeRef[] (actor_type=agent / actor_id=agent.id)', () => {
+      const agents = [
+        { id: 'agent-r', role: 'researcher' },
+        { id: 'agent-p', role: 'pm' },
+      ]
+      expect(agentsToAssigneeRefs(agents)).toEqual([
+        { actorType: 'agent', actorId: 'agent-r' },
+        { actorType: 'agent', actorId: 'agent-p' },
+      ])
+    })
+
+    it('空配列なら空配列', () => {
+      expect(agentsToAssigneeRefs([])).toEqual([])
+    })
+
+    it('order を保持する (sort しない)', () => {
+      const agents = [
+        { id: 'z', role: 'reviewer' },
+        { id: 'a', role: 'engineer' },
+        { id: 'm', role: 'pm' },
+      ]
+      const refs = agentsToAssigneeRefs(agents)
+      expect(refs.map((r) => r.actorId)).toEqual(['z', 'a', 'm'])
+    })
+  })
+
+  describe('formatAgentRoleLabelJa', () => {
+    it('既知 4 role を日本語ラベルに変換', () => {
+      expect(formatAgentRoleLabelJa('pm')).toBe('AI PM')
+      expect(formatAgentRoleLabelJa('researcher')).toBe('AI リサーチャー')
+      expect(formatAgentRoleLabelJa('engineer')).toBe('AI エンジニア')
+      expect(formatAgentRoleLabelJa('reviewer')).toBe('AI レビューワー')
+    })
+
+    it('未知 role は AI + 原文 で fallback', () => {
+      expect(formatAgentRoleLabelJa('custom-role-x')).toBe('AI custom-role-x')
     })
   })
 

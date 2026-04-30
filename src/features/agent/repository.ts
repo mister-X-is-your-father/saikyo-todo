@@ -22,6 +22,20 @@ export const agentRepository = {
     if (!row) throw new Error('insert agents returned no row')
     return row as Agent
   },
+
+  /**
+   * 指定 workspace の agent 一覧を role 昇順で返す。
+   * AssigneePicker の AI 選択肢列挙 / Item 自動実行 trigger 候補抽出に使う
+   * (FEEDBACK_QUEUE「AI 自動実行モード」 P0 scope A iter2)。
+   */
+  async listByWorkspace(tx: Tx, workspaceId: string): Promise<Agent[]> {
+    const rows = await tx
+      .select()
+      .from(agents)
+      .where(eq(agents.workspaceId, workspaceId))
+      .orderBy(asc(agents.role))
+    return rows as Agent[]
+  },
 }
 
 export const agentInvocationRepository = {
