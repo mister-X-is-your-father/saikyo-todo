@@ -70,6 +70,7 @@ export function EngineerTriggerButton({ item }: Props) {
       <Button
         type="button"
         size="sm"
+        className="min-h-11"
         variant="secondary"
         disabled={trigger.isPending}
         // iter334: pending 中の SR 通知を「disabled」だけでなく「busy」にも伝達
