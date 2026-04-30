@@ -4,8 +4,6 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { ConflictError } from '@/lib/errors'
-
 import { personalPeriodGoalService } from './service'
 
 import { createTestUserAndWorkspace, mockAuthGuards } from '@/test/fixtures'
@@ -84,7 +82,7 @@ describe('personalPeriodGoalService', () => {
     })
     expect(r.ok).toBe(false)
     if (r.ok) return
-    expect(r.error).toBeInstanceOf(ConflictError)
+    expect(r.error.code).toBe('CONFLICT')
   })
 
   it('upsert: 新規 insert で expectedVersion != 0 は ConflictError', async () => {

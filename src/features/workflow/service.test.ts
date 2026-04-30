@@ -4,8 +4,6 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { ConflictError, NotFoundError } from '@/lib/errors'
-
 import { workflowService } from './service'
 
 import { createTestUserAndWorkspace, mockAuthGuards } from '@/test/fixtures'
@@ -95,21 +93,21 @@ describe('workflowService', () => {
     })
     expect(r.ok).toBe(false)
     if (r.ok) return
-    expect(r.error).toBeInstanceOf(ConflictError)
+    expect(r.error.code).toBe('CONFLICT')
   })
 
   it('softDelete: 存在しない id は NotFoundError', async () => {
     const r = await workflowService.softDelete('00000000-0000-0000-0000-000000000000')
     expect(r.ok).toBe(false)
     if (r.ok) return
-    expect(r.error).toBeInstanceOf(NotFoundError)
+    expect(r.error.code).toBe('NOT_FOUND')
   })
 
   it('listNodeRuns: 存在しない runId は NotFoundError', async () => {
     const r = await workflowService.listNodeRuns('00000000-0000-0000-0000-000000000000')
     expect(r.ok).toBe(false)
     if (r.ok) return
-    expect(r.error).toBeInstanceOf(NotFoundError)
+    expect(r.error.code).toBe('NOT_FOUND')
   })
 
   it('listNodeRuns: runId 空は ValidationError', async () => {

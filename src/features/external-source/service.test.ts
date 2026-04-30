@@ -1,7 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { ConflictError, NotFoundError } from '@/lib/errors'
-
 import { externalSourceService } from './service'
 
 import { createTestUserAndWorkspace, mockAuthGuards } from '@/test/fixtures'
@@ -123,13 +121,13 @@ describe('externalSourceService', () => {
     })
     expect(r.ok).toBe(false)
     if (r.ok) return
-    expect(r.error).toBeInstanceOf(ConflictError)
+    expect(r.error.code).toBe('CONFLICT')
   })
 
   it('softDelete: 存在しない id は NotFoundError', async () => {
     const r = await externalSourceService.softDelete('00000000-0000-0000-0000-000000000000')
     expect(r.ok).toBe(false)
     if (r.ok) return
-    expect(r.error).toBeInstanceOf(NotFoundError)
+    expect(r.error.code).toBe('NOT_FOUND')
   })
 })
