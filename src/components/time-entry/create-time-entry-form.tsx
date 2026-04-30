@@ -130,6 +130,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           aria-busy={create.isPending || undefined}
           data-testid="create-time-entry-submit"
           aria-label={create.isPending ? '稼働記録を作成中…' : '稼働記録を作成'}
+          className="h-11 px-4"
         >
           {create.isPending ? '...' : '記録'}
         </Button>
