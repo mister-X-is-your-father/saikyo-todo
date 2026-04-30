@@ -230,7 +230,7 @@ button disabled + reason aria-label。typecheck/lint 緑 (warning baseline 1)。
          latest-activity の 3 substrate を 1 panel に統合、scope A UI bind)
 
 3. **チームメンバー余裕時間 一覧** (詳細: 本ファイル下方、scope A から)
-   - 🚧 進行中 (iter465 で member-capacity substrate 着地、次 iter で UI bind)
+   - ✅ scope A 完了 (iter465/466/469/476/477、計 5 commit)
    - 仮置き判断: capacity = 8h/day 固定、見積無し item は「未見積 N 件」 chip で別表示
    - workspace home に panel 追加、avatar + 今日 chip + 今週 chip (ISO 週)
    - MUST 別カウントは scope B 以降、Slack 通知も別件
@@ -244,8 +244,11 @@ button disabled + reason aria-label。typecheck/lint 緑 (warning baseline 1)。
          `sortTeamCapacityLoadsByUrgency` (member×period×assignee の三軸統合、
          今日/今週 row × N member、urgency sort) + 11 test。caller は本 helper
          1 関数呼び出しで render data 揃う。
-   - [ ] 次: workspace home に MemberCapacityPanel UI 配線 (assignee bulk fetch
-         hook `useAllItemAssignees` 新設 → useMemo getAssignees → 本 helper)
+   - [x] iter476 (1ddfc4f): bulk fetch API `listAssigneesForWorkspace` +
+         `useWorkspaceItemAssignees` hook (sprint 横断 N+1 query 回避)
+   - [x] iter477 (0097358): workspace home に `TeamCapacityPanel` mount =
+         scope A UI bind 完了 (lazy disclosure + member 別 今日/今週 chip +
+         tone 配色 + 危ない member 上 sort)
 
 4. **Gantt DnD 期間編集** (詳細: 本ファイル下方、scope A から)
    - 🚧 進行中 (iter467 で bar-drag substrate 着地、次 iter で gantt-view UI 配線)
