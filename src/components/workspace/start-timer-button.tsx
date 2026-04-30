@@ -117,6 +117,7 @@ export function StartTimerButton({ item, size = 'default' }: Props) {
       type="button"
       variant="outline"
       size={isCompact ? 'sm' : 'default'}
+      className="min-h-11"
       onClick={handleClick}
       data-testid={`start-timer-${item.id}`}
       aria-label={fullHint}
