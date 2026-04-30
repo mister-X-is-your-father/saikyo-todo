@@ -6,9 +6,11 @@ import { describe, expect, it } from 'vitest'
 import {
   agentReliabilityChipClasses,
   agentReliabilityTone,
+  agentRoleLabelJa,
   computeAgentReliability,
   formatAgentReliabilityCompactJa,
   formatAgentReliabilityJa,
+  reliabilityLevelLabelJa,
 } from './agent-reliability'
 
 describe('computeAgentReliability', () => {
@@ -134,6 +136,24 @@ describe('formatAgentReliabilityCompactJa (compact dashboard chip / Slack 通知
   it('critical 6/10 → 「要調査 (6/10 完了、60%)」', () => {
     const r = computeAgentReliability([{ role: 'pm', invocations: 10, completed: 6, failed: 4 }])
     expect(formatAgentReliabilityCompactJa(r)).toBe('AI 信頼性: 要調査 (6/10 完了、60%)')
+  })
+})
+
+describe('agentRoleLabelJa / reliabilityLevelLabelJa (public ja-JP labels)', () => {
+  it('role: pm → PM、researcher → Researcher', () => {
+    expect(agentRoleLabelJa('pm')).toBe('PM')
+    expect(agentRoleLabelJa('researcher')).toBe('Researcher')
+  })
+
+  it('level: healthy=健全 / warn=注意 / critical=要調査 / idle=記録なし', () => {
+    expect(reliabilityLevelLabelJa('healthy')).toBe('健全')
+    expect(reliabilityLevelLabelJa('warn')).toBe('注意')
+    expect(reliabilityLevelLabelJa('critical')).toBe('要調査')
+    expect(reliabilityLevelLabelJa('idle')).toBe('記録なし')
+  })
+
+  it('caller pattern: role + level の組み合わせ (例: 「PM 健全」)', () => {
+    expect(`${agentRoleLabelJa('pm')} ${reliabilityLevelLabelJa('healthy')}`).toBe('PM 健全')
   })
 })
 

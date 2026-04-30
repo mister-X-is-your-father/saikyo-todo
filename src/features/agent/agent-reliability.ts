@@ -134,6 +134,29 @@ const LEVEL_LABEL_JA: Record<ReliabilityLevel, string> = {
 }
 
 /**
+ * iter492 ai-automation: role / level の ja-JP 短ラベルを public export 化。
+ * 既存 `formatAgentReliabilityJa` は両ラベル + 件数 + % + 'AI 信頼性: ' prefix を
+ * 1 行にまとめるが、caller が **個別組合せ** (例: Slack attachment per-role 別、
+ * dashboard widget の hover tooltip) で文言を組み立てたい時に直接 ラベルが取れる。
+ *
+ * ラベル仕様 (短縮、UI vocabulary):
+ *  - role: pm → 'PM' / researcher → 'Researcher'
+ *  - level: healthy → '健全' / warn → '注意' / critical → '要調査' / idle → '記録なし'
+ *
+ * iter491 chipToneLabelJa との対比:
+ *  - chipToneLabelJa は **tone (視覚配色軸)** のラベル ('緊急'/'達成' 等)
+ *  - 本 helper は **domain 固有 (信頼性 level / role 名)** のラベル
+ *  - caller は 2 つを組み合わせて 'PM 健全 (達成)' のような richer 文言を作れる
+ */
+export function agentRoleLabelJa(role: AgentRole): string {
+  return ROLE_LABEL_JA[role]
+}
+
+export function reliabilityLevelLabelJa(level: ReliabilityLevel): string {
+  return LEVEL_LABEL_JA[level]
+}
+
+/**
  * AI 朝 brief / chip 表示用に reliability を 1 行 ja-JP 文言で:
  *  - idle → 'AI 信頼性: 記録なし'
  *  - 全 role healthy → 'AI 信頼性: PM 14/15 (93%) 健全・Researcher 8/8 (100%) 健全'
