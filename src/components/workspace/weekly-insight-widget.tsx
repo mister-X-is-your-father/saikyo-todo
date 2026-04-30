@@ -22,9 +22,12 @@ import { useMemo } from 'react'
 import { AlertTriangle, TrendingDown, TrendingUp } from 'lucide-react'
 
 import { trendToneClass } from '@/lib/ui/trend-tone'
+import { severityClasses } from '@/lib/widget/severity'
+import { fourStateHintToSeverity } from '@/lib/widget/severity-bridges'
 
 import {
   buildWeeklyInsight,
+  classifyWeeklyInsightHint,
   formatBestDayJa,
   formatWeeklyInsightHintJa,
   pickBestDayInWeek,
@@ -95,6 +98,9 @@ export function WeeklyInsightWidget({ items, now }: Props) {
   const bestDayLabel = formatBestDayJa(bestDay)
   // iter483 basics: 4 状態 hint で chip / aria-label に 1 単語 state を埋める
   const hintLabel = formatWeeklyInsightHintJa(insight)
+  // iter496 basics: hint → Severity bridge (iter495) → severityClasses で chip 配色
+  const hintSeverity = fourStateHintToSeverity(classifyWeeklyInsightHint(insight))
+  const hintClasses = severityClasses(hintSeverity)
 
   return (
     <Card
@@ -104,12 +110,23 @@ export function WeeklyInsightWidget({ items, now }: Props) {
       data-testid="weekly-insight-widget"
     >
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-base" role="heading" aria-level={2}>
+        <CardTitle
+          className="flex flex-wrap items-center gap-2 text-base"
+          role="heading"
+          aria-level={2}
+        >
           週次 Insight
           <span className="text-muted-foreground text-xs font-normal">{insight.weekStart} 週</span>
+          <span
+            className={`ml-auto rounded border px-2 py-0.5 text-[11px] font-medium ${hintClasses.bg} ${hintClasses.text} ${hintClasses.border}`}
+            data-testid="weekly-insight-hint"
+            data-severity={hintSeverity}
+          >
+            {hintLabel}
+          </span>
           {bestDay !== null && (
             <span
-              className="ml-auto rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700"
+              className="rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700"
               data-testid="weekly-insight-best-day"
             >
               ⭐ {bestDayLabel}
