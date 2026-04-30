@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
 import { getMockSessionId } from '@/features/mock-timesheet/actions'
@@ -5,6 +6,12 @@ import { mockTimesheetService } from '@/features/mock-timesheet/service'
 import { categoryLabel } from '@/features/time-entry/categories'
 
 import { MockTopNav } from '@/components/mock-timesheet/mock-top-nav'
+
+export const metadata: Metadata = {
+  title: 'Mock Timesheet 送信済み | 最強TODO',
+  description:
+    '最強TODO の Playwright 自動入力テスト対象 mock 外部システムの送信済み timesheet 一覧画面。',
+}
 
 export default async function MockEntriesPage() {
   const sessionId = await getMockSessionId()

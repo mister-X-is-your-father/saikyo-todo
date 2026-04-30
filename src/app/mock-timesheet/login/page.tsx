@@ -1,4 +1,12 @@
+import type { Metadata } from 'next'
+
 import { MockLoginForm } from '@/components/mock-timesheet/mock-login-form'
+
+export const metadata: Metadata = {
+  title: 'Mock Timesheet ログイン | 最強TODO',
+  description:
+    '最強TODO の Playwright 自動入力テスト対象 mock 外部システムのログイン画面 (saikyo-todo とは独立)。',
+}
 
 export default function MockLoginPage() {
   return (
