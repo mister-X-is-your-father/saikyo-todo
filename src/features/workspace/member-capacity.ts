@@ -30,6 +30,7 @@
  *    - util > 100 → 'overloaded' (red、オーバー)
  */
 
+import { formatMinutes } from '@/lib/format-duration'
 import { type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
 export type CapacityLoadStatus = 'free' | 'comfortable' | 'tight' | 'overloaded' | 'unknown'
@@ -130,8 +131,8 @@ export function formatMemberCapacityLoadJa(load: MemberCapacityLoad): string {
     const tail = load.totalItemCount > 0 ? ` / 全 ${load.totalItemCount} 件` : ''
     return `余裕時間 算定不能${tail}`
   }
-  const cap = formatHours(load.capacityMinutes)
-  const remain = formatHours(Math.abs(load.remainingMinutes))
+  const cap = formatMinutes(load.capacityMinutes)
+  const remain = formatMinutes(Math.abs(load.remainingMinutes))
   const head =
     load.loadStatus === 'free'
       ? `余裕あり: 残 ${remain}`
@@ -143,15 +144,6 @@ export function formatMemberCapacityLoadJa(load: MemberCapacityLoad): string {
   const body = `${head} / capacity ${cap} (${load.utilizationPct}%)`
   const unestTail = load.unestimatedCount > 0 ? ` / 未見積 ${load.unestimatedCount} 件` : ''
   return `${body}${unestTail}`
-}
-
-function formatHours(minutes: number): string {
-  if (minutes <= 0) return '0h'
-  const h = Math.floor(minutes / 60)
-  const m = minutes % 60
-  if (h === 0) return `${m}min`
-  if (m === 0) return `${h}h`
-  return `${h}h ${m}min`
 }
 
 /**
