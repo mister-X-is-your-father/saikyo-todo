@@ -285,13 +285,18 @@ function Section({
 }) {
   const { icon: DirectionIcon, iconClass, srLabel } = DIRECTION_CONFIG[direction]
 
+  // iter450: <h3> に id を付与し下流 <ul> を aria-labelledby で連携 (iter427 /
+  // iter428 / iter438 / iter447-449 と同 widget heading 統一 pattern 13 件目)。
+  const headingId = `dep-section-${direction}-heading`
   return (
     <div className="space-y-2">
-      <h3 className="text-sm font-semibold">{title}</h3>
+      <h3 id={headingId} className="text-sm font-semibold">
+        {title}
+      </h3>
       {items.length === 0 ? (
         <p className="text-muted-foreground text-xs">{emptyText}</p>
       ) : (
-        <ul className="space-y-1">
+        <ul className="space-y-1" aria-labelledby={headingId}>
           {items.map(({ ref }) => (
             <li
               key={ref.id}
