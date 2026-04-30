@@ -252,6 +252,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="min-h-11 min-w-11"
                     onClick={() => handleDelete(t)}
                     disabled={deleteMut.isPending}
                     aria-busy={deleteMut.isPending || undefined}

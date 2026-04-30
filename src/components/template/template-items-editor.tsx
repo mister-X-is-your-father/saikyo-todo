@@ -135,6 +135,7 @@ export function TemplateItemsEditor({ templateId }: Props) {
         <Button
           type="submit"
           size="sm"
+          className="min-h-11"
           disabled={addMut.isPending || !title.trim()}
           aria-busy={addMut.isPending || undefined}
           aria-label={
@@ -179,6 +180,7 @@ export function TemplateItemsEditor({ templateId }: Props) {
               <Button
                 variant="ghost"
                 size="sm"
+                className="min-h-11 min-w-11"
                 onClick={() => handleRemove(it.id, it.title)}
                 disabled={removeMut.isPending}
                 aria-busy={removeMut.isPending || undefined}

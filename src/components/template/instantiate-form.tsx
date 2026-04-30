@@ -122,6 +122,7 @@ export function InstantiateForm({ workspaceId, template }: Props) {
       <Button
         type="submit"
         size="sm"
+        className="min-h-11"
         disabled={mut.isPending}
         aria-busy={mut.isPending || undefined}
         aria-label={
