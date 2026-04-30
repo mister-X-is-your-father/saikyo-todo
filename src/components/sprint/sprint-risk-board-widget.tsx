@@ -73,10 +73,14 @@ export function SprintRiskBoardWidget<T extends RiskBoardItemFields>({
         {/* topRisk list */}
         {board.topRisk.length > 0 && (
           <div>
-            <div className="text-muted-foreground mb-1 text-xs">
+            {/* heading semantic で SR の h ナビ navigation 可、size は text-xs 維持 */}
+            <h3
+              id="sprint-risk-top-heading"
+              className="text-muted-foreground mb-1 text-xs font-normal"
+            >
               要警戒 上位 {board.topRisk.length} 件
-            </div>
-            <ul className="space-y-1.5">
+            </h3>
+            <ul className="space-y-1.5" aria-labelledby="sprint-risk-top-heading">
               {board.topRisk.map((entry) => {
                 const sev = riskSeverity(entry.riskScore)
                 const titleEl = (
@@ -137,11 +141,14 @@ export function SprintRiskBoardWidget<T extends RiskBoardItemFields>({
         {/* assignee load */}
         {loadEntries.length > 0 && (
           <div>
-            <div className="text-muted-foreground mb-1 flex items-center gap-1 text-xs">
+            <h3
+              id="sprint-risk-load-heading"
+              className="text-muted-foreground mb-1 flex items-center gap-1 text-xs font-normal"
+            >
               <Users className="h-3.5 w-3.5" aria-hidden="true" />
               担当者負荷 ({loadEntries.length} 名)
-            </div>
-            <table className="w-full text-xs" role="table" aria-label="Sprint 担当者負荷">
+            </h3>
+            <table className="w-full text-xs" aria-labelledby="sprint-risk-load-heading">
               <thead>
                 <tr className="text-muted-foreground border-b">
                   <th className="py-1 text-left font-normal">担当</th>
