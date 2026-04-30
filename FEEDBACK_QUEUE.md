@@ -15,6 +15,38 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
 
 ## 未処理 (新しい順)
 
+### 2026-04-30 — AI との高度で手軽な分業・協業 シリーズ ★ P0 ★
+
+- [ ] **AI を「同僚」として task に組み込み、1 click で任せる / 1 click で review してもらう / 提案 → 人間判断 のループを最小摩擦で回す体験を作る** — 分類: AI UX 設計 + 機能追加 (P0、複数 commit)
+  - 原文 (2026-04-30): 「AI との高度で手軽な分業や協業ができるのを作りたい」
+  - **意図**: 既存 AI feature (researcher / pm-standup / decompose / plan generation / assignee=AI) は **個別 button** 経由で散在。これを「AI 同僚 1 人がいるみたいな統一 UX」 に再構成し、人間と AI が **同じ task を交互に進める** 流れを最小クリックで実現する。
+  - **既存 AI 資産**:
+    - assignee=AI モード (item に AI assignee 設定 → 「Plan を生成」 button)
+    - decomposeItem (item を subtask に AI 分解、staging proposal 経由 review)
+    - researcherService (AI 調査 → comment / doc post、CLI 経路化済 iter520)
+    - PM Stand-up widget 化 (iter524 で AI 文章 → widget 置換)
+    - workspace_settings.team_context (AI prompt 末尾に inject される workspace 方針)
+  - **段階実装 候補 (各 P0 candidate、依存順)**:
+    1. **AC-1 「AI に任せた」 ワンクリック** — item edit dialog に大きい「AI に任せた」 button、押すと: ① assignee=AI 自動設定 + ② plan 生成 + ③ 通知 「AI が plan を立てたので確認してください」 + ④ 完了時 review modal で staging subtasks 表示
+    2. **AC-2 「AI に review してもらう」** — 任意 task (人間担当) で「AI に review」 button、AI が dod / plan / output を読んで checklist (✅ ⚠ ❌) + 改善提案 1-3 件を comment で post
+    3. **AC-3 inline AI 提案 (pair programming 風)** — item description 編集中に「AI に書かせる」 mini button、現在 cursor 周辺 + workspace context で suggestion を inline 表示、Tab で accept、Esc で reject
+    4. **AC-4 hand-off 履歴 view** — 「最近 AI が触った task」 list、人 ↔ AI のターン履歴 (誰が何をした) を 1 panel で可視化、漏れ防止 + 学習材料に
+    5. **AC-5 AI 同僚 persona 設定** — workspace_settings に「team_context」 (既存) + 「ai_persona_role」 (例: "junior backend dev" / "research analyst" / "PM") を追加、prompt に常時 inject、AI 出力の tone を統一
+    6. **AC-6 AI 出力 quality 自己評価** — 各 AI 生成成果物 (plan / decompose / research) に「役立った? 1-5」 user feedback、structured で蓄積し prompt 改善 / 監視に使う
+  - **6 軸スコア (期待)**: 可視化 4 / 操作 5 / 認知低減 5 / 漏れ防止 4 / やる気 5 / 効率化 5 — 軸 5 やる気 + 6 効率化が直結
+  - **設計哲学 (memory project_saikyo_todo_philosophy)**: 「AI を使うことで人間の段取り力が育つ」 角度を意識 — AI が全部やる != ゴール、「AI に任せる判断 → review する判断」 を鍛える UX に
+  - 関連 queue: REST API/MCP server 化 (本 entry の上、AI agent から叩けるようにする substrate)、fluffy → widget 化 8 件 (AI 出力の structured 化、本 entry の前提)
+
+  **段階実装 commit 案**:
+  - `feat(item): AI 任せたワンクリック button + plan 自動生成 (queue: AI 分業 AC-1)`
+  - `feat(comment): AI review request — checklist + 改善 1-3 件 (queue: AI 分業 AC-2)`
+  - `feat(item): description inline AI 提案 (Tab accept) (queue: AI 分業 AC-3)`
+  - `feat(workspace): AI hand-off 履歴 view (queue: AI 分業 AC-4)`
+  - `feat(workspace): ai_persona_role 設定 + prompt inject (queue: AI 分業 AC-5)`
+  - `feat(agent): AI 出力 quality feedback (1-5 + 蓄積) (queue: AI 分業 AC-6)`
+
+---
+
 ### 2026-04-30 — REST API + MCP server 化 (saikyo-todo を外部から叩けるように) ★ P0 ★
 
 - [ ] **saikyo-todo の主要 entity (item / schedule / goal / template / time-entry) を REST API として外部公開、加えて MCP server として AI agent / Claude Desktop 等から直接叩けるようにする** — 分類: 外部統合 (P0)
