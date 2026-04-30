@@ -288,6 +288,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
         <div className="flex flex-wrap gap-1.5">
           <Button
             size="sm"
+            className="min-h-11"
             variant="outline"
             onClick={() => void handleTrigger()}
             disabled={!wf.enabled || trigger.isPending}
@@ -313,6 +314,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
           </Button>
           <Button
             size="sm"
+            className="min-h-11"
             variant="outline"
             onClick={() => setEditorOpen(true)}
             data-testid={`wf-edit-${wf.id}`}
@@ -323,6 +325,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
           </Button>
           <Button
             size="sm"
+            className="min-h-11"
             variant="ghost"
             onClick={() => void toggleEnabled()}
             disabled={update.isPending}
@@ -338,6 +341,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
           </Button>
           <Button
             size="sm"
+            className="min-h-11"
             variant="ghost"
             onClick={() => setRunsOpen((v) => !v)}
             aria-expanded={runsOpen}
@@ -353,6 +357,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
           </Button>
           <Button
             size="sm"
+            className="min-h-11"
             variant="ghost"
             onClick={() => void handleDelete()}
             disabled={del.isPending}
@@ -478,6 +483,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                   key={preset.type}
                   type="button"
                   size="sm"
+                  className="min-h-11"
                   variant="outline"
                   onClick={() => setGraphText(appendNodePreset(graphText, preset))}
                   data-testid={`wf-node-preset-${preset.type}-${wf.id}`}
@@ -510,6 +516,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
               <Button
                 type="button"
                 size="sm"
+                className="min-h-11"
                 variant="outline"
                 onClick={() => setTriggerText(JSON.stringify({ kind: 'manual' }, null, 2))}
                 data-testid={`wf-trigger-preset-manual-${wf.id}`}
@@ -521,6 +528,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
               <Button
                 type="button"
                 size="sm"
+                className="min-h-11"
                 variant="outline"
                 onClick={() =>
                   setTriggerText(JSON.stringify({ kind: 'cron', cron: '0 9 * * *' }, null, 2))
@@ -534,6 +542,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
               <Button
                 type="button"
                 size="sm"
+                className="min-h-11"
                 variant="outline"
                 onClick={() =>
                   setTriggerText(
@@ -549,6 +558,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
               <Button
                 type="button"
                 size="sm"
+                className="min-h-11"
                 variant="outline"
                 onClick={() =>
                   setTriggerText(
