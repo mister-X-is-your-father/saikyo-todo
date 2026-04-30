@@ -24,9 +24,10 @@ export default function OfflinePage() {
   return (
     <main
       id="main-content"
+      tabIndex={-1}
       aria-labelledby="offline-heading"
       aria-describedby="offline-description offline-secondary"
-      className="flex min-h-dvh flex-col items-center justify-center gap-4 p-8 text-center"
+      className="flex min-h-dvh flex-col items-center justify-center gap-4 p-8 text-center focus-visible:outline-none"
     >
       <h1 id="offline-heading" className="text-2xl font-bold">
         オフラインです
