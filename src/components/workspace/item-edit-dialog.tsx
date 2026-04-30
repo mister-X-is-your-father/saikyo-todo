@@ -58,6 +58,7 @@ import { CommentThread } from './comment-thread'
 import { EngineerTriggerButton } from './engineer-trigger-button'
 import { ItemDecomposeButton } from './item-decompose-button'
 import { ItemDependenciesPanel } from './item-dependencies-panel'
+import { ItemPlanGenerateButton } from './item-plan-generate-button'
 import { ItemSummaryPanel } from './item-summary-panel'
 import { MustBadge } from './must-badge'
 import { StartTimerButton } from './start-timer-button'
@@ -387,6 +388,26 @@ function ItemEditDialogInner({
                 </p>
               </div>
               <ItemDecomposeButton workspaceId={workspaceId} item={item} />
+            </div>
+
+            {/* P0「AI 自動実行モード」 scope A: AI 担当 (assignee に agent あり) の時のみ
+                表示。Researcher が「実行計画 (Plan)」を Markdown で書いて Item の comment
+                として post (🤖 marker 付き)。canGeneratePlan で内部 gate 済 (false なら null)。 */}
+            <div className="bg-primary/5 flex items-start justify-between gap-3 rounded-lg border p-3">
+              <div className="min-w-0">
+                <div className="text-sm font-semibold">
+                  <span aria-hidden="true">🤖 </span>AI 担当の実行計画
+                </div>
+                <p className="text-muted-foreground text-xs">
+                  AI 担当に設定した時、実行前に Plan (目的 / アプローチ / リスク / 完了見込み) を
+                  comment に投下させ、ユーザが承認できるようにします。
+                </p>
+              </div>
+              <ItemPlanGenerateButton
+                workspaceId={workspaceId}
+                item={item}
+                assignees={assignees ?? []}
+              />
             </div>
 
             <div className="flex items-start justify-between gap-3 rounded-lg border border-dashed p-3">
