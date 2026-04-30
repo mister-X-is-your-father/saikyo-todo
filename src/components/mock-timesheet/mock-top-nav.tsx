@@ -9,21 +9,30 @@ export function MockTopNav({ sessionId }: { sessionId: string }) {
     <header className="flex items-center justify-between border-b pb-3">
       <div>
         <h1 className="text-xl font-bold">Mock Timesheet</h1>
-        <p className="text-muted-foreground text-xs">ログイン中: {sessionId}</p>
+        <p className="text-muted-foreground text-xs">
+          <span className="sr-only">現在の session ID: </span>
+          <span aria-hidden="true">ログイン中: </span>
+          <span className="font-mono">{sessionId}</span>
+        </p>
       </div>
-      <div className="flex items-center gap-2">
+      <nav aria-label="mock-timesheet ナビゲーション" className="flex items-center gap-2">
         <Button variant="outline" size="sm" asChild>
           <Link href="/mock-timesheet/new">新規入力</Link>
         </Button>
         <Button variant="outline" size="sm" asChild>
           <Link href="/mock-timesheet/entries">入力一覧</Link>
         </Button>
-        <form action={mockLogoutAction}>
-          <Button variant="ghost" size="sm" type="submit">
+        <form action={mockLogoutAction} aria-label="mock-timesheet からログアウト">
+          <Button
+            variant="ghost"
+            size="sm"
+            type="submit"
+            aria-label="mock-timesheet session をログアウト"
+          >
             ログアウト
           </Button>
         </form>
-      </div>
+      </nav>
     </header>
   )
 }
