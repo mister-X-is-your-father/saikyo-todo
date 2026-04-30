@@ -19,6 +19,7 @@ import { EmptyState } from '@/components/shared/async-states'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ItemCheckbox } from '@/components/workspace/item-checkbox'
 import { MustBadge } from '@/components/workspace/must-badge'
+import { OperationBoardWidget } from '@/components/workspace/operation-board-widget'
 import { StartTimerButton } from '@/components/workspace/start-timer-button'
 import { StatusBadge } from '@/components/workspace/status-badge'
 
@@ -124,45 +125,49 @@ export function TodayView({
 
   if (total === 0) {
     return (
-      <EmptyState
-        icon={
-          <span aria-hidden="true" className="text-3xl">
-            🎉
-          </span>
-        }
-        title="今日のタスクはありません"
-        // iter273 basics: 旧説明はスキーマ用語 (scheduled_for / dueDate) で
-        // 一般ユーザに不親切だった → 自然言語入力例で置き換え。Today/Backlog の
-        // 両方を満たす予定 (scheduledFor) 設定の手順をクイック追加例で示す。
-        description={
-          <span>
-            QuickAdd で <code className="bg-muted rounded px-1 text-[11px]">明日 資料準備</code> /{' '}
-            <code className="bg-muted rounded px-1 text-[11px]">tomorrow 9am review</code> /{' '}
-            <code className="bg-muted rounded px-1 text-[11px]">3/15 リリース</code>{' '}
-            のように日付を含めるとここに表示されます
-          </span>
-        }
-        action={
-          <button
-            type="button"
-            className="text-primary hover:bg-muted mt-2 rounded border px-3 py-1.5 text-xs hover:underline"
-            data-testid="today-empty-quick-add"
-            aria-label="クイック追加入力欄にフォーカス (q キーでも可)"
-            onClick={() => {
-              const el = document.getElementById('quick-add-input') as HTMLInputElement | null
-              el?.focus()
-              el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            }}
-          >
-            クイック追加にフォーカス (キー: q)
-          </button>
-        }
-      />
+      <div className="space-y-4" data-testid="today-view">
+        <OperationBoardWidget items={items} today={today} />
+        <EmptyState
+          icon={
+            <span aria-hidden="true" className="text-3xl">
+              🎉
+            </span>
+          }
+          title="今日のタスクはありません"
+          // iter273 basics: 旧説明はスキーマ用語 (scheduled_for / dueDate) で
+          // 一般ユーザに不親切だった → 自然言語入力例で置き換え。Today/Backlog の
+          // 両方を満たす予定 (scheduledFor) 設定の手順をクイック追加例で示す。
+          description={
+            <span>
+              QuickAdd で <code className="bg-muted rounded px-1 text-[11px]">明日 資料準備</code> /{' '}
+              <code className="bg-muted rounded px-1 text-[11px]">tomorrow 9am review</code> /{' '}
+              <code className="bg-muted rounded px-1 text-[11px]">3/15 リリース</code>{' '}
+              のように日付を含めるとここに表示されます
+            </span>
+          }
+          action={
+            <button
+              type="button"
+              className="text-primary hover:bg-muted mt-2 rounded border px-3 py-1.5 text-xs hover:underline"
+              data-testid="today-empty-quick-add"
+              aria-label="クイック追加入力欄にフォーカス (q キーでも可)"
+              onClick={() => {
+                const el = document.getElementById('quick-add-input') as HTMLInputElement | null
+                el?.focus()
+                el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }}
+            >
+              クイック追加にフォーカス (キー: q)
+            </button>
+          }
+        />
+      </div>
     )
   }
 
   return (
     <div className="space-y-4" data-testid="today-view">
+      <OperationBoardWidget items={items} today={today} />
       <p className="text-muted-foreground text-xs" aria-live="polite">
         キーボード: j/k で移動 · Enter または e で編集 · x または Space で完了切替 · Esc で解除
       </p>
