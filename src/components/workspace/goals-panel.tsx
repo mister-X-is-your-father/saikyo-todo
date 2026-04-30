@@ -6,7 +6,7 @@
  *   - 各 Goal expand すると KR list + 個別 progress + 新規 KR フォーム
  *   - KR は items mode (linked items の done 比) と manual mode (current/target) を支援
  */
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import {
   AlertTriangle,
@@ -89,12 +89,16 @@ export function GoalsPanel({ workspaceId }: Props) {
   const [description, setDescription] = useState('')
   const [startDate, setStartDate] = useState(todayISO())
   const [endDate, setEndDate] = useState(isoDaysFromNow(90))
+  // iter502: 期間 validation 失敗 path で end-date input に focus shift
+  // (iter501 SprintCard 期間編集 と同 pattern、manual handleSubmit form の onInvalid 4 弾目)
+  const goalEndRef = useRef<HTMLInputElement>(null)
 
   async function handleCreate() {
     const t = title.trim()
     if (!t) return
     if (isInvalidDateRange(startDate, endDate)) {
       toast.error('終了日は開始日以降にしてください')
+      goalEndRef.current?.focus()
       return
     }
     try {
@@ -166,12 +170,14 @@ export function GoalsPanel({ workspaceId }: Props) {
               <div className="space-y-1">
                 <Label htmlFor="goal-end">終了</Label>
                 <Input
+                  ref={goalEndRef}
                   id="goal-end"
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   required
                   aria-required="true"
+                  aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   min={startDate || undefined}
                 />
               </div>
