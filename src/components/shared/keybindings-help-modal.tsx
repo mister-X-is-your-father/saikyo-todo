@@ -57,18 +57,29 @@ export function KeybindingsHelpModal({ open, onOpenChange }: Props) {
         </DialogHeader>
 
         <div className="space-y-4">
-          {Object.entries(groups).map(([group, list]) => (
-            <section key={group} data-testid={`keybindings-group-${group}`}>
-              <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
-                {group}
-              </h3>
-              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
-                {list.map((kb) => (
-                  <KbdRow key={kb.combo} kb={kb} />
-                ))}
-              </dl>
-            </section>
-          ))}
+          {Object.entries(groups).map(([group, list]) => {
+            const headingId = `keybindings-group-heading-${group.replace(/\s+/g, '-')}`
+            return (
+              <section
+                key={group}
+                aria-labelledby={headingId}
+                data-testid={`keybindings-group-${group}`}
+              >
+                <h3
+                  id={headingId}
+                  className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase"
+                >
+                  {group}
+                  <span className="sr-only"> ({list.length} 件)</span>
+                </h3>
+                <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
+                  {list.map((kb) => (
+                    <KbdRow key={kb.combo} kb={kb} />
+                  ))}
+                </dl>
+              </section>
+            )
+          })}
         </div>
       </DialogContent>
     </Dialog>
@@ -83,10 +94,12 @@ function KbdRow({ kb }: { kb: Keybinding }) {
       <dt
         className="flex items-center gap-1 whitespace-nowrap"
         data-testid={`keybinding-combo-${kb.combo}`}
+        aria-label={`ショートカット ${kb.combo}`}
       >
         {parts.map((p, i) => (
           <kbd
             key={`${p}-${i}`}
+            aria-hidden="true"
             className="bg-muted text-foreground inline-flex min-w-[1.5rem] items-center justify-center rounded border px-1.5 py-0.5 font-mono text-xs"
           >
             {p}
