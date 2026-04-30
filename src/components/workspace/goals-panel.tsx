@@ -428,6 +428,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                   <Button
                     type="button"
                     size="sm"
+                    className="min-h-11"
                     variant="outline"
                     onClick={() => void changeStatus('completed')}
                     disabled={update.isPending}
@@ -444,6 +445,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                   <Button
                     type="button"
                     size="sm"
+                    className="min-h-11"
                     variant="ghost"
                     onClick={() => void changeStatus('archived')}
                     disabled={update.isPending}
@@ -464,6 +466,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                   <Button
                     type="button"
                     size="sm"
+                    className="min-h-11"
                     variant="outline"
                     onClick={() => void changeStatus('active')}
                     disabled={update.isPending}
@@ -480,6 +483,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                   <Button
                     type="button"
                     size="sm"
+                    className="min-h-11"
                     variant="ghost"
                     onClick={() => void changeStatus('archived')}
                     disabled={update.isPending}
@@ -499,6 +503,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                 <Button
                   type="button"
                   size="sm"
+                  className="min-h-11"
                   variant="outline"
                   onClick={() => void changeStatus('active')}
                   disabled={update.isPending}
@@ -516,6 +521,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
               <Button
                 type="button"
                 size="sm"
+                className="min-h-11"
                 variant="outline"
                 onClick={() => void handleDecompose()}
                 disabled={decompose.isPending || status !== 'active'}
