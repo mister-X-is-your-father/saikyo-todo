@@ -252,4 +252,69 @@ export const workspaceService = {
     })
     return ok({ teamContext: input.teamContext })
   },
+
+  /**
+   * iter517 (queue MS-1): methodology mode (none / taskchute / gtd) を取得 (viewer 以上)。
+   * 行が無い workspace は 'none' を返す。詳細: docs/methodology-modes-plan.md §6
+   */
+  async getDefaultMode(
+    workspaceId: string,
+  ): Promise<Result<{ defaultMode: 'none' | 'taskchute' | 'gtd' }>> {
+    if (!workspaceId) return err(new ValidationError('workspaceId 必須'))
+    const user = await requireUser()
+    await requireWorkspaceMember(workspaceId, 'viewer')
+    return await withUserDb(user.id, async (tx) => {
+      const rows = await tx
+        .select({ defaultMode: workspaceSettings.defaultMode })
+        .from(workspaceSettings)
+        .where(eq(workspaceSettings.workspaceId, workspaceId))
+        .limit(1)
+      return ok({ defaultMode: (rows[0]?.defaultMode ?? 'none') as 'none' | 'taskchute' | 'gtd' })
+    })
+  },
+
+  /**
+   * iter517 (queue MS-1): methodology mode を更新 (admin 以上)。
+   * 行が無ければ insert (= upsert)。値は 'none' / 'taskchute' / 'gtd' のいずれか。
+   */
+  async updateDefaultMode(input: {
+    workspaceId: string
+    defaultMode: 'none' | 'taskchute' | 'gtd'
+  }): Promise<Result<{ defaultMode: 'none' | 'taskchute' | 'gtd' }>> {
+    if (!input.workspaceId) return err(new ValidationError('workspaceId 必須'))
+    if (!['none', 'taskchute', 'gtd'].includes(input.defaultMode)) {
+      return err(new ValidationError('defaultMode は none / taskchute / gtd のいずれか'))
+    }
+
+    const user = await requireUser()
+    await requireWorkspaceMember(input.workspaceId, 'admin')
+    await adminDb.transaction(async (tx) => {
+      const [before] = await tx
+        .select({ defaultMode: workspaceSettings.defaultMode })
+        .from(workspaceSettings)
+        .where(eq(workspaceSettings.workspaceId, input.workspaceId))
+        .limit(1)
+      const updated = await tx
+        .update(workspaceSettings)
+        .set({ defaultMode: input.defaultMode })
+        .where(eq(workspaceSettings.workspaceId, input.workspaceId))
+        .returning({ workspaceId: workspaceSettings.workspaceId })
+      if (updated.length === 0) {
+        await tx
+          .insert(workspaceSettings)
+          .values({ workspaceId: input.workspaceId, defaultMode: input.defaultMode })
+      }
+      await recordAudit(tx, {
+        workspaceId: input.workspaceId,
+        actorType: 'user',
+        actorId: user.id,
+        targetType: 'workspace_settings',
+        targetId: input.workspaceId,
+        action: 'update_default_mode',
+        before: { defaultMode: before?.defaultMode ?? 'none' },
+        after: { defaultMode: input.defaultMode },
+      })
+    })
+    return ok({ defaultMode: input.defaultMode })
+  },
 }

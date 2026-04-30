@@ -52,3 +52,20 @@ export async function updateTeamContextAction(input: {
 }): Promise<Result<{ teamContext: string }>> {
   return await actionWrap(() => workspaceService.updateTeamContext(input))
 }
+
+/**
+ * iter517 (queue MS-1): methodology mode (none / taskchute / gtd) 取得 / 更新。
+ * 詳細: docs/methodology-modes-plan.md §6 (Mode switch UX)。
+ */
+export async function getWorkspaceDefaultModeAction(
+  workspaceId: string,
+): Promise<Result<{ defaultMode: 'none' | 'taskchute' | 'gtd' }>> {
+  return await actionWrap(() => workspaceService.getDefaultMode(workspaceId))
+}
+
+export async function updateWorkspaceDefaultModeAction(input: {
+  workspaceId: string
+  defaultMode: 'none' | 'taskchute' | 'gtd'
+}): Promise<Result<{ defaultMode: 'none' | 'taskchute' | 'gtd' }>> {
+  return await actionWrap(() => workspaceService.updateDefaultMode(input))
+}

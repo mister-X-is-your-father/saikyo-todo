@@ -97,6 +97,14 @@ export const workspaceSettings = pgTable('workspace_settings', {
    * 例: "チームの方針: TDD。MUST タスクは PR 必須。"
    */
   teamContext: text('team_context').notNull().default(''),
+  /**
+   * iter517 (queue MS-1): methodology mode の workspace default。
+   * 'none' (既存通り) / 'taskchute' (1 列 timeline + 打刻) / 'gtd' (Inbox + Process + Weekly Review)。
+   * URL `?mode=` で per-session override 可能。詳細: docs/methodology-modes-plan.md §6
+   */
+  defaultMode: text('default_mode', { enum: ['none', 'taskchute', 'gtd'] })
+    .notNull()
+    .default('none'),
   ...timestamps,
 })
 
