@@ -149,6 +149,44 @@ export function formatWaitingSummaryJa(summary: WaitingSummary): string {
 }
 
 /**
+ * iter502 ai-automation: workspace 連絡待ち状態 4 状態 hint シリーズ 13 弾目 (= velocity /
+ * blocked-items / at-risk-parents / weekly-insight / inbox-process / notification-activity /
+ * structured-review / audit-activity に続く)。
+ *
+ * - 'idle'     : total=0 (= 連絡待ちなし)
+ * - 'severe'   : bySeverity.danger >= 3 (= 7d+ escalate 候補多発) OR oldestDays >= 14
+ * - 'moderate' : bySeverity.danger >= 1 (= 1 件でも escalate あり) OR dueRemindCount >= 1
+ *                (= リマインド推奨あり)
+ * - 'mild'     : それ以外 (= 健全な待ち、進行中)
+ *
+ * 用途: dashboard chip 「連絡待ち 異常」 / Slack daily digest 見出し / WT-2 panel chip。
+ */
+import { type FourStateHint, makeHintLabelFormatter } from '@/lib/hint'
+
+export type WaitingHint = FourStateHint
+
+export function classifyWaitingHint(summary: WaitingSummary): WaitingHint {
+  if (summary.total === 0) return 'idle'
+  if (summary.bySeverity.danger >= 3 || (summary.oldestDays !== null && summary.oldestDays >= 14)) {
+    return 'severe'
+  }
+  if (summary.bySeverity.danger >= 1 || summary.dueRemindCount >= 1) return 'moderate'
+  return 'mild'
+}
+
+const WAITING_HINT_LABEL_JA: Record<WaitingHint, string> = {
+  idle: '連絡待ちなし',
+  mild: '進行中',
+  moderate: '注意',
+  severe: '異常',
+}
+
+export const formatWaitingHintJa = makeHintLabelFormatter(
+  classifyWaitingHint,
+  WAITING_HINT_LABEL_JA,
+)
+
+/**
  * AI prompt / chip aria-label / Slack 通知用 1 行 waiting status:
  *   '依頼から 5 日経過 (次リマインド 1 日後)'
  *   '依頼から 8 日経過 (escalate 検討)'

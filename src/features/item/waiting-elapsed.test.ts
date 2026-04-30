@@ -1,13 +1,16 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  classifyWaitingHint,
   elapsedWaitingDays,
+  formatWaitingHintJa,
   formatWaitingStatusJa,
   formatWaitingSummaryJa,
   nextReminderInDays,
   summarizeWaitingItems,
   waitingElapsedSeverity,
   type WaitingItemFields,
+  type WaitingSummary,
 } from './waiting-elapsed'
 
 const NOW = new Date('2026-04-30T12:00:00Z')
@@ -202,5 +205,100 @@ describe('formatWaitingSummaryJa', () => {
         dueRemindCount: 0,
       }),
     ).toBe('連絡待ち 1 件')
+  })
+})
+
+describe('classifyWaitingHint', () => {
+  function summary(over: Partial<WaitingSummary>): WaitingSummary {
+    return {
+      total: 0,
+      bySeverity: { ok: 0, warn: 0, danger: 0, muted: 0 },
+      oldestDays: null,
+      dueRemindCount: 0,
+      ...over,
+    }
+  }
+
+  it('total 0 → idle', () => {
+    expect(classifyWaitingHint(summary({}))).toBe('idle')
+  })
+
+  it('danger >= 3 → severe', () => {
+    expect(
+      classifyWaitingHint(
+        summary({ total: 3, bySeverity: { ok: 0, warn: 0, danger: 3, muted: 0 } }),
+      ),
+    ).toBe('severe')
+  })
+
+  it('oldestDays >= 14 → severe', () => {
+    expect(
+      classifyWaitingHint(
+        summary({
+          total: 1,
+          bySeverity: { ok: 1, warn: 0, danger: 0, muted: 0 },
+          oldestDays: 14,
+        }),
+      ),
+    ).toBe('severe')
+  })
+
+  it('danger 1 件 → moderate', () => {
+    expect(
+      classifyWaitingHint(
+        summary({ total: 1, bySeverity: { ok: 0, warn: 0, danger: 1, muted: 0 } }),
+      ),
+    ).toBe('moderate')
+  })
+
+  it('dueRemindCount >= 1 → moderate', () => {
+    expect(
+      classifyWaitingHint(
+        summary({
+          total: 2,
+          bySeverity: { ok: 1, warn: 1, danger: 0, muted: 0 },
+          dueRemindCount: 1,
+        }),
+      ),
+    ).toBe('moderate')
+  })
+
+  it('健全 → mild', () => {
+    expect(
+      classifyWaitingHint(
+        summary({ total: 1, bySeverity: { ok: 1, warn: 0, danger: 0, muted: 0 } }),
+      ),
+    ).toBe('mild')
+  })
+})
+
+describe('formatWaitingHintJa', () => {
+  function summary(over: Partial<WaitingSummary>): WaitingSummary {
+    return {
+      total: 0,
+      bySeverity: { ok: 0, warn: 0, danger: 0, muted: 0 },
+      oldestDays: null,
+      dueRemindCount: 0,
+      ...over,
+    }
+  }
+
+  it('idle / mild / moderate / severe を 1 単語で返す', () => {
+    expect(formatWaitingHintJa(summary({}))).toBe('連絡待ちなし')
+    expect(
+      formatWaitingHintJa(
+        summary({ total: 1, bySeverity: { ok: 1, warn: 0, danger: 0, muted: 0 } }),
+      ),
+    ).toBe('進行中')
+    expect(
+      formatWaitingHintJa(
+        summary({ total: 1, bySeverity: { ok: 0, warn: 0, danger: 1, muted: 0 } }),
+      ),
+    ).toBe('注意')
+    expect(
+      formatWaitingHintJa(
+        summary({ total: 3, bySeverity: { ok: 0, warn: 0, danger: 3, muted: 0 } }),
+      ),
+    ).toBe('異常')
   })
 })
