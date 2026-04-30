@@ -14,7 +14,7 @@ export default async function MockEntriesPage() {
   const entries = r.ok ? r.value : []
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 p-6">
+    <main id="main-content" className="mx-auto max-w-3xl space-y-6 p-6">
       <MockTopNav sessionId={sessionId} />
       <h2 className="text-lg font-semibold">送信済み一覧 ({entries.length} 件)</h2>
       {entries.length === 0 ? (

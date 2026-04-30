@@ -10,7 +10,7 @@ export default async function MockNewPage() {
   if (!sessionId) redirect('/mock-timesheet/login')
 
   return (
-    <main className="mx-auto max-w-xl space-y-6 p-6">
+    <main id="main-content" className="mx-auto max-w-xl space-y-6 p-6">
       <MockTopNav sessionId={sessionId} />
       <MockSubmitForm />
     </main>
