@@ -47,6 +47,7 @@ export function ItemPlanGenerateButton({ workspaceId, item, assignees }: Props) 
     <Button
       type="button"
       size="sm"
+      className="min-h-11"
       variant="outline"
       disabled={generate.isPending}
       aria-busy={generate.isPending || undefined}
