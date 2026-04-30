@@ -8,7 +8,7 @@
  * AI 分解 CTA は主ボタンとして基本 Tab の上部に配置。子 Item が生成されると
  * hooks 側で items cache が invalidate されるので、親の一覧がすぐ更新される。
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -113,6 +113,9 @@ function ItemEditDialogInner({
   const [dueDate, setDueDate] = useState(item.dueDate ?? '')
   const [isMust, setIsMust] = useState(item.isMust)
   const [dod, setDod] = useState(item.dod ?? '')
+  // iter504: handleSave validation 失敗 path で focus shift する用 (iter499-503 続編)
+  const dodRef = useRef<HTMLInputElement>(null)
+  const dueDateRef = useRef<HTMLInputElement>(null)
 
   // Phase 6.15 iter 238: 楽観ロック Conflict UX 改善 (Linear / Asana 風 banner)。
   // dialog open 時の version を state で保持し、Realtime で item.version が server 側
@@ -174,10 +177,14 @@ function ItemEditDialogInner({
   async function handleSave() {
     if (isMust && !dod.trim()) {
       toast.error('MUST には DoD が必要です')
+      // iter504: validation 失敗 path で first invalid field に focus shift
+      // (iter499-503 manual handleSubmit form の onInvalid pattern を ItemEditDialog に展開)
+      dodRef.current?.focus()
       return
     }
     if (isInvalidDateRange(startDate, dueDate)) {
       toast.error('期限は開始日以降にしてください')
+      dueDateRef.current?.focus()
       return
     }
     const patch = {
@@ -508,11 +515,13 @@ function ItemEditDialogInner({
               <div className="space-y-1.5">
                 <Label htmlFor="editDue">期限</Label>
                 <IMEInput
+                  ref={dueDateRef}
                   id="editDue"
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
                   data-testid="edit-item-due-date"
+                  aria-invalid={isInvalidDateRange(startDate, dueDate) || undefined}
                   min={startDate || undefined}
                 />
               </div>
@@ -633,11 +642,13 @@ function ItemEditDialogInner({
                   </span>
                 </Label>
                 <IMEInput
+                  ref={dodRef}
                   id="editDod"
                   value={dod}
                   onChange={(e) => setDod(e.target.value)}
                   required
                   aria-required="true"
+                  aria-invalid={(isMust && !dod.trim()) || undefined}
                   aria-describedby="editDod-hint"
                   data-testid="edit-item-dod"
                   autoComplete="off"
