@@ -26,6 +26,7 @@ export function MockSubmitForm() {
   const [lastRef, setLastRef] = useState<string | null>(null)
   const form = useForm<MockTimesheetSubmitInput>({
     resolver: zodResolver(MockTimesheetSubmitInputSchema),
+    mode: 'onTouched',
     defaultValues: {
       workDate: todayISO(),
       category: 'dev',
@@ -47,21 +48,40 @@ export function MockSubmitForm() {
     })
   }
 
+  function onInvalid(errors: typeof form.formState.errors) {
+    const firstError = Object.keys(errors)[0] as keyof MockTimesheetSubmitInput | undefined
+    if (firstError) form.setFocus(firstError)
+  }
+
   return (
     <form
       method="post"
-      onSubmit={form.handleSubmit(onSubmit)}
+      onSubmit={form.handleSubmit(onSubmit, onInvalid)}
+      noValidate
       className="space-y-4"
       data-testid="mock-submit-form"
     >
       <div className="space-y-2">
         <Label htmlFor="tsDate">勤務日</Label>
-        <IMEInput id="tsDate" type="date" {...form.register('workDate')} />
+        <IMEInput
+          id="tsDate"
+          type="date"
+          aria-invalid={form.formState.errors.workDate ? true : undefined}
+          aria-describedby={form.formState.errors.workDate ? 'tsDate-error' : undefined}
+          {...form.register('workDate')}
+        />
+        {form.formState.errors.workDate && (
+          <p id="tsDate-error" className="text-destructive text-xs" role="alert">
+            {form.formState.errors.workDate.message}
+          </p>
+        )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="tsCategory">カテゴリ</Label>
         <select
           id="tsCategory"
+          aria-invalid={form.formState.errors.category ? true : undefined}
+          aria-describedby={form.formState.errors.category ? 'tsCategory-error' : undefined}
           {...form.register('category')}
           className="w-full rounded border px-3 py-2 text-sm"
         >
@@ -71,10 +91,25 @@ export function MockSubmitForm() {
             </option>
           ))}
         </select>
+        {form.formState.errors.category && (
+          <p id="tsCategory-error" className="text-destructive text-xs" role="alert">
+            {form.formState.errors.category.message}
+          </p>
+        )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="tsDescription">作業内容</Label>
-        <IMEInput id="tsDescription" {...form.register('description')} />
+        <IMEInput
+          id="tsDescription"
+          aria-invalid={form.formState.errors.description ? true : undefined}
+          aria-describedby={form.formState.errors.description ? 'tsDescription-error' : undefined}
+          {...form.register('description')}
+        />
+        {form.formState.errors.description && (
+          <p id="tsDescription-error" className="text-destructive text-xs" role="alert">
+            {form.formState.errors.description.message}
+          </p>
+        )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="tsHours">時間 (h, 0.25 刻み)</Label>
@@ -84,10 +119,23 @@ export function MockSubmitForm() {
           step="0.25"
           min="0.25"
           max="24"
+          aria-invalid={form.formState.errors.hoursDecimal ? true : undefined}
+          aria-describedby={form.formState.errors.hoursDecimal ? 'tsHours-error' : undefined}
           {...form.register('hoursDecimal', { valueAsNumber: true })}
         />
+        {form.formState.errors.hoursDecimal && (
+          <p id="tsHours-error" className="text-destructive text-xs" role="alert">
+            {form.formState.errors.hoursDecimal.message}
+          </p>
+        )}
       </div>
-      <Button id="tsSubmit" type="submit" disabled={isPending} className="w-full">
+      <Button
+        id="tsSubmit"
+        type="submit"
+        disabled={isPending}
+        className="w-full"
+        aria-label={isPending ? '送信中… (mock-timesheet 工数送信処理を実行中)' : undefined}
+      >
         {isPending ? '送信中...' : '送信'}
       </Button>
       {lastRef && (
