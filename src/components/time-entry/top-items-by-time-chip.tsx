@@ -100,7 +100,7 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
   return (
     <Card data-testid="top-items-by-time-chip">
       <CardHeader>
-        <CardTitle className="text-base">
+        <CardTitle className="text-base" role="heading" aria-level={2}>
           <span aria-hidden="true">直近 {WINDOW_DAYS} 日 稼働ダッシュボード</span>
           <span className="sr-only">{`${summary.trendLine}。${summary.streakLine}。${peakLabel ? `${peakLabel}。` : ''}${summary.line}`}</span>
         </CardTitle>
