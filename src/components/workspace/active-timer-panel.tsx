@@ -227,6 +227,7 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
           <Button
             type="button"
             size="sm"
+            className="min-h-11"
             variant="ghost"
             onClick={pause}
             aria-label="タイマーを一時停止"
@@ -238,6 +239,7 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
           <Button
             type="button"
             size="sm"
+            className="min-h-11"
             variant="ghost"
             onClick={resume}
             aria-label="タイマーを再開"
@@ -249,6 +251,7 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
         <Button
           type="button"
           size="sm"
+          className="min-h-11"
           variant="ghost"
           onClick={inPip ? closePip : () => void handleOpenPip()}
           disabled={!pipSupported || pipPending}
@@ -276,6 +279,7 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
         <Button
           type="button"
           size="sm"
+          className="min-h-11"
           variant="outline"
           onClick={() => void handleStop()}
           disabled={create.isPending}
