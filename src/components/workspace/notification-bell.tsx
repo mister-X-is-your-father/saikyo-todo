@@ -181,6 +181,7 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
             type="button"
             variant="ghost"
             size="sm"
+            className="min-h-11"
             disabled={unreadCount === 0 || markAllRead.isPending}
             onClick={() => markAllRead.mutate()}
             data-testid="notification-mark-all-read"
