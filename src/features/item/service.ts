@@ -310,9 +310,23 @@ export const itemService = {
           }
         }
 
+        // Legacy bug で sibling 同士に同 position ('a0' 等) が残っているケースがある。
+        // generateKeyBetween は prev>=next で throw するので、collision を検知したら
+        // 片側 null に fallback して place after prev (or before next) で救済する。
+        // (drag 直前の意図 = 「prev の直後 / next の直前」 を最大限保つ)
         let newPosition: string
+        const prevPos = prev?.position ?? null
+        const nextPos = next?.position ?? null
+        const collision =
+          prevPos !== null && nextPos !== null && prevPos.localeCompare(nextPos) >= 0
         try {
-          newPosition = positionBetween(prev?.position ?? null, next?.position ?? null)
+          if (collision) {
+            // 片側 null fallback: prev 側を優先 (= prev の後ろ)
+            // これで item は collision sibling 群の末尾に行くが、致命エラーは回避
+            newPosition = positionBetween(prevPos, null)
+          } else {
+            newPosition = positionBetween(prevPos, nextPos)
+          }
         } catch (e) {
           return err(new ValidationError(`position 計算に失敗: ${(e as Error).message}`))
         }

@@ -313,6 +313,37 @@ describe('itemService', () => {
       expect(result.ok).toBe(false)
       if (!result.ok) expect(result.error.code).toBe('VALIDATION')
     })
+
+    // Legacy bug 救済: 同 parent の sibling 同士が同 position ('a0' 等) を共有
+    // しているとき、prev>=next で `generateKeyBetween` は throw する (旧仕様で
+    // ValidationError "position 計算に失敗" を返していた)。今は片側 null fallback
+    // して place after prev で救済する。
+    it('prev.position == next.position (legacy collision) でも reorder 成功する', async () => {
+      const a = await createItem({ title: 'A' })
+      const b = await createItem({ title: 'B' })
+      const c = await createItem({ title: 'C' })
+      // a と c に同 position 'a0' を強制 (= 旧バグ再現)。b は別 'a1' に。
+      await adminClient().from('items').update({ position: 'a0' }).eq('id', a.id)
+      await adminClient().from('items').update({ position: 'a1' }).eq('id', b.id)
+      await adminClient().from('items').update({ position: 'a0' }).eq('id', c.id)
+      const fresh = await adminClient()
+        .from('items')
+        .select('id, version')
+        .in('id', [a.id, b.id, c.id])
+      const bFresh = fresh.data!.find((x) => x.id === b.id)!
+      // b を a (prev='a0') と c (next='a0') の間に置く → 旧仕様は throw、今は救済
+      const result = await itemService.reorder({
+        id: b.id,
+        expectedVersion: bFresh.version,
+        prevSiblingId: a.id,
+        nextSiblingId: c.id,
+      })
+      expect(result.ok).toBe(true)
+      if (result.ok) {
+        // collision 救済: prev='a0' の後ろに置かれる (= 'a0' < newPosition)
+        expect(result.value.position.localeCompare('a0')).toBeGreaterThan(0)
+      }
+    })
   })
 
   describe('softDelete', () => {
