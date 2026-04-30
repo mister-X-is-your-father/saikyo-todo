@@ -257,9 +257,17 @@ button disabled + reason aria-label。typecheck/lint 緑 (warning baseline 1)。
          optimistic lock + ConflictError 時 revert + toast (UI bind)
 
 5. **Sprint 担当者 swim-lane Gantt** (詳細: 本ファイル下方、scope A から)
+   - ✅ scope A 完了 (iter468/470/471/472/473/474/475、計 7 commit)
    - 仮置き判断: sprint detail の inline disclosure (新 tab ではない)、未 assignee lane 表示
    - HTML/CSS grid (member × 日)、bar は `<div>` で width 計算
    - capacity 計算は workspace default 8h × N day (member 別は別件)
+   - [x] iter468 (b8b04c5): pure helper `computeSwimlaneBarPosition` + `groupItemsByAssigneeKey` + 15 test
+   - [x] iter470 (a840c91): pure helper `detectLaneConflicts` + `collectConflictedItemIds` + `formatLaneConflictsJa` + 16 test
+   - [x] iter471 (a1825bf): pure helper `summarizeLaneLoad` + `formatLaneLoadJa` + 8 test
+   - [x] iter472 (398f3ed): orchestrator `computeSprintSwimlane` で 7 helper を 1 関数連結 + 11 test
+   - [x] iter473 (4411200): pure helper `summarizeSprintSwimlanePopulation` + `formatSprintSwimlanePopulationJa` + 13 test
+   - [x] iter474 (3ba5efd): bulk fetch API `listAssigneesForSprintItems` + `useSprintItemAssignees` hook + `groupAssigneesByItemId` pure helper + 6 test
+   - [x] iter475 (77bc549): SprintCard に `SprintSwimlaneDisclosure` mount = scope A UI bind 完了 (lane 別 bar Gantt + population summary chip + conflict 警告)
 
 各 iter ルール:
 
