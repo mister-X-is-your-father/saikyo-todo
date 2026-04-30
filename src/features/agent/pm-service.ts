@@ -64,6 +64,25 @@ export const pmService = {
       if (!budget.ok) return err(budget.error)
     }
 
+    // CLAUDE.md 「ANTHROPIC_API_KEY 直接利用禁止 (Claude Max OAuth + claude CLI のみ)」
+    // 方針に従い、env 未設定時は明確なエラーを返す。pm-service は executeToolLoop
+    // (Anthropic SDK 直叩き) を使うため API key 必須。ユーザの方針は claude CLI
+    // 経路への移行 (FEEDBACK_QUEUE 別 entry) だが、移行完了まではこのガードで
+    // 「失敗の理由が分からない」状態を回避する。test invoker DI 時は skip。
+    if (!input.invoker) {
+      const apiKey = process.env.ANTHROPIC_API_KEY
+      if (!apiKey || apiKey.trim().length === 0) {
+        return err(
+          new ValidationError(
+            'PM Stand-up は現状 Anthropic SDK 経由で実装されており API key が必要です。' +
+              'プロジェクト方針 (Claude Max OAuth + claude CLI のみ) に沿うため、' +
+              '`pm-service` を claude CLI 経路に移行する作業が FEEDBACK_QUEUE.md に' +
+              'P0 として queue 済です。それまでは PM Stand-up 機能は利用不可。',
+          ),
+        )
+      }
+    }
+
     const agent: Agent = await agentService.ensureAgent(input.workspaceId, 'pm')
 
     const past = await agentMemoryService.loadRecent(agent.id, PM_ROLE.memoryLimit)

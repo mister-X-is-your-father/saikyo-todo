@@ -91,13 +91,24 @@ export const researcherService = {
       if (!budget.ok) return err(budget.error)
     }
 
-    // Phase 6.15 iter146: iter142 の ANTHROPIC_API_KEY 検出 block を撤回。
-    // プロジェクト方針は Claude Max OAuth + claude CLI 経由 (CLAUDE.md
-    // "してはいけない" / scripts/claude-flow-runner.ts) なので env を要求
-    // すること自体が誤り。本来 dev server の researcher も
-    // claude-flow-runner と同じ CLI+MCP 経路で動かすべきで、その移行は
-    // 別 iter で実装する (executeToolLoop / 既存 SDK 路線を残しつつ runner を
-    // 切替えるアダプタを追加する想定)。
+    // Phase 6.15 iter146: iter142 の ANTHROPIC_API_KEY 検出 block を撤回 (誤判断)。
+    // 2026-04-30: ユーザ強調「ANTHROPIC_API_KEY は何があっても使わない、Claude MAX
+    // プランあるもん」に従い、env 未設定なら **明確なエラーを返す** ガードを再導入。
+    // 真の修正は claude CLI (subprocess) 経路への migration (FEEDBACK_QUEUE.md
+    // で P0 queue 済)。ガードはそれまでの bridge。test invoker DI 時は skip。
+    if (!input.invoker) {
+      const apiKey = process.env.ANTHROPIC_API_KEY
+      if (!apiKey || apiKey.trim().length === 0) {
+        return err(
+          new ValidationError(
+            'Researcher (AI 分解 / 調査) は現状 Anthropic SDK 経由で実装されており API key が必要です。' +
+              'プロジェクト方針 (Claude Max OAuth + claude CLI のみ) に沿うため、' +
+              '`researcher-service` を claude CLI 経路に移行する作業が FEEDBACK_QUEUE.md に' +
+              'P0 として queue 済です。それまでは AI 分解 / 調査機能は利用不可。',
+          ),
+        )
+      }
+    }
 
     const agent: Agent = await agentService.ensureAgent(input.workspaceId, 'researcher')
 

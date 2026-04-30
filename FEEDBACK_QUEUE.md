@@ -338,6 +338,21 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 
 ### 🔥 次 iter で即実装 (P0 最優先、track 判定より優先) 🔥
 
+ユーザ強調 (2026-04-30): **「ANTHROPIC_API_KEY は何があっても使わない。クロード MAX プランあるもん」**
+
+→ **0. AI agent (pm / researcher / engineer) を Anthropic SDK 直叩きから claude CLI subprocess 経路へ完全 migration**
+詳細: pm-service / researcher-service の `executeToolLoop` を `runFlowViaClaude` (= claude-flow-runner.ts) ベースに置換。
+現状 `.env.local: ANTHROPIC_API_KEY=` (空) で PM Stand-up / AI 分解が失敗する症状は本件の暫定 ValidationError ガードで明確化済 (2910d50 系)。
+真の解は CLI 経路移行。Engineer は既に cloud-engineer-adapter.ts で CLI 経路あり、pattern 流用可。
+- iter1: pm-service.run の executeToolLoop を runFlowViaClaude へ置換 (input/output adapter helper を pure 関数として、test 含む)
+- iter2: researcher-service.run も同様に置換
+- iter3: tools (read_items / search_items / etc) を CLI 経路でも動くよう MCP server 化 (scripts/mcp-agent-server.ts 拡張)
+- iter4: agent_invocations の cost / tokens 集計を CLI 経路の outputs に合わせて修正
+- iter5: 既存 SDK 経路 (`executeToolLoop`) を deprecated に、テストも CLI mock に切替
+完了後: ANTHROPIC_API_KEY env を削除可能、SDK 依存も削除可能。
+
+---
+
 ユーザ指示 (2026-04-30): 「自動実行モード搭載して。担当者をAIにできる。プランモードで
 こうやるけどええか？って聞かれる。エスカレーションとか相談はSlackで。これ優先度高く実装頼む」
 
