@@ -18,6 +18,8 @@
  */
 import { z } from 'zod'
 
+import { extractFirstJsonObject } from '@/lib/json/extract-first-object'
+
 export const StructuredPlanStepSchema = z.object({
   /** subtask の title (1-200 文字) */
   title: z.string().trim().min(1).max(200),
@@ -146,37 +148,6 @@ export function formatStructuredPlanJa(plan: NormalizedStructuredPlan): string {
   const totalStr = hours === 0 ? `${mins}m` : mins === 0 ? `${hours}h` : `${hours}h${mins}m`
   const dodPart = plan.dodSummary ? ` — 「DoD: ${plan.dodSummary}」` : ''
   return `${plan.steps.length} step / 合計 ${totalStr}${dodPart}`
-}
-
-/** 入力 string から 1 つ目の JSON object (`{...}`) を切り出す。失敗時 null */
-function extractFirstJsonObject(s: string): string | null {
-  const start = s.indexOf('{')
-  if (start === -1) return null
-  let depth = 0
-  let inString = false
-  let escape = false
-  for (let i = start; i < s.length; i++) {
-    const c = s.charAt(i)
-    if (inString) {
-      if (escape) {
-        escape = false
-        continue
-      }
-      if (c === '\\') escape = true
-      else if (c === '"') inString = false
-      continue
-    }
-    if (c === '"') {
-      inString = true
-      continue
-    }
-    if (c === '{') depth += 1
-    else if (c === '}') {
-      depth -= 1
-      if (depth === 0) return s.slice(start, i + 1)
-    }
-  }
-  return null
 }
 
 /**

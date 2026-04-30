@@ -18,6 +18,8 @@
  */
 import { z } from 'zod'
 
+import { extractFirstJsonObject } from '@/lib/json/extract-first-object'
+
 export const ChecklistStatusSchema = z.enum(['ok', 'warn', 'fail'])
 export type ChecklistStatus = z.infer<typeof ChecklistStatusSchema>
 
@@ -63,37 +65,6 @@ export interface ReviewSummary {
 export type ParseStructuredReviewResult =
   | { ok: true; review: StructuredReview; summary: ReviewSummary }
   | { ok: false; error: string; details?: unknown }
-
-/** input string から 1 つ目の JSON object を切り出す (structured-plan.ts と同 pattern) */
-function extractFirstJsonObject(s: string): string | null {
-  const start = s.indexOf('{')
-  if (start === -1) return null
-  let depth = 0
-  let inString = false
-  let escape = false
-  for (let i = start; i < s.length; i++) {
-    const c = s.charAt(i)
-    if (inString) {
-      if (escape) {
-        escape = false
-        continue
-      }
-      if (c === '\\') escape = true
-      else if (c === '"') inString = false
-      continue
-    }
-    if (c === '"') {
-      inString = true
-      continue
-    }
-    if (c === '{') depth += 1
-    else if (c === '}') {
-      depth -= 1
-      if (depth === 0) return s.slice(start, i + 1)
-    }
-  }
-  return null
-}
 
 export function parseStructuredReview(input: unknown): ParseStructuredReviewResult {
   let raw: unknown = input
