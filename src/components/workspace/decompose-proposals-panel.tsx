@@ -249,7 +249,11 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
         )}
       </div>
 
-      <ul className="space-y-1.5" data-testid="proposals-list">
+      <ul
+        className="space-y-1.5"
+        data-testid="proposals-list"
+        aria-label={`AI 分解提案 一覧 ${list.length} 件`}
+      >
         {list.map((p) => (
           <ProposalRow
             key={p.id}

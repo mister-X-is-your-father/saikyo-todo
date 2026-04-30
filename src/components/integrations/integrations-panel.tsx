@@ -72,7 +72,11 @@ export function IntegrationsPanel({ workspaceId }: Props) {
           }
         />
       ) : (
-        <ul className="space-y-3" data-testid="sources-list">
+        <ul
+          className="space-y-3"
+          data-testid="sources-list"
+          aria-label={`API 連携 source 一覧 ${list.data!.length} 件`}
+        >
           {list.data!.map((src) => (
             <li key={src.id}>
               <SourceCard workspaceId={workspaceId} src={src} />
