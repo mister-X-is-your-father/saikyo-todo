@@ -3,7 +3,12 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import { computeBarDragShift, computeBarLeftEdgeShift, computeBarRightEdgeShift } from './bar-drag'
+import {
+  computeBarDragShift,
+  computeBarLeftEdgeShift,
+  computeBarRightEdgeShift,
+  computeSnappedDragPx,
+} from './bar-drag'
 
 describe('computeBarDragShift (中央 drag = 平行 shift)', () => {
   it('1 日分右にシフト (deltaPx=20, dayPx=20)', () => {
@@ -162,5 +167,21 @@ describe('computeBarRightEdgeShift (dueDate のみ shift)', () => {
       dayPx: 20,
     })
     expect(r.dueDate).toBeNull()
+  })
+})
+
+describe('computeSnappedDragPx (drag 中の視覚 ghost 用)', () => {
+  it('15px @ dayPx=20 → 20px に snap (1 日)', () => {
+    expect(computeSnappedDragPx(15, 20)).toBe(20)
+  })
+
+  it('-25px @ dayPx=20 → -20px に snap (-1 日)、半日未満は隣の日へ寄せ', () => {
+    expect(computeSnappedDragPx(-25, 20)).toBe(-20)
+  })
+
+  it('dayPx=0 / NaN → 0 (sentinel、translateX で動かない)', () => {
+    expect(computeSnappedDragPx(40, 0)).toBe(0)
+    expect(computeSnappedDragPx(40, NaN)).toBe(0)
+    expect(computeSnappedDragPx(NaN, 20)).toBe(0)
   })
 })

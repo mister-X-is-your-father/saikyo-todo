@@ -21,11 +21,15 @@
  *     (Phase 6.15 iter 1 の computeCriticalPath を呼んだ結果を渡す想定)
  *   - workspace 横断 edges 取得 hook は次 iter (現状は呼び出し元から渡す)
  */
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { addDays, differenceInCalendarDays, format, isValid, parseISO } from 'date-fns'
 import { parseAsBoolean, parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs'
+import { toast } from 'sonner'
 
+import { isAppError } from '@/lib/errors'
+
+import { computeBarDragShift, computeSnappedDragPx } from '@/features/gantt/bar-drag'
 import {
   computeGanttRange,
   computeMonthBoundaries,
@@ -33,6 +37,7 @@ import {
   computeTotalDays,
 } from '@/features/gantt/gantt-range'
 import { computeProjectStats, formatSlipText } from '@/features/gantt/project-stats'
+import { useUpdateItem } from '@/features/item/hooks'
 import type { Item } from '@/features/item/schema'
 
 import { type GanttBar, type GanttDepEdge, GanttDependencyArrows } from './gantt-dependency-arrows'
@@ -65,6 +70,7 @@ function toDate(v: Date | string | null | undefined): Date | null {
 }
 
 export function GanttView({
+  workspaceId,
   items,
   edges = [],
   criticalIds = [],
@@ -88,6 +94,24 @@ export function GanttView({
     parseAsStringLiteral(['compact', 'normal', 'wide'] as const).withDefault('normal'),
   )
   const dayPx = ZOOM_PX[zoom]
+
+  // FEEDBACK_QUEUE P0 entry 4 「Gantt DnD 期間編集」 scope A UI bind (iter478):
+  // 中央 drag で bar の startDate / dueDate を平行 shift。snap to day。
+  // - drag 中は visual ghost (translateX) で「次の日にスナップ」プレビュー
+  // - 4px 未満 → click 扱い (dialog open)
+  // - drop 時 `computeBarDragShift` で日数計算 → useUpdateItem
+  // - ConflictError は toast でユーザに通知 (revert は invalidateQueries で自動)
+  // - workspaceId 未指定 (read-only Gantt) → drag 無効 (button disabled 同等)
+  const update = useUpdateItem(workspaceId ?? '')
+  const [drag, setDrag] = useState<{
+    barId: string
+    startX: number
+    deltaPx: number
+    moved: boolean
+  } | null>(null)
+  // pointerup 直後の click event を抑止するための「直前 drag 完了」フラグ
+  const suppressNextClickRef = useRef<string | null>(null)
+  const DRAG_THRESHOLD_PX = 4
 
   const withDates = useMemo(
     () =>
@@ -176,6 +200,87 @@ export function GanttView({
     if (!el || todayX === null) return
     const target = LABEL_COL_PX + todayX - el.clientWidth / 2
     el.scrollTo({ left: Math.max(0, target), behavior })
+  }
+
+  const dragEnabled = Boolean(workspaceId)
+
+  function onBarPointerDown(e: React.PointerEvent<HTMLDivElement>, barId: string) {
+    if (!dragEnabled) return
+    if (e.button !== 0 || e.pointerType === 'touch') return
+    e.stopPropagation()
+    e.currentTarget.setPointerCapture(e.pointerId)
+    setDrag({ barId, startX: e.clientX, deltaPx: 0, moved: false })
+  }
+
+  function onBarPointerMove(e: React.PointerEvent<HTMLDivElement>, barId: string) {
+    if (!drag || drag.barId !== barId) return
+    const deltaPx = e.clientX - drag.startX
+    const moved = drag.moved || Math.abs(deltaPx) >= DRAG_THRESHOLD_PX
+    if (deltaPx === drag.deltaPx && moved === drag.moved) return
+    setDrag({ ...drag, deltaPx, moved })
+  }
+
+  async function onBarPointerUp(
+    e: React.PointerEvent<HTMLDivElement>,
+    barId: string,
+    item: Item,
+    startISO: string,
+    dueISO: string,
+  ) {
+    if (!drag || drag.barId !== barId) return
+    const deltaPx = drag.deltaPx
+    const moved = drag.moved
+    setDrag(null)
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId)
+    } catch {
+      // already released by browser
+    }
+    if (!moved) {
+      // click 扱い、onClick 側で setOpenItemId(item.id) が走る
+      return
+    }
+    // 直後の click を suppress (drag 完了なので dialog を開かない)
+    suppressNextClickRef.current = barId
+    const result = computeBarDragShift({
+      startDate: startISO,
+      dueDate: dueISO,
+      deltaPx,
+      dayPx,
+    })
+    if (result.invalid || result.deltaDays === 0) return
+    try {
+      await update.mutateAsync({
+        id: item.id,
+        expectedVersion: item.version,
+        patch: { startDate: result.startDate, dueDate: result.dueDate },
+      })
+      const sign = result.deltaDays > 0 ? '+' : ''
+      toast.success(`期間を ${sign}${result.deltaDays} 日 シフトしました`)
+    } catch (err) {
+      if (isAppError(err) && err.code === 'CONFLICT') {
+        toast.error('別の編集と競合しました。Gantt を再読込して再操作してください')
+      } else {
+        toast.error(isAppError(err) ? err.message : '期間の更新に失敗しました')
+      }
+    }
+  }
+
+  function onBarPointerCancel(barId: string) {
+    if (!drag || drag.barId !== barId) return
+    setDrag(null)
+  }
+
+  function onBarClick(e: React.MouseEvent<HTMLDivElement>, itemId: string) {
+    // drag 完了直後の click は dialog を開かない
+    if (suppressNextClickRef.current === itemId) {
+      suppressNextClickRef.current = null
+      e.preventDefault()
+      e.stopPropagation()
+      return
+    }
+    e.stopPropagation()
+    void setOpenItemId(itemId)
   }
 
   return (
@@ -518,11 +623,25 @@ export function GanttView({
                     data-milestone="false"
                     data-done={isDone ? 'true' : 'false'}
                     data-critical={criticalSet.has(item.id) ? 'true' : 'false'}
+                    data-dragging={drag?.barId === item.id && drag.moved ? 'true' : 'false'}
                     role="button"
                     tabIndex={0}
-                    aria-label={`${item.title} ${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')} (${spanDays}日)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}${slipText}${progressPct > 0 ? ` [進捗 ${progressPct}%]` : ''}`}
+                    aria-label={`${item.title} ${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')} (${spanDays}日)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}${slipText}${progressPct > 0 ? ` [進捗 ${progressPct}%]` : ''}${dragEnabled ? ' (ドラッグで期間移動)' : ''}`}
                     onKeyDown={onBarKeyDown}
-                    className="focus-visible:ring-foreground absolute top-1 flex items-center gap-1 overflow-hidden rounded text-xs leading-6 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none"
+                    onPointerDown={(e) => onBarPointerDown(e, item.id)}
+                    onPointerMove={(e) => onBarPointerMove(e, item.id)}
+                    onPointerUp={(e) =>
+                      void onBarPointerUp(
+                        e,
+                        item.id,
+                        item,
+                        format(start, 'yyyy-MM-dd'),
+                        format(due, 'yyyy-MM-dd'),
+                      )
+                    }
+                    onPointerCancel={() => onBarPointerCancel(item.id)}
+                    onClick={(e) => onBarClick(e, item.id)}
+                    className="focus-visible:ring-foreground absolute top-1 flex items-center gap-1 overflow-hidden rounded text-xs leading-6 select-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none"
                     style={{
                       left: barLeft,
                       width: barWidth,
@@ -535,11 +654,22 @@ export function GanttView({
                       boxShadow: criticalSet.has(item.id)
                         ? '0 0 0 2px rgb(220, 38, 38), 0 1px 2px rgba(0,0,0,0.18)'
                         : '0 1px 2px rgba(0,0,0,0.18)',
-                      cursor: 'pointer',
+                      cursor: dragEnabled
+                        ? drag?.barId === item.id && drag.moved
+                          ? 'grabbing'
+                          : 'grab'
+                        : 'pointer',
                       textDecoration: isDone ? 'line-through' : undefined,
+                      // drag 中は snap to day で視覚 ghost (translateX) — TeamGantt 風
+                      transform:
+                        drag?.barId === item.id && drag.moved
+                          ? `translateX(${computeSnappedDragPx(drag.deltaPx, dayPx)}px)`
+                          : undefined,
+                      opacity: drag?.barId === item.id && drag.moved ? 0.85 : undefined,
+                      transition: drag?.barId === item.id ? 'none' : 'transform 120ms ease-out',
+                      touchAction: 'none',
                     }}
-                    title={`${item.title} — ${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')} (${spanDays}日)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}${slipText}${progressPct > 0 ? ` [進捗 ${progressPct}%]` : ''}`}
-                    onClick={() => void setOpenItemId(item.id)}
+                    title={`${item.title} — ${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')} (${spanDays}日)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}${slipText}${progressPct > 0 ? ` [進捗 ${progressPct}%]` : ''}${dragEnabled ? ' — ドラッグで期間移動' : ''}`}
                   >
                     {progressPct > 0 && (
                       <div

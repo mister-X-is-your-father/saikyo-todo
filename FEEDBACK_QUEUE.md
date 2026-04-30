@@ -191,7 +191,27 @@ pagehide listener で close 検知 + `useSyncExternalStore` で SSR/hydration �
 capability 検出。Chrome / Edge は別 window 化 + 常に手前、Safari / Firefox は
 button disabled + reason aria-label。typecheck/lint 緑 (warning baseline 1)。
 
+### ✅ 2026-04-30 完了 (旧 P0 最優先消化済 — 5/5 entry scope A 完了)
+
+iter460 〜 iter478 までの計 19 commit で **5 件 全 entry scope A 完了**:
+
+1. ✅ Template 登録機能 (iter460/461/462)
+2. ✅ 案件サマリ panel (iter463/464)
+3. ✅ チームメンバー余裕時間 一覧 (iter465/466/469/476/477)
+4. ✅ Gantt DnD 期間編集 (iter467/478)
+5. ✅ Sprint 担当者 swim-lane Gantt (iter468/470/471/472/473/474/475)
+
+各 entry の実装詳細は本 file 下方の同名 section を参照。**P0 section は「(空)」状態**、
+次 iter (479) からは judge.sh の track 判定 (iter % 5 = 4 → ai-automation) に復帰。
+scope B (各 entry の中規模拡張、例: Gantt DnD 左右 edge resize / 依存連動 / Template
+drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up された時のみ着手。
+
 ### 🔥 次 iter で即実装 (P0 最優先、track 判定より優先) 🔥
+
+(空) — 5 件 全 entry scope A 完了済、track 判定に復帰。
+
+<details>
+<summary>iter460-478 の P0 5 件消化記録 (履歴)</summary>
 
 ユーザ指示 (2026-04-30): 「さっきのやつとか優先してやってほしいな」「最優先でできるようにして欲しい」
 → 下記 5 件 queue を **track 判定より優先して順次消化**。各 iter で 1 件 着手、scope A
@@ -251,13 +271,12 @@ button disabled + reason aria-label。typecheck/lint 緑 (warning baseline 1)。
          tone 配色 + 危ない member 上 sort)
 
 4. **Gantt DnD 期間編集** (詳細: 本ファイル下方、scope A から)
-   - 🚧 進行中 (iter467 で bar-drag substrate 着地、次 iter で gantt-view UI 配線)
+   - ✅ scope A 完了 (iter467/478、計 2 commit)
    - 仮置き判断: bar 中央 drag → 期間平行 shift のみ実装 (左右 edge / 依存連動は別 iter)
-   - day 単位 snap、@dnd-kit で実装 (既導入)
-   - 失敗時 ghost reset + toast、楽観ロック衝突は revert
+   - day 単位 snap、PointerEvent + setPointerCapture (@dnd-kit Sortable は再順序用途、bar drag には合わないため使用せず)
+   - 失敗時 ghost reset + toast、楽観ロック衝突は revert (TanStack Query invalidate で自動)
    - [x] iter467 (dbb6e96): pure helper `computeBarDragShift` + `computeBarLeftEdgeShift` + `computeBarRightEdgeShift` (snap to day / clamp / fail-soft 全網羅) + 14 test。scope B 左右 edge も sibling 関数として先行整備。
-   - [ ] 次: gantt-view.tsx の bar に dnd-kit Sortable + onDragEnd 配線、
-         optimistic lock + ConflictError 時 revert + toast (UI bind)
+   - [x] iter478: gantt-view.tsx の非 milestone bar に PointerEvent 配線 = scope A UI bind 完了 (translateX で snap-to-day visual ghost + 4px threshold で click vs drag 判定 + ConflictError toast + cursor grab/grabbing 切替 + `computeSnappedDragPx` pure helper 追加 + 3 test)
 
 5. **Sprint 担当者 swim-lane Gantt** (詳細: 本ファイル下方、scope A から)
    - ✅ scope A 完了 (iter468/470/471/472/473/474/475、計 7 commit)
@@ -282,6 +301,8 @@ button disabled + reason aria-label。typecheck/lint 緑 (warning baseline 1)。
 - 3 連続失敗 (typecheck/lint/test 落ち) で次 entry に進む
 
 5 件全部消化したら本 P0 section を「(空)」に戻す → track 判定に復帰。
+
+</details>
 
 <details>
 <summary>iter302 で消化済の Scope B 仕様 (履歴)</summary>

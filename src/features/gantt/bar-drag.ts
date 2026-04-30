@@ -45,6 +45,20 @@ export interface BarDragResult {
   invalid: boolean
 }
 
+/**
+ * iter478 P0 (queue: Gantt DnD UI bind): drag 中の bar の視覚 ghost 用に
+ * pixel delta を「最寄りの日」に snap する。`Math.round(deltaPx / dayPx) * dayPx` を
+ * 安全 (NaN / dayPx<=0 を 0 sentinel) に行うだけの極小 helper。
+ *
+ * caller (gantt-view.tsx) は drag 中にこの値を `transform: translateX(${px}px)` に
+ * 渡して、ユーザに「次の日にスナップ」のフィードバックを即時表示する (TeamGantt 風)。
+ * 確定 shift は drop 時に `computeBarDragShift` 経由で日付計算する。
+ */
+export function computeSnappedDragPx(deltaPx: number, dayPx: number): number {
+  if (!Number.isFinite(deltaPx) || !Number.isFinite(dayPx) || dayPx <= 0) return 0
+  return Math.round(deltaPx / dayPx) * dayPx
+}
+
 export function computeBarDragShift(input: BarDragInput): BarDragResult {
   if (!Number.isFinite(input.dayPx) || input.dayPx <= 0 || !Number.isFinite(input.deltaPx)) {
     return {
