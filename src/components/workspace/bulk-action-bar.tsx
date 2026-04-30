@@ -79,6 +79,7 @@ export function BulkActionBar({ workspaceId }: Props) {
         <Button
           key={s.key}
           size="sm"
+          className="min-h-11"
           variant="outline"
           disabled={bulkStatus.isPending}
           onClick={() => void handleStatus(s.key)}
@@ -94,6 +95,7 @@ export function BulkActionBar({ workspaceId }: Props) {
       ))}
       <Button
         size="sm"
+        className="min-h-11"
         variant="destructive"
         disabled={bulkDelete.isPending}
         onClick={() => void handleDelete()}
@@ -108,6 +110,7 @@ export function BulkActionBar({ workspaceId }: Props) {
       </Button>
       <Button
         size="sm"
+        className="min-h-11"
         variant="ghost"
         onClick={() => clear()}
         data-testid="bulk-clear"
