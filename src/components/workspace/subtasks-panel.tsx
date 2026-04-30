@@ -113,21 +113,23 @@ function SubtaskTreeNode({
   const canOutdent = findGrandparentId(item, allItems) !== null
 
   // DnD: row 自体を sortable に。drag handle のみが pointer hold/drag を起動。
-  // 2026-04-30: `animateLayoutChanges: () => false` で **layout 変動時の自動 animation を無効化**。
+  // 2026-04-30: `animateLayoutChanges: () => false` で **drop 後の自動 layout animation を無効化**。
   // これがないと、楽観 update で array 順が変わった瞬間に dnd-kit が古い transform を
-  // 残したまま新 DOM 位置に適用し、要素が「上に飛んでから戻ってくる」 視覚 artifact が発生する
-  // (ユーザ報告 2026-04-30 の root cause)。drag 中の他要素 push 動作には影響しない。
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: item.id,
-    animateLayoutChanges: () => false,
-  })
-  // 2026-04-30: drag 中のみ transform を適用、drop 後は **完全に空 style**。
-  // drop 直後に古い transform (drag 中の translateY(-100px) 等) が新 DOM 位置に
-  // 1 frame 残ると要素が「プル」 と飛んで戻る視覚 artifact になる。isDragging=false の
-  // 時は transform / transition も undefined にすることで artifact を完全消去。
-  const sortableStyle = isDragging
-    ? { transform: CSS.Transform.toString(transform), transition, opacity: 0.4 }
-    : {}
+  // 残したまま新 DOM 位置に適用し、要素が「上に飛んでから戻ってくる」 視覚 artifact が発生する。
+  // ※ drag 中の「他要素が押し退けられる」 動作は isSorting=true の transform で別管理 (健在)。
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging, isSorting } =
+    useSortable({
+      id: item.id,
+      animateLayoutChanges: () => false,
+    })
+  // 2026-04-30: drag-or-sorting 中のみ transform を適用、drop 確定後は空 style。
+  //   - isDragging=true: 自身が drag されている (translateY 等で追従)
+  //   - isSorting=true (isDragging=false): 別要素が drag 中、自身は make-way 移動
+  //   - 両方 false (= drop 完了): transform 0、artifact 防止のため style 空
+  const sortableStyle =
+    isDragging || isSorting
+      ? { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }
+      : {}
 
   /** Alt+←/→ keyboard で outdent/indent (focus は drag handle / row 全体)。 */
   function onRowKeyDown(e: ReactKeyboardEvent<HTMLLIElement>) {
