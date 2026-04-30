@@ -363,9 +363,12 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
       return
     }
     // 同 parent の siblings をソート → arrayMove → 前後を計算 → reorder action
+    // **重要**: 表示順と完全一致させるため `compareSiblings` (position + id tie-break)
+    // を使う。`localeCompare` だけだと collision 時に index がずれて 思った位置に
+    // 行かない (2026-04-30 ユーザ報告 root cause)。
     const siblings = allItems
       .filter((i) => !i.deletedAt && i.parentPath === activeItem.parentPath)
-      .sort((a, b) => a.position.localeCompare(b.position))
+      .sort(compareSiblings)
     const srcIdx = siblings.findIndex((s) => s.id === activeItem.id)
     const dstIdx = siblings.findIndex((s) => s.id === overItem.id)
     if (srcIdx < 0 || dstIdx < 0) return
