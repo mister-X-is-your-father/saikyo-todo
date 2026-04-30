@@ -16,16 +16,17 @@ export function MockTopNav({ sessionId }: { sessionId: string }) {
         </p>
       </div>
       <nav aria-label="mock-timesheet ナビゲーション" className="flex items-center gap-2">
-        <Button variant="outline" size="sm" asChild>
+        <Button variant="outline" size="sm" className="min-h-11" asChild>
           <Link href="/mock-timesheet/new">新規入力</Link>
         </Button>
-        <Button variant="outline" size="sm" asChild>
+        <Button variant="outline" size="sm" className="min-h-11" asChild>
           <Link href="/mock-timesheet/entries">入力一覧</Link>
         </Button>
         <form action={mockLogoutAction} aria-label="mock-timesheet からログアウト">
           <Button
             variant="ghost"
             size="sm"
+            className="min-h-11"
             type="submit"
             aria-label="mock-timesheet session をログアウト"
           >
