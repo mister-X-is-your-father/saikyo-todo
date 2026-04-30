@@ -21,6 +21,7 @@ import { dashboardViewPlugin } from './views/dashboard'
 import { ganttViewPlugin } from './views/gantt'
 import { inboxViewPlugin } from './views/inbox'
 import { kanbanViewPlugin } from './views/kanban'
+import { taskchuteViewPlugin } from './views/taskchute'
 import { todayViewPlugin } from './views/today'
 
 let registered = false
@@ -32,6 +33,7 @@ export function registerCorePlugins(): void {
   registerAction(researchItemActionPlugin)
   // 並び順が switcher の並びになる
   registerView(todayViewPlugin)
+  registerView(taskchuteViewPlugin)
   registerView(calendarViewPlugin)
   registerView(inboxViewPlugin)
   registerView(kanbanViewPlugin)
