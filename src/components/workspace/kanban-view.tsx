@@ -360,9 +360,18 @@ function KanbanCard({
             item.startDate && item.dueDate ? ' / ' : ''
           }${item.dueDate ? `期限 ${item.dueDate}` : ''}`}
         >
-          {item.startDate ? `開始: ${formatFriendlyDate(item.startDate, today)}` : ''}
+          {item.startDate && (
+            <>
+              開始:{' '}
+              <time dateTime={item.startDate}>{formatFriendlyDate(item.startDate, today)}</time>
+            </>
+          )}
           {item.startDate && item.dueDate ? ' / ' : ''}
-          {item.dueDate ? `期限: ${formatFriendlyDate(item.dueDate, today)}` : ''}
+          {item.dueDate && (
+            <>
+              期限: <time dateTime={item.dueDate}>{formatFriendlyDate(item.dueDate, today)}</time>
+            </>
+          )}
         </div>
       )}
       <div className="mt-2 flex items-center justify-between gap-2">

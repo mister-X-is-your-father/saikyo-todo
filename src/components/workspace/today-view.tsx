@@ -222,7 +222,10 @@ export function TodayView({
                             title={it.dueDate}
                             aria-label={`期限 ${it.dueDate}`}
                           >
-                            期限 {formatFriendlyDate(it.dueDate, todayDate)}
+                            期限{' '}
+                            <time dateTime={it.dueDate}>
+                              {formatFriendlyDate(it.dueDate, todayDate)}
+                            </time>
                           </span>
                         )}
                         <StatusBadge status={it.status} />
