@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 
 import {
   computeMonthlyCostTrend,
+  computeMonthlyCostTrendByRole,
   type CostMonthEntry,
+  formatMonthlyCostTrendByRoleJa,
   formatMonthlyCostTrendJa,
   rollupCostByMonth,
 } from './cost-monthly-trend'
@@ -264,5 +266,76 @@ describe('integration: rollup → trend → format', () => {
     expect(out).toContain('増加')
     expect(out).toContain('$1.50')
     expect(out).toContain('$1.00')
+  })
+})
+
+describe('computeMonthlyCostTrendByRole (role 別 trend、AI brief / dashboard widget 共通)', () => {
+  it('PM 増加 / Researcher 安定 を別々 trend で取り出す', () => {
+    const rows = [
+      { month: '2026-04', role: 'pm', costUsd: 0.8 },
+      { month: '2026-03', role: 'pm', costUsd: 0.5 },
+      { month: '2026-04', role: 'researcher', costUsd: 0.3 },
+      { month: '2026-03', role: 'researcher', costUsd: 0.3 }, // 安定 = flat
+    ]
+    const trends = computeMonthlyCostTrendByRole(rows, '2026-04-29')
+    expect(trends.pm.direction).toBe('up')
+    expect(trends.pm.thisMonthUsd).toBe(0.8)
+    expect(trends.pm.priorMonthUsd).toBe(0.5)
+    expect(trends.researcher.direction).toBe('flat')
+    expect(trends.researcher.thisMonthUsd).toBe(0.3)
+    expect(trends.researcher.priorMonthUsd).toBe(0.3)
+  })
+
+  it('role 不在は idle trend で埋まる (caller は undefined check 不要)', () => {
+    const rows = [{ month: '2026-04', role: 'pm', costUsd: 0.5 }]
+    const trends = computeMonthlyCostTrendByRole(rows, '2026-04-29')
+    expect(trends.pm.direction).toBe('up') // 先月 0 → 今月 0.5
+    expect(trends.researcher.direction).toBe('idle')
+    expect(trends.researcher.thisMonthUsd).toBe(0)
+  })
+
+  it('未知 role / 不正 month を skip', () => {
+    const rows = [
+      { month: '2026-04', role: 'pm', costUsd: 0.5 },
+      { month: '2026-04', role: 'engineer' as const, costUsd: 100 }, // 未知 role 想定
+      { month: 'not-a-month', role: 'pm', costUsd: 1 },
+    ]
+    const trends = computeMonthlyCostTrendByRole(rows, '2026-04-29')
+    expect(trends.pm.thisMonthUsd).toBe(0.5)
+  })
+})
+
+describe('formatMonthlyCostTrendByRoleJa', () => {
+  it('全 role idle → 「先月今月とも記録なし」', () => {
+    const trends = computeMonthlyCostTrendByRole([], '2026-04-29')
+    expect(formatMonthlyCostTrendByRoleJa(trends)).toBe('AI コスト: 先月今月とも記録なし')
+  })
+
+  it('PM 増加 + Researcher 安定 → 「AI コスト: PM 増加・Researcher 安定」', () => {
+    const rows = [
+      { month: '2026-04', role: 'pm', costUsd: 0.8 },
+      { month: '2026-03', role: 'pm', costUsd: 0.5 },
+      { month: '2026-04', role: 'researcher', costUsd: 0.3 },
+      { month: '2026-03', role: 'researcher', costUsd: 0.3 },
+    ]
+    const trends = computeMonthlyCostTrendByRole(rows, '2026-04-29')
+    expect(formatMonthlyCostTrendByRoleJa(trends)).toBe('AI コスト: PM 増加・Researcher 安定')
+  })
+
+  it('PM のみ entry → 「PM 増加・Researcher 記録なし」', () => {
+    const rows = [{ month: '2026-04', role: 'pm', costUsd: 0.5 }]
+    const trends = computeMonthlyCostTrendByRole(rows, '2026-04-29')
+    expect(formatMonthlyCostTrendByRoleJa(trends)).toBe('AI コスト: PM 増加・Researcher 記録なし')
+  })
+
+  it('PM 減少 + Researcher 減少', () => {
+    const rows = [
+      { month: '2026-04', role: 'pm', costUsd: 0.3 },
+      { month: '2026-03', role: 'pm', costUsd: 0.8 },
+      { month: '2026-04', role: 'researcher', costUsd: 0.1 },
+      { month: '2026-03', role: 'researcher', costUsd: 0.5 },
+    ]
+    const trends = computeMonthlyCostTrendByRole(rows, '2026-04-29')
+    expect(formatMonthlyCostTrendByRoleJa(trends)).toBe('AI コスト: PM 減少・Researcher 減少')
   })
 })

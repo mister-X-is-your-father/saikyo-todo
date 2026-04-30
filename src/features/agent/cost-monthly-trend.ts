@@ -158,6 +158,77 @@ function formatUsd(usd: number): string {
   return `$${safe.toFixed(decimals)}`
 }
 
+/**
+ * iter484 ai-automation: role 別 (pm / researcher) に this vs prior month trend を
+ * 取り出す helper。既存の `computeMonthlyCostTrend` は workspace 全体集計の trend
+ * を 1 個返すが、AI brief / dashboard widget で「PM agent は増加 / Researcher
+ * agent は安定」のような **role 別 trend** を同時に出したい。
+ *
+ * 入力: `MonthlyCostRow` 互換 (`{ month, role, costUsd }` を持てば OK、cost-aggregate.ts
+ * の `MonthlyCostRow` を直接渡せる structural subset)。出力: `Record<role,
+ * MonthlyCostTrend>`、role 不在は zero entry trend (= idle / safe) で埋める。
+ *
+ * 仕様:
+ *   - rows を role 別に partition、各 role の `{month, costUsd}` を `computeMonthlyCostTrend`
+ *     に渡して trend を計算
+ *   - role 'pm' / 'researcher' の両方が必ず key として存在 (= caller は undefined check
+ *     不要)、entry 0 件 role は idle trend
+ *   - `formatMonthlyCostTrendByRoleJa(trends)` で 1 行 ja-JP 文言:
+ *       'AI コスト: PM 増加 (先月 $0.50 → 今月 $0.80、+$0.30 (+60%))・Researcher 安定'
+ *     役割名 → 「PM」「Researcher」 (TIER_LABEL と同じ視覚短ラベル)
+ */
+export type AgentRole = 'pm' | 'researcher'
+
+export type MonthlyCostTrendByRole = Record<AgentRole, MonthlyCostTrend>
+
+const ROLE_LABEL_JA: Record<AgentRole, string> = {
+  pm: 'PM',
+  researcher: 'Researcher',
+}
+
+export function computeMonthlyCostTrendByRole(
+  rows: readonly { month: string; role: string; costUsd: number }[],
+  today: string,
+): MonthlyCostTrendByRole {
+  const roleEntries: Record<AgentRole, CostMonthEntry[]> = {
+    pm: [],
+    researcher: [],
+  }
+  for (const r of rows) {
+    if (r.role === 'pm' || r.role === 'researcher') {
+      if (!ISO_MONTH_RE.test(r.month)) continue
+      roleEntries[r.role].push({ month: r.month, costUsd: safeUsd(r.costUsd) })
+    }
+  }
+  return {
+    pm: computeMonthlyCostTrend(roleEntries.pm, today),
+    researcher: computeMonthlyCostTrend(roleEntries.researcher, today),
+  }
+}
+
+/**
+ * role 別 trend を 1 行 ja-JP 文言に整形 (chip / SR aria-label / AI brief 共通)。
+ * 全 role idle → 'AI コスト: 先月今月とも記録なし'、それ以外 → role 別「方向 + 状態」 を中黒 (・) で連結。
+ *  - up → 'PM 増加'
+ *  - down → 'PM 減少'
+ *  - flat → 'PM 安定'
+ *  - idle → 'PM 記録なし'
+ */
+export function formatMonthlyCostTrendByRoleJa(trends: MonthlyCostTrendByRole): string {
+  const allIdle = (Object.values(trends) as MonthlyCostTrend[]).every((t) => t.direction === 'idle')
+  if (allIdle) return 'AI コスト: 先月今月とも記録なし'
+  const parts: string[] = []
+  for (const role of ['pm', 'researcher'] as const) {
+    const t = trends[role]
+    const label = ROLE_LABEL_JA[role]
+    if (t.direction === 'idle') parts.push(`${label} 記録なし`)
+    else if (t.direction === 'up') parts.push(`${label} 増加`)
+    else if (t.direction === 'down') parts.push(`${label} 減少`)
+    else parts.push(`${label} 安定`)
+  }
+  return `AI コスト: ${parts.join('・')}`
+}
+
 export function formatMonthlyCostTrendJa(trend: MonthlyCostTrend): string {
   if (trend.direction === 'idle') {
     return 'AI コスト: 先月今月とも記録なし'
