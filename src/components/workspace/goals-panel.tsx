@@ -46,6 +46,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { TeamContextEditor } from '@/components/workspace/team-context-editor'
+import { WorkspaceModeSelector } from '@/components/workspace/workspace-mode-selector'
 
 interface Props {
   workspaceId: string
@@ -116,6 +117,7 @@ export function GoalsPanel({ workspaceId }: Props) {
 
   return (
     <div className="space-y-6">
+      <WorkspaceModeSelector workspaceId={workspaceId} />
       <TeamContextEditor workspaceId={workspaceId} />
       <Card>
         <CardHeader>
