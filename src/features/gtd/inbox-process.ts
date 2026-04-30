@@ -171,6 +171,36 @@ export function gtdBucketLabelJa(bucket: GtdBucket): string {
 }
 
 /**
+ * iter544 ai-automation polish: GtdBucket → SeverityChip tone bridge。
+ * 「即実行」 / 「次の action」 が attention 軸最上位、「参考」 / 「いつか」 / 「予定済」
+ * は neutral、「削除候補」 は muted。bucket は分類軸だが、Inbox process UI で「今すぐ
+ * 何を見るべきか」 を chip 配色で示すには必須。
+ *
+ * 'immediate'    → 'warn'   (= 即実行を促す警報、2 分 rule で速攻片付ける)
+ * 'next-action'  → 'info'   (= 進行中、優先順位ありの実行待ち)
+ * 'project'      → 'info'   (= 分解必要、複数 step だが進行中)
+ * 'waiting-for'  → 'warn'   (= 関係者待ち、リマインドが要るかも)
+ * 'reference'    → 'muted'  (= 参考、attention 不要)
+ * 'someday'      → 'muted'  (= いつか、attention 不要)
+ * 'scheduled'    → 'info'   (= 予定済、期日まで放置 ok)
+ * 'trash'        → 'muted'  (= 削除候補、attention 不要)
+ */
+const BUCKET_SEVERITY: Record<GtdBucket, 'ok' | 'info' | 'warn' | 'danger' | 'muted'> = {
+  immediate: 'warn',
+  'next-action': 'info',
+  project: 'info',
+  'waiting-for': 'warn',
+  reference: 'muted',
+  someday: 'muted',
+  scheduled: 'info',
+  trash: 'muted',
+}
+
+export function gtdBucketSeverity(bucket: GtdBucket): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
+  return BUCKET_SEVERITY[bucket]
+}
+
+/**
  * Inbox 全 items を 8 bucket に分類して count + items をまとめる。
  * UI で「Inbox に N 件、うち next-action: 5 / project: 3 / ...」 表示用。
  */

@@ -4,6 +4,7 @@ import {
   classifyInboxItem,
   formatInboxBucketsJa,
   gtdBucketLabelJa,
+  gtdBucketSeverity,
   type InboxItemFields,
   summarizeInbox,
 } from './inbox-process'
@@ -183,6 +184,23 @@ describe('gtdBucketLabelJa', () => {
     expect(gtdBucketLabelJa('someday')).toBe('いつか / もしかしたら')
     expect(gtdBucketLabelJa('scheduled')).toBe('予定済')
     expect(gtdBucketLabelJa('trash')).toBe('削除候補')
+  })
+})
+
+describe('gtdBucketSeverity', () => {
+  it('attention 軸の bucket → warn (immediate / waiting-for)', () => {
+    expect(gtdBucketSeverity('immediate')).toBe('warn')
+    expect(gtdBucketSeverity('waiting-for')).toBe('warn')
+  })
+  it('進行軸の bucket → info (next-action / project / scheduled)', () => {
+    expect(gtdBucketSeverity('next-action')).toBe('info')
+    expect(gtdBucketSeverity('project')).toBe('info')
+    expect(gtdBucketSeverity('scheduled')).toBe('info')
+  })
+  it('attention 不要の bucket → muted (reference / someday / trash)', () => {
+    expect(gtdBucketSeverity('reference')).toBe('muted')
+    expect(gtdBucketSeverity('someday')).toBe('muted')
+    expect(gtdBucketSeverity('trash')).toBe('muted')
   })
 })
 
