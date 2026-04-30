@@ -61,15 +61,17 @@ async function main(): Promise<void> {
     }
   }
 
-  // 3. button aria-label に sevLabel + title + 想定 + 実測 を集約
+  // 3. SeverityChip に ariaLabel prop で sevLabel + title + 想定 + 実測 + 差分 を集約
+  // (iter420 直後 8ddf469 で <button> から SeverityChip に refactor されたため
+  //  ariaLabel prop 経由の渡し方を許容する)
   if (
-    /aria-label=\{`\$\{sevLabel\}: \$\{title\} 想定 \$\{fmtMin\(r\.plannedMinutes\)\} 実測 \$\{fmtMin\(r\.actualMinutes\)\}\$\{deltaText\}`\}/.test(
+    /ariaLabel=\{`\$\{sevLabel\}: \$\{title\} 想定 \$\{fmtMin\(r\.plannedMinutes\)\} 実測 \$\{fmtMin\(r\.actualMinutes\)\}\$\{deltaText\}`\}/.test(
       src,
     )
   ) {
-    findings.push({ level: 'info', message: `${path}: button aria-label 集約 OK` })
+    findings.push({ level: 'info', message: `${path}: SeverityChip ariaLabel 集約 OK` })
   } else {
-    findings.push({ level: 'warning', message: `${path}: button aria-label 集約 不在` })
+    findings.push({ level: 'warning', message: `${path}: SeverityChip ariaLabel 集約 不在` })
   }
 
   // 4. title 属性削除 (重複読み上げ防止)
