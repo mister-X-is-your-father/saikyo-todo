@@ -96,6 +96,7 @@ export function ErrorState({
         <Button
           variant="outline"
           size="sm"
+          className="min-h-11"
           onClick={onRetry}
           aria-label={`「${message}」をクリアして再試行`}
         >

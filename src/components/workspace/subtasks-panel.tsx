@@ -551,6 +551,7 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
           <Button
             type="button"
             size="sm"
+            className="min-h-11"
             disabled={!bulkText.trim() || create.isPending}
             aria-busy={create.isPending || undefined}
             onClick={() => void handleBulkAdd()}
