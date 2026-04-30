@@ -77,7 +77,9 @@ export function TemplatesPanel({ workspaceId }: Props) {
     <div className="space-y-6" data-testid="templates-panel">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">新規 Template</CardTitle>
+          <CardTitle className="text-base" role="heading" aria-level={2}>
+            新規 Template
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <form
@@ -234,7 +236,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
                     aria-controls={`template-body-${t.id}`}
                     aria-label={`Template「${t.name}」の詳細を${expandedId === t.id ? '閉じる' : '開く'}`}
                   >
-                    <CardTitle className="text-base">
+                    <CardTitle className="text-base" role="heading" aria-level={3}>
                       {t.name}
                       <span className="text-muted-foreground ml-2 text-xs font-normal">
                         [{t.kind}
