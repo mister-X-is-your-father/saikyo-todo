@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { classifyInboxItem, type InboxItemFields, summarizeInbox } from './inbox-process'
+import {
+  classifyInboxItem,
+  formatInboxBucketsJa,
+  gtdBucketLabelJa,
+  type InboxItemFields,
+  summarizeInbox,
+} from './inbox-process'
 
 function mk(over: Partial<InboxItemFields> & { id: string; title: string }): InboxItemFields {
   return {
@@ -164,5 +170,42 @@ describe('summarizeInbox', () => {
   it('twoMinRuleSuggestions: 空 (immediate=0) なら []', () => {
     const r = summarizeInbox([mk({ id: 'a', title: 'a' })])
     expect(r.twoMinRuleSuggestions).toEqual([])
+  })
+})
+
+describe('gtdBucketLabelJa', () => {
+  it('8 bucket 全て Japanese label', () => {
+    expect(gtdBucketLabelJa('immediate')).toBe('即実行')
+    expect(gtdBucketLabelJa('next-action')).toBe('次の action')
+    expect(gtdBucketLabelJa('project')).toBe('プロジェクト')
+    expect(gtdBucketLabelJa('waiting-for')).toBe('関係者待ち')
+    expect(gtdBucketLabelJa('reference')).toBe('参考資料')
+    expect(gtdBucketLabelJa('someday')).toBe('いつか / もしかしたら')
+    expect(gtdBucketLabelJa('scheduled')).toBe('予定済')
+    expect(gtdBucketLabelJa('trash')).toBe('削除候補')
+  })
+})
+
+describe('formatInboxBucketsJa', () => {
+  it('total=0 → "(空)"', () => {
+    expect(formatInboxBucketsJa(summarizeInbox([]))).toBe('Inbox 0 件 (空)')
+  })
+
+  it('count 降順で bucket を連結 ("/" 区切り)', () => {
+    const items: InboxItemFields[] = [
+      mk({ id: 'p1', title: 'project1', hasSubtasks: true }),
+      mk({ id: 'p2', title: 'project2', hasSubtasks: true }),
+      mk({ id: 'p3', title: 'project3', hasSubtasks: true }),
+      mk({ id: 'n1', title: 'next1' }),
+      mk({ id: 'n2', title: 'next2' }),
+      mk({ id: 'i1', title: 'imm', estimateMin: 2 }),
+    ]
+    const out = formatInboxBucketsJa(summarizeInbox(items))
+    expect(out).toMatch(/^Inbox 6 件: /)
+    expect(out).toContain('プロジェクト 3')
+    expect(out).toContain('次の action 2')
+    expect(out).toContain('即実行 1')
+    // 順序: project (3) が先に出る
+    expect(out.indexOf('プロジェクト')).toBeLessThan(out.indexOf('次の action'))
   })
 })

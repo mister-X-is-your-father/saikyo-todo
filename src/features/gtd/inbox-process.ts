@@ -151,6 +151,26 @@ export function classifyInboxItem(item: InboxItemFields): InboxClassification {
 }
 
 /**
+ * iter539 ai-automation polish: GtdBucket → Japanese label の pure helper。
+ * chip aria-label / Slack 通知 / AI prompt 用。SeverityChip tone bind とは別軸 (= bucket
+ * は分類軸、Severity は深刻度軸)。
+ */
+const BUCKET_LABEL_JA: Record<GtdBucket, string> = {
+  immediate: '即実行',
+  'next-action': '次の action',
+  project: 'プロジェクト',
+  'waiting-for': '関係者待ち',
+  reference: '参考資料',
+  someday: 'いつか / もしかしたら',
+  scheduled: '予定済',
+  trash: '削除候補',
+}
+
+export function gtdBucketLabelJa(bucket: GtdBucket): string {
+  return BUCKET_LABEL_JA[bucket]
+}
+
+/**
  * Inbox 全 items を 8 bucket に分類して count + items をまとめる。
  * UI で「Inbox に N 件、うち next-action: 5 / project: 3 / ...」 表示用。
  */
@@ -197,4 +217,37 @@ export function summarizeInbox<T extends InboxItemFields>(
     .slice(0, 5)
 
   return { buckets, counts, twoMinRuleSuggestions }
+}
+
+/**
+ * AI prompt / chip aria-label / Slack 通知用 1 行 inbox summary:
+ *   'Inbox 12 件: 次の action 5 / プロジェクト 3 / 関係者待ち 2 / 即実行 2'
+ *   'Inbox 0 件 (空)'
+ *
+ * count=0 bucket は省略。bucket 表示順は count 降順 (= 多い bucket が先)、tie は
+ * BUCKET_LABEL_JA 定義順 stable。
+ */
+export function formatInboxBucketsJa<T extends InboxItemFields>(
+  summary: InboxBucketSummary<T>,
+): string {
+  const total = (Object.keys(summary.counts) as GtdBucket[]).reduce(
+    (s, k) => s + summary.counts[k],
+    0,
+  )
+  if (total === 0) return 'Inbox 0 件 (空)'
+  const order: GtdBucket[] = [
+    'immediate',
+    'next-action',
+    'project',
+    'waiting-for',
+    'reference',
+    'someday',
+    'scheduled',
+    'trash',
+  ]
+  const sorted = order
+    .filter((b) => summary.counts[b] > 0)
+    .sort((a, b) => summary.counts[b] - summary.counts[a])
+  const parts = sorted.map((b) => `${gtdBucketLabelJa(b)} ${summary.counts[b]}`)
+  return `Inbox ${total} 件: ${parts.join(' / ')}`
 }
