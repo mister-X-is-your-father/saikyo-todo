@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 
 import {
   buildTaskChuteTicker,
+  formatDurationJa,
   formatHHMM,
+  formatTickerHeaderJa,
   isDone,
   type TickerItemFields,
 } from './cumulative-remaining'
@@ -145,5 +147,65 @@ describe('buildTaskChuteTicker', () => {
     ]
     const r = buildTaskChuteTicker(items, NOW)
     expect(r.rows.map((row) => row.item.id)).toEqual(['c', 'a', 'b'])
+  })
+})
+
+describe('formatDurationJa', () => {
+  it('0 / negative / NaN → 0m', () => {
+    expect(formatDurationJa(0)).toBe('0m')
+    expect(formatDurationJa(-5)).toBe('0m')
+    expect(formatDurationJa(NaN)).toBe('0m')
+  })
+  it('60 未満は 分のみ', () => {
+    expect(formatDurationJa(45)).toBe('45m')
+    expect(formatDurationJa(1)).toBe('1m')
+  })
+  it('丁度 60 / 120 は h のみ', () => {
+    expect(formatDurationJa(60)).toBe('1h')
+    expect(formatDurationJa(120)).toBe('2h')
+  })
+  it('h と m の合算', () => {
+    expect(formatDurationJa(252)).toBe('4h12m')
+    expect(formatDurationJa(125)).toBe('2h5m')
+  })
+  it('小数は round', () => {
+    expect(formatDurationJa(60.4)).toBe('1h')
+    expect(formatDurationJa(60.6)).toBe('1h1m')
+  })
+})
+
+describe('formatTickerHeaderJa', () => {
+  const NOW2 = new Date('2026-04-30T09:00:00')
+  it('全件 estimate 無し / 0 件 → 合計 0m', () => {
+    const ticker = buildTaskChuteTicker([], NOW2)
+    expect(formatTickerHeaderJa(ticker)).toBe('合計 0m')
+  })
+
+  it('合計 + 残 + 終わる予測 を連結', () => {
+    const items = [
+      mk({ id: 'a', estimateMin: 30 }), // 9:30 eta
+      mk({ id: 'b', estimateMin: 60 }), // 10:30 eta
+    ]
+    const ticker = buildTaskChuteTicker(items, NOW2)
+    expect(formatTickerHeaderJa(ticker)).toBe('合計 1h30m / 残 1h30m / 終わる予測 10:30')
+  })
+
+  it('estimate 無し件数があれば末尾に「(N 件 見積なし)」', () => {
+    const items = [mk({ id: 'a', estimateMin: 30 }), mk({ id: 'b' }), mk({ id: 'c' })]
+    const ticker = buildTaskChuteTicker(items, NOW2)
+    const out = formatTickerHeaderJa(ticker)
+    expect(out).toContain('(2 件 見積なし)')
+  })
+
+  it('全件 done なら eta 省略', () => {
+    const items = [
+      mk({ id: 'a', estimateMin: 30, doneAt: NOW2 }),
+      mk({ id: 'b', estimateMin: 60, status: 'done' }),
+    ]
+    const ticker = buildTaskChuteTicker(items, NOW2)
+    const out = formatTickerHeaderJa(ticker)
+    expect(out).toContain('合計 1h30m')
+    expect(out).toContain('残 0m')
+    expect(out).not.toContain('終わる予測')
   })
 })

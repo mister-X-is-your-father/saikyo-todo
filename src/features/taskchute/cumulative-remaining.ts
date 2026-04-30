@@ -136,5 +136,51 @@ export function buildTaskChuteTicker<T extends TickerItemFields>(
   }
 }
 
+/**
+ * iter530 ai-automation polish: 分単位 duration を「4h12m」形式の Japanese 短縮表記に
+ * 整形する pure helper。TaskChute ticker header / row 累積残の chip / aria-label /
+ * AI prompt で再利用。
+ *
+ *   formatDurationJa(0) === '0m'
+ *   formatDurationJa(45) === '45m'
+ *   formatDurationJa(60) === '1h'
+ *   formatDurationJa(252) === '4h12m'
+ *   formatDurationJa(-1) === '0m'    (negative は 0 へ clamp)
+ *   formatDurationJa(NaN) === '0m'
+ */
+export function formatDurationJa(minutes: number): string {
+  if (!Number.isFinite(minutes) || minutes <= 0) return '0m'
+  const m = Math.round(minutes)
+  const hours = Math.floor(m / 60)
+  const mins = m % 60
+  if (hours === 0) return `${mins}m`
+  if (mins === 0) return `${hours}h`
+  return `${hours}h${mins}m`
+}
+
+/**
+ * TaskChute view header / chip aria-label / AI prompt 用 1 行 ticker サマリ:
+ *   '合計 4h12m / 残 2h45m / 終わる予測 18:30'
+ *   '合計 4h12m / 残 2h45m / 終わる予測 18:30 (3 件 見積なし)'   (= unknown 含む)
+ *   '合計 0m'                                                     (= 全件 見積なし or 0 件)
+ *
+ * 終わる予測 = active rows 中で最後に eta を持つ row の eta (= 全 active が done すれば
+ * その時刻に終わる)。eta 取れない (全件 estimate 無し / 全 done) 場合は省略。
+ */
+export function formatTickerHeaderJa<T extends TickerItemFields>(
+  ticker: TaskChuteTicker<T>,
+): string {
+  if (ticker.totalEstimateMin <= 0 && ticker.estimateUnknownCount === 0) {
+    return '合計 0m'
+  }
+  const total = formatDurationJa(ticker.totalEstimateMin)
+  const remaining = formatDurationJa(ticker.remainingEstimateMin)
+  const lastEta = [...ticker.rows].reverse().find((r) => r.eta !== null)?.eta ?? null
+  const etaPart = lastEta ? ` / 終わる予測 ${lastEta}` : ''
+  const unknownPart =
+    ticker.estimateUnknownCount > 0 ? ` (${ticker.estimateUnknownCount} 件 見積なし)` : ''
+  return `合計 ${total} / 残 ${remaining}${etaPart}${unknownPart}`
+}
+
 // 内部 helper を test しやすく named export
 export { formatHHMM, isDone }
