@@ -141,6 +141,9 @@ export function SprintsPanel({ workspaceId }: Props) {
   const [startDate, setStartDate] = useState(initStart)
   const [endDate, setEndDate] = useState(initEnd)
   const [defaultsApplied, setDefaultsApplied] = useState(Boolean(defaults.data))
+  // iter503: 期間 validation 失敗 path で end-date input に focus shift
+  // (iter501 / iter502 続編、Sprint 作成 form の onInvalid 5 弾目)
+  const sprintEndRef = useRef<HTMLInputElement>(null)
   // defaults が後から到着した場合、ユーザがまだ手で触っていなければ初期値を defaults に揃える
   if (defaults.data && !defaultsApplied) {
     setStartDate(initStart)
@@ -153,6 +156,7 @@ export function SprintsPanel({ workspaceId }: Props) {
     if (!n) return
     if (isInvalidDateRange(startDate, endDate)) {
       toast.error('終了日は開始日以降にしてください')
+      sprintEndRef.current?.focus()
       return
     }
     try {
@@ -233,12 +237,14 @@ export function SprintsPanel({ workspaceId }: Props) {
               <div className="space-y-1">
                 <Label htmlFor="sprint-end">終了</Label>
                 <Input
+                  ref={sprintEndRef}
                   id="sprint-end"
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   required
                   aria-required="true"
+                  aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   min={startDate || undefined}
                 />
               </div>
