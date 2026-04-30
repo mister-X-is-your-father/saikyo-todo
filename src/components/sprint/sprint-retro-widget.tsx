@@ -19,6 +19,8 @@ import { AlertOctagon, Ban, Lock, Minus, TrendingDown, TrendingUp, Trophy } from
 
 import {
   buildSprintRetroSummary,
+  completionRateSeverity,
+  completionRateSeverityLabelJa,
   type SprintRetroItemFields,
   type SprintRetroSummary,
 } from '@/features/sprint/retro-summary'
@@ -35,20 +37,8 @@ interface Props {
   className?: string
 }
 
-function completionRateSeverity(rate: number): 'ok' | 'info' | 'warn' | 'danger' {
-  if (rate >= 75) return 'ok'
-  if (rate >= 50) return 'info'
-  if (rate >= 25) return 'warn'
-  return 'danger'
-}
-
-/** 進捗 bar の aria-valuetext に「ok=順調 / info=良好 / warn=注意 / danger=要対策」を付加 */
-function severityLabelJa(sev: 'ok' | 'info' | 'warn' | 'danger'): string {
-  if (sev === 'ok') return '順調'
-  if (sev === 'info') return '良好'
-  if (sev === 'warn') return '注意'
-  return '要対策'
-}
+// iter528: completionRateSeverity / completionRateSeverityLabelJa は retro-summary.ts の
+// pure helper 化、本 widget は public API を直接呼ぶ。
 
 function trendIcon(trend: 'up' | 'down' | 'flat') {
   if (trend === 'up') {
@@ -105,7 +95,7 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
             aria-valuemin={0}
             aria-valuemax={100}
             aria-label="完了率"
-            aria-valuetext={`${summary.completionRate}% (${severityLabelJa(sev)})`}
+            aria-valuetext={`${summary.completionRate}% (${completionRateSeverityLabelJa(sev)})`}
           >
             <div
               className={

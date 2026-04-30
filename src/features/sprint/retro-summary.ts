@@ -176,3 +176,55 @@ export function buildSprintRetroSummary(
     comparisonWithPrev,
   }
 }
+
+/**
+ * iter528 ai-automation: SprintRetroWidget の inline helper を pure 化。
+ *
+ * 完了率 (= done / total) を 4 段 severity に分類。SeverityChip の tone bind と
+ * progress bar aria-valuetext 用の共通分類軸として、widget 以外 (AI prompt /
+ * dashboard chip / Slack 通知) からも参照できるよう抽出。
+ *
+ * 閾値:
+ *  - 'ok'     >= 75 (= 順調、青信号)
+ *  - 'info'   >= 50 (= 良好、半数超え)
+ *  - 'warn'   >= 25 (= 注意、まだ追い込み余地)
+ *  - 'danger' <  25 (= 要対策、低空飛行)
+ */
+export type RetroCompletionSeverity = 'ok' | 'info' | 'warn' | 'danger'
+
+export function completionRateSeverity(rate: number): RetroCompletionSeverity {
+  if (rate >= 75) return 'ok'
+  if (rate >= 50) return 'info'
+  if (rate >= 25) return 'warn'
+  return 'danger'
+}
+
+const SEVERITY_LABEL_JA: Record<RetroCompletionSeverity, string> = {
+  ok: '順調',
+  info: '良好',
+  warn: '注意',
+  danger: '要対策',
+}
+
+export function completionRateSeverityLabelJa(sev: RetroCompletionSeverity): string {
+  return SEVERITY_LABEL_JA[sev]
+}
+
+/**
+ * AI prompt / Slack / chip aria-label 用 1 行 retro summary:
+ *  '完了率 80% (順調) — 計画 10 件 / 納品 8 件 / 改善 +5pt'
+ *  '完了率 0% (要対策) — 計画 0 件 / 納品 0 件'  (= empty 場合)
+ */
+export function formatSprintRetroSummaryJa(summary: SprintRetroSummary): string {
+  const sev = completionRateSeverity(summary.completionRate)
+  const sevLabel = completionRateSeverityLabelJa(sev)
+  const { planned, delivered } = summary.plannedVsDelivered
+  const cmp = summary.comparisonWithPrev
+  const trendPart =
+    cmp === null
+      ? ''
+      : ` — ${cmp.trend === 'up' ? '改善' : cmp.trend === 'down' ? '悪化' : '横ばい'} ${
+          cmp.completionDelta >= 0 ? '+' : ''
+        }${cmp.completionDelta}pt`
+  return `完了率 ${summary.completionRate}% (${sevLabel}) — 計画 ${planned} 件 / 納品 ${delivered} 件${trendPart}`
+}

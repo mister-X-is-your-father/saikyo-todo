@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildSprintRetroSummary, type SprintRetroItemFields } from './retro-summary'
+import {
+  buildSprintRetroSummary,
+  completionRateSeverity,
+  completionRateSeverityLabelJa,
+  formatSprintRetroSummaryJa,
+  type SprintRetroItemFields,
+} from './retro-summary'
 
 function mk(over: Partial<SprintRetroItemFields>): SprintRetroItemFields {
   return { status: 'todo', dueDate: null, doneAt: null, ...over }
@@ -176,5 +182,57 @@ describe('buildSprintRetroSummary', () => {
     expect(r.plannedVsDelivered.planned).toBe(8)
     expect(r.plannedVsDelivered.delivered).toBe(3)
     expect(r.plannedVsDelivered.delta).toBe(-5)
+  })
+})
+
+describe('completionRateSeverity', () => {
+  it('rate >= 75 → ok', () => {
+    expect(completionRateSeverity(75)).toBe('ok')
+    expect(completionRateSeverity(100)).toBe('ok')
+  })
+  it('50 <= rate < 75 → info', () => {
+    expect(completionRateSeverity(50)).toBe('info')
+    expect(completionRateSeverity(74)).toBe('info')
+  })
+  it('25 <= rate < 50 → warn', () => {
+    expect(completionRateSeverity(25)).toBe('warn')
+    expect(completionRateSeverity(49)).toBe('warn')
+  })
+  it('rate < 25 → danger', () => {
+    expect(completionRateSeverity(0)).toBe('danger')
+    expect(completionRateSeverity(24)).toBe('danger')
+  })
+})
+
+describe('completionRateSeverityLabelJa', () => {
+  it('4 段の Japanese label', () => {
+    expect(completionRateSeverityLabelJa('ok')).toBe('順調')
+    expect(completionRateSeverityLabelJa('info')).toBe('良好')
+    expect(completionRateSeverityLabelJa('warn')).toBe('注意')
+    expect(completionRateSeverityLabelJa('danger')).toBe('要対策')
+  })
+})
+
+describe('formatSprintRetroSummaryJa', () => {
+  it('empty (total=0) は完了率 0% / danger / 計画 0 件 / 納品 0 件', () => {
+    const summary = buildSprintRetroSummary([])
+    expect(formatSprintRetroSummaryJa(summary)).toBe('完了率 0% (要対策) — 計画 0 件 / 納品 0 件')
+  })
+  it('80% / ok severity / 計画 + 納品 表示', () => {
+    const items: SprintRetroItemFields[] = []
+    for (let i = 0; i < 8; i++) items.push(mk({ status: 'done' }))
+    for (let i = 0; i < 2; i++) items.push(mk({ status: 'todo' }))
+    const summary = buildSprintRetroSummary(items)
+    expect(formatSprintRetroSummaryJa(summary)).toBe('完了率 80% (順調) — 計画 10 件 / 納品 8 件')
+  })
+  it('prev 指定で trend tail 付加', () => {
+    const items: SprintRetroItemFields[] = []
+    for (let i = 0; i < 7; i++) items.push(mk({ status: 'done' }))
+    for (let i = 0; i < 3; i++) items.push(mk({ status: 'todo' }))
+    const prev: SprintRetroItemFields[] = []
+    for (let i = 0; i < 5; i++) prev.push(mk({ status: 'done' }))
+    for (let i = 0; i < 5; i++) prev.push(mk({ status: 'todo' }))
+    const summary = buildSprintRetroSummary(items, { prevItems: prev })
+    expect(formatSprintRetroSummaryJa(summary)).toContain('改善 +20pt')
   })
 })
