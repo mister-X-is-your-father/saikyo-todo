@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  computePlanCriticalPathMin,
   extractFirstJsonObject,
+  formatCriticalPathJa,
   formatLongestStepJa,
   formatStructuredPlanJa,
   parseStructuredPlan,
@@ -344,6 +346,73 @@ describe('formatLongestStepJa', () => {
   it('複合 → h + m', () => {
     expect(formatLongestStepJa({ title: 's', est_min: 150, dod: '', dependencies: [] })).toBe(
       '最長 step: s (2h30m)',
+    )
+  })
+})
+
+describe('computePlanCriticalPathMin', () => {
+  it('空 plan → 0', () => {
+    expect(computePlanCriticalPathMin({ steps: [] })).toBe(0)
+  })
+
+  it('依存無し → 最大 est_min と一致 (= 並列実行で 1 step 分)', () => {
+    const r = computePlanCriticalPathMin({
+      steps: [
+        { title: 'a', est_min: 30, dod: '', dependencies: [] },
+        { title: 'b', est_min: 90, dod: '', dependencies: [] },
+        { title: 'c', est_min: 60, dod: '', dependencies: [] },
+      ],
+    })
+    expect(r).toBe(90)
+  })
+
+  it('線形依存 a→b→c は est_min 合計', () => {
+    const r = computePlanCriticalPathMin({
+      steps: [
+        { title: 'a', est_min: 30, dod: '', dependencies: [] },
+        { title: 'b', est_min: 60, dod: '', dependencies: ['a'] },
+        { title: 'c', est_min: 30, dod: '', dependencies: ['b'] },
+      ],
+    })
+    expect(r).toBe(120)
+  })
+
+  it('diamond: a→b/c→d、b/c は並列実行可なので max(b,c)+a+d', () => {
+    // a(10) → b(50)/c(80) → d(20)、critical = a + max(b,c) + d = 10 + 80 + 20 = 110
+    const r = computePlanCriticalPathMin({
+      steps: [
+        { title: 'a', est_min: 10, dod: '', dependencies: [] },
+        { title: 'b', est_min: 50, dod: '', dependencies: ['a'] },
+        { title: 'c', est_min: 80, dod: '', dependencies: ['a'] },
+        { title: 'd', est_min: 20, dod: '', dependencies: ['b', 'c'] },
+      ],
+    })
+    expect(r).toBe(110)
+  })
+
+  it('cycle → null', () => {
+    const r = computePlanCriticalPathMin({
+      steps: [
+        { title: 'a', est_min: 10, dod: '', dependencies: ['b'] },
+        { title: 'b', est_min: 10, dod: '', dependencies: ['a'] },
+      ],
+    })
+    expect(r).toBeNull()
+  })
+})
+
+describe('formatCriticalPathJa', () => {
+  it('null → 「不定 (依存 cycle)」', () => {
+    expect(formatCriticalPathJa(null, 100)).toBe('最早 finish: 不定 (依存 cycle)')
+  })
+
+  it('critical = total → 「線形」', () => {
+    expect(formatCriticalPathJa(120, 120)).toBe('最早 finish: 2h (線形)')
+  })
+
+  it('critical < total → 「並列化機会あり」', () => {
+    expect(formatCriticalPathJa(150, 300)).toBe(
+      '最早 finish: 2h30m (合計 5h との差 2h30m = 並列化機会あり)',
     )
   })
 })

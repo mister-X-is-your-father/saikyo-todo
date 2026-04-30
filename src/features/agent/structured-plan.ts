@@ -240,5 +240,70 @@ export function formatLongestStepJa(step: StructuredPlanStep | null): string {
   return `最長 step: ${step.title} (${dur})`
 }
 
+/**
+ * iter487 ai-automation: 依存 graph の critical path (= 最長 chain の est_min 合計) を計算。
+ *
+ * - 全 step の依存を辿って「自分を含むまでの最長 est_min 合計」を計算
+ * - cycle 検出時は null (parser 通過済 plan では発生しないが防御)
+ * - 全 step を並列実行できる ideal case では `pickLongestStep().est_min` と一致
+ * - 線形依存 a→b→c (各 30/60/30) なら 120 (= 30+60+30、並列化不可)
+ *
+ * 用途: AI plan 生成時の「最早 finish 予測」 chip、Gantt critical path 強調、
+ * Slack 通知の est 値 (合計 vs critical の差で並列化機会の指標)
+ */
+export function computePlanCriticalPathMin(
+  plan: Pick<NormalizedStructuredPlan, 'steps'>,
+): number | null {
+  const order = topoSortPlanSteps(plan)
+  if (order === null) return null
+
+  const titleToIdx = new Map<string, number>()
+  plan.steps.forEach((s, i) => titleToIdx.set(s.title, i))
+
+  // dp[i] = step i を完了するまでの最長 chain の est_min 合計
+  const dp = new Array<number>(plan.steps.length).fill(0)
+  for (const idx of order) {
+    const step = plan.steps[idx]
+    if (!step) continue
+    let maxDepEnd = 0
+    for (const dep of step.dependencies) {
+      const depIdx = titleToIdx.get(dep)
+      if (depIdx === undefined || depIdx === idx) continue
+      const depEnd = dp[depIdx] ?? 0
+      if (depEnd > maxDepEnd) maxDepEnd = depEnd
+    }
+    dp[idx] = maxDepEnd + step.est_min
+  }
+
+  let max = 0
+  for (const v of dp) {
+    if (v > max) max = v
+  }
+  return max
+}
+
+/**
+ * iter487 ai-automation: critical path min を chip 文言に整形。
+ *   '最早 finish: 2h30m (合計 5h との差 2h30m = 並列化機会あり)'
+ *   '最早 finish: 1h (合計 1h = 線形)'
+ *   '最早 finish: 不定'  (= cycle)
+ */
+export function formatCriticalPathJa(criticalMin: number | null, totalMin: number): string {
+  if (criticalMin === null) return '最早 finish: 不定 (依存 cycle)'
+  const fmt = (m: number): string => {
+    const h = Math.floor(m / 60)
+    const r = m % 60
+    return h === 0 ? `${r}m` : r === 0 ? `${h}h` : `${h}h${r}m`
+  }
+  const gap = totalMin - criticalMin
+  const tail =
+    gap === 0
+      ? '線形'
+      : gap > 0
+        ? `合計 ${fmt(totalMin)} との差 ${fmt(gap)} = 並列化機会あり`
+        : '不整合' // 数学的には総和 ≥ critical なので発生しないが防御
+  return `最早 finish: ${fmt(criticalMin)} (${tail})`
+}
+
 // 内部 helper を test しやすく named export
 export { extractFirstJsonObject }
