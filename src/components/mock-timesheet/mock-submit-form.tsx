@@ -141,10 +141,15 @@ export function MockSubmitForm() {
         {isPending ? '送信中...' : '送信'}
       </Button>
       {lastRef && (
+        // iter444: 送信成功後の external_ref 表示を SR にも届ける。toast.success
+        // (sonner) は SR 対応だが過去送信の参照値は permanent display なので
+        // role="status" + aria-live="polite" で SR に on-mount 1 回 announce。
         <p
           className="text-muted-foreground text-xs"
           data-external-ref={lastRef}
           data-testid="mock-last-ref"
+          role="status"
+          aria-live="polite"
         >
           last external_ref: <code>{lastRef}</code>
         </p>
