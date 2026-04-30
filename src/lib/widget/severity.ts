@@ -66,6 +66,22 @@ export function severityClasses(severity: Severity): SeverityClasses {
 }
 
 /**
+ * iter500 refactor: chip 用の Tailwind class string (bg + text + border のみ) を 1 行で。
+ *
+ * 用途: caller が `<span className={`rounded border px-2 py-0.5 ${severityChipClass(sev)}`}>`
+ * のように severityClasses の 3 軸を bg/text/border 合体形で取りたい時 1 行で取れる。
+ *
+ * iter495 fourStateHintToSeverity bridge 経由の caller (WeeklyInsightWidget /
+ * InboxView / ActivityLog / NotificationBell) で繰り返し書かれていた
+ * `${classes.bg} ${classes.text} ${classes.border}` 連結を 1 関数に集約。ring は
+ * focus 用なので chip 静的配色には含めない。
+ */
+export function severityChipClass(severity: Severity): string {
+  const c = severityClasses(severity)
+  return `${c.bg} ${c.text} ${c.border}`
+}
+
+/**
  * `actual / expected` 比率から severity を返す。
  *
  * - expected ≤ 0 → 'muted' (target 不明、判定不能)

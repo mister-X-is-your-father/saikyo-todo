@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  severityChipClass,
   severityClasses,
   severityFromAchievement,
   severityFromOverdueDays,
@@ -117,5 +118,36 @@ describe('severityToChipTone3 (legacy bridge)', () => {
   it('info / muted → neutral', () => {
     expect(severityToChipTone3('info')).toBe('neutral')
     expect(severityToChipTone3('muted')).toBe('neutral')
+  })
+})
+
+describe('severityChipClass', () => {
+  it('5 severity すべてで bg + text + border の Tailwind class string を返す', () => {
+    const all: ReadonlyArray<'ok' | 'info' | 'warn' | 'danger' | 'muted'> = [
+      'ok',
+      'info',
+      'warn',
+      'danger',
+      'muted',
+    ]
+    for (const s of all) {
+      const cls = severityChipClass(s)
+      expect(cls).toMatch(/bg-/)
+      expect(cls).toMatch(/text-/)
+      expect(cls).toMatch(/border-/)
+    }
+  })
+
+  it('severityClasses と同じ class 値を含む (連結のみで lossless)', () => {
+    const c = severityClasses('warn')
+    const joined = severityChipClass('warn')
+    expect(joined).toContain(c.bg)
+    expect(joined).toContain(c.text)
+    expect(joined).toContain(c.border)
+  })
+
+  it('ring class は含まない (focus 用なので chip 静的配色には不要)', () => {
+    const cls = severityChipClass('ok')
+    expect(cls).not.toContain('ring-')
   })
 })
