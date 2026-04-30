@@ -180,14 +180,17 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
         >
           <span className="truncate font-mono">→ {preview.title}</span>
           {preview.scheduledFor && (
-            <span
+            // iter439: 旧 <span title> (mouse hover only) は SR / keyboard で
+            // ISO 日付不可達。<time dateTime> 要素に格上げ (HTML5 semantic、
+            // iter435 / iter436 / iter437 と同 pattern 5 view 目)。
+            <time
               className="rounded bg-blue-100 px-1.5 py-0.5 text-blue-700"
-              title={preview.scheduledFor}
+              dateTime={preview.scheduledFor}
               aria-label={`予定 ${preview.scheduledFor}${preview.dueTime ? ` ${preview.dueTime}` : ''}`}
             >
               {formatFriendlyDate(preview.scheduledFor, new Date())}
               {preview.dueTime ? ` ${preview.dueTime}` : ''}
-            </span>
+            </time>
           )}
           {preview.priority && (
             <span className={`rounded px-1.5 py-0.5 ${PRIO_COLOR[preview.priority]}`}>
