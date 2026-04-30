@@ -42,6 +42,14 @@ function completionRateSeverity(rate: number): 'ok' | 'info' | 'warn' | 'danger'
   return 'danger'
 }
 
+/** 進捗 bar の aria-valuetext に「ok=順調 / info=良好 / warn=注意 / danger=要対策」を付加 */
+function severityLabelJa(sev: 'ok' | 'info' | 'warn' | 'danger'): string {
+  if (sev === 'ok') return '順調'
+  if (sev === 'info') return '良好'
+  if (sev === 'warn') return '注意'
+  return '要対策'
+}
+
 function trendIcon(trend: 'up' | 'down' | 'flat') {
   if (trend === 'up') {
     return <TrendingUp className="h-4 w-4 text-emerald-600" aria-hidden="true" />
@@ -96,7 +104,8 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
             aria-valuenow={summary.completionRate}
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-label={`完了率 ${summary.completionRate}%`}
+            aria-label="完了率"
+            aria-valuetext={`${summary.completionRate}% (${severityLabelJa(sev)})`}
           >
             <div
               className={
