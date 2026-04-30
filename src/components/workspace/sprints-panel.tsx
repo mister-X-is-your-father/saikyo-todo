@@ -379,6 +379,9 @@ function SprintCard({
   const [editing, setEditing] = useState(false)
   const [editStart, setEditStart] = useState(sprint.startDate)
   const [editEnd, setEditEnd] = useState(sprint.endDate)
+  // iter501: 期間 validation 失敗 path で end-date input に focus shift
+  // (iter499 / iter500 manual handleSubmit form の onInvalid pattern を 3 件目展開)
+  const editEndRef = useRef<HTMLInputElement>(null)
   // active / completed は進捗を取る (planning は未割当が多いので skip)
   const showProgress = status === 'active' || status === 'completed'
   const progress = useSprintProgress(showProgress ? sprint.id : null)
@@ -547,6 +550,7 @@ function SprintCard({
                 e.preventDefault()
                 if (isInvalidDateRange(editStart, editEnd)) {
                   toast.error('終了日は開始日以降にしてください')
+                  editEndRef.current?.focus()
                   return
                 }
                 try {
@@ -585,6 +589,7 @@ function SprintCard({
                     終了 ({dayOfWeekJa(editEnd)})
                   </Label>
                   <Input
+                    ref={editEndRef}
                     id={`sprint-edit-end-${sprint.id}`}
                     type="date"
                     value={editEnd}
@@ -592,6 +597,7 @@ function SprintCard({
                     onChange={(e) => setEditEnd(e.target.value)}
                     required
                     aria-label="Sprint 終了日"
+                    aria-invalid={isInvalidDateRange(editStart, editEnd) || undefined}
                     className="h-8 text-xs"
                     data-testid={`sprint-edit-end-${sprint.id}`}
                   />
