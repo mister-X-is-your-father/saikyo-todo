@@ -243,9 +243,10 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
     - 6 軸は **互いに緊張関係** がある (例: 可視化 ↔ 認知負荷低減、やる気アップ ↔ 効率化)。憲章で trade-off を明示し、view ごとに優先軸を決める。
     - **数値採点** は今の自分の主観で OK、ただし採点の根拠 (具体的な体験例) を 1-2 行ずつ書く。
 
-### 2026-04-30 — TaskChute モード / GTD モード 実装プラン作成 ★ P0 plan ★
+### 2026-04-30 — TaskChute モード / GTD モード 実装プラン作成 ★ P0 plan ★ ✅ iter516 完了
 
-- [ ] **TaskChute (タスクシュート) と GTD の methodology モードを実装する前段の「プラン作成」タスク** — 分類: 設計プラン (P0)
+- [x] **TaskChute (タスクシュート) と GTD の methodology モードを実装する前段の「プラン作成」タスク** — 分類: 設計プラン (P0)
+  - **iter516 (2026-04-30) 完了**: `docs/methodology-modes-plan.md` 新規 (12 section / 約 280 行: TaskChute 7 concept + GTD 7 concept + マッピング表 + gap 分析 + 9 P0 candidate + mode switch UX + 6 軸スコア + 既存資産 80%/70% 活用率 + 確認事項 5 件 + 完了条件)。**両 mode の 80%/70% は既存資産で実現可能** が判明 (templates kind='recurring' + schedule_cron は既に動く / time-entry の bias-calibration / daily-streak は流用可 / parent_path で Project 表現可)。派生 P0 9 件 (TC-1〜TC-4, GT-1〜GT-4, MS-1) を本 file 末尾に投入、各 30-150 行 / 1 commit で消化可能。**plan のみ、実装はしない** (queue で各 phase が消化された後に始まる)。
   - 原文 (2026-04-30): 「タスクシュートがしやすいモードとか、GTDがしやすいモードとか、そういうのも頼むよ。プラン作ってもいいけど。そういうプランを作るタスクをp0に入れようか。」
   - **目標**: TaskChute / GTD それぞれの中核 concept を saikyo-todo の既存 feature にマップし、段階実装 phase を切る詳細プランを作成する。プラン本体を `docs/methodology-modes-plan.md` に書き、queue に [x] チェックして次の P0 (= 各 phase の実装) に渡す。
 
@@ -709,13 +710,26 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 - 派生 P0 は queue 末尾に 8 件投入 (view × 軸 単位)、各 1 commit で消化
 - 6 軸 = 目的層、a-g = 手段層、commit body に併記する運用に切替
 
-#### 🌟 新 P0 [優先度 1] (2026-04-30、繰上げ): TaskChute / GTD methodology モード 実装プラン作成
+#### ✅ 旧 P0 [優先度 1] (2026-04-30、iter516 完了): TaskChute / GTD methodology モード 実装プラン作成
 
-- 詳細は queue 上部 `2026-04-30 — TaskChute モード / GTD モード 実装プラン作成` entry 参照
-- 成果物: `docs/methodology-modes-plan.md` (200-400 行)
-- 期待 commit: `docs(methodology): TaskChute / GTD モード 実装プラン (queue: methodology-modes plan)`
-- **plan のみ作成、実装はしない** (各 phase は別 P0 で plan 完成後に queue 投入)
-- 憲章 (iter515) ができた後の commit なので、6 軸で plan が採点されてより尖る
+- `docs/methodology-modes-plan.md` 投下 (約 280 行)、9 派生 P0 (TC-1〜TC-4, GT-1〜GT-4, MS-1) を queue 末尾に投入完了
+- **plan のみ完了、実装は派生 P0 で**
+
+#### 🌟 新 P0 [優先度 1] (2026-04-30、iter516 派生 hoist): TaskChute / GTD methodology mode scope A 実装
+
+methodology-modes-plan.md §5 段階実装 phase の 9 P0 を 1 iter ずつ消化。優先順 (依存関係考慮):
+
+1. **MS-1** Mode switch UX (workspace_settings.default_mode + URL override) — 他 mode 機能の前提、最初に
+2. **TC-1** TaskChute view skeleton (1 列 linear timeline)
+3. **TC-2** items.started_at / completed_at + 打刻 service
+4. **TC-3** 見積 vs 実績 inline + 累積残 ticker
+5. **TC-4** routine 露出 (recurring templates UI)
+6. **GT-1** GTD preset 導入 + Project ラベル
+7. **GT-2** Context tag (tag_kind 列)
+8. **GT-3** 2-min rule + Inbox Process 強化
+9. **GT-4** Weekly Review (cron + checklist view)
+
+各 entry の詳細・既存資産参照・期待 commit message は `docs/methodology-modes-plan.md` §5 / §12 参照。各 30-150 行 / 1 commit / typecheck+lint clean / unit test 1-2、6 軸スコアは plan §7 参照。
 
 #### 🌟 新 P0 [優先度 2-9] (2026-04-30、iter515 派生): UX 卓越憲章の view × 軸 採点 1-2 由来 8 件
 
