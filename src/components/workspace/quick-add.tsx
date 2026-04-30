@@ -219,13 +219,15 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
           )}
           {/* iter267: bias calibration が利用可能なら校正値を annotation で表示。
               delta=0 の場合は表示しない (情報量ゼロ)。Item.description には
-              元の見積をそのまま記録するので、UI 提示のみで実データには影響しない。 */}
+              元の見積をそのまま記録するので、UI 提示のみで実データには影響しない。
+              iter441: title= (mouse only) を削除、aria-label に factor 詳細を集約
+              (iter440 ActiveTimerPanel と同 pattern)。 */}
           {calibrated && calibrated.deltaMinutes !== 0 && (
             <span
               className="rounded border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 text-[10px] text-cyan-600"
               data-testid="quick-add-estimate-calibrated"
-              title={`直近の見積精度に基づく校正値 (中央値 ${calibrationFactor?.toFixed(2)}×)`}
-              aria-label={`校正後 ${formatEstimate(calibrated.calibratedMinutes)} (${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分)`}
+              role="img"
+              aria-label={`校正後 ${formatEstimate(calibrated.calibratedMinutes)} (${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正)`}
             >
               → {formatEstimate(calibrated.calibratedMinutes)}
             </span>
