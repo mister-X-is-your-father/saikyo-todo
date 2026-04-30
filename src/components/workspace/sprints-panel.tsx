@@ -56,6 +56,7 @@ import {
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { IMEInput } from '@/components/shared/ime-input'
 import { SprintRetroWidget } from '@/components/sprint/sprint-retro-widget'
+import { SprintRiskBoardWidget } from '@/components/sprint/sprint-risk-board-widget'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -386,6 +387,25 @@ function SprintCard({
               status: it.status,
               dueDate: it.dueDate,
               doneAt: it.doneAt,
+            }))
+        : [],
+    [allItems.data, sprint.id, status],
+  )
+  // iter548 (queue fluffy-2 wire-up): active sprint では Risk Board widget を表示
+  const riskBoardItems = useMemo(
+    () =>
+      status === 'active' || status === 'planning'
+        ? (allItems.data ?? [])
+            .filter((it) => it.sprintId === sprint.id)
+            .map((it) => ({
+              id: it.id,
+              title: it.title,
+              status: it.status,
+              dueDate: it.dueDate,
+              priority: it.priority,
+              isMust: it.isMust,
+              blockingCount: 0, // 別 helper で精緻化、当面 0
+              assigneeIds: [], // 別 hook で精緻化、当面 []
             }))
         : [],
     [allItems.data, sprint.id, status],
@@ -733,6 +753,9 @@ function SprintCard({
           </div>
           {status === 'completed' && sprintItems.length > 0 ? (
             <SprintRetroWidget items={sprintItems} sprintEndISO={sprint.endDate} className="mt-2" />
+          ) : null}
+          {(status === 'active' || status === 'planning') && riskBoardItems.length > 0 ? (
+            <SprintRiskBoardWidget items={riskBoardItems} today={todayISO()} className="mt-2" />
           ) : null}
           <SprintSwimlaneDisclosure
             workspaceId={sprint.workspaceId}
