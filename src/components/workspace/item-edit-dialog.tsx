@@ -37,6 +37,7 @@ import { useItemDependencies } from '@/features/item-dependency/hooks'
 import { summarizeDependencyReadiness } from '@/features/item-dependency/readiness'
 import { useAllKeyResultsByWorkspace, useAssignItemToKeyResult } from '@/features/okr/hooks'
 import { useAssignItemToSprint, useSprints } from '@/features/sprint/hooks'
+import { useCreateTemplateFromItem } from '@/features/template/hooks'
 
 import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
@@ -149,6 +150,12 @@ function ItemEditDialogInner({
   const assignSprint = useAssignItemToSprint(workspaceId)
   const krsList = useAllKeyResultsByWorkspace(workspaceId)
   const assignKr = useAssignItemToKeyResult(workspaceId)
+  // FEEDBACK_QUEUE P0 「Template 登録機能」 scope A bind (iter462):
+  // 「この Item と subtask を Template として保存」 ghost button を footer に配置。
+  // service 側 (iter461 fd9da3a) が parent + 子孫 items を bulk insert するので、
+  // ボタン側は itemId を渡すだけで済む。成功 toast に templateId を含めず単に
+  // 「Template に保存しました」のみ (template 一覧画面への deep link は scope B 以降)。
+  const createTemplateFromItem = useCreateTemplateFromItem(workspaceId)
 
   async function handleSave() {
     if (isMust && !dod.trim()) {
@@ -741,6 +748,39 @@ function ItemEditDialogInner({
               }
             >
               {clearBaseline.isPending ? 'クリア中…' : 'baseline クリア'}
+            </Button>
+          )}
+          {!item.archivedAt && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={createTemplateFromItem.isPending}
+              aria-busy={createTemplateFromItem.isPending || undefined}
+              onClick={async () => {
+                if (
+                  !window.confirm(
+                    'この Item と全ての子孫 (subtask) を Template として保存しますか?\n(再利用時は /<wsId>/templates から展開できます)',
+                  )
+                )
+                  return
+                try {
+                  await createTemplateFromItem.mutateAsync({ itemId: item.id })
+                  toast.success('Template に保存しました')
+                } catch (e) {
+                  toast.error(isAppError(e) ? e.message : 'Template 保存に失敗しました')
+                }
+              }}
+              data-testid="item-edit-save-as-template"
+              className="text-muted-foreground"
+              title="この Item と全ての子孫 (subtask) を Template として保存 (再利用可)"
+              aria-label={
+                createTemplateFromItem.isPending
+                  ? `「${item.title}」を Template に保存中…`
+                  : `「${item.title}」と全ての子孫 (subtask) を Template として保存 (再利用可)`
+              }
+            >
+              {createTemplateFromItem.isPending ? '保存中…' : 'Template として保存'}
             </Button>
           )}
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

@@ -7,6 +7,7 @@ import { unwrap } from '@/lib/result-unwrap'
 import {
   addTemplateItemAction,
   createTemplateAction,
+  createTemplateFromItemAction,
   instantiateTemplateAction,
   listTemplateItemsAction,
   listTemplatesAction,
@@ -17,6 +18,7 @@ import {
 } from './actions'
 import type {
   AddTemplateItemInput,
+  CreateTemplateFromItemInput,
   CreateTemplateInput,
   InstantiateTemplateInput,
   RemoveTemplateItemInput,
@@ -52,6 +54,22 @@ export function useCreateTemplate(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: CreateTemplateInput) => unwrap(await createTemplateAction(input)),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [...templateKeys.all, workspaceId] })
+    },
+  })
+}
+
+/**
+ * 既存 Item ツリー (parent + 子孫 items) を Template として保存。
+ * 成功時に templates 一覧 cache を invalidate し、新しい Template が
+ * /<wsId>/templates ページに即出現するようにする。
+ */
+export function useCreateTemplateFromItem(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: CreateTemplateFromItemInput) =>
+      unwrap(await createTemplateFromItemAction(input)),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: [...templateKeys.all, workspaceId] })
     },
