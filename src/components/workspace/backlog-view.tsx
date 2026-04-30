@@ -12,7 +12,6 @@
 import { useMemo, useState } from 'react'
 
 import {
-  closestCenter,
   DndContext,
   type DragEndEvent,
   MouseSensor,
@@ -39,6 +38,7 @@ import {
 import { parseAsString, useQueryState } from 'nuqs'
 import { toast } from 'sonner'
 
+import { pointerFirstCollision } from '@/lib/dnd/pointer-first-collision'
 import { isAppError } from '@/lib/errors'
 
 import { formatFriendlyDate } from '@/features/item/date-tokens'
@@ -283,7 +283,7 @@ export function BacklogView({ workspaceId, items }: Props) {
         </span>
       </div>
       <div data-testid="backlog-view" className="max-h-[600px] overflow-auto rounded-lg border">
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext sensors={sensors} collisionDetection={pointerFirstCollision} onDragEnd={handleDragEnd}>
           <table className="w-full border-collapse text-sm">
             <caption className="sr-only">
               バックログ一覧 (DnD で並び替え可能 / 列ヘッダ click で sort)

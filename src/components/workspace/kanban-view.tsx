@@ -14,7 +14,6 @@
 import { useMemo } from 'react'
 
 import {
-  closestCenter,
   DndContext,
   type DragEndEvent,
   MouseSensor,
@@ -34,6 +33,7 @@ import { parseAsString, useQueryState } from 'nuqs'
 import { toast } from 'sonner'
 
 import { uuidToLabel } from '@/lib/db/ltree-path'
+import { pointerFirstCollision } from '@/lib/dnd/pointer-first-collision'
 import { isAppError } from '@/lib/errors'
 
 import { formatFriendlyDate } from '@/features/item/date-tokens'
@@ -171,7 +171,7 @@ export function KanbanView({ workspaceId, items }: Props) {
 
   return (
     <>
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} collisionDetection={pointerFirstCollision} onDragEnd={handleDragEnd}>
         {/*
          * 横スクロールを内部 (この div) で完結させる。body を横長にしないことで
          * 1) スマホで右切れ防止、2) `position: fixed` Dialog が viewport 中央に正しく出る、
