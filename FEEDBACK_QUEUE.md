@@ -704,6 +704,64 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 
 ### 🔥 次 iter で即実装 (P0 最優先、track 判定より優先) 🔥
 
+#### 🌟 新 P0 [優先度 0、最優先 A] (2026-04-30): AI 調査 / 分解 が API key 要求してる regression を修正
+
+ユーザ指摘: 「AI調査がまたAPIキー使えって言われるんだが それはダメだろう」
+
+`src/features/agent/researcher-service.ts:99-117` で `process.env.ANTHROPIC_API_KEY` ガードが iter146 で再導入されてる。コメントには「真の修正は claude CLI 経路への migration (queue 済)」と書いてあるが、iter501-505 の SDK→CLI migration は **pm-service / standup と一部 researcher 経路 のみ** で、`researcherService.run` (= AI 調査 / AI 分解 ボタンの本流) は **未着手**。
+
+**修正方針**:
+- `researcherService.run` を `decomposeItemViaClaude` (iter251 で動いてる claude-flow-runner 経路) と同じ CLI subprocess 経路に移行
+- env 検出ガード (line 105-117) を撤去
+- `researcher-flow-adapter` 既存 helper を `run` でも流用
+- agentMemoryService の load / append は CLI 経路でも継続
+- tool budget / cost record / agent_invocation の audit は維持
+- service test を CLI subprocess mock (`vi.mock('node:child_process')`) に書換
+
+**期待 commit (1-2 commits)**:
+1. `feat(agent): researcherService.run を CLI subprocess 経路に移行 — API key 不要化 (queue: researcher SDK→CLI run path)`
+2. `chore(agent): researcher-service.ts の env ガードを撤去 — CLI 経路に統一 (queue: researcher SDK→CLI run path)`
+
+#### 🌟 新 P0 [優先度 0、最優先 B] (2026-04-30): DnD reorder の flicker を **全 view 点検 + 修正**
+
+ユーザ指摘: 「フリッカー直ってないな。並べ替えのときの」「全部点検せよ」
+
+iter514 系で 5 連続 fix (`animateLayoutChanges:false` / drop 後 transform クリア / isSorting 時 transform / pointer-first collision) したが **まだフリッカー残ってる**。view ごとに DnD 実装が微妙に違うので **全 view を Playwright MCP で実機点検** が必要。
+
+**点検対象 view**:
+1. **Subtask panel** (item edit dialog → 子タスク tab) — 既存 fix 一番多い
+2. **Backlog table** (row reorder) — `pointerFirstCollision` 適用済
+3. **Today view** (row reorder)
+4. **Inbox view** (row reorder)
+5. **Kanban カード** (列内 reorder + 列間 move)
+6. **Personal-period view** (DnD あれば)
+7. **Gantt** (bar の時刻調整 DnD あれば)
+
+**点検フロー (各 view、Playwright MCP 経由)**:
+1. signup + workspace + item seed (5+ 件)
+2. drag start → move (slow/fast) → drop → 視覚 record (連続 screenshot)
+3. flicker パターン分類:
+   - 掴む瞬間 飛び (transform 初期化漏れ)
+   - 他 row が押し退けられる時 ガクつき (transition conflict)
+   - drop 直後 元位置に瞬間戻る → 新位置 (楽観 update vs server 確定 race)
+   - drop 直後 サイズ変化 (group container vs leaf row の高さ差)
+   - nested tree 親 row が子 transform 引きずる (subtasks-panel)
+4. 原因切り分け + 修正
+
+**修正範囲の見当**:
+- 共通 helper: `src/lib/dnd/pointer-first-collision.ts`
+- 各 view: `src/components/workspace/<view>-view.tsx` 個別
+- 楽観 update + 楽観ロック race fix (TanStack Query の `onMutate` で先行更新、確定後 invalidate)
+- `useSortable` の `animateLayoutChanges: () => false` を全 view で適用 (subtasks-panel のみ済)
+
+**期待 commit (5-10 commits、view 別)**:
+- `fix(dnd): subtask panel flicker — <原因>` (queue: dnd flicker 点検 1/N)
+- `fix(dnd): backlog row flicker — <原因>` (queue: dnd flicker 点検 2/N)
+- `fix(dnd): today row flicker — <原因>` (queue: dnd flicker 点検 3/N)
+- 最後に `chore(queue): DnD flicker 全 view 点検完了 + 残課題` で締める
+
+**重要**: cloud env で実機 chrome 再現が鍵。Playwright MCP の `browser_take_screenshot` 連続撮影で flicker frame を捕まえる。再現困難な view は HANDOFF §9 にメモして次 iter へ。
+
 #### ✅ 旧 P0 [優先度 1] (2026-04-30、iter515 完了): saikyo-todo UX 卓越憲章 + iter prompt 統合
 
 - `docs/ux-excellence-charter.md` 投下、`CLAUDE.md` / `iter-instruction-autonomous.md` 連携完了
