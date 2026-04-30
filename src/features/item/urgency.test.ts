@@ -14,9 +14,11 @@ import {
   type UrgencyFields,
   type UrgencyTier,
   urgencyTier,
+  urgencyTierChipClasses,
   urgencyTierCountsSeverity,
   urgencyTierLabel,
   urgencyTierOf,
+  urgencyTierTone,
 } from './urgency'
 
 const TODAY = new Date(2026, 3, 27) // Mon 2026-04-27
@@ -596,5 +598,34 @@ describe('formatTopUrgentTitlesJa', () => {
       titled({ title: '期限切れ p4', priority: 4, dueDate: '2026-04-26', isMust: true }), // 90 → high
     ]
     expect(formatTopUrgentTitlesJa(items, 1, TODAY)).toBe('上位 urgent: 期限切れ p4 (高)')
+  })
+})
+
+describe('urgencyTierTone (graphical 波及 — tier → chip tone token)', () => {
+  it('5 段階 tone 全使用 (critical→danger / high→urgent / medium→warn / low→info / none→idle)', () => {
+    expect(urgencyTierTone('critical')).toBe('danger')
+    expect(urgencyTierTone('high')).toBe('urgent')
+    expect(urgencyTierTone('medium')).toBe('warn')
+    expect(urgencyTierTone('low')).toBe('info')
+    expect(urgencyTierTone('none')).toBe('idle')
+  })
+})
+
+describe('urgencyTierChipClasses (Tailwind 3 軸 class、iter481/482 と整合)', () => {
+  it('critical → rose 3 軸 (iter481 dueProximity overdue と同色)', () => {
+    const c = urgencyTierChipClasses('critical')
+    expect(c.bgClass).toBe('bg-rose-100')
+    expect(c.textClass).toBe('text-rose-700')
+    expect(c.ringClass).toBe('ring-rose-300')
+  })
+
+  it('high vs medium で amber 強弱を区別 (urgent 100 vs warn 50)', () => {
+    expect(urgencyTierChipClasses('high').bgClass).toBe('bg-amber-100')
+    expect(urgencyTierChipClasses('medium').bgClass).toBe('bg-amber-50')
+  })
+
+  it('low → blue 薄、none → slate 薄 (計画範囲内 vs 対象外を区別)', () => {
+    expect(urgencyTierChipClasses('low').textClass).toBe('text-blue-700')
+    expect(urgencyTierChipClasses('none').textClass).toBe('text-slate-600')
   })
 })

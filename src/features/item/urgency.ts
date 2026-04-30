@@ -219,6 +219,78 @@ export function urgencyTierLabel(tier: UrgencyTier): string {
 }
 
 /**
+ * iter483 basics (graphical 波及): UrgencyTier を「graphical chip tone」 token に
+ * 変換する pure helper。iter481 dueProximityTone / iter482 costMonthProjectionTone
+ * と同じ 5 段階 vocabulary (danger / urgent / warn / info / idle) を使用、5 tier
+ * 全部に対応 (= 5 tone を fully utilize)。Today / Backlog / Kanban / dashboard chip /
+ * SR aria-label で urgency tier 別の意味のある配色を 1 関数で。
+ *
+ * 配色 token (iter481 dueProximity と同色 = app 全体で「赤 / 橙強 / 橙薄 / 青 / 灰」が一貫):
+ *  - 'danger' — critical (rose、緊急、要即時対応)
+ *  - 'urgent' — high (amber 強、行動喚起)
+ *  - 'warn'   — medium (amber 薄、注意)
+ *  - 'info'   — low (blue 薄、計画範囲内)
+ *  - 'idle'   — none (slate 薄、対象外、UI 静か)
+ *
+ * 期日近接 (dueProximity) と独立: dueProximity は dueDate のみ見るが urgency は
+ * priority + dueDate + MUST + 経過時間を全部加味。なので「期限切れだけど priority
+ * 4 で MUST じゃない」 item は dueProximity=danger / urgencyTier=medium 等のズレが
+ * ありうる。両方を chip で並べ表示しても意味のある区別になる。
+ */
+export type UrgencyTierTone = 'danger' | 'urgent' | 'warn' | 'info' | 'idle'
+
+const TIER_TONE_MAP: Record<UrgencyTier, UrgencyTierTone> = {
+  critical: 'danger',
+  high: 'urgent',
+  medium: 'warn',
+  low: 'info',
+  none: 'idle',
+}
+
+export function urgencyTierTone(tier: UrgencyTier): UrgencyTierTone {
+  return TIER_TONE_MAP[tier]
+}
+
+export interface UrgencyTierChipClasses {
+  bgClass: string
+  textClass: string
+  ringClass: string
+}
+
+const TIER_TONE_CLASSES: Record<UrgencyTierTone, UrgencyTierChipClasses> = {
+  danger: {
+    bgClass: 'bg-rose-100',
+    textClass: 'text-rose-700',
+    ringClass: 'ring-rose-300',
+  },
+  urgent: {
+    bgClass: 'bg-amber-100',
+    textClass: 'text-amber-800',
+    ringClass: 'ring-amber-300',
+  },
+  warn: {
+    bgClass: 'bg-amber-50',
+    textClass: 'text-amber-700',
+    ringClass: 'ring-amber-200',
+  },
+  info: {
+    bgClass: 'bg-blue-50',
+    textClass: 'text-blue-700',
+    ringClass: 'ring-blue-200',
+  },
+  idle: {
+    bgClass: 'bg-slate-50',
+    textClass: 'text-slate-600',
+    ringClass: 'ring-slate-200',
+  },
+}
+
+/** Tier → Tailwind chip class 3 軸 (bg / text / ring) を 1 関数で。iter481/482 と整合。 */
+export function urgencyTierChipClasses(tier: UrgencyTier): UrgencyTierChipClasses {
+  return TIER_TONE_CLASSES[TIER_TONE_MAP[tier]]
+}
+
+/**
  * iter395 refactor: `urgencyTier(computeUrgency(item, today))` の 4 callsite
  * (`groupItemsByUrgencyTier` / `pickItemsByUrgencyTiers` / `countItemsByUrgencyTier` /
  * `formatTopUrgentTitlesJa`) を 1 関数に集約。score → tier の 2 段 dispatch を
