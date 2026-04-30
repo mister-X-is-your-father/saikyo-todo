@@ -16,7 +16,7 @@ import { useMemo, useState } from 'react'
 import { AlarmClock, AlertCircle, AtSign, Bell, CheckCheck, UserPlus } from 'lucide-react'
 import { parseAsString, useQueryState } from 'nuqs'
 
-import { severityClasses } from '@/lib/widget/severity'
+import { severityChipClass } from '@/lib/widget/severity'
 import { fourStateHintToSeverity } from '@/lib/widget/severity-bridges'
 
 import { formatNotificationBody, formatRelativeTime } from '@/features/notification/format'
@@ -99,7 +99,7 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
     if (total === 0) return null
     const label = formatNotificationActivityHintJa(counts)
     const severity = fourStateHintToSeverity(classifyNotificationActivityHint(counts))
-    return { label, severity, classes: severityClasses(severity) }
+    return { label, severity, chipClass: severityChipClass(severity) }
   }, [notifications])
 
   const markRead = useMarkNotificationRead(workspaceId)
@@ -157,7 +157,7 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
               通知
               {hint && (
                 <span
-                  className={`rounded border px-1.5 py-0 text-[10px] font-normal ${hint.classes.bg} ${hint.classes.text} ${hint.classes.border}`}
+                  className={`rounded border px-1.5 py-0 text-[10px] font-normal ${hint.chipClass}`}
                   data-testid="notification-bell-hint"
                   data-severity={hint.severity}
                   aria-label={`通知 健全性: ${hint.label}`}

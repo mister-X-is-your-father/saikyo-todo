@@ -18,7 +18,7 @@ import {
   Trash2,
 } from 'lucide-react'
 
-import { severityClasses } from '@/lib/widget/severity'
+import { severityChipClass } from '@/lib/widget/severity'
 import { fourStateHintToSeverity } from '@/lib/widget/severity-bridges'
 
 import { type AuditActionIconKey, getAuditActionVisual } from '@/features/audit/action-visual'
@@ -57,7 +57,7 @@ export function ActivityLog({ itemId }: { itemId: string }) {
     const counts = groupAuditByCategory(data, { actorTypes: [] })
     const label = formatAuditActivityHintJa(counts)
     const severity = fourStateHintToSeverity(classifyAuditActivityHint(counts))
-    return { label, severity, classes: severityClasses(severity) }
+    return { label, severity, chipClass: severityChipClass(severity) }
   }, [data])
   if (isLoading) {
     return (
@@ -97,7 +97,7 @@ export function ActivityLog({ itemId }: { itemId: string }) {
           </div>
           {hint && (
             <span
-              className={`rounded border px-2 py-0.5 text-[11px] font-medium ${hint.classes.bg} ${hint.classes.text} ${hint.classes.border}`}
+              className={`rounded border px-2 py-0.5 text-[11px] font-medium ${hint.chipClass}`}
               data-testid="activity-log-hint"
               data-severity={hint.severity}
               aria-label={`Activity 状態: ${hint.label}`}

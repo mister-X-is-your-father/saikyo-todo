@@ -22,7 +22,7 @@ import { useMemo } from 'react'
 import { AlertTriangle, TrendingDown, TrendingUp } from 'lucide-react'
 
 import { trendToneClass } from '@/lib/ui/trend-tone'
-import { severityClasses } from '@/lib/widget/severity'
+import { severityChipClass } from '@/lib/widget/severity'
 import { fourStateHintToSeverity } from '@/lib/widget/severity-bridges'
 
 import {
@@ -98,9 +98,10 @@ export function WeeklyInsightWidget({ items, now }: Props) {
   const bestDayLabel = formatBestDayJa(bestDay)
   // iter483 basics: 4 状態 hint で chip / aria-label に 1 単語 state を埋める
   const hintLabel = formatWeeklyInsightHintJa(insight)
-  // iter496 basics: hint → Severity bridge (iter495) → severityClasses で chip 配色
+  // iter496 basics: hint → Severity bridge (iter495) → severityChipClass で chip 配色
+  // iter501 simplification: severityClasses(...).bg/.text/.border → severityChipClass で 1 行化
   const hintSeverity = fourStateHintToSeverity(classifyWeeklyInsightHint(insight))
-  const hintClasses = severityClasses(hintSeverity)
+  const hintClass = severityChipClass(hintSeverity)
 
   return (
     <Card
@@ -118,7 +119,7 @@ export function WeeklyInsightWidget({ items, now }: Props) {
           週次 Insight
           <span className="text-muted-foreground text-xs font-normal">{insight.weekStart} 週</span>
           <span
-            className={`ml-auto rounded border px-2 py-0.5 text-[11px] font-medium ${hintClasses.bg} ${hintClasses.text} ${hintClasses.border}`}
+            className={`ml-auto rounded border px-2 py-0.5 text-[11px] font-medium ${hintClass}`}
             data-testid="weekly-insight-hint"
             data-severity={hintSeverity}
           >
