@@ -23,6 +23,7 @@ import {
   generatePlanAction,
   listAgentsAction,
   researchItemAction,
+  researchItemViaClaudeAction,
 } from './actions'
 
 export const agentKeys = {
@@ -156,7 +157,25 @@ export interface ResearchItemVariables {
 // useResearchItem は workspaceId を vars.workspaceId から受ける (useDecomposeItem とは
 // シグネチャが異なる点に注意: Doc 新規作成は items キャッシュ invalidate が不要のため
 // factory 引数で workspace を bind する必要がない)
+//
+// iter520 (queue: researcher SDK→CLI run path): AI 調査も Claude Max OAuth + claude CLI
+// 経由 (env 不要) を default に切替。`useResearchItemViaSDK` は test / fallback 用に残置。
 export function useResearchItem() {
+  return useMutation({
+    mutationFn: async (vars: ResearchItemVariables) =>
+      unwrap(
+        await researchItemViaClaudeAction({
+          workspaceId: vars.workspaceId,
+          itemId: vars.itemId,
+          extraHint: vars.extraHint,
+          idempotencyKey: vars.idempotencyKey,
+        }),
+      ),
+  })
+}
+
+/** SDK 直接利用 (env 必須) で AI 調査する旧経路。fallback 用に残置。 */
+export function useResearchItemViaSDK() {
   return useMutation({
     mutationFn: async (vars: ResearchItemVariables) =>
       unwrap(

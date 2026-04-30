@@ -48,13 +48,27 @@ export const DECOMPOSE_FLOW_TOOL_NAMES = [
   'propose_child_item',
 ] as const
 
+/**
+ * Researcher research mode (AI 調査 → Doc 作成) の MCP tool 名 whitelist。
+ * read 4 + create_doc = 5 本。`create_item` / `write_comment` / `instantiate_template`
+ * を外して「調査結果を Doc にまとめる」フローへ集中させる。`decomposeItemViaClaude`
+ * と同じ薄い ViaClaude 経路で env 不要 (Claude Max OAuth + claude CLI subprocess)。
+ */
+export const RESEARCH_FLOW_TOOL_NAMES = [
+  'read_items',
+  'read_docs',
+  'search_docs',
+  'search_items',
+  'create_doc',
+] as const
+
 export interface ResearcherFlowAdapterInput {
   workspaceId: string
   userMessage: string
   idempotencyKey: string
   targetItemId?: string | null
-  /** 'researcher' (default) or 'decompose'. */
-  toolMode?: 'researcher' | 'decompose'
+  /** 'researcher' (default) / 'decompose' / 'research'. */
+  toolMode?: 'researcher' | 'decompose' | 'research'
   /** toolMode='decompose' で必須。propose_child_item の親 Item id。 */
   decomposeParentItemId?: string
 }
@@ -69,9 +83,12 @@ export interface ResearcherFlowAdapterInput {
  */
 export function buildResearcherFlowInput(input: ResearcherFlowAdapterInput): ClaudeFlowInput {
   const isDecompose = input.toolMode === 'decompose'
+  const isResearch = input.toolMode === 'research'
   const allowedToolNames = isDecompose
     ? [...DECOMPOSE_FLOW_TOOL_NAMES]
-    : [...RESEARCHER_FLOW_TOOL_NAMES]
+    : isResearch
+      ? [...RESEARCH_FLOW_TOOL_NAMES]
+      : [...RESEARCHER_FLOW_TOOL_NAMES]
 
   return {
     workspaceId: input.workspaceId,

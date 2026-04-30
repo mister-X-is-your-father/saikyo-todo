@@ -469,6 +469,49 @@ export const researcherService = {
   },
 
   /**
+   * iter520 (queue: researcher SDK→CLI run path): AI 調査 を Claude Max OAuth +
+   * claude CLI subprocess 経路で実行する。`researchItem` (= SDK 経路、env 必要) の
+   * regression 修正。`decomposeItemViaClaude` と同じく `runFlowViaClaude` で MCP に
+   * RESEARCH_FLOW_TOOL_NAMES (read 4 + create_doc) を expose、create_doc で Doc を
+   * 直接生成させる。env 不要。`text` には調査要旨を返す。
+   */
+  async researchItemViaClaude(params: {
+    workspaceId: string
+    itemId: string
+    extraHint?: string
+    idempotencyKey: string
+  }): Promise<Result<ResearcherRunOutput>> {
+    if (!params.idempotencyKey) {
+      return err(new ValidationError('idempotencyKey は必須です'))
+    }
+    const item = await adminDb.transaction((tx) => itemRepository.findById(tx, params.itemId))
+    if (!item) return err(new NotFoundError('Item が見つかりません'))
+    if (item.workspaceId !== params.workspaceId) {
+      return err(new ValidationError('Item が指定 workspace に属していません'))
+    }
+    const userMessage = buildResearchUserMessage({
+      itemId: item.id,
+      title: item.title,
+      description: item.description ?? '',
+      ...(params.extraHint ? { extraHint: params.extraHint } : {}),
+    })
+    try {
+      const out = await runFlowViaClaude(
+        buildResearcherFlowInput({
+          workspaceId: params.workspaceId,
+          userMessage,
+          idempotencyKey: params.idempotencyKey,
+          targetItemId: item.id,
+          toolMode: 'research',
+        }),
+      )
+      return ok(mapClaudeFlowOutputToResearcherRunOutput(out))
+    } catch (e) {
+      return err(new ExternalServiceError('claude-cli', e))
+    }
+  },
+
+  /**
    * 対象 Item を Researcher に調査させ、結果を Doc として保存させる便利エントリ。
    * decomposeItem と同じパターン。Agent は `search_docs` → `create_doc` の順で動く。
    */

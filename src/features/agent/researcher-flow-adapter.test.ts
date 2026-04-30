@@ -15,6 +15,7 @@ import {
   buildResearcherFlowInput,
   DECOMPOSE_FLOW_TOOL_NAMES,
   mapClaudeFlowOutputToResearcherRunOutput,
+  RESEARCH_FLOW_TOOL_NAMES,
   RESEARCHER_FLOW_TOOL_NAMES,
 } from './researcher-flow-adapter'
 
@@ -62,6 +63,26 @@ describe('researcher-flow-adapter', () => {
     })
   })
 
+  describe('RESEARCH_FLOW_TOOL_NAMES', () => {
+    it('read 4 + create_doc の 5 本のみ (調査 → Doc 作成)', () => {
+      expect([...RESEARCH_FLOW_TOOL_NAMES]).toEqual([
+        'read_items',
+        'read_docs',
+        'search_docs',
+        'search_items',
+        'create_doc',
+      ])
+    })
+
+    it('create_item / write_comment / propose_child_item / instantiate_template は含まない', () => {
+      const names = [...RESEARCH_FLOW_TOOL_NAMES]
+      expect(names).not.toContain('create_item')
+      expect(names).not.toContain('write_comment')
+      expect(names).not.toContain('propose_child_item')
+      expect(names).not.toContain('instantiate_template')
+    })
+  })
+
   describe('buildResearcherFlowInput', () => {
     const baseInput = {
       workspaceId: 'ws-1',
@@ -90,6 +111,17 @@ describe('researcher-flow-adapter', () => {
       expect(out.allowedToolNames).toEqual([...DECOMPOSE_FLOW_TOOL_NAMES])
       expect(out.allowedToolNames).toHaveLength(5)
       expect(out.decomposeParentItemId).toBe('parent-1')
+    })
+
+    it('toolMode=research は research bundle (5 本) + decomposeParentItemId は drop', () => {
+      const out = buildResearcherFlowInput({
+        ...baseInput,
+        toolMode: 'research',
+        decomposeParentItemId: 'parent-X',
+      })
+      expect(out.allowedToolNames).toEqual([...RESEARCH_FLOW_TOOL_NAMES])
+      expect(out.allowedToolNames).toHaveLength(5)
+      expect(out.decomposeParentItemId).toBeUndefined()
     })
 
     it('toolMode=researcher の時は decomposeParentItemId を渡しても drop する', () => {

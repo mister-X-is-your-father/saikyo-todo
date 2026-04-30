@@ -155,6 +155,29 @@ export async function researchItemAction(input: unknown): Promise<Result<Researc
   })
 }
 
+/**
+ * iter520 (queue: researcher SDK→CLI run path): AI 調査 を Claude Max OAuth +
+ * claude CLI subprocess 経路で実行する Server Action。`researchItemAction` (SDK 経路、
+ * env 必要) の regression 修正。UI 既定はこちらを呼ぶ (hooks.ts useResearchItem)。
+ */
+export async function researchItemViaClaudeAction(
+  input: unknown,
+): Promise<Result<ResearcherRunOutput>> {
+  return await actionWrap(async () => {
+    const parsed = DecomposeItemActionInputSchema.safeParse(input)
+    if (!parsed.success) {
+      return err(new ValidationError('入力内容を確認してください', parsed.error))
+    }
+    await requireWorkspaceMember(parsed.data.workspaceId, 'member')
+    return await researcherService.researchItemViaClaude({
+      workspaceId: parsed.data.workspaceId,
+      itemId: parsed.data.itemId,
+      ...(parsed.data.extraHint ? { extraHint: parsed.data.extraHint } : {}),
+      idempotencyKey: parsed.data.idempotencyKey ?? randomUUID(),
+    })
+  })
+}
+
 const StandupActionInputSchema = z.object({
   workspaceId: z.string().uuid(),
   idempotencyKey: z.string().uuid().optional(),
