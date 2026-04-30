@@ -14,11 +14,19 @@ const SEVERITY_STYLE: Record<DiffRow['severity'], string> = {
 }
 
 const SEVERITY_ICON: Record<DiffRow['severity'], React.ReactNode> = {
-  ok: <CheckCircle2 className="h-3 w-3" />,
-  warn: <TrendingUp className="h-3 w-3" />,
-  danger: <AlertTriangle className="h-3 w-3" />,
-  not_done: <MinusCircle className="h-3 w-3" />,
-  interrupt: <Zap className="h-3 w-3" />,
+  ok: <CheckCircle2 className="h-3 w-3" aria-hidden="true" />,
+  warn: <TrendingUp className="h-3 w-3" aria-hidden="true" />,
+  danger: <AlertTriangle className="h-3 w-3" aria-hidden="true" />,
+  not_done: <MinusCircle className="h-3 w-3" aria-hidden="true" />,
+  interrupt: <Zap className="h-3 w-3" aria-hidden="true" />,
+}
+
+const SEVERITY_LABEL_JA: Record<DiffRow['severity'], string> = {
+  ok: '想定通り',
+  warn: '注意 (1.1〜1.5x)',
+  danger: '危険 (1.5x 超過)',
+  not_done: '未実施',
+  interrupt: '割込み',
 }
 
 interface Props {
@@ -53,13 +61,18 @@ export function DiffSummaryBar({ schedules, itemTitleById, onSelect }: Props) {
       {rows.map((r) => {
         const title = r.itemId ? (itemTitleById.get(r.itemId) ?? '(不明)') : '割込み / その他'
         const cls = SEVERITY_STYLE[r.severity]
+        const sevLabel = SEVERITY_LABEL_JA[r.severity]
+        const deltaText =
+          r.severity !== 'interrupt' && r.plannedMinutes > 0
+            ? ` 差分 ${deltaLabel(r.deltaMinutes)}`
+            : ''
         return (
           <button
             key={r.itemId ?? '__interrupt__'}
             type="button"
             onClick={() => onSelect?.(r.itemId)}
             className={`inline-flex max-w-[260px] items-center gap-1 rounded-full border px-2.5 py-1 text-xs ${cls} hover:opacity-90`}
-            title={`想定 ${fmtMin(r.plannedMinutes)} / 実測 ${fmtMin(r.actualMinutes)}`}
+            aria-label={`${sevLabel}: ${title} 想定 ${fmtMin(r.plannedMinutes)} 実測 ${fmtMin(r.actualMinutes)}${deltaText}`}
           >
             {SEVERITY_ICON[r.severity]}
             <span className="truncate font-medium">{title}</span>
