@@ -73,8 +73,17 @@ export function InboxView({
       {inbox.map((it) => (
         <div
           key={it.id}
+          role="button"
+          tabIndex={0}
           onClick={() => void setOpenItemId(it.id)}
-          className="hover:bg-muted/50 flex cursor-pointer items-center gap-2 rounded px-2 py-1.5"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              void setOpenItemId(it.id)
+            }
+          }}
+          aria-label={`${it.title} を編集ダイアログで開く`}
+          className="hover:bg-muted/50 focus-visible:ring-ring flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 focus-visible:ring-2 focus-visible:outline-none"
           data-testid={`inbox-row-${it.id}`}
         >
           <ItemCheckbox item={it} workspaceId={workspaceId} />
@@ -84,17 +93,14 @@ export function InboxView({
             role="img"
             aria-label={priorityLabel(it.priority)}
           />
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              void setOpenItemId(it.id)
-            }}
-            className="hover:text-primary truncate text-left font-medium hover:underline"
-            data-testid={`inbox-title-${it.id}`}
-          >
+          {/* iter429: 旧 inner <button> は outer div の role="button" と
+              button-in-button 違反 (WAI-ARIA: 非 interactive 化された要素を
+              除き focusable child を持てない) のため <span> に降格。
+              outer div が単一 interactive element + 全行 click + keyboard
+              (Enter/Space) accessible。 */}
+          <span className="truncate text-left font-medium" data-testid={`inbox-title-${it.id}`}>
             {it.title}
-          </button>
+          </span>
           {it.isMust && <MustBadge data-testid={`inbox-must-${it.id}`} />}
           <div className="ml-auto shrink-0">
             <StatusBadge status={it.status} />
