@@ -131,7 +131,9 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
   return (
     <Card data-testid={`src-card-${src.id}`}>
       <CardHeader className="pb-2">
-        <CardTitle className="truncate text-base">{src.name}</CardTitle>
+        <CardTitle className="truncate text-base" role="heading" aria-level={3}>
+          {src.name}
+        </CardTitle>
         <p className="text-muted-foreground mt-0.5 text-xs">
           kind: {src.kind} · {src.enabled ? '有効' : '無効'}
           {src.scheduleCron ? ` · cron: ${src.scheduleCron}` : ''}
@@ -283,7 +285,9 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">新規 Source</CardTitle>
+        <CardTitle className="text-base" role="heading" aria-level={2}>
+          新規 Source
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <form

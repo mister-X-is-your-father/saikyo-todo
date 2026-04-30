@@ -82,7 +82,9 @@ export function WorkflowsPanel({ workspaceId }: Props) {
     >
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">新規 Workflow</CardTitle>
+          <CardTitle className="text-base" role="heading" aria-level={2}>
+            新規 Workflow
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <form
@@ -265,7 +267,9 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <CardTitle className="truncate text-base">{wf.name}</CardTitle>
+            <CardTitle className="truncate text-base" role="heading" aria-level={3}>
+              {wf.name}
+            </CardTitle>
             <p className="text-muted-foreground mt-0.5 text-xs">
               trigger: {triggerKind} · nodes: {nodeCount} · {wf.enabled ? '有効' : '無効'}
             </p>
