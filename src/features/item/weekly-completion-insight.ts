@@ -183,5 +183,28 @@ export function formatWeeklyCompletionInsightJa(insight: WeeklyCompletionInsight
   return `${head} (前週比 ${pct}${peakPart})`
 }
 
+/**
+ * iter541 ai-automation polish: 週次 trend direction → 「励まし」 hint Japanese 1 行。
+ * fluffy-8 widget で「先週との比較を見て前向きな (or 注意喚起の) 1 行」を出すための
+ * encoding 軸。pure mapping、AI 不使用。
+ *
+ *   'idle'  → '今週も来週も完了履歴がありません — まず 1 件着手から'
+ *   'up'    → '前週比 改善 — 勢いを維持'
+ *   'flat'  → '前週並み — 安定運用'
+ *   'down'  → '前週比 低下 — 何か engulf 要因あれば見直し'
+ */
+export function weeklyDirectionHintJa(direction: WeeklyCompletionDirection): string {
+  switch (direction) {
+    case 'idle':
+      return '今週も来週も完了履歴がありません — まず 1 件着手から'
+    case 'up':
+      return '前週比 改善 — 勢いを維持'
+    case 'flat':
+      return '前週並み — 安定運用'
+    case 'down':
+      return '前週比 低下 — 何か engulf 要因あれば見直し'
+  }
+}
+
 // 使い回し: formatLocalISO は test の utility としても再利用したいので named export
 export { formatLocalISO }

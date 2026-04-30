@@ -16,6 +16,7 @@ import {
   dayOfWeekLabelJa,
   formatWeeklyCompletionInsightJa,
   type WeeklyCompletionItemFields,
+  weeklyDirectionHintJa,
 } from './weekly-completion-insight'
 
 // today: 2026-04-30 (木) — 本週 = 04-24 金 〜 04-30 木、前週 = 04-17 金 〜 04-23 木
@@ -164,5 +165,14 @@ describe('formatWeeklyCompletionInsightJa', () => {
     ]
     const r = buildWeeklyCompletionInsight(items, TODAY)
     expect(formatWeeklyCompletionInsightJa(r)).toBe('今週 0 件 (前週比 -100%)')
+  })
+})
+
+describe('weeklyDirectionHintJa', () => {
+  it('4 direction を Japanese hint に', () => {
+    expect(weeklyDirectionHintJa('idle')).toContain('まず 1 件')
+    expect(weeklyDirectionHintJa('up')).toContain('改善')
+    expect(weeklyDirectionHintJa('flat')).toContain('安定')
+    expect(weeklyDirectionHintJa('down')).toContain('低下')
   })
 })
