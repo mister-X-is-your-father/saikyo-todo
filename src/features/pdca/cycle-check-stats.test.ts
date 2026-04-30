@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import {
   buildCycleCheckStats,
   type CycleCheckItemFields,
+  type CycleCheckStats,
+  formatCycleCheckStatsJa,
   median,
   parseDateLike,
 } from './cycle-check-stats'
@@ -213,5 +215,57 @@ describe('buildCycleCheckStats', () => {
     ]
     const r = buildCycleCheckStats(items)
     expect(r.completionRate).toBe(33) // 1/3 = 33
+  })
+})
+
+describe('formatCycleCheckStatsJa', () => {
+  it('total=0 → 完了 item なし', () => {
+    const stats: CycleCheckStats = {
+      total: 0,
+      done: 0,
+      cancelled: 0,
+      inProgressOrTodo: 0,
+      completionRate: 0,
+      leadTimeAvgHours: null,
+      leadTimeMedianHours: null,
+      lateCompletionCount: 0,
+      inFlightOverdueCount: 0,
+      cycleDurationDays: 1,
+    }
+    expect(formatCycleCheckStatsJa(stats)).toBe('完了率 0% (0/0) — 完了 item なし')
+  })
+
+  it('完了率 / lead / 遅延 / overdue を 1 行', () => {
+    const stats: CycleCheckStats = {
+      total: 5,
+      done: 4,
+      cancelled: 0,
+      inProgressOrTodo: 1,
+      completionRate: 80,
+      leadTimeAvgHours: 12,
+      leadTimeMedianHours: 10,
+      lateCompletionCount: 1,
+      inFlightOverdueCount: 0,
+      cycleDurationDays: 7,
+    }
+    expect(formatCycleCheckStatsJa(stats)).toBe(
+      '完了率 80% (4/5) — 平均 lead 12h / 遅延完了 1 / 期限内 active 0',
+    )
+  })
+
+  it('leadTimeAvgHours=null → 未計測', () => {
+    const stats: CycleCheckStats = {
+      total: 3,
+      done: 0,
+      cancelled: 0,
+      inProgressOrTodo: 3,
+      completionRate: 0,
+      leadTimeAvgHours: null,
+      leadTimeMedianHours: null,
+      lateCompletionCount: 0,
+      inFlightOverdueCount: 1,
+      cycleDurationDays: 5,
+    }
+    expect(formatCycleCheckStatsJa(stats)).toContain('平均 lead 未計測')
   })
 })

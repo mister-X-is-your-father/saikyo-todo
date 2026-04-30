@@ -160,5 +160,23 @@ export function buildCycleCheckStats(
   }
 }
 
+/**
+ * iter540 ai-automation polish: AI prompt / chip aria-label / Slack 通知用 1 行 cycle
+ * Check status summary。
+ *   '完了率 80% (4/5) — 平均 lead 12h / 遅延完了 1 / 期限内 active 0'
+ *   '完了率 0% (0/0) — 完了 item なし'  (= total=0 / done=0)
+ *
+ * 詳細値 (median / cycleDurationDays / cancelled) は widget 側で別表示する想定。
+ */
+export function formatCycleCheckStatsJa(stats: CycleCheckStats): string {
+  if (stats.total === 0) return '完了率 0% (0/0) — 完了 item なし'
+  const lead = stats.leadTimeAvgHours === null ? '未計測' : `${stats.leadTimeAvgHours}h`
+  return (
+    `完了率 ${stats.completionRate}% (${stats.done}/${stats.total}) — ` +
+    `平均 lead ${lead} / 遅延完了 ${stats.lateCompletionCount} / ` +
+    `期限内 active ${stats.inFlightOverdueCount}`
+  )
+}
+
 // 内部 helper を test しやすく named export
 export { median, parseDateLike }
