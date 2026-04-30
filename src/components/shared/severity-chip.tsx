@@ -77,8 +77,11 @@ export function SeverityChip({
   }
 
   return (
+    // role="img" (atomic group with aria-label) — iter98 PDCA bar /
+    // iter417 TaskChute priority chip と同 pattern。旧 role="status" は live
+    // region で SR が再描画のたびに announce するため、静的 chip では誤用。
     <span
-      role="status"
+      role="img"
       className={baseCls}
       aria-label={ariaLabel ?? label}
       data-testid={testId}
