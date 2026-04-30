@@ -498,10 +498,14 @@ iter を中断せずキューイングして、後続 iter で 1 件ずつ消化
     - 代替: `reactflow` (旧 paquete name)、`react-flow-renderer` (deprecated)
     - 不採用: `dagre-d3` (描画のみ、edit 不可)
   - 設計案 3 scope:
-    - **A (最小、3-5 commit)**:
-      1. `pnpm add @xyflow/react` + import + 既存 dialog 内に Canvas 配置
-      2. WorkflowGraph JSON ↔ React Flow nodes/edges の bi-directional 変換 helper (pure 関数 + test)
-      3. Read-only viewer mode (まずは「見る」だけ実装、editor mode は scope B)
+    - **A (最小、3-5 commit)** ✅ **完了 (2026-04-30、ユーザ「今すぐ!」割込み 1 commit)**:
+      1. ✅ `pnpm add @xyflow/react` (12.10.2) — install 完了
+      2. ✅ pure helper `react-flow-bridge.ts` (`workflowGraphToFlow` / `flowToWorkflowGraph`) +
+         dagre 風 auto-layout (depth × type column) + 11 unit test pass
+      3. ✅ Read-only viewer `WorkflowGraphCanvas` 実装、WorkflowEditorDialog の上部に「視覚プレ
+         ビュー」 section として配置。JSON textarea 編集に即時 follow (best-effort parse、不正
+         中は直前の有効 graph を keep)。node type 別配色 (8 type)、空 graph は EmptyState、
+         5 node 超で MiniMap 出現、attribution hideAttribution で MIT 尊重しつつ noise 削減
     - **B (中、5-10 commit)**: 4. Drag&drop でノード作成 (palette toolbar + dnd-kit と統合 or React Flow native) 5. Edge drawing (port → port)、cycle detection は engine 側既製を流用 6. 右 sidebar でノード設定編集 (config を node type 別 form で) 7. 保存 button で React Flow state → JSON → action.update
     - **C (大)**: workflow run 中の execution status を Canvas 上に live highlight (pending/running/done/failed を node 色で)
   - **要追加質問** (仮置きで進める):

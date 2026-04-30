@@ -8,7 +8,7 @@
  *
  * graph 編集 UI (React Flow ベース DAG editor) は次 iter。今は graph は API 経由で更新する。
  */
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { ChevronDown, ChevronRight, Pencil, Play, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -44,6 +44,7 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { WorkflowGraphCanvas } from '@/components/workflow/workflow-graph-canvas'
 
 interface Props {
   workspaceId: string
@@ -398,6 +399,17 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
+  // iter (queue: workflow graphical 段階 A): 視覚プレビュー用に graphText を best-effort で
+  // parse。失敗 (編集中の不正 JSON) なら直前の有効な graph を表示し続ける (= viewer は
+  // breaking しない)。
+  const previewGraph = useMemo(() => {
+    try {
+      return WorkflowGraphSchema.parse(JSON.parse(graphText))
+    } catch {
+      return wf.graph as ReturnType<typeof WorkflowGraphSchema.parse>
+    }
+  }, [graphText, wf.graph])
+
   // dialog が再 open されたら最新 wf 値で初期化 (前回の編集中値を残さない)
   if (open && wf.updatedAt) {
     // no-op — 初期値は useState の lazy init で設定済。再 open 時は意図的に保持する。
@@ -439,11 +451,19 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
         <DialogHeader>
           <DialogTitle>Workflow 編集 — {wf.name}</DialogTitle>
           <DialogDescription>
-            graph (nodes / edges) と trigger を JSON で編集。React Flow ベースの 視覚エディタは次
-            iter で実装予定。zod スキーマで保存時にバリデーションする。
+            graph を JSON で編集 (上の視覚プレビューに即時反映)。zod スキーマで保存時にバリデー
+            ション。drag&drop での edit は段階 B で実装予定。
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
+          <div className="space-y-1">
+            <Label className="text-xs">視覚プレビュー (read-only、JSON 編集に追従)</Label>
+            <WorkflowGraphCanvas
+              graph={previewGraph}
+              className="h-56"
+              testId={`wf-editor-canvas-${wf.id}`}
+            />
+          </div>
           <div className="space-y-1">
             <Label htmlFor={`wf-editor-graph-${wf.id}`}>
               graph ({'{ nodes: [...], edges: [...] }'})
