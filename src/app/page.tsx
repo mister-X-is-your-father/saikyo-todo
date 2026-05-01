@@ -33,7 +33,14 @@ export default async function HomePage() {
             redirect('/login')
           }}
         >
-          <Button type="submit" variant="ghost" size="sm">
+          <Button
+            type="submit"
+            variant="ghost"
+            size="sm"
+            className="min-h-11"
+            data-testid="logout-btn"
+            aria-label="ログアウトしてログイン画面に戻る"
+          >
             ログアウト
           </Button>
         </form>
