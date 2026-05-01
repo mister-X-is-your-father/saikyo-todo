@@ -259,6 +259,7 @@ export function BudgetPanel({ workspaceId }: Props) {
                 size="sm"
                 className="min-h-11"
                 disabled={update.isPending}
+                aria-busy={update.isPending || undefined}
                 data-testid="budget-save-btn"
                 aria-label={
                   update.isPending
