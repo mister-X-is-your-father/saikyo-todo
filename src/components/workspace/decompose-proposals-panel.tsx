@@ -409,6 +409,11 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               checked={isMust}
               onChange={(e) => setIsMust(e.target.checked)}
               data-testid={`proposal-${proposal.id}-must`}
+              aria-label={
+                isMust
+                  ? 'MUST が ON: 絶対落とさない (DoD 必須、クリックで OFF)'
+                  : 'MUST が OFF: 通常タスク (クリックで ON、DoD 必須化)'
+              }
             />
             <span className="font-medium text-red-700">MUST</span>
           </label>

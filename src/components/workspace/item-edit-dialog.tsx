@@ -635,6 +635,11 @@ function ItemEditDialogInner({
                 checked={isMust}
                 onChange={(e) => setIsMust(e.target.checked)}
                 data-testid="edit-item-must"
+                aria-label={
+                  isMust
+                    ? 'MUST が ON: 絶対落とさない (DoD 必須、クリックで OFF)'
+                    : 'MUST が OFF: 通常タスク (クリックで ON、DoD 必須化)'
+                }
               />
               <span className="font-medium text-red-700">MUST</span>
               <span className="text-muted-foreground text-xs">(絶対落とさない)</span>
