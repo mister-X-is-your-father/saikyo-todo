@@ -510,6 +510,8 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
               className="font-mono text-xs"
               data-testid={`wf-editor-graph-${wf.id}`}
               aria-label="graph JSON"
+              aria-invalid={error?.startsWith('graph JSON 不正') || undefined}
+              aria-describedby={error ? `wf-editor-error-${wf.id}` : undefined}
             />
             <p className="text-muted-foreground text-[10px]">
               プリセット button で skeleton node を JSON に追加できます (id は自動 unique 化、 node
@@ -595,6 +597,8 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
               className="font-mono text-xs"
               data-testid={`wf-editor-trigger-${wf.id}`}
               aria-label="trigger JSON"
+              aria-invalid={error?.startsWith('trigger JSON 不正') || undefined}
+              aria-describedby={error ? `wf-editor-error-${wf.id}` : undefined}
             />
             <p className="text-muted-foreground text-[10px]">
               プリセット button で typical な JSON を流し込めます (cron は毎日 09:00、 webhook は
