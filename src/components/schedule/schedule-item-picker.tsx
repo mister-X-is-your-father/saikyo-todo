@@ -105,6 +105,8 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
               variant="secondary"
               className="min-h-11"
               onClick={() => onPick({ itemId: null, note: interruptNote || '割込み' })}
+              data-testid="schedule-picker-interrupt-add"
+              aria-label={`割込み / 休憩として追加${interruptNote ? ` (メモ: ${interruptNote})` : ''}`}
             >
               割込みとして追加
             </Button>
