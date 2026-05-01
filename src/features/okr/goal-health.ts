@@ -166,3 +166,36 @@ export function countGoalsByHealth(
 export function formatGoalHealthCounts(counts: Record<GoalHealthTier, number>): string {
   return formatNonZeroCounts(counts, TIER_ORDER, TIER_LABEL)
 }
+
+/**
+ * iter526 ai-automation: GoalHealthTier → 5 段階 共通 Severity bridge。
+ * iter519 / iter524 / iter525 と同 pattern。
+ *
+ *   'achieved'  → 'ok'     (= 達成、緑、最高評価)
+ *   'on-track'  → 'info'   (= 順調、青、進行中で healthy)
+ *   'at-risk'   → 'warn'   (= やや遅れ、黄、要観察)
+ *   'behind'    → 'danger' (= 遅延、赤、要救済)
+ *   'idle'      → 'muted'  (= 期間外、グレー、対象外)
+ *
+ * 設計意図:
+ *   - achieved = ok 緑で「終わったけど positive」
+ *   - on-track = info で「進行中だが healthy」 (ok と差別化、achieved を ok 専用に)
+ *   - behind = danger で escalate 必要を即時提示
+ *   - idle (期間外) = muted で「無視してよい」を視覚化
+ *
+ * goals-panel.tsx 内の TIER_BAR_CLASS (= progress bar 色) は 5 色 (emerald/blue/amber/
+ * red/primary) で本 helper 5 段と整合的。SeverityChip / Slack chip の標準軸と同期。
+ */
+const TIER_SEVERITY: Record<GoalHealthTier, 'ok' | 'info' | 'warn' | 'danger' | 'muted'> = {
+  achieved: 'ok',
+  'on-track': 'info',
+  'at-risk': 'warn',
+  behind: 'danger',
+  idle: 'muted',
+}
+
+export function goalHealthTierSeverity(
+  tier: GoalHealthTier,
+): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
+  return TIER_SEVERITY[tier]
+}

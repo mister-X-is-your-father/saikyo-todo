@@ -10,6 +10,7 @@ import {
   formatGoalHealthCounts,
   type GoalHealthTier,
   goalHealthTierLabel,
+  goalHealthTierSeverity,
   groupGoalsByHealth,
 } from './goal-health'
 
@@ -247,5 +248,35 @@ describe('formatGoalHealthCounts', () => {
     expect(
       formatGoalHealthCounts({ achieved: 1, 'on-track': 0, 'at-risk': 0, behind: 0, idle: 1 }),
     ).toBe('達成 1 / 期間外 1')
+  })
+})
+
+describe('goalHealthTierSeverity', () => {
+  it('achieved → ok (緑、達成)', () => {
+    expect(goalHealthTierSeverity('achieved')).toBe('ok')
+  })
+
+  it('on-track → info (青、進行中で healthy)', () => {
+    expect(goalHealthTierSeverity('on-track')).toBe('info')
+  })
+
+  it('at-risk → warn (黄、要観察)', () => {
+    expect(goalHealthTierSeverity('at-risk')).toBe('warn')
+  })
+
+  it('behind → danger (赤、要救済)', () => {
+    expect(goalHealthTierSeverity('behind')).toBe('danger')
+  })
+
+  it('idle → muted (グレー、期間外)', () => {
+    expect(goalHealthTierSeverity('idle')).toBe('muted')
+  })
+
+  it('全 GoalHealthTier 値で 5 段階 Severity のいずれかを返す', () => {
+    const all: GoalHealthTier[] = ['achieved', 'on-track', 'at-risk', 'behind', 'idle']
+    const validSev = ['ok', 'info', 'warn', 'danger', 'muted']
+    for (const t of all) {
+      expect(validSev).toContain(goalHealthTierSeverity(t))
+    }
   })
 })
