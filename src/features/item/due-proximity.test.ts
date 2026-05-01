@@ -4,6 +4,7 @@ import {
   countItemsByDueProximity,
   dueProximityChipClasses,
   dueProximityLabel,
+  dueProximitySeverity,
   dueProximityTone,
   formatDueProximityCounts,
   getDueProximity,
@@ -264,5 +265,46 @@ describe('dueProximityChipClasses (tone → Tailwind 3 軸 class)', () => {
   it('thisWeek / noDate は別 tone でも class が定まっている', () => {
     expect(dueProximityChipClasses('thisWeek').textClass).toBe('text-blue-700')
     expect(dueProximityChipClasses('noDate').textClass).toBe('text-slate-600')
+  })
+})
+
+describe('dueProximitySeverity — 5 段共通 Severity bridge', () => {
+  it('overdue → danger (赤、最深刻)', () => {
+    expect(dueProximitySeverity('overdue')).toBe('danger')
+  })
+
+  it('today → warn (黄、行動喚起、overdue を danger 専用に維持)', () => {
+    expect(dueProximitySeverity('today')).toBe('warn')
+  })
+
+  it('tomorrow → info (青、計画範囲内)', () => {
+    expect(dueProximitySeverity('tomorrow')).toBe('info')
+  })
+
+  it('thisWeek → info (青、計画範囲内、tomorrow と同階層)', () => {
+    expect(dueProximitySeverity('thisWeek')).toBe('info')
+  })
+
+  it('later → muted (グレー、計画余裕)', () => {
+    expect(dueProximitySeverity('later')).toBe('muted')
+  })
+
+  it('noDate → muted (グレー、対象外)', () => {
+    expect(dueProximitySeverity('noDate')).toBe('muted')
+  })
+
+  it('全 DueProximityKind 値で 5 段階 Severity のいずれかを返す', () => {
+    const all: Array<'overdue' | 'today' | 'tomorrow' | 'thisWeek' | 'later' | 'noDate'> = [
+      'overdue',
+      'today',
+      'tomorrow',
+      'thisWeek',
+      'later',
+      'noDate',
+    ]
+    const validSev = ['ok', 'info', 'warn', 'danger', 'muted']
+    for (const k of all) {
+      expect(validSev).toContain(dueProximitySeverity(k))
+    }
   })
 })

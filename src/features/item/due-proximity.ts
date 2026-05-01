@@ -184,3 +184,41 @@ export type DueProximityChipClasses = ChipToneClasses
 export function dueProximityChipClasses(kind: DueProximityKind): DueProximityChipClasses {
   return getChipToneClasses(TONE_MAP[kind])
 }
+
+/**
+ * iter529 ai-automation: DueProximityKind → 5 段階 共通 Severity bridge。
+ * iter519 / iter524-528 と同 pattern (累計 7 ドメイン目)。
+ * `DueProximityTone` (5 段独自 token: danger/urgent/warn/info/idle) と異なり、
+ * 全 saikyo-todo widget 横断の `'ok'|'info'|'warn'|'danger'|'muted'` 5 段標準 token に
+ * collapse する bridge。SeverityChip / Slack 通知 / SR aria-label / AI prompt 用。
+ *
+ *   'overdue'  → 'danger' (= 期限切れ、赤、最深刻)
+ *   'today'    → 'warn'   (= 今日が期限、黄、行動喚起 — overdue を danger 専用に)
+ *   'tomorrow' → 'info'   (= 明日が期限、青、計画範囲内)
+ *   'thisWeek' → 'info'   (= 今週内、青、計画範囲内)
+ *   'later'    → 'muted'  (= 7 日以降、グレー、計画余裕)
+ *   'noDate'   → 'muted'  (= 期限未設定、グレー、対象外)
+ *
+ * 設計意図:
+ *   - overdue が danger 専用 = 「期限を割っている = 最深刻」 を一意視覚化
+ *   - today が warn (黄) = 「今日中に終わらせる行動喚起、ただし still 可能」
+ *   - tomorrow / thisWeek は info で同階層 (計画 OK)、tone (TONE_MAP) では別々
+ *     (urgent/warn) だが Severity bridge では collapse
+ *
+ * `DueProximityTone` は TONE_MAP の 5 階調 chip 配色用 (Today / Backlog 等の visual)、
+ * 本 helper は SeverityChip / Slack 等の 5 段 共通 token 用。caller 用途で使い分け可。
+ */
+const PROXIMITY_SEVERITY: Record<DueProximityKind, 'ok' | 'info' | 'warn' | 'danger' | 'muted'> = {
+  overdue: 'danger',
+  today: 'warn',
+  tomorrow: 'info',
+  thisWeek: 'info',
+  later: 'muted',
+  noDate: 'muted',
+}
+
+export function dueProximitySeverity(
+  kind: DueProximityKind,
+): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
+  return PROXIMITY_SEVERITY[kind]
+}
