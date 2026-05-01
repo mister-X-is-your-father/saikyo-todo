@@ -4,6 +4,7 @@ import {
   buildTodayForecast,
   type ForecastItemFields,
   forecastSeverity,
+  forecastSeverityCountsToSeverityCounts,
   forecastSeverityLabelJa,
   formatTodayForecastJa,
   minutesUntilEndOfDay,
@@ -224,5 +225,48 @@ describe('formatTodayForecastJa', () => {
       NOW,
     )
     expect(formatTodayForecastJa(r)).toContain('2 件 見積なし')
+  })
+})
+
+describe('forecastSeverityCountsToSeverityCounts', () => {
+  it('forecast counts を 5 段 severity counts に集約 (identity + muted padding)', () => {
+    expect(
+      forecastSeverityCountsToSeverityCounts({
+        ok: 4,
+        info: 3,
+        warn: 2,
+        danger: 1,
+      }),
+    ).toEqual({
+      ok: 4,
+      info: 3,
+      warn: 2,
+      danger: 1,
+      muted: 0,
+    })
+  })
+
+  it('全 0 → 全 severity 0', () => {
+    expect(forecastSeverityCountsToSeverityCounts({ ok: 0, info: 0, warn: 0, danger: 0 })).toEqual({
+      ok: 0,
+      info: 0,
+      warn: 0,
+      danger: 0,
+      muted: 0,
+    })
+  })
+
+  it('muted は常に 0 (forecast 4 段に muted 概念なし)', () => {
+    const r = forecastSeverityCountsToSeverityCounts({ ok: 1, info: 1, warn: 1, danger: 1 })
+    expect(r.muted).toBe(0)
+  })
+
+  it('合計が forecast 件数の合計と一致', () => {
+    const counts = { ok: 4, info: 3, warn: 2, danger: 1 }
+    const sevCounts = forecastSeverityCountsToSeverityCounts(counts)
+    const total = counts.ok + counts.info + counts.warn + counts.danger
+    const sevTotal =
+      sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
+    expect(sevTotal).toBe(total)
   })
 })

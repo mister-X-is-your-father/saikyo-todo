@@ -175,6 +175,30 @@ export function forecastSeverityLabelJa(sev: ForecastSeverity): string {
 }
 
 /**
+ * iter544 ai-automation: `Record<ForecastSeverity, number>` (forecast 4 段別件数) を
+ * 共通 5 段 Severity counts に集約する pure helper。
+ *
+ * iter533-543 と同 pattern (= 12 ドメイン目)。`ForecastSeverity` 自体が 5 段共通
+ * Severity の subset (`'ok' | 'info' | 'warn' | 'danger'` で muted 不在) なので
+ * bridge は identity copy + muted 0 padding で済むが、caller が「counts 系 bridge を
+ * 1 関数で呼べる」 統一 API のために用意。
+ *
+ * 例: workspace 内の各 person 別 / 日別 / sprint 別 forecast を集計して 1 行 summary
+ * で「危険 1 / 注意 2 / 情報 3 / OK 4 (合計 10)」 と出せる。
+ */
+export function forecastSeverityCountsToSeverityCounts(
+  counts: Record<ForecastSeverity, number>,
+): Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> {
+  return {
+    ok: counts.ok ?? 0,
+    info: counts.info ?? 0,
+    warn: counts.warn ?? 0,
+    danger: counts.danger ?? 0,
+    muted: 0,
+  }
+}
+
+/**
  * 1 行 forecast summary (AI prompt / chip aria-label / Slack 通知用):
  *   '余裕 (合計 4h / 残 8h)'
  *   '要 トリアージ (合計 6h / 残 4h、超過 2h)'
