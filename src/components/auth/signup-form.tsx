@@ -129,6 +129,8 @@ export function SignupForm() {
         type="submit"
         className="h-11 w-full"
         disabled={isPending}
+        aria-busy={isPending || undefined}
+        data-testid="signup-submit"
         aria-label={isPending ? 'アカウント作成中…' : 'アカウントを作成 (サインアップ)'}
       >
         {isPending ? '作成中…' : 'サインアップ'}

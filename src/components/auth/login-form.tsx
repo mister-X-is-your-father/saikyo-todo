@@ -99,6 +99,8 @@ export function LoginForm() {
         type="submit"
         className="h-11 w-full"
         disabled={isPending}
+        aria-busy={isPending || undefined}
+        data-testid="login-submit"
         aria-label={isPending ? 'ログイン中… (認証処理を実行中)' : undefined}
       >
         {isPending ? 'ログイン中…' : 'ログイン'}
