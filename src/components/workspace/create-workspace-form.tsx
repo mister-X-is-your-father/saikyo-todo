@@ -45,6 +45,8 @@ export function CreateWorkspaceForm() {
       onSubmit={form.handleSubmit(onSubmit, onInvalid)}
       noValidate
       aria-busy={isPending || undefined}
+      aria-label="Workspace 作成フォーム"
+      data-testid="create-workspace-form"
       className="space-y-4"
     >
       <div className="space-y-2">
