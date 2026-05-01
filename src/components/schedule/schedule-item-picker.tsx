@@ -112,7 +112,14 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
         </div>
       ) : null}
       <div className="flex justify-end gap-2 border-t pt-2">
-        <Button type="button" variant="ghost" className="min-h-11" onClick={onCancel}>
+        <Button
+          type="button"
+          variant="ghost"
+          className="min-h-11"
+          onClick={onCancel}
+          data-testid="schedule-picker-cancel"
+          aria-label="task pick をキャンセル"
+        >
           キャンセル
         </Button>
       </div>
