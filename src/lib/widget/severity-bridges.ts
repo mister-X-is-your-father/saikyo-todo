@@ -136,6 +136,38 @@ export function checklistStatusCountsToSeverityCounts(
 }
 
 /**
+ * iter540 ai-automation: `Record<'high' | 'medium' | 'low', number>` (改善提案
+ * severity 別件数) を `Record<Severity, number>` に集約する pure helper。
+ *
+ * iter533-539 と同 pattern (= 8 ドメイン目)。caller は AI review (structured-review)
+ * の `improvements[].severity` 集計を 1 行 severity サマリ で表示できる。
+ *
+ *   high   → danger (= 必ず対応する改善、影響大、赤)
+ *   medium → warn   (= 検討対象、影響中、黄)
+ *   low    → info   (= nice-to-have、影響小、青)
+ *
+ * ok / muted bucket には出ない (= 「改善提案」 自体がそもそも改善 = positive 評価
+ * ではない、対応必要度の grade)。
+ */
+export function improvementSeverityCountsToSeverityCounts(
+  counts: Record<'high' | 'medium' | 'low', number>,
+): Record<Severity, number> {
+  const out: Record<Severity, number> = {
+    ok: 0,
+    info: 0,
+    warn: 0,
+    danger: 0,
+    muted: 0,
+  }
+  const all: Array<'high' | 'medium' | 'low'> = ['high', 'medium', 'low']
+  for (const k of all) {
+    const sev = improvementSeverityToSeverity(k)
+    out[sev] += counts[k] ?? 0
+  }
+  return out
+}
+
+/**
  * iter495 refactor: 4 状態 hint (`FourStateHint` 'idle' | 'mild' | 'moderate' | 'severe') →
  * 共通 `Severity` bridge。
  *

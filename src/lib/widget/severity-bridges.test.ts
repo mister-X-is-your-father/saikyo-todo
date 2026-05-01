@@ -6,6 +6,7 @@ import {
   checklistStatusCountsToSeverityCounts,
   checklistStatusToSeverity,
   fourStateHintToSeverity,
+  improvementSeverityCountsToSeverityCounts,
   improvementSeverityToSeverity,
   pdcaPhaseSeverityToSeverity,
 } from './severity-bridges'
@@ -144,6 +145,49 @@ describe('checklistStatusCountsToSeverityCounts', () => {
     const counts = { ok: 5, warn: 2, fail: 1 }
     const sevCounts = checklistStatusCountsToSeverityCounts(counts)
     const total = counts.ok + counts.warn + counts.fail
+    const sevTotal =
+      sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
+    expect(sevTotal).toBe(total)
+  })
+})
+
+describe('improvementSeverityCountsToSeverityCounts', () => {
+  it('improvement counts を 5 段 severity counts に集約', () => {
+    expect(
+      improvementSeverityCountsToSeverityCounts({
+        high: 1,
+        medium: 2,
+        low: 3,
+      }),
+    ).toEqual({
+      ok: 0,
+      info: 3, // low
+      warn: 2, // medium
+      danger: 1, // high
+      muted: 0,
+    })
+  })
+
+  it('全 0 → 全 severity 0', () => {
+    expect(improvementSeverityCountsToSeverityCounts({ high: 0, medium: 0, low: 0 })).toEqual({
+      ok: 0,
+      info: 0,
+      warn: 0,
+      danger: 0,
+      muted: 0,
+    })
+  })
+
+  it('ok / muted bucket には出ない (improvement は対応必要度 grade)', () => {
+    const r = improvementSeverityCountsToSeverityCounts({ high: 1, medium: 1, low: 1 })
+    expect(r.ok).toBe(0)
+    expect(r.muted).toBe(0)
+  })
+
+  it('合計が improvement 件数の合計と一致', () => {
+    const counts = { high: 1, medium: 2, low: 3 }
+    const sevCounts = improvementSeverityCountsToSeverityCounts(counts)
+    const total = counts.high + counts.medium + counts.low
     const sevTotal =
       sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
     expect(sevTotal).toBe(total)
