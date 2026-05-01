@@ -110,6 +110,9 @@ export function InstantiateForm({ workspaceId, template }: Props) {
                 onChange={(e) => setValues({ ...values, [v]: e.target.value })}
                 required
                 aria-required="true"
+                aria-invalid={
+                  ((values[v] ?? '').length > 0 && (values[v] ?? '').trim() === '') || undefined
+                }
                 aria-label={`Mustache 変数 ${v} の値`}
                 maxLength={500}
               />

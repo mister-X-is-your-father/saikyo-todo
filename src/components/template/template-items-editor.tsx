@@ -100,6 +100,7 @@ export function TemplateItemsEditor({ templateId }: Props) {
             aria-label="子 Item のタイトル"
             required
             aria-required="true"
+            aria-invalid={(title.length > 0 && title.trim() === '') || undefined}
             minLength={1}
             maxLength={500}
             autoComplete="off"
