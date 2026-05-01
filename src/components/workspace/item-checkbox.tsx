@@ -62,9 +62,14 @@ export function ItemCheckbox({
       onPointerDown={(e) => e.stopPropagation()}
       onClick={handle}
       disabled={toggle.isPending}
+      aria-busy={toggle.isPending || undefined}
       className={`relative inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors before:absolute before:-inset-3 before:rounded-full before:content-[''] disabled:before:hidden ${colorClass} ${className ?? ''}`}
       data-testid={`item-checkbox-${item.id}`}
-      aria-label={`「${item.title}」を${isDone ? '未完了に戻す' : '完了にする'}`}
+      aria-label={
+        toggle.isPending
+          ? `「${item.title}」の完了状態を切替中…`
+          : `「${item.title}」を${isDone ? '未完了に戻す' : '完了にする'}`
+      }
       title={isDone ? '未完了に戻す' : '完了にする'}
     >
       {isDone && (
