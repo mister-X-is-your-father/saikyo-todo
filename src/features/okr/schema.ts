@@ -28,6 +28,29 @@ export function goalStatusLabelJa(status: GoalStatus): string {
   return GOAL_STATUS_LABEL_JA[status]
 }
 
+/**
+ * iter525 ai-automation: GoalStatus → 5 段階 共通 Severity bridge。
+ * iter524 sprintStatusSeverity と同 pattern (sprint と同 4→3 値の差分はあるが思想同じ)。
+ *
+ *   'active'    → 'ok'    (= 稼働中、緑、healthy in-progress)
+ *   'completed' → 'muted' (= 完了、グレー、過去 chip)
+ *   'archived'  → 'muted' (= アーカイブ、グレー、より目立たない)
+ *
+ * 設計意図: Goal は cancelled 概念がない (archive で代替) ため danger は不在。
+ * active のみ強調 (= 「いま追ってる目標」を最重要 visual、軸 1 可視化)。
+ */
+const GOAL_STATUS_SEVERITY: Record<GoalStatus, 'ok' | 'info' | 'warn' | 'danger' | 'muted'> = {
+  active: 'ok',
+  completed: 'muted',
+  archived: 'muted',
+}
+
+export function goalStatusSeverity(
+  status: GoalStatus,
+): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
+  return GOAL_STATUS_SEVERITY[status]
+}
+
 export const ProgressModeSchema = z.enum(['items', 'manual'])
 export type ProgressMode = z.infer<typeof ProgressModeSchema>
 
