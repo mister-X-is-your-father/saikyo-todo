@@ -13,6 +13,7 @@ import {
   groupItemsByPriority,
   initPriorityRecord,
   priorityClass,
+  priorityCountsToSeverityCounts,
   priorityDetailSuffix,
   priorityLabel,
   prioritySeverity,
@@ -483,6 +484,42 @@ describe('countNonEmptyPriorityBuckets / countNonEmptyPriorityBucketsBy', () => 
       for (const p of [1, 2, 3, 4]) {
         expect(validSev).toContain(prioritySeverity(p))
       }
+    })
+  })
+
+  describe('priorityCountsToSeverityCounts', () => {
+    it('priority counts を 5 段 severity counts に集約 (p1→danger / p2→warn / p3→info / p4→muted)', () => {
+      expect(priorityCountsToSeverityCounts({ 1: 3, 2: 1, 3: 2, 4: 4 })).toEqual({
+        danger: 3,
+        warn: 1,
+        info: 2,
+        muted: 4,
+        ok: 0,
+      })
+    })
+
+    it('全 0 → 全 severity 0', () => {
+      expect(priorityCountsToSeverityCounts({ 1: 0, 2: 0, 3: 0, 4: 0 })).toEqual({
+        danger: 0,
+        warn: 0,
+        info: 0,
+        muted: 0,
+        ok: 0,
+      })
+    })
+
+    it('priority は ok bucket に出ない (重要度軸 ≠ 達成度軸)', () => {
+      const r = priorityCountsToSeverityCounts({ 1: 5, 2: 5, 3: 5, 4: 5 })
+      expect(r.ok).toBe(0)
+    })
+
+    it('合計が priority 件数の合計と一致 (集約だけで増減しない)', () => {
+      const counts = { 1: 3, 2: 1, 3: 2, 4: 4 }
+      const sevCounts = priorityCountsToSeverityCounts(counts)
+      const priorityTotal = counts[1] + counts[2] + counts[3] + counts[4]
+      const sevTotal =
+        sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
+      expect(sevTotal).toBe(priorityTotal)
     })
   })
 })

@@ -64,6 +64,37 @@ export function prioritySeverity(
 }
 
 /**
+ * iter533 ai-automation: `Record<PriorityKey, number>` (priority 別件数) を
+ * `Record<Severity, number>` (5 段 severity 別件数) に集約する pure helper。
+ *
+ * 用途: priority 別件数を `formatSeverityCountsJa` (lib/widget/severity.ts、iter532) に
+ * 渡して 1 行 severity サマリ (「危険 3 / 注意 1 / 情報 2 / なし 4 (合計 10)」) を
+ * AI prompt / Slack 通知 / dashboard summary に出すための bridge。
+ *
+ * 各 priority は `prioritySeverity` (iter527) で対応 severity に集約 (p1→danger /
+ * p2→warn / p3→info / p4→muted)、'ok' は priority bucket には出ない (priority は
+ * 「重要度」 軸であり「達成度」軸ではない)。
+ *
+ * 例: {1: 3, 2: 1, 3: 2, 4: 4} → {danger: 3, warn: 1, info: 2, muted: 4, ok: 0}
+ */
+export function priorityCountsToSeverityCounts(
+  counts: Record<PriorityKey, number>,
+): Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> {
+  const out: Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> = {
+    ok: 0,
+    info: 0,
+    warn: 0,
+    danger: 0,
+    muted: 0,
+  }
+  for (const k of PRIORITY_ORDER) {
+    const sev = PRIORITY_SEVERITY[k]
+    out[sev] += counts[k] ?? 0
+  }
+  return out
+}
+
+/**
  * iter292 ai-automation: AI brief / pm-agent / dashboard widget が「priority 別の
  * item 分布」を 1 関数で出せる substrate。due-proximity の `groupItemsByDueProximity`
  * / `countItemsByDueProximity` / `formatDueProximityCounts` と対称な API。
