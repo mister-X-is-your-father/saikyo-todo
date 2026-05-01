@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import { itemListPart, itemUpdatePart } from './item'
+import { itemListOverduePart, itemListPart, itemListTodayPart, itemUpdatePart } from './item'
 import { VALID_FIXTURE_ID } from './test-fixtures'
 
 describe('itemUpdatePart input schema', () => {
@@ -113,5 +113,44 @@ describe('itemListPart input schema', () => {
     expect(itemListPart.id).toBe('item.list')
     expect(itemListPart.sideEffect).toBe('read')
     expect(itemListPart.category).toBe('item')
+  })
+})
+
+describe('itemListTodayPart input schema', () => {
+  it('today (ISO YYYY-MM-DD) で valid', () => {
+    const r = itemListTodayPart.input.safeParse({ today: '2026-05-01' })
+    expect(r.success).toBe(true)
+  })
+
+  it('today 不在 → invalid (required)', () => {
+    expect(itemListTodayPart.input.safeParse({}).success).toBe(false)
+  })
+
+  it('today が ISO 不正 → invalid', () => {
+    expect(itemListTodayPart.input.safeParse({ today: '2026/05/01' }).success).toBe(false)
+    expect(itemListTodayPart.input.safeParse({ today: '5/1/2026' }).success).toBe(false)
+  })
+
+  it('part metadata: id / sideEffect=read / category', () => {
+    expect(itemListTodayPart.id).toBe('item.list_today')
+    expect(itemListTodayPart.sideEffect).toBe('read')
+    expect(itemListTodayPart.category).toBe('item')
+  })
+})
+
+describe('itemListOverduePart input schema', () => {
+  it('today (ISO YYYY-MM-DD) で valid', () => {
+    const r = itemListOverduePart.input.safeParse({ today: '2026-05-01' })
+    expect(r.success).toBe(true)
+  })
+
+  it('today 不在 → invalid', () => {
+    expect(itemListOverduePart.input.safeParse({}).success).toBe(false)
+  })
+
+  it('part metadata: id / sideEffect=read / category', () => {
+    expect(itemListOverduePart.id).toBe('item.list_overdue')
+    expect(itemListOverduePart.sideEffect).toBe('read')
+    expect(itemListOverduePart.category).toBe('item')
   })
 })

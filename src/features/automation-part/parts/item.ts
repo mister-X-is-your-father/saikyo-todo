@@ -134,6 +134,71 @@ export const itemListPart = definePart({
   },
 })
 
+/**
+ * iter609 ai-automation: item.list_today part — 今日対象の item を返す read 系 part。
+ *
+ * 「今日対象」 = scheduledFor === today OR dueDate === today (active のみ)。AI が
+ * 「今日のタスクは何?」 を 1 part で取得できるようにする (= operation-board の
+ * mustToday / todayScheduled と同じ概念だが、AI 経由で個別に呼べる substrate)。
+ *
+ * input.today は ISO YYYY-MM-DD (= caller が workspace TZ で算出した「今日」を渡す、
+ * server で勝手に new Date() しない pattern。time-zone 漏洩予防)。
+ */
+const ItemListTodayInput = z.object({
+  today: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+})
+
+export const itemListTodayPart = definePart({
+  id: 'item.list_today',
+  label: '今日対象の item 一覧',
+  description:
+    '指定 today (ISO YYYY-MM-DD) に scheduledFor または dueDate が一致する active item を返す。副作用なし、read scope。',
+  category: 'item',
+  sideEffect: 'read',
+  input: ItemListTodayInput,
+  output: z.array(ItemSelectSchema),
+  run: async (input, ctx) => {
+    const all = await itemService.list(ctx.workspaceId)
+    return all.filter((it) => {
+      if (it.doneAt || it.archivedAt || it.deletedAt) return false
+      return it.scheduledFor === input.today || it.dueDate === input.today
+    })
+  },
+})
+
+/**
+ * iter609 ai-automation: item.list_overdue part — 期限超過 item を返す read 系 part。
+ *
+ * 「overdue」 = active item で dueDate < today (= 期限を過ぎているのに未完了)。AI が
+ * 「救済プラン」 等を立てる起点の substrate。古い超過順 (dueDate 昇順) で返す。
+ */
+const ItemListOverdueInput = z.object({
+  today: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+})
+
+export const itemListOverduePart = definePart({
+  id: 'item.list_overdue',
+  label: '期限超過 item 一覧',
+  description:
+    '指定 today に対して dueDate < today の active item を古い超過順で返す。副作用なし、read scope。',
+  category: 'item',
+  sideEffect: 'read',
+  input: ItemListOverdueInput,
+  output: z.array(ItemSelectSchema),
+  run: async (input, ctx) => {
+    const all = await itemService.list(ctx.workspaceId)
+    return all
+      .filter((it) => {
+        if (it.doneAt || it.archivedAt || it.deletedAt) return false
+        return it.dueDate !== null && it.dueDate < input.today
+      })
+      .sort((a, b) => {
+        if (a.dueDate! !== b.dueDate!) return a.dueDate!.localeCompare(b.dueDate!)
+        return a.priority - b.priority
+      })
+  },
+})
+
 const ItemCompleteInput = z.object({
   id: z.string().uuid(),
   expectedVersion: z.number().int().nonnegative(),

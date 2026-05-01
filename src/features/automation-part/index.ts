@@ -9,7 +9,14 @@ import 'server-only'
 
 import { commentCreateOnItemPart, commentListForItemPart } from './parts/comment'
 import { docCreatePart, docListPart } from './parts/doc'
-import { itemCompletePart, itemCreatePart, itemListPart, itemUpdatePart } from './parts/item'
+import {
+  itemCompletePart,
+  itemCreatePart,
+  itemListOverduePart,
+  itemListPart,
+  itemListTodayPart,
+  itemUpdatePart,
+} from './parts/item'
 import {
   scheduleCreatePart,
   scheduleStartTimerPart,
@@ -33,6 +40,8 @@ const ALL_PARTS: readonly AnyPart[] = [
   itemUpdatePart as AnyPart,
   itemCompletePart as AnyPart,
   itemListPart as AnyPart,
+  itemListTodayPart as AnyPart,
+  itemListOverduePart as AnyPart,
   scheduleCreatePart as AnyPart,
   scheduleStartTimerPart as AnyPart,
   scheduleStopTimerPart as AnyPart,
