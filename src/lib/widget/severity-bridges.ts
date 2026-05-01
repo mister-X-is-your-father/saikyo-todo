@@ -105,6 +105,37 @@ export function checklistStatusToSeverity(status: ChecklistStatus): Severity {
 }
 
 /**
+ * iter539 ai-automation: `Record<ChecklistStatus, number>` (AI review checklist 結果
+ * 別件数) を `Record<Severity, number>` に集約する pure helper。
+ *
+ * iter533-538 と同 pattern (= 7 ドメイン目)。caller は AI review (= structured-review)
+ * の checklist 集計を 1 行 severity サマリ で表示できる。
+ *
+ *   ok   → ok     (= ✅、合格)
+ *   warn → warn   (= ⚠、要注意)
+ *   fail → danger (= ❌、要対策)
+ *
+ * info / muted bucket には出ない (checklist は 3 値、ニュートラルや非該当は無い)。
+ */
+export function checklistStatusCountsToSeverityCounts(
+  counts: Record<ChecklistStatus, number>,
+): Record<Severity, number> {
+  const out: Record<Severity, number> = {
+    ok: 0,
+    info: 0,
+    warn: 0,
+    danger: 0,
+    muted: 0,
+  }
+  const all: ChecklistStatus[] = ['ok', 'warn', 'fail']
+  for (const k of all) {
+    const sev = checklistStatusToSeverity(k)
+    out[sev] += counts[k] ?? 0
+  }
+  return out
+}
+
+/**
  * iter495 refactor: 4 状態 hint (`FourStateHint` 'idle' | 'mild' | 'moderate' | 'severe') →
  * 共通 `Severity` bridge。
  *

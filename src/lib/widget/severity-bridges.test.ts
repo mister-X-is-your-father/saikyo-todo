@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   assigneeLoadSeverityToSeverity,
   buildFourStateHintChip,
+  checklistStatusCountsToSeverityCounts,
   checklistStatusToSeverity,
   fourStateHintToSeverity,
   improvementSeverityToSeverity,
@@ -103,5 +104,48 @@ describe('checklistStatusToSeverity', () => {
 
   it('fail → danger (赤、要対策)', () => {
     expect(checklistStatusToSeverity('fail')).toBe('danger')
+  })
+})
+
+describe('checklistStatusCountsToSeverityCounts', () => {
+  it('checklist counts を 5 段 severity counts に集約 (1:1)', () => {
+    expect(
+      checklistStatusCountsToSeverityCounts({
+        ok: 5,
+        warn: 2,
+        fail: 1,
+      }),
+    ).toEqual({
+      ok: 5,
+      info: 0,
+      warn: 2,
+      danger: 1,
+      muted: 0,
+    })
+  })
+
+  it('全 0 → 全 severity 0', () => {
+    expect(checklistStatusCountsToSeverityCounts({ ok: 0, warn: 0, fail: 0 })).toEqual({
+      ok: 0,
+      info: 0,
+      warn: 0,
+      danger: 0,
+      muted: 0,
+    })
+  })
+
+  it('info / muted bucket には出ない (checklist は 3 値)', () => {
+    const r = checklistStatusCountsToSeverityCounts({ ok: 1, warn: 1, fail: 1 })
+    expect(r.info).toBe(0)
+    expect(r.muted).toBe(0)
+  })
+
+  it('合計が checklist 件数の合計と一致', () => {
+    const counts = { ok: 5, warn: 2, fail: 1 }
+    const sevCounts = checklistStatusCountsToSeverityCounts(counts)
+    const total = counts.ok + counts.warn + counts.fail
+    const sevTotal =
+      sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
+    expect(sevTotal).toBe(total)
   })
 })
