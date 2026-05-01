@@ -4,9 +4,10 @@
  * 既存 scheduleService を thin wrap する形で part 化:
  *   - schedule.create (planned / actual を input.kind で出し分け)
  *   - schedule.start_timer (実測タイマー開始 = actual + placeholder end)
- *   - schedule.stop_timer (実測タイマー停止、楽観ロック必須、iter592 で追加)
+ *   - schedule.stop_timer (実測タイマー停止、楽観ロック必須、iter592)
+ *   - schedule.update (部分 patch + 楽観ロック、iter604)
  *
- * move / update は AP-2 第 3 弾以降で。
+ * move は AP-2 残以降で。
  *
  * 設計メモ:
  *   - scheduleService は requireWorkspaceMember(workspaceId, 'member') を内部で呼ぶ
@@ -116,5 +117,46 @@ export const scheduleStopTimerPart = definePart({
       endAt: input.endAt,
     })
     return unwrapPartResult('schedule.stop_timer', r)
+  },
+})
+
+/**
+ * iter604 ai-automation: schedule.update part — 部分 patch + 楽観ロック。
+ *
+ * itemId / startAt / endAt / note を patch で個別更新可能。startAt / endAt の片方だけ
+ * 変えても service が「最終的な start < end」 を check (= 不正な順序を構造的に reject)。
+ * AC-1「AI に任せた」 で AI が「予定スロットを 30 分後ろ倒し」 等を atomic に呼べる。
+ */
+const ScheduleUpdatePatchInput = z
+  .object({
+    itemId: z.string().uuid().nullish(),
+    startAt: isoDateTime.optional(),
+    endAt: isoDateTime.optional(),
+    note: z.string().max(2000).nullish(),
+  })
+  .refine((p) => Object.keys(p).length > 0, { message: '更新する項目がありません' })
+
+const ScheduleUpdateInput = z.object({
+  id: z.string().uuid(),
+  expectedVersion: z.number().int().nonnegative(),
+  patch: ScheduleUpdatePatchInput,
+})
+
+export const scheduleUpdatePart = definePart({
+  id: 'schedule.update',
+  label: 'schedule を更新',
+  description:
+    '指定 schedule の itemId / startAt / endAt / note を patch で更新する (楽観ロック必須)。startAt < endAt は service 内で check。',
+  category: 'schedule',
+  sideEffect: 'write',
+  input: ScheduleUpdateInput,
+  output: ScheduleSelectSchema,
+  run: async (input) => {
+    const r = await scheduleService.update({
+      id: input.id,
+      expectedVersion: input.expectedVersion,
+      patch: input.patch,
+    })
+    return unwrapPartResult('schedule.update', r)
   },
 })

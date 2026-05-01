@@ -9,7 +9,12 @@ import 'server-only'
 
 import { commentCreateOnItemPart, commentListForItemPart } from './parts/comment'
 import { itemCompletePart, itemCreatePart, itemListPart, itemUpdatePart } from './parts/item'
-import { scheduleCreatePart, scheduleStartTimerPart, scheduleStopTimerPart } from './parts/schedule'
+import {
+  scheduleCreatePart,
+  scheduleStartTimerPart,
+  scheduleStopTimerPart,
+  scheduleUpdatePart,
+} from './parts/schedule'
 import { timeEntryCreatePart } from './parts/time-entry'
 import { registerPart } from './registry'
 
@@ -25,6 +30,7 @@ export function bootstrapAutomationParts(): void {
   registerPart(scheduleCreatePart)
   registerPart(scheduleStartTimerPart)
   registerPart(scheduleStopTimerPart)
+  registerPart(scheduleUpdatePart)
   registerPart(commentCreateOnItemPart)
   registerPart(commentListForItemPart)
   registerPart(timeEntryCreatePart)

@@ -6,7 +6,12 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import { scheduleCreatePart, scheduleStartTimerPart, scheduleStopTimerPart } from './schedule'
+import {
+  scheduleCreatePart,
+  scheduleStartTimerPart,
+  scheduleStopTimerPart,
+  scheduleUpdatePart,
+} from './schedule'
 import { VALID_FIXTURE_ID } from './test-fixtures'
 
 const validId = VALID_FIXTURE_ID
@@ -132,5 +137,58 @@ describe('scheduleStopTimerPart input schema', () => {
     expect(scheduleStopTimerPart.id).toBe('schedule.stop_timer')
     expect(scheduleStopTimerPart.sideEffect).toBe('write')
     expect(scheduleStopTimerPart.category).toBe('schedule')
+  })
+})
+
+describe('scheduleUpdatePart input schema', () => {
+  it('id + expectedVersion + 1 patch field で valid', () => {
+    const r = scheduleUpdatePart.input.safeParse({
+      id: validId,
+      expectedVersion: 0,
+      patch: { startAt: '2026-05-01T10:30:00Z' },
+    })
+    expect(r.success).toBe(true)
+  })
+
+  it('patch 空 object → invalid', () => {
+    const r = scheduleUpdatePart.input.safeParse({
+      id: validId,
+      expectedVersion: 1,
+      patch: {},
+    })
+    expect(r.success).toBe(false)
+  })
+
+  it('itemId null で clear 可能 (nullish)', () => {
+    const r = scheduleUpdatePart.input.safeParse({
+      id: validId,
+      expectedVersion: 0,
+      patch: { itemId: null },
+    })
+    expect(r.success).toBe(true)
+  })
+
+  it('startAt が ISO 不正 → invalid', () => {
+    const r = scheduleUpdatePart.input.safeParse({
+      id: validId,
+      expectedVersion: 0,
+      patch: { startAt: 'bogus' },
+    })
+    expect(r.success).toBe(false)
+  })
+
+  it('id uuid 不正 → invalid', () => {
+    const r = scheduleUpdatePart.input.safeParse({
+      id: 'bogus',
+      expectedVersion: 0,
+      patch: { startAt: '2026-05-01T10:30:00Z' },
+    })
+    expect(r.success).toBe(false)
+  })
+
+  it('part metadata: id / sideEffect / category', () => {
+    expect(scheduleUpdatePart.id).toBe('schedule.update')
+    expect(scheduleUpdatePart.sideEffect).toBe('write')
+    expect(scheduleUpdatePart.category).toBe('schedule')
   })
 })
