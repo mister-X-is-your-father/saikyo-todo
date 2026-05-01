@@ -156,3 +156,46 @@ export function severityToChipTone3(severity: Severity): ChipTone3 {
   if (severity === 'warn' || severity === 'danger') return 'warn'
   return 'neutral'
 }
+
+/**
+ * iter532 refactor: AI prompt / chip aria-label / Slack 通知 用 1 行 severity counts summary。
+ *
+ *   formatSeverityCountsJa({ok:3, warn:2, danger:1, info:0, muted:0}) →
+ *     'OK 3 / 注意 2 / 危険 1 (合計 6)'
+ *   formatSeverityCountsJa({ok:0, info:0, warn:0, danger:0, muted:0}) →
+ *     '0 件'
+ *
+ * 順序: 視認重要度順 (danger → warn → info → ok → muted)、件数 0 の severity は省略。
+ *
+ * 用途: SeverityChip 群の sub-header label、Slack 通知 chip 概要、AI prompt の status 集計
+ * 1 行 (= 「全件 ok」 か 「危険 1 含む」 か即判別可能)。
+ *
+ * label JA: danger=危険、warn=注意、info=情報、ok=OK、muted=なし。
+ */
+const SEVERITY_LABEL_JA: Record<Severity, string> = {
+  danger: '危険',
+  warn: '注意',
+  info: '情報',
+  ok: 'OK',
+  muted: 'なし',
+}
+
+const SEVERITY_DISPLAY_ORDER: readonly Severity[] = ['danger', 'warn', 'info', 'ok', 'muted']
+
+export function severityLabelJa(severity: Severity): string {
+  return SEVERITY_LABEL_JA[severity]
+}
+
+export function formatSeverityCountsJa(counts: Record<Severity, number>): string {
+  const parts: string[] = []
+  let total = 0
+  for (const sev of SEVERITY_DISPLAY_ORDER) {
+    const n = counts[sev] ?? 0
+    if (n > 0) {
+      parts.push(`${SEVERITY_LABEL_JA[sev]} ${n}`)
+      total += n
+    }
+  }
+  if (parts.length === 0) return '0 件'
+  return `${parts.join(' / ')} (合計 ${total})`
+}

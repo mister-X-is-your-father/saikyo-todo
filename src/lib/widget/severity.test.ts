@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  formatSeverityCountsJa,
   severityChipClass,
   severityClasses,
   severityFromAchievement,
   severityFromOverdueDays,
   severityFromRatio,
+  severityLabelJa,
   severityToChipTone3,
 } from './severity'
 
@@ -149,5 +151,51 @@ describe('severityChipClass', () => {
   it('ring class は含まない (focus 用なので chip 静的配色には不要)', () => {
     const cls = severityChipClass('ok')
     expect(cls).not.toContain('ring-')
+  })
+})
+
+describe('severityLabelJa', () => {
+  it('5 段階の JA label を返す', () => {
+    expect(severityLabelJa('danger')).toBe('危険')
+    expect(severityLabelJa('warn')).toBe('注意')
+    expect(severityLabelJa('info')).toBe('情報')
+    expect(severityLabelJa('ok')).toBe('OK')
+    expect(severityLabelJa('muted')).toBe('なし')
+  })
+})
+
+describe('formatSeverityCountsJa', () => {
+  it('全 0 → "0 件"', () => {
+    expect(formatSeverityCountsJa({ ok: 0, info: 0, warn: 0, danger: 0, muted: 0 })).toBe('0 件')
+  })
+
+  it('複数 severity の counts を 1 行で (視認重要度順)', () => {
+    expect(formatSeverityCountsJa({ ok: 3, warn: 2, danger: 1, info: 0, muted: 0 })).toBe(
+      '危険 1 / 注意 2 / OK 3 (合計 6)',
+    )
+  })
+
+  it('件数 0 の severity は省略', () => {
+    expect(formatSeverityCountsJa({ ok: 5, info: 0, warn: 0, danger: 0, muted: 0 })).toBe(
+      'OK 5 (合計 5)',
+    )
+  })
+
+  it('単独 danger のみ', () => {
+    expect(formatSeverityCountsJa({ ok: 0, info: 0, warn: 0, danger: 1, muted: 0 })).toBe(
+      '危険 1 (合計 1)',
+    )
+  })
+
+  it('muted のみ → "なし N (合計 N)"', () => {
+    expect(formatSeverityCountsJa({ ok: 0, info: 0, warn: 0, danger: 0, muted: 3 })).toBe(
+      'なし 3 (合計 3)',
+    )
+  })
+
+  it('全 5 severity 1 件ずつ → 視認重要度順', () => {
+    expect(formatSeverityCountsJa({ ok: 1, info: 1, warn: 1, danger: 1, muted: 1 })).toBe(
+      '危険 1 / 注意 1 / 情報 1 / OK 1 / なし 1 (合計 5)',
+    )
   })
 })
