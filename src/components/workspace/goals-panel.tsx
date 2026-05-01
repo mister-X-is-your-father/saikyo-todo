@@ -35,7 +35,12 @@ import {
   useKeyResults,
   useUpdateGoal,
 } from '@/features/okr/hooks'
-import type { Goal, GoalStatus, ProgressMode } from '@/features/okr/schema'
+import {
+  type Goal,
+  type GoalStatus,
+  goalStatusLabelJa,
+  type ProgressMode,
+} from '@/features/okr/schema'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
 import { IMEInput } from '@/components/shared/ime-input'
@@ -52,11 +57,7 @@ interface Props {
   workspaceId: string
 }
 
-const STATUS_LABEL: Record<GoalStatus, string> = {
-  active: '稼働中',
-  completed: '完了',
-  archived: 'アーカイブ',
-}
+// iter522 basics: STATUS_LABEL は `goalStatusLabelJa` (okr/schema.ts) に集約。
 const STATUS_COLOR: Record<GoalStatus, 'default' | 'secondary' | 'outline'> = {
   active: 'default',
   completed: 'secondary',
@@ -319,7 +320,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
         expectedVersion: goal.version,
         patch: { status: next },
       })
-      toast.success(`Goal を「${STATUS_LABEL[next]}」に変更しました`)
+      toast.success(`Goal を「${goalStatusLabelJa(next)}」に変更しました`)
     } catch (e) {
       toast.error(isAppError(e) ? e.message : 'status 変更に失敗')
     }
@@ -415,9 +416,9 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
             <Badge
               variant={STATUS_COLOR[status]}
               data-testid={`goal-status-${goal.id}`}
-              aria-label={`Goal「${goal.title}」のステータス: ${STATUS_LABEL[status]}`}
+              aria-label={`Goal「${goal.title}」のステータス: ${goalStatusLabelJa(status)}`}
             >
-              {STATUS_LABEL[status]}
+              {goalStatusLabelJa(status)}
             </Badge>
           </div>
           {goal.description && (

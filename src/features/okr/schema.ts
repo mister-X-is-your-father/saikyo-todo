@@ -12,6 +12,22 @@ export type KeyResult = z.infer<typeof KeyResultSelectSchema>
 export const GoalStatusSchema = z.enum(['active', 'completed', 'archived'])
 export type GoalStatus = z.infer<typeof GoalStatusSchema>
 
+/**
+ * iter522 basics: GoalStatus → 短い JA chip label。
+ * goals-panel / Slack 通知 / aria-label / AI prompt で再利用可能な共通 label 源。
+ *
+ * 文言は既存の goals-panel.tsx STATUS_LABEL と同一 (wire-up で重複削除)。
+ */
+const GOAL_STATUS_LABEL_JA: Record<GoalStatus, string> = {
+  active: '稼働中',
+  completed: '完了',
+  archived: 'アーカイブ',
+}
+
+export function goalStatusLabelJa(status: GoalStatus): string {
+  return GOAL_STATUS_LABEL_JA[status]
+}
+
 export const ProgressModeSchema = z.enum(['items', 'manual'])
 export type ProgressMode = z.infer<typeof ProgressModeSchema>
 
