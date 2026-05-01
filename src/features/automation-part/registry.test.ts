@@ -5,7 +5,15 @@
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 
-import { _resetRegistryForTesting, getPart, listParts, registerPart, requirePart } from './registry'
+import {
+  _resetRegistryForTesting,
+  buildPartManifest,
+  buildPartManifestEntry,
+  getPart,
+  listParts,
+  registerPart,
+  requirePart,
+} from './registry'
 import { definePart } from './types'
 
 const fakePart = definePart({
@@ -68,5 +76,54 @@ describe('automation-part registry', () => {
       { workspaceId: 'w', actorType: 'user', actorId: 'u', invokedFrom: 'direct' },
     )
     expect(out).toEqual({ y: 42 })
+  })
+
+  it('buildPartManifestEntry: zod schema → JSON Schema 込みの manifest', () => {
+    _resetRegistryForTesting()
+    registerPart(fakePart)
+    const m = buildPartManifestEntry(fakePart)
+    expect(m).toMatchObject({
+      id: 'test.fake',
+      label: 'fake',
+      description: 'test',
+      category: 'item',
+      sideEffect: 'read',
+    })
+    // input: { x: number } → JSON Schema
+    expect(m.inputJsonSchema).toMatchObject({
+      type: 'object',
+      properties: { x: { type: 'number' } },
+      required: ['x'],
+    })
+    // output: { y: number } → JSON Schema
+    expect(m.outputJsonSchema).toMatchObject({
+      type: 'object',
+      properties: { y: { type: 'number' } },
+      required: ['y'],
+    })
+  })
+
+  it('buildPartManifest: filter で絞込 + 全 part の manifest', () => {
+    _resetRegistryForTesting()
+    registerPart(fakePart)
+    registerPart(
+      definePart({
+        id: 'test.write',
+        label: 'w',
+        description: '',
+        category: 'schedule' as const,
+        sideEffect: 'write' as const,
+        input: z.object({}),
+        output: z.object({}),
+        run: async () => ({}),
+      }),
+    )
+    const all = buildPartManifest()
+    expect(all).toHaveLength(2)
+    expect(all.map((m) => m.id).sort()).toEqual(['test.fake', 'test.write'])
+    const writeOnly = buildPartManifest({ sideEffect: 'write' })
+    expect(writeOnly.map((m) => m.id)).toEqual(['test.write'])
+    const itemOnly = buildPartManifest({ category: 'item' })
+    expect(itemOnly.map((m) => m.id)).toEqual(['test.fake'])
   })
 })

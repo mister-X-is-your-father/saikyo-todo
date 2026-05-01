@@ -30,7 +30,14 @@ export function bootstrapAutomationParts(): void {
 // module load 時に自動 bootstrap (test では _resetRegistryForTesting → bootstrap で reload)
 bootstrapAutomationParts()
 
-export { _resetRegistryForTesting, getPart, listParts, requirePart } from './registry'
+export {
+  _resetRegistryForTesting,
+  buildPartManifest,
+  buildPartManifestEntry,
+  getPart,
+  listParts,
+  requirePart,
+} from './registry'
 export type {
   AnyPart,
   AutomationPart,
