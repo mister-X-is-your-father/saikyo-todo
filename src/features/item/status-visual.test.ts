@@ -13,6 +13,7 @@ import {
   groupItemsByStatus,
   KNOWN_STATUS_KEYS,
   type StatusIconKey,
+  statusKeySeverity,
 } from './status-visual'
 
 describe('getStatusVisual', () => {
@@ -232,5 +233,41 @@ describe('formatStatusCounts', () => {
         todo: 1,
       }),
     ).toBe('TODO 1 / 進行中 1 / blocked 1 / 完了 1 / キャンセル 1 / 不明 1')
+  })
+})
+
+describe('statusKeySeverity', () => {
+  it('todo → muted (グレー、未着手)', () => {
+    expect(statusKeySeverity('todo')).toBe('muted')
+  })
+
+  it('in_progress → info (青、healthy in-progress)', () => {
+    expect(statusKeySeverity('in_progress')).toBe('info')
+  })
+
+  it('blocked → warn (黄、依存待ち)', () => {
+    expect(statusKeySeverity('blocked')).toBe('warn')
+  })
+
+  it('done → ok (緑、完了)', () => {
+    expect(statusKeySeverity('done')).toBe('ok')
+  })
+
+  it('cancelled → muted (グレー、過去)', () => {
+    expect(statusKeySeverity('cancelled')).toBe('muted')
+  })
+
+  it('未知 / null / undefined / 空文字 は unknown → muted に集約', () => {
+    expect(statusKeySeverity(null)).toBe('muted')
+    expect(statusKeySeverity(undefined)).toBe('muted')
+    expect(statusKeySeverity('')).toBe('muted')
+    expect(statusKeySeverity('custom-status')).toBe('muted')
+  })
+
+  it('全 既知 status で 5 段階 Severity のいずれかを返す', () => {
+    const validSev = ['ok', 'info', 'warn', 'danger', 'muted']
+    for (const s of ['todo', 'in_progress', 'blocked', 'done', 'cancelled']) {
+      expect(validSev).toContain(statusKeySeverity(s))
+    }
   })
 })

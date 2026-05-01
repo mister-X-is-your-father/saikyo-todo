@@ -179,3 +179,39 @@ const SHORT_LABEL: Record<StatusKey, string> = {
 export function formatStatusCounts(counts: Record<StatusKey, number>): string {
   return formatNonZeroCounts(counts, STATUS_ORDER, SHORT_LABEL)
 }
+
+/**
+ * iter528 ai-automation: StatusKey → 5 段階 共通 Severity bridge。
+ * iter519 / iter524-527 と同 pattern。STATUS_MAP の visual semantic と整合的:
+ *
+ *   'todo'        → 'muted'  (= 未着手、グレー、待機中)
+ *   'in_progress' → 'info'   (= 進行中、青、healthy)
+ *   'blocked'     → 'warn'   (= 依存待ち、黄、要観察)
+ *   'done'        → 'ok'     (= 完了、緑、最高評価)
+ *   'cancelled'   → 'muted'  (= キャンセル、グレー、過去)
+ *   'unknown'     → 'muted'  (= 不明、グレー、対象外)
+ *
+ * 設計意図:
+ *   - in_progress = info で「いま動いてる」 (= 軸 1 可視化)、done と差別化
+ *   - blocked = warn で「依存解消が必要」 を能動表示 (軸 4 漏れ防止)
+ *   - todo / cancelled / unknown は muted で「現在の判断対象外」 (= 認知負荷 低減)
+ *
+ * STATUS_MAP visual (slate/blue/emerald/zinc/amber) は本 Severity 5 段とおおむね整合
+ * (todo=slate→muted、cancelled=zinc→muted、blocked=amber→warn は微差)。SeverityChip
+ * tone の caller がこの helper 1 関数で chip 配色を統一可能、AI prompt / Slack 通知 /
+ * SR aria-label の chip shape も同源化。
+ */
+const STATUS_SEVERITY: Record<StatusKey, 'ok' | 'info' | 'warn' | 'danger' | 'muted'> = {
+  todo: 'muted',
+  in_progress: 'info',
+  blocked: 'warn',
+  done: 'ok',
+  cancelled: 'muted',
+  unknown: 'muted',
+}
+
+export function statusKeySeverity(
+  status: string | null | undefined,
+): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
+  return STATUS_SEVERITY[normalizeStatus(status)]
+}
