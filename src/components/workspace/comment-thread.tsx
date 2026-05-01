@@ -243,12 +243,13 @@ function CommentItem({
               disabled={update.isPending || !body.trim()}
               aria-busy={update.isPending || undefined}
               data-testid={`comment-save-${comment.id}`}
+              aria-keyshortcuts="Meta+Enter Control+Enter"
               aria-label={
                 !body.trim()
                   ? 'コメントを保存するには本文を入力してください'
                   : update.isPending
                     ? 'コメントの編集を保存中…'
-                    : 'コメントの編集を保存'
+                    : 'コメントの編集を保存 (Cmd/Ctrl+Enter でも可)'
               }
             >
               保存
