@@ -434,6 +434,8 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               variant="ghost"
               onClick={() => setEditing(false)}
               disabled={update.isPending}
+              data-testid={`proposal-${proposal.id}-edit-cancel`}
+              aria-label={`「${proposal.title}」の編集をキャンセル`}
             >
               キャンセル
             </Button>
