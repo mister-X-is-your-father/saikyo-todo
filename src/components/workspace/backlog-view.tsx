@@ -114,6 +114,7 @@ function buildColumns(
             (row.original.doneAt ? 'text-muted-foreground line-through' : '')
           }
           data-testid={`backlog-title-${row.original.id}`}
+          aria-label={`「${String(getValue())}」を編集`}
         >
           {String(getValue())}
         </button>
