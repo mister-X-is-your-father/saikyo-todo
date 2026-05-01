@@ -883,12 +883,13 @@ function ItemEditDialogInner({
             disabled={update.isPending || !title.trim()}
             aria-busy={update.isPending || undefined}
             data-testid="item-edit-save"
+            aria-keyshortcuts="Meta+S Control+S"
             aria-label={
               !title.trim()
                 ? '保存するにはタイトルを入力してください'
                 : update.isPending
                   ? `「${item.title}」を保存中…`
-                  : `「${item.title}」を保存 (楽観ロックで version が進む)`
+                  : `「${item.title}」を保存 (Cmd/Ctrl+S でも可、楽観ロックで version が進む)`
             }
           >
             {update.isPending ? '保存中...' : '保存'}
