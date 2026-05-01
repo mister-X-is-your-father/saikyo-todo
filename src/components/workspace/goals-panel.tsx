@@ -351,6 +351,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
               onClick={() => setOpen((v) => !v)}
               className="hover:bg-muted mt-0.5 rounded p-1"
               aria-expanded={open}
+              aria-controls={`goal-body-${goal.id}`}
               aria-label={`Goal「${goal.title}」の KR ${open ? '一覧を閉じる' : '一覧を開く'}`}
               data-testid={`goal-toggle-${goal.id}`}
             >
@@ -428,7 +429,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
           )}
         </CardHeader>
         {open && (
-          <CardContent className="space-y-3 pt-0">
+          <CardContent id={`goal-body-${goal.id}`} className="space-y-3 pt-0">
             <div className="flex flex-wrap items-center justify-end gap-1.5">
               {status === 'active' && (
                 <>
