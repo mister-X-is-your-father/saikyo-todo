@@ -9,6 +9,24 @@ export type Sprint = z.infer<typeof SprintSelectSchema>
 export const SprintStatusSchema = z.enum(['planning', 'active', 'completed', 'cancelled'])
 export type SprintStatus = z.infer<typeof SprintStatusSchema>
 
+/**
+ * iter521 basics: SprintStatus → 短い JA chip label。
+ * sprints-panel / Slack 通知 / aria-label / AI prompt で再利用可能な共通 label 源。
+ *
+ * UI 文言は既存の sprints-panel.tsx STATUS_LABEL と同一 (sprints-panel から本 helper を
+ * 消費する形に refactor する次 iter で重複が消える)。
+ */
+const SPRINT_STATUS_LABEL_JA: Record<SprintStatus, string> = {
+  planning: '計画中',
+  active: '稼働中',
+  completed: '完了',
+  cancelled: '中止',
+}
+
+export function sprintStatusLabelJa(status: SprintStatus): string {
+  return SPRINT_STATUS_LABEL_JA[status]
+}
+
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD 形式で')
 
 export const CreateSprintInputSchema = z

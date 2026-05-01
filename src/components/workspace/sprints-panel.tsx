@@ -42,7 +42,7 @@ import {
   useUpdateSprint,
   useUpdateSprintDefaults,
 } from '@/features/sprint/hooks'
-import type { Sprint, SprintStatus } from '@/features/sprint/schema'
+import { type Sprint, type SprintStatus, sprintStatusLabelJa } from '@/features/sprint/schema'
 import {
   addDaysISO,
   dayOfWeekJa,
@@ -69,13 +69,7 @@ interface Props {
   workspaceId: string
 }
 
-const STATUS_LABEL: Record<SprintStatus, string> = {
-  planning: '計画中',
-  active: '稼働中',
-  completed: '完了',
-  cancelled: '中止',
-}
-
+// iter521 basics: STATUS_LABEL は `sprintStatusLabelJa` (sprint/schema.ts) に集約。
 const STATUS_COLOR: Record<SprintStatus, 'secondary' | 'default' | 'destructive' | 'outline'> = {
   planning: 'outline',
   active: 'default',
@@ -179,7 +173,7 @@ export function SprintsPanel({ workspaceId }: Props) {
   async function handleStatusChange(sp: Sprint, status: SprintStatus) {
     try {
       await changeMut.mutateAsync({ id: sp.id, expectedVersion: sp.version, status })
-      toast.success(`${STATUS_LABEL[status]} に変更`)
+      toast.success(`${sprintStatusLabelJa(status)} に変更`)
     } catch (e) {
       toast.error(isAppError(e) ? e.message : 'status 変更に失敗')
     }
@@ -478,9 +472,9 @@ function SprintCard({
             <Badge
               variant={STATUS_COLOR[status]}
               data-testid={`sprint-status-${sprint.id}`}
-              aria-label={`Sprint「${sprint.name}」のステータス: ${STATUS_LABEL[status]}`}
+              aria-label={`Sprint「${sprint.name}」のステータス: ${sprintStatusLabelJa(status)}`}
             >
-              {STATUS_LABEL[status]}
+              {sprintStatusLabelJa(status)}
             </Badge>
           </div>
         </CardHeader>
