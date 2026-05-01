@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  chipTone3CountsToSeverityCounts,
+  chipTone3ToSeverity,
   formatSeverityCountsJa,
   severityChipClass,
   severityClasses,
@@ -197,5 +199,62 @@ describe('formatSeverityCountsJa', () => {
     expect(formatSeverityCountsJa({ ok: 1, info: 1, warn: 1, danger: 1, muted: 1 })).toBe(
       '危険 1 / 注意 1 / 情報 1 / OK 1 / なし 1 (合計 5)',
     )
+  })
+})
+
+describe('chipTone3ToSeverity', () => {
+  it('good → ok', () => {
+    expect(chipTone3ToSeverity('good')).toBe('ok')
+  })
+
+  it('warn → warn', () => {
+    expect(chipTone3ToSeverity('warn')).toBe('warn')
+  })
+
+  it('neutral → muted', () => {
+    expect(chipTone3ToSeverity('neutral')).toBe('muted')
+  })
+})
+
+describe('chipTone3CountsToSeverityCounts', () => {
+  it('ChipTone3 counts を 5 段 severity counts に集約 (good→ok / warn→warn / neutral→muted)', () => {
+    expect(
+      chipTone3CountsToSeverityCounts({
+        good: 3,
+        warn: 2,
+        neutral: 5,
+      }),
+    ).toEqual({
+      ok: 3,
+      info: 0,
+      warn: 2,
+      danger: 0,
+      muted: 5,
+    })
+  })
+
+  it('全 0 → 全 severity 0', () => {
+    expect(chipTone3CountsToSeverityCounts({ good: 0, warn: 0, neutral: 0 })).toEqual({
+      ok: 0,
+      info: 0,
+      warn: 0,
+      danger: 0,
+      muted: 0,
+    })
+  })
+
+  it('info / danger bucket は 0 (ChipTone3 は 3 値 lossy)', () => {
+    const r = chipTone3CountsToSeverityCounts({ good: 1, warn: 1, neutral: 1 })
+    expect(r.info).toBe(0)
+    expect(r.danger).toBe(0)
+  })
+
+  it('合計が ChipTone3 件数の合計と一致', () => {
+    const counts = { good: 3, warn: 2, neutral: 5 }
+    const sevCounts = chipTone3CountsToSeverityCounts(counts)
+    const total = counts.good + counts.warn + counts.neutral
+    const sevTotal =
+      sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
+    expect(sevTotal).toBe(total)
   })
 })

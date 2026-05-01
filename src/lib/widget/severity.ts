@@ -158,6 +158,45 @@ export function severityToChipTone3(severity: Severity): ChipTone3 {
 }
 
 /**
+ * iter546 ai-automation: ChipTone3 → 共通 5 段 Severity bridge (severityToChipTone3 の逆)。
+ * dashboard-chip 群が ChipTone3 を入力に取る場合の counts → severity counts 集約用。
+ *
+ *   'good'    → 'ok'      (= 達成 / 健全)
+ *   'neutral' → 'muted'   (= 中立、判断材料外)
+ *   'warn'    → 'warn'    (= 警戒)
+ *
+ * ChipTone3 は 3 値 lossy (severity の info / danger は warn に collapse される)、
+ * ChipTone3 → Severity の逆 bridge は「neutral=muted」 が default として安全な選択。
+ * 本 bridge は ChipTone3 で書かれた既存 dashboard chip 出力を共通 severity counts
+ * 集約 path に乗せるための glue helper。
+ */
+export function chipTone3ToSeverity(tone: ChipTone3): Severity {
+  if (tone === 'good') return 'ok'
+  if (tone === 'warn') return 'warn'
+  return 'muted'
+}
+
+/**
+ * iter546 ai-automation: `Record<ChipTone3, number>` (dashboard-chip 3 段別件数) を
+ * 共通 5 段 Severity counts に集約する pure helper。
+ *
+ * iter533-545 と同 pattern (= 14 ドメイン目)。caller は dashboard-chip 群の
+ * tone 別件数 distribution を 1 行 severity サマリ
+ * (例: 「警戒 2 / OK 3 / なし 5 (合計 10)」) で出せる。
+ */
+export function chipTone3CountsToSeverityCounts(
+  counts: Record<ChipTone3, number>,
+): Record<Severity, number> {
+  return {
+    ok: counts.good ?? 0,
+    info: 0,
+    warn: counts.warn ?? 0,
+    danger: 0,
+    muted: counts.neutral ?? 0,
+  }
+}
+
+/**
  * iter532 refactor: AI prompt / chip aria-label / Slack 通知 用 1 行 severity counts summary。
  *
  *   formatSeverityCountsJa({ok:3, warn:2, danger:1, info:0, muted:0}) →
