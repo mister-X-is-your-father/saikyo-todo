@@ -228,6 +228,8 @@ function CommentItem({
               size="sm"
               className="min-h-11"
               onClick={() => setEditing(false)}
+              data-testid={`comment-edit-cancel-${comment.id}`}
+              aria-label="コメントの編集をキャンセル"
             >
               キャンセル
             </Button>
