@@ -18,6 +18,7 @@ import {
   buildCycleCheckStats,
   type CycleCheckItemFields,
   type CycleCheckOptions,
+  cycleCheckSeverity,
 } from '@/features/pdca/cycle-check-stats'
 
 import { DataWidgetCard } from '@/components/shared/data-widget-card'
@@ -30,13 +31,6 @@ interface Props {
   className?: string
 }
 
-function completionSeverity(rate: number): 'ok' | 'info' | 'warn' | 'danger' {
-  if (rate >= 75) return 'ok'
-  if (rate >= 50) return 'info'
-  if (rate >= 25) return 'warn'
-  return 'danger'
-}
-
 /** iter454 (iter424 pattern 水平展開): 進捗 bar の aria-valuetext に severity 文字 */
 function severityLabelJa(sev: 'ok' | 'info' | 'warn' | 'danger'): string {
   if (sev === 'ok') return '順調'
@@ -47,7 +41,10 @@ function severityLabelJa(sev: 'ok' | 'info' | 'warn' | 'danger'): string {
 
 export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, className }: Props) {
   const stats = buildCycleCheckStats(items, { cycleStartedAt, cycleEndedAt })
-  const sev = completionSeverity(stats.completionRate)
+  // iter531 wire-up: 内部 completionSeverity (rate のみ) を `cycleCheckSeverity(stats)`
+  // (iter547 helper、SprintRetro と同 thresholds + total=0 → warn 含む) に集約。
+  // total=0 ケースが warn (= empty cycle 注意促す) と判定されるよう統一。
+  const sev = cycleCheckSeverity(stats)
 
   const sevBarCls =
     sev === 'ok'
