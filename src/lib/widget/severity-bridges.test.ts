@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   assigneeLoadSeverityToSeverity,
   buildFourStateHintChip,
+  checklistStatusToSeverity,
   fourStateHintToSeverity,
   improvementSeverityToSeverity,
   pdcaPhaseSeverityToSeverity,
@@ -88,5 +89,19 @@ describe('buildFourStateHintChip', () => {
     )
     expect(r.severity).toBe('muted')
     expect(r.chipClass).toContain('slate')
+  })
+})
+
+describe('checklistStatusToSeverity', () => {
+  it('ok → ok (緑、合格)', () => {
+    expect(checklistStatusToSeverity('ok')).toBe('ok')
+  })
+
+  it('warn → warn (黄、要注意)', () => {
+    expect(checklistStatusToSeverity('warn')).toBe('warn')
+  })
+
+  it('fail → danger (赤、要対策)', () => {
+    expect(checklistStatusToSeverity('fail')).toBe('danger')
   })
 })

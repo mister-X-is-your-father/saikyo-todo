@@ -11,6 +11,7 @@
  */
 import type { FourStateHint } from '@/lib/hint'
 
+import type { ChecklistStatus } from '@/features/agent/structured-review'
 import type { PdcaPhaseSeverity } from '@/features/pdca-cycle/phase-helpers'
 import type { AssigneeLoadSeverity } from '@/features/sprint/risk-board'
 
@@ -77,6 +78,29 @@ export function improvementSeverityToSeverity(sev: 'high' | 'medium' | 'low'): S
       return 'warn'
     case 'low':
       return 'info'
+  }
+}
+
+/**
+ * iter530 refactor: structured-review の `ChecklistItem.status` ('ok' | 'warn' | 'fail') →
+ * 共通 Severity bridge。statusGlyph (✅/⚠/❌) と対をなす chip 配色用。
+ *
+ *   'ok'   → 'ok'     (= 緑、合格)
+ *   'warn' → 'warn'   (= 黄、要注意だが致命でない)
+ *   'fail' → 'danger' (= 赤、要対策)
+ *
+ * statusGlyph は visual icon (✅/⚠/❌) を返すが、SeverityChip の tone bind は
+ * Severity 型が必要。本 bridge で AI review checklist の各 row chip を
+ * SeverityChip 経由で配色統一可能。
+ */
+export function checklistStatusToSeverity(status: ChecklistStatus): Severity {
+  switch (status) {
+    case 'ok':
+      return 'ok'
+    case 'warn':
+      return 'warn'
+    case 'fail':
+      return 'danger'
   }
 }
 
