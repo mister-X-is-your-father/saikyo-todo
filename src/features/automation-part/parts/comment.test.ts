@@ -7,9 +7,10 @@
 import { describe, expect, it } from 'vitest'
 
 import { commentCreateOnItemPart } from './comment'
+import { ALT_FIXTURE_ID, VALID_FIXTURE_ID } from './test-fixtures'
 
-const validId = '01234567-89ab-4123-89ab-0123456789ab'
-const altId = '11111111-2222-4333-8444-555555555555'
+const validId = VALID_FIXTURE_ID
+const altId = ALT_FIXTURE_ID
 
 describe('commentCreateOnItemPart input schema', () => {
   it('itemId + body + idempotencyKey で valid', () => {

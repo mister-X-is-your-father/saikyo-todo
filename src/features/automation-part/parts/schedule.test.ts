@@ -7,8 +7,9 @@
 import { describe, expect, it } from 'vitest'
 
 import { scheduleCreatePart, scheduleStartTimerPart, scheduleStopTimerPart } from './schedule'
+import { VALID_FIXTURE_ID } from './test-fixtures'
 
-const validId = '01234567-89ab-4123-89ab-0123456789ab'
+const validId = VALID_FIXTURE_ID
 
 describe('scheduleCreatePart input schema', () => {
   it('最小 (planned + itemId + startAt/endAt) で valid', () => {

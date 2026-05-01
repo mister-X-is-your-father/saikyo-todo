@@ -6,9 +6,10 @@
  */
 import { describe, expect, it } from 'vitest'
 
+import { VALID_FIXTURE_ID } from './test-fixtures'
 import { timeEntryCreatePart } from './time-entry'
 
-const validId = '01234567-89ab-4123-89ab-0123456789ab'
+const validId = VALID_FIXTURE_ID
 
 describe('timeEntryCreatePart input schema', () => {
   it('最小 (workDate + category + durationMinutes + idempotencyKey) で valid', () => {

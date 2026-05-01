@@ -7,9 +7,10 @@
 import { describe, expect, it } from 'vitest'
 
 import { itemListPart, itemUpdatePart } from './item'
+import { VALID_FIXTURE_ID } from './test-fixtures'
 
 describe('itemUpdatePart input schema', () => {
-  const validId = '01234567-89ab-4123-89ab-0123456789ab'
+  const validId = VALID_FIXTURE_ID
 
   it('最小: id + expectedVersion + 1 patch field で valid', () => {
     const r = itemUpdatePart.input.safeParse({
