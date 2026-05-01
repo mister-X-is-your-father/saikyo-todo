@@ -174,6 +174,7 @@ function buildColumns(
               onEdit(row.original)
             }}
             data-testid={`backlog-edit-${row.original.id}`}
+            aria-label={`「${row.original.title}」を編集`}
           >
             編集
           </Button>
