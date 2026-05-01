@@ -55,7 +55,11 @@ export function SprintSwimlaneDisclosure({
       onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}
       data-testid={`sprint-swimlane-${sprintId}`}
     >
-      <summary className="text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center gap-1.5 text-xs">
+      <summary
+        className="text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center gap-1.5 text-xs"
+        aria-label={`Sprint「${sprintName}」の担当者 swim-lane Gantt を開閉`}
+        data-testid={`sprint-swimlane-summary-${sprintId}`}
+      >
         <Users className="h-3.5 w-3.5" aria-hidden="true" />
         担当者ビュー (swim-lane Gantt)
       </summary>
