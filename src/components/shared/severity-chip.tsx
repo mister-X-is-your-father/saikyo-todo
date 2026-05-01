@@ -63,10 +63,14 @@ export function SeverityChip({
 
   if (onClick) {
     return (
+      // iter598 basics: visual chip は text-xs / py-1 で 20px 高 (≪ 44px) のため
+      // pseudo `::before` で tap target を 44x44 化 (WCAG 2.5.5 / 2.5.8 対応)。
+      // operation-board-widget iter514 / activity-log iter507 / subtasks-panel iter505
+      // と同 pattern (visual layout 不変、SR / mouse / touch 全 path で interactive)。
       <button
         type="button"
         onClick={onClick}
-        className={baseCls}
+        className={cn(baseCls, "relative before:absolute before:-inset-3 before:content-['']")}
         aria-label={ariaLabel ?? label}
         data-testid={testId}
         data-severity={severity}
