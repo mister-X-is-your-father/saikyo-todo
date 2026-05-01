@@ -100,6 +100,7 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
           maxLength={10_000}
           required
           aria-required="true"
+          aria-invalid={(body.length > 0 && body.trim() === '') || undefined}
         />
         <div className="flex justify-end">
           <Button
