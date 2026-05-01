@@ -315,6 +315,12 @@ export function BacklogView({ workspaceId, items }: Props) {
                     const sortLabel =
                       sorted === 'asc' ? '昇順' : sorted === 'desc' ? '降順' : '未ソート'
                     const headerText = flexRender(h.column.columnDef.header, h.getContext())
+                    // iter596 basics: aria-label に column name を含める。
+                    // h.column.columnDef.header が string なら直接使い、function なら column.id で fallback
+                    const headerName =
+                      typeof h.column.columnDef.header === 'string'
+                        ? h.column.columnDef.header
+                        : h.column.id
                     return (
                       <th
                         key={h.id}
@@ -323,7 +329,7 @@ export function BacklogView({ workspaceId, items }: Props) {
                         tabIndex={h.column.getCanSort() ? 0 : undefined}
                         aria-label={
                           h.column.getCanSort()
-                            ? `列ソート (現在: ${sortLabel}) — Enter / Space で切替`
+                            ? `「${headerName}」列でソート (現在: ${sortLabel}) — Enter / Space で次の状態に切替`
                             : undefined
                         }
                         style={{ width: h.getSize() }}
