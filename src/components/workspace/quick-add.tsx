@@ -156,6 +156,7 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
           className="min-h-11"
           onClick={() => void submit()}
           disabled={create.isPending || !preview?.title || (preview?.isMust ?? false)}
+          aria-busy={create.isPending || undefined}
           data-testid="quick-add-submit"
           aria-label={
             !preview?.title
