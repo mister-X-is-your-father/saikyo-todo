@@ -448,10 +448,11 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               disabled={update.isPending}
               aria-busy={update.isPending || undefined}
               data-testid={`proposal-${proposal.id}-save`}
+              aria-keyshortcuts="Meta+Enter Control+Enter"
               aria-label={
                 update.isPending
                   ? `提案「${proposal.title}」の編集を保存中…`
-                  : `提案「${proposal.title}」の編集を保存`
+                  : `提案「${proposal.title}」の編集を保存 (Cmd/Ctrl+Enter でも可)`
               }
             >
               {update.isPending ? '保存中…' : '保存'}
