@@ -151,6 +151,7 @@ export function GoalsPanel({ workspaceId }: Props) {
                   placeholder="例: 2026 Q2 — システム速度を体感半分に"
                   required
                   aria-required="true"
+                  aria-invalid={(title.length > 0 && title.trim() === '') || undefined}
                   minLength={1}
                   maxLength={200}
                   autoComplete="off"
@@ -713,6 +714,7 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
             aria-label="KR タイトル"
             required
             aria-required="true"
+            aria-invalid={(krTitle.length > 0 && krTitle.trim() === '') || undefined}
             minLength={1}
             maxLength={300}
             autoComplete="off"

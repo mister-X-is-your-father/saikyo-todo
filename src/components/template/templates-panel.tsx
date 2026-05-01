@@ -102,6 +102,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   placeholder="例: クライアント onboarding"
                   required
                   aria-required="true"
+                  aria-invalid={(name.length > 0 && name.trim() === '') || undefined}
                   minLength={1}
                   maxLength={200}
                   autoComplete="off"
