@@ -656,6 +656,7 @@ function SprintCard({
                 className="min-h-11"
                 variant="outline"
                 disabled={changing}
+                aria-busy={changing || undefined}
                 onClick={() => onStatusChange('active')}
                 data-testid={`sprint-activate-${sprint.id}`}
                 aria-label={
@@ -675,6 +676,7 @@ function SprintCard({
                   className="min-h-11"
                   variant="outline"
                   disabled={changing}
+                  aria-busy={changing || undefined}
                   onClick={() => onStatusChange('completed')}
                   data-testid={`sprint-complete-${sprint.id}`}
                   aria-label={
@@ -691,6 +693,7 @@ function SprintCard({
                   className="min-h-11"
                   variant="outline"
                   disabled={changing}
+                  aria-busy={changing || undefined}
                   onClick={() => onStatusChange('planning')}
                   aria-label={
                     changing
@@ -709,6 +712,7 @@ function SprintCard({
                 className="min-h-11"
                 variant="ghost"
                 disabled={changing}
+                aria-busy={changing || undefined}
                 onClick={() => {
                   if (
                     !window.confirm(
