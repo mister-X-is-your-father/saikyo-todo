@@ -616,6 +616,8 @@ function SprintCard({
                     setEditStart(sprint.startDate)
                     setEditEnd(sprint.endDate)
                   }}
+                  data-testid={`sprint-period-cancel-${sprint.id}`}
+                  aria-label={`Sprint「${sprint.name}」の期間編集をキャンセル`}
                 >
                   キャンセル
                 </Button>
@@ -917,6 +919,8 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                   setDow(cur.startDow)
                   setLength(cur.lengthDays)
                 }}
+                data-testid="sprint-defaults-cancel"
+                aria-label="Sprint デフォルトの編集をキャンセル"
               >
                 キャンセル
               </Button>
