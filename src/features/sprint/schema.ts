@@ -27,6 +27,33 @@ export function sprintStatusLabelJa(status: SprintStatus): string {
   return SPRINT_STATUS_LABEL_JA[status]
 }
 
+/**
+ * iter524 basics: SprintStatus → 5 段階 共通 Severity bridge。
+ * SeverityChip の tone bind / Slack 通知の chip 配色を統一する用途。
+ *
+ *   'planning'  → 'info'   (= 計画中、青、ニュートラル)
+ *   'active'    → 'ok'     (= 稼働中、緑、healthy in-progress)
+ *   'completed' → 'muted'  (= 完了、グレー、過去 chip)
+ *   'cancelled' → 'danger' (= 中止、赤、注意喚起)
+ *
+ * 設計意図:
+ *   - active が ok (緑) = 「いま走ってる」を最重要 visual に (= 軸 1 可視化)
+ *   - completed は muted (= 過去の事項、強調しない)、active と差別化
+ *   - cancelled は danger (= 例外、目立たせる)
+ */
+const SPRINT_STATUS_SEVERITY: Record<SprintStatus, 'ok' | 'info' | 'warn' | 'danger' | 'muted'> = {
+  planning: 'info',
+  active: 'ok',
+  completed: 'muted',
+  cancelled: 'danger',
+}
+
+export function sprintStatusSeverity(
+  status: SprintStatus,
+): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
+  return SPRINT_STATUS_SEVERITY[status]
+}
+
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD 形式で')
 
 export const CreateSprintInputSchema = z
