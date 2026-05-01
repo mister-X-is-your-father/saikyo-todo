@@ -485,6 +485,7 @@ function ItemEditDialogInner({
                 onChange={(e) => setTitle(e.target.value)}
                 required
                 aria-required="true"
+                aria-invalid={(title.length > 0 && title.trim() === '') || undefined}
                 minLength={1}
                 maxLength={500}
                 autoComplete="off"
