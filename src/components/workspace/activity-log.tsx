@@ -190,6 +190,11 @@ function ActivityRow({
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-controls={detailId}
+          aria-label={
+            open
+              ? `「${label}」の差分 (before / after) を閉じる`
+              : `「${label}」の差分 (before / after) を見る`
+          }
           data-testid={`activity-detail-toggle-${entry.id}`}
         >
           {open ? '詳細を閉じる' : '詳細を見る'}
