@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   type BiasSample,
   type BiasTendency,
+  biasTendencyCountsToSeverityCounts,
   biasTendencyLabelJa,
   biasTendencySeverity,
   computeEstimateBias,
@@ -230,5 +231,63 @@ describe('biasTendencySeverity', () => {
     for (const t of all) {
       expect(validSev).toContain(biasTendencySeverity(t))
     }
+  })
+})
+
+describe('biasTendencyCountsToSeverityCounts', () => {
+  it('tendency counts を 5 段 severity counts に集約', () => {
+    expect(
+      biasTendencyCountsToSeverityCounts({
+        'on-track': 3,
+        underestimating: 2,
+        overestimating: 1,
+        mixed: 1,
+        unknown: 2,
+      }),
+    ).toEqual({
+      ok: 3, // on-track
+      info: 1, // overestimating
+      warn: 3, // underestimating + mixed
+      danger: 0,
+      muted: 2, // unknown
+    })
+  })
+
+  it('全 0 → 全 severity 0', () => {
+    expect(
+      biasTendencyCountsToSeverityCounts({
+        'on-track': 0,
+        underestimating: 0,
+        overestimating: 0,
+        mixed: 0,
+        unknown: 0,
+      }),
+    ).toEqual({ ok: 0, info: 0, warn: 0, danger: 0, muted: 0 })
+  })
+
+  it('合計が tendency 件数の合計と一致', () => {
+    const counts = {
+      'on-track': 3,
+      underestimating: 2,
+      overestimating: 1,
+      mixed: 1,
+      unknown: 2,
+    } as const
+    const sevCounts = biasTendencyCountsToSeverityCounts(counts)
+    const tendencyTotal = Object.values(counts).reduce((a, b) => a + b, 0)
+    const sevTotal =
+      sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
+    expect(sevTotal).toBe(tendencyTotal)
+  })
+
+  it('bias-tendency は danger bucket には出ない (見積精度は致命的事象として表現しない)', () => {
+    const r = biasTendencyCountsToSeverityCounts({
+      'on-track': 1,
+      underestimating: 1,
+      overestimating: 1,
+      mixed: 1,
+      unknown: 1,
+    })
+    expect(r.danger).toBe(0)
   })
 })

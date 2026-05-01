@@ -212,3 +212,43 @@ export function biasTendencySeverity(
 ): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
   return TENDENCY_SEVERITY[tendency]
 }
+
+/**
+ * iter537 ai-automation: `Record<BiasTendency, number>` (見積精度 別件数) を
+ * `Record<Severity, number>` (5 段 severity 別件数) に集約する pure helper。
+ *
+ * iter533/534/535/536 と同 pattern (= 5 ドメイン目)。caller は
+ * `formatSeverityCountsJa(biasTendencyCountsToSeverityCounts(counts))` で 見積精度
+ * 件数 (チーム内 member 別 / 期間別 等) を 1 行 severity サマリ として AI prompt /
+ * Slack 通知 / dashboard summary に出せる。
+ *
+ * 各 tendency は TENDENCY_SEVERITY (iter519) で集約:
+ *   on-track         → ok    (= 良好)
+ *   underestimating  → warn  (= 見積低い = 残業リスク)
+ *   mixed            → warn  (= ばらつき、要観察)
+ *   overestimating   → info  (= buffer 余り、軽微)
+ *   unknown          → muted (= データ不足)
+ *
+ * 集約後の合計件数は tendency 合計と一致 (集約だけで増減しない)。'danger' bucket には
+ * 出ない (見積精度は致命的事象としては表現しない、まず行動 = warn が適切)。
+ *
+ * iter533/534/535/536/537 で priority / status / due-proximity / goal-health /
+ * bias-tendency の 5 ドメインが counts → severity-counts bridge を持つ。
+ */
+export function biasTendencyCountsToSeverityCounts(
+  counts: Record<BiasTendency, number>,
+): Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> {
+  const out: Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> = {
+    ok: 0,
+    info: 0,
+    warn: 0,
+    danger: 0,
+    muted: 0,
+  }
+  const all: BiasTendency[] = ['on-track', 'underestimating', 'overestimating', 'mixed', 'unknown']
+  for (const t of all) {
+    const sev = TENDENCY_SEVERITY[t]
+    out[sev] += counts[t] ?? 0
+  }
+  return out
+}
