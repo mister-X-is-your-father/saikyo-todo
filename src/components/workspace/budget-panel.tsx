@@ -227,6 +227,11 @@ export function BudgetPanel({ workspaceId }: Props) {
                 // iter349: USD 通貨額は decimal 入力 (.50) 必須、mobile に小数 keypad を呼出。
                 inputMode="decimal"
                 data-testid="budget-limit-input"
+                aria-invalid={
+                  (draftLimit !== '' &&
+                    (Number.isNaN(Number(draftLimit)) || Number(draftLimit) < 0)) ||
+                  undefined
+                }
               />
             </div>
             <div className="space-y-1">
