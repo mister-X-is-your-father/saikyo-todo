@@ -243,6 +243,10 @@ export function BudgetPanel({ workspaceId }: Props) {
                 onChange={(e) => setDraftWarn(e.target.value)}
                 inputMode="decimal"
                 data-testid="budget-warn-input"
+                aria-invalid={
+                  (draftWarn !== '' && (Number(draftWarn) < 0 || Number(draftWarn) > 1)) ||
+                  undefined
+                }
               />
             </div>
             <div className="flex justify-end gap-1.5">
