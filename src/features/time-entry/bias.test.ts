@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { type BiasSample, computeEstimateBias } from './bias'
+import {
+  type BiasSample,
+  type BiasTendency,
+  biasTendencyLabelJa,
+  biasTendencySeverity,
+  computeEstimateBias,
+} from './bias'
 
 const sample = (actualMinutes: number, estimateMinutes: number | null): BiasSample => ({
   actualMinutes,
@@ -165,5 +171,64 @@ describe('computeEstimateBias', () => {
     ])
     expect(r.summary).toMatch(/5 件中/)
     expect(r.summary).toMatch(/\d+%/)
+  })
+})
+
+describe('biasTendencyLabelJa', () => {
+  it('全 5 段階のラベルを返す', () => {
+    expect(biasTendencyLabelJa('on-track')).toBe('見積精度 良好')
+    expect(biasTendencyLabelJa('underestimating')).toBe('見積を低く見積りがち')
+    expect(biasTendencyLabelJa('overestimating')).toBe('見積を高く見積りがち')
+    expect(biasTendencyLabelJa('mixed')).toBe('見積精度にばらつき')
+    expect(biasTendencyLabelJa('unknown')).toBe('見積データ 不足')
+  })
+
+  it('全 BiasTendency 値が空文字列でない (網羅性ガード)', () => {
+    const all: BiasTendency[] = [
+      'on-track',
+      'underestimating',
+      'overestimating',
+      'mixed',
+      'unknown',
+    ]
+    for (const t of all) {
+      expect(biasTendencyLabelJa(t).length).toBeGreaterThan(0)
+    }
+  })
+})
+
+describe('biasTendencySeverity', () => {
+  it('on-track → ok (緑)', () => {
+    expect(biasTendencySeverity('on-track')).toBe('ok')
+  })
+
+  it('underestimating → warn (残業リスク)', () => {
+    expect(biasTendencySeverity('underestimating')).toBe('warn')
+  })
+
+  it('overestimating → info (buffer 余り、軽微)', () => {
+    expect(biasTendencySeverity('overestimating')).toBe('info')
+  })
+
+  it('mixed → warn (要観察)', () => {
+    expect(biasTendencySeverity('mixed')).toBe('warn')
+  })
+
+  it('unknown → muted (データ不足、グレー)', () => {
+    expect(biasTendencySeverity('unknown')).toBe('muted')
+  })
+
+  it('全 BiasTendency 値で 5 段階 Severity のいずれかを返す', () => {
+    const all: BiasTendency[] = [
+      'on-track',
+      'underestimating',
+      'overestimating',
+      'mixed',
+      'unknown',
+    ]
+    const validSev = ['ok', 'info', 'warn', 'danger', 'muted']
+    for (const t of all) {
+      expect(validSev).toContain(biasTendencySeverity(t))
+    }
   })
 })

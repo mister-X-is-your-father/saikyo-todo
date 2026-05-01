@@ -166,3 +166,49 @@ function pct(num: number, denom: number): number {
   if (denom === 0) return 0
   return Math.round((num / denom) * 100)
 }
+
+/**
+ * iter519 ai-automation: BiasTendency → 短い JA chip label。
+ * estimate-bias-insight.tsx の TENDENCY_LABEL を集約、Slack 通知 / SR aria-label /
+ * AI prompt の chip 文言で再利用可能。
+ */
+const TENDENCY_LABEL_JA: Record<BiasTendency, string> = {
+  'on-track': '見積精度 良好',
+  underestimating: '見積を低く見積りがち',
+  overestimating: '見積を高く見積りがち',
+  mixed: '見積精度にばらつき',
+  unknown: '見積データ 不足',
+}
+
+export function biasTendencyLabelJa(tendency: BiasTendency): string {
+  return TENDENCY_LABEL_JA[tendency]
+}
+
+/**
+ * iter519 ai-automation: BiasTendency → 5 段階 Severity 共通分類軸 bridge。
+ * SeverityChip の tone bind / lib/widget/severity-bridges との整合用。
+ *
+ *   'on-track'        → 'ok'      (= 良好、緑)
+ *   'underestimating' → 'warn'    (= 見積低い = 残業リスク、黄)
+ *   'overestimating'  → 'info'    (= 見積高い = 余裕枠保持、青、軽微)
+ *   'mixed'           → 'warn'    (= ばらつき、要観察)
+ *   'unknown'         → 'muted'   (= データ不足、グレー)
+ *
+ * 設計意図:
+ *   - underestimating は「実 actual がはみ出て残業」 = 即時影響あり = warn
+ *   - overestimating は「buffer 取り過ぎで時間効率損失」 = 中期影響 = info
+ *   - mixed は両方混在 = 学習対象 = warn
+ */
+const TENDENCY_SEVERITY: Record<BiasTendency, 'ok' | 'info' | 'warn' | 'danger' | 'muted'> = {
+  'on-track': 'ok',
+  underestimating: 'warn',
+  overestimating: 'info',
+  mixed: 'warn',
+  unknown: 'muted',
+}
+
+export function biasTendencySeverity(
+  tendency: BiasTendency,
+): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
+  return TENDENCY_SEVERITY[tendency]
+}
