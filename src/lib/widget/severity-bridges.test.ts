@@ -6,6 +6,7 @@ import {
   buildFourStateHintChip,
   checklistStatusCountsToSeverityCounts,
   checklistStatusToSeverity,
+  fourStateHintCountsToSeverityCounts,
   fourStateHintToSeverity,
   improvementSeverityCountsToSeverityCounts,
   improvementSeverityToSeverity,
@@ -291,6 +292,50 @@ describe('pdcaPhaseSeverityCountsToSeverityCounts', () => {
     const counts = { overdue: 1, stale: 2, on_track: 3, fresh: 1, closed: 4 }
     const sevCounts = pdcaPhaseSeverityCountsToSeverityCounts(counts)
     const total = counts.overdue + counts.stale + counts.on_track + counts.fresh + counts.closed
+    const sevTotal =
+      sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
+    expect(sevTotal).toBe(total)
+  })
+})
+
+describe('fourStateHintCountsToSeverityCounts', () => {
+  it('FourStateHint counts を 5 段 severity counts に集約', () => {
+    expect(
+      fourStateHintCountsToSeverityCounts({
+        idle: 1,
+        mild: 2,
+        moderate: 3,
+        severe: 1,
+      }),
+    ).toEqual({
+      ok: 2, // mild
+      info: 0,
+      warn: 3, // moderate
+      danger: 1, // severe
+      muted: 1, // idle
+    })
+  })
+
+  it('全 0 → 全 severity 0', () => {
+    expect(
+      fourStateHintCountsToSeverityCounts({ idle: 0, mild: 0, moderate: 0, severe: 0 }),
+    ).toEqual({ ok: 0, info: 0, warn: 0, danger: 0, muted: 0 })
+  })
+
+  it('info bucket には出ない (4 状態 hint は 4 値、ニュートラル進行中の概念無し)', () => {
+    const r = fourStateHintCountsToSeverityCounts({
+      idle: 1,
+      mild: 1,
+      moderate: 1,
+      severe: 1,
+    })
+    expect(r.info).toBe(0)
+  })
+
+  it('合計が hint 件数の合計と一致', () => {
+    const counts = { idle: 1, mild: 2, moderate: 3, severe: 1 }
+    const sevCounts = fourStateHintCountsToSeverityCounts(counts)
+    const total = counts.idle + counts.mild + counts.moderate + counts.severe
     const sevTotal =
       sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
     expect(sevTotal).toBe(total)

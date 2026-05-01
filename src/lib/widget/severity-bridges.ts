@@ -233,6 +233,43 @@ export function pdcaPhaseSeverityCountsToSeverityCounts(
 }
 
 /**
+ * iter543 ai-automation: `Record<FourStateHint, number>` (4 状態 hint 別件数) を
+ * `Record<Severity, number>` に集約する pure helper。
+ *
+ * iter533-542 と同 pattern (= 11 ドメイン目)。caller は workspace 内 widget 群の
+ * 4 状態 hint distribution を 1 行 severity サマリ で表示できる。
+ *
+ *   idle     → muted  (= 該当なし、neutral)
+ *   mild     → ok     (= 健全、安全側)
+ *   moderate → warn   (= 注意、要 monitoring)
+ *   severe   → danger (= 異常、要対応)
+ *
+ * info bucket には出ない (4 状態 hint は 4 値、ニュートラル進行中の概念は無い)。
+ *
+ * iter533-543 で 11 ドメインが counts → severity-counts bridge を持つ。
+ * `severity-bridges.ts` に集約された bridge は計 9 件 (= 5 単数 bridge + 4 counts bridge)
+ * になり、saikyo-todo 全 widget の chip 群 distribution を共通の 1 行 summary に
+ * 圧縮可能。
+ */
+export function fourStateHintCountsToSeverityCounts(
+  counts: Record<FourStateHint, number>,
+): Record<Severity, number> {
+  const out: Record<Severity, number> = {
+    ok: 0,
+    info: 0,
+    warn: 0,
+    danger: 0,
+    muted: 0,
+  }
+  const all: FourStateHint[] = ['idle', 'mild', 'moderate', 'severe']
+  for (const k of all) {
+    const sev = fourStateHintToSeverity(k)
+    out[sev] += counts[k] ?? 0
+  }
+  return out
+}
+
+/**
  * iter495 refactor: 4 状態 hint (`FourStateHint` 'idle' | 'mild' | 'moderate' | 'severe') →
  * 共通 `Severity` bridge。
  *
