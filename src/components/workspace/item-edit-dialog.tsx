@@ -509,6 +509,7 @@ function ItemEditDialogInner({
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   data-testid="edit-item-start-date"
+                  aria-invalid={isInvalidDateRange(startDate, dueDate) || undefined}
                   // iter346: 既存 dueDate を超える startDate は不正なので max で HTML5 制約。
                   // 反対方向 (min={startDate}) は editDue 側に既設、両方向ガードで対称化。
                   max={dueDate || undefined}

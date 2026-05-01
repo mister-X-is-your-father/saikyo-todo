@@ -165,6 +165,7 @@ export function GoalsPanel({ workspaceId }: Props) {
                   onChange={(e) => setStartDate(e.target.value)}
                   required
                   aria-required="true"
+                  aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   max={endDate || undefined}
                 />
               </div>

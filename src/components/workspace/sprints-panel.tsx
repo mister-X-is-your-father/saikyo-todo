@@ -581,6 +581,7 @@ function SprintCard({
                     onChange={(e) => setEditStart(e.target.value)}
                     required
                     aria-label="Sprint 開始日"
+                    aria-invalid={isInvalidDateRange(editStart, editEnd) || undefined}
                     className="h-8 text-xs"
                     data-testid={`sprint-edit-start-${sprint.id}`}
                   />
