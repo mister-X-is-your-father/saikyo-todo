@@ -265,6 +265,12 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
               className="hover:text-foreground text-muted-foreground relative flex items-center gap-1 text-xs before:absolute before:-inset-3 before:content-['']"
               onClick={() => setShowDoneYesterday((v) => !v)}
               aria-expanded={showDoneYesterday}
+              aria-controls="operation-board-done-yesterday-list"
+              aria-label={
+                showDoneYesterday
+                  ? `昨日 done ${board.doneYesterday.count} 件の一覧を閉じる`
+                  : `昨日 done ${board.doneYesterday.count} 件の一覧を表示`
+              }
               data-testid="operation-board-done-yesterday-toggle"
             >
               {showDoneYesterday ? (
@@ -276,7 +282,7 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
               昨日 done {board.doneYesterday.count} 件
             </button>
             {showDoneYesterday && (
-              <div className="pt-1 pl-5">
+              <div id="operation-board-done-yesterday-list" className="pt-1 pl-5">
                 <ItemList items={board.doneYesterday.items} onClick={openItem} muted />
               </div>
             )}
