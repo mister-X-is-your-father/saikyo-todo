@@ -83,7 +83,9 @@ export function TemplateItemsEditor({ templateId }: Props) {
       <form
         className="space-y-2 rounded-md border p-3"
         noValidate
+        aria-label="Template 子 Item 追加フォーム"
         aria-busy={addMut.isPending || undefined}
+        data-testid="template-items-add-form"
         onSubmit={(e) => {
           e.preventDefault()
           void handleAdd()
