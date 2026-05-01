@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   countItemsByDueProximity,
   dueProximityChipClasses,
+  dueProximityCountsToSeverityCounts,
   dueProximityLabel,
   dueProximitySeverity,
   dueProximityTone,
@@ -306,5 +307,60 @@ describe('dueProximitySeverity — 5 段共通 Severity bridge', () => {
     for (const k of all) {
       expect(validSev).toContain(dueProximitySeverity(k))
     }
+  })
+})
+
+describe('dueProximityCountsToSeverityCounts', () => {
+  it('期限近接 counts を 5 段 severity counts に集約', () => {
+    expect(
+      dueProximityCountsToSeverityCounts({
+        overdue: 2,
+        today: 1,
+        tomorrow: 0,
+        thisWeek: 3,
+        later: 5,
+        noDate: 1,
+      }),
+    ).toEqual({
+      ok: 0,
+      info: 3, // tomorrow + thisWeek
+      warn: 1, // today
+      danger: 2, // overdue
+      muted: 6, // later + noDate
+    })
+  })
+
+  it('全 0 → 全 severity 0', () => {
+    expect(
+      dueProximityCountsToSeverityCounts({
+        overdue: 0,
+        today: 0,
+        tomorrow: 0,
+        thisWeek: 0,
+        later: 0,
+        noDate: 0,
+      }),
+    ).toEqual({ ok: 0, info: 0, warn: 0, danger: 0, muted: 0 })
+  })
+
+  it('合計が DueProximityKind 件数の合計と一致', () => {
+    const counts = { overdue: 2, today: 1, tomorrow: 1, thisWeek: 3, later: 5, noDate: 1 }
+    const sevCounts = dueProximityCountsToSeverityCounts(counts)
+    const kindTotal = Object.values(counts).reduce((a, b) => a + b, 0)
+    const sevTotal =
+      sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
+    expect(sevTotal).toBe(kindTotal)
+  })
+
+  it('期限近接は ok bucket には出ない (期限軸 ≠ 達成度軸)', () => {
+    const r = dueProximityCountsToSeverityCounts({
+      overdue: 1,
+      today: 1,
+      tomorrow: 1,
+      thisWeek: 1,
+      later: 1,
+      noDate: 1,
+    })
+    expect(r.ok).toBe(0)
   })
 })

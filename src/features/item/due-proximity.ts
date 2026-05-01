@@ -222,3 +222,44 @@ export function dueProximitySeverity(
 ): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
   return PROXIMITY_SEVERITY[kind]
 }
+
+/**
+ * iter535 ai-automation: `Record<DueProximityKind, number>` (期限近接 別件数) を
+ * `Record<Severity, number>` (5 段 severity 別件数) に集約する pure helper。
+ *
+ * iter533 priority / iter534 status と同 pattern。caller は
+ * `formatSeverityCountsJa(dueProximityCountsToSeverityCounts(counts))` で 期限近接
+ * 件数を 1 行 severity サマリ として AI prompt / Slack 通知 / dashboard summary に出せる。
+ *
+ * 各 DueProximityKind は `PROXIMITY_SEVERITY` (iter529) で対応 severity に集約:
+ *   overdue            → danger
+ *   today              → warn
+ *   tomorrow / thisWeek → info
+ *   later / noDate     → muted
+ *
+ * 例: {overdue:2, today:1, tomorrow:0, thisWeek:3, later:5, noDate:1} →
+ *     {danger:2, warn:1, info:3, muted:6, ok:0}
+ *
+ * 集約後の合計件数は kind 合計と一致 (集約だけで増減しない)。
+ *
+ * iter533 priority + iter534 status + iter535 due-proximity で「item に関する 3 大 axis」
+ * が全て共通 severity 軸で集約可能になった。dashboard / AI prompt が複数 axis を
+ * 同 severity 集約に乗せられるため、危険 N / 注意 N / OK N の単一 severity 1 行
+ * summary で「全 axis 横断の状況」 を 1 行で出せる。
+ */
+export function dueProximityCountsToSeverityCounts(
+  counts: Record<DueProximityKind, number>,
+): Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> {
+  const out: Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> = {
+    ok: 0,
+    info: 0,
+    warn: 0,
+    danger: 0,
+    muted: 0,
+  }
+  for (const k of KIND_ORDER) {
+    const sev = PROXIMITY_SEVERITY[k]
+    out[sev] += counts[k] ?? 0
+  }
+  return out
+}
