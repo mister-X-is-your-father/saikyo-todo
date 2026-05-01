@@ -82,6 +82,7 @@ export function BulkActionBar({ workspaceId }: Props) {
           className="min-h-11"
           variant="outline"
           disabled={bulkStatus.isPending}
+          aria-busy={bulkStatus.isPending || undefined}
           onClick={() => void handleStatus(s.key)}
           data-testid={`bulk-status-${s.key}`}
           aria-label={
@@ -98,6 +99,7 @@ export function BulkActionBar({ workspaceId }: Props) {
         className="min-h-11"
         variant="destructive"
         disabled={bulkDelete.isPending}
+        aria-busy={bulkDelete.isPending || undefined}
         onClick={() => void handleDelete()}
         data-testid="bulk-delete"
         aria-label={
