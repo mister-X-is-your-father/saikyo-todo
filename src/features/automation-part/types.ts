@@ -14,7 +14,15 @@ import type { Result } from '@/lib/result'
 export type PartSideEffect = 'read' | 'write' | 'external'
 
 /** part 分類。UI 上の grouping や filter にも使う。 */
-export type PartCategory = 'item' | 'schedule' | 'time' | 'comment' | 'ai' | 'notify' | 'external'
+export type PartCategory =
+  | 'item'
+  | 'schedule'
+  | 'time'
+  | 'comment'
+  | 'doc'
+  | 'ai'
+  | 'notify'
+  | 'external'
 
 /**
  * part 実行時の文脈。layer ごとに異なる呼出元から build する:
