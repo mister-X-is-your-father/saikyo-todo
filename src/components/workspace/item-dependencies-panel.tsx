@@ -216,6 +216,7 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
             size="sm"
             className="min-h-11"
             disabled={!pickId || add.isPending}
+            aria-busy={add.isPending || undefined}
             onClick={() => void handleAdd()}
             data-testid="dep-add-btn"
             aria-label={
