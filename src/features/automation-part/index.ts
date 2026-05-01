@@ -7,7 +7,7 @@
  */
 import 'server-only'
 
-import { commentCreateOnItemPart } from './parts/comment'
+import { commentCreateOnItemPart, commentListForItemPart } from './parts/comment'
 import { itemCompletePart, itemCreatePart, itemListPart, itemUpdatePart } from './parts/item'
 import { scheduleCreatePart, scheduleStartTimerPart, scheduleStopTimerPart } from './parts/schedule'
 import { timeEntryCreatePart } from './parts/time-entry'
@@ -26,6 +26,7 @@ export function bootstrapAutomationParts(): void {
   registerPart(scheduleStartTimerPart)
   registerPart(scheduleStopTimerPart)
   registerPart(commentCreateOnItemPart)
+  registerPart(commentListForItemPart)
   registerPart(timeEntryCreatePart)
   // AP-2 残 / AP-3 でここに notify / slack / ai / external 追加
 }
