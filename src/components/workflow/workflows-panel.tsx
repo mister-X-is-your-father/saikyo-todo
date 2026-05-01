@@ -706,6 +706,11 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
                 onClick={() => setExpandedRunId(isOpen ? null : r.id)}
                 aria-expanded={isOpen}
                 aria-controls={`wf-run-nodes-${r.id}`}
+                aria-label={
+                  isOpen
+                    ? `${r.triggerKind} 実行 (${formatRunTime(r)}) のノード詳細を閉じる`
+                    : `${r.triggerKind} 実行 (${formatRunTime(r)}) のノード詳細を表示`
+                }
                 data-testid={`wf-run-toggle-${r.id}`}
               >
                 {isOpen ? (
