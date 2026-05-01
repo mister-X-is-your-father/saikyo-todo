@@ -6,6 +6,7 @@ import {
   formatRecoveryPlanJa,
   formatTopRecoveryActionJa,
   pickTopRecoveryAction,
+  recoveryActionKindCountsToSeverityCounts,
   recoveryActionKindLabelJa,
   recoveryActionKindSeverity,
   type RecoveryPlanItemFields,
@@ -328,5 +329,58 @@ describe('formatTopRecoveryActionJa', () => {
         rationale: 'Y',
       }),
     ).toBe('次の一手: 担当再分配')
+  })
+})
+
+describe('recoveryActionKindCountsToSeverityCounts', () => {
+  it('action kind counts を 5 段 severity counts に集約', () => {
+    expect(
+      recoveryActionKindCountsToSeverityCounts({
+        unblock: 2,
+        reassign: 1,
+        split: 3,
+        reschedule: 2,
+        escalate: 1,
+      }),
+    ).toEqual({
+      ok: 0,
+      info: 5, // split + reschedule
+      warn: 3, // unblock + reassign
+      danger: 1, // escalate
+      muted: 0,
+    })
+  })
+
+  it('全 0 → 全 severity 0', () => {
+    expect(
+      recoveryActionKindCountsToSeverityCounts({
+        unblock: 0,
+        reassign: 0,
+        split: 0,
+        reschedule: 0,
+        escalate: 0,
+      }),
+    ).toEqual({ ok: 0, info: 0, warn: 0, danger: 0, muted: 0 })
+  })
+
+  it('合計が action kind 件数の合計と一致', () => {
+    const counts = { unblock: 2, reassign: 1, split: 3, reschedule: 2, escalate: 1 }
+    const sevCounts = recoveryActionKindCountsToSeverityCounts(counts)
+    const kindTotal = Object.values(counts).reduce((a, b) => a + b, 0)
+    const sevTotal =
+      sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
+    expect(sevTotal).toBe(kindTotal)
+  })
+
+  it('recovery action は ok / muted bucket には出ない (救済不要は別 sentinel で表現)', () => {
+    const r = recoveryActionKindCountsToSeverityCounts({
+      unblock: 1,
+      reassign: 1,
+      split: 1,
+      reschedule: 1,
+      escalate: 1,
+    })
+    expect(r.ok).toBe(0)
+    expect(r.muted).toBe(0)
   })
 })

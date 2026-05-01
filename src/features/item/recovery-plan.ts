@@ -196,6 +196,49 @@ export function recoveryActionKindSeverity(
 }
 
 /**
+ * iter538 ai-automation: `Record<RecoveryActionKind, number>` (救済 action 種別 別件数)
+ * を `Record<Severity, number>` (5 段 severity 別件数) に集約する pure helper。
+ *
+ * iter533-537 と同 pattern (= 6 ドメイン目)。caller は
+ * `formatSeverityCountsJa(recoveryActionKindCountsToSeverityCounts(counts))` で
+ * 「救済 action 全件 distribution」 を 1 行 severity サマリ として AI prompt /
+ * Slack 通知 / dashboard summary に出せる。
+ *
+ * 各 kind は `ACTION_KIND_SEVERITY` (iter545) で集約:
+ *   unblock / reassign → warn   (= 中程度、コミュニケーション要)
+ *   split / reschedule → info   (= 軽度、自分で完結)
+ *   escalate           → danger (= 最深刻、上位者判断必要)
+ *
+ * 集約後の合計件数は kind 合計と一致 (集約だけで増減しない)。recovery action は
+ * ok / muted bucket には出ない (= 「救済不要」 は本 helper で扱わない、
+ * formatRecoveryPlanJa の sentinel "救済不要" で別表現)。
+ */
+const RECOVERY_ACTION_KIND_ORDER: readonly RecoveryActionKind[] = [
+  'unblock',
+  'reassign',
+  'split',
+  'reschedule',
+  'escalate',
+]
+
+export function recoveryActionKindCountsToSeverityCounts(
+  counts: Record<RecoveryActionKind, number>,
+): Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> {
+  const out: Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> = {
+    ok: 0,
+    info: 0,
+    warn: 0,
+    danger: 0,
+    muted: 0,
+  }
+  for (const k of RECOVERY_ACTION_KIND_ORDER) {
+    const sev = ACTION_KIND_SEVERITY[k]
+    out[sev] += counts[k] ?? 0
+  }
+  return out
+}
+
+/**
  * AI prompt / chip aria-label / Slack 通知用 1 行 recovery summary:
  *  '救済不要'                                    (= isApplicable=false)
  *  '救済 action 3 選: 依存先解消 / 担当再分配 / 期限再設定'
