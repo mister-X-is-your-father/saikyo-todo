@@ -13,6 +13,9 @@ import {
   agentsToAssigneeRefs,
   assigneeRefEquals,
   canGeneratePlan,
+  classifyCollaborationMode,
+  collaborationModeLabelJa,
+  collaborationModeSeverity,
   countAssigneesByKind,
   extractAiAssignees,
   extractUserAssignees,
@@ -238,6 +241,51 @@ describe('ai-assignee', () => {
     })
     it('user のみ', () => {
       expect(countAssigneesByKind([userRef, userRef2])).toEqual({ ai: 0, user: 2, total: 2 })
+    })
+  })
+
+  describe('classifyCollaborationMode', () => {
+    it('total=0 → unassigned', () => {
+      expect(classifyCollaborationMode({ ai: 0, user: 0, total: 0 })).toBe('unassigned')
+    })
+
+    it('AI のみ → ai-only', () => {
+      expect(classifyCollaborationMode({ ai: 2, user: 0, total: 2 })).toBe('ai-only')
+    })
+
+    it('user のみ → user-only', () => {
+      expect(classifyCollaborationMode({ ai: 0, user: 2, total: 2 })).toBe('user-only')
+    })
+
+    it('AI + user → mixed', () => {
+      expect(classifyCollaborationMode({ ai: 1, user: 1, total: 2 })).toBe('mixed')
+    })
+  })
+
+  describe('collaborationModeLabelJa', () => {
+    it('全 4 mode の JA label を返す', () => {
+      expect(collaborationModeLabelJa('unassigned')).toBe('未割当')
+      expect(collaborationModeLabelJa('ai-only')).toBe('AI 専属')
+      expect(collaborationModeLabelJa('user-only')).toBe('人間専属')
+      expect(collaborationModeLabelJa('mixed')).toBe('協業')
+    })
+  })
+
+  describe('collaborationModeSeverity', () => {
+    it('unassigned → warn (漏れリスク)', () => {
+      expect(collaborationModeSeverity('unassigned')).toBe('warn')
+    })
+
+    it('ai-only → info (進行中)', () => {
+      expect(collaborationModeSeverity('ai-only')).toBe('info')
+    })
+
+    it('user-only → ok (人間運用)', () => {
+      expect(collaborationModeSeverity('user-only')).toBe('ok')
+    })
+
+    it('mixed → ok (協業)', () => {
+      expect(collaborationModeSeverity('mixed')).toBe('ok')
     })
   })
 })

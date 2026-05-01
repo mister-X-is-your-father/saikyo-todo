@@ -95,6 +95,64 @@ export function formatAssigneeKindSummaryJa(counts: AssigneeKindCounts): string 
 }
 
 /**
+ * iter547 ai-automation: items 群を「協業モード」で集計する pure helper。
+ *
+ * 1 item の AssigneeKindCounts (AI / user / total) から `CollaborationMode` を判定:
+ *   'unassigned' — total=0 (= 未割当、漏れリスク)
+ *   'ai-only'    — ai>0 && user=0 (= AI 専属、自律実行)
+ *   'user-only'  — user>0 && ai=0 (= 人間専属、従来運用)
+ *   'mixed'      — ai>0 && user>0 (= 協業、人間 ↔ AI ターン)
+ *
+ * dashboard / AI prompt が「workspace 内 item の協業 distribution」 を 1 行で出すための
+ * 軸。fluffy 撲滅原則 (= AI に文章書かせない) で、collaboration の分布を直 chip で
+ * 視認可能にする。
+ */
+export type CollaborationMode = 'unassigned' | 'ai-only' | 'user-only' | 'mixed'
+
+export function classifyCollaborationMode(counts: AssigneeKindCounts): CollaborationMode {
+  if (counts.total === 0) return 'unassigned'
+  if (counts.ai > 0 && counts.user === 0) return 'ai-only'
+  if (counts.user > 0 && counts.ai === 0) return 'user-only'
+  return 'mixed'
+}
+
+const COLLAB_MODE_LABEL_JA: Record<CollaborationMode, string> = {
+  unassigned: '未割当',
+  'ai-only': 'AI 専属',
+  'user-only': '人間専属',
+  mixed: '協業',
+}
+
+export function collaborationModeLabelJa(mode: CollaborationMode): string {
+  return COLLAB_MODE_LABEL_JA[mode]
+}
+
+/**
+ * iter547 ai-automation: CollaborationMode → 共通 5 段 Severity bridge。
+ * dashboard chip の tone bind 用。
+ *
+ *   'unassigned' → 'warn'  (= 未割当 = 漏れリスク、要対応)
+ *   'ai-only'    → 'info'  (= AI 自律、進行中)
+ *   'user-only'  → 'ok'    (= 人間運用、healthy default)
+ *   'mixed'      → 'ok'    (= 協業、healthy default)
+ *
+ * unassigned は warn で「誰の責任か曖昧」 risk を可視化。
+ */
+const COLLAB_MODE_SEVERITY: Record<CollaborationMode, 'ok' | 'info' | 'warn' | 'danger' | 'muted'> =
+  {
+    unassigned: 'warn',
+    'ai-only': 'info',
+    'user-only': 'ok',
+    mixed: 'ok',
+  }
+
+export function collaborationModeSeverity(
+  mode: CollaborationMode,
+): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
+  return COLLAB_MODE_SEVERITY[mode]
+}
+
+/**
  * agents 行を AssigneeRef[] に map (actor_type='agent' / actor_id=agent.id)。
  * AssigneePicker で AI 選択肢を render する時、value 内の AI assignee と
  * 比較するために使う。
