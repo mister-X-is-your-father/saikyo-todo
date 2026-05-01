@@ -325,6 +325,7 @@ function KanbanCard({
               onEdit(item)
             }}
             data-testid={`kanban-title-${item.id}`}
+            aria-label={`「${item.title}」を編集`}
             className={
               'hover:text-primary text-left font-medium break-words hover:underline ' +
               (item.doneAt ? 'text-muted-foreground line-through' : '')
