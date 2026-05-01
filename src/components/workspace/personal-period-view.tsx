@@ -224,6 +224,7 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
                     }}
                     className="hover:text-primary truncate text-left text-sm font-medium hover:underline"
                     data-testid={`period-title-${period}-${it.id}`}
+                    aria-label={`「${it.title}」を編集`}
                   >
                     {it.title}
                   </button>
