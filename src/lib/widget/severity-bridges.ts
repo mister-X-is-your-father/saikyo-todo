@@ -168,6 +168,38 @@ export function improvementSeverityCountsToSeverityCounts(
 }
 
 /**
+ * iter541 ai-automation: `Record<AssigneeLoadSeverity, number>` (sprint 担当負荷 別件数) を
+ * `Record<Severity, number>` に集約する pure helper。
+ *
+ * iter533-540 と同 pattern (= 9 ドメイン目)。caller は sprint 担当負荷 distribution を
+ * 1 行 severity サマリ で表示できる。
+ *
+ *   overloaded → danger (= 高負荷、即 escalation)
+ *   busy       → warn   (= 繁忙、注意)
+ *   normal     → info   (= 通常、健全)
+ *   light      → ok     (= 余裕、引き受け候補)
+ *
+ * muted bucket には出ない (4 段全て担当者がいる前提、unknown 扱いなし)。
+ */
+export function assigneeLoadSeverityCountsToSeverityCounts(
+  counts: Record<AssigneeLoadSeverity, number>,
+): Record<Severity, number> {
+  const out: Record<Severity, number> = {
+    ok: 0,
+    info: 0,
+    warn: 0,
+    danger: 0,
+    muted: 0,
+  }
+  const all: AssigneeLoadSeverity[] = ['overloaded', 'busy', 'normal', 'light']
+  for (const k of all) {
+    const sev = assigneeLoadSeverityToSeverity(k)
+    out[sev] += counts[k] ?? 0
+  }
+  return out
+}
+
+/**
  * iter495 refactor: 4 状態 hint (`FourStateHint` 'idle' | 'mild' | 'moderate' | 'severe') →
  * 共通 `Severity` bridge。
  *

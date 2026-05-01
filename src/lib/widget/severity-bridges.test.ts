@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  assigneeLoadSeverityCountsToSeverityCounts,
   assigneeLoadSeverityToSeverity,
   buildFourStateHintChip,
   checklistStatusCountsToSeverityCounts,
@@ -188,6 +189,55 @@ describe('improvementSeverityCountsToSeverityCounts', () => {
     const counts = { high: 1, medium: 2, low: 3 }
     const sevCounts = improvementSeverityCountsToSeverityCounts(counts)
     const total = counts.high + counts.medium + counts.low
+    const sevTotal =
+      sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
+    expect(sevTotal).toBe(total)
+  })
+})
+
+describe('assigneeLoadSeverityCountsToSeverityCounts', () => {
+  it('assignee load counts を 5 段 severity counts に集約', () => {
+    expect(
+      assigneeLoadSeverityCountsToSeverityCounts({
+        overloaded: 1,
+        busy: 2,
+        normal: 3,
+        light: 4,
+      }),
+    ).toEqual({
+      ok: 4, // light
+      info: 3, // normal
+      warn: 2, // busy
+      danger: 1, // overloaded
+      muted: 0,
+    })
+  })
+
+  it('全 0 → 全 severity 0', () => {
+    expect(
+      assigneeLoadSeverityCountsToSeverityCounts({
+        overloaded: 0,
+        busy: 0,
+        normal: 0,
+        light: 0,
+      }),
+    ).toEqual({ ok: 0, info: 0, warn: 0, danger: 0, muted: 0 })
+  })
+
+  it('muted bucket には出ない (4 段全て担当ありの前提、unknown 扱いなし)', () => {
+    const r = assigneeLoadSeverityCountsToSeverityCounts({
+      overloaded: 1,
+      busy: 1,
+      normal: 1,
+      light: 1,
+    })
+    expect(r.muted).toBe(0)
+  })
+
+  it('合計が assignee load 件数の合計と一致', () => {
+    const counts = { overloaded: 1, busy: 2, normal: 3, light: 4 }
+    const sevCounts = assigneeLoadSeverityCountsToSeverityCounts(counts)
+    const total = counts.overloaded + counts.busy + counts.normal + counts.light
     const sevTotal =
       sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
     expect(sevTotal).toBe(total)
