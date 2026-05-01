@@ -20,6 +20,7 @@ export type PartCategory =
   | 'time'
   | 'comment'
   | 'doc'
+  | 'tag'
   | 'ai'
   | 'notify'
   | 'external'

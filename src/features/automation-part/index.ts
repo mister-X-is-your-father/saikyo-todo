@@ -23,6 +23,7 @@ import {
   scheduleStopTimerPart,
   scheduleUpdatePart,
 } from './parts/schedule'
+import { tagListPart } from './parts/tag'
 import { timeEntryCreatePart } from './parts/time-entry'
 import { registerPart } from './registry'
 import type { AnyPart } from './types'
@@ -50,6 +51,7 @@ const ALL_PARTS: readonly AnyPart[] = [
   commentListForItemPart as AnyPart,
   docCreatePart as AnyPart,
   docListPart as AnyPart,
+  tagListPart as AnyPart,
   timeEntryCreatePart as AnyPart,
   // AP-2 残 / AP-3 でここに notify / slack / ai / external 追加 (1 行で OK)
 ]
