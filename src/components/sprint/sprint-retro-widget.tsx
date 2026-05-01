@@ -126,6 +126,13 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
             <dt className="text-muted-foreground">差分</dt>
             <dd
               className={`text-base font-semibold tabular-nums ${delta < 0 ? 'text-rose-700' : delta > 0 ? 'text-emerald-700' : ''}`}
+              aria-label={
+                delta < 0
+                  ? `納品 - 計画 ${delta} 件 (未達)`
+                  : delta > 0
+                    ? `納品 - 計画 +${delta} 件 (超過達成)`
+                    : '納品 = 計画 (差分なし)'
+              }
             >
               {delta > 0 ? '+' : ''}
               {delta}
