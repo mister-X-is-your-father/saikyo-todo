@@ -199,3 +199,41 @@ export function goalHealthTierSeverity(
 ): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
   return TIER_SEVERITY[tier]
 }
+
+/**
+ * iter536 ai-automation: `Record<GoalHealthTier, number>` (5 段健全性 別件数) を
+ * `Record<Severity, number>` (5 段 severity 別件数) に集約する pure helper。
+ *
+ * iter533 priority / iter534 status / iter535 due-proximity と同 pattern。caller は
+ * `formatSeverityCountsJa(goalHealthTierCountsToSeverityCounts(counts))` で goal 健全性
+ * 件数を 1 行 severity サマリ として AI prompt / Slack 通知 / dashboard summary に出せる。
+ *
+ * 各 tier は TIER_SEVERITY (iter526) で対応 severity に集約:
+ *   achieved  → ok     (= 達成、緑)
+ *   on-track  → info   (= 順調、青)
+ *   at-risk   → warn   (= やや遅れ、黄)
+ *   behind    → danger (= 遅延、赤)
+ *   idle      → muted  (= 期間外、グレー)
+ *
+ * 各 tier が 1:1 で対応 severity に bridge されるため、本 helper は
+ * `countGoalsByHealth` の出力を本 helper にそのまま渡すだけで dashboard chip 1 行
+ * summary になる (例: 「危険 1 / 注意 2 / 情報 3 / OK 4 / なし 1 (合計 11)」)。
+ *
+ * 集約後の合計件数は tier 合計と一致 (集約だけで増減しない)。
+ */
+export function goalHealthTierCountsToSeverityCounts(
+  counts: Record<GoalHealthTier, number>,
+): Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> {
+  const out: Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> = {
+    ok: 0,
+    info: 0,
+    warn: 0,
+    danger: 0,
+    muted: 0,
+  }
+  for (const t of TIER_ORDER) {
+    const sev = TIER_SEVERITY[t]
+    out[sev] += counts[t] ?? 0
+  }
+  return out
+}

@@ -9,6 +9,7 @@ import {
   countGoalsByHealth,
   formatGoalHealthCounts,
   type GoalHealthTier,
+  goalHealthTierCountsToSeverityCounts,
   goalHealthTierLabel,
   goalHealthTierSeverity,
   groupGoalsByHealth,
@@ -278,5 +279,61 @@ describe('goalHealthTierSeverity', () => {
     for (const t of all) {
       expect(validSev).toContain(goalHealthTierSeverity(t))
     }
+  })
+})
+
+describe('goalHealthTierCountsToSeverityCounts', () => {
+  it('tier counts を 5 段 severity counts に集約 (1:1 対応)', () => {
+    expect(
+      goalHealthTierCountsToSeverityCounts({
+        achieved: 4,
+        'on-track': 3,
+        'at-risk': 2,
+        behind: 1,
+        idle: 1,
+      }),
+    ).toEqual({
+      ok: 4, // achieved
+      info: 3, // on-track
+      warn: 2, // at-risk
+      danger: 1, // behind
+      muted: 1, // idle
+    })
+  })
+
+  it('全 0 → 全 severity 0', () => {
+    expect(
+      goalHealthTierCountsToSeverityCounts({
+        achieved: 0,
+        'on-track': 0,
+        'at-risk': 0,
+        behind: 0,
+        idle: 0,
+      }),
+    ).toEqual({ ok: 0, info: 0, warn: 0, danger: 0, muted: 0 })
+  })
+
+  it('合計が tier 件数の合計と一致', () => {
+    const counts = { achieved: 4, 'on-track': 3, 'at-risk': 2, behind: 1, idle: 1 }
+    const sevCounts = goalHealthTierCountsToSeverityCounts(counts)
+    const tierTotal = Object.values(counts).reduce((a, b) => a + b, 0)
+    const sevTotal =
+      sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
+    expect(sevTotal).toBe(tierTotal)
+  })
+
+  it('1:1 対応で全 5 severity に分布する (priority / status / due-proximity と異なり ok 含む)', () => {
+    const r = goalHealthTierCountsToSeverityCounts({
+      achieved: 1,
+      'on-track': 1,
+      'at-risk': 1,
+      behind: 1,
+      idle: 1,
+    })
+    expect(r.ok).toBe(1) // priority/status/due-proximity の bridge と異なり ok bucket もある
+    expect(r.info).toBe(1)
+    expect(r.warn).toBe(1)
+    expect(r.danger).toBe(1)
+    expect(r.muted).toBe(1)
   })
 })
