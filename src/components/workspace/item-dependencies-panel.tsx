@@ -323,6 +323,7 @@ function Section({
                 className="min-h-11"
                 onClick={() => onRemove(ref)}
                 disabled={removing}
+                aria-busy={removing || undefined}
                 data-testid={`dep-remove-${ref.id}`}
                 aria-label={
                   removing ? `依存「${ref.title}」を解除中…` : `依存「${ref.title}」を解除`
