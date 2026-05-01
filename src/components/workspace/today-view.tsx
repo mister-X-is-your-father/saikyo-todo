@@ -212,6 +212,7 @@ export function TodayView({
                           }}
                           className="hover:text-primary truncate text-left font-medium hover:underline"
                           data-testid={`today-title-${it.id}`}
+                          aria-label={`「${it.title}」を編集`}
                         >
                           {it.title}
                         </button>
