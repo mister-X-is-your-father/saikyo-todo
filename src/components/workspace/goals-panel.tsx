@@ -757,6 +757,7 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
             size="sm"
             className="min-h-11"
             disabled={!krTitle.trim() || create.isPending}
+            aria-busy={create.isPending || undefined}
             data-testid={`kr-add-btn-${goalId}`}
             aria-label={
               !krTitle.trim()
