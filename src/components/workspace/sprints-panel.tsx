@@ -210,6 +210,7 @@ export function SprintsPanel({ workspaceId }: Props) {
                   placeholder="例: 2026 W18 Sprint"
                   required
                   aria-required="true"
+                  aria-invalid={(name.length > 0 && name.trim() === '') || undefined}
                   minLength={1}
                   maxLength={100}
                   // iter344: app 固有 input なので browser auto-fill 候補は無関係 → off
