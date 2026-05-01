@@ -347,6 +347,11 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             onClick={() => setRunsOpen((v) => !v)}
             aria-expanded={runsOpen}
             aria-controls={`wf-runs-${wf.id}`}
+            aria-label={
+              runsOpen
+                ? `Workflow「${wf.name}」の実行履歴 (直近 5 件) を閉じる`
+                : `Workflow「${wf.name}」の実行履歴 (直近 5 件) を表示`
+            }
             data-testid={`wf-runs-toggle-${wf.id}`}
           >
             {runsOpen ? (
