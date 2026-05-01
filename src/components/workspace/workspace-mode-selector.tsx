@@ -128,6 +128,7 @@ export function WorkspaceModeSelector({ workspaceId }: Props) {
                 aria-label={`${opt.label}: ${opt.description}`}
                 tabIndex={selected ? 0 : -1}
                 disabled={upd.isPending}
+                aria-busy={upd.isPending || undefined}
                 onClick={() => void handleSelect(opt.value)}
                 onKeyDown={(e) => handleKeyDown(e, index)}
                 className={cn(
