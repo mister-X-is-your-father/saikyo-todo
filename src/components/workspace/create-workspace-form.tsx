@@ -95,7 +95,14 @@ export function CreateWorkspaceForm() {
           </p>
         )}
       </div>
-      <Button type="submit" className="h-11 w-full" disabled={isPending}>
+      <Button
+        type="submit"
+        className="h-11 w-full"
+        disabled={isPending}
+        aria-busy={isPending || undefined}
+        data-testid="create-workspace-submit"
+        aria-label={isPending ? 'Workspace を作成中…' : 'Workspace を新規作成'}
+      >
         {isPending ? '作成中...' : '作成'}
       </Button>
     </form>
