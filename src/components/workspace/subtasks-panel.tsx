@@ -200,6 +200,7 @@ function SubtaskTreeNode({
         disabled={!canOutdent || movePending}
         aria-busy={movePending || undefined}
         data-testid={`subtask-outdent-${item.id}`}
+        aria-keyshortcuts="Alt+ArrowLeft"
         aria-label={
           !canOutdent
             ? `「${item.title}」は root のためアウトデント不可`
@@ -219,6 +220,7 @@ function SubtaskTreeNode({
         disabled={!canIndent || movePending}
         aria-busy={movePending || undefined}
         data-testid={`subtask-indent-${item.id}`}
+        aria-keyshortcuts="Alt+ArrowRight"
         aria-label={
           !canIndent
             ? depth + 1 >= MAX_TREE_DEPTH
