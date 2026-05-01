@@ -8,6 +8,8 @@
  */
 import type { z, ZodType } from 'zod'
 
+import type { Result } from '@/lib/result'
+
 /** part の副作用カテゴリ。MCP の scope (read / write) 判定 + audit に使う。 */
 export type PartSideEffect = 'read' | 'write' | 'external'
 
@@ -91,3 +93,29 @@ export interface PartManifestEntry {
 }
 
 export type _ZodNS = typeof z
+
+/**
+ * iter590 refactor: part の run() で `if (!r.ok) throw new Error(...); return r.value`
+ * の重複を 1 関数に集約する小ヘルパ。
+ *
+ * service の Result<T> を part 経由で「(part 経路 layer 不問で) throw on err」 へ
+ * 揃える。error message 先頭に partId を必ず含めることで workflow / agent / MCP
+ * のどの呼出 stack でも part を identify できる。
+ *
+ *   run: async (input, ctx) => {
+ *     const r = await scheduleService.create({...})
+ *     return unwrapPartResult('schedule.create', r)  // ← 重複 1 行に
+ *   }
+ *
+ * 戻り型は `r.value` の型を T に narrow するための conditional return。
+ * `r.error` は AppError を想定するが、message / code 双方を fallback で拾う。
+ */
+export function unwrapPartResult<T, E = unknown>(partId: string, r: Result<T, E>): T {
+  if (r.ok) return r.value
+  const e = r.error as { message?: unknown; code?: unknown }
+  const detail =
+    (typeof e?.message === 'string' && e.message) ||
+    (typeof e?.code === 'string' && e.code) ||
+    'unknown error'
+  throw new Error(`${partId} failed: ${detail}`)
+}

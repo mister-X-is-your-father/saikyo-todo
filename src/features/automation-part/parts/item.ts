@@ -22,7 +22,7 @@ import { z } from 'zod'
 import { ItemSelectSchema } from '@/features/item/schema'
 import { itemService } from '@/features/item/service'
 
-import { definePart } from '../types'
+import { definePart, unwrapPartResult } from '../types'
 
 const ItemCreateInput = z.object({
   title: z.string().min(1).max(500),
@@ -47,8 +47,7 @@ export const itemCreatePart = definePart({
       workspaceId: ctx.workspaceId,
       ...input,
     })
-    if (!r.ok) throw new Error(`item.create failed: ${r.error.message ?? r.error.code}`)
-    return r.value
+    return unwrapPartResult('item.create', r)
   },
 })
 
@@ -93,14 +92,13 @@ export const itemUpdatePart = definePart({
   sideEffect: 'write',
   input: ItemUpdateInput,
   output: ItemSelectSchema,
-  run: async (input, _ctx) => {
+  run: async (input) => {
     const r = await itemService.update({
       id: input.id,
       expectedVersion: input.expectedVersion,
       patch: input.patch,
     })
-    if (!r.ok) throw new Error(`item.update failed: ${r.error.message ?? r.error.code}`)
-    return r.value
+    return unwrapPartResult('item.update', r)
   },
 })
 
@@ -117,13 +115,12 @@ export const itemCompletePart = definePart({
   sideEffect: 'write',
   input: ItemCompleteInput,
   output: ItemSelectSchema,
-  run: async (input, _ctx) => {
+  run: async (input) => {
     const r = await itemService.toggleComplete({
       id: input.id,
       expectedVersion: input.expectedVersion,
       complete: true,
     })
-    if (!r.ok) throw new Error(`item.complete failed: ${r.error.message ?? r.error.code}`)
-    return r.value
+    return unwrapPartResult('item.complete', r)
   },
 })

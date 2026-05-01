@@ -21,7 +21,7 @@ import { z } from 'zod'
 import { ScheduleSelectSchema } from '@/features/schedule/schema'
 import { scheduleService } from '@/features/schedule/service'
 
-import { definePart } from '../types'
+import { definePart, unwrapPartResult } from '../types'
 
 const isoDateTime = z
   .string()
@@ -53,8 +53,7 @@ export const scheduleCreatePart = definePart({
       endAt: input.endAt,
       note: input.note ?? null,
     })
-    if (!r.ok) throw new Error(`schedule.create failed: ${r.error.message ?? r.error.code}`)
-    return r.value
+    return unwrapPartResult('schedule.create', r)
   },
 })
 
@@ -82,7 +81,6 @@ export const scheduleStartTimerPart = definePart({
       startAt: input.startAt,
       note: input.note ?? null,
     })
-    if (!r.ok) throw new Error(`schedule.start_timer failed: ${r.error.message ?? r.error.code}`)
-    return r.value
+    return unwrapPartResult('schedule.start_timer', r)
   },
 })
