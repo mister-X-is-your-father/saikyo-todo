@@ -188,6 +188,11 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             onClick={() => setImportsOpen((v) => !v)}
             aria-expanded={importsOpen}
             aria-controls={`src-imports-${src.id}`}
+            aria-label={
+              importsOpen
+                ? `Source「${src.name}」の Pull 履歴 (直近 5 件) を閉じる`
+                : `Source「${src.name}」の Pull 履歴 (直近 5 件) を表示`
+            }
             data-testid={`src-imports-toggle-${src.id}`}
           >
             {importsOpen ? (
