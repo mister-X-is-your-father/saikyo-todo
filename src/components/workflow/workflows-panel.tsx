@@ -146,12 +146,13 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                 disabled={!name.trim() || create.isPending}
                 aria-busy={create.isPending || undefined}
                 data-testid="wf-create-btn"
+                aria-keyshortcuts="Meta+Enter Control+Enter"
                 aria-label={
                   !name.trim()
                     ? 'Workflow を作成するには名前を入力してください'
                     : create.isPending
                       ? 'Workflow を作成中…'
-                      : 'Workflow を新規作成'
+                      : 'Workflow を新規作成 (Cmd/Ctrl+Enter でも可)'
                 }
               >
                 {create.isPending ? '作成中…' : '作成'}

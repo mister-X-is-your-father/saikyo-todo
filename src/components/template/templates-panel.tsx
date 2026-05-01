@@ -164,12 +164,13 @@ export function TemplatesPanel({ workspaceId }: Props) {
               className="min-h-11"
               disabled={createMut.isPending || !name.trim()}
               aria-busy={createMut.isPending || undefined}
+              aria-keyshortcuts="Meta+Enter Control+Enter"
               aria-label={
                 !name.trim()
                   ? 'Template を作成するには名前を入力してください'
                   : createMut.isPending
                     ? 'Template を作成中…'
-                    : 'Template を新規作成'
+                    : 'Template を新規作成 (Cmd/Ctrl+Enter でも可)'
               }
             >
               作成
