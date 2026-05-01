@@ -186,7 +186,7 @@ function ActivityRow({
         <button
           type="button"
           // iter507: pseudo で tap target を 44x44 化 (visual text-[11px] underline 維持)
-          className="text-muted-foreground relative mt-1 text-[11px] underline before:absolute before:-inset-3 before:content-['']"
+          className="text-muted-foreground focus-visible:ring-ring relative mt-1 rounded text-[11px] underline before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-controls={detailId}
