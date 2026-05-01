@@ -253,6 +253,8 @@ export function BudgetPanel({ workspaceId }: Props) {
                 variant="ghost"
                 onClick={() => setEditing(false)}
                 disabled={update.isPending}
+                data-testid="budget-edit-cancel"
+                aria-label="AI 月次コスト上限の編集をキャンセル"
               >
                 キャンセル
               </Button>
