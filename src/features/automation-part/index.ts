@@ -10,6 +10,7 @@ import 'server-only'
 import { commentCreateOnItemPart } from './parts/comment'
 import { itemCompletePart, itemCreatePart, itemUpdatePart } from './parts/item'
 import { scheduleCreatePart, scheduleStartTimerPart, scheduleStopTimerPart } from './parts/schedule'
+import { timeEntryCreatePart } from './parts/time-entry'
 import { registerPart } from './registry'
 
 let initialized = false
@@ -24,7 +25,8 @@ export function bootstrapAutomationParts(): void {
   registerPart(scheduleStartTimerPart)
   registerPart(scheduleStopTimerPart)
   registerPart(commentCreateOnItemPart)
-  // AP-2 残 / AP-3 でここに time / notify / slack / ai / external 追加
+  registerPart(timeEntryCreatePart)
+  // AP-2 残 / AP-3 でここに notify / slack / ai / external 追加
 }
 
 // module load 時に自動 bootstrap (test では _resetRegistryForTesting → bootstrap で reload)
