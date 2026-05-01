@@ -117,6 +117,13 @@ export function TemplateItemsEditor({ templateId }: Props) {
             max={365}
             step={1}
             inputMode="numeric"
+            aria-invalid={
+              (dueOffset !== '' &&
+                (Number.isNaN(Number(dueOffset)) ||
+                  Number(dueOffset) < 0 ||
+                  Number(dueOffset) > 365)) ||
+              undefined
+            }
           />
         </div>
         <label className="flex items-center gap-1 text-sm">
