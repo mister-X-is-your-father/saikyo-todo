@@ -23,7 +23,7 @@ import {
   usePersonalPeriodGoal,
   useUpsertPersonalPeriodGoal,
 } from '@/features/personal-period-goal/hooks'
-import type { Period } from '@/features/personal-period-goal/schema'
+import { type Period, periodLabelJa } from '@/features/personal-period-goal/schema'
 
 import { EmptyState } from '@/components/shared/async-states'
 import { Button } from '@/components/ui/button'
@@ -39,11 +39,7 @@ interface Props {
   period: Period
 }
 
-const PERIOD_LABEL: Record<Period, string> = {
-  day: '日次',
-  week: '週次',
-  month: '月次',
-}
+// iter523 basics: PERIOD_LABEL は `periodLabelJa` (personal-period-goal/schema.ts) に集約。
 
 function pad(n: number): string {
   return n < 10 ? `0${n}` : String(n)
@@ -129,7 +125,7 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
         text: draft,
         expectedVersion: goalQ.data?.version ?? 0,
       })
-      toast.success(`${PERIOD_LABEL[period]}ゴールを保存しました`)
+      toast.success(`${periodLabelJa(period)}ゴールを保存しました`)
     } catch (e) {
       toast.error(isAppError(e) ? e.message : '保存に失敗')
     }
@@ -142,7 +138,7 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base" role="heading" aria-level={2}>
-            {PERIOD_LABEL[period]}ゴール ({periodKey})
+            {periodLabelJa(period)}ゴール ({periodKey})
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -163,10 +159,10 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
                 void handleSave()
               }
             }}
-            placeholder={`この${PERIOD_LABEL[period]}で達成したいことを書く (例: ◯◯ を完了する) (Cmd/Ctrl+Enter で保存)`}
+            placeholder={`この${periodLabelJa(period)}で達成したいことを書く (例: ◯◯ を完了する) (Cmd/Ctrl+Enter で保存)`}
             rows={3}
             maxLength={2000}
-            aria-label={`${PERIOD_LABEL[period]}ゴール (Cmd/Ctrl+Enter で保存)`}
+            aria-label={`${periodLabelJa(period)}ゴール (Cmd/Ctrl+Enter で保存)`}
             data-testid={`period-goal-textarea-${period}`}
           />
           <div className="flex justify-end">
@@ -181,10 +177,10 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
               aria-keyshortcuts="Meta+Enter Control+Enter"
               aria-label={
                 !dirty
-                  ? `${PERIOD_LABEL[period]}ゴールに変更がないため保存不要`
+                  ? `${periodLabelJa(period)}ゴールに変更がないため保存不要`
                   : upsertGoal.isPending
-                    ? `${PERIOD_LABEL[period]}ゴールを保存中…`
-                    : `${PERIOD_LABEL[period]}ゴールを保存`
+                    ? `${periodLabelJa(period)}ゴールを保存中…`
+                    : `${periodLabelJa(period)}ゴールを保存`
               }
             >
               {upsertGoal.isPending ? '保存中…' : 'ゴール保存'}
@@ -193,16 +189,16 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
         </CardContent>
       </Card>
 
-      <Card role="region" aria-label={`${PERIOD_LABEL[period]}の Item ${filtered.length} 件`}>
+      <Card role="region" aria-label={`${periodLabelJa(period)}の Item ${filtered.length} 件`}>
         <CardHeader className="pb-2">
           <CardTitle className="text-base" role="heading" aria-level={2}>
-            {PERIOD_LABEL[period]}の Item ({filtered.length})
+            {periodLabelJa(period)}の Item ({filtered.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
           {filtered.length === 0 ? (
             <EmptyState
-              title={`${PERIOD_LABEL[period]}範囲の item がありません`}
+              title={`${periodLabelJa(period)}範囲の item がありません`}
               description="dueDate / scheduledFor が範囲外、または完了済の item は表示されません。"
             />
           ) : (
