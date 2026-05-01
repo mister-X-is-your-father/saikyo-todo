@@ -7,7 +7,7 @@
  */
 import 'server-only'
 
-import { itemCompletePart, itemCreatePart } from './parts/item'
+import { itemCompletePart, itemCreatePart, itemUpdatePart } from './parts/item'
 import { registerPart } from './registry'
 
 let initialized = false
@@ -16,6 +16,7 @@ export function bootstrapAutomationParts(): void {
   if (initialized) return
   initialized = true
   registerPart(itemCreatePart)
+  registerPart(itemUpdatePart)
   registerPart(itemCompletePart)
   // AP-2 / AP-3 でここに schedule / time / comment / notify / slack / ai / external 追加
 }

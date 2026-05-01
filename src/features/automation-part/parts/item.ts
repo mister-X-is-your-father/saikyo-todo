@@ -1,11 +1,12 @@
 /**
  * queue: AP-1 substrate — item.* part 群 (sample 移植)。
  *
- * 既存 itemService を thin wrap する形で part 化。今回は最小 2 件:
+ * 既存 itemService を thin wrap する形で part 化:
  *   - item.create
+ *   - item.update (iter587 ai-automation で追加: 部分 patch + 楽観ロック)
  *   - item.complete
  *
- * 残り (update / list_today / list_overdue 等) は AP-2 / AP-3 で。
+ * 残り (list_today / list_overdue 等) は AP-2 / AP-3 で。
  *
  * 設計メモ:
  *   - itemService は requireUser / requireWorkspaceMember を内部で呼ぶ。
@@ -47,6 +48,58 @@ export const itemCreatePart = definePart({
       ...input,
     })
     if (!r.ok) throw new Error(`item.create failed: ${r.error.message ?? r.error.code}`)
+    return r.value
+  },
+})
+
+/**
+ * iter587 ai-automation: item.update part — 部分 patch + 楽観ロック。
+ *
+ * ItemUpdateInput = { id, expectedVersion, patch }。patch は schema/UpdateItemInputSchema
+ * の patch を minimal subset に narrow し、AI / workflow / MCP から呼びやすい
+ * shape に揃える (workspace 横断の field のみ、ltree path / version 等の内部 field は
+ * itemService 内で扱われるので除外)。
+ *
+ * 楽観ロック衝突時 (= ConflictError) は run() 内で throw、呼出 layer
+ * (workflow / agent / MCP) 側で retry / surface ポリシを選ぶ。
+ */
+const ItemUpdatePatchInput = z
+  .object({
+    title: z.string().min(1).max(500).optional(),
+    description: z.string().optional(),
+    status: z.string().min(1).optional(),
+    priority: z.number().int().min(1).max(4).optional(),
+    isMust: z.boolean().optional(),
+    dueDate: z.string().nullish(),
+    scheduledFor: z.string().nullish(),
+    dod: z.string().nullish(),
+  })
+  .refine((p) => Object.keys(p).length > 0, {
+    message: '更新する項目がありません',
+  })
+
+const ItemUpdateInput = z.object({
+  id: z.string().uuid(),
+  expectedVersion: z.number().int().nonnegative(),
+  patch: ItemUpdatePatchInput,
+})
+
+export const itemUpdatePart = definePart({
+  id: 'item.update',
+  label: 'item を更新',
+  description:
+    'item の指定 field を patch で更新する (楽観ロック必須)。workspace は ctx 経由で固定。',
+  category: 'item',
+  sideEffect: 'write',
+  input: ItemUpdateInput,
+  output: ItemSelectSchema,
+  run: async (input, _ctx) => {
+    const r = await itemService.update({
+      id: input.id,
+      expectedVersion: input.expectedVersion,
+      patch: input.patch,
+    })
+    if (!r.ok) throw new Error(`item.update failed: ${r.error.message ?? r.error.code}`)
     return r.value
   },
 })
