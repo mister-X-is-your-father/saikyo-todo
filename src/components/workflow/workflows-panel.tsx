@@ -616,6 +616,8 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
             variant="ghost"
             className="min-h-11"
             onClick={() => onOpenChange(false)}
+            data-testid={`wf-editor-cancel-${wf.id}`}
+            aria-label={`Workflow「${wf.name}」の編集をキャンセル`}
           >
             キャンセル
           </Button>
