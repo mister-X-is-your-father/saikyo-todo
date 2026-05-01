@@ -1,11 +1,12 @@
 /**
  * queue: AP-2 substrate — schedule.* part 群 (sample 移植)。
  *
- * 既存 scheduleService を thin wrap する形で part 化。AP-2 第 1 弾:
+ * 既存 scheduleService を thin wrap する形で part 化:
  *   - schedule.create (planned / actual を input.kind で出し分け)
  *   - schedule.start_timer (実測タイマー開始 = actual + placeholder end)
+ *   - schedule.stop_timer (実測タイマー停止、楽観ロック必須、iter592 で追加)
  *
- * stop_timer / move / update 等は AP-2 第 2 弾以降で。
+ * move / update は AP-2 第 3 弾以降で。
  *
  * 設計メモ:
  *   - scheduleService は requireWorkspaceMember(workspaceId, 'member') を内部で呼ぶ
@@ -13,6 +14,7 @@
  *     は input 経由
  *   - planned schedule は itemId 必須 (schema superRefine)
  *   - 24 時間超は reject (schema superRefine)
+ *   - stop_timer は kind=actual のみ許容、kind=planned に対しては service が ValidationError
  */
 import 'server-only'
 
@@ -82,5 +84,37 @@ export const scheduleStartTimerPart = definePart({
       note: input.note ?? null,
     })
     return unwrapPartResult('schedule.start_timer', r)
+  },
+})
+
+/**
+ * iter592 ai-automation: schedule.stop_timer part — 実測スロットの end を確定。
+ *
+ * start_timer で作った placeholder end (startAt + 60s) を確定値に書き換える。
+ * 楽観ロック必須、kind=planned には service が ValidationError を返す。
+ */
+const ScheduleStopTimerInput = z.object({
+  id: z.string().uuid(),
+  expectedVersion: z.number().int().nonnegative(),
+  /** 終了時刻 (省略時 = サーバ now)。startAt 以前は service が reject */
+  endAt: isoDateTime.optional(),
+})
+
+export const scheduleStopTimerPart = definePart({
+  id: 'schedule.stop_timer',
+  label: '実測タイマーを停止',
+  description:
+    '実測 (kind=actual) schedule の endAt を確定する (楽観ロック必須)。kind=planned は reject。',
+  category: 'schedule',
+  sideEffect: 'write',
+  input: ScheduleStopTimerInput,
+  output: ScheduleSelectSchema,
+  run: async (input) => {
+    const r = await scheduleService.stopTimer({
+      id: input.id,
+      expectedVersion: input.expectedVersion,
+      endAt: input.endAt,
+    })
+    return unwrapPartResult('schedule.stop_timer', r)
   },
 })

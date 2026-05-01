@@ -8,7 +8,7 @@
 import 'server-only'
 
 import { itemCompletePart, itemCreatePart, itemUpdatePart } from './parts/item'
-import { scheduleCreatePart, scheduleStartTimerPart } from './parts/schedule'
+import { scheduleCreatePart, scheduleStartTimerPart, scheduleStopTimerPart } from './parts/schedule'
 import { registerPart } from './registry'
 
 let initialized = false
@@ -21,6 +21,7 @@ export function bootstrapAutomationParts(): void {
   registerPart(itemCompletePart)
   registerPart(scheduleCreatePart)
   registerPart(scheduleStartTimerPart)
+  registerPart(scheduleStopTimerPart)
   // AP-2 残 / AP-3 でここに time / comment / notify / slack / ai / external 追加
 }
 

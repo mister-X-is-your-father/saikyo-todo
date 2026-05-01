@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import { scheduleCreatePart, scheduleStartTimerPart } from './schedule'
+import { scheduleCreatePart, scheduleStartTimerPart, scheduleStopTimerPart } from './schedule'
 
 const validId = '01234567-89ab-4123-89ab-0123456789ab'
 
@@ -81,5 +81,55 @@ describe('scheduleStartTimerPart input schema', () => {
     expect(scheduleStartTimerPart.id).toBe('schedule.start_timer')
     expect(scheduleStartTimerPart.sideEffect).toBe('write')
     expect(scheduleStartTimerPart.category).toBe('schedule')
+  })
+})
+
+describe('scheduleStopTimerPart input schema', () => {
+  it('id + expectedVersion で valid (endAt 省略可 = サーバ now)', () => {
+    const r = scheduleStopTimerPart.input.safeParse({
+      id: validId,
+      expectedVersion: 0,
+    })
+    expect(r.success).toBe(true)
+  })
+
+  it('id + expectedVersion + endAt 明示で valid', () => {
+    const r = scheduleStopTimerPart.input.safeParse({
+      id: validId,
+      expectedVersion: 1,
+      endAt: '2026-05-01T12:00:00Z',
+    })
+    expect(r.success).toBe(true)
+  })
+
+  it('id が uuid 不正 → invalid', () => {
+    const r = scheduleStopTimerPart.input.safeParse({
+      id: 'bogus',
+      expectedVersion: 0,
+    })
+    expect(r.success).toBe(false)
+  })
+
+  it('expectedVersion 負数 → invalid', () => {
+    const r = scheduleStopTimerPart.input.safeParse({
+      id: validId,
+      expectedVersion: -1,
+    })
+    expect(r.success).toBe(false)
+  })
+
+  it('endAt が ISO 不正 → invalid', () => {
+    const r = scheduleStopTimerPart.input.safeParse({
+      id: validId,
+      expectedVersion: 0,
+      endAt: 'not-a-date',
+    })
+    expect(r.success).toBe(false)
+  })
+
+  it('part metadata: id / sideEffect / category', () => {
+    expect(scheduleStopTimerPart.id).toBe('schedule.stop_timer')
+    expect(scheduleStopTimerPart.sideEffect).toBe('write')
+    expect(scheduleStopTimerPart.category).toBe('schedule')
   })
 })
