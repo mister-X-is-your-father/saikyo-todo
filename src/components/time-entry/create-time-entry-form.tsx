@@ -106,6 +106,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           onChange={(e) => setDescription(e.target.value)}
           required
           aria-required="true"
+          aria-invalid={(description.length > 0 && description.trim() === '') || undefined}
           minLength={1}
           maxLength={500}
         />
