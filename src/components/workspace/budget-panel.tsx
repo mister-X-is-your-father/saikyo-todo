@@ -205,6 +205,8 @@ export function BudgetPanel({ workspaceId }: Props) {
             className="space-y-2 rounded border border-dashed p-2"
             noValidate
             aria-busy={update.isPending || undefined}
+            aria-label="AI 月次コスト上限編集フォーム"
+            data-testid="budget-edit-form"
             onSubmit={(e) => {
               e.preventDefault()
               void saveEdit()
