@@ -306,6 +306,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
         <form
           className="space-y-3"
           noValidate
+          aria-label="External Source 作成フォーム"
           aria-busy={create.isPending || undefined}
           onSubmit={(e) => {
             e.preventDefault()
