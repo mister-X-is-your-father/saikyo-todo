@@ -18,7 +18,7 @@ export function ThemeToggle() {
       type="button"
       variant="ghost"
       size="icon"
-      aria-label="テーマ切替"
+      aria-label={resolvedTheme === 'dark' ? 'ライトテーマに切替' : 'ダークテーマに切替'}
       className="min-h-11 min-w-11"
       onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
       data-testid="theme-toggle"
