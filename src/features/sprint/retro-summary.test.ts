@@ -5,6 +5,7 @@ import {
   completionRateSeverity,
   completionRateSeverityLabelJa,
   formatSprintRetroSummaryJa,
+  retroCompletionSeverityCountsToSeverityCounts,
   type SprintRetroItemFields,
 } from './retro-summary'
 
@@ -234,5 +235,44 @@ describe('formatSprintRetroSummaryJa', () => {
     for (let i = 0; i < 5; i++) prev.push(mk({ status: 'todo' }))
     const summary = buildSprintRetroSummary(items, { prevItems: prev })
     expect(formatSprintRetroSummaryJa(summary)).toContain('改善 +20pt')
+  })
+})
+
+describe('retroCompletionSeverityCountsToSeverityCounts', () => {
+  it('retro 完了率 counts を 5 段 severity counts に集約 (identity + muted 0 padding)', () => {
+    expect(
+      retroCompletionSeverityCountsToSeverityCounts({
+        ok: 3,
+        info: 2,
+        warn: 1,
+        danger: 1,
+      }),
+    ).toEqual({
+      ok: 3,
+      info: 2,
+      warn: 1,
+      danger: 1,
+      muted: 0,
+    })
+  })
+
+  it('全 0 → 全 severity 0', () => {
+    expect(
+      retroCompletionSeverityCountsToSeverityCounts({ ok: 0, info: 0, warn: 0, danger: 0 }),
+    ).toEqual({ ok: 0, info: 0, warn: 0, danger: 0, muted: 0 })
+  })
+
+  it('muted は常に 0 (retro completion 4 段に muted 概念なし)', () => {
+    const r = retroCompletionSeverityCountsToSeverityCounts({ ok: 1, info: 1, warn: 1, danger: 1 })
+    expect(r.muted).toBe(0)
+  })
+
+  it('合計が retro 件数の合計と一致', () => {
+    const counts = { ok: 3, info: 2, warn: 1, danger: 1 }
+    const sevCounts = retroCompletionSeverityCountsToSeverityCounts(counts)
+    const total = counts.ok + counts.info + counts.warn + counts.danger
+    const sevTotal =
+      sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
+    expect(sevTotal).toBe(total)
   })
 })

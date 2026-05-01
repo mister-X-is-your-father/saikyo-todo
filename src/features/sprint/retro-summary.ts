@@ -211,6 +211,28 @@ export function completionRateSeverityLabelJa(sev: RetroCompletionSeverity): str
 }
 
 /**
+ * iter545 ai-automation: `Record<RetroCompletionSeverity, number>` (Sprint retro 完了率
+ * 4 段別件数) を 共通 5 段 Severity counts に集約する pure helper。
+ *
+ * iter533-544 と同 pattern (= 13 ドメイン目)。`RetroCompletionSeverity` 自体が共通 5 段
+ * Severity の subset (muted 不在) なので bridge は identity copy + muted 0 padding。
+ *
+ * caller は workspace 内 sprint 群の完了率 distribution を 1 行 severity サマリで
+ * AI prompt / Slack / dashboard に出せる。例: 「危険 1 / 注意 1 / 情報 2 / OK 3 (合計 7)」
+ */
+export function retroCompletionSeverityCountsToSeverityCounts(
+  counts: Record<RetroCompletionSeverity, number>,
+): Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> {
+  return {
+    ok: counts.ok ?? 0,
+    info: counts.info ?? 0,
+    warn: counts.warn ?? 0,
+    danger: counts.danger ?? 0,
+    muted: 0,
+  }
+}
+
+/**
  * AI prompt / Slack / chip aria-label 用 1 行 retro summary:
  *  '完了率 80% (順調) — 計画 10 件 / 納品 8 件 / 改善 +5pt'
  *  '完了率 0% (要対策) — 計画 0 件 / 納品 0 件'  (= empty 場合)
