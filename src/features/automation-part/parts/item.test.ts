@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import { itemUpdatePart } from './item'
+import { itemListPart, itemUpdatePart } from './item'
 
 describe('itemUpdatePart input schema', () => {
   const validId = '01234567-89ab-4123-89ab-0123456789ab'
@@ -79,5 +79,38 @@ describe('itemUpdatePart input schema', () => {
     expect(itemUpdatePart.id).toBe('item.update')
     expect(itemUpdatePart.sideEffect).toBe('write')
     expect(itemUpdatePart.category).toBe('item')
+  })
+})
+
+describe('itemListPart input schema', () => {
+  it('空 object で valid (filter 無し = 全件)', () => {
+    const r = itemListPart.input.safeParse({})
+    expect(r.success).toBe(true)
+  })
+
+  it('status filter 単独で valid', () => {
+    const r = itemListPart.input.safeParse({ status: 'todo' })
+    expect(r.success).toBe(true)
+  })
+
+  it('isMust filter 単独で valid', () => {
+    const r = itemListPart.input.safeParse({ isMust: true })
+    expect(r.success).toBe(true)
+  })
+
+  it('status + isMust 同時指定で valid', () => {
+    const r = itemListPart.input.safeParse({ status: 'in_progress', isMust: true })
+    expect(r.success).toBe(true)
+  })
+
+  it('status が空文字 → invalid (min 1)', () => {
+    const r = itemListPart.input.safeParse({ status: '' })
+    expect(r.success).toBe(false)
+  })
+
+  it('part metadata: id / sideEffect = read / category', () => {
+    expect(itemListPart.id).toBe('item.list')
+    expect(itemListPart.sideEffect).toBe('read')
+    expect(itemListPart.category).toBe('item')
   })
 })

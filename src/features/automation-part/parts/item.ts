@@ -1,12 +1,13 @@
 /**
- * queue: AP-1 substrate — item.* part 群 (sample 移植)。
+ * queue: AP-1 / AP-2 substrate — item.* part 群 (sample 移植)。
  *
  * 既存 itemService を thin wrap する形で part 化:
  *   - item.create
- *   - item.update (iter587 ai-automation で追加: 部分 patch + 楽観ロック)
+ *   - item.update (iter587 ai-automation: 部分 patch + 楽観ロック)
  *   - item.complete
+ *   - item.list (iter599 ai-automation: read 系 1 件目、status / isMust filter)
  *
- * 残り (list_today / list_overdue 等) は AP-2 / AP-3 で。
+ * list_today / list_overdue 等の特殊 list は AP-2 残以降で。
  *
  * 設計メモ:
  *   - itemService は requireUser / requireWorkspaceMember を内部で呼ぶ。
@@ -99,6 +100,37 @@ export const itemUpdatePart = definePart({
       patch: input.patch,
     })
     return unwrapPartResult('item.update', r)
+  },
+})
+
+/**
+ * iter599 ai-automation: item.list part — workspace の Item 一覧を返す read 系 part。
+ *
+ * AC-1「AI に任せた」 で AI が「今ある todo を見る」 起点の探索や、workflow の最初の
+ * 入力として item 集合を取り出す経路。filter は status (todo / in_progress / done /
+ * blocked / 自由 string) と isMust (true / false) のみ提供 (= 副作用なしの最小 read)。
+ * workspaceId は ctx 経由で固定。
+ */
+const ItemListInput = z.object({
+  status: z.string().min(1).optional(),
+  isMust: z.boolean().optional(),
+})
+
+export const itemListPart = definePart({
+  id: 'item.list',
+  label: 'item 一覧を取得',
+  description:
+    'workspace の Item 一覧を返す。filter で status / isMust を絞り込み可能。副作用なし、read scope。',
+  category: 'item',
+  sideEffect: 'read',
+  input: ItemListInput,
+  output: z.array(ItemSelectSchema),
+  run: async (input, ctx) => {
+    const items = await itemService.list(ctx.workspaceId, {
+      status: input.status,
+      isMust: input.isMust,
+    })
+    return items
   },
 })
 
