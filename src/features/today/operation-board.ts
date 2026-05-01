@@ -32,7 +32,13 @@ export interface OperationBoardSummary {
   today: string
 }
 
-function isActive(it: Item): boolean {
+/**
+ * iter610 refactor: item の「active」 判定 (doneAt / archivedAt / deletedAt が
+ * 全て null) を共通 helper として export。automation-part/parts/item.ts の
+ * itemListTodayPart / itemListOverduePart からも参照される (= 「active item」
+ * の semantics を 1 箇所に固定)。
+ */
+export function isItemActive(it: Item): boolean {
   return !it.doneAt && !it.archivedAt && !it.deletedAt
 }
 
@@ -90,7 +96,7 @@ export function buildOperationBoard(items: Item[], today: string): OperationBoar
     })
 
   // ----- active 集合 -----
-  const active = items.filter(isActive)
+  const active = items.filter(isItemActive)
 
   // ----- 今日の MUST -----
   const mustTodayItems = active

@@ -22,6 +22,7 @@ import { z } from 'zod'
 
 import { ItemSelectSchema } from '@/features/item/schema'
 import { itemService } from '@/features/item/service'
+import { isItemActive } from '@/features/today/operation-board'
 
 import { definePart, unwrapPartResult } from '../types'
 
@@ -159,10 +160,9 @@ export const itemListTodayPart = definePart({
   output: z.array(ItemSelectSchema),
   run: async (input, ctx) => {
     const all = await itemService.list(ctx.workspaceId)
-    return all.filter((it) => {
-      if (it.doneAt || it.archivedAt || it.deletedAt) return false
-      return it.scheduledFor === input.today || it.dueDate === input.today
-    })
+    return all.filter(
+      (it) => isItemActive(it) && (it.scheduledFor === input.today || it.dueDate === input.today),
+    )
   },
 })
 
@@ -188,10 +188,7 @@ export const itemListOverduePart = definePart({
   run: async (input, ctx) => {
     const all = await itemService.list(ctx.workspaceId)
     return all
-      .filter((it) => {
-        if (it.doneAt || it.archivedAt || it.deletedAt) return false
-        return it.dueDate !== null && it.dueDate < input.today
-      })
+      .filter((it) => isItemActive(it) && it.dueDate !== null && it.dueDate < input.today)
       .sort((a, b) => {
         if (a.dueDate! !== b.dueDate!) return a.dueDate!.localeCompare(b.dueDate!)
         return a.priority - b.priority

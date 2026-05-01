@@ -7,6 +7,7 @@ import {
   dayOffsetISO,
   dueTimeMinutes,
   eisenhowerScore,
+  isItemActive,
 } from './operation-board'
 
 const TODAY = '2026-04-30'
@@ -62,6 +63,24 @@ describe('dueTimeMinutes', () => {
     expect(dueTimeMinutes('00:00')).toBe(0)
     expect(dueTimeMinutes(null)).toBe(24 * 60)
     expect(dueTimeMinutes('garbage')).toBe(24 * 60)
+  })
+})
+
+describe('isItemActive', () => {
+  it('全 timestamp null = active (= true)', () => {
+    expect(isItemActive(mk({ id: 'a' }))).toBe(true)
+  })
+
+  it('doneAt 設定 → 非 active', () => {
+    expect(isItemActive(mk({ id: 'b', doneAt: new Date() }))).toBe(false)
+  })
+
+  it('archivedAt 設定 → 非 active', () => {
+    expect(isItemActive(mk({ id: 'c', archivedAt: new Date() }))).toBe(false)
+  })
+
+  it('deletedAt 設定 → 非 active (soft delete)', () => {
+    expect(isItemActive(mk({ id: 'd', deletedAt: new Date() }))).toBe(false)
   })
 })
 
