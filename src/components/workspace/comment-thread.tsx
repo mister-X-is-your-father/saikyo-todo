@@ -219,6 +219,7 @@ function CommentItem({
             aria-label="コメント編集 (Cmd/Ctrl+Enter で保存、Esc で編集破棄)"
             required
             aria-required="true"
+            aria-invalid={(body.length > 0 && body.trim() === '') || undefined}
             maxLength={10_000}
             data-testid={`comment-edit-input-${comment.id}`}
           />
