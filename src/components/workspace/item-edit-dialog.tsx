@@ -536,6 +536,7 @@ function ItemEditDialogInner({
                   value={item.sprintId ?? ''}
                   onChange={(e) => void handleSprintChange(e.target.value || null)}
                   disabled={assignSprint.isPending}
+                  aria-busy={assignSprint.isPending || undefined}
                   className="w-full rounded border px-2 py-1.5 text-sm"
                   data-testid="edit-item-sprint"
                 >
@@ -578,6 +579,7 @@ function ItemEditDialogInner({
                   value={item.keyResultId ?? ''}
                   onChange={(e) => void handleKrChange(e.target.value || null)}
                   disabled={assignKr.isPending}
+                  aria-busy={assignKr.isPending || undefined}
                   className="w-full rounded border px-2 py-1.5 text-sm"
                   data-testid="edit-item-kr"
                 >
