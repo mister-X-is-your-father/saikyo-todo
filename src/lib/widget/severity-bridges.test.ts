@@ -9,6 +9,7 @@ import {
   fourStateHintToSeverity,
   improvementSeverityCountsToSeverityCounts,
   improvementSeverityToSeverity,
+  pdcaPhaseSeverityCountsToSeverityCounts,
   pdcaPhaseSeverityToSeverity,
 } from './severity-bridges'
 
@@ -238,6 +239,58 @@ describe('assigneeLoadSeverityCountsToSeverityCounts', () => {
     const counts = { overloaded: 1, busy: 2, normal: 3, light: 4 }
     const sevCounts = assigneeLoadSeverityCountsToSeverityCounts(counts)
     const total = counts.overloaded + counts.busy + counts.normal + counts.light
+    const sevTotal =
+      sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
+    expect(sevTotal).toBe(total)
+  })
+})
+
+describe('pdcaPhaseSeverityCountsToSeverityCounts', () => {
+  it('PDCA phase counts を 5 段 severity counts に集約 (fresh + on_track が info に lossy 縮約)', () => {
+    expect(
+      pdcaPhaseSeverityCountsToSeverityCounts({
+        overdue: 1,
+        stale: 2,
+        on_track: 3,
+        fresh: 1,
+        closed: 4,
+      }),
+    ).toEqual({
+      ok: 0,
+      info: 4, // on_track + fresh
+      warn: 2, // stale
+      danger: 1, // overdue
+      muted: 4, // closed
+    })
+  })
+
+  it('全 0 → 全 severity 0', () => {
+    expect(
+      pdcaPhaseSeverityCountsToSeverityCounts({
+        overdue: 0,
+        stale: 0,
+        on_track: 0,
+        fresh: 0,
+        closed: 0,
+      }),
+    ).toEqual({ ok: 0, info: 0, warn: 0, danger: 0, muted: 0 })
+  })
+
+  it('ok bucket には出ない (cycle phase は進行段階軸であり達成度ではない)', () => {
+    const r = pdcaPhaseSeverityCountsToSeverityCounts({
+      overdue: 1,
+      stale: 1,
+      on_track: 1,
+      fresh: 1,
+      closed: 1,
+    })
+    expect(r.ok).toBe(0)
+  })
+
+  it('合計が phase 件数の合計と一致', () => {
+    const counts = { overdue: 1, stale: 2, on_track: 3, fresh: 1, closed: 4 }
+    const sevCounts = pdcaPhaseSeverityCountsToSeverityCounts(counts)
+    const total = counts.overdue + counts.stale + counts.on_track + counts.fresh + counts.closed
     const sevTotal =
       sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
     expect(sevTotal).toBe(total)

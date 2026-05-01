@@ -200,6 +200,39 @@ export function assigneeLoadSeverityCountsToSeverityCounts(
 }
 
 /**
+ * iter542 ai-automation: `Record<PdcaPhaseSeverity, number>` (PDCA cycle phase 5 段
+ * 別件数) を `Record<Severity, number>` に集約する pure helper。
+ *
+ * iter533-541 と同 pattern (= 10 ドメイン目)。caller は workspace 内 PDCA cycle 群の
+ * phase 状態 distribution を 1 行 severity サマリ で表示できる。
+ *
+ *   overdue  → danger (= 進行を促す警報)
+ *   stale    → warn   (= 停滞気味、注意)
+ *   on_track → info   (= 順調、進行中)
+ *   fresh    → info   (= 開始直後、進行中、on_track と同 severity に lossy 縮約)
+ *   closed   → muted  (= 完了、neutral)
+ *
+ * ok bucket には出ない (cycle phase は「達成」ではなく「進行段階」 軸)。
+ */
+export function pdcaPhaseSeverityCountsToSeverityCounts(
+  counts: Record<PdcaPhaseSeverity, number>,
+): Record<Severity, number> {
+  const out: Record<Severity, number> = {
+    ok: 0,
+    info: 0,
+    warn: 0,
+    danger: 0,
+    muted: 0,
+  }
+  const all: PdcaPhaseSeverity[] = ['overdue', 'stale', 'on_track', 'fresh', 'closed']
+  for (const k of all) {
+    const sev = pdcaPhaseSeverityToSeverity(k)
+    out[sev] += counts[k] ?? 0
+  }
+  return out
+}
+
+/**
  * iter495 refactor: 4 状態 hint (`FourStateHint` 'idle' | 'mild' | 'moderate' | 'severe') →
  * 共通 `Severity` bridge。
  *
