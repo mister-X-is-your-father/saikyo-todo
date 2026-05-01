@@ -118,7 +118,12 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
       data-testid="decompose-proposals-panel"
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
+        <div
+          className="min-w-0 flex-1"
+          role="status"
+          aria-live="polite"
+          data-testid="decompose-proposals-status"
+        >
           <div className="flex items-center gap-1.5 text-sm font-semibold">
             <Sparkles
               className={`h-3.5 w-3.5 text-amber-600 dark:text-amber-400 ${
