@@ -870,6 +870,8 @@ function ItemEditDialogInner({
             variant="outline"
             className="min-h-11"
             onClick={() => onOpenChange(false)}
+            data-testid="item-edit-cancel"
+            aria-label={`「${item.title}」の編集をキャンセル`}
           >
             キャンセル
           </Button>
