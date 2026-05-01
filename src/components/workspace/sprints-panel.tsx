@@ -580,6 +580,7 @@ function SprintCard({
                     max={editEnd || undefined}
                     onChange={(e) => setEditStart(e.target.value)}
                     required
+                    aria-required="true"
                     aria-label="Sprint 開始日"
                     aria-invalid={isInvalidDateRange(editStart, editEnd) || undefined}
                     className="h-8 text-xs"
@@ -598,6 +599,7 @@ function SprintCard({
                     min={editStart}
                     onChange={(e) => setEditEnd(e.target.value)}
                     required
+                    aria-required="true"
                     aria-label="Sprint 終了日"
                     aria-invalid={isInvalidDateRange(editStart, editEnd) || undefined}
                     className="h-8 text-xs"
