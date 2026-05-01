@@ -6,7 +6,7 @@
  * 1 part = 1 副作用 / 1 zod input / 1 zod output。3 layer (workflow node / agent
  * tool / MCP server tool) から同一定義を共有する。
  */
-import type { z, ZodType } from 'zod'
+import type { ZodType } from 'zod'
 
 import type { Result } from '@/lib/result'
 
@@ -91,8 +91,6 @@ export interface PartManifestEntry {
   inputJsonSchema: unknown
   outputJsonSchema: unknown
 }
-
-export type _ZodNS = typeof z
 
 /**
  * iter590 refactor: part の run() で `if (!r.ok) throw new Error(...); return r.value`
