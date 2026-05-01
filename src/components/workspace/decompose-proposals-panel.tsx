@@ -475,7 +475,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
     >
       <button
         type="button"
-        className="hover:bg-muted min-w-0 flex-1 cursor-pointer rounded px-1 py-0.5 text-left transition"
+        className="hover:bg-muted focus-visible:ring-ring min-w-0 flex-1 cursor-pointer rounded px-1 py-0.5 text-left transition focus-visible:ring-2 focus-visible:outline-none"
         onClick={() => setEditing(true)}
         data-testid={`proposal-${proposal.id}-edit-btn`}
         aria-label={`提案「${proposal.title}」を編集${proposal.isMust ? ' (MUST)' : ''}`}
