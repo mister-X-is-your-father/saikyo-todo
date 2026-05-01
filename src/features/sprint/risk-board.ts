@@ -218,6 +218,49 @@ export function formatAssigneeLoadJa(load: RiskBoardAssigneeLoad): string {
 }
 
 /**
+ * iter552 ai-automation (queue: heavyAssignees 自動算出 — risk-board → recovery-plan bridge):
+ * sprint risk board の `assigneeLoad` から「重い担当」 = recovery-plan の reassign 候補から
+ * 外す側のリストを抽出する pure helper。
+ *
+ * 既存資産の橋渡しのみ:
+ *   - input  : SprintRiskBoardSummary.assigneeLoad (Map<assigneeId, RiskBoardAssigneeLoad>)
+ *   - output : assignee id 配列 (重い順、tie は id 昇順で安定)
+ *   - bridge : `buildRecoveryPlan(item, { today, heavyAssignees: extractHeavyAssignees(summary) })`
+ *
+ * 閾値 default は 'busy' (= overloaded + busy を heavy 判定)。'overloaded' のみで絞りたい
+ * caller (= MUST severe escalation) は明示指定。'normal' / 'light' は heavy 扱いしない
+ * (recovery-plan の reassign 候補 = 「他の余裕ある人」 が居なくなる)。
+ *
+ * 出力順は totalScore 降順 → tie は id 昇順 (deterministic、UI で chip 並べる時に安定)。
+ *
+ * AI 不使用、副作用無し、既存 helper のみ依存。
+ */
+const SEVERITY_RANK: Record<AssigneeLoadSeverity, number> = {
+  overloaded: 3,
+  busy: 2,
+  normal: 1,
+  light: 0,
+}
+
+export function extractHeavyAssignees<T extends RiskBoardItemFields>(
+  summary: SprintRiskBoardSummary<T>,
+  threshold: AssigneeLoadSeverity = 'busy',
+): string[] {
+  const minRank = SEVERITY_RANK[threshold]
+  const matched: { id: string; load: RiskBoardAssigneeLoad }[] = []
+  for (const [id, load] of summary.assigneeLoad) {
+    if (SEVERITY_RANK[assigneeLoadSeverity(load)] >= minRank) {
+      matched.push({ id, load })
+    }
+  }
+  matched.sort((a, b) => {
+    if (a.load.totalScore !== b.load.totalScore) return b.load.totalScore - a.load.totalScore
+    return a.id < b.id ? -1 : a.id > b.id ? 1 : 0
+  })
+  return matched.map((m) => m.id)
+}
+
+/**
  * AI prompt / dashboard chip 用 sprint 全体の board サマリ 1 行:
  *   'リスクあり 5 件 (top: 期限超過 12 日 score 60 / 今日が期限 score 50)'
  *   '安全 (リスク item なし)' (= 全 score 0)

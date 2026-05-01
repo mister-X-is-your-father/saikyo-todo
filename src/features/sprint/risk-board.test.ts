@@ -5,6 +5,7 @@ import {
   buildSprintRiskBoard,
   computeRiskScore,
   dayDiffISO,
+  extractHeavyAssignees,
   formatAssigneeLoadJa,
   formatSprintRiskBoardJa,
   type RiskBoardItemFields,
@@ -247,5 +248,124 @@ describe('formatSprintRiskBoardJa', () => {
     expect(out).toMatch(/^リスクあり 2 件 \(top: /)
     expect(out).toContain('期限超過 10 日')
     expect(out).toContain('今日が期限')
+  })
+})
+
+describe('extractHeavyAssignees', () => {
+  it('default threshold "busy" → overloaded + busy のみ抽出', () => {
+    // u1: overloaded (totalScore 120), u2: busy (50), u3: normal (25), u4: light (5)
+    const items: RiskBoardItemFields[] = [
+      // u1 = 高負荷: overdue + must + blocked (priority 1) で 1 item で 100 超え
+      mk({
+        id: 'a',
+        assigneeIds: ['u1'],
+        dueDate: '2026-04-20',
+        isMust: true,
+        priority: 1,
+        status: 'blocked',
+        blockingCount: 2,
+      }),
+      // u2 = busy: today (25) + must (15) + must (15) で 50 超え
+      mk({ id: 'b', assigneeIds: ['u2'], dueDate: TODAY, isMust: true }),
+      mk({ id: 'c', assigneeIds: ['u2'], isMust: true }),
+      mk({ id: 'd', assigneeIds: ['u2'], isMust: true }),
+      // u3 = normal: today=25 のみ
+      mk({ id: 'e', assigneeIds: ['u3'], dueDate: TODAY }),
+      // u4 = light: priority 3 (4 score)
+      mk({ id: 'f', assigneeIds: ['u4'], priority: 3 }),
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    expect(extractHeavyAssignees(summary)).toEqual(['u1', 'u2'])
+  })
+
+  it('threshold "overloaded" → overloaded のみ抽出', () => {
+    // u1: 30(overdue) + 15(must) + 12(p1) + 25(blocked) + 25(blocking 5) = 107 → overloaded
+    // u2: 25(today) + 15(must) + 15(must) + 15(must) = 70 → busy (overloaded には届かない)
+    const items: RiskBoardItemFields[] = [
+      mk({
+        id: 'a',
+        assigneeIds: ['u1'],
+        dueDate: '2026-04-20',
+        isMust: true,
+        priority: 1,
+        status: 'blocked',
+        blockingCount: 5,
+      }),
+      mk({ id: 'b', assigneeIds: ['u2'], dueDate: TODAY, isMust: true }),
+      mk({ id: 'c', assigneeIds: ['u2'], isMust: true }),
+      mk({ id: 'd', assigneeIds: ['u2'], isMust: true }),
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    expect(extractHeavyAssignees(summary, 'overloaded')).toEqual(['u1'])
+  })
+
+  it('threshold "normal" → light 以外を抽出', () => {
+    const items: RiskBoardItemFields[] = [
+      mk({ id: 'a', assigneeIds: ['u1'], dueDate: TODAY }), // 25 → normal
+      mk({ id: 'b', assigneeIds: ['u2'], priority: 3 }), // 4 → light
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    expect(extractHeavyAssignees(summary, 'normal')).toEqual(['u1'])
+  })
+
+  it('threshold "light" → 全担当抽出 (light も含む)', () => {
+    const items: RiskBoardItemFields[] = [
+      mk({ id: 'a', assigneeIds: ['u1'], dueDate: TODAY }),
+      mk({ id: 'b', assigneeIds: ['u2'], priority: 3 }),
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    expect(extractHeavyAssignees(summary, 'light').sort()).toEqual(['u1', 'u2'])
+  })
+
+  it('totalScore 降順 + tie は id 昇順 で deterministic', () => {
+    // u1, u2, u3 を全員 busy (50) tie にして id 順を確認
+    const items: RiskBoardItemFields[] = [
+      mk({ id: 'i3', assigneeIds: ['u3'], dueDate: TODAY, isMust: true }),
+      mk({ id: 'i3b', assigneeIds: ['u3'], isMust: true }),
+      mk({ id: 'i3c', assigneeIds: ['u3'], isMust: true }),
+      mk({ id: 'i1', assigneeIds: ['u1'], dueDate: TODAY, isMust: true }),
+      mk({ id: 'i1b', assigneeIds: ['u1'], isMust: true }),
+      mk({ id: 'i1c', assigneeIds: ['u1'], isMust: true }),
+      mk({ id: 'i2', assigneeIds: ['u2'], dueDate: TODAY, isMust: true }),
+      mk({ id: 'i2b', assigneeIds: ['u2'], isMust: true }),
+      mk({ id: 'i2c', assigneeIds: ['u2'], isMust: true }),
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    // 全員 totalScore 55 で tie → id 昇順
+    expect(extractHeavyAssignees(summary)).toEqual(['u1', 'u2', 'u3'])
+  })
+
+  it('空 assigneeLoad → []', () => {
+    const summary = buildSprintRiskBoard([mk({ id: 'a', assigneeIds: [] })], { today: TODAY })
+    expect(extractHeavyAssignees(summary)).toEqual([])
+  })
+
+  it('該当無し (全員 light) → []', () => {
+    const items: RiskBoardItemFields[] = [
+      mk({ id: 'a', assigneeIds: ['u1'], priority: 3 }), // 4
+      mk({ id: 'b', assigneeIds: ['u2'], priority: 4 }), // 0
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    expect(extractHeavyAssignees(summary)).toEqual([])
+  })
+
+  it('降順: totalScore 高い側が先', () => {
+    // u1 = overloaded (高 score), u2 = busy (低 score)
+    const items: RiskBoardItemFields[] = [
+      mk({
+        id: 'a',
+        assigneeIds: ['u1'],
+        dueDate: '2026-04-20',
+        isMust: true,
+        priority: 1,
+        status: 'blocked',
+        blockingCount: 5,
+      }),
+      mk({ id: 'b', assigneeIds: ['u2'], dueDate: TODAY, isMust: true }),
+      mk({ id: 'c', assigneeIds: ['u2'], isMust: true }),
+      mk({ id: 'd', assigneeIds: ['u2'], isMust: true }),
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    expect(extractHeavyAssignees(summary)).toEqual(['u1', 'u2'])
   })
 })
