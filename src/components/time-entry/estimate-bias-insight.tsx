@@ -16,7 +16,7 @@ import { useMemo } from 'react'
 
 import { useItems } from '@/features/item/hooks'
 import type { Item } from '@/features/item/schema'
-import { computeEstimateBias } from '@/features/time-entry/bias'
+import { biasTendencyLabelJa, computeEstimateBias } from '@/features/time-entry/bias'
 import {
   computeBiasByCategory,
   formatTopSkewedCategoryJa,
@@ -35,14 +35,9 @@ import { useTimeEntries } from '@/features/time-entry/hooks'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-const TENDENCY_LABEL: Record<ReturnType<typeof computeEstimateBias>['tendency'], string> = {
-  'on-track': '見積精度 良好',
-  underestimating: '見積を低く見積りがち',
-  overestimating: '見積を高く見積りがち',
-  mixed: '見積精度にばらつき',
-  unknown: '見積データ 不足',
-}
-
+// iter520 refactor: TENDENCY_LABEL は `biasTendencyLabelJa` (iter519 helper) に集約。
+// TENDENCY_TONE は visual (mixed=violet 等) を保持するため component 内に残す
+// (severity bridge 化は別 iter で UX shift を伴うため別 commit が望ましい)。
 const TENDENCY_TONE: Record<ReturnType<typeof computeEstimateBias>['tendency'], string> = {
   'on-track': 'bg-emerald-50 text-emerald-700 border-emerald-200',
   underestimating: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -106,7 +101,7 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
   // error 時は silent (sub-feature なので主機能を妨げない)
   if (!report || entriesQ.error || itemsQ.error) return null
 
-  const label = TENDENCY_LABEL[report.tendency]
+  const label = biasTendencyLabelJa(report.tendency)
   const tone = TENDENCY_TONE[report.tendency]
 
   return (
