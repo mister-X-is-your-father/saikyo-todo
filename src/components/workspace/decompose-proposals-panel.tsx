@@ -485,6 +485,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
           variant="default"
           className="min-h-11 px-2"
           disabled={disabled}
+          aria-busy={disabled || undefined}
           onClick={() => void handleAccept()}
           data-testid={`proposal-${proposal.id}-accept`}
           title="採用 → 子タスクとして追加"
@@ -501,6 +502,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
           variant="ghost"
           className="min-h-11 px-2"
           disabled={disabled}
+          aria-busy={disabled || undefined}
           onClick={() => void handleReject()}
           data-testid={`proposal-${proposal.id}-reject`}
           title="却下"
