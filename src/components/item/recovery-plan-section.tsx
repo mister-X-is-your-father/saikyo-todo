@@ -20,7 +20,8 @@ import { todayISO } from '@/lib/date/iso'
 
 import {
   buildRecoveryPlan,
-  type RecoveryActionKind,
+  recoveryActionKindLabelJa,
+  recoveryActionKindSeverity,
   type RecoveryPlanItemFields,
 } from '@/features/item/recovery-plan'
 
@@ -35,25 +36,16 @@ interface Props {
   className?: string
 }
 
-const ACTION_KIND_SEVERITY: Record<RecoveryActionKind, 'ok' | 'info' | 'warn' | 'danger'> = {
-  unblock: 'danger',
-  reassign: 'warn',
-  split: 'warn',
-  reschedule: 'info',
-  escalate: 'info',
-}
-
-const ACTION_KIND_LABEL: Record<RecoveryActionKind, string> = {
-  unblock: '依存先解消',
-  reassign: '担当再分配',
-  split: '細分化',
-  reschedule: '期限再設定',
-  escalate: 'エスカレーション',
-}
-
 /**
  * overdue MUST item に対し救済 action 3 選を表示する section。
  * isApplicable=false なら null (= 描画なし)。
+ *
+ * iter518 refactor: chip label / severity は recovery-plan.ts の helper
+ * (`recoveryActionKindLabelJa` / `recoveryActionKindSeverity`、iter545 で投入) を
+ * そのまま消費し、本 component 内の重複 map を削除。escalate は helper では
+ * 'danger' (= 自動推論不能、上位者判断必要) に分類されているため SeverityChip
+ * 配色も従来 info → danger に shift (semantic 整合)。同様に unblock は
+ * danger → warn / split は warn → info に整列。
  */
 export function RecoveryPlanSection({ item, heavyAssignees = [], today, className }: Props) {
   const t = today ?? todayISO()
@@ -79,24 +71,29 @@ export function RecoveryPlanSection({ item, heavyAssignees = [], today, classNam
         この overdue MUST item は落とせない。具体 action 上位 3 つ (data-driven、AI 不使用)。
       </p>
       <ol className="space-y-2" aria-label={`救済 action ${plan.actions.length} 件`}>
-        {plan.actions.map((action) => (
-          <li
-            key={`${action.kind}-${action.rank}`}
-            className="space-y-1 rounded border bg-white p-2 text-xs"
-            data-testid={`recovery-action-${action.kind}`}
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground text-[10px] tabular-nums">{action.rank}.</span>
-              <SeverityChip
-                severity={ACTION_KIND_SEVERITY[action.kind]}
-                label={ACTION_KIND_LABEL[action.kind]}
-                ariaLabel={`action 種別 ${ACTION_KIND_LABEL[action.kind]}`}
-              />
-              <span className="font-medium">{action.title}</span>
-            </div>
-            <p className="text-muted-foreground pl-6 leading-relaxed">{action.rationale}</p>
-          </li>
-        ))}
+        {plan.actions.map((action) => {
+          const label = recoveryActionKindLabelJa(action.kind)
+          return (
+            <li
+              key={`${action.kind}-${action.rank}`}
+              className="space-y-1 rounded border bg-white p-2 text-xs"
+              data-testid={`recovery-action-${action.kind}`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground text-[10px] tabular-nums">
+                  {action.rank}.
+                </span>
+                <SeverityChip
+                  severity={recoveryActionKindSeverity(action.kind)}
+                  label={label}
+                  ariaLabel={`action 種別 ${label}`}
+                />
+                <span className="font-medium">{action.title}</span>
+              </div>
+              <p className="text-muted-foreground pl-6 leading-relaxed">{action.rationale}</p>
+            </li>
+          )
+        })}
       </ol>
     </div>
   )
