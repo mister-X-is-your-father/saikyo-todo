@@ -356,7 +356,9 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
         <form
           className="space-y-2"
           noValidate
+          aria-label={`提案「${proposal.title}」の編集フォーム`}
           aria-busy={update.isPending || undefined}
+          data-testid={`proposal-${proposal.id}-edit-form`}
           onSubmit={(e) => {
             e.preventDefault()
             void handleSaveEdit()
