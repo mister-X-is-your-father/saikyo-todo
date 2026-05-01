@@ -821,7 +821,13 @@ function WorkflowNodeRunsList({ runId }: { runId: string }) {
           )}
           {nr.output != null && (
             <details className="text-[10px]">
-              <summary className="text-muted-foreground cursor-pointer">output (jsonb)</summary>
+              <summary
+                className="text-muted-foreground cursor-pointer"
+                aria-label={`node ${nr.nodeId} の output (jsonb) を開閉`}
+                data-testid={`wf-node-run-output-summary-${nr.id}`}
+              >
+                output (jsonb)
+              </summary>
               <pre className="bg-muted/30 mt-1 overflow-x-auto rounded px-2 py-1 whitespace-pre-wrap">
                 {JSON.stringify(nr.output, null, 2)}
               </pre>
