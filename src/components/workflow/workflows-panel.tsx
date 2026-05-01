@@ -91,7 +91,9 @@ export function WorkflowsPanel({ workspaceId }: Props) {
           <form
             className="space-y-3"
             noValidate
+            aria-label="Workflow 作成フォーム"
             aria-busy={create.isPending || undefined}
+            data-testid="create-workflow-form"
             onSubmit={(e) => {
               e.preventDefault()
               void handleCreate()
