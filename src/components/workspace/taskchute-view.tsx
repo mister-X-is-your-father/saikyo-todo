@@ -165,7 +165,7 @@ export function TaskChuteView({ workspaceId, items }: Props) {
               <button
                 type="button"
                 onClick={() => void setOpenItemId(item.id)}
-                className="hover:text-primary flex-1 truncate text-left text-sm transition"
+                className="hover:text-primary focus-visible:ring-ring flex-1 truncate rounded text-left text-sm transition focus-visible:ring-2 focus-visible:outline-none"
                 aria-label={`${item.title} を編集`}
               >
                 {item.title}
