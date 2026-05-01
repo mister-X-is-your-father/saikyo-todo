@@ -327,7 +327,7 @@ function KanbanCard({
             data-testid={`kanban-title-${item.id}`}
             aria-label={`「${item.title}」を編集`}
             className={
-              'hover:text-primary text-left font-medium break-words hover:underline ' +
+              'hover:text-primary focus-visible:ring-ring rounded text-left font-medium break-words hover:underline focus-visible:ring-2 focus-visible:outline-none ' +
               (item.doneAt ? 'text-muted-foreground line-through' : '')
             }
           >
@@ -351,7 +351,7 @@ function KanbanCard({
             // iter505 ItemCheckbox pattern と同 pseudo `::before` 拡張。
             aria-label={`「${item.title}」を編集`}
             title={`「${item.title}」を編集`}
-            className="text-muted-foreground hover:text-foreground relative rounded px-1 text-xs before:absolute before:-inset-3 before:content-['']"
+            className="text-muted-foreground hover:text-foreground focus-visible:ring-ring relative rounded px-1 text-xs before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
             data-testid={`kanban-edit-${item.id}`}
           >
             <span aria-hidden="true">✎</span>
