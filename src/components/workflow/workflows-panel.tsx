@@ -623,6 +623,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
             type="button"
             className="min-h-11"
             disabled={saving}
+            aria-busy={saving || undefined}
             onClick={() => void handleSave()}
             data-testid={`wf-editor-save-${wf.id}`}
             aria-label={
