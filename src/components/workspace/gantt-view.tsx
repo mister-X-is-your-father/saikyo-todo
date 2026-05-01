@@ -349,6 +349,7 @@ export function GanttView({
             checked={showDeps}
             onChange={(e) => setShowDeps(e.target.checked)}
             className="size-3.5 cursor-pointer accent-current"
+            aria-label={showDeps ? '依存線を表示中 (クリックで非表示)' : '依存線を表示する'}
           />
           依存線
         </label>
@@ -358,6 +359,9 @@ export function GanttView({
             checked={hideDone}
             onChange={(e) => setHideDone(e.target.checked)}
             className="size-3.5 cursor-pointer accent-current"
+            aria-label={
+              hideDone ? '完了済を隠している (クリックで表示)' : '完了済を隠す (現在は表示中)'
+            }
           />
           完了済を隠す
         </label>
