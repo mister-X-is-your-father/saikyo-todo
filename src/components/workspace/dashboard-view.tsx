@@ -1398,6 +1398,7 @@ export function DashboardView({ workspaceId }: Props) {
                         }}
                         className="hover:text-primary truncate text-left font-medium hover:underline"
                         data-testid={`dashboard-must-title-${item.id}`}
+                        aria-label={`MUST「${item.title}」を編集`}
                       >
                         {item.title}
                       </button>
