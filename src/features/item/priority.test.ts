@@ -15,6 +15,7 @@ import {
   priorityClass,
   priorityDetailSuffix,
   priorityLabel,
+  prioritySeverity,
 } from './priority'
 
 describe('priority helpers', () => {
@@ -449,6 +450,39 @@ describe('countNonEmptyPriorityBuckets / countNonEmptyPriorityBucketsBy', () => 
           '進行中の案件 0 件',
         ),
       ).toBe('進行中: P1: 5')
+    })
+  })
+
+  describe('prioritySeverity', () => {
+    it('p1 → danger (赤、最優先)', () => {
+      expect(prioritySeverity(1)).toBe('danger')
+    })
+
+    it('p2 → warn (黄、高)', () => {
+      expect(prioritySeverity(2)).toBe('warn')
+    })
+
+    it('p3 → info (青、中)', () => {
+      expect(prioritySeverity(3)).toBe('info')
+    })
+
+    it('p4 → muted (グレー、低)', () => {
+      expect(prioritySeverity(4)).toBe('muted')
+    })
+
+    it('null/undefined/範囲外は p4 (muted) に集約', () => {
+      expect(prioritySeverity(null)).toBe('muted')
+      expect(prioritySeverity(undefined)).toBe('muted')
+      expect(prioritySeverity(0)).toBe('muted')
+      expect(prioritySeverity(5)).toBe('muted')
+      expect(prioritySeverity(-1)).toBe('muted')
+    })
+
+    it('全 priority 1-4 で 5 段階 Severity のいずれかを返す', () => {
+      const validSev = ['ok', 'info', 'warn', 'danger', 'muted']
+      for (const p of [1, 2, 3, 4]) {
+        expect(validSev).toContain(prioritySeverity(p))
+      }
     })
   })
 })

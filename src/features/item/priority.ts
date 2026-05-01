@@ -33,6 +33,37 @@ export function priorityLabel(p: number | null | undefined): string {
 }
 
 /**
+ * iter527 ai-automation: priority → 5 段階 共通 Severity bridge。
+ * iter519 / iter524-526 と同 pattern。`PRIO_DOT_CLASS` の visual semantic
+ * (red/amber/blue/slate) と完全整合:
+ *
+ *   p1 (最優先) → 'danger' (赤、bg-red-500)
+ *   p2 (高)     → 'warn'   (黄、bg-amber-500)
+ *   p3 (中)     → 'info'   (青、bg-blue-500)
+ *   p4 (低)     → 'muted'  (グレー、bg-slate-400)
+ *
+ * null/undefined/範囲外は p4 (低) と同じ muted に集約 (priorityClass / priorityLabel と同じ
+ * フォールバック)。SeverityChip / Slack 通知 / SR aria-label / AI prompt の chip 配色を
+ * 1 関数で統一可能。
+ *
+ * `lib/widget/severity-bridges.ts` (assigneeLoad / PdcaPhase 既存の bridge 集約 file)
+ * との整合: `Severity` 型は同源、bridge を本 file (= priority のドメインに近い) に置く
+ * のは「caller が priority.ts を import するついでに severity が取れる」 ergonomic 優先。
+ */
+const PRIORITY_SEVERITY: Record<PriorityKey, 'ok' | 'info' | 'warn' | 'danger' | 'muted'> = {
+  1: 'danger',
+  2: 'warn',
+  3: 'info',
+  4: 'muted',
+}
+
+export function prioritySeverity(
+  p: number | null | undefined,
+): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
+  return PRIORITY_SEVERITY[normalizePriority(p)]
+}
+
+/**
  * iter292 ai-automation: AI brief / pm-agent / dashboard widget が「priority 別の
  * item 分布」を 1 関数で出せる substrate。due-proximity の `groupItemsByDueProximity`
  * / `countItemsByDueProximity` / `formatDueProximityCounts` と対称な API。
