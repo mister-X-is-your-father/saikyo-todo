@@ -12,6 +12,7 @@ import {
   getStatusVisual,
   groupItemsByStatus,
   KNOWN_STATUS_KEYS,
+  statusCountsToSeverityCounts,
   type StatusIconKey,
   statusKeySeverity,
 } from './status-visual'
@@ -269,5 +270,60 @@ describe('statusKeySeverity', () => {
     for (const s of ['todo', 'in_progress', 'blocked', 'done', 'cancelled']) {
       expect(validSev).toContain(statusKeySeverity(s))
     }
+  })
+})
+
+describe('statusCountsToSeverityCounts', () => {
+  it('status counts を 5 段 severity counts に集約', () => {
+    expect(
+      statusCountsToSeverityCounts({
+        todo: 5,
+        in_progress: 2,
+        blocked: 1,
+        done: 3,
+        cancelled: 1,
+        unknown: 0,
+      }),
+    ).toEqual({
+      ok: 3, // done
+      info: 2, // in_progress
+      warn: 1, // blocked
+      danger: 0,
+      muted: 6, // todo (5) + cancelled (1) + unknown (0)
+    })
+  })
+
+  it('全 0 → 全 severity 0', () => {
+    expect(
+      statusCountsToSeverityCounts({
+        todo: 0,
+        in_progress: 0,
+        blocked: 0,
+        done: 0,
+        cancelled: 0,
+        unknown: 0,
+      }),
+    ).toEqual({ ok: 0, info: 0, warn: 0, danger: 0, muted: 0 })
+  })
+
+  it('合計が status 件数の合計と一致 (集約だけで増減しない)', () => {
+    const counts = { todo: 5, in_progress: 2, blocked: 1, done: 3, cancelled: 1, unknown: 0 }
+    const sevCounts = statusCountsToSeverityCounts(counts)
+    const statusTotal = Object.values(counts).reduce((a, b) => a + b, 0)
+    const sevTotal =
+      sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
+    expect(sevTotal).toBe(statusTotal)
+  })
+
+  it('status は danger bucket には出ない (status 軸では「致命」は無い)', () => {
+    const r = statusCountsToSeverityCounts({
+      todo: 1,
+      in_progress: 1,
+      blocked: 1,
+      done: 1,
+      cancelled: 1,
+      unknown: 1,
+    })
+    expect(r.danger).toBe(0)
   })
 })

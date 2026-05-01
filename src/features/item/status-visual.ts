@@ -215,3 +215,39 @@ export function statusKeySeverity(
 ): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
   return STATUS_SEVERITY[normalizeStatus(status)]
 }
+
+/**
+ * iter534 ai-automation: `Record<StatusKey, number>` (status 別件数) を
+ * `Record<Severity, number>` (5 段 severity 別件数) に集約する pure helper。
+ *
+ * iter533 priorityCountsToSeverityCounts と同 pattern。caller は
+ * `formatSeverityCountsJa(statusCountsToSeverityCounts(counts))` で status 件数を
+ * 1 行 severity サマリ として AI prompt / Slack 通知 / dashboard summary に出せる。
+ *
+ * 各 status は `STATUS_SEVERITY` (iter528) で対応 severity に集約:
+ *   todo / cancelled / unknown → muted
+ *   in_progress                → info
+ *   blocked                    → warn
+ *   done                       → ok
+ *
+ * 例: {todo:5, in_progress:2, blocked:1, done:3, cancelled:1, unknown:0} →
+ *     {ok:3, info:2, warn:1, danger:0, muted:6}
+ *
+ * 集約後の合計件数は status 合計と一致 (集約だけで増減しない)。
+ */
+export function statusCountsToSeverityCounts(
+  counts: Record<StatusKey, number>,
+): Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> {
+  const out: Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> = {
+    ok: 0,
+    info: 0,
+    warn: 0,
+    danger: 0,
+    muted: 0,
+  }
+  for (const k of STATUS_ORDER) {
+    const sev = STATUS_SEVERITY[k]
+    out[sev] += counts[k] ?? 0
+  }
+  return out
+}
