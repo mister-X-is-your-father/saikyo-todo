@@ -14,9 +14,11 @@ import {
   assigneeRefEquals,
   canGeneratePlan,
   classifyCollaborationMode,
+  collaborationModeCountsToSeverityCounts,
   collaborationModeLabelJa,
   collaborationModeSeverity,
   countAssigneesByKind,
+  countItemsByCollaborationMode,
   extractAiAssignees,
   extractUserAssignees,
   formatAgentRoleLabelJa,
@@ -286,6 +288,74 @@ describe('ai-assignee', () => {
 
     it('mixed → ok (協業)', () => {
       expect(collaborationModeSeverity('mixed')).toBe('ok')
+    })
+  })
+
+  describe('countItemsByCollaborationMode', () => {
+    it('items 配列を CollaborationMode 別に集計', () => {
+      const items = [
+        { assignees: [] },
+        { assignees: [aiRef] },
+        { assignees: [aiRef, aiRef2] },
+        { assignees: [userRef] },
+        { assignees: [userRef, userRef2] },
+        { assignees: [aiRef, userRef] },
+        { assignees: [] },
+      ]
+      expect(countItemsByCollaborationMode(items)).toEqual({
+        unassigned: 2,
+        'ai-only': 2,
+        'user-only': 2,
+        mixed: 1,
+      })
+    })
+
+    it('空配列 → 全 mode 0', () => {
+      expect(countItemsByCollaborationMode([])).toEqual({
+        unassigned: 0,
+        'ai-only': 0,
+        'user-only': 0,
+        mixed: 0,
+      })
+    })
+  })
+
+  describe('collaborationModeCountsToSeverityCounts', () => {
+    it('mode counts を 5 段 severity counts に集約 (user-only + mixed が ok 合算)', () => {
+      expect(
+        collaborationModeCountsToSeverityCounts({
+          unassigned: 2,
+          'ai-only': 3,
+          'user-only': 5,
+          mixed: 1,
+        }),
+      ).toEqual({
+        ok: 6, // user-only + mixed
+        info: 3, // ai-only
+        warn: 2, // unassigned
+        danger: 0,
+        muted: 0,
+      })
+    })
+
+    it('全 0 → 全 severity 0', () => {
+      expect(
+        collaborationModeCountsToSeverityCounts({
+          unassigned: 0,
+          'ai-only': 0,
+          'user-only': 0,
+          mixed: 0,
+        }),
+      ).toEqual({ ok: 0, info: 0, warn: 0, danger: 0, muted: 0 })
+    })
+
+    it('合計が mode 件数の合計と一致', () => {
+      const counts = { unassigned: 2, 'ai-only': 3, 'user-only': 5, mixed: 1 } as const
+      const sevCounts = collaborationModeCountsToSeverityCounts(counts)
+      const total = Object.values(counts).reduce((a, b) => a + b, 0)
+      const sevTotal =
+        sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
+      expect(sevTotal).toBe(total)
     })
   })
 })

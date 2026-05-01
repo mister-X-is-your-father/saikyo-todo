@@ -153,6 +153,63 @@ export function collaborationModeSeverity(
 }
 
 /**
+ * iter548 ai-automation: items 群を `CollaborationMode` 別に集計する pure helper。
+ *
+ * iter547 で投入した `classifyCollaborationMode` 単体判定を「items 配列全体の
+ * distribution」 に拡張。dashboard / AI prompt が workspace 内全 item の協業
+ * distribution を 1 関数で出せる。
+ *
+ * 各 item は `assignees: AssigneeRef[]` を持つ前提で、本 helper は
+ * countAssigneesByKind → classifyCollaborationMode を順に適用、4 mode 別件数を返す。
+ *
+ * 例: workspace 全 100 件 items を入力 → {unassigned: 12, 'ai-only': 5, 'user-only': 70, mixed: 13}
+ *
+ * caller は本 output を `formatCollaborationModeCountsJa` (= 別 helper、または直接展開)
+ * で 1 行 summary にする想定。本 iter は分類 + count に集約。
+ */
+export function countItemsByCollaborationMode<T extends { assignees: readonly AssigneeRef[] }>(
+  items: readonly T[],
+): Record<CollaborationMode, number> {
+  const out: Record<CollaborationMode, number> = {
+    unassigned: 0,
+    'ai-only': 0,
+    'user-only': 0,
+    mixed: 0,
+  }
+  for (const it of items) {
+    const counts = countAssigneesByKind(it.assignees)
+    const mode = classifyCollaborationMode(counts)
+    out[mode] += 1
+  }
+  return out
+}
+
+/**
+ * iter548 ai-automation: `Record<CollaborationMode, number>` を 共通 5 段
+ * Severity counts に集約する bridge。
+ *
+ *   unassigned → warn / ai-only → info / user-only → ok / mixed → ok (severity を
+ *   合算なので user-only と mixed が同 ok bucket)
+ */
+export function collaborationModeCountsToSeverityCounts(
+  counts: Record<CollaborationMode, number>,
+): Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> {
+  const out: Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> = {
+    ok: 0,
+    info: 0,
+    warn: 0,
+    danger: 0,
+    muted: 0,
+  }
+  const all: CollaborationMode[] = ['unassigned', 'ai-only', 'user-only', 'mixed']
+  for (const m of all) {
+    const sev = COLLAB_MODE_SEVERITY[m]
+    out[sev] += counts[m] ?? 0
+  }
+  return out
+}
+
+/**
  * agents 行を AssigneeRef[] に map (actor_type='agent' / actor_id=agent.id)。
  * AssigneePicker で AI 選択肢を render する時、value 内の AI assignee と
  * 比較するために使う。
