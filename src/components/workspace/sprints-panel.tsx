@@ -906,7 +906,11 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                 value={length}
                 onChange={(e) => setLength(Number(e.target.value))}
                 className="h-9 w-20 text-sm"
-                aria-label="Sprint 期間 (日数、1-90)"
+                aria-label={
+                  length < 1 || length > 90
+                    ? `Sprint 期間 (日数) の有効範囲は 1-90、現在値 ${length} は範囲外`
+                    : `Sprint 期間 (日数、1-90、現在: ${length} 日)`
+                }
                 aria-invalid={length < 1 || length > 90 || undefined}
                 inputMode="numeric"
                 data-testid="sprint-defaults-length"
