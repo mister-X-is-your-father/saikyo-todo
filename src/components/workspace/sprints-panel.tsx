@@ -277,7 +277,13 @@ export function SprintsPanel({ workspaceId }: Props) {
                 placeholder="この Sprint で達成したいこと"
                 rows={2}
                 maxLength={500}
-                aria-label="Sprint ゴール (任意、Cmd/Ctrl+Enter で作成)"
+                aria-label={
+                  goal.length === 0
+                    ? 'Sprint ゴール (任意、最大 500 文字、この Sprint で達成したいこと、Cmd/Ctrl+Enter で作成)'
+                    : goal.length > 480
+                      ? `Sprint ゴール (現在 ${goal.length} / 500 文字、上限近接、Cmd/Ctrl+Enter で作成)`
+                      : `Sprint ゴール (現在 ${goal.length} / 500 文字、Cmd/Ctrl+Enter で作成)`
+                }
               />
             </div>
             <div className="flex justify-end">
