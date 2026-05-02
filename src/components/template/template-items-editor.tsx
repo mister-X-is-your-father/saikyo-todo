@@ -161,9 +161,16 @@ export function TemplateItemsEditor({ templateId }: Props) {
             value={dod}
             onChange={(e) => setDod(e.target.value)}
             rows={2}
-            aria-label="DoD (Definition of Done) — MUST item の完了条件"
+            aria-label={
+              dod.length === 0
+                ? 'DoD (Definition of Done) — MUST item の完了条件 (必須、何があれば完了とみなすか)'
+                : dod.trim() === ''
+                  ? `DoD (現在 ${dod.length} 文字、空白のみは不正、MUST item には完了条件が必須)`
+                  : `DoD (現在 ${dod.length} 文字、Definition of Done)`
+            }
             required
             aria-required="true"
+            aria-invalid={(dod.length > 0 && dod.trim() === '') || undefined}
           />
         ) : null}
         <Button
