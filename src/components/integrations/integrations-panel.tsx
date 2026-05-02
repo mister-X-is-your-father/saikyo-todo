@@ -491,6 +491,11 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     minLength={1}
                     autoComplete="off"
                     spellCheck={false}
+                    aria-label={
+                      idPath.length === 0
+                        ? 'id path (必須、各 item の一意 ID を取り出す JSON dot-path — 例: id)'
+                        : `id path (現在 ${idPath.length} 文字、JSON dot-path)`
+                    }
                   />
                 </div>
                 <div className="space-y-1">
@@ -504,6 +509,11 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     minLength={1}
                     autoComplete="off"
                     spellCheck={false}
+                    aria-label={
+                      titlePath.length === 0
+                        ? 'title path (必須、各 item のタイトルを取り出す JSON dot-path — 例: title または name)'
+                        : `title path (現在 ${titlePath.length} 文字、JSON dot-path)`
+                    }
                   />
                 </div>
               </div>
