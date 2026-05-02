@@ -457,6 +457,11 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     placeholder="例: data.items (省略で root)"
                     autoComplete="off"
                     spellCheck={false}
+                    aria-label={
+                      itemsPath.length === 0
+                        ? 'items path (任意、JSON dot-path、省略で response root を items 配列とみなす — 例: data.items)'
+                        : `items path (現在 ${itemsPath.length} 文字、JSON dot-path)`
+                    }
                   />
                 </div>
                 <div className="space-y-1">
@@ -468,6 +473,11 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     placeholder="例: due_date"
                     autoComplete="off"
                     spellCheck={false}
+                    aria-label={
+                      duePath.length === 0
+                        ? 'due path (任意、各 item から期日を取り出す JSON dot-path — 例: due_date)'
+                        : `due path (現在 ${duePath.length} 文字、JSON dot-path)`
+                    }
                   />
                 </div>
                 <div className="space-y-1">
