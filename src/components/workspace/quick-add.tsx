@@ -134,7 +134,11 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
         <IMEInput
           id="quick-add-input"
           placeholder='例: "明日15時 p1 #会議 1時間 打ち合わせ準備"  (Enter で作成)'
-          aria-label="クイック追加 — タスクをすばやく作成 (Enter で確定、自然言語で日時・優先度・タグ・見積時間を指定可)"
+          aria-label={
+            text.length > 480
+              ? `クイック追加 — タスクをすばやく作成 (現在 ${text.length} / 500 文字、上限近接、Enter で確定)`
+              : 'クイック追加 — タスクをすばやく作成 (Enter で確定、自然言語で日時・優先度・タグ・見積時間を指定可)'
+          }
           aria-describedby="quick-add-preview quick-add-hint"
           maxLength={500}
           value={text}
