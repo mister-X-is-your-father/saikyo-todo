@@ -1,6 +1,7 @@
 import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 
+import { ISO_DATE_RE } from '@/lib/date/iso'
 import { itemSchedules } from '@/lib/db/schema'
 
 export const ScheduleSelectSchema = createSelectSchema(itemSchedules)
@@ -104,6 +105,6 @@ export type StopTimerInput = z.infer<typeof StopTimerInputSchema>
 export const ListSchedulesByDateInputSchema = z.object({
   workspaceId: z.string().uuid(),
   /** ISO date "YYYY-MM-DD"。範囲は workspace TZ ベースでサーバ側が解釈 */
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  date: z.string().regex(ISO_DATE_RE),
 })
 export type ListSchedulesByDateInput = z.infer<typeof ListSchedulesByDateInputSchema>

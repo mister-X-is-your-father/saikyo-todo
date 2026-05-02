@@ -19,6 +19,8 @@ import 'server-only'
 
 import { z } from 'zod'
 
+import { ISO_DATE_RE } from '@/lib/date/iso'
+
 import { TimeEntryCategorySchema } from '@/features/time-entry/categories'
 import { TimeEntrySelectSchema } from '@/features/time-entry/schema'
 import { timeEntryService } from '@/features/time-entry/service'
@@ -27,7 +29,7 @@ import { definePart, unwrapPartResult } from '../types'
 
 const TimeEntryCreateInput = z.object({
   itemId: z.string().uuid().nullish(),
-  workDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  workDate: z.string().regex(ISO_DATE_RE),
   category: TimeEntryCategorySchema,
   description: z.string().max(2000).optional(),
   durationMinutes: z

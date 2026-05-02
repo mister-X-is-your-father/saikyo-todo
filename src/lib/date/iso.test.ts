@@ -4,6 +4,7 @@ import {
   dueDateEndOfDayMs,
   formatLocalISO,
   formatUtcISO,
+  ISO_DATE_RE,
   isoDaysFromNow,
   isValidIsoDate,
   MS_PER_DAY,
@@ -218,6 +219,23 @@ describe('isValidIsoDate', () => {
     expect(isValidIsoDate('')).toBe(false)
     expect(isValidIsoDate('2026/04/29')).toBe(false)
     expect(isValidIsoDate('26-04-29')).toBe(false)
+  })
+})
+
+describe('ISO_DATE_RE (iter615 共有 regex)', () => {
+  it('完全一致 YYYY-MM-DD で true', () => {
+    expect(ISO_DATE_RE.test('2026-04-29')).toBe(true)
+    expect(ISO_DATE_RE.test('2024-12-31')).toBe(true)
+  })
+
+  it('ISO datetime prefix は false (= 完全一致のみ、isValidIsoDate と挙動が違う)', () => {
+    expect(ISO_DATE_RE.test('2026-04-29T15:30:00Z')).toBe(false)
+  })
+
+  it('形式不一致は false', () => {
+    expect(ISO_DATE_RE.test('2026/04/29')).toBe(false)
+    expect(ISO_DATE_RE.test('26-04-29')).toBe(false)
+    expect(ISO_DATE_RE.test('')).toBe(false)
   })
 })
 

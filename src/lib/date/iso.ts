@@ -93,6 +93,17 @@ export function todayUtcISO(now: Date = new Date()): string {
 }
 
 /**
+ * iter615 refactor: ISO `YYYY-MM-DD` 形式の zod / 自前検証で再利用する regex。
+ * automation-part / schedule / sprint / mock-timesheet / agent.tools が同一
+ * inline `/^\d{4}-\d{2}-\d{2}$/` を 5 箇所以上で複製していたので集約。
+ *
+ * 用途:
+ *   - zod: `z.string().regex(ISO_DATE_RE)` (message は caller 側で付ける)
+ *   - 自前 fail-soft 判定: `isValidIsoDate(s)`
+ */
+export const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+
+/**
  * iter360 refactor: ISO `YYYY-MM-DD` 文字列が有効か (= year-month-day prefix が
  * range 内か) を判定。`due-date-coverage` / `must-hygiene` で 2 callsite に重複
  * していたので集約。
@@ -104,7 +115,10 @@ export function todayUtcISO(now: Date = new Date()): string {
  *  - 形式不一致 / 範囲外 → false
  *
  * caller の用途は「dueDate っぽい文字列か」を fail-soft 判定するため、厳密 calendar
- * 検証ではなく shape check 程度で十分。
+ * 検証ではなく shape check 程度で十分。注意: `ISO_DATE_RE` は **完全一致**
+ * (= `2026-01-01...` のような prefix 一致は false) であり、本関数は **prefix 一致**
+ * を意図的に許す (caller が ISO datetime 文字列を渡す場合に対応)。そのため本関数
+ * 内では `ISO_DATE_RE` ではなく独自 prefix regex を使う。
  */
 export function isValidIsoDate(s: string): boolean {
   const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/)

@@ -20,6 +20,8 @@ import 'server-only'
 
 import { z } from 'zod'
 
+import { ISO_DATE_RE } from '@/lib/date/iso'
+
 import { ItemSelectSchema } from '@/features/item/schema'
 import { itemService } from '@/features/item/service'
 import { isItemActive } from '@/features/today/operation-board'
@@ -146,7 +148,7 @@ export const itemListPart = definePart({
  * server で勝手に new Date() しない pattern。time-zone 漏洩予防)。
  */
 const ItemListTodayInput = z.object({
-  today: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  today: z.string().regex(ISO_DATE_RE),
 })
 
 export const itemListTodayPart = definePart({
@@ -173,7 +175,7 @@ export const itemListTodayPart = definePart({
  * 「救済プラン」 等を立てる起点の substrate。古い超過順 (dueDate 昇順) で返す。
  */
 const ItemListOverdueInput = z.object({
-  today: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  today: z.string().regex(ISO_DATE_RE),
 })
 
 export const itemListOverduePart = definePart({
