@@ -597,7 +597,13 @@ function SprintCard({
                     onChange={(e) => setEditStart(e.target.value)}
                     required
                     aria-required="true"
-                    aria-label="Sprint 開始日"
+                    aria-label={
+                      editStart === ''
+                        ? 'Sprint 開始日 (必須、終了日以前)'
+                        : isInvalidDateRange(editStart, editEnd)
+                          ? `Sprint 開始日 (現在: ${editStart} (${dayOfWeekJa(editStart)})、終了日 ${editEnd} より後で不正)`
+                          : `Sprint 開始日 (現在: ${editStart} (${dayOfWeekJa(editStart)}))`
+                    }
                     aria-invalid={isInvalidDateRange(editStart, editEnd) || undefined}
                     className="h-8 text-xs"
                     data-testid={`sprint-edit-start-${sprint.id}`}
@@ -616,7 +622,13 @@ function SprintCard({
                     onChange={(e) => setEditEnd(e.target.value)}
                     required
                     aria-required="true"
-                    aria-label="Sprint 終了日"
+                    aria-label={
+                      editEnd === ''
+                        ? 'Sprint 終了日 (必須、開始日以降)'
+                        : isInvalidDateRange(editStart, editEnd)
+                          ? `Sprint 終了日 (現在: ${editEnd} (${dayOfWeekJa(editEnd)})、開始日 ${editStart} より前で不正)`
+                          : `Sprint 終了日 (現在: ${editEnd} (${dayOfWeekJa(editEnd)}))`
+                    }
                     aria-invalid={isInvalidDateRange(editStart, editEnd) || undefined}
                     className="h-8 text-xs"
                     data-testid={`sprint-edit-end-${sprint.id}`}
