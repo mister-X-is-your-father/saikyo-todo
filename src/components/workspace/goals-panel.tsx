@@ -723,10 +723,16 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
             value={mode}
             onChange={(e) => setMode(e.target.value as ProgressMode)}
             className="rounded border px-2 py-1 text-xs"
-            aria-label="KR 進捗算出モード"
+            aria-label={`KR 進捗算出モード (現在: ${
+              mode === 'items'
+                ? '子 Item 完了率で自動算出'
+                : mode === 'manual'
+                  ? '目標値 / 単位を手入力'
+                  : mode
+            })`}
           >
-            <option value="items">items</option>
-            <option value="manual">manual</option>
+            <option value="items">items (子 Item 完了率)</option>
+            <option value="manual">manual (目標値 / 単位)</option>
           </select>
         </div>
         {mode === 'manual' && (
