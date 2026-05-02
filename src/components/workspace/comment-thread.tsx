@@ -96,7 +96,15 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
           }}
           rows={3}
           data-testid="comment-input"
-          aria-label="コメント本文 (Cmd/Ctrl+Enter で投稿)"
+          aria-label={
+            body.length === 0
+              ? 'コメント本文 (必須、最大 10000 文字、@user で言及・通知、Cmd/Ctrl+Enter で投稿)'
+              : body.trim() === ''
+                ? `コメント本文 (現在 ${body.length} / 10000 文字、空白のみは不正)`
+                : body.length > 9500
+                  ? `コメント本文 (現在 ${body.length} / 10000 文字、上限近接、Cmd/Ctrl+Enter で投稿)`
+                  : `コメント本文 (現在 ${body.length} / 10000 文字、Cmd/Ctrl+Enter で投稿)`
+          }
           maxLength={10_000}
           required
           aria-required="true"
