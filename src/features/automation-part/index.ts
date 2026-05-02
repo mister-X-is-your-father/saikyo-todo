@@ -67,6 +67,12 @@ export function bootstrapAutomationParts(): void {
 // module load 時に自動 bootstrap (test では _resetRegistryForTesting → bootstrap で reload)
 bootstrapAutomationParts()
 
+export type { AnthropicToolDefinition } from './anthropic-bridge'
+export {
+  buildAnthropicToolDefinitions,
+  partIdToToolName,
+  toolNameToPartIdCandidate,
+} from './anthropic-bridge'
 export {
   _resetRegistryForTesting,
   buildPartManifest,
