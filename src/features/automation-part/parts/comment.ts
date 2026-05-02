@@ -20,7 +20,7 @@ import 'server-only'
 
 import { z } from 'zod'
 
-import { CommentOnItemSelectSchema } from '@/features/comment/schema'
+import { CommentOnDocSelectSchema, CommentOnItemSelectSchema } from '@/features/comment/schema'
 import { commentService } from '@/features/comment/service'
 
 import { definePart, unwrapPartResult } from '../types'
@@ -72,5 +72,37 @@ export const commentListForItemPart = definePart({
   output: z.array(CommentOnItemSelectSchema),
   run: async (input) => {
     return await commentService.onItem.list(input.itemId)
+  },
+})
+
+/**
+ * iter634 ai-automation: comment.list_for_doc part — Doc のコメント一覧 (read 系)。
+ *
+ * AC-2「AI に review してもらう」 の Doc 版。AI が「Doc に対する review コメント
+ * 履歴」 を取得して 引継ぎ / 既存 review summary に反映する経路の substrate。
+ * comment.list_for_item と pair で「item / doc 両 entity に対する議論履歴」 を
+ * AI が atomic に取得できる体制 (commentService.onDoc.list を thin wrap)。
+ *
+ * 設計メモ (item 版と統一):
+ *   - workspaceId は service が doc 経由で確立 (input 不要)
+ *   - 不在 / 他 ws の doc は requireWorkspaceMember(viewer) で拒否
+ *   - service は不在時 [] を返す (Result<T> ではない、type 互換のため part 内で
+ *     unwrap 不要)
+ */
+const CommentListForDocInput = z.object({
+  docId: z.string().uuid(),
+})
+
+export const commentListForDocPart = definePart({
+  id: 'comment.list_for_doc',
+  label: 'Doc のコメント一覧',
+  description:
+    '指定 Doc のコメント一覧を新しい順に返す。副作用なし、read scope。workspaceId は Doc 経由で確立。',
+  category: 'comment',
+  sideEffect: 'read',
+  input: CommentListForDocInput,
+  output: z.array(CommentOnDocSelectSchema),
+  run: async (input) => {
+    return await commentService.onDoc.list(input.docId)
   },
 })

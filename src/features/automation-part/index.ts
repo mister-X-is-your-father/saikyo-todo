@@ -7,7 +7,11 @@
  */
 import 'server-only'
 
-import { commentCreateOnItemPart, commentListForItemPart } from './parts/comment'
+import {
+  commentCreateOnItemPart,
+  commentListForDocPart,
+  commentListForItemPart,
+} from './parts/comment'
 import { docCreatePart, docListPart } from './parts/doc'
 import { goalListPart } from './parts/goal'
 import {
@@ -54,6 +58,7 @@ const ALL_PARTS: readonly AnyPart[] = [
   scheduleUpdatePart as AnyPart,
   commentCreateOnItemPart as AnyPart,
   commentListForItemPart as AnyPart,
+  commentListForDocPart as AnyPart,
   docCreatePart as AnyPart,
   docListPart as AnyPart,
   tagListPart as AnyPart,

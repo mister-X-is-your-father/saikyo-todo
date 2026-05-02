@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import { commentCreateOnItemPart, commentListForItemPart } from './comment'
+import { commentCreateOnItemPart, commentListForDocPart, commentListForItemPart } from './comment'
 import { ALT_FIXTURE_ID, VALID_FIXTURE_ID } from './test-fixtures'
 
 const validId = VALID_FIXTURE_ID
@@ -94,5 +94,28 @@ describe('commentListForItemPart input schema', () => {
     expect(commentListForItemPart.id).toBe('comment.list_for_item')
     expect(commentListForItemPart.sideEffect).toBe('read')
     expect(commentListForItemPart.category).toBe('comment')
+  })
+})
+
+describe('commentListForDocPart input schema (iter634)', () => {
+  it('docId 単独で valid', () => {
+    const r = commentListForDocPart.input.safeParse({ docId: validId })
+    expect(r.success).toBe(true)
+  })
+
+  it('docId 不在 → invalid (required)', () => {
+    const r = commentListForDocPart.input.safeParse({})
+    expect(r.success).toBe(false)
+  })
+
+  it('docId が uuid 不正 → invalid', () => {
+    const r = commentListForDocPart.input.safeParse({ docId: 'bogus' })
+    expect(r.success).toBe(false)
+  })
+
+  it('part metadata: id / sideEffect = read / category=comment', () => {
+    expect(commentListForDocPart.id).toBe('comment.list_for_doc')
+    expect(commentListForDocPart.sideEffect).toBe('read')
+    expect(commentListForDocPart.category).toBe('comment')
   })
 })
