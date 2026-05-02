@@ -108,9 +108,19 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                 placeholder="例: 朝の Slack 通知"
                 required
                 aria-required="true"
+                aria-invalid={(name.length > 0 && name.trim() === '') || undefined}
                 minLength={1}
                 maxLength={200}
                 autoComplete="off"
+                aria-label={
+                  name.length === 0
+                    ? 'Workflow 名前 (必須、最大 200 文字、何を自動化するか分かる名前)'
+                    : name.trim() === ''
+                      ? `Workflow 名前 (現在 ${name.length} / 200 文字、空白のみは不正)`
+                      : name.length > 180
+                        ? `Workflow 名前 (現在 ${name.length} / 200 文字、上限近接)`
+                        : `Workflow 名前 (現在 ${name.length} / 200 文字)`
+                }
               />
             </div>
             <div className="space-y-1">
