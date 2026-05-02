@@ -263,7 +263,7 @@ function CommentItem({
             <div className="mt-2 flex justify-end gap-2">
               <button
                 type="button"
-                className="text-muted-foreground hover:text-foreground text-xs"
+                className="text-muted-foreground hover:text-foreground focus-visible:ring-ring rounded text-xs focus-visible:ring-2 focus-visible:outline-none"
                 onClick={() => {
                   setBody(comment.body)
                   setEditing(true)
@@ -277,7 +277,7 @@ function CommentItem({
               </button>
               <button
                 type="button"
-                className="hover:text-destructive text-muted-foreground text-xs disabled:opacity-50"
+                className="hover:text-destructive text-muted-foreground focus-visible:ring-ring rounded text-xs focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
                 onClick={handleDelete}
                 disabled={softDelete.isPending}
                 aria-busy={softDelete.isPending || undefined}
