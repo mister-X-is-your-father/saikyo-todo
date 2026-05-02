@@ -35,6 +35,7 @@ import { isAppError } from '@/lib/errors'
 
 import { useItems } from '@/features/item/hooks'
 import type { Item } from '@/features/item/schema'
+import { getStatusVisual } from '@/features/item/status-visual'
 import {
   useAddItemDependency,
   useItemDependencies,
@@ -204,18 +205,21 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
             aria-label="依存先 Item"
           >
             <option value="">Item を選択…</option>
-            {candidates.map((c) => (
-              <option
-                key={c.id}
-                value={c.id}
-                aria-label={
-                  c.isMust ? `MUST: ${c.title} (${c.status})` : `${c.title} (${c.status})`
-                }
-              >
-                {c.isMust ? '⚠ ' : ''}
-                {c.title} [{c.status}]
-              </option>
-            ))}
+            {candidates.map((c) => {
+              const statusJa = getStatusVisual(c.status).shortLabel
+              return (
+                <option
+                  key={c.id}
+                  value={c.id}
+                  aria-label={
+                    c.isMust ? `MUST: ${c.title} (${statusJa})` : `${c.title} (${statusJa})`
+                  }
+                >
+                  {c.isMust ? '⚠ ' : ''}
+                  {c.title} [{statusJa}]
+                </option>
+              )
+            })}
           </select>
           <Button
             type="button"
