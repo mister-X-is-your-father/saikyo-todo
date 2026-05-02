@@ -125,6 +125,11 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
                       void toggle(ref)
                     }}
                     data-testid={`assignee-option-${m.userId}`}
+                    aria-label={
+                      checked
+                        ? `「${label}」をアサイン中 (クリックで解除)`
+                        : `「${label}」をアサインする`
+                    }
                   >
                     <CheckIcon
                       className={cn('mr-2 size-4', checked ? 'opacity-100' : 'opacity-0')}
@@ -149,6 +154,11 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
                         void toggle(ref)
                       }}
                       data-testid={`assignee-option-agent-${a.role}`}
+                      aria-label={
+                        checked
+                          ? `AI Agent「${label}」をアサイン中 (クリックで解除)`
+                          : `AI Agent「${label}」をアサインする`
+                      }
                     >
                       <CheckIcon
                         className={cn('mr-2 size-4', checked ? 'opacity-100' : 'opacity-0')}
