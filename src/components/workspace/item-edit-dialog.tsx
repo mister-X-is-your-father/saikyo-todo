@@ -489,6 +489,15 @@ function ItemEditDialogInner({
                 minLength={1}
                 maxLength={500}
                 autoComplete="off"
+                aria-label={
+                  title.length === 0
+                    ? 'タイトル (必須、最大 500 文字)'
+                    : title.trim() === ''
+                      ? `タイトル (現在 ${title.length} / 500 文字、空白のみは不正)`
+                      : title.length > 480
+                        ? `タイトル (現在 ${title.length} / 500 文字、上限近接)`
+                        : `タイトル (現在 ${title.length} / 500 文字)`
+                }
               />
             </div>
             <div className="space-y-1.5">
