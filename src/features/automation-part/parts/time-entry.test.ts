@@ -7,7 +7,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { VALID_FIXTURE_ID } from './test-fixtures'
-import { timeEntryCreatePart } from './time-entry'
+import { timeEntryCreatePart, timeEntryListPart } from './time-entry'
 
 const validId = VALID_FIXTURE_ID
 
@@ -106,5 +106,37 @@ describe('timeEntryCreatePart input schema', () => {
     expect(timeEntryCreatePart.id).toBe('time_entry.create')
     expect(timeEntryCreatePart.sideEffect).toBe('write')
     expect(timeEntryCreatePart.category).toBe('time')
+  })
+})
+
+describe('timeEntryListPart input schema (iter629)', () => {
+  it('空 object で valid (filter なし、limit default で service が 100 適用)', () => {
+    const r = timeEntryListPart.input.safeParse({})
+    expect(r.success).toBe(true)
+  })
+
+  it('from / to / limit 全指定で valid', () => {
+    const r = timeEntryListPart.input.safeParse({
+      from: '2026-04-01',
+      to: '2026-04-30',
+      limit: 200,
+    })
+    expect(r.success).toBe(true)
+  })
+
+  it('from が ISO date 不正 → invalid', () => {
+    const r = timeEntryListPart.input.safeParse({ from: '2026/04/01' })
+    expect(r.success).toBe(false)
+  })
+
+  it('limit 範囲外 (0 / 501) → invalid', () => {
+    expect(timeEntryListPart.input.safeParse({ limit: 0 }).success).toBe(false)
+    expect(timeEntryListPart.input.safeParse({ limit: 501 }).success).toBe(false)
+  })
+
+  it('part metadata: id / sideEffect=read / category=time', () => {
+    expect(timeEntryListPart.id).toBe('time_entry.list')
+    expect(timeEntryListPart.sideEffect).toBe('read')
+    expect(timeEntryListPart.category).toBe('time')
   })
 })

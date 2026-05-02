@@ -1,14 +1,14 @@
 /**
  * queue: AP-2 substrate — time_entry.* part 群 (sample 移植)。
  *
- * 既存 timeEntryService を thin wrap する形で part 化。AP-2 第 4 弾:
- *   - time_entry.create (稼働記録 1 件作成、idempotencyKey 必須)
- *
- * list / update は AP-2 第 5 弾以降で。
+ * 既存 timeEntryService を thin wrap する形で part 化:
+ *   - time_entry.create (稼働記録 1 件作成、idempotencyKey 必須、AP-2 第 4 弾)
+ *   - time_entry.list (期間 filter で稼働記録一覧、read 系、iter629 ai-automation 追加)
  *
  * 設計メモ:
  *   - timeEntryService.create は内部で requireWorkspaceMember(workspaceId, 'member')
  *     を呼ぶ
+ *   - timeEntryService.list は requireWorkspaceMember(viewer)、from / to は YYYY-MM-DD
  *   - workspaceId は ctx 経由 (input に直接含めない) — schedule / item と同じ pattern
  *   - durationMinutes は 1 〜 1440 (24h、schema で enforce)
  *   - category は固定 enum (dev / meeting / research / ops / other) — categories.ts
@@ -60,5 +60,39 @@ export const timeEntryCreatePart = definePart({
       idempotencyKey: input.idempotencyKey,
     })
     return unwrapPartResult('time_entry.create', r)
+  },
+})
+
+/**
+ * iter629 ai-automation: time_entry.list part — 期間 filter で稼働記録一覧 (read 系)。
+ *
+ * AC-1「AI に任せた」 の続編 (= AI が自動 stop_timer 後の累計工数を確認)、AC-5
+ * 「AI 同僚 persona」 で AI が「先週の自分の稼働 categoryどれが多い?」 等を 1 part
+ * で取得する経路。workspaceId は ctx 経由、from / to は ISO YYYY-MM-DD (caller が
+ * workspace TZ で算出)、limit は 1-500 (default 100、service schema 既定)。
+ */
+const TimeEntryListInput = z.object({
+  from: z.string().regex(ISO_DATE_RE).optional(),
+  to: z.string().regex(ISO_DATE_RE).optional(),
+  limit: z.number().int().min(1).max(500).optional(),
+})
+
+export const timeEntryListPart = definePart({
+  id: 'time_entry.list',
+  label: '稼働記録一覧を取得',
+  description:
+    '指定期間 (from / to ISO YYYY-MM-DD) の稼働記録一覧を返す。limit (default 100、最大 500) で件数制御。副作用なし、read scope。',
+  category: 'time',
+  sideEffect: 'read',
+  input: TimeEntryListInput,
+  output: z.array(TimeEntrySelectSchema),
+  run: async (input, ctx) => {
+    const r = await timeEntryService.list({
+      workspaceId: ctx.workspaceId,
+      ...(input.from ? { from: input.from } : {}),
+      ...(input.to ? { to: input.to } : {}),
+      ...(input.limit !== undefined ? { limit: input.limit } : {}),
+    })
+    return unwrapPartResult('time_entry.list', r)
   },
 })
