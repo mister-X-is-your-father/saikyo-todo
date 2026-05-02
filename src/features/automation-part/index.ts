@@ -24,6 +24,7 @@ import {
   scheduleStopTimerPart,
   scheduleUpdatePart,
 } from './parts/schedule'
+import { sprintListPart } from './parts/sprint'
 import { tagListPart } from './parts/tag'
 import { timeEntryCreatePart } from './parts/time-entry'
 import { registerPart } from './registry'
@@ -54,6 +55,7 @@ const ALL_PARTS: readonly AnyPart[] = [
   docListPart as AnyPart,
   tagListPart as AnyPart,
   goalListPart as AnyPart,
+  sprintListPart as AnyPart,
   timeEntryCreatePart as AnyPart,
   // AP-2 残 / AP-3 でここに notify / slack / ai / external 追加 (1 行で OK)
 ]
