@@ -382,7 +382,7 @@ export function GanttView({
             // gantt-summary banner の sibling chip / checkbox と垂直 align も保持)
             className="text-foreground hover:bg-muted relative rounded border px-2 py-0.5 text-xs before:absolute before:-inset-3 before:content-['']"
             title="今日の縦線まで横スクロール"
-            aria-label="Gantt timeline を今日の縦線まで横スクロール"
+            aria-label={`Gantt timeline を今日 (${format(new Date(), 'M月d日 (eee)')}) の縦線まで横スクロール`}
           >
             今日へジャンプ
           </button>
