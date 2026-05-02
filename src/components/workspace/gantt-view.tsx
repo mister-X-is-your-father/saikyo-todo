@@ -403,7 +403,7 @@ export function GanttView({
         {todayX !== null && (
           <div
             data-testid="gantt-today-line"
-            aria-label="今日"
+            aria-label={`今日 (${format(new Date(), 'yyyy年M月d日 (eee)')}) の縦線`}
             className="pointer-events-none absolute z-20"
             style={{
               left: LABEL_COL_PX + todayX,
