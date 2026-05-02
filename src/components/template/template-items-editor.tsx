@@ -97,7 +97,15 @@ export function TemplateItemsEditor({ templateId }: Props) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="flex-1"
-            aria-label="子 Item のタイトル"
+            aria-label={
+              title.length === 0
+                ? '子 Item のタイトル (必須、最大 500 文字、Mustache 変数 {{var}} 利用可)'
+                : title.trim() === ''
+                  ? `子 Item のタイトル (現在 ${title.length} / 500 文字、空白のみは不正)`
+                  : title.length > 480
+                    ? `子 Item のタイトル (現在 ${title.length} / 500 文字、上限近接)`
+                    : `子 Item のタイトル (現在 ${title.length} / 500 文字)`
+            }
             required
             aria-required="true"
             aria-invalid={(title.length > 0 && title.trim() === '') || undefined}
