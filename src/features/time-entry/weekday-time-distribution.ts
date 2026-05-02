@@ -23,6 +23,7 @@
  */
 
 import { formatMinutes } from './category-summary'
+import { safeMinutes } from './safe-minutes'
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -72,11 +73,6 @@ function parseWorkDate(iso: string): Date | null {
     return null
   }
   return out
-}
-
-function safeMinutes(min: number): number {
-  if (!Number.isFinite(min) || min <= 0) return 0
-  return Math.round(min)
 }
 
 /**

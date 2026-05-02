@@ -31,6 +31,7 @@
  */
 
 import { formatMinutes } from './category-summary'
+import { safeMinutes } from './safe-minutes'
 
 /** 集計に必要な最小 structural subset (TimeEntry のサブセット)。 */
 export interface ItemTimeEntry {
@@ -61,11 +62,6 @@ export interface GroupItemTimeOptions {
 }
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
-
-function safeMinutes(min: number): number {
-  if (!Number.isFinite(min) || min <= 0) return 0
-  return Math.round(min)
-}
 
 function inRange(workDate: string, from?: string, to?: string): boolean {
   if (!ISO_DATE_RE.test(workDate)) return false

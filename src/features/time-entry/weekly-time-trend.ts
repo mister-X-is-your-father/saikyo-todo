@@ -29,6 +29,7 @@
 import { shiftIsoDate } from '@/lib/date/iso'
 
 import { formatMinutes } from './category-summary'
+import { safeMinutes } from './safe-minutes'
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -50,11 +51,6 @@ export interface WeeklyTimeTrend {
 }
 
 const FLAT_THRESHOLD_PCT = 5
-
-function safeMinutes(min: number): number {
-  if (!Number.isFinite(min) || min <= 0) return 0
-  return Math.round(min)
-}
 
 // iter330 refactor: shiftDays は lib/date/iso.ts#shiftIsoDate に集約 (2 callsite 重複削除)。
 

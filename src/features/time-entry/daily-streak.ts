@@ -28,6 +28,8 @@
 
 import { shiftIsoDate } from '@/lib/date/iso'
 
+import { safeMinutes } from './safe-minutes'
+
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 export interface StreakEntry {
@@ -39,11 +41,6 @@ export interface StreakResult {
   currentStreak: number
   longestStreak: number
   lastActiveDate: string | null
-}
-
-function safeMinutes(min: number): number {
-  if (!Number.isFinite(min) || min <= 0) return 0
-  return min
 }
 
 // iter330 refactor: shiftDays は lib/date/iso.ts#shiftIsoDate に集約 (2 callsite 重複削除)。
