@@ -106,6 +106,15 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   minLength={1}
                   maxLength={200}
                   autoComplete="off"
+                  aria-label={
+                    name.length === 0
+                      ? 'Template 名前 (必須、最大 200 文字、何を生成するかが分かる名前)'
+                      : name.trim() === ''
+                        ? `Template 名前 (現在 ${name.length} / 200 文字、空白のみは不正)`
+                        : name.length > 180
+                          ? `Template 名前 (現在 ${name.length} / 200 文字、上限近接)`
+                          : `Template 名前 (現在 ${name.length} / 200 文字)`
+                  }
                 />
               </div>
               <div>
