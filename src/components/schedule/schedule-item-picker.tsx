@@ -48,7 +48,11 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
         <Search className="text-muted-foreground h-4 w-4" aria-hidden="true" />
         <Input
           autoFocus
-          aria-label="task を検索"
+          aria-label={
+            q.length === 0
+              ? 'task を検索 (タイトルで部分一致)'
+              : `task を検索 (現在のクエリ "${q}" — ${q.length} 文字)`
+          }
           placeholder="task を検索…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -100,6 +104,11 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
               placeholder="例: 急な電話 / 昼休み"
               value={interruptNote}
               onChange={(e) => setInterruptNote(e.target.value)}
+              aria-label={
+                interruptNote.length === 0
+                  ? '割込み / 休憩のメモ (任意、空欄で「割込み」 fallback)'
+                  : `割込み / 休憩のメモ (現在 ${interruptNote.length} 文字)`
+              }
             />
             <Button
               type="button"
