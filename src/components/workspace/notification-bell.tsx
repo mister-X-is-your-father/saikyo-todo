@@ -226,7 +226,7 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                     <button
                       type="button"
                       onClick={() => handleNotificationClick(n)}
-                      className="hover:bg-muted/60 flex w-full items-start gap-2 px-3 py-2 text-left"
+                      className="hover:bg-muted/60 focus-visible:ring-ring flex w-full items-start gap-2 rounded px-3 py-2 text-left focus-visible:ring-2 focus-visible:outline-none"
                       data-testid="notification-item"
                       data-notification-type={n.type}
                       aria-label={`${n.readAt ? '既読' : '未読'}${visual.label}通知: ${formatNotificationBody(n)}`}
