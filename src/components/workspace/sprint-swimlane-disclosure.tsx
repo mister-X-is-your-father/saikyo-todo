@@ -57,7 +57,11 @@ export function SprintSwimlaneDisclosure({
     >
       <summary
         className="text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center gap-1.5 text-xs"
-        aria-label={`Sprint「${sprintName}」の担当者 swim-lane Gantt を開閉`}
+        aria-label={
+          open
+            ? `Sprint「${sprintName}」の担当者 swim-lane Gantt を閉じる`
+            : `Sprint「${sprintName}」の担当者 swim-lane Gantt を開く`
+        }
         data-testid={`sprint-swimlane-summary-${sprintId}`}
       >
         <Users className="h-3.5 w-3.5" aria-hidden="true" />
