@@ -400,7 +400,13 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               }}
               rows={3}
               maxLength={10000}
-              aria-label="提案 description (Cmd/Ctrl+Enter で保存)"
+              aria-label={
+                description.length === 0
+                  ? '提案 description (任意、最大 10000 文字、Markdown 可、Cmd/Ctrl+Enter で保存)'
+                  : description.length > 9500
+                    ? `提案 description (現在 ${description.length} / 10000 文字、上限近接、Cmd/Ctrl+Enter で保存)`
+                    : `提案 description (現在 ${description.length} / 10000 文字、Cmd/Ctrl+Enter で保存)`
+              }
             />
           </div>
           <label className="flex items-center gap-1.5 text-xs">
