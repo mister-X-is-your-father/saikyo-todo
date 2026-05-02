@@ -337,8 +337,15 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
             data-testid="filter-sprint"
             aria-label={
               sprintFilter
-                ? `Sprint で絞り込み中 (現在: ${sprintFilter})。「全 Sprint」で解除`
-                : 'Sprint で絞り込み (active / 未割当 / 個別 sprint)'
+                ? `Sprint で絞り込み中 (現在: ${
+                    sprintFilter === 'active'
+                      ? '稼働中の Sprint'
+                      : sprintFilter === 'none'
+                        ? '未割当のみ'
+                        : ((sprintsList.data ?? []).find((sp) => sp.id === sprintFilter)?.name ??
+                          sprintFilter)
+                  })。「全 Sprint」で解除`
+                : 'Sprint で絞り込み (稼働中 / 未割当 / 個別 sprint)'
             }
           >
             <option value="">全 Sprint</option>
