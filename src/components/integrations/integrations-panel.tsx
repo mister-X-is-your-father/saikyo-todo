@@ -409,7 +409,13 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     value={method}
                     onChange={(e) => setMethod(e.target.value as 'GET' | 'POST')}
                     className="h-9 w-full rounded-md border px-3 py-1 text-sm"
-                    aria-label="HTTP メソッド (GET / POST)"
+                    aria-label={`HTTP メソッド (現在: ${
+                      method === 'GET'
+                        ? 'GET — 副作用なし、URL の query で読取り'
+                        : method === 'POST'
+                          ? 'POST — body 付き送信、subscribe / search 系の API に使う'
+                          : method
+                    })`}
                   >
                     <option value="GET">GET</option>
                     <option value="POST">POST</option>
