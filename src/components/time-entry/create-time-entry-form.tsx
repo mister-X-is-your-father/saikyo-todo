@@ -74,6 +74,14 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           required
           aria-required="true"
           max={new Date().toISOString().slice(0, 10)}
+          aria-label={(() => {
+            const today = new Date().toISOString().slice(0, 10)
+            if (workDate === '') return '日付 (必須、今日まで指定可、未来日付は不正)'
+            if (workDate > today)
+              return `日付 (現在: ${workDate}、今日 ${today} より後の未来日付で不正)`
+            if (workDate === today) return `日付 (現在: ${workDate}、今日)`
+            return `日付 (現在: ${workDate}、過去日付)`
+          })()}
         />
       </div>
       <div className="space-y-1">
