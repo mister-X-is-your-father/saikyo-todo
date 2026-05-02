@@ -543,7 +543,13 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
           rows={5}
           className="bg-background w-full rounded border px-2 py-1.5 font-mono text-sm"
           placeholder={'例:\n仕様書を読む\nスキーマ設計\nプロトタイプ実装'}
-          aria-label="子タスクを改行区切りで bulk 追加 (Cmd/Ctrl+Enter で追加)"
+          aria-label={
+            bulkText === ''
+              ? '子タスクを改行区切りで bulk 追加 (Cmd/Ctrl+Enter で追加)'
+              : pendingTitleCount === 0
+                ? '子タスクを改行区切りで bulk 追加 (現在 空行のみで追加対象なし)'
+                : `子タスクを改行区切りで bulk 追加 (現在 ${pendingTitleCount} 件、Cmd/Ctrl+Enter で追加)`
+          }
           data-testid="subtasks-bulk-input"
         />
         <div className="flex items-center justify-between">
