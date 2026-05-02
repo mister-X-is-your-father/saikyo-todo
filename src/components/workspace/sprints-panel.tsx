@@ -883,7 +883,7 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                 value={dow}
                 onChange={(e) => setDow(Number(e.target.value))}
                 className="h-9 rounded-md border px-2 text-sm"
-                aria-label="Sprint 基本曜日"
+                aria-label={`Sprint 基本曜日 (現在: ${DOW_JA[dow] ?? dow}曜開始)`}
                 data-testid="sprint-defaults-dow"
               >
                 {DOW_JA.map((label, i) => (
