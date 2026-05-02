@@ -378,6 +378,11 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                   autoComplete="new-password"
                   spellCheck={false}
                   data-testid="src-token"
+                  aria-label={
+                    token.length === 0
+                      ? 'API Token (必須、Yamory API の secret token、type=password で入力中も非表示)'
+                      : `API Token (現在 ${token.length} 文字、type=password で内容は SR にも非表示)`
+                  }
                 />
               </div>
               <div className="space-y-1">
@@ -410,6 +415,11 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     autoComplete="off"
                     spellCheck={false}
                     data-testid="src-url"
+                    aria-label={
+                      url.length === 0
+                        ? 'URL (必須、https:// または http:// で始まる API endpoint)'
+                        : `URL (現在 ${url.length} 文字、API endpoint)`
+                    }
                   />
                 </div>
                 <div className="space-y-1">
