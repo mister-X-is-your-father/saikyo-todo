@@ -136,8 +136,18 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           className="w-24"
           required
           aria-required="true"
-          aria-invalid={durationMinutes <= 0 || undefined}
+          aria-invalid={durationMinutes <= 0 || durationMinutes > 24 * 60 || undefined}
           inputMode="numeric"
+          aria-label={(() => {
+            if (durationMinutes <= 0)
+              return `分 (1 以上、最大 1440 = 24h、現在値 ${durationMinutes} は不正)`
+            if (durationMinutes > 24 * 60)
+              return `分 (有効範囲 1-1440、現在値 ${durationMinutes} は範囲外)`
+            const h = Math.floor(durationMinutes / 60)
+            const m = durationMinutes % 60
+            const hm = h > 0 ? (m > 0 ? `${h}時間${m}分` : `${h}時間`) : `${m}分`
+            return `分 (現在 ${durationMinutes} 分 = ${hm}、step 15)`
+          })()}
         />
       </div>
       <div className="flex items-end">
