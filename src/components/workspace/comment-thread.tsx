@@ -224,7 +224,15 @@ function CommentItem({
               }
             }}
             rows={3}
-            aria-label="コメント編集 (Cmd/Ctrl+Enter で保存、Esc で編集破棄)"
+            aria-label={
+              body.length === 0
+                ? 'コメント編集 (必須、最大 10000 文字、Cmd/Ctrl+Enter で保存、Esc で編集破棄)'
+                : body.trim() === ''
+                  ? `コメント編集 (現在 ${body.length} / 10000 文字、空白のみは不正)`
+                  : body.length > 9500
+                    ? `コメント編集 (現在 ${body.length} / 10000 文字、上限近接、Cmd/Ctrl+Enter で保存、Esc で編集破棄)`
+                    : `コメント編集 (現在 ${body.length} / 10000 文字、Cmd/Ctrl+Enter で保存、Esc で編集破棄)`
+            }
             required
             aria-required="true"
             aria-invalid={(body.length > 0 && body.trim() === '') || undefined}
