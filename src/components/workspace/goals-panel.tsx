@@ -780,7 +780,13 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
               onChange={(e) => setTarget(e.target.value)}
               placeholder="例: 100"
               className="w-32 text-sm"
-              aria-label="目標値"
+              aria-label={
+                target === ''
+                  ? '目標値 (KR を達成判定するための数値、decimal 可)'
+                  : Number.isNaN(Number(target))
+                    ? `目標値 (現在値「${target}」 は数値として不正)`
+                    : `目標値 (現在: ${target}${unit ? ` ${unit}` : ''})`
+              }
               // iter348: 目標値は decimal 入力可 (% / hours など) のため inputMode="decimal"
               // で mobile に小数 keypad を呼出。step=any で arrow キー / spinner で小数入力可。
               inputMode="decimal"
@@ -791,7 +797,11 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
               onChange={(e) => setUnit(e.target.value)}
               placeholder="例: 件 / %"
               className="w-24 text-sm"
-              aria-label="単位"
+              aria-label={
+                unit.length === 0
+                  ? '単位 (任意、最大 20 文字、目標値とセット — 例: 件 / % / hours)'
+                  : `単位 (現在: 「${unit}」、${unit.length} 文字)`
+              }
               maxLength={20}
               autoComplete="off"
             />
