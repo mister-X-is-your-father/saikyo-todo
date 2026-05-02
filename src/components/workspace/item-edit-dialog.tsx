@@ -499,6 +499,13 @@ function ItemEditDialogInner({
                 onChange={(e) => setDescription(e.target.value)}
                 maxLength={10_000}
                 autoComplete="off"
+                aria-label={
+                  description.length === 0
+                    ? '説明 (任意、最大 10000 文字、Markdown 可)'
+                    : description.length > 9500
+                      ? `説明 (現在 ${description.length} / 10000 文字、上限近接)`
+                      : `説明 (現在 ${description.length} / 10000 文字)`
+                }
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
