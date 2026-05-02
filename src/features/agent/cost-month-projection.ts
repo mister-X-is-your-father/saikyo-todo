@@ -35,6 +35,8 @@
 
 import { type ChipTone, type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
+import { safeUsd } from './cost-safe-usd'
+
 const ISO_DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/
 
 const DEFAULT_WARN_THRESHOLD = 0.8
@@ -60,11 +62,6 @@ export interface CostMonthProjection {
   exceedsLimit: boolean
   /** 'safe' / 'warn' / 'over' / 'idle' */
   riskLevel: CostMonthProjectionRisk
-}
-
-function safeUsd(usd: number): number {
-  if (!Number.isFinite(usd) || usd <= 0) return 0
-  return usd
 }
 
 function parseToday(today: string): { year: number; month: number; day: number } | null {

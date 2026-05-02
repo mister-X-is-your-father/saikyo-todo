@@ -25,6 +25,8 @@
 
 import { rateToPct } from '@/lib/format-rate'
 
+import { safeUsd } from './cost-safe-usd'
+
 const ISO_MONTH_RE = /^\d{4}-\d{2}$/
 const ISO_DATE_PREFIX_RE = /^\d{4}-\d{2}/
 
@@ -51,11 +53,6 @@ export interface MonthlyCostTrend {
 }
 
 const FLAT_THRESHOLD_PCT = 5
-
-function safeUsd(usd: number): number {
-  if (!Number.isFinite(usd) || usd <= 0) return 0
-  return usd
-}
 
 /** 'YYYY-MM-DD' or 'YYYY-MM' から 'YYYY-MM' を抽出。形式不一致は null */
 function todayToMonth(today: string): string | null {
