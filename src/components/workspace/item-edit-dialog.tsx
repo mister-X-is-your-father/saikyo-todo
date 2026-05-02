@@ -592,6 +592,14 @@ function ItemEditDialogInner({
                   aria-busy={assignKr.isPending || undefined}
                   className="w-full rounded border px-2 py-1.5 text-sm"
                   data-testid="edit-item-kr"
+                  aria-label={(() => {
+                    const current = (krsList.data ?? []).find((k) => k.id === item.keyResultId)
+                    return assignKr.isPending
+                      ? 'Key Result 割当を更新中…'
+                      : current
+                        ? `Key Result「${current.title}」(Goal「${current.goalTitle}」) に割当中 (変更で別 KR へ移動)`
+                        : 'Key Result 未割当 (選択で稼働中 Goal の KR に割当)'
+                  })()}
                 >
                   <option value="">未割当</option>
                   {(() => {
