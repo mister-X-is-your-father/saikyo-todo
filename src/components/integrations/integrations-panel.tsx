@@ -322,7 +322,13 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                 value={kind}
                 onChange={(e) => setKind(e.target.value as 'yamory' | 'custom-rest')}
                 className="h-9 w-full rounded-md border px-3 py-1 text-sm"
-                aria-label="Source 種別"
+                aria-label={`Source 種別 (現在: ${
+                  kind === 'custom-rest'
+                    ? 'custom-rest — 汎用 REST API、URL / メソッド / items path を自由設定'
+                    : kind === 'yamory'
+                      ? 'yamory — 脆弱性管理 SaaS の専用コネクタ'
+                      : kind
+                })`}
               >
                 <option value="custom-rest">custom-rest (汎用 REST)</option>
                 <option value="yamory">yamory (脆弱性管理)</option>
