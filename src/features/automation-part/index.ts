@@ -28,6 +28,7 @@ import {
 import { sprintListPart } from './parts/sprint'
 import { tagListPart } from './parts/tag'
 import { timeEntryCreatePart, timeEntryListPart } from './parts/time-entry'
+import { workspaceGetTeamContextPart } from './parts/workspace'
 import { registerPart } from './registry'
 import type { AnyPart } from './types'
 
@@ -60,6 +61,7 @@ const ALL_PARTS: readonly AnyPart[] = [
   sprintListPart as AnyPart,
   timeEntryCreatePart as AnyPart,
   timeEntryListPart as AnyPart,
+  workspaceGetTeamContextPart as AnyPart,
   // AP-2 残 / AP-3 でここに notify / slack / ai / external 追加 (1 行で OK)
 ]
 
