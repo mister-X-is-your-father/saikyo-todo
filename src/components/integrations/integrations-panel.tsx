@@ -396,6 +396,11 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                   aria-required="true"
                   autoComplete="off"
                   spellCheck={false}
+                  aria-label={
+                    projectIds.length === 0
+                      ? 'project IDs (必須、1 件以上、カンマ区切り — 例: proj-a, proj-b)'
+                      : `project IDs (現在 ${projectIds.length} 文字、カンマ区切り)`
+                  }
                 />
               </div>
             </div>
