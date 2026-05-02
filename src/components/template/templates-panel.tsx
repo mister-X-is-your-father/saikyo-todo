@@ -115,6 +115,13 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   value={kind}
                   onChange={(e) => setKind(e.target.value as 'manual' | 'recurring')}
                   className="h-9 w-full rounded-md border px-3 py-1 text-sm"
+                  aria-label={`Template 種別 (現在: ${
+                    kind === 'manual'
+                      ? 'manual — 手動展開のみ、ユーザが「展開」 button で生成'
+                      : kind === 'recurring'
+                        ? 'recurring — cron 式に従って worker が自動展開 (下記 cron 式を設定)'
+                        : kind
+                  })`}
                 >
                   <option value="manual">manual (手動展開)</option>
                   <option value="recurring">recurring (cron で自動展開)</option>
