@@ -185,7 +185,13 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
             onChange={(e) => setPickKind(e.target.value as 'prerequisite' | 'related')}
             className="rounded border px-2 py-1.5 text-sm"
             data-testid="dep-kind"
-            aria-label="依存の種類"
+            aria-label={`依存の種類 (現在: ${
+              pickKind === 'prerequisite'
+                ? '前提条件 (上流、これが完了しないと本 Item を着手できない)'
+                : pickKind === 'related'
+                  ? '関連 (緩い結び付き、進行ブロックではない)'
+                  : pickKind
+            })`}
           >
             <option value="prerequisite">前提条件 (上流)</option>
             <option value="related">関連</option>
