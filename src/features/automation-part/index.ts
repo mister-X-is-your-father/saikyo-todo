@@ -31,6 +31,7 @@ import {
 } from './parts/schedule'
 import { sprintListPart } from './parts/sprint'
 import { tagListPart } from './parts/tag'
+import { templateListPart } from './parts/template'
 import { timeEntryCreatePart, timeEntryListPart } from './parts/time-entry'
 import { workspaceGetTeamContextPart } from './parts/workspace'
 import { registerPart } from './registry'
@@ -62,6 +63,7 @@ const ALL_PARTS: readonly AnyPart[] = [
   docCreatePart as AnyPart,
   docListPart as AnyPart,
   tagListPart as AnyPart,
+  templateListPart as AnyPart,
   goalListPart as AnyPart,
   sprintListPart as AnyPart,
   timeEntryCreatePart as AnyPart,
