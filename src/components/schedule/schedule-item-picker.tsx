@@ -75,7 +75,8 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
                 <button
                   type="button"
                   onClick={() => onPick({ itemId: it.id })}
-                  className="hover:bg-accent flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm"
+                  className="hover:bg-accent focus-visible:ring-ring flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm focus-visible:ring-2 focus-visible:outline-none"
+                  aria-label={`item「${it.title}」を選択${it.isMust ? ' (MUST)' : ''}`}
                 >
                   <span className="truncate">{it.title}</span>
                   {it.isMust ? <MustBadge data-testid={`schedule-picker-must-${it.id}`} /> : null}
