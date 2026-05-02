@@ -176,6 +176,11 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   className="font-mono"
                   autoComplete="off"
                   spellCheck={false}
+                  aria-label={
+                    scheduleCron.length === 0
+                      ? 'cron 式 (任意、5 フィールド標準 cron 形式 — 例: 「0 9 * * 1」 で毎週月曜 09:00)'
+                      : `cron 式 (現在 ${scheduleCron.length} 文字、5 フィールド標準形式)`
+                  }
                 />
               </div>
             ) : null}
