@@ -227,6 +227,13 @@ export function BudgetPanel({ workspaceId }: Props) {
                 // iter349: USD 通貨額は decimal 入力 (.50) 必須、mobile に小数 keypad を呼出。
                 inputMode="decimal"
                 data-testid="budget-limit-input"
+                aria-label={
+                  draftLimit === ''
+                    ? '月次上限 (USD) — 空欄で無制限'
+                    : Number.isNaN(Number(draftLimit)) || Number(draftLimit) < 0
+                      ? `月次上限 (USD、0 以上の数値必須、現在値「${draftLimit}」は不正)`
+                      : `月次上限 (USD、現在: $${Number(draftLimit).toFixed(2)})`
+                }
                 aria-invalid={
                   (draftLimit !== '' &&
                     (Number.isNaN(Number(draftLimit)) || Number(draftLimit) < 0)) ||
@@ -248,6 +255,13 @@ export function BudgetPanel({ workspaceId }: Props) {
                 onChange={(e) => setDraftWarn(e.target.value)}
                 inputMode="decimal"
                 data-testid="budget-warn-input"
+                aria-label={
+                  draftWarn === '' || Number.isNaN(Number(draftWarn))
+                    ? '警告閾値 (0..1、消費率がこの値を超えると UI バーを警告色に切替)'
+                    : Number(draftWarn) < 0 || Number(draftWarn) > 1
+                      ? `警告閾値 (有効範囲は 0-1、現在値「${draftWarn}」は範囲外)`
+                      : `警告閾値 (現在: ${Math.round(Number(draftWarn) * 100)}% — 消費率がこの値を超えると UI バーを警告色に切替)`
+                }
                 aria-invalid={
                   (draftWarn !== '' && (Number(draftWarn) < 0 || Number(draftWarn) > 1)) ||
                   undefined
