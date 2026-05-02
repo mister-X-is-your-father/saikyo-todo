@@ -343,9 +343,19 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                 placeholder="例: Yamory チーム A"
                 required
                 aria-required="true"
+                aria-invalid={(name.length > 0 && name.trim() === '') || undefined}
                 minLength={1}
                 maxLength={200}
                 autoComplete="off"
+                aria-label={
+                  name.length === 0
+                    ? 'Source 名前 (必須、最大 200 文字、識別しやすい名前 — 例: Yamory チーム A)'
+                    : name.trim() === ''
+                      ? `Source 名前 (現在 ${name.length} / 200 文字、空白のみは不正)`
+                      : name.length > 180
+                        ? `Source 名前 (現在 ${name.length} / 200 文字、上限近接)`
+                        : `Source 名前 (現在 ${name.length} / 200 文字)`
+                }
               />
             </div>
           </div>
