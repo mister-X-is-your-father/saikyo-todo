@@ -73,6 +73,8 @@ export {
   partIdToToolName,
   toolNameToPartIdCandidate,
 } from './anthropic-bridge'
+export type { McpToolDefinition } from './mcp-bridge'
+export { buildMcpToolDefinitions } from './mcp-bridge'
 export {
   _resetRegistryForTesting,
   buildPartManifest,
