@@ -26,11 +26,9 @@
  * 状態 (例: 直近 90 日) で渡す想定。
  */
 
-import { shiftIsoDate } from '@/lib/date/iso'
+import { ISO_DATE_RE, shiftIsoDate } from '@/lib/date/iso'
 
 import { safeMinutes } from './safe-minutes'
-
-const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 export interface StreakEntry {
   workDate: string

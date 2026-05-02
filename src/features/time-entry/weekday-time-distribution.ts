@@ -22,10 +22,10 @@
  *   - peak: 最大の曜日 + minutes、tie 時は週前半 (月→日 順) を優先、全 0 → null
  */
 
+import { ISO_DATE_RE } from '@/lib/date/iso'
+
 import { formatMinutes } from './category-summary'
 import { safeMinutes } from './safe-minutes'
-
-const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 export const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
 export type WeekdayKey = (typeof WEEKDAY_KEYS)[number]

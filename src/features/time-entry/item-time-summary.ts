@@ -30,6 +30,8 @@
  * 範囲外 entry は除外、0 加算 entry は entryCount にカウントしない (= 完全 ignore)。
  */
 
+import { ISO_DATE_RE } from '@/lib/date/iso'
+
 import { formatMinutes } from './category-summary'
 import { safeMinutes } from './safe-minutes'
 
@@ -60,8 +62,6 @@ export interface GroupItemTimeOptions {
   /** ISO `YYYY-MM-DD` 以前 (inclusive)。未指定で上限なし */
   to?: string
 }
-
-const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 function inRange(workDate: string, from?: string, to?: string): boolean {
   if (!ISO_DATE_RE.test(workDate)) return false

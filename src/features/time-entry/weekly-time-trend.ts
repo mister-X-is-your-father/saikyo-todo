@@ -26,12 +26,10 @@
  * workDate (空文字 / 形式違反) は除外。
  */
 
-import { shiftIsoDate } from '@/lib/date/iso'
+import { ISO_DATE_RE, shiftIsoDate } from '@/lib/date/iso'
 
 import { formatMinutes } from './category-summary'
 import { safeMinutes } from './safe-minutes'
-
-const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 export interface WeeklyTimeEntry {
   workDate: string
