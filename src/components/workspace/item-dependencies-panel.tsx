@@ -202,7 +202,11 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
             onChange={(e) => setPickId(e.target.value)}
             className="min-w-[260px] flex-1 rounded border px-2 py-1.5 text-sm"
             data-testid="dep-target"
-            aria-label="依存先 Item"
+            aria-label={
+              candidates.length === 0
+                ? '依存先 Item — 選択可能な候補がありません (本 Item と循環しない他の Item を作成すると候補に出ます)'
+                : `依存先 Item (候補 ${candidates.length} 件、本 Item と循環しないものに限定)`
+            }
           >
             <option value="">Item を選択…</option>
             {candidates.map((c) => {
