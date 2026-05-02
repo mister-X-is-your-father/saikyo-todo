@@ -527,6 +527,13 @@ function ItemEditDialogInner({
                   onChange={(e) => setStartDate(e.target.value)}
                   data-testid="edit-item-start-date"
                   aria-invalid={isInvalidDateRange(startDate, dueDate) || undefined}
+                  aria-label={
+                    startDate === ''
+                      ? '開始日 (任意、期限以前)'
+                      : isInvalidDateRange(startDate, dueDate)
+                        ? `開始日 (現在: ${startDate}、期限 ${dueDate} より後で不正)`
+                        : `開始日 (現在: ${startDate})`
+                  }
                   // iter346: 既存 dueDate を超える startDate は不正なので max で HTML5 制約。
                   // 反対方向 (min={startDate}) は editDue 側に既設、両方向ガードで対称化。
                   max={dueDate || undefined}
@@ -542,6 +549,13 @@ function ItemEditDialogInner({
                   onChange={(e) => setDueDate(e.target.value)}
                   data-testid="edit-item-due-date"
                   aria-invalid={isInvalidDateRange(startDate, dueDate) || undefined}
+                  aria-label={
+                    dueDate === ''
+                      ? '期限 (任意、開始日以降、MUST item は期限 + Heartbeat 通知が必須)'
+                      : isInvalidDateRange(startDate, dueDate)
+                        ? `期限 (現在: ${dueDate}、開始日 ${startDate} より前で不正)`
+                        : `期限 (現在: ${dueDate})`
+                  }
                   min={startDate || undefined}
                 />
               </div>
