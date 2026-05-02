@@ -1396,7 +1396,7 @@ export function DashboardView({ workspaceId }: Props) {
                           e.stopPropagation()
                           void setOpenItemId(item.id)
                         }}
-                        className="hover:text-primary truncate text-left font-medium hover:underline"
+                        className="hover:text-primary focus-visible:ring-ring truncate rounded text-left font-medium hover:underline focus-visible:ring-2 focus-visible:outline-none"
                         data-testid={`dashboard-must-title-${item.id}`}
                         aria-label={`MUST「${item.title}」を編集`}
                       >
