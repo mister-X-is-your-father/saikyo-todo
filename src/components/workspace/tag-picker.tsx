@@ -129,6 +129,11 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
                       void toggle(t.id)
                     }}
                     data-testid={`tag-option-${t.id}`}
+                    aria-label={
+                      checked
+                        ? `タグ「${t.name}」を付与中 (クリックで解除)`
+                        : `タグ「${t.name}」を付与する`
+                    }
                   >
                     <CheckIcon
                       className={cn('mr-2 size-4', checked ? 'opacity-100' : 'opacity-0')}
