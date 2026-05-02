@@ -155,6 +155,15 @@ export function GoalsPanel({ workspaceId }: Props) {
                   minLength={1}
                   maxLength={200}
                   autoComplete="off"
+                  aria-label={
+                    title.length === 0
+                      ? 'Goal Objective (必須、最大 200 文字、なに / なぜを 1 行で)'
+                      : title.trim() === ''
+                        ? `Goal Objective (現在 ${title.length} / 200 文字、空白のみは不正)`
+                        : title.length > 180
+                          ? `Goal Objective (現在 ${title.length} / 200 文字、上限近接)`
+                          : `Goal Objective (現在 ${title.length} / 200 文字)`
+                  }
                 />
               </div>
               <div className="space-y-1">
@@ -711,7 +720,15 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
             placeholder="KR タイトル (例: p95 < 200ms)"
             className="flex-1"
             data-testid={`kr-title-input-${goalId}`}
-            aria-label="KR タイトル"
+            aria-label={
+              krTitle.length === 0
+                ? 'KR タイトル (必須、最大 300 文字、達成判定可能な数値目標が望ましい)'
+                : krTitle.trim() === ''
+                  ? `KR タイトル (現在 ${krTitle.length} / 300 文字、空白のみは不正)`
+                  : krTitle.length > 280
+                    ? `KR タイトル (現在 ${krTitle.length} / 300 文字、上限近接)`
+                    : `KR タイトル (現在 ${krTitle.length} / 300 文字)`
+            }
             required
             aria-required="true"
             aria-invalid={(krTitle.length > 0 && krTitle.trim() === '') || undefined}
