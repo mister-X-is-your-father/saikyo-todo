@@ -313,8 +313,16 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
             data-testid="filter-status"
             aria-label={
               statusFilter
-                ? `ステータスで絞り込み中 (現在: ${statusFilter})。「全ステータス」で解除`
-                : 'ステータスで絞り込み (todo / in_progress / done)'
+                ? `ステータスで絞り込み中 (現在: ${
+                    statusFilter === 'todo'
+                      ? 'TODO'
+                      : statusFilter === 'in_progress'
+                        ? '進行中'
+                        : statusFilter === 'done'
+                          ? '完了'
+                          : statusFilter
+                  })。「全ステータス」で解除`
+                : 'ステータスで絞り込み (TODO / 進行中 / 完了)'
             }
           >
             <option value="">全ステータス</option>
