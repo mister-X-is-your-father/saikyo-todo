@@ -113,7 +113,16 @@ export function InstantiateForm({ workspaceId, template }: Props) {
                 aria-invalid={
                   ((values[v] ?? '').length > 0 && (values[v] ?? '').trim() === '') || undefined
                 }
-                aria-label={`Mustache 変数 ${v} の値`}
+                aria-label={(() => {
+                  const val = values[v] ?? ''
+                  if (val.length === 0)
+                    return `Mustache 変数「${v}」 の値 (必須、最大 500 文字、template の {{${v}}} に展開時 substitute される)`
+                  if (val.trim() === '')
+                    return `Mustache 変数「${v}」 (現在 ${val.length} / 500 文字、空白のみは不正)`
+                  if (val.length > 480)
+                    return `Mustache 変数「${v}」 (現在 ${val.length} / 500 文字、上限近接)`
+                  return `Mustache 変数「${v}」 (現在 ${val.length} / 500 文字)`
+                })()}
                 maxLength={500}
               />
             </div>
