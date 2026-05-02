@@ -162,7 +162,13 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
             placeholder={`この${periodLabelJa(period)}で達成したいことを書く (例: ◯◯ を完了する) (Cmd/Ctrl+Enter で保存)`}
             rows={3}
             maxLength={2000}
-            aria-label={`${periodLabelJa(period)}ゴール (Cmd/Ctrl+Enter で保存)`}
+            aria-label={
+              draft.length === 0
+                ? `${periodLabelJa(period)}ゴール (任意、最大 2000 文字、この${periodLabelJa(period)}で達成したいこと、Cmd/Ctrl+Enter で保存)`
+                : draft.length > 1900
+                  ? `${periodLabelJa(period)}ゴール (現在 ${draft.length} / 2000 文字、上限近接、Cmd/Ctrl+Enter で保存)`
+                  : `${periodLabelJa(period)}ゴール (現在 ${draft.length} / 2000 文字、Cmd/Ctrl+Enter で保存)`
+            }
             data-testid={`period-goal-textarea-${period}`}
           />
           <div className="flex justify-end">
