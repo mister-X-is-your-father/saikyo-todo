@@ -237,6 +237,13 @@ export function SprintsPanel({ workspaceId }: Props) {
                   aria-required="true"
                   aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   max={endDate || undefined}
+                  aria-label={
+                    startDate === ''
+                      ? 'Sprint 開始日 (必須、終了日以前)'
+                      : isInvalidDateRange(startDate, endDate)
+                        ? `Sprint 開始日 (現在: ${startDate}、終了日 ${endDate} より後で不正)`
+                        : `Sprint 開始日 (現在: ${startDate})`
+                  }
                 />
               </div>
               <div className="space-y-1">
@@ -251,6 +258,13 @@ export function SprintsPanel({ workspaceId }: Props) {
                   aria-required="true"
                   aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   min={startDate || undefined}
+                  aria-label={
+                    endDate === ''
+                      ? 'Sprint 終了日 (必須、開始日以降)'
+                      : isInvalidDateRange(startDate, endDate)
+                        ? `Sprint 終了日 (現在: ${endDate}、開始日 ${startDate} より前で不正)`
+                        : `Sprint 終了日 (現在: ${endDate})`
+                  }
                 />
               </div>
             </div>
