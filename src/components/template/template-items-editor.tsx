@@ -119,7 +119,14 @@ export function TemplateItemsEditor({ templateId }: Props) {
             value={dueOffset}
             onChange={(e) => setDueOffset(e.target.value)}
             className="h-9 w-28 rounded-md border px-2 text-sm"
-            aria-label="期日 offset (日数 — 展開日 + N 日後を期日に設定、0-365)"
+            aria-label={(() => {
+              if (dueOffset === '')
+                return '期日 offset (任意、日数 — 展開日 + N 日後を期日に設定、0-365)'
+              const n = Number(dueOffset)
+              if (Number.isNaN(n) || n < 0 || n > 365)
+                return `期日 offset (有効範囲 0-365、現在値「${dueOffset}」 は範囲外)`
+              return `期日 offset (現在 ${n} 日 — 展開日から ${n} 日後を期日に設定)`
+            })()}
             // iter347: 妥当範囲 0-365 日を HTML5 native で制約 (1 年超は誤入力 / 仕様外)。
             // step=1 で小数入力ガード。inputMode="numeric" で mobile に数字 keypad。
             min={0}
