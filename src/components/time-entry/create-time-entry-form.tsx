@@ -109,6 +109,15 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           aria-invalid={(description.length > 0 && description.trim() === '') || undefined}
           minLength={1}
           maxLength={500}
+          aria-label={
+            description.length === 0
+              ? '作業内容 (必須、最大 500 文字、何をやったかを 1 行で)'
+              : description.trim() === ''
+                ? `作業内容 (現在 ${description.length} / 500 文字、空白のみは不正)`
+                : description.length > 480
+                  ? `作業内容 (現在 ${description.length} / 500 文字、上限近接)`
+                  : `作業内容 (現在 ${description.length} / 500 文字)`
+          }
         />
       </div>
       <div className="space-y-1">
