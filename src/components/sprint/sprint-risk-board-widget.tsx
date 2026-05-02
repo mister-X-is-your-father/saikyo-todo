@@ -111,7 +111,7 @@ export function SprintRiskBoardWidget<T extends RiskBoardItemFields>({
                       <button
                         type="button"
                         onClick={() => onItemClick(entry.item)}
-                        className="hover:bg-muted/60 flex w-full items-center gap-2 rounded px-1 py-1"
+                        className="hover:bg-muted/60 focus-visible:ring-ring flex w-full items-center gap-2 rounded px-1 py-1 focus-visible:ring-2 focus-visible:outline-none"
                         aria-label={`${entry.item.title} を開く`}
                       >
                         {inner}
