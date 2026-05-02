@@ -9,6 +9,7 @@ import 'server-only'
 
 import { commentCreateOnItemPart, commentListForItemPart } from './parts/comment'
 import { docCreatePart, docListPart } from './parts/doc'
+import { goalListPart } from './parts/goal'
 import {
   itemCompletePart,
   itemCreatePart,
@@ -52,6 +53,7 @@ const ALL_PARTS: readonly AnyPart[] = [
   docCreatePart as AnyPart,
   docListPart as AnyPart,
   tagListPart as AnyPart,
+  goalListPart as AnyPart,
   timeEntryCreatePart as AnyPart,
   // AP-2 残 / AP-3 でここに notify / slack / ai / external 追加 (1 行で OK)
 ]

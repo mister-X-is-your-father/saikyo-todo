@@ -21,6 +21,7 @@ export type PartCategory =
   | 'comment'
   | 'doc'
   | 'tag'
+  | 'goal'
   | 'ai'
   | 'notify'
   | 'external'
