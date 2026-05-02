@@ -52,7 +52,7 @@ export function TimeEntriesPanel({ workspaceId }: { workspaceId: string }) {
               action={
                 <button
                   type="button"
-                  className="text-primary hover:bg-muted mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline"
+                  className="text-primary hover:bg-muted focus-visible:ring-ring mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline focus-visible:ring-2 focus-visible:outline-none"
                   data-testid="time-entries-empty-create"
                   aria-label="稼働記録 作成フォームの『勤務日』入力欄にフォーカス"
                   onClick={() => {
