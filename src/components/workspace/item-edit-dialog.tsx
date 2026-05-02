@@ -541,6 +541,14 @@ function ItemEditDialogInner({
                   aria-busy={assignSprint.isPending || undefined}
                   className="w-full rounded border px-2 py-1.5 text-sm"
                   data-testid="edit-item-sprint"
+                  aria-label={(() => {
+                    const current = (sprintsList.data ?? []).find((s) => s.id === item.sprintId)
+                    return assignSprint.isPending
+                      ? 'Sprint 割当を更新中…'
+                      : current
+                        ? `Sprint「${current.name}」に割当中 (変更で別 Sprint へ移動)`
+                        : 'Sprint 未割当 (選択で稼働中 / 計画中 Sprint に割当)'
+                  })()}
                 >
                   <option value="">未割当</option>
                   {(() => {
