@@ -136,7 +136,13 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                 rows={2}
                 maxLength={2000}
                 placeholder="この workflow が何を自動化するか"
-                aria-label="Workflow の説明 (任意、Cmd/Ctrl+Enter で作成)"
+                aria-label={
+                  description.length === 0
+                    ? 'Workflow の説明 (任意、最大 2000 文字、Cmd/Ctrl+Enter で作成)'
+                    : description.length > 1900
+                      ? `Workflow の説明 (現在 ${description.length} / 2000 文字、上限近接、Cmd/Ctrl+Enter で作成)`
+                      : `Workflow の説明 (現在 ${description.length} / 2000 文字、Cmd/Ctrl+Enter で作成)`
+                }
               />
             </div>
             <div className="flex justify-end">
