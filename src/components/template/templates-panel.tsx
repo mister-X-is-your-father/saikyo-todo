@@ -158,7 +158,11 @@ export function TemplatesPanel({ workspaceId }: Props) {
                 }}
                 rows={2}
                 placeholder="このテンプレートが何を生成するか"
-                aria-label="Template の説明 (Cmd/Ctrl+Enter で作成)"
+                aria-label={
+                  description.length === 0
+                    ? 'Template の説明 (任意、このテンプレートが何を生成するか、Cmd/Ctrl+Enter で作成)'
+                    : `Template の説明 (現在 ${description.length} 文字、Cmd/Ctrl+Enter で作成)`
+                }
               />
             </div>
             {kind === 'recurring' ? (
