@@ -14,6 +14,7 @@ import { eq, sql } from 'drizzle-orm'
 import { z } from 'zod'
 
 import { recordAudit } from '@/lib/audit'
+import { ISO_DATE_RE } from '@/lib/date/iso'
 import { fullPathOf } from '@/lib/db/ltree-path'
 import { agentDecomposeProposals } from '@/lib/db/schema'
 import { adminDb } from '@/lib/db/scoped-client'
@@ -25,16 +26,14 @@ import { itemRepository } from '@/features/item/repository'
 
 import type { AgentToolFactory } from './types'
 
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
-
 const AgentCreateItemSchema = z
   .object({
     title: z.string().min(1).max(500),
     description: z.string().max(5000).default(''),
     status: z.string().min(1).default('todo'),
     parentItemId: z.string().uuid().nullish(),
-    startDate: z.string().regex(ISO_DATE).nullish(),
-    dueDate: z.string().regex(ISO_DATE).nullish(),
+    startDate: z.string().regex(ISO_DATE_RE).nullish(),
+    dueDate: z.string().regex(ISO_DATE_RE).nullish(),
     isMust: z.boolean().default(false),
     dod: z.string().max(2000).nullish(),
   })

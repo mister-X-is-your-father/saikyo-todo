@@ -1,6 +1,7 @@
 import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 
+import { ISO_DATE_RE } from '@/lib/date/iso'
 import { sprints } from '@/lib/db/schema'
 
 export const SprintSelectSchema = createSelectSchema(sprints)
@@ -54,7 +55,7 @@ export function sprintStatusSeverity(
   return SPRINT_STATUS_SEVERITY[status]
 }
 
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD 形式で')
+const isoDate = z.string().regex(ISO_DATE_RE, 'YYYY-MM-DD 形式で')
 
 export const CreateSprintInputSchema = z
   .object({

@@ -1,14 +1,13 @@
 import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 
+import { ISO_DATE_RE } from '@/lib/date/iso'
 import { mockTimesheetEntries } from '@/lib/db/schema'
 
 import { TimeEntryCategorySchema } from '@/features/time-entry/categories'
 
 export const MockTimesheetEntrySchema = createSelectSchema(mockTimesheetEntries)
 export type MockTimesheetEntry = z.infer<typeof MockTimesheetEntrySchema>
-
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 
 export const MockTimesheetLoginInputSchema = z.object({
   email: z.string().email(),
@@ -17,7 +16,7 @@ export const MockTimesheetLoginInputSchema = z.object({
 export type MockTimesheetLoginInput = z.infer<typeof MockTimesheetLoginInputSchema>
 
 export const MockTimesheetSubmitInputSchema = z.object({
-  workDate: z.string().regex(ISO_DATE, 'YYYY-MM-DD'),
+  workDate: z.string().regex(ISO_DATE_RE, 'YYYY-MM-DD'),
   category: TimeEntryCategorySchema,
   description: z.string().max(2000),
   // 15 分 (0.25h) 刻みのため 0.25 倍数チェック
