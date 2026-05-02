@@ -18,6 +18,7 @@ import {
   itemListTodayPart,
   itemUpdatePart,
 } from './parts/item'
+import { itemDependencyListForItemPart } from './parts/item-dependency'
 import {
   scheduleCreatePart,
   scheduleStartTimerPart,
@@ -45,6 +46,7 @@ const ALL_PARTS: readonly AnyPart[] = [
   itemListPart as AnyPart,
   itemListTodayPart as AnyPart,
   itemListOverduePart as AnyPart,
+  itemDependencyListForItemPart as AnyPart,
   scheduleCreatePart as AnyPart,
   scheduleStartTimerPart as AnyPart,
   scheduleStopTimerPart as AnyPart,
