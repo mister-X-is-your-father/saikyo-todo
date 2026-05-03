@@ -25,6 +25,7 @@
 import { formatLocalISO, parseIsoDateAsLocalMidnight, toLocalMidnight } from '@/lib/date/iso'
 
 import { formatMinutes } from './category-summary'
+import { safeMinutes } from './safe-minutes'
 
 /** 集計に必要な最小 structural subset。 */
 export interface DailySummaryEntry {
@@ -62,8 +63,7 @@ export function groupTimeEntriesByDay(
     if (!e?.workDate) continue
     if (options.from && e.workDate < options.from) continue
     if (options.to && e.workDate > options.to) continue
-    const min = Number.isFinite(e.durationMinutes) ? Math.max(0, e.durationMinutes) : 0
-    map.set(e.workDate, (map.get(e.workDate) ?? 0) + min)
+    map.set(e.workDate, (map.get(e.workDate) ?? 0) + safeMinutes(e.durationMinutes))
   }
   return map
 }

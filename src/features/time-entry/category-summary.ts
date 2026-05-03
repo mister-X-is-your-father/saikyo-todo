@@ -25,6 +25,7 @@
 import { formatMinutes as formatMinutesShared } from '@/lib/format-duration'
 
 import { categoryLabel, TIME_ENTRY_CATEGORIES, type TimeEntryCategoryKey } from './categories'
+import { safeMinutes } from './safe-minutes'
 
 /** 集計に必要な最小 structural subset (TimeEntry のサブセット)。 */
 export interface CategorySummaryEntry {
@@ -72,8 +73,7 @@ export function groupTimeEntriesByCategory(
     const key: TimeEntryCategoryKey = (
       KEY_SET.has(e.category) ? e.category : 'other'
     ) as TimeEntryCategoryKey
-    const min = Number.isFinite(e.durationMinutes) ? Math.max(0, e.durationMinutes) : 0
-    totals[key] += min
+    totals[key] += safeMinutes(e.durationMinutes)
   }
   return totals
 }
