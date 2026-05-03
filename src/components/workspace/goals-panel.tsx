@@ -380,7 +380,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
             <button
               type="button"
               onClick={() => setOpen((v) => !v)}
-              className="hover:bg-muted mt-0.5 rounded p-1"
+              className="hover:bg-muted focus-visible:ring-ring mt-0.5 rounded p-1 focus-visible:ring-2 focus-visible:outline-none"
               aria-expanded={open}
               aria-controls={`goal-body-${goal.id}`}
               aria-label={`Goal「${goal.title}」の KR ${open ? '一覧を閉じる' : '一覧を開く'}`}
@@ -693,7 +693,7 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
                       title="KR を削除 (soft delete)"
                       data-testid={`kr-delete-${kr.id}`}
                       // iter506: pseudo で tap target を 44x44 化 (visual ✕ icon size 維持)
-                      className="text-muted-foreground hover:text-destructive relative text-xs before:absolute before:-inset-3 before:content-[''] disabled:opacity-50 disabled:before:hidden"
+                      className="text-muted-foreground hover:text-destructive focus-visible:ring-ring relative text-xs before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50 disabled:before:hidden"
                     >
                       <span aria-hidden="true">✕</span>
                     </button>
