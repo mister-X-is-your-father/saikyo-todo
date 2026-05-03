@@ -26,6 +26,7 @@ export default async function HomePage() {
       <header className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">最強TODO</h1>
         <form
+          aria-label="ログアウト"
           action={async () => {
             'use server'
             const { logoutAction } = await import('@/features/auth/actions')
