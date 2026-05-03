@@ -310,7 +310,11 @@ export function GanttView({
           </span>
         )}
         {criticalCount > 0 && (
-          <span className="text-red-600 dark:text-red-400">
+          <span
+            data-testid="gantt-summary-critical"
+            className="text-red-600 dark:text-red-400"
+            title="critical path 上の item (= project 全体期間に直接影響、遅延すると全体遅延)"
+          >
             critical path <span className="font-mono">{criticalCount}</span> 件
           </span>
         )}
