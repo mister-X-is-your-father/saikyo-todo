@@ -358,11 +358,15 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
             <option value="">全 Sprint</option>
             <option value="active">稼働中の Sprint</option>
             <option value="none">未割当のみ</option>
-            {(sprintsList.data ?? []).map((sp) => (
-              <option key={sp.id} value={sp.id}>
-                {sp.name}
-              </option>
-            ))}
+            {(sprintsList.data ?? []).length > 0 && (
+              <optgroup label="個別 Sprint">
+                {(sprintsList.data ?? []).map((sp) => (
+                  <option key={sp.id} value={sp.id}>
+                    {sp.name}
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
           {(() => {
             // iter296 basics: フィルタ active 時は 「フィルタ後 / 全体」 の比率を出して
