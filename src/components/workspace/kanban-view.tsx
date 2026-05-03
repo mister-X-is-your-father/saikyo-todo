@@ -393,7 +393,7 @@ function KanbanCard({
           <span />
         )}
         <div
-          className="opacity-0 transition-opacity group-hover:opacity-100"
+          className="opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
           data-testid={`kanban-decompose-wrapper-${item.id}`}
         >
           <ItemDecomposeButton workspaceId={workspaceId} item={item} />
