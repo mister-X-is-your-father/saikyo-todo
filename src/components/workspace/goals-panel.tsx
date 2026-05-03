@@ -302,7 +302,11 @@ export function GoalsPanel({ workspaceId }: Props) {
           }
         />
       ) : (
-        <ul className="space-y-3" data-testid="goals-list">
+        <ul
+          className="space-y-3"
+          data-testid="goals-list"
+          aria-label={`Goal 一覧 ${list.data.length} 件`}
+        >
           {list.data.map((g) => (
             <GoalCard key={g.id} goal={g} workspaceId={workspaceId} />
           ))}
@@ -653,7 +657,11 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
           KR がありません。下のフォームから追加。
         </p>
       ) : (
-        <ul className="space-y-2" data-testid={`krs-${goalId}`}>
+        <ul
+          className="space-y-2"
+          data-testid={`krs-${goalId}`}
+          aria-label={`Key Result 一覧 ${(list.data ?? []).length} 件`}
+        >
           {(list.data ?? []).map((kr) => {
             const p = krProgressMap.get(kr.id)
             const pct = p ? Math.round(p.pct * 100) : 0
