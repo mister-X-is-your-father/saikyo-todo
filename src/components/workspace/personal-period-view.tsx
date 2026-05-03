@@ -208,7 +208,11 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
               description="dueDate / scheduledFor が範囲外、または完了済の item は表示されません。"
             />
           ) : (
-            <ul className="space-y-1" data-testid={`period-items-${period}`}>
+            <ul
+              className="space-y-1"
+              data-testid={`period-items-${period}`}
+              aria-label={`${periodLabelJa(period)} 期間の Item 一覧 ${filtered.length} 件`}
+            >
               {filtered.map((it) => (
                 <li
                   key={it.id}
