@@ -294,7 +294,11 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         >
           月次
         </Button>
-        <div className="ml-4 flex items-center gap-2 text-sm">
+        <div
+          className="ml-4 flex items-center gap-2 text-sm"
+          role="group"
+          aria-label="Item の絞り込み (MUST / ステータス / Sprint)"
+        >
           <label htmlFor="filter-must" className="flex items-center gap-1">
             <input
               id="filter-must"
