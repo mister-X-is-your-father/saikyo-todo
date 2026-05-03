@@ -247,7 +247,7 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
                 role="alert"
                 data-testid="quick-add-must-warn"
               >
-                ⚠ 編集ダイアログで DoD を入れてください
+                <span aria-hidden="true">⚠ </span>編集ダイアログで DoD を入れてください
               </span>
             </>
           )}
