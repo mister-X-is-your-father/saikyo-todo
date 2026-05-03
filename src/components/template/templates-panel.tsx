@@ -9,6 +9,7 @@ import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { buildCharCountAria } from '@/lib/a11y/char-count-aria'
 import { isAppError } from '@/lib/errors'
 
 import { useCreateTemplate, useSoftDeleteTemplate, useTemplates } from '@/features/template/hooks'
@@ -106,15 +107,14 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   minLength={1}
                   maxLength={200}
                   autoComplete="off"
-                  aria-label={
-                    name.length === 0
-                      ? 'Template 名前 (必須、最大 200 文字、何を生成するかが分かる名前)'
-                      : name.trim() === ''
-                        ? `Template 名前 (現在 ${name.length} / 200 文字、空白のみは不正)`
-                        : name.length > 180
-                          ? `Template 名前 (現在 ${name.length} / 200 文字、上限近接)`
-                          : `Template 名前 (現在 ${name.length} / 200 文字)`
-                  }
+                  aria-label={buildCharCountAria({
+                    emptyLabel: 'Template 名前 (必須、最大 200 文字、何を生成するかが分かる名前)',
+                    fieldName: 'Template 名前',
+                    value: name,
+                    maxLength: 200,
+                    nearMaxAt: 180,
+                    whitespaceOnlySuffix: '空白のみは不正',
+                  })}
                 />
               </div>
               <div>
