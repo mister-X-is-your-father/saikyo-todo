@@ -72,7 +72,10 @@ export function KeybindingsHelpModal({ open, onOpenChange }: Props) {
                   {group}
                   <span className="sr-only"> ({list.length} 件)</span>
                 </h3>
-                <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
+                <dl
+                  className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2"
+                  aria-labelledby={headingId}
+                >
                   {list.map((kb) => (
                     <KbdRow key={kb.combo} kb={kb} />
                   ))}
