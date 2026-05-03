@@ -465,7 +465,11 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
         </CardHeader>
         {open && (
           <CardContent id={`goal-body-${goal.id}`} className="space-y-3 pt-0">
-            <div className="flex flex-wrap items-center justify-end gap-1.5">
+            <div
+              className="flex flex-wrap items-center justify-end gap-1.5"
+              role="group"
+              aria-label={`Goal「${goal.title}」のステータス操作 (完了 / アーカイブ / 再開)`}
+            >
               {status === 'active' && (
                 <>
                   <Button
