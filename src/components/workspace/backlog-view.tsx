@@ -110,7 +110,7 @@ function buildColumns(
           }}
           onPointerDown={(e) => e.stopPropagation()}
           className={
-            'hover:text-primary text-left hover:underline ' +
+            'hover:text-primary focus-visible:ring-ring rounded text-left hover:underline focus-visible:ring-2 focus-visible:outline-none ' +
             (row.original.doneAt ? 'text-muted-foreground line-through' : '')
           }
           data-testid={`backlog-title-${row.original.id}`}
