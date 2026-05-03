@@ -93,7 +93,7 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
         {stats.leadTimeAvgHours !== null ? (
           <dl
             className="grid grid-cols-3 gap-2 text-xs"
-            aria-label="Lead time 統計 (平均 / 中央 / 期間)"
+            aria-label={`Lead time 統計 (平均 ${stats.leadTimeAvgHours}h / 中央 ${stats.leadTimeMedianHours ?? '不明'}h / 期間 ${stats.cycleDurationDays}d)`}
           >
             <div>
               <dt className="text-muted-foreground">平均 lead</dt>
