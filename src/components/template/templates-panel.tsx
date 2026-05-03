@@ -259,7 +259,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
                 <CardHeader className="flex flex-row items-center justify-between">
                   <button
                     type="button"
-                    className="flex-1 text-left"
+                    className="focus-visible:ring-ring flex-1 rounded text-left focus-visible:ring-2 focus-visible:outline-none"
                     onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
                     aria-expanded={expandedId === t.id}
                     aria-controls={`template-body-${t.id}`}
