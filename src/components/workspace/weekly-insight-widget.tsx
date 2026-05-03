@@ -136,7 +136,8 @@ export function WeeklyInsightWidget({ items, now }: Props) {
               className="rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700"
               data-testid="weekly-insight-best-day"
             >
-              ⭐ {bestDayLabel}
+              <span aria-hidden="true">⭐ </span>
+              {bestDayLabel}
             </span>
           )}
           {worstDay !== null && worstDay.dayIndex !== bestDay?.dayIndex && (
@@ -147,7 +148,8 @@ export function WeeklyInsightWidget({ items, now }: Props) {
               data-testid="weekly-insight-worst-day"
               data-worst-current={worstDay.current}
             >
-              {worstDay.current === 0 ? '😴' : '⚠'} {formatWorstDayJa(worstDay)}
+              <span aria-hidden="true">{worstDay.current === 0 ? '😴' : '⚠'} </span>
+              {formatWorstDayJa(worstDay)}
             </span>
           )}
         </CardTitle>
