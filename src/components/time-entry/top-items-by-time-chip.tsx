@@ -152,7 +152,12 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
           </div>
         ) : null}
         {summary.top.length === 0 ? (
-          <p className="text-muted-foreground text-xs" data-testid="top-items-by-time-empty">
+          <p
+            className="text-muted-foreground text-xs"
+            role="status"
+            aria-live="polite"
+            data-testid="top-items-by-time-empty"
+          >
             直近 {WINDOW_DAYS} 日 — Item 紐付けの稼働記録なし (自由稼働のみ)
           </p>
         ) : (
