@@ -239,7 +239,11 @@ function CommentItem({
             maxLength={10_000}
             data-testid={`comment-edit-input-${comment.id}`}
           />
-          <div className="flex justify-end gap-2">
+          <div
+            className="flex justify-end gap-2"
+            role="group"
+            aria-label="コメント編集の操作 (キャンセル / 保存)"
+          >
             <Button
               type="button"
               variant="outline"
