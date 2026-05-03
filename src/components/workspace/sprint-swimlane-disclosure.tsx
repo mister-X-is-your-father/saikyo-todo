@@ -129,7 +129,12 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
   }
   if (rows.length === 0) {
     return (
-      <p className="text-muted-foreground mt-2 text-xs" data-testid="sprint-swimlane-empty">
+      <p
+        className="text-muted-foreground mt-2 text-xs"
+        role="status"
+        aria-live="polite"
+        data-testid="sprint-swimlane-empty"
+      >
         この sprint に割当 item がありません
       </p>
     )
