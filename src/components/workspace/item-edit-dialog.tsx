@@ -394,10 +394,18 @@ function ItemEditDialogInner({
                 </span>
               ) : null}
             </TabsTrigger>
-            <TabsTrigger value="comments" data-testid="tab-comments">
+            <TabsTrigger
+              value="comments"
+              data-testid="tab-comments"
+              aria-label="コメントタブ — 議論履歴 + @メンション + AI Plan 投下"
+            >
               コメント
             </TabsTrigger>
-            <TabsTrigger value="activity" data-testid="tab-activity">
+            <TabsTrigger
+              value="activity"
+              data-testid="tab-activity"
+              aria-label="アクティビティタブ — 編集履歴 (audit_log) を時系列表示"
+            >
               アクティビティ
             </TabsTrigger>
           </TabsList>
