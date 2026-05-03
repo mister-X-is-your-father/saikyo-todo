@@ -11,6 +11,7 @@ import {
   AppError,
   ConflictError,
   ExternalServiceError,
+  isAppError,
   NotFoundError,
   ValidationError,
 } from './errors'
@@ -52,5 +53,27 @@ describe('AppError serialization (Server Action wire)', () => {
     const e = new ValidationError('x')
     expect(e instanceof AppError).toBe(true)
     expect(e instanceof Error).toBe(true)
+  })
+})
+
+describe('isAppError type guard', () => {
+  it('AppError instance に対して true', () => {
+    expect(isAppError(new AppError('TEST', 'msg'))).toBe(true)
+    expect(isAppError(new ValidationError('x'))).toBe(true)
+    expect(isAppError(new NotFoundError('not found'))).toBe(true)
+    expect(isAppError(new ConflictError())).toBe(true)
+  })
+
+  it('plain Error は false (= 通常 Error は wrap されていない)', () => {
+    expect(isAppError(new Error('boom'))).toBe(false)
+    expect(isAppError(new TypeError('bad'))).toBe(false)
+  })
+
+  it('non-Error 値は false', () => {
+    expect(isAppError(null)).toBe(false)
+    expect(isAppError(undefined)).toBe(false)
+    expect(isAppError('error string')).toBe(false)
+    expect(isAppError(42)).toBe(false)
+    expect(isAppError({ message: 'plain' })).toBe(false)
   })
 })
