@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 
 import { toast } from 'sonner'
 
+import { buildCharCountAria } from '@/lib/a11y/char-count-aria'
 import { isAppError } from '@/lib/errors'
 
 import { useInstantiateTemplate, useTemplateItems } from '@/features/template/hooks'
@@ -93,13 +94,13 @@ export function InstantiateForm({ workspaceId, template }: Props) {
           value={override}
           onChange={(e) => setOverride(e.target.value)}
           maxLength={500}
-          aria-label={
-            override.length === 0
-              ? `Template「${template.name}」展開時の root Item タイトル (任意、最大 500 文字、省略時は「${template.name}」)`
-              : override.length > 480
-                ? `root Item タイトル (現在 ${override.length} / 500 文字、上限近接)`
-                : `root Item タイトル (現在 ${override.length} / 500 文字)`
-          }
+          aria-label={buildCharCountAria({
+            emptyLabel: `Template「${template.name}」展開時の root Item タイトル (任意、最大 500 文字、省略時は「${template.name}」)`,
+            fieldName: 'root Item タイトル',
+            value: override,
+            maxLength: 500,
+            nearMaxAt: 480,
+          })}
         />
       </div>
       {vars.length > 0 ? (
@@ -119,16 +120,14 @@ export function InstantiateForm({ workspaceId, template }: Props) {
                 aria-invalid={
                   ((values[v] ?? '').length > 0 && (values[v] ?? '').trim() === '') || undefined
                 }
-                aria-label={(() => {
-                  const val = values[v] ?? ''
-                  if (val.length === 0)
-                    return `Mustache 変数「${v}」 の値 (必須、最大 500 文字、template の {{${v}}} に展開時 substitute される)`
-                  if (val.trim() === '')
-                    return `Mustache 変数「${v}」 (現在 ${val.length} / 500 文字、空白のみは不正)`
-                  if (val.length > 480)
-                    return `Mustache 変数「${v}」 (現在 ${val.length} / 500 文字、上限近接)`
-                  return `Mustache 変数「${v}」 (現在 ${val.length} / 500 文字)`
-                })()}
+                aria-label={buildCharCountAria({
+                  emptyLabel: `Mustache 変数「${v}」 の値 (必須、最大 500 文字、template の {{${v}}} に展開時 substitute される)`,
+                  fieldName: `Mustache 変数「${v}」`,
+                  value: values[v] ?? '',
+                  maxLength: 500,
+                  nearMaxAt: 480,
+                  whitespaceOnlySuffix: '空白のみは不正',
+                })}
                 maxLength={500}
               />
             </div>

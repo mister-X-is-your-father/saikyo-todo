@@ -15,6 +15,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { parseAsString, useQueryState } from 'nuqs'
 import { toast } from 'sonner'
 
+import { buildCharCountAria } from '@/lib/a11y/char-count-aria'
 import { isAppError } from '@/lib/errors'
 
 import { priorityClass, priorityLabel } from '@/features/item/priority'
@@ -162,13 +163,14 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
             placeholder={`この${periodLabelJa(period)}で達成したいことを書く (例: ◯◯ を完了する) (Cmd/Ctrl+Enter で保存)`}
             rows={3}
             maxLength={2000}
-            aria-label={
-              draft.length === 0
-                ? `${periodLabelJa(period)}ゴール (任意、最大 2000 文字、この${periodLabelJa(period)}で達成したいこと、Cmd/Ctrl+Enter で保存)`
-                : draft.length > 1900
-                  ? `${periodLabelJa(period)}ゴール (現在 ${draft.length} / 2000 文字、上限近接、Cmd/Ctrl+Enter で保存)`
-                  : `${periodLabelJa(period)}ゴール (現在 ${draft.length} / 2000 文字、Cmd/Ctrl+Enter で保存)`
-            }
+            aria-label={buildCharCountAria({
+              emptyLabel: `${periodLabelJa(period)}ゴール (任意、最大 2000 文字、この${periodLabelJa(period)}で達成したいこと、Cmd/Ctrl+Enter で保存)`,
+              fieldName: `${periodLabelJa(period)}ゴール`,
+              value: draft,
+              maxLength: 2000,
+              nearMaxAt: 1900,
+              filledSuffix: '、Cmd/Ctrl+Enter で保存',
+            })}
             data-testid={`period-goal-textarea-${period}`}
           />
           <div className="flex justify-end">
