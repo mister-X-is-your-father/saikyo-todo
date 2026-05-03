@@ -158,7 +158,9 @@ export function TaskChuteView({ workspaceId, items }: Props) {
                     {timeLabel}
                   </>
                 ) : (
-                  <span className="text-muted-foreground/50">--:--</span>
+                  <span className="text-muted-foreground/50" aria-hidden="true">
+                    --:--
+                  </span>
                 )}
               </span>
               <ItemCheckbox workspaceId={workspaceId} item={item} />
