@@ -331,7 +331,11 @@ function ItemEditDialogInner({
           {/* iter327: TabsList に aria-label を付与し landmark / SR ナビ可能に。
               Activity は他 4 タブが日本語のため "アクティビティ" にローカライズ統一 (WCAG 3.1.2)。 */}
           <TabsList className="w-full" aria-label="Item 編集タブ">
-            <TabsTrigger value="base" data-testid="tab-base">
+            <TabsTrigger
+              value="base"
+              data-testid="tab-base"
+              aria-label="基本タブ — タイトル / 状態 / 期限 / MUST / 担当 / Tag / DoD を編集"
+            >
               基本
             </TabsTrigger>
             <TabsTrigger
