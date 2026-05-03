@@ -310,7 +310,9 @@ function Section({
         {title}
       </h3>
       {items.length === 0 ? (
-        <p className="text-muted-foreground text-xs">{emptyText}</p>
+        <p className="text-muted-foreground text-xs" role="status" aria-live="polite">
+          {emptyText}
+        </p>
       ) : (
         <ul className="space-y-1" aria-labelledby={headingId}>
           {items.map(({ ref }) => (
