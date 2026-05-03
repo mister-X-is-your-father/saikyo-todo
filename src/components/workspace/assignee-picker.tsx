@@ -105,7 +105,11 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-64 p-0" align="start">
+      <PopoverContent
+        className="w-64 p-0"
+        align="start"
+        aria-label="アサイン (メンバー / AI Agent) を選択"
+      >
         <Command>
           <CommandInput placeholder="メンバー / AI を検索…" />
           <CommandList>

@@ -113,7 +113,7 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-72 p-0" align="start">
+      <PopoverContent className="w-72 p-0" align="start" aria-label="タグを選択 / 新規作成">
         <Command>
           <CommandInput placeholder="タグを検索 or 作成…" value={query} onValueChange={setQuery} />
           <CommandList>
