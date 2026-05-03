@@ -212,7 +212,11 @@ export function WeeklyInsightWidget({ items, now }: Props) {
         </div>
 
         {insight.anomalies.length > 0 && (
-          <ul className="space-y-1" aria-label="特筆事項" data-testid="weekly-insight-anomalies">
+          <ul
+            className="space-y-1"
+            aria-label={`今週の特筆事項 ${insight.anomalies.length} 件 (集中日 / 過小日 / 期限超過 spike)`}
+            data-testid="weekly-insight-anomalies"
+          >
             {insight.anomalies.map((a) => {
               // iter504 ai-automation: highCompletionDay は positive anomaly (= 集中日)
               // で emerald 配色、その他 (lowCompletionDay / overdueSpike) は amber 配色。
