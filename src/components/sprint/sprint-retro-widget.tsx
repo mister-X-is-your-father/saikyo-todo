@@ -113,7 +113,10 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
         </div>
 
         {/* planned vs delivered */}
-        <dl className="grid grid-cols-3 gap-2 text-xs">
+        <dl
+          className="grid grid-cols-3 gap-2 text-xs"
+          aria-label="計画 vs 納品 (計画 / 納品 / 差分)"
+        >
           <div>
             <dt className="text-muted-foreground">計画</dt>
             <dd className="text-base font-semibold tabular-nums">{planned}</dd>
