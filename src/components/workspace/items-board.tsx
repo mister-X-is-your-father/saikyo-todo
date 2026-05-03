@@ -271,6 +271,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           onClick={() => setView('daily')}
           data-testid="view-daily-btn"
           aria-pressed={view === 'daily'}
+          aria-label="日次レビュー画面 (個人 期間 = 今日)"
         >
           日次
         </Button>
@@ -281,6 +282,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           onClick={() => setView('weekly')}
           data-testid="view-weekly-btn"
           aria-pressed={view === 'weekly'}
+          aria-label="週次レビュー画面 (個人 期間 = 今週)"
         >
           週次
         </Button>
@@ -291,6 +293,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           onClick={() => setView('monthly')}
           data-testid="view-monthly-btn"
           aria-pressed={view === 'monthly'}
+          aria-label="月次レビュー画面 (個人 期間 = 今月)"
         >
           月次
         </Button>
