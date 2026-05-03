@@ -119,7 +119,11 @@ export function NotificationPreferencesButton({ Icon = Settings }: { Icon?: Luci
           <Icon className="h-4 w-4" aria-hidden="true" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 max-w-[calc(100vw-1rem)] gap-0 p-0">
+      <PopoverContent
+        align="end"
+        className="w-80 max-w-[calc(100vw-1rem)] gap-0 p-0"
+        aria-labelledby="notification-preferences-heading"
+      >
         <div className="border-b px-3 py-2">
           {/* SR の heading navigation (h ショートカット) で popover に到達した
               直後にラベルが聞ける (iter427 NotificationBell と同 pattern)。
