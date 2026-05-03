@@ -21,6 +21,7 @@ import {
 import { toast } from 'sonner'
 
 import { buildCharCountAria } from '@/lib/a11y/char-count-aria'
+import { buildDateRangeAria } from '@/lib/a11y/date-range-aria'
 import { isoDaysFromNow, todayISO } from '@/lib/date/iso'
 import { isAppError } from '@/lib/errors'
 
@@ -177,13 +178,15 @@ export function GoalsPanel({ workspaceId }: Props) {
                   aria-required="true"
                   aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   max={endDate || undefined}
-                  aria-label={
-                    startDate === ''
-                      ? 'Goal 開始日 (必須、終了日以前)'
-                      : isInvalidDateRange(startDate, endDate)
-                        ? `Goal 開始日 (現在: ${startDate}、終了日 ${endDate} より後で不正)`
-                        : `Goal 開始日 (現在: ${startDate})`
-                  }
+                  aria-label={buildDateRangeAria({
+                    emptyLabel: 'Goal 開始日 (必須、終了日以前)',
+                    fieldName: 'Goal 開始日',
+                    value: startDate,
+                    otherFieldName: '終了日',
+                    otherValue: endDate,
+                    position: 'start',
+                    isInvalid: isInvalidDateRange(startDate, endDate),
+                  })}
                 />
               </div>
               <div className="space-y-1">
@@ -198,13 +201,15 @@ export function GoalsPanel({ workspaceId }: Props) {
                   aria-required="true"
                   aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   min={startDate || undefined}
-                  aria-label={
-                    endDate === ''
-                      ? 'Goal 終了日 (必須、開始日以降)'
-                      : isInvalidDateRange(startDate, endDate)
-                        ? `Goal 終了日 (現在: ${endDate}、開始日 ${startDate} より前で不正)`
-                        : `Goal 終了日 (現在: ${endDate})`
-                  }
+                  aria-label={buildDateRangeAria({
+                    emptyLabel: 'Goal 終了日 (必須、開始日以降)',
+                    fieldName: 'Goal 終了日',
+                    value: endDate,
+                    otherFieldName: '開始日',
+                    otherValue: startDate,
+                    position: 'end',
+                    isInvalid: isInvalidDateRange(startDate, endDate),
+                  })}
                 />
               </div>
             </div>

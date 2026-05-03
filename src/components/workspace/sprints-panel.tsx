@@ -22,6 +22,7 @@ import {
 import { toast } from 'sonner'
 
 import { buildCharCountAria } from '@/lib/a11y/char-count-aria'
+import { buildDateRangeAria } from '@/lib/a11y/date-range-aria'
 import { isAppError } from '@/lib/errors'
 
 import { isInvalidDateRange } from '@/features/item/date-range'
@@ -237,13 +238,15 @@ export function SprintsPanel({ workspaceId }: Props) {
                   aria-required="true"
                   aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   max={endDate || undefined}
-                  aria-label={
-                    startDate === ''
-                      ? 'Sprint 開始日 (必須、終了日以前)'
-                      : isInvalidDateRange(startDate, endDate)
-                        ? `Sprint 開始日 (現在: ${startDate}、終了日 ${endDate} より後で不正)`
-                        : `Sprint 開始日 (現在: ${startDate})`
-                  }
+                  aria-label={buildDateRangeAria({
+                    emptyLabel: 'Sprint 開始日 (必須、終了日以前)',
+                    fieldName: 'Sprint 開始日',
+                    value: startDate,
+                    otherFieldName: '終了日',
+                    otherValue: endDate,
+                    position: 'start',
+                    isInvalid: isInvalidDateRange(startDate, endDate),
+                  })}
                 />
               </div>
               <div className="space-y-1">
@@ -258,13 +261,15 @@ export function SprintsPanel({ workspaceId }: Props) {
                   aria-required="true"
                   aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   min={startDate || undefined}
-                  aria-label={
-                    endDate === ''
-                      ? 'Sprint 終了日 (必須、開始日以降)'
-                      : isInvalidDateRange(startDate, endDate)
-                        ? `Sprint 終了日 (現在: ${endDate}、開始日 ${startDate} より前で不正)`
-                        : `Sprint 終了日 (現在: ${endDate})`
-                  }
+                  aria-label={buildDateRangeAria({
+                    emptyLabel: 'Sprint 終了日 (必須、開始日以降)',
+                    fieldName: 'Sprint 終了日',
+                    value: endDate,
+                    otherFieldName: '開始日',
+                    otherValue: startDate,
+                    position: 'end',
+                    isInvalid: isInvalidDateRange(startDate, endDate),
+                  })}
                 />
               </div>
             </div>
@@ -613,13 +618,16 @@ function SprintCard({
                     onChange={(e) => setEditStart(e.target.value)}
                     required
                     aria-required="true"
-                    aria-label={
-                      editStart === ''
-                        ? 'Sprint 開始日 (必須、終了日以前)'
-                        : isInvalidDateRange(editStart, editEnd)
-                          ? `Sprint 開始日 (現在: ${editStart} (${dayOfWeekJa(editStart)})、終了日 ${editEnd} より後で不正)`
-                          : `Sprint 開始日 (現在: ${editStart} (${dayOfWeekJa(editStart)}))`
-                    }
+                    aria-label={buildDateRangeAria({
+                      emptyLabel: 'Sprint 開始日 (必須、終了日以前)',
+                      fieldName: 'Sprint 開始日',
+                      value: editStart,
+                      valueDisplay: `${editStart} (${dayOfWeekJa(editStart)})`,
+                      otherFieldName: '終了日',
+                      otherValue: editEnd,
+                      position: 'start',
+                      isInvalid: isInvalidDateRange(editStart, editEnd),
+                    })}
                     aria-invalid={isInvalidDateRange(editStart, editEnd) || undefined}
                     className="h-8 text-xs"
                     data-testid={`sprint-edit-start-${sprint.id}`}
@@ -638,13 +646,16 @@ function SprintCard({
                     onChange={(e) => setEditEnd(e.target.value)}
                     required
                     aria-required="true"
-                    aria-label={
-                      editEnd === ''
-                        ? 'Sprint 終了日 (必須、開始日以降)'
-                        : isInvalidDateRange(editStart, editEnd)
-                          ? `Sprint 終了日 (現在: ${editEnd} (${dayOfWeekJa(editEnd)})、開始日 ${editStart} より前で不正)`
-                          : `Sprint 終了日 (現在: ${editEnd} (${dayOfWeekJa(editEnd)}))`
-                    }
+                    aria-label={buildDateRangeAria({
+                      emptyLabel: 'Sprint 終了日 (必須、開始日以降)',
+                      fieldName: 'Sprint 終了日',
+                      value: editEnd,
+                      valueDisplay: `${editEnd} (${dayOfWeekJa(editEnd)})`,
+                      otherFieldName: '開始日',
+                      otherValue: editStart,
+                      position: 'end',
+                      isInvalid: isInvalidDateRange(editStart, editEnd),
+                    })}
                     aria-invalid={isInvalidDateRange(editStart, editEnd) || undefined}
                     className="h-8 text-xs"
                     data-testid={`sprint-edit-end-${sprint.id}`}

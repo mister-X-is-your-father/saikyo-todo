@@ -14,6 +14,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { buildCharCountAria } from '@/lib/a11y/char-count-aria'
+import { buildDateRangeAria } from '@/lib/a11y/date-range-aria'
 import { isAppError } from '@/lib/errors'
 
 import { isPlanComment } from '@/features/agent/agent-plan-prompt'
@@ -527,13 +528,15 @@ function ItemEditDialogInner({
                   onChange={(e) => setStartDate(e.target.value)}
                   data-testid="edit-item-start-date"
                   aria-invalid={isInvalidDateRange(startDate, dueDate) || undefined}
-                  aria-label={
-                    startDate === ''
-                      ? '開始日 (任意、期限以前)'
-                      : isInvalidDateRange(startDate, dueDate)
-                        ? `開始日 (現在: ${startDate}、期限 ${dueDate} より後で不正)`
-                        : `開始日 (現在: ${startDate})`
-                  }
+                  aria-label={buildDateRangeAria({
+                    emptyLabel: '開始日 (任意、期限以前)',
+                    fieldName: '開始日',
+                    value: startDate,
+                    otherFieldName: '期限',
+                    otherValue: dueDate,
+                    position: 'start',
+                    isInvalid: isInvalidDateRange(startDate, dueDate),
+                  })}
                   // iter346: 既存 dueDate を超える startDate は不正なので max で HTML5 制約。
                   // 反対方向 (min={startDate}) は editDue 側に既設、両方向ガードで対称化。
                   max={dueDate || undefined}
@@ -549,13 +552,15 @@ function ItemEditDialogInner({
                   onChange={(e) => setDueDate(e.target.value)}
                   data-testid="edit-item-due-date"
                   aria-invalid={isInvalidDateRange(startDate, dueDate) || undefined}
-                  aria-label={
-                    dueDate === ''
-                      ? '期限 (任意、開始日以降、MUST item は期限 + Heartbeat 通知が必須)'
-                      : isInvalidDateRange(startDate, dueDate)
-                        ? `期限 (現在: ${dueDate}、開始日 ${startDate} より前で不正)`
-                        : `期限 (現在: ${dueDate})`
-                  }
+                  aria-label={buildDateRangeAria({
+                    emptyLabel: '期限 (任意、開始日以降、MUST item は期限 + Heartbeat 通知が必須)',
+                    fieldName: '期限',
+                    value: dueDate,
+                    otherFieldName: '開始日',
+                    otherValue: startDate,
+                    position: 'end',
+                    isInvalid: isInvalidDateRange(startDate, dueDate),
+                  })}
                   min={startDate || undefined}
                 />
               </div>
