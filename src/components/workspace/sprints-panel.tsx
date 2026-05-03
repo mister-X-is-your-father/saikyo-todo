@@ -216,15 +216,14 @@ export function SprintsPanel({ workspaceId }: Props) {
                   maxLength={100}
                   // iter344: app 固有 input なので browser auto-fill 候補は無関係 → off
                   autoComplete="off"
-                  aria-label={
-                    name.length === 0
-                      ? 'Sprint 名前 (必須、最大 100 文字)'
-                      : name.trim() === ''
-                        ? `Sprint 名前 (現在 ${name.length} / 100 文字、空白のみは不正)`
-                        : name.length > 90
-                          ? `Sprint 名前 (現在 ${name.length} / 100 文字、上限近接)`
-                          : `Sprint 名前 (現在 ${name.length} / 100 文字)`
-                  }
+                  aria-label={buildCharCountAria({
+                    emptyLabel: 'Sprint 名前 (必須、最大 100 文字)',
+                    fieldName: 'Sprint 名前',
+                    value: name,
+                    maxLength: 100,
+                    nearMaxAt: 90,
+                    whitespaceOnlySuffix: '空白のみは不正',
+                  })}
                 />
               </div>
               <div className="space-y-1">

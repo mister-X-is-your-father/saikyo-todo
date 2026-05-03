@@ -17,6 +17,7 @@ import { useRef, useState } from 'react'
 import { RotateCw, Sparkles, X } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { buildCharCountAria } from '@/lib/a11y/char-count-aria'
 import { isAppError } from '@/lib/errors'
 
 import { useCancelInvocation, useDecomposeItem } from '@/features/agent/hooks'
@@ -376,15 +377,14 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               aria-invalid={!title.trim() || undefined}
               minLength={1}
               maxLength={500}
-              aria-label={
-                title.length === 0
-                  ? '提案タイトル (必須、最大 500 文字)'
-                  : title.trim() === ''
-                    ? `提案タイトル (現在 ${title.length} / 500 文字、空白のみは不正)`
-                    : title.length > 480
-                      ? `提案タイトル (現在 ${title.length} / 500 文字、上限近接)`
-                      : `提案タイトル (現在 ${title.length} / 500 文字)`
-              }
+              aria-label={buildCharCountAria({
+                emptyLabel: '提案タイトル (必須、最大 500 文字)',
+                fieldName: '提案タイトル',
+                value: title,
+                maxLength: 500,
+                nearMaxAt: 480,
+                whitespaceOnlySuffix: '空白のみは不正',
+              })}
             />
           </div>
           <div className="space-y-1">
@@ -409,13 +409,15 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               }}
               rows={3}
               maxLength={10000}
-              aria-label={
-                description.length === 0
-                  ? '提案 description (任意、最大 10000 文字、Markdown 可、Cmd/Ctrl+Enter で保存)'
-                  : description.length > 9500
-                    ? `提案 description (現在 ${description.length} / 10000 文字、上限近接、Cmd/Ctrl+Enter で保存)`
-                    : `提案 description (現在 ${description.length} / 10000 文字、Cmd/Ctrl+Enter で保存)`
-              }
+              aria-label={buildCharCountAria({
+                emptyLabel:
+                  '提案 description (任意、最大 10000 文字、Markdown 可、Cmd/Ctrl+Enter で保存)',
+                fieldName: '提案 description',
+                value: description,
+                maxLength: 10000,
+                nearMaxAt: 9500,
+                filledSuffix: '、Cmd/Ctrl+Enter で保存',
+              })}
             />
           </div>
           <label className="flex items-center gap-1.5 text-xs">

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { buildCharCountAria } from '@/lib/a11y/char-count-aria'
 import { isoDaysFromNow, todayISO } from '@/lib/date/iso'
 import { isAppError } from '@/lib/errors'
 
@@ -155,15 +156,14 @@ export function GoalsPanel({ workspaceId }: Props) {
                   minLength={1}
                   maxLength={200}
                   autoComplete="off"
-                  aria-label={
-                    title.length === 0
-                      ? 'Goal Objective (必須、最大 200 文字、なに / なぜを 1 行で)'
-                      : title.trim() === ''
-                        ? `Goal Objective (現在 ${title.length} / 200 文字、空白のみは不正)`
-                        : title.length > 180
-                          ? `Goal Objective (現在 ${title.length} / 200 文字、上限近接)`
-                          : `Goal Objective (現在 ${title.length} / 200 文字)`
-                  }
+                  aria-label={buildCharCountAria({
+                    emptyLabel: 'Goal Objective (必須、最大 200 文字、なに / なぜを 1 行で)',
+                    fieldName: 'Goal Objective',
+                    value: title,
+                    maxLength: 200,
+                    nearMaxAt: 180,
+                    whitespaceOnlySuffix: '空白のみは不正',
+                  })}
                 />
               </div>
               <div className="space-y-1">
@@ -230,13 +230,15 @@ export function GoalsPanel({ workspaceId }: Props) {
                   }
                 }}
                 maxLength={2000}
-                aria-label={
-                  description.length === 0
-                    ? 'Goal の説明 (任意、最大 2000 文字、Objective の補足や背景、Cmd/Ctrl+Enter で作成)'
-                    : description.length > 1900
-                      ? `Goal の説明 (現在 ${description.length} / 2000 文字、上限近接、Cmd/Ctrl+Enter で作成)`
-                      : `Goal の説明 (現在 ${description.length} / 2000 文字、Cmd/Ctrl+Enter で作成)`
-                }
+                aria-label={buildCharCountAria({
+                  emptyLabel:
+                    'Goal の説明 (任意、最大 2000 文字、Objective の補足や背景、Cmd/Ctrl+Enter で作成)',
+                  fieldName: 'Goal の説明',
+                  value: description,
+                  maxLength: 2000,
+                  nearMaxAt: 1900,
+                  filledSuffix: '、Cmd/Ctrl+Enter で作成',
+                })}
               />
             </div>
             <div className="flex justify-end">
@@ -740,15 +742,14 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
             placeholder="KR タイトル (例: p95 < 200ms)"
             className="flex-1"
             data-testid={`kr-title-input-${goalId}`}
-            aria-label={
-              krTitle.length === 0
-                ? 'KR タイトル (必須、最大 300 文字、達成判定可能な数値目標が望ましい)'
-                : krTitle.trim() === ''
-                  ? `KR タイトル (現在 ${krTitle.length} / 300 文字、空白のみは不正)`
-                  : krTitle.length > 280
-                    ? `KR タイトル (現在 ${krTitle.length} / 300 文字、上限近接)`
-                    : `KR タイトル (現在 ${krTitle.length} / 300 文字)`
-            }
+            aria-label={buildCharCountAria({
+              emptyLabel: 'KR タイトル (必須、最大 300 文字、達成判定可能な数値目標が望ましい)',
+              fieldName: 'KR タイトル',
+              value: krTitle,
+              maxLength: 300,
+              nearMaxAt: 280,
+              whitespaceOnlySuffix: '空白のみは不正',
+            })}
             required
             aria-required="true"
             aria-invalid={(krTitle.length > 0 && krTitle.trim() === '') || undefined}
