@@ -349,7 +349,9 @@ export function BacklogView({ workspaceId, items }: Props) {
                         }`}
                       >
                         {headerText}
-                        {{ asc: ' ▲', desc: ' ▼' }[h.column.getIsSorted() as string] ?? ''}
+                        <span aria-hidden="true">
+                          {{ asc: ' ▲', desc: ' ▼' }[h.column.getIsSorted() as string] ?? ''}
+                        </span>
                       </th>
                     )
                   })}
