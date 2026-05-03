@@ -127,7 +127,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
           <div className="flex items-center gap-1.5 text-sm font-semibold">
             <Sparkles
               className={`h-3.5 w-3.5 text-amber-600 dark:text-amber-400 ${
-                isAgentRunning ? 'animate-pulse' : ''
+                isAgentRunning ? 'motion-safe:animate-pulse' : ''
               }`}
               aria-hidden="true"
             />
