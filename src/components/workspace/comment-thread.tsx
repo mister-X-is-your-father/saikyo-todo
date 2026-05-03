@@ -139,6 +139,10 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
   )
 }
 
+function commentBodySnippet(body: string): string {
+  return `${body.slice(0, 30)}${body.length > 30 ? '…' : ''}`
+}
+
 function CommentItem({
   comment,
   itemId,
@@ -154,6 +158,7 @@ function CommentItem({
   const softDelete = useSoftDeleteItemComment(itemId)
   const [editing, setEditing] = useState(false)
   const [body, setBody] = useState(comment.body)
+  const snippet = commentBodySnippet(comment.body)
 
   async function handleSave() {
     const trimmed = body.trim()
@@ -290,7 +295,7 @@ function CommentItem({
                 disabled={softDelete.isPending}
                 aria-busy={softDelete.isPending || undefined}
                 data-testid={`comment-edit-${comment.id}`}
-                aria-label={`コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を編集`}
+                aria-label={`コメント「${snippet}」を編集`}
               >
                 編集
               </button>
@@ -303,8 +308,8 @@ function CommentItem({
                 data-testid={`comment-delete-${comment.id}`}
                 aria-label={
                   softDelete.isPending
-                    ? `コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を削除中…`
-                    : `コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を削除`
+                    ? `コメント「${snippet}」を削除中…`
+                    : `コメント「${snippet}」を削除`
                 }
               >
                 削除
