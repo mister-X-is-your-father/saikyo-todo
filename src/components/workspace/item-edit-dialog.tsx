@@ -13,6 +13,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+import { buildCharCountAria } from '@/lib/a11y/char-count-aria'
 import { isAppError } from '@/lib/errors'
 
 import { isPlanComment } from '@/features/agent/agent-plan-prompt'
@@ -489,15 +490,14 @@ function ItemEditDialogInner({
                 minLength={1}
                 maxLength={500}
                 autoComplete="off"
-                aria-label={
-                  title.length === 0
-                    ? 'タイトル (必須、最大 500 文字)'
-                    : title.trim() === ''
-                      ? `タイトル (現在 ${title.length} / 500 文字、空白のみは不正)`
-                      : title.length > 480
-                        ? `タイトル (現在 ${title.length} / 500 文字、上限近接)`
-                        : `タイトル (現在 ${title.length} / 500 文字)`
-                }
+                aria-label={buildCharCountAria({
+                  emptyLabel: 'タイトル (必須、最大 500 文字)',
+                  fieldName: 'タイトル',
+                  value: title,
+                  maxLength: 500,
+                  nearMaxAt: 480,
+                  whitespaceOnlySuffix: '空白のみは不正',
+                })}
               />
             </div>
             <div className="space-y-1.5">
@@ -508,13 +508,13 @@ function ItemEditDialogInner({
                 onChange={(e) => setDescription(e.target.value)}
                 maxLength={10_000}
                 autoComplete="off"
-                aria-label={
-                  description.length === 0
-                    ? '説明 (任意、最大 10000 文字、Markdown 可)'
-                    : description.length > 9500
-                      ? `説明 (現在 ${description.length} / 10000 文字、上限近接)`
-                      : `説明 (現在 ${description.length} / 10000 文字)`
-                }
+                aria-label={buildCharCountAria({
+                  emptyLabel: '説明 (任意、最大 10000 文字、Markdown 可)',
+                  fieldName: '説明',
+                  value: description,
+                  maxLength: 10000,
+                  nearMaxAt: 9500,
+                })}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">

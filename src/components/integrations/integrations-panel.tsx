@@ -11,6 +11,7 @@ import { useState } from 'react'
 import { ChevronDown, ChevronRight, Play, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { buildCharCountAria } from '@/lib/a11y/char-count-aria'
 import { isAppError } from '@/lib/errors'
 
 import {
@@ -347,15 +348,15 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                 minLength={1}
                 maxLength={200}
                 autoComplete="off"
-                aria-label={
-                  name.length === 0
-                    ? 'Source 名前 (必須、最大 200 文字、識別しやすい名前 — 例: Yamory チーム A)'
-                    : name.trim() === ''
-                      ? `Source 名前 (現在 ${name.length} / 200 文字、空白のみは不正)`
-                      : name.length > 180
-                        ? `Source 名前 (現在 ${name.length} / 200 文字、上限近接)`
-                        : `Source 名前 (現在 ${name.length} / 200 文字)`
-                }
+                aria-label={buildCharCountAria({
+                  emptyLabel:
+                    'Source 名前 (必須、最大 200 文字、識別しやすい名前 — 例: Yamory チーム A)',
+                  fieldName: 'Source 名前',
+                  value: name,
+                  maxLength: 200,
+                  nearMaxAt: 180,
+                  whitespaceOnlySuffix: '空白のみは不正',
+                })}
               />
             </div>
           </div>
