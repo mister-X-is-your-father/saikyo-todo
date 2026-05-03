@@ -356,8 +356,10 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
             }
           >
             <option value="">全 Sprint</option>
-            <option value="active">稼働中の Sprint</option>
-            <option value="none">未割当のみ</option>
+            <optgroup label="ショートカット">
+              <option value="active">稼働中の Sprint</option>
+              <option value="none">未割当のみ</option>
+            </optgroup>
             {(sprintsList.data ?? []).length > 0 && (
               <optgroup label="個別 Sprint">
                 {(sprintsList.data ?? []).map((sp) => (
