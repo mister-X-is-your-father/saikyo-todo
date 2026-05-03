@@ -117,7 +117,7 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
         {/* status 分布 */}
         <dl
           className="grid grid-cols-3 gap-2 text-xs"
-          aria-label="ステータス分布 (完了 / 未完了 / blocked)"
+          aria-label={`ステータス分布 (完了 ${stats.done} 件 / 未完了 ${stats.inProgressOrTodo} 件 / cancelled ${stats.cancelled} 件)`}
         >
           <div>
             <dt className="text-muted-foreground">完了</dt>
