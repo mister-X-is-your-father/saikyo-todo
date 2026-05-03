@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { memberLabel } from './member-label'
+import { memberLabel, memberLabelFromRow } from './member-label'
 
 describe('memberLabel', () => {
   const members = [
@@ -37,5 +37,22 @@ describe('memberLabel', () => {
   it('userId が 6 文字未満の異常 input は そのまま slice の結果 (= 元文字列) を返す', () => {
     // userId が 6 文字未満は実環境では起きないが behavior の固定 (defensive 不要)
     expect(memberLabel([], 'abc')).toBe('abc')
+  })
+})
+
+describe('memberLabelFromRow', () => {
+  it('row.displayName を返す', () => {
+    expect(memberLabelFromRow({ userId: 'user-001-fullid-uuid', displayName: 'Alice' })).toBe(
+      'Alice',
+    )
+  })
+
+  it('row.displayName が null → row.userId 頭 6 文字 fallback', () => {
+    expect(memberLabelFromRow({ userId: 'user-001-fullid-uuid', displayName: null })).toBe('user-0')
+  })
+
+  it('memberLabel(members, userId) と memberLabelFromRow(row) は同 row に対して同じ結果', () => {
+    const m = { userId: 'user-001-fullid-uuid', displayName: 'Alice' }
+    expect(memberLabelFromRow(m)).toBe(memberLabel([m], m.userId))
   })
 })

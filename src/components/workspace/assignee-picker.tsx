@@ -21,7 +21,7 @@ import { useWorkspaceAgents } from '@/features/agent/hooks'
 import { formatAgentRoleLabelJa, toggleAssigneeRef } from '@/features/item/ai-assignee'
 import type { AssigneeRef } from '@/features/item/repository'
 import { useWorkspaceMembers } from '@/features/workspace/hooks'
-import { memberLabel } from '@/features/workspace/member-label'
+import { memberLabel, memberLabelFromRow } from '@/features/workspace/member-label'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -115,7 +115,7 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
             <CommandGroup heading="ワークスペース メンバー">
               {(members ?? []).map((m) => {
                 const checked = selectedUserIds.has(m.userId)
-                const label = m.displayName ?? m.userId.slice(0, 6)
+                const label = memberLabelFromRow(m)
                 const ref: AssigneeRef = { actorType: 'user', actorId: m.userId }
                 return (
                   <CommandItem

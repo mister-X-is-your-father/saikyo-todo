@@ -22,3 +22,12 @@ export function memberLabel(
 ): string {
   return members?.find((m) => m.userId === userId)?.displayName ?? userId.slice(0, 6)
 }
+
+/**
+ * row 直接版: 既に member row を手に持っている caller 用 (例: `.map((m) => ...)` 内)。
+ * memberLabel(members, userId) が lookup → row 取得 → label 抽出 の合成なのに対し、
+ * memberLabelFromRow(m) は row → label のみ。同じ short-id fallback (頭 6 文字) 規約を維持。
+ */
+export function memberLabelFromRow(m: MemberLabelRow): string {
+  return m.displayName ?? m.userId.slice(0, 6)
+}
