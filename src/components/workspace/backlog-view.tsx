@@ -437,10 +437,11 @@ function DragHandle() {
   return (
     <span
       className="text-muted-foreground cursor-grab select-none active:cursor-grabbing"
+      role="img"
       aria-label="ドラッグで並び替え"
       data-testid="backlog-drag-handle"
     >
-      ≡
+      <span aria-hidden="true">≡</span>
     </span>
   )
 }
