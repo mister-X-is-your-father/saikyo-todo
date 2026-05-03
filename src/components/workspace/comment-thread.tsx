@@ -21,6 +21,7 @@ import {
 } from '@/features/comment/hooks'
 import type { CommentOnItem } from '@/features/comment/schema'
 import { useWorkspaceMembers } from '@/features/workspace/hooks'
+import { memberLabel } from '@/features/workspace/member-label'
 
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -52,8 +53,7 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
     }
   }
 
-  const displayName = (userId: string) =>
-    members?.find((m) => m.userId === userId)?.displayName ?? userId.slice(0, 6)
+  const displayName = (userId: string) => memberLabel(members, userId)
 
   return (
     <div className="space-y-4" data-testid="comment-thread">

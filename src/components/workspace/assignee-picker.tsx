@@ -21,6 +21,7 @@ import { useWorkspaceAgents } from '@/features/agent/hooks'
 import { formatAgentRoleLabelJa, toggleAssigneeRef } from '@/features/item/ai-assignee'
 import type { AssigneeRef } from '@/features/item/repository'
 import { useWorkspaceMembers } from '@/features/workspace/hooks'
+import { memberLabel } from '@/features/workspace/member-label'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -56,8 +57,7 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
     [value],
   )
 
-  const userLabelFor = (userId: string) =>
-    members?.find((m) => m.userId === userId)?.displayName ?? userId.slice(0, 6)
+  const userLabelFor = (userId: string) => memberLabel(members, userId)
   const agentLabelFor = (agentId: string) => {
     const a = agents?.find((x) => x.id === agentId)
     return a ? formatAgentRoleLabelJa(a.role) : `AI ${agentId.slice(0, 6)}`
