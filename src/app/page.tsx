@@ -72,7 +72,7 @@ export default async function HomePage() {
               <li key={ws.id}>
                 <Link
                   href={`/${ws.id}`}
-                  className="hover:bg-muted block rounded-lg border p-4 transition"
+                  className="hover:bg-muted focus-visible:ring-ring block rounded-lg border p-4 transition focus-visible:ring-2 focus-visible:outline-none"
                   aria-label={`${ws.name} (slug: ${ws.slug}, role: ${ws.role}) を開く`}
                   data-testid={`workspace-link-${ws.id}`}
                 >

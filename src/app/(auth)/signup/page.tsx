@@ -28,7 +28,7 @@ export default function SignupPage() {
         </span>
         <Link
           href="/login"
-          className="text-primary relative z-10 inline-flex min-h-11 items-center px-2 py-2 underline underline-offset-4"
+          className="text-primary focus-visible:ring-ring relative z-10 inline-flex min-h-11 items-center rounded px-2 py-2 underline underline-offset-4 focus-visible:ring-2 focus-visible:outline-none"
           aria-label="既にアカウントをお持ちの方はこちらでログイン"
         >
           ログイン
