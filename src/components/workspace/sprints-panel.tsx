@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { buildCharCountAria } from '@/lib/a11y/char-count-aria'
 import { isAppError } from '@/lib/errors'
 
 import { isInvalidDateRange } from '@/features/item/date-range'
@@ -291,13 +292,15 @@ export function SprintsPanel({ workspaceId }: Props) {
                 placeholder="この Sprint で達成したいこと"
                 rows={2}
                 maxLength={500}
-                aria-label={
-                  goal.length === 0
-                    ? 'Sprint ゴール (任意、最大 500 文字、この Sprint で達成したいこと、Cmd/Ctrl+Enter で作成)'
-                    : goal.length > 480
-                      ? `Sprint ゴール (現在 ${goal.length} / 500 文字、上限近接、Cmd/Ctrl+Enter で作成)`
-                      : `Sprint ゴール (現在 ${goal.length} / 500 文字、Cmd/Ctrl+Enter で作成)`
-                }
+                aria-label={buildCharCountAria({
+                  emptyLabel:
+                    'Sprint ゴール (任意、最大 500 文字、この Sprint で達成したいこと、Cmd/Ctrl+Enter で作成)',
+                  fieldName: 'Sprint ゴール',
+                  value: goal,
+                  maxLength: 500,
+                  nearMaxAt: 480,
+                  filledSuffix: '、Cmd/Ctrl+Enter で作成',
+                })}
               />
             </div>
             <div className="flex justify-end">

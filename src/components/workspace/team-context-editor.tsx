@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { toast } from 'sonner'
 
+import { buildCharCountAria } from '@/lib/a11y/char-count-aria'
 import { isAppError } from '@/lib/errors'
 
 import { useTeamContext, useUpdateTeamContext } from '@/features/workspace/hooks'
@@ -79,13 +80,15 @@ export function TeamContextEditor({ workspaceId }: Props) {
           placeholder="例: 当チームは TDD。MUST タスクは PR 必須。Slack #team-x で進捗報告。 (Cmd/Ctrl+Enter で保存)"
           rows={4}
           maxLength={4000}
-          aria-label={
-            draft.length === 0
-              ? 'チームコンテキスト (workspace 全体、最大 4000 文字、AI プロンプト末尾に inject、Cmd/Ctrl+Enter で保存)'
-              : draft.length > 3800
-                ? `チームコンテキスト (現在 ${draft.length} / 4000 文字、上限近接、Cmd/Ctrl+Enter で保存)`
-                : `チームコンテキスト (現在 ${draft.length} / 4000 文字、Cmd/Ctrl+Enter で保存)`
-          }
+          aria-label={buildCharCountAria({
+            emptyLabel:
+              'チームコンテキスト (workspace 全体、最大 4000 文字、AI プロンプト末尾に inject、Cmd/Ctrl+Enter で保存)',
+            fieldName: 'チームコンテキスト',
+            value: draft,
+            maxLength: 4000,
+            nearMaxAt: 3800,
+            filledSuffix: '、Cmd/Ctrl+Enter で保存',
+          })}
           data-testid="team-context-textarea"
         />
         <div className="text-muted-foreground flex items-center justify-between text-[11px]">

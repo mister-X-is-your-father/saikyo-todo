@@ -10,6 +10,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 
+import { buildCharCountAria } from '@/lib/a11y/char-count-aria'
 import { isAppError } from '@/lib/errors'
 
 import {
@@ -96,15 +97,16 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
           }}
           rows={3}
           data-testid="comment-input"
-          aria-label={
-            body.length === 0
-              ? 'コメント本文 (必須、最大 10000 文字、@user で言及・通知、Cmd/Ctrl+Enter で投稿)'
-              : body.trim() === ''
-                ? `コメント本文 (現在 ${body.length} / 10000 文字、空白のみは不正)`
-                : body.length > 9500
-                  ? `コメント本文 (現在 ${body.length} / 10000 文字、上限近接、Cmd/Ctrl+Enter で投稿)`
-                  : `コメント本文 (現在 ${body.length} / 10000 文字、Cmd/Ctrl+Enter で投稿)`
-          }
+          aria-label={buildCharCountAria({
+            emptyLabel:
+              'コメント本文 (必須、最大 10000 文字、@user で言及・通知、Cmd/Ctrl+Enter で投稿)',
+            fieldName: 'コメント本文',
+            value: body,
+            maxLength: 10_000,
+            nearMaxAt: 9500,
+            filledSuffix: '、Cmd/Ctrl+Enter で投稿',
+            whitespaceOnlySuffix: '空白のみは不正',
+          })}
           maxLength={10_000}
           required
           aria-required="true"
@@ -224,15 +226,16 @@ function CommentItem({
               }
             }}
             rows={3}
-            aria-label={
-              body.length === 0
-                ? 'コメント編集 (必須、最大 10000 文字、Cmd/Ctrl+Enter で保存、Esc で編集破棄)'
-                : body.trim() === ''
-                  ? `コメント編集 (現在 ${body.length} / 10000 文字、空白のみは不正)`
-                  : body.length > 9500
-                    ? `コメント編集 (現在 ${body.length} / 10000 文字、上限近接、Cmd/Ctrl+Enter で保存、Esc で編集破棄)`
-                    : `コメント編集 (現在 ${body.length} / 10000 文字、Cmd/Ctrl+Enter で保存、Esc で編集破棄)`
-            }
+            aria-label={buildCharCountAria({
+              emptyLabel:
+                'コメント編集 (必須、最大 10000 文字、Cmd/Ctrl+Enter で保存、Esc で編集破棄)',
+              fieldName: 'コメント編集',
+              value: body,
+              maxLength: 10_000,
+              nearMaxAt: 9500,
+              filledSuffix: '、Cmd/Ctrl+Enter で保存、Esc で編集破棄',
+              whitespaceOnlySuffix: '空白のみは不正',
+            })}
             required
             aria-required="true"
             aria-invalid={(body.length > 0 && body.trim() === '') || undefined}
