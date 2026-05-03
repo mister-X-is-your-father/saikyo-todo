@@ -47,7 +47,9 @@ export default async function TemplatesPage({ params }: PageProps) {
         subtitle={`ワークパッケージ定義 · ${user.email ?? ''}`}
         pageActions={
           <Button variant="outline" asChild size="sm" className="min-h-11">
-            <Link href={`/${workspaceId}`}>← Workspace</Link>
+            <Link href={`/${workspaceId}`}>
+              <span aria-hidden="true">← </span>Workspace
+            </Link>
           </Button>
         }
         utility={
