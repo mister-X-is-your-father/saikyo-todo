@@ -70,7 +70,11 @@ export function SeverityChip({
       <button
         type="button"
         onClick={onClick}
-        className={cn(baseCls, "relative before:absolute before:-inset-3 before:content-['']")}
+        className={cn(
+          baseCls,
+          "relative before:absolute before:-inset-3 before:content-['']",
+          'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
+        )}
         aria-label={ariaLabel ?? label}
         data-testid={testId}
         data-severity={severity}
