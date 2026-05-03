@@ -735,7 +735,7 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
     <ul
       className="divide-y rounded border text-xs"
       data-testid={`wf-runs-list-${workflowId}`}
-      aria-label="直近の実行履歴 (最新 5 件)"
+      aria-label={`直近の実行履歴 ${runs.length} 件 (最新順)`}
     >
       {runs.map((r) => {
         const isOpen = expandedRunId === r.id
