@@ -160,7 +160,11 @@ export function CalendarView({ workspaceId }: Props) {
   return (
     <div className="flex h-full min-h-[700px] flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+        <div
+          className="flex items-center gap-2"
+          role="group"
+          aria-label="カレンダー日付ナビゲーション (前日 / 翌日 / 今日)"
+        >
           <Button
             variant="outline"
             size="icon"
