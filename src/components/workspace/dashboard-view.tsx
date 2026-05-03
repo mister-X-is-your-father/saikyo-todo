@@ -877,7 +877,11 @@ export function DashboardView({ workspaceId }: Props) {
 
       {/* iter331 / iter336 basics: trend / hygiene chips (flex-wrap で同列)
        * iter355 refactor: 8 chip の JSX 重複を <DashboardChip> に集約 */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div
+        className="flex flex-wrap items-center gap-2"
+        role="group"
+        aria-label="Dashboard 健全性 chip 群 (urgency / velocity / momentum / due-coverage / dod-coverage / aging / due-hit-rate / slip / completion-gap / wip-bias)"
+      >
         {urgencyTiers ? (
           <DashboardChip
             testId="dashboard-urgency-tiers-chip"
