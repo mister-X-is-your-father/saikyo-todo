@@ -268,7 +268,11 @@ export function BudgetPanel({ workspaceId }: Props) {
                 }
               />
             </div>
-            <div className="flex justify-end gap-1.5">
+            <div
+              className="flex justify-end gap-1.5"
+              role="group"
+              aria-label="AI 月次コスト上限編集の操作 (キャンセル / 保存)"
+            >
               <Button
                 type="button"
                 size="sm"
