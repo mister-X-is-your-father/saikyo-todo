@@ -115,7 +115,7 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
         {/* planned vs delivered */}
         <dl
           className="grid grid-cols-3 gap-2 text-xs"
-          aria-label="計画 vs 納品 (計画 / 納品 / 差分)"
+          aria-label={`計画 vs 納品 (計画 ${planned} 件 / 納品 ${delivered} 件 / 差分 ${delta > 0 ? '+' : ''}${delta} 件)`}
         >
           <div>
             <dt className="text-muted-foreground">計画</dt>
