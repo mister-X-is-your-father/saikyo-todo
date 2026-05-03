@@ -740,7 +740,7 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
             <div className="flex-1">
               <button
                 type="button"
-                className="hover:bg-muted/50 flex w-full items-center gap-2 px-2 py-1.5 text-left"
+                className="hover:bg-muted/50 focus-visible:ring-ring flex w-full items-center gap-2 px-2 py-1.5 text-left focus-visible:ring-2 focus-visible:outline-none"
                 onClick={() => setExpandedRunId(isOpen ? null : r.id)}
                 aria-expanded={isOpen}
                 aria-controls={`wf-run-nodes-${r.id}`}
@@ -778,7 +778,7 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
             </div>
             <button
               type="button"
-              className="hover:bg-muted/50 text-muted-foreground hover:text-foreground flex shrink-0 items-center gap-1 border-l px-2 disabled:opacity-50"
+              className="hover:bg-muted/50 text-muted-foreground hover:text-foreground focus-visible:ring-ring flex shrink-0 items-center gap-1 border-l px-2 focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
               disabled={trigger.isPending}
               aria-busy={trigger.isPending || undefined}
               onClick={(e) => {
