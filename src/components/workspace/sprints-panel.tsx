@@ -683,7 +683,11 @@ function SprintCard({
               </div>
             </form>
           )}
-          <div className="flex flex-wrap gap-1.5">
+          <div
+            className="flex flex-wrap gap-1.5"
+            role="group"
+            aria-label={`Sprint「${sprint.name}」の操作 (期間編集 / ステータス遷移 / Retro / Pre-mortem)`}
+          >
             {!editing && status !== 'cancelled' && status !== 'completed' && (
               <Button
                 size="sm"
