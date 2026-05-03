@@ -91,7 +91,10 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
 
         {/* lead time */}
         {stats.leadTimeAvgHours !== null ? (
-          <dl className="grid grid-cols-3 gap-2 text-xs">
+          <dl
+            className="grid grid-cols-3 gap-2 text-xs"
+            aria-label="Lead time 統計 (平均 / 中央 / 期間)"
+          >
             <div>
               <dt className="text-muted-foreground">平均 lead</dt>
               <dd className="text-base font-semibold tabular-nums">{stats.leadTimeAvgHours}h</dd>
@@ -112,7 +115,10 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
         ) : null}
 
         {/* status 分布 */}
-        <dl className="grid grid-cols-3 gap-2 text-xs">
+        <dl
+          className="grid grid-cols-3 gap-2 text-xs"
+          aria-label="ステータス分布 (完了 / 未完了 / blocked)"
+        >
           <div>
             <dt className="text-muted-foreground">完了</dt>
             <dd className="font-semibold text-emerald-700 tabular-nums">{stats.done}</dd>
