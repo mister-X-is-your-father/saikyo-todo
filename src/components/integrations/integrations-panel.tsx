@@ -580,7 +580,7 @@ function SourceImportHistory({ sourceId }: { sourceId: string }) {
     <ul
       className="divide-y rounded border text-xs"
       data-testid={`src-imports-list-${sourceId}`}
-      aria-label="直近の Pull 履歴 (最新 5 件)"
+      aria-label={`直近の Pull 履歴 ${imports.length} 件 (最新順)`}
     >
       {imports.map((r) => (
         <li
