@@ -452,7 +452,7 @@ export function GanttView({
         {/* 月境界線 (Phase 6.15 iter 16 — TeamGantt 風) */}
         {monthBoundaryDays.length > 0 && (
           <div
-            aria-hidden
+            aria-hidden="true"
             className="pointer-events-none absolute z-10"
             style={{
               left: LABEL_COL_PX,
@@ -486,7 +486,7 @@ export function GanttView({
         )}
         {/* 週末縦帯 (Phase 6.15 iter 11 — TeamGantt の典型表現)。bar の下に薄い背景 */}
         <div
-          aria-hidden
+          aria-hidden="true"
           className="pointer-events-none absolute"
           style={{
             left: LABEL_COL_PX,
@@ -688,7 +688,7 @@ export function GanttView({
                     {progressPct > 0 && (
                       <div
                         data-testid={`gantt-progress-${item.id}`}
-                        aria-hidden
+                        aria-hidden="true"
                         className="pointer-events-none absolute inset-y-0 left-0 rounded-l"
                         style={{
                           width: `${progressPct}%`,

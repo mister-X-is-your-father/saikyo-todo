@@ -83,7 +83,7 @@ export default async function HomePage() {
                         /{ws.slug} · あなたの role: {ws.role}
                       </p>
                     </div>
-                    <span className="text-muted-foreground text-xs" aria-hidden>
+                    <span className="text-muted-foreground text-xs" aria-hidden="true">
                       →
                     </span>
                   </div>

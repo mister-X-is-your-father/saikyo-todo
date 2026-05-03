@@ -116,7 +116,7 @@ export function PdcaPanel({ workspaceId }: Props) {
                   background: PDCA_COLORS.plan,
                 }}
                 title={`Plan ${counts.plan}`}
-                aria-hidden
+                aria-hidden="true"
               />
               <div
                 className="h-full"
@@ -125,7 +125,7 @@ export function PdcaPanel({ workspaceId }: Props) {
                   background: PDCA_COLORS.do,
                 }}
                 title={`Do ${counts.do}`}
-                aria-hidden
+                aria-hidden="true"
               />
               <div
                 className="h-full"
@@ -134,7 +134,7 @@ export function PdcaPanel({ workspaceId }: Props) {
                   background: PDCA_COLORS.check,
                 }}
                 title={`Check ${counts.check}`}
-                aria-hidden
+                aria-hidden="true"
               />
               <div
                 className="h-full"
@@ -143,7 +143,7 @@ export function PdcaPanel({ workspaceId }: Props) {
                   background: PDCA_COLORS.act,
                 }}
                 title={`Act ${counts.act}`}
-                aria-hidden
+                aria-hidden="true"
               />
             </div>
           </div>
@@ -189,7 +189,7 @@ function PdcaStat({
         <span
           className="inline-block h-2 w-2 rounded-full"
           style={{ background: color }}
-          aria-hidden
+          aria-hidden="true"
         />
         <span className="text-xs font-medium">{label}</span>
       </div>
