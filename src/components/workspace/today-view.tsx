@@ -211,7 +211,7 @@ export function TodayView({
                             e.stopPropagation()
                             void setOpenItemId(it.id)
                           }}
-                          className="hover:text-primary truncate text-left font-medium hover:underline"
+                          className="hover:text-primary focus-visible:ring-ring truncate rounded text-left font-medium hover:underline focus-visible:ring-2 focus-visible:outline-none"
                           data-testid={`today-title-${it.id}`}
                           aria-label={`「${it.title}」を編集`}
                         >
