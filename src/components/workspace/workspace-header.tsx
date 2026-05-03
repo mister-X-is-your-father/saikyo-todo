@@ -31,7 +31,11 @@ export function WorkspaceHeader({ title, role, subtitle, pageActions, utility }:
         </div>
         <p className="text-muted-foreground mt-1 truncate text-xs">{subtitle}</p>
       </div>
-      <div className="flex flex-wrap items-center gap-2">
+      <div
+        className="flex flex-wrap items-center gap-2"
+        role="group"
+        aria-label="ヘッダー操作 (ページ固有アクション / ユーティリティ)"
+      >
         {pageActions}
         {utility}
       </div>
