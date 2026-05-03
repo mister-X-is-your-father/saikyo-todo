@@ -33,6 +33,7 @@
  *   - AI invocation の頻度が均等でない場合 (例: 月末集中) は projection が低めに出る
  */
 
+import { formatUsd } from '@/lib/format-usd'
 import { type ChipTone, type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
 import { safeUsd } from './cost-safe-usd'
@@ -151,13 +152,6 @@ export function computeCostMonthProjection(input: CostMonthProjectionInput): Cos
     exceedsLimit,
     riskLevel,
   }
-}
-
-/** USD を `'$1.23'` (>=1) / `'$0.123'` (<1) / `'$0.00'` (=0) 形式に整形。 */
-function formatUsd(usd: number): string {
-  const safe = Number.isFinite(usd) ? Math.max(0, usd) : 0
-  const decimals = safe < 1 ? 3 : 2
-  return `$${safe.toFixed(decimals)}`
 }
 
 /**

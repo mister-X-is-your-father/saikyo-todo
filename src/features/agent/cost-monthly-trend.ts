@@ -24,6 +24,7 @@
  */
 
 import { rateToPct } from '@/lib/format-rate'
+import { formatUsd } from '@/lib/format-usd'
 
 import { safeUsd } from './cost-safe-usd'
 
@@ -147,14 +148,6 @@ export function computeMonthlyCostTrend(
     deltaPct,
     direction,
   }
-}
-
-/** USD を `'$1.234'` (3 桁固定) / `'$0.01'` 形式に整形。$0 は `'$0.00'`。 */
-function formatUsd(usd: number): string {
-  const safe = Number.isFinite(usd) ? Math.max(0, usd) : 0
-  // 1 USD 未満は 3 桁、それ以上は 2 桁 (人が読みやすく)
-  const decimals = safe < 1 ? 3 : 2
-  return `$${safe.toFixed(decimals)}`
 }
 
 /**
