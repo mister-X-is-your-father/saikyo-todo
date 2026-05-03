@@ -71,7 +71,13 @@ export function BulkActionBar({ workspaceId }: Props) {
       role="region"
       aria-label={`一括操作 (${count} 件選択中)`}
     >
-      <span className="text-sm font-medium" data-testid="bulk-count">
+      <span
+        className="text-sm font-medium"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="bulk-count"
+      >
         {count} 件選択中
       </span>
       <div className="bg-border mx-1 h-5 w-px" aria-hidden="true" />
