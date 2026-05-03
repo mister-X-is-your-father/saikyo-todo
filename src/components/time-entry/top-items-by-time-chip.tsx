@@ -161,7 +161,10 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
             直近 {WINDOW_DAYS} 日 — Item 紐付けの稼働記録なし (自由稼働のみ)
           </p>
         ) : (
-          <ol className="space-y-1">
+          <ol
+            className="space-y-1"
+            aria-label={`直近 ${WINDOW_DAYS} 日 Item 別稼働 top ${summary.top.length} 件 (合計時間が多い順)`}
+          >
             {summary.top.map((row, idx) => {
               const title = summary.titles.get(row.itemId) ?? '(無題)'
               const label = formatMinutes(row.totalMinutes)
