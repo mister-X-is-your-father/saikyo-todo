@@ -256,7 +256,11 @@ function KanbanColumn({
           data-droppable-status={statusKey}
         >
           {items.length === 0 ? (
-            <div className="text-muted-foreground rounded border border-dashed px-2 py-4 text-center text-xs">
+            <div
+              className="text-muted-foreground rounded border border-dashed px-2 py-4 text-center text-xs"
+              role="status"
+              aria-live="polite"
+            >
               ここにドロップ
             </div>
           ) : (
