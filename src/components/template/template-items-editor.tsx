@@ -201,7 +201,10 @@ export function TemplateItemsEditor({ templateId }: Props) {
       ) : (items.data?.length ?? 0) === 0 ? (
         <EmptyState title="子 Item がまだありません" />
       ) : (
-        <ul className="divide-y text-sm">
+        <ul
+          className="divide-y text-sm"
+          aria-label={`Template 子 Item 一覧 ${items.data!.length} 件`}
+        >
           {items.data!.map((it) => (
             <li
               key={it.id}
