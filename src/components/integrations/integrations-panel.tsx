@@ -144,7 +144,11 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
         </p>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-wrap gap-1.5">
+        <div
+          className="flex flex-wrap gap-1.5"
+          role="group"
+          aria-label={`Source「${src.name}」の操作 (pull / 編集 / 有効化切替 / 削除)`}
+        >
           <Button
             size="sm"
             className="min-h-11"
