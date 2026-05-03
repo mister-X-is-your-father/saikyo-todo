@@ -452,7 +452,11 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               />
             </div>
           )}
-          <div className="flex justify-end gap-1">
+          <div
+            className="flex justify-end gap-1"
+            role="group"
+            aria-label={`提案「${proposal.title}」の編集 form 操作 (キャンセル / 保存)`}
+          >
             <Button
               type="button"
               size="sm"
@@ -509,7 +513,11 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
           </p>
         )}
       </button>
-      <div className="flex shrink-0 gap-1">
+      <div
+        className="flex shrink-0 gap-1"
+        role="group"
+        aria-label={`提案「${proposal.title}」の操作 (採用 / 却下)`}
+      >
         <Button
           size="sm"
           variant="default"
