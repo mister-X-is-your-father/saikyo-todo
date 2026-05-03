@@ -123,7 +123,12 @@ function PanelBody({ workspaceId }: Props) {
   }
   if (rows.length === 0) {
     return (
-      <p className="text-muted-foreground mt-2 text-xs" data-testid="team-capacity-empty">
+      <p
+        className="text-muted-foreground mt-2 text-xs"
+        role="status"
+        aria-live="polite"
+        data-testid="team-capacity-empty"
+      >
         member が登録されていません
       </p>
     )
