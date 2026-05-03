@@ -297,6 +297,8 @@ export function GanttView({
       <div
         data-testid="gantt-summary"
         className="bg-muted/40 text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 border-b px-3 py-1.5 text-xs"
+        role="group"
+        aria-label="Gantt project summary (表示範囲 / Item 数 / CPM 期間 / critical / baseline / 遅延)"
       >
         <span>
           表示範囲 <span className="text-foreground font-mono">{totalSpanDays}</span> 日
