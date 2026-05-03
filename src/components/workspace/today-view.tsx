@@ -169,7 +169,10 @@ export function TodayView({
   return (
     <div className="space-y-4" data-testid="today-view">
       <OperationBoardWidget items={items} today={today} />
-      <p className="text-muted-foreground text-xs" aria-live="polite">
+      {/* iter726: 静的キーボードヒントは aria-live="polite" の誤用 (live region は
+          値変更時の再 announce 用、静的命令文には不要)。SR ユーザは <p> として
+          通常 reading 順で 1 回読み上げれば十分。 iter443 inbox-view と同 anti-pattern 修正。 */}
+      <p className="text-muted-foreground text-xs">
         キーボード: j/k で移動 · Enter または e で編集 · x または Space で完了切替 · Esc で解除
       </p>
       {groups.map(
