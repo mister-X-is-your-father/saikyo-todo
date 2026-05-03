@@ -179,7 +179,11 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
           </div>
         )}
         {!isAgentRunning && (
-          <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+          <div
+            className="flex shrink-0 flex-wrap items-center justify-end gap-1.5"
+            role="group"
+            aria-label="AI 分解提案の bulk 操作 (全て採用 / 全て却下 / 再分解)"
+          >
             {list.length > 0 && (
               <>
                 <Button
