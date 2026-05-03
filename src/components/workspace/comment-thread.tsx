@@ -276,7 +276,11 @@ function CommentItem({
         <>
           <p className="break-words whitespace-pre-wrap">{comment.body}</p>
           {isOwn && (
-            <div className="mt-2 flex justify-end gap-2">
+            <div
+              className="mt-2 flex justify-end gap-2"
+              role="group"
+              aria-label="自分のコメント操作 (編集 / 削除)"
+            >
               <button
                 type="button"
                 className="text-muted-foreground hover:text-foreground focus-visible:ring-ring rounded text-xs focus-visible:ring-2 focus-visible:outline-none"
