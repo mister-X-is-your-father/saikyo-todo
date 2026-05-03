@@ -26,4 +26,13 @@ describe('safeMinutes', () => {
     expect(safeMinutes(NaN)).toBe(0)
     expect(safeMinutes(Infinity)).toBe(0)
   })
+
+  it('0 < x < 0.5 (Math.round で 0 になる) は 0 (集計に影響しない)', () => {
+    expect(safeMinutes(0.1)).toBe(0)
+    expect(safeMinutes(0.49)).toBe(0)
+  })
+
+  it('境界 0.5 は Math.round で 1 (banker round ではなく round-half-away)', () => {
+    expect(safeMinutes(0.5)).toBe(1)
+  })
 })

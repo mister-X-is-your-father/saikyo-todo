@@ -1,9 +1,10 @@
 /**
  * iter630 refactor: durationMinutes 集計用の sanitization helper。
  *
- * `item-time-summary.ts` / `weekly-time-trend.ts` / `weekday-time-distribution.ts`
- * / `daily-streak.ts` の 4 file で同等の `function safeMinutes(min: number): number`
- * が重複していたため 1 source of truth に集約。
+ * iter664 までに `item-time-summary.ts` / `weekly-time-trend.ts` /
+ * `weekday-time-distribution.ts` / `daily-streak.ts` / `category-summary.ts` /
+ * `daily-summary.ts` の 6 file で同等の sanitization が重複していたため
+ * 1 source of truth に集約 (= time-entry 配下の集計系全 file で統一)。
  *
  * 仕様:
  *   - finite かつ正値 → Math.round(min) (= 整数化、durationMinutes は DB 上 integer
