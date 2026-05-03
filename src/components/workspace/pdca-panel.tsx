@@ -82,7 +82,11 @@ export function PdcaPanel({ workspaceId }: Props) {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* PDCA 件数: 4 列 */}
-        <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+        <div
+          className="grid grid-cols-2 gap-2 md:grid-cols-4"
+          role="group"
+          aria-label="PDCA 4 段階の集計 (Plan / Do / Check / Act)"
+        >
           <PdcaStat label="Plan" sub="未着手" value={counts.plan} color={PDCA_COLORS.plan} />
           <PdcaStat label="Do" sub="進行中" value={counts.do} color={PDCA_COLORS.do} />
           <PdcaStat
