@@ -135,7 +135,7 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
                 {item.isMust && <MustBadge className="mr-1" iconOnly />}
                 <Link
                   href={`/${workspaceId}?item=${item.id}`}
-                  className="text-primary hover:underline"
+                  className="text-primary focus-visible:ring-ring rounded hover:underline focus-visible:ring-2 focus-visible:outline-none"
                   data-testid={`archive-title-link-${item.id}`}
                   aria-label={`「${item.title}」を開く (${fmt(item.archivedAt)} にアーカイブ)`}
                 >
