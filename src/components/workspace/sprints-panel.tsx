@@ -649,7 +649,11 @@ function SprintCard({
                   />
                 </div>
               </div>
-              <div className="flex justify-end gap-1.5">
+              <div
+                className="flex justify-end gap-1.5"
+                role="group"
+                aria-label={`Sprint「${sprint.name}」の期間編集 form 操作 (キャンセル / 保存)`}
+              >
                 <Button
                   type="button"
                   size="sm"
@@ -961,7 +965,11 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                 data-testid="sprint-defaults-length"
               />
             </div>
-            <div className="flex gap-1.5">
+            <div
+              className="flex gap-1.5"
+              role="group"
+              aria-label="Sprint デフォルト編集の操作 (キャンセル / 保存)"
+            >
               <Button
                 type="button"
                 size="sm"
