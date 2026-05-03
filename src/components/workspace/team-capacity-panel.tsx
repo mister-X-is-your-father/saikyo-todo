@@ -61,7 +61,7 @@ export function TeamCapacityPanel({ workspaceId }: Props) {
       >
         <summary
           id="team-capacity-summary"
-          className="text-foreground inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium"
+          className="text-foreground focus-visible:ring-ring inline-flex cursor-pointer items-center gap-1.5 rounded text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
           aria-label={
             open
               ? 'チームメンバー 余裕時間 (今日 / 今週) を閉じる'

@@ -860,7 +860,7 @@ function WorkflowNodeRunsList({ runId }: { runId: string }) {
           {nr.output != null && (
             <details className="text-[10px]">
               <summary
-                className="text-muted-foreground cursor-pointer"
+                className="text-muted-foreground focus-visible:ring-ring cursor-pointer rounded focus-visible:ring-2 focus-visible:outline-none"
                 aria-label={`node ${nr.nodeId} の output (jsonb) を開閉`}
                 data-testid={`wf-node-run-output-summary-${nr.id}`}
               >
