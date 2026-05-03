@@ -199,7 +199,7 @@ export function CalendarView({ workspaceId }: Props) {
           想定 {planned.length} 件 / 実測 {actual.length} 件
           {(create.isPending || move.isPending || softDelete.isPending) && (
             <Loader2
-              className="ml-2 inline h-3 w-3 animate-spin"
+              className="ml-2 inline h-3 w-3 animate-spin motion-reduce:animate-none"
               aria-label="保存中"
               role="status"
             />
@@ -236,7 +236,10 @@ export function CalendarView({ workspaceId }: Props) {
                 role="status"
                 aria-live="polite"
               >
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                <Loader2
+                  className="mr-2 h-4 w-4 animate-spin motion-reduce:animate-none"
+                  aria-hidden="true"
+                />
                 読み込み中...
               </div>
             ) : (
@@ -273,7 +276,10 @@ export function CalendarView({ workspaceId }: Props) {
                 role="status"
                 aria-live="polite"
               >
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                <Loader2
+                  className="mr-2 h-4 w-4 animate-spin motion-reduce:animate-none"
+                  aria-hidden="true"
+                />
                 読み込み中...
               </div>
             ) : (

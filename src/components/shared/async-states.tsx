@@ -29,7 +29,7 @@ export function Loading({
         className,
       )}
     >
-      <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+      <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
       <span>{message}</span>
     </div>
   )
