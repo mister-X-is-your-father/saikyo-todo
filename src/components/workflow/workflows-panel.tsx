@@ -13,6 +13,7 @@ import { useMemo, useState } from 'react'
 import { ChevronDown, ChevronRight, Pencil, Play, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { buildCharCountAria } from '@/lib/a11y/char-count-aria'
 import { isAppError } from '@/lib/errors'
 
 import { formatRunDuration, formatRunTime } from '@/features/workflow/format'
@@ -112,15 +113,14 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                 minLength={1}
                 maxLength={200}
                 autoComplete="off"
-                aria-label={
-                  name.length === 0
-                    ? 'Workflow 名前 (必須、最大 200 文字、何を自動化するか分かる名前)'
-                    : name.trim() === ''
-                      ? `Workflow 名前 (現在 ${name.length} / 200 文字、空白のみは不正)`
-                      : name.length > 180
-                        ? `Workflow 名前 (現在 ${name.length} / 200 文字、上限近接)`
-                        : `Workflow 名前 (現在 ${name.length} / 200 文字)`
-                }
+                aria-label={buildCharCountAria({
+                  emptyLabel: 'Workflow 名前 (必須、最大 200 文字、何を自動化するか分かる名前)',
+                  fieldName: 'Workflow 名前',
+                  value: name,
+                  maxLength: 200,
+                  nearMaxAt: 180,
+                  whitespaceOnlySuffix: '空白のみは不正',
+                })}
               />
             </div>
             <div className="space-y-1">
@@ -146,13 +146,14 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                 rows={2}
                 maxLength={2000}
                 placeholder="この workflow が何を自動化するか"
-                aria-label={
-                  description.length === 0
-                    ? 'Workflow の説明 (任意、最大 2000 文字、Cmd/Ctrl+Enter で作成)'
-                    : description.length > 1900
-                      ? `Workflow の説明 (現在 ${description.length} / 2000 文字、上限近接、Cmd/Ctrl+Enter で作成)`
-                      : `Workflow の説明 (現在 ${description.length} / 2000 文字、Cmd/Ctrl+Enter で作成)`
-                }
+                aria-label={buildCharCountAria({
+                  emptyLabel: 'Workflow の説明 (任意、最大 2000 文字、Cmd/Ctrl+Enter で作成)',
+                  fieldName: 'Workflow の説明',
+                  value: description,
+                  maxLength: 2000,
+                  nearMaxAt: 1900,
+                  filledSuffix: '、Cmd/Ctrl+Enter で作成',
+                })}
               />
             </div>
             <div className="flex justify-end">
