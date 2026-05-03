@@ -160,7 +160,7 @@ export function GanttView({
   if (withDates.length === 0) {
     return (
       <div data-testid="gantt-view" className="rounded-lg border p-6">
-        <p className="text-muted-foreground text-center text-sm">
+        <p className="text-muted-foreground text-center text-sm" role="status" aria-live="polite">
           startDate / dueDate が両方設定された item がありません。 Item 編集で期間を入れると Gantt
           に表示されます。
         </p>
