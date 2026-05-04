@@ -108,6 +108,7 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
                       : 'h-full bg-rose-500'
               }
               style={{ width: `${summary.completionRate}%` }}
+              aria-hidden="true"
             />
           </div>
         </div>

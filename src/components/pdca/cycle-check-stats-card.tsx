@@ -85,7 +85,11 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
             aria-label={`PDCA Cycle 完了率 ${stats.completionRate}% (${severityLabelJa(sev)})`}
             aria-valuetext={`${stats.completionRate}% (${severityLabelJa(sev)})`}
           >
-            <div className={`h-full ${sevBarCls}`} style={{ width: `${stats.completionRate}%` }} />
+            <div
+              className={`h-full ${sevBarCls}`}
+              style={{ width: `${stats.completionRate}%` }}
+              aria-hidden="true"
+            />
           </div>
         </div>
 
