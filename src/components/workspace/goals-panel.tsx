@@ -795,9 +795,12 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
               onChange={(e) => setTarget(e.target.value)}
               placeholder="例: 100"
               className="w-32 text-sm"
+              required
+              aria-required="true"
+              aria-invalid={(target !== '' && Number.isNaN(Number(target))) || undefined}
               aria-label={
                 target === ''
-                  ? '目標値 (KR を達成判定するための数値、decimal 可)'
+                  ? '目標値 (KR を達成判定するための数値、必須、decimal 可)'
                   : Number.isNaN(Number(target))
                     ? `目標値 (現在値「${target}」 は数値として不正)`
                     : `目標値 (現在: ${target}${unit ? ` ${unit}` : ''})`
