@@ -101,7 +101,12 @@ export function InboxView({
   )
 
   return (
-    <div className="space-y-1 rounded-lg border p-2" data-testid="inbox-view">
+    <div
+      className="space-y-1 rounded-lg border p-2"
+      data-testid="inbox-view"
+      role="region"
+      aria-label={`Inbox view (${inbox.length} 件、scheduledFor も期限も未設定、健全性: ${healthChip.label})`}
+    >
       <div className="mb-1 flex items-center gap-2 px-2 text-xs">
         <span className="text-muted-foreground">
           {inbox.length} 件 — scheduledFor も期限も未設定
