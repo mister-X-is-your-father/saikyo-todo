@@ -866,6 +866,7 @@ function WorkflowNodeRunsList({ runId }: { runId: string }) {
               className="overflow-x-auto rounded bg-red-50 px-2 py-1 text-[10px] whitespace-pre-wrap text-red-700 dark:bg-red-950 dark:text-red-300"
               data-testid={`wf-node-run-error-${nr.id}`}
               aria-label={`node ${nr.nodeId} のエラー`}
+              role="alert"
             >
               {nr.error}
             </pre>
