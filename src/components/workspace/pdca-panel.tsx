@@ -56,7 +56,11 @@ export function PdcaPanel({ workspaceId }: Props) {
           <CardTitle className="text-base" role="heading" aria-level={2}>
             PDCA ({days} 日間)
           </CardTitle>
-          <div className="flex gap-1" role="group" aria-label="集計期間">
+          <div
+            className="flex gap-1"
+            role="group"
+            aria-label={`集計期間 (現在: ${days} 日、30 / 90 から選択)`}
+          >
             <Button
               size="sm"
               className="min-h-11"
