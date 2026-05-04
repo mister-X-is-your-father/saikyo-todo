@@ -551,12 +551,14 @@ function SprintCard({
                   <div
                     className={`${PROGRESS_TONE_BAR_CLASS[tone]} h-full`}
                     style={{ width: `${pct}%` }}
+                    aria-hidden="true"
                   />
                   {/* ideal 線 (経過率) */}
                   {status === 'active' && (
                     <div
                       className="bg-foreground/40 absolute top-0 h-full w-px"
                       style={{ left: `${elapsedPct}%` }}
+                      aria-hidden="true"
                       aria-label={`理想ライン ${elapsedPct}%`}
                     />
                   )}
