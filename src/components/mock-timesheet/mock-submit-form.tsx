@@ -84,6 +84,7 @@ export function MockSubmitForm() {
           id="tsCategory"
           aria-invalid={form.formState.errors.category ? true : undefined}
           aria-describedby={form.formState.errors.category ? 'tsCategory-error' : undefined}
+          aria-label={`カテゴリ (現在: ${TIME_ENTRY_CATEGORIES.find((c) => c.key === form.watch('category'))?.label ?? form.watch('category')})`}
           {...form.register('category')}
           className="w-full rounded border px-3 py-2 text-sm"
         >
