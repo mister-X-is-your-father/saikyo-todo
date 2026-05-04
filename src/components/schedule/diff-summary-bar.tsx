@@ -60,7 +60,7 @@ export function DiffSummaryBar({ schedules, itemTitleById, onSelect }: Props) {
   const rows = summarizeDiff(schedules)
   if (rows.length === 0) {
     return (
-      <div className="text-muted-foreground py-2 text-xs">
+      <div className="text-muted-foreground py-2 text-xs" role="status" aria-live="polite">
         想定 / 実測 が登録されると、ここに差分が並びます
       </div>
     )
