@@ -100,7 +100,11 @@ export function TaskChuteView({ workspaceId, items }: Props) {
   }
 
   return (
-    <Card data-testid="taskchute-view">
+    <Card
+      data-testid="taskchute-view"
+      role="region"
+      aria-label={`TaskChute mode (今日の 1 列 timeline ${ordered.length} 件、合計 ${ticker.totalEstimateMin} 分 / 残 ${ticker.remainingEstimateMin} 分)`}
+    >
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-1.5 text-base" role="heading" aria-level={2}>
           <Sparkles className="h-4 w-4" aria-hidden="true" />
