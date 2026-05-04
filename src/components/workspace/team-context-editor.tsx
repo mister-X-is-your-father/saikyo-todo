@@ -79,6 +79,7 @@ export function TeamContextEditor({ workspaceId }: Props) {
           placeholder="例: 当チームは TDD。MUST タスクは PR 必須。Slack #team-x で進捗報告。 (Cmd/Ctrl+Enter で保存)"
           rows={4}
           maxLength={4000}
+          aria-keyshortcuts="Meta+Enter Control+Enter"
           aria-label={
             draft.length === 0
               ? 'チームコンテキスト (workspace 全体、最大 4000 文字、AI プロンプト末尾に inject、Cmd/Ctrl+Enter で保存)'
