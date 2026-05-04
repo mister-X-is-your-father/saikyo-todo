@@ -39,7 +39,7 @@ export function WorkspaceHeader({ title, role, subtitle, pageActions, utility }:
       <div
         className="flex flex-wrap items-center gap-2"
         role="group"
-        aria-label="ヘッダー操作 (ページ固有アクション / ユーティリティ)"
+        aria-label={`「${title}」 ヘッダー操作 (ページ固有アクション / ユーティリティ)`}
       >
         {pageActions}
         {utility}
