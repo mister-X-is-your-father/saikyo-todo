@@ -122,9 +122,17 @@ export function MockSubmitForm() {
           min="0.25"
           max="24"
           aria-invalid={form.formState.errors.hoursDecimal ? true : undefined}
-          aria-describedby={form.formState.errors.hoursDecimal ? 'tsHours-error' : undefined}
+          aria-describedby={
+            form.formState.errors.hoursDecimal ? 'tsHours-hint tsHours-error' : 'tsHours-hint'
+          }
           {...form.register('hoursDecimal', { valueAsNumber: true })}
         />
+        {/* iter739: form hint pattern (iter733race-738race と同じ) を mock-submit-form の
+            数値 input にも適用。Label の「(h, 0.25 刻み)」は visible だが SR は input 単独
+            focus 時に bind された hint を読むので aria-describedby に紐付ける。 */}
+        <p id="tsHours-hint" className="text-muted-foreground text-xs">
+          0.25 刻み (15 分単位)、最小 0.25 (= 15 分)、最大 24 (= 24 時間)。例: 1.5 = 1 時間 30 分
+        </p>
         {form.formState.errors.hoursDecimal && (
           <p id="tsHours-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.hoursDecimal.message}
