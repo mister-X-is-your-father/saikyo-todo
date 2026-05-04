@@ -146,7 +146,7 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
     <div
       className="mt-2 space-y-1.5"
       role="group"
-      aria-label={`Sprint「${sprintName}」 担当者 swim-lane`}
+      aria-label={`Sprint「${sprintName}」 担当者 swim-lane (lane ${rows.length} 件)`}
     >
       <div
         className="text-muted-foreground text-[11px]"
