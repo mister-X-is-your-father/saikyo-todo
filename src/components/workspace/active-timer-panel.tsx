@@ -225,7 +225,7 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
       <div
         className="flex shrink-0 items-center gap-1"
         role="group"
-        aria-label="タスクタイマーの操作 (一時停止 / 再開 / Picture-in-Picture / 停止)"
+        aria-label={`タスクタイマーの操作 (現在: ${running ? '計測中' : '一時停止中'}、一時停止 / 再開 / Picture-in-Picture / 停止)`}
       >
         {running ? (
           <Button
