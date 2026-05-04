@@ -71,7 +71,17 @@ export function ItemSummaryPanel({ workspaceId, item }: Props) {
   const now = new Date()
 
   return (
-    <div className="space-y-3" role="region" aria-label="案件サマリ">
+    <div
+      className="space-y-3"
+      role="region"
+      aria-label={`案件サマリ${
+        progress
+          ? ` (進捗 ${progress.pctDone}%、完了 ${progress.done} / 全 ${progress.total} 件${
+              progress.blocked > 0 ? `、blocked ${progress.blocked} 件` : ''
+            })`
+          : ''
+      }`}
+    >
       <div
         className={`rounded-md border px-3 py-2 ring-1 ${
           progress?.isComplete
