@@ -322,6 +322,7 @@ export function GanttView({
             data-testid="gantt-summary-critical"
             className="text-red-600 dark:text-red-400"
             title="critical path 上の item (= project 全体期間に直接影響、遅延すると全体遅延)"
+            aria-label={`critical path ${criticalCount} 件 (project 全体期間に直接影響、遅延すると全体遅延)`}
           >
             critical path <span className="font-mono">{criticalCount}</span> 件
           </span>
@@ -336,6 +337,7 @@ export function GanttView({
             data-testid="gantt-summary-slip"
             className="text-amber-600 dark:text-amber-400"
             title={`baseline より遅れている item の合計遅延日数`}
+            aria-label={`遅延 ${slipItemCount} 件 (baseline より遅れている item)、計 ${totalSlipDays} 日`}
           >
             遅延 <span className="font-mono">{slipItemCount}</span> 件 / 計
             <span className="font-mono"> {totalSlipDays}</span> 日
