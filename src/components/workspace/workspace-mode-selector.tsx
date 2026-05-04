@@ -114,6 +114,7 @@ export function WorkspaceModeSelector({ workspaceId }: Props) {
         <div
           role="radiogroup"
           aria-label={`workspace の default 作業モード (現在: ${MODE_OPTIONS.find((o) => o.value === current)?.label ?? current})`}
+          aria-describedby="workspace-mode-hint"
           aria-busy={upd.isPending || undefined}
           className="grid grid-cols-1 gap-2 sm:grid-cols-3"
         >
@@ -163,7 +164,7 @@ export function WorkspaceModeSelector({ workspaceId }: Props) {
             )
           })}
         </div>
-        <p className="text-muted-foreground mt-2 text-[11px]">
+        <p id="workspace-mode-hint" className="text-muted-foreground mt-2 text-[11px]">
           URL <code>?mode=taskchute</code> 等で session 単位で override 可能 (workspace
           設定は変えずに試せる)。
         </p>
