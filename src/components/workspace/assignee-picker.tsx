@@ -111,7 +111,10 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
         aria-label="アサイン (メンバー / AI Agent) を選択"
       >
         <Command>
-          <CommandInput placeholder="メンバー / AI を検索…" />
+          <CommandInput
+            placeholder="メンバー / AI を検索…"
+            aria-label="アサイン候補を検索 (workspace メンバー / AI Agent)"
+          />
           <CommandList>
             <CommandEmpty>
               {isLoading ? '読み込み中…' : 'メンバー / AI が見つかりません'}
