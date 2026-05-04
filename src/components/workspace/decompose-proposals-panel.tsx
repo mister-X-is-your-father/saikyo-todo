@@ -124,7 +124,11 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
           aria-live="polite"
           data-testid="decompose-proposals-status"
         >
-          <div className="flex items-center gap-1.5 text-sm font-semibold">
+          <div
+            className="flex items-center gap-1.5 text-sm font-semibold"
+            role="heading"
+            aria-level={3}
+          >
             <Sparkles
               className={`h-3.5 w-3.5 text-amber-600 dark:text-amber-400 ${
                 isAgentRunning ? 'motion-safe:animate-pulse' : ''
