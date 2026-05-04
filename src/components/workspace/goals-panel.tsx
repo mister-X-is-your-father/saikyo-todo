@@ -469,7 +469,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
             <div
               className="flex flex-wrap items-center justify-end gap-1.5"
               role="group"
-              aria-label={`Goal「${goal.title}」のステータス操作 (完了 / アーカイブ / 再開)`}
+              aria-label={`Goal「${goal.title}」のステータス操作 (現在: ${goalStatusLabelJa(status)}、完了 / アーカイブ / 再開)`}
             >
               {status === 'active' && (
                 <>
