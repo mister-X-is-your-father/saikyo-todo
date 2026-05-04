@@ -75,7 +75,10 @@ export default async function RootLayout({
           メインコンテンツへスキップ
         </a>
         <noscript>
-          <div className="bg-destructive text-destructive-foreground p-4 text-center text-sm">
+          <div
+            className="bg-destructive text-destructive-foreground p-4 text-center text-sm"
+            role="alert"
+          >
             最強TODO は JavaScript を必要とします。ブラウザで JavaScript を有効にしてください。
           </div>
         </noscript>
