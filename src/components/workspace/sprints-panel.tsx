@@ -291,6 +291,7 @@ export function SprintsPanel({ workspaceId }: Props) {
                 placeholder="この Sprint で達成したいこと"
                 rows={2}
                 maxLength={500}
+                aria-keyshortcuts="Meta+Enter Control+Enter"
                 aria-label={
                   goal.length === 0
                     ? 'Sprint ゴール (任意、最大 500 文字、この Sprint で達成したいこと、Cmd/Ctrl+Enter で作成)'
