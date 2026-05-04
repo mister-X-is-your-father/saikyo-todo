@@ -230,6 +230,7 @@ export function GoalsPanel({ workspaceId }: Props) {
                   }
                 }}
                 maxLength={2000}
+                aria-keyshortcuts="Meta+Enter Control+Enter"
                 aria-label={
                   description.length === 0
                     ? 'Goal の説明 (任意、最大 2000 文字、Objective の補足や背景、Cmd/Ctrl+Enter で作成)'
