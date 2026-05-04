@@ -298,7 +298,13 @@ export function GanttView({
         data-testid="gantt-summary"
         className="bg-muted/40 text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 border-b px-3 py-1.5 text-xs"
         role="group"
-        aria-label="Gantt project summary (表示範囲 / Item 数 / CPM 期間 / critical / baseline / 遅延)"
+        aria-label={`Gantt project summary (表示範囲 ${totalSpanDays} 日 / 表示中 Item ${withDates.length} 件${
+          projectDurationDays !== undefined && projectDurationDays > 0
+            ? ` / CPM 期間 ${projectDurationDays} 日`
+            : ''
+        }${criticalCount > 0 ? ` / critical ${criticalCount} 件` : ''}${
+          baselineCount > 0 ? ` / baseline ${baselineCount} 件` : ''
+        }${slipItemCount > 0 ? ` / 遅延 ${slipItemCount} 件 計 ${totalSlipDays} 日` : ''})`}
       >
         <span>
           表示範囲 <span className="text-foreground font-mono">{totalSpanDays}</span> 日
