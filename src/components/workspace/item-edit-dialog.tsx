@@ -430,7 +430,7 @@ function ItemEditDialogInner({
             />
             <div className="bg-primary/5 flex items-start justify-between gap-3 rounded-lg border p-3">
               <div className="min-w-0">
-                <div className="text-sm font-semibold">
+                <div className="text-sm font-semibold" role="heading" aria-level={3}>
                   <span aria-hidden="true">🧠 </span>AI で分解
                 </div>
                 <p className="text-muted-foreground text-xs">
@@ -445,7 +445,7 @@ function ItemEditDialogInner({
                 として post (🤖 marker 付き)。canGeneratePlan で内部 gate 済 (false なら null)。 */}
             <div className="bg-primary/5 flex items-start justify-between gap-3 rounded-lg border p-3">
               <div className="min-w-0 space-y-1.5">
-                <div className="text-sm font-semibold">
+                <div className="text-sm font-semibold" role="heading" aria-level={3}>
                   <span aria-hidden="true">🤖 </span>AI 担当の実行計画
                 </div>
                 {/* iter542 (queue AI 分業 AC-1 wire-up): handoff-phase chip で
@@ -466,7 +466,7 @@ function ItemEditDialogInner({
 
             <div className="flex items-start justify-between gap-3 rounded-lg border border-dashed p-3">
               <div className="min-w-0">
-                <div className="text-sm font-semibold">
+                <div className="text-sm font-semibold" role="heading" aria-level={3}>
                   <span aria-hidden="true">🛠 </span>Engineer に実装させる
                 </div>
                 <p className="text-muted-foreground text-xs">
@@ -479,7 +479,7 @@ function ItemEditDialogInner({
 
             <div className="flex items-start justify-between gap-3 rounded-lg border border-dashed p-3">
               <div className="min-w-0">
-                <div className="text-sm font-semibold">
+                <div className="text-sm font-semibold" role="heading" aria-level={3}>
                   <span aria-hidden="true">⏱ </span>タスクタイマー
                 </div>
                 <p className="text-muted-foreground text-xs">
