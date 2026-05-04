@@ -375,7 +375,12 @@ export function BacklogView({ workspaceId, items }: Props) {
               </SortableContext>
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={columns.length} className="text-muted-foreground py-8 text-center">
+                  <td
+                    colSpan={columns.length}
+                    className="text-muted-foreground py-8 text-center"
+                    role="status"
+                    aria-live="polite"
+                  >
                     表示する item がありません
                   </td>
                 </tr>
