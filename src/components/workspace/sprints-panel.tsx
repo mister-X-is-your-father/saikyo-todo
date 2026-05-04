@@ -691,7 +691,7 @@ function SprintCard({
           <div
             className="flex flex-wrap gap-1.5"
             role="group"
-            aria-label={`Sprint「${sprint.name}」の操作 (期間編集 / ステータス遷移 / Retro / Pre-mortem)`}
+            aria-label={`Sprint「${sprint.name}」の操作 (現在: ${sprintStatusLabelJa(status)}、期間編集 / ステータス遷移 / Retro / Pre-mortem)`}
           >
             {!editing && status !== 'cancelled' && status !== 'completed' && (
               <Button
