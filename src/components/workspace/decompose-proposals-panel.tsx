@@ -182,7 +182,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
           <div
             className="flex shrink-0 flex-wrap items-center justify-end gap-1.5"
             role="group"
-            aria-label="AI 分解提案の bulk 操作 (全て採用 / 全て却下 / 再分解)"
+            aria-label={`AI 分解提案の bulk 操作 (全て採用 / 全て却下 / 再分解、保留中 ${list.length} 件)`}
           >
             {list.length > 0 && (
               <>
