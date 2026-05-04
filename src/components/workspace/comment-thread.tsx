@@ -225,6 +225,7 @@ function CommentItem({
               }
             }}
             rows={3}
+            aria-keyshortcuts="Meta+Enter Control+Enter Escape"
             aria-label={
               body.length === 0
                 ? 'コメント編集 (必須、最大 10000 文字、Cmd/Ctrl+Enter で保存、Esc で編集破棄)'
