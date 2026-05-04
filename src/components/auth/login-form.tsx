@@ -118,7 +118,9 @@ export function LoginForm() {
         disabled={isPending}
         aria-busy={isPending || undefined}
         data-testid="login-submit"
-        aria-label={isPending ? 'ログイン中… (認証処理を実行中)' : undefined}
+        aria-label={
+          isPending ? 'ログイン中… (認証処理を実行中)' : 'ログイン (メール + パスワードで認証)'
+        }
       >
         {isPending ? 'ログイン中…' : 'ログイン'}
       </Button>
