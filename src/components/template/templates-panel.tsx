@@ -124,6 +124,8 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   value={kind}
                   onChange={(e) => setKind(e.target.value as 'manual' | 'recurring')}
                   className="h-9 w-full rounded-md border px-3 py-1 text-sm"
+                  required
+                  aria-required="true"
                   aria-label={`Template 種別 (現在: ${
                     kind === 'manual'
                       ? 'manual — 手動展開のみ、ユーザが「展開」 button で生成'
