@@ -52,6 +52,8 @@ export function MockLoginForm() {
           id="tsEmail"
           type="email"
           autoComplete="email"
+          required
+          aria-required="true"
           aria-invalid={form.formState.errors.email ? true : undefined}
           aria-describedby={
             form.formState.errors.email ? 'tsEmail-hint tsEmail-error' : 'tsEmail-hint'
@@ -75,6 +77,8 @@ export function MockLoginForm() {
           id="tsPassword"
           type="password"
           autoComplete="current-password"
+          required
+          aria-required="true"
           aria-invalid={form.formState.errors.password ? true : undefined}
           aria-describedby={form.formState.errors.password ? 'tsPassword-error' : undefined}
           {...form.register('password')}
@@ -90,6 +94,7 @@ export function MockLoginForm() {
         type="submit"
         className="h-11 w-full"
         disabled={isPending}
+        aria-busy={isPending || undefined}
         aria-label={isPending ? '認証中… (mock-timesheet 認証処理を実行中)' : undefined}
       >
         {isPending ? '認証中...' : 'ログイン'}
