@@ -83,7 +83,12 @@ export function DataWidgetCard({
   const errorMsg = getErrorMessage(error)
 
   return (
-    <Card className={cn(className)} data-testid={testId}>
+    <Card
+      className={cn(className)}
+      data-testid={testId}
+      role="region"
+      aria-label={count !== undefined ? `${title} (${count} 件)` : title}
+    >
       <CardHeader className="pb-2">
         <div className="flex items-center gap-1.5">
           <CardTitle
