@@ -715,7 +715,7 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
                 <div
                   className="bg-muted h-1 w-full overflow-hidden rounded-full"
                   role="progressbar"
-                  aria-label={`KR「${kr.title}」進捗`}
+                  aria-label={`KR「${kr.title}」進捗 ${pct}%`}
                   aria-valuenow={pct}
                   aria-valuemin={0}
                   aria-valuemax={100}
