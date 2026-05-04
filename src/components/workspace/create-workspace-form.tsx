@@ -88,9 +88,14 @@ export function CreateWorkspaceForm() {
           spellCheck={false}
           enterKeyHint="send"
           aria-invalid={form.formState.errors.slug ? true : undefined}
-          aria-describedby={form.formState.errors.slug ? 'ws-slug-error' : undefined}
+          aria-describedby={
+            form.formState.errors.slug ? 'ws-slug-hint ws-slug-error' : 'ws-slug-hint'
+          }
           {...form.register('slug')}
         />
+        <p id="ws-slug-hint" className="text-muted-foreground text-xs">
+          小文字 (a-z) / 数字 / ハイフンのみ。最大 50 文字。例: team-a
+        </p>
         {form.formState.errors.slug && (
           <p id="ws-slug-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.slug.message}
