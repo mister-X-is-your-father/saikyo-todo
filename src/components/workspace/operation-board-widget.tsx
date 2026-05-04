@@ -221,7 +221,12 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
             count={board.overdue.total}
             tone="red"
           >
-            <ItemList items={board.overdue.top3} onClick={openItem} tone="red" />
+            <ItemList
+              items={board.overdue.top3}
+              onClick={openItem}
+              tone="red"
+              ariaLabel={`期限超過 ${board.overdue.total} 件のうち上位 ${board.overdue.top3.length} 件 (期日が古い順)`}
+            />
             {board.overdue.total > board.overdue.top3.length ? (
               <p className="text-muted-foreground pl-6 text-xs">
                 ほか {board.overdue.total - board.overdue.top3.length} 件
@@ -243,7 +248,11 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
             label="今日の MUST"
             count={board.mustToday.count}
           >
-            <ItemList items={board.mustToday.items} onClick={openItem} />
+            <ItemList
+              items={board.mustToday.items}
+              onClick={openItem}
+              ariaLabel={`今日の MUST ${board.mustToday.count} 件 (期日が近い順)`}
+            />
           </Section>
         )}
 
@@ -253,7 +262,12 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
             label="今日の予定"
             count={board.todayScheduled.count}
           >
-            <ItemList items={board.todayScheduled.items} onClick={openItem} showTime />
+            <ItemList
+              items={board.todayScheduled.items}
+              onClick={openItem}
+              showTime
+              ariaLabel={`今日の予定 ${board.todayScheduled.count} 件 (時刻順)`}
+            />
           </Section>
         )}
 
@@ -283,7 +297,12 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
             </button>
             {showDoneYesterday && (
               <div id="operation-board-done-yesterday-list" className="pt-1 pl-5">
-                <ItemList items={board.doneYesterday.items} onClick={openItem} muted />
+                <ItemList
+                  items={board.doneYesterday.items}
+                  onClick={openItem}
+                  muted
+                  ariaLabel={`昨日 done ${board.doneYesterday.count} 件`}
+                />
               </div>
             )}
           </div>
@@ -332,15 +351,20 @@ function ItemList({
   tone,
   muted,
   showTime,
+  ariaLabel,
 }: {
   items: Item[]
   onClick: (id: string) => void
   tone?: 'red'
   muted?: boolean
   showTime?: boolean
+  ariaLabel?: string
 }) {
+  // iter727: Section 親は role="group" + aria-labelledby を持つが、SR の list
+  // shortcut で ul に直行されると label が解離するため、ul 自身に件数込み
+  // aria-label を持たせる (iter720-725 と同 pattern)。
   return (
-    <ul className="space-y-0.5">
+    <ul className="space-y-0.5" aria-label={ariaLabel}>
       {items.map((it) => (
         <li key={it.id}>
           <ItemRow item={it} onClick={onClick} tone={tone} muted={muted} showTime={showTime} />
