@@ -102,6 +102,10 @@ export function NotificationPreferencesButton({ Icon = Settings }: { Icon?: Luci
     }
   }
 
+  // iter762: button aria-label に現在 ON 件数を含める。data fetch 中は "..." fallback。
+  const onCount = data
+    ? TOGGLES.filter((t) => Boolean(data[t.key as keyof typeof data])).length
+    : null
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -109,7 +113,11 @@ export function NotificationPreferencesButton({ Icon = Settings }: { Icon?: Luci
           type="button"
           variant="ghost"
           size="icon"
-          aria-label="通知設定 (メール通知 4 種を ON/OFF)"
+          aria-label={
+            onCount !== null
+              ? `通知設定 (メール通知 ${onCount}/${TOGGLES.length} 種 ON)`
+              : '通知設定 (メール通知 4 種を ON/OFF)'
+          }
           aria-haspopup="dialog"
           className="min-h-11 min-w-11"
           data-testid="notification-preferences"
