@@ -109,7 +109,7 @@ export function WorkspaceModeSelector({ workspaceId }: Props) {
       <CardContent>
         <div
           role="radiogroup"
-          aria-label="workspace の default 作業モード"
+          aria-label={`workspace の default 作業モード (現在: ${MODE_OPTIONS.find((o) => o.value === current)?.label ?? current})`}
           aria-busy={upd.isPending || undefined}
           className="grid grid-cols-1 gap-2 sm:grid-cols-3"
         >
