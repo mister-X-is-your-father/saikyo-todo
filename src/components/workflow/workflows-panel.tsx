@@ -146,6 +146,7 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                 rows={2}
                 maxLength={2000}
                 placeholder="この workflow が何を自動化するか"
+                aria-keyshortcuts="Meta+Enter Control+Enter"
                 aria-label={
                   description.length === 0
                     ? 'Workflow の説明 (任意、最大 2000 文字、Cmd/Ctrl+Enter で作成)'
