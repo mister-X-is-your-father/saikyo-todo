@@ -153,6 +153,7 @@ export function MockSubmitForm() {
         id="tsSubmit"
         type="submit"
         disabled={isPending}
+        aria-busy={isPending || undefined}
         className="h-11 w-full"
         aria-label={isPending ? '送信中… (mock-timesheet 工数送信処理を実行中)' : undefined}
       >
