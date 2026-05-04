@@ -52,6 +52,10 @@ export function MockLoginForm() {
           id="tsEmail"
           type="email"
           autoComplete="email"
+          inputMode="email"
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck={false}
           required
           aria-required="true"
           aria-invalid={form.formState.errors.email ? true : undefined}
