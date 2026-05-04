@@ -33,6 +33,7 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
       role="dialog"
       aria-modal="true"
       aria-labelledby="schedule-picker-title"
+      aria-keyshortcuts="Escape"
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
           e.stopPropagation()
