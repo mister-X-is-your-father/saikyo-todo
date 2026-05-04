@@ -445,6 +445,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     <div
                       className={`${TIER_BAR_CLASS[tier]} h-full`}
                       style={{ width: `${goalPct}%` }}
+                      aria-hidden="true"
                     />
                   </div>
                 </div>
@@ -728,7 +729,11 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
                   }
                   data-testid={`kr-progress-${kr.id}`}
                 >
-                  <div className="bg-primary h-full" style={{ width: `${pct}%` }} />
+                  <div
+                    className="bg-primary h-full"
+                    style={{ width: `${pct}%` }}
+                    aria-hidden="true"
+                  />
                 </div>
               </li>
             )
