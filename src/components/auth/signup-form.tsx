@@ -98,9 +98,18 @@ export function SignupForm() {
           required
           aria-required="true"
           aria-invalid={form.formState.errors.email ? true : undefined}
-          aria-describedby={form.formState.errors.email ? 'signup-email-error' : undefined}
+          aria-describedby={
+            form.formState.errors.email
+              ? 'signup-email-hint signup-email-error'
+              : 'signup-email-hint'
+          }
           {...form.register('email')}
         />
+        {/* iter736: email format hint を pattern エラー前に提示
+            (iter733 race / iter735 race と同 pattern)。Magic Link 送信先になる旨を補足。 */}
+        <p id="signup-email-hint" className="text-muted-foreground text-xs">
+          ログイン用 Magic Link の送信先になります。例: you@example.com
+        </p>
         {form.formState.errors.email && (
           <p id="signup-email-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.email.message}
