@@ -773,6 +773,8 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
             value={mode}
             onChange={(e) => setMode(e.target.value as ProgressMode)}
             className="rounded border px-2 py-1 text-xs"
+            required
+            aria-required="true"
             aria-label={`KR 進捗算出モード (現在: ${
               mode === 'items'
                 ? '子 Item 完了率で自動算出'
