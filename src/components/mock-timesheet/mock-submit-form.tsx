@@ -104,9 +104,18 @@ export function MockSubmitForm() {
         <IMEInput
           id="tsDescription"
           aria-invalid={form.formState.errors.description ? true : undefined}
-          aria-describedby={form.formState.errors.description ? 'tsDescription-error' : undefined}
+          aria-describedby={
+            form.formState.errors.description
+              ? 'tsDescription-hint tsDescription-error'
+              : 'tsDescription-hint'
+          }
           {...form.register('description')}
         />
+        {/* iter740: form hint pattern (iter735race-739race と同じ)。schema 側で
+            max(2000) を強制するので、その上限と例 (PR 番号 / Item link 等) を hint に。 */}
+        <p id="tsDescription-hint" className="text-muted-foreground text-xs">
+          自由記述、最大 2000 文字。例: 「PR #123 review」「Item Y の調査」
+        </p>
         {form.formState.errors.description && (
           <p id="tsDescription-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.description.message}
