@@ -99,6 +99,7 @@ export function CommandPalette({ commands, items, onSelectItem }: CommandPalette
     >
       <CommandInput
         placeholder="コマンド or ? でタスク検索…"
+        aria-label="コマンドパレット 検索 (コマンド名 or ? でタスクを fuzzy 検索)"
         value={query}
         onValueChange={setQuery}
       />
