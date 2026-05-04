@@ -17,7 +17,12 @@ interface Props {
 
 export function WorkspaceHeader({ title, role, subtitle, pageActions, utility }: Props) {
   return (
-    <header className="flex flex-wrap items-start justify-between gap-3">
+    // iter763: <header> は implicit banner landmark なので aria-label で page 固有
+    // 名前を付けて SR ユーザの landmark navigation で複数 page header を区別可能に。
+    <header
+      className="flex flex-wrap items-start justify-between gap-3"
+      aria-label={`Workspace header: ${title}`}
+    >
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <h1 className="truncate text-2xl font-bold">{title}</h1>
