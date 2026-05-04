@@ -53,9 +53,16 @@ export function MockLoginForm() {
           type="email"
           autoComplete="email"
           aria-invalid={form.formState.errors.email ? true : undefined}
-          aria-describedby={form.formState.errors.email ? 'tsEmail-error' : undefined}
+          aria-describedby={
+            form.formState.errors.email ? 'tsEmail-hint tsEmail-error' : 'tsEmail-hint'
+          }
           {...form.register('email')}
         />
+        {/* iter738: signup-form / login-form (iter735race-737race) と同 form hint pattern。
+            mock-timesheet は demo 用途で開発者がよく触るので hint を見える化。 */}
+        <p id="tsEmail-hint" className="text-muted-foreground text-xs">
+          mock-timesheet 用 email。例: ops@example.com (フォーム下の seed 参照)
+        </p>
         {form.formState.errors.email && (
           <p id="tsEmail-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.email.message}
