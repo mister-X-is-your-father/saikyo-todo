@@ -289,7 +289,7 @@ export function GanttView({
       data-testid="gantt-view"
       className="overflow-auto rounded-lg border"
       role="grid"
-      aria-label="Gantt チャート (item × 期間)"
+      aria-label={`Gantt チャート (Item ${withDates.length} 件 × 期間 ${totalSpanDays} 日)`}
       aria-rowcount={withDates.length + 1 /* +1 = header row */}
       aria-colcount={2 /* item column + timeline column */}
     >
