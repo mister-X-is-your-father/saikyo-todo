@@ -507,7 +507,11 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
             <Label htmlFor={`wf-editor-graph-${wf.id}`}>
               graph ({'{ nodes: [...], edges: [...] }'})
             </Label>
-            <div className="flex flex-wrap gap-1.5" role="group" aria-label="node 追加プリセット">
+            <div
+              className="flex flex-wrap gap-1.5"
+              role="group"
+              aria-label={`node 追加プリセット (${NODE_PRESETS.length} 種、graph JSON に skeleton を 1 click 投入)`}
+            >
               {NODE_PRESETS.map((preset) => (
                 <Button
                   key={preset.type}
