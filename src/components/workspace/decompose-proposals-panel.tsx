@@ -145,7 +145,12 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               {progress.streamingText || '思考中…'}
             </p>
           ) : completedWithNoProposals ? (
-            <p className="text-muted-foreground text-xs" data-testid="proposals-empty-msg">
+            <p
+              className="text-muted-foreground text-xs"
+              data-testid="proposals-empty-msg"
+              role="status"
+              aria-live="polite"
+            >
               Researcher は完了しましたが提案を出力しませんでした。
               ヒントを足してもう一度試すか、下の bulk 入力から手動で追加できます。
             </p>
