@@ -54,6 +54,20 @@ const VIEWS = [
 ] as const
 type ViewKey = (typeof VIEWS)[number]
 
+// iter742: view-switcher group の aria-label に「現在: ...」 を含めるための日本語ラベル。
+// SR ユーザは role=group focus 時に「現在 Today」 等を把握できる (iter734 と同 pattern)。
+const VIEW_LABEL_JA: Record<ViewKey, string> = {
+  today: 'Today',
+  inbox: 'Inbox',
+  kanban: 'Kanban',
+  backlog: 'Backlog',
+  gantt: 'Gantt',
+  dashboard: 'Dashboard',
+  daily: '日次レビュー',
+  weekly: '週次レビュー',
+  monthly: '月次レビュー',
+}
+
 export function ItemsBoard({ workspaceId, currentUserId }: Props) {
   const [view, setView] = useQueryState(
     'view',
@@ -202,7 +216,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         className="flex flex-wrap items-center gap-2"
         data-testid="view-switcher"
         role="group"
-        aria-label="表示切替"
+        aria-label={`表示切替 (現在: ${VIEW_LABEL_JA[view] ?? view})`}
       >
         <Button
           variant={view === 'today' ? 'default' : 'outline'}
