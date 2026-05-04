@@ -314,7 +314,15 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         <div
           className="ml-4 flex items-center gap-2 text-sm"
           role="group"
-          aria-label="Item の絞り込み (MUST / ステータス / Sprint)"
+          aria-label={`Item の絞り込み (MUST / ステータス / Sprint、現在 ${
+            [
+              must ? 'MUST のみ' : null,
+              statusFilter ? `ステータス=${statusFilter}` : null,
+              sprintFilter ? `Sprint=${sprintFilter}` : null,
+            ]
+              .filter(Boolean)
+              .join(' + ') || '絞り込みなし'
+          })`}
         >
           <label htmlFor="filter-must" className="flex items-center gap-1">
             <input
