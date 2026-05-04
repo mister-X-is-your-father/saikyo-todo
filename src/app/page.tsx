@@ -23,7 +23,7 @@ export default async function HomePage() {
 
   return (
     <main id="main-content" className="container mx-auto max-w-3xl space-y-8 p-6">
-      <header className="flex items-center justify-between">
+      <header className="flex items-center justify-between" aria-label="最強TODO ホーム header">
         <h1 className="text-3xl font-bold">最強TODO</h1>
         <form
           aria-label="ログアウト"
