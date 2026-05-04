@@ -544,6 +544,7 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
           rows={5}
           className="bg-background w-full rounded border px-2 py-1.5 font-mono text-sm"
           placeholder={'例:\n仕様書を読む\nスキーマ設計\nプロトタイプ実装'}
+          aria-keyshortcuts="Meta+Enter Control+Enter"
           aria-label={
             bulkText === ''
               ? '子タスクを改行区切りで bulk 追加 (Cmd/Ctrl+Enter で追加)'
