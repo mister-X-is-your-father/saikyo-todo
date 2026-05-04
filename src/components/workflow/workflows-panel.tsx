@@ -554,7 +554,11 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
             <Label htmlFor={`wf-editor-trigger-${wf.id}`}>
               trigger ({'{ kind: "manual" | "cron" | "item-event" | "webhook" }'})
             </Label>
-            <div className="flex flex-wrap gap-1.5" role="group" aria-label="trigger プリセット">
+            <div
+              className="flex flex-wrap gap-1.5"
+              role="group"
+              aria-label="trigger プリセット (4 種: manual / cron / item-event / webhook、JSON に 1 click 投入)"
+            >
               <Button
                 type="button"
                 size="sm"
