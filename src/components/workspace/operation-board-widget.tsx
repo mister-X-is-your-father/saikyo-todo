@@ -93,7 +93,7 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
     <Card
       className="border-primary/30 bg-primary/5"
       role="region"
-      aria-label="今日の作戦盤"
+      aria-label={`今日の作戦盤 (期限超過 ${board.overdue.total} 件 / 今日 MUST ${board.mustToday.count} 件 / 今日予定 ${board.todayScheduled.count} 件)`}
       data-testid="operation-board-widget"
     >
       <CardHeader className="pb-2">
