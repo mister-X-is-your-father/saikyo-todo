@@ -309,7 +309,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
         <div
           className="flex flex-wrap gap-1.5"
           role="group"
-          aria-label={`Workflow「${wf.name}」の操作 (実行 / 編集 / 有効化切替 / 削除)`}
+          aria-label={`Workflow「${wf.name}」の操作 (現在: ${wf.enabled ? '有効' : '無効'}、実行 / 編集 / 有効化切替 / 削除)`}
         >
           <Button
             size="sm"
