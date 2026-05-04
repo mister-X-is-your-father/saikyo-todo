@@ -162,6 +162,7 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
             placeholder={`この${periodLabelJa(period)}で達成したいことを書く (例: ◯◯ を完了する) (Cmd/Ctrl+Enter で保存)`}
             rows={3}
             maxLength={2000}
+            aria-keyshortcuts="Meta+Enter Control+Enter"
             aria-label={
               draft.length === 0
                 ? `${periodLabelJa(period)}ゴール (任意、最大 2000 文字、この${periodLabelJa(period)}で達成したいこと、Cmd/Ctrl+Enter で保存)`
