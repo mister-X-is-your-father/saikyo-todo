@@ -94,7 +94,7 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
             aria-valuenow={summary.completionRate}
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-label="完了率"
+            aria-label={`Sprint Retro 完了率 ${summary.completionRate}% (${completionRateSeverityLabelJa(sev)})`}
             aria-valuetext={`${summary.completionRate}% (${completionRateSeverityLabelJa(sev)})`}
           >
             <div
