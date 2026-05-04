@@ -115,7 +115,12 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
       </PopoverTrigger>
       <PopoverContent className="w-72 p-0" align="start" aria-label="タグを選択 / 新規作成">
         <Command>
-          <CommandInput placeholder="タグを検索 or 作成…" value={query} onValueChange={setQuery} />
+          <CommandInput
+            placeholder="タグを検索 or 作成…"
+            aria-label="タグを検索 or 新規作成 (Item に紐付けるラベル、新規 tag は色がランダム生成)"
+            value={query}
+            onValueChange={setQuery}
+          />
           <CommandList>
             <CommandEmpty>{isLoading ? '読み込み中…' : '候補なし'}</CommandEmpty>
             <CommandGroup heading="タグ">
