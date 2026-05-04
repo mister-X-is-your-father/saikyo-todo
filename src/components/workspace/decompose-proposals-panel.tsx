@@ -413,6 +413,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               }}
               rows={3}
               maxLength={10000}
+              aria-keyshortcuts="Meta+Enter Control+Enter"
               aria-label={
                 description.length === 0
                   ? '提案 description (任意、最大 10000 文字、Markdown 可、Cmd/Ctrl+Enter で保存)'
