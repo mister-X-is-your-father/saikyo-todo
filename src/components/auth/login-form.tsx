@@ -67,9 +67,16 @@ export function LoginForm() {
           required
           aria-required="true"
           aria-invalid={form.formState.errors.email ? true : undefined}
-          aria-describedby={form.formState.errors.email ? 'email-error' : undefined}
+          aria-describedby={
+            form.formState.errors.email ? 'login-email-hint email-error' : 'login-email-hint'
+          }
           {...form.register('email')}
         />
+        {/* iter737: signup-form 側 (iter735race/iter736race) と同 pattern。
+            login も同じ hint で「Magic Link 送信先」 mental model を共有する。 */}
+        <p id="login-email-hint" className="text-muted-foreground text-xs">
+          サインアップ時に登録したメールアドレス。例: you@example.com
+        </p>
         {form.formState.errors.email && (
           <p id="email-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.email.message}
