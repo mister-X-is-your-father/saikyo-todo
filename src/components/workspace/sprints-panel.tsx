@@ -540,7 +540,7 @@ function SprintCard({
                 <div
                   className="bg-muted relative h-1.5 w-full overflow-hidden rounded-full"
                   role="progressbar"
-                  aria-label={`Sprint「${sprint.name}」完了率 (${sprintProgressToneLabel(tone)})`}
+                  aria-label={`Sprint「${sprint.name}」完了率 ${pct}% (${done}/${total} 件、${sprintProgressToneLabel(tone)})`}
                   aria-valuenow={pct}
                   aria-valuemin={0}
                   aria-valuemax={100}
