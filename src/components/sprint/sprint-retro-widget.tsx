@@ -83,7 +83,7 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
         <div>
           <div className="mb-1 flex items-center justify-between">
             <span className="text-xs font-medium">完了率</span>
-            <span className="text-2xl font-semibold tabular-nums">
+            <span className="text-2xl font-semibold tabular-nums" aria-hidden="true">
               {summary.completionRate}
               <span className="text-muted-foreground ml-0.5 text-sm">%</span>
             </span>
