@@ -224,7 +224,12 @@ export function TodayView({
                       </div>
                       <div className="text-muted-foreground flex shrink-0 items-center gap-2 text-xs">
                         {it.dueTime && (
-                          <span className="tabular-nums">{it.dueTime.slice(0, 5)}</span>
+                          <span
+                            className="tabular-nums"
+                            aria-label={`期限時刻 ${it.dueTime.slice(0, 5)}`}
+                          >
+                            <span aria-hidden="true">{it.dueTime.slice(0, 5)}</span>
+                          </span>
                         )}
                         {it.dueDate && it.dueDate !== today && (
                           // iter436: 旧 outer `title={dueDate}` (mouse only) 削除、
