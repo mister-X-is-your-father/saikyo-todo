@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter830 1/1] home page Workspace Link 内 outer div を aria-hidden で wrap (/ home page workspace 一覧 Link): Link aria-label が完全 content 含むのに内側 visible h3/p の重複。fix: outer flex div に aria-hidden + 矢印 span の aria-hidden 削除 (二重不要)。+1/-3 行差分 (簡潔化)。検証 5 OK (iter735/826/828/829 invariant 込み)。
 - ✅ [playwright-iter829 1/1] archived-items-panel restore button visible text を aria-hidden span で wrap (Archive view の Restore button): "復元" / "復元中…" を aria-hidden で wrap、aria-label 単独経路。+1/-1 行。検証 5 OK (iter735/825/826/828 invariant 込み)。
 - ✅ [playwright-iter828 1/1] sprint-card 期間進捗 row に role=group + aria-label 集約 + 内側 aria-hidden (Sprint Card active 期間進捗 status row): plain visible text のみで Sprint context が aria-label 集約に欠落していたのを page-specific naming + aria-hidden span に整備。+6/-2 行。検証 5 OK (iter735/819/826/827 invariant 込み)。
 - ✅ [playwright-iter827 1/1] quick-add estimate chip 内 visible aria-hidden 統合 (QuickAdd preview chip): emoji + text を 1 aria-hidden span に統合、内側 重複なし。+1/-2 行。検証 5 OK (iter735/819/825/826 invariant 込み)。
