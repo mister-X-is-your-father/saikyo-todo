@@ -22,7 +22,7 @@
  * 不正 category は 'other' に集約。
  */
 
-import { formatMinutes as formatMinutesShared } from '@/lib/format-duration'
+import { formatMinutes as formatMinutesShared, formatMinutesJa } from '@/lib/format-duration'
 
 import { categoryLabel, TIME_ENTRY_CATEGORIES, type TimeEntryCategoryKey } from './categories'
 
@@ -99,7 +99,7 @@ export function formatCategorySummary(
   for (const k of KEY_ORDER) {
     const min = totals[k]
     if (hideZero && min === 0) continue
-    parts.push(`${categoryLabel(k)} ${formatMinutes(min)}`)
+    parts.push(`${categoryLabel(k)} ${formatMinutesJa(min)}`)
   }
   if (parts.length === 0) return '0 件'
   return parts.join(' / ')

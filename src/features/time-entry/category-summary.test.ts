@@ -117,13 +117,13 @@ describe('formatMinutes', () => {
 describe('formatCategorySummary', () => {
   it('全カテゴリ非ゼロは固定順で連結', () => {
     expect(formatCategorySummary({ dev: 240, meeting: 60, research: 30, ops: 90, other: 15 })).toBe(
-      '開発 4h / MTG 1h / 調査 30min / 運用 1h 30min / その他 15min',
+      '開発 4時間 / MTG 1時間 / 調査 30分 / 運用 1時間30分 / その他 15分',
     )
   })
 
   it('hideZero (default) で 0 件は省略', () => {
     expect(formatCategorySummary({ dev: 60, meeting: 0, research: 30, ops: 0, other: 0 })).toBe(
-      '開発 1h / 調査 30min',
+      '開発 1時間 / 調査 30分',
     )
   })
 
@@ -133,7 +133,7 @@ describe('formatCategorySummary', () => {
         { dev: 60, meeting: 0, research: 30, ops: 0, other: 0 },
         { hideZero: false },
       ),
-    ).toBe('開発 1h / MTG 0min / 調査 30min / 運用 0min / その他 0min')
+    ).toBe('開発 1時間 / MTG 0分 / 調査 30分 / 運用 0分 / その他 0分')
   })
 
   it('全 0 → "0 件"', () => {
@@ -144,7 +144,7 @@ describe('formatCategorySummary', () => {
 
   it('単一カテゴリでも順序を保つ (other のみ)', () => {
     expect(formatCategorySummary({ dev: 0, meeting: 0, research: 0, ops: 0, other: 30 })).toBe(
-      'その他 30min',
+      'その他 30分',
     )
   })
 
@@ -152,7 +152,7 @@ describe('formatCategorySummary', () => {
     // 全カテゴリ 1min ずつで順序確認
     const totals = { dev: 1, meeting: 1, research: 1, ops: 1, other: 1 }
     expect(formatCategorySummary(totals)).toBe(
-      '開発 1min / MTG 1min / 調査 1min / 運用 1min / その他 1min',
+      '開発 1分 / MTG 1分 / 調査 1分 / 運用 1分 / その他 1分',
     )
   })
 })
@@ -177,7 +177,7 @@ describe('集計 + フォーマット 統合', () => {
       e({ category: 'research', durationMinutes: 30 }),
     ]
     const totals = groupTimeEntriesByCategory(entries)
-    expect(formatCategorySummary(totals)).toBe('開発 4h / MTG 1h / 調査 30min')
+    expect(formatCategorySummary(totals)).toBe('開発 4時間 / MTG 1時間 / 調査 30分')
     expect(totalCategoryMinutes(totals)).toBe(330) // 4h + 1h + 30min = 5h 30min
   })
 })
