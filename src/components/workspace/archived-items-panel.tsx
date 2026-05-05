@@ -168,7 +168,7 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
                       : `「${item.title}」を復元 (${fmt(item.archivedAt)} にアーカイブ)`
                   }
                 >
-                  {unarchive.isPending ? '復元中…' : '復元'}
+                  <span aria-hidden="true">{unarchive.isPending ? '復元中…' : '復元'}</span>
                 </Button>
               </td>
             </tr>
