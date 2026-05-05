@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter836 1/1] sprint + goal create button visible "作成" / "作成中…" を aria-hidden span で wrap (一括) (Sprint 作成 form + Goal 作成 form の Submit button): visible text を aria-hidden で wrap、aria-label 単独経路。+2/-2 行 (2 file)。検証 5 OK (iter735/826/834/835 invariant 込み)。
 - ✅ [playwright-iter835 1/1] template-items-editor 追加 button visible "+ 追加" を aria-hidden span で wrap (Template card 内 子 Item 追加 button): +1/-1 行。検証 5 OK (iter735/826/833/834 invariant 込み)。
 - ✅ [playwright-iter834 1/1] heartbeat-button + start-timer-button visible text を aria-hidden span で wrap (一括) (Workspace header の Heartbeat button + Item row の StartTimer button): visible text を aria-hidden で wrap、aria-label 単独経路。+2/-2 行 (2 file)。検証 5 OK (iter735/826/831/833 invariant 込み)。
 - ✅ [playwright-iter833 1/1] Item action 3 button (decompose / research / plan-generate) visible text を aria-hidden span で wrap (一括) (Item edit dialog 内 AI 分解 / 調査 / Plan 生成 button): 3 button の visible text は aria-label が完全 content を含むのに aria-hidden 無しだったのを一括で span aria-hidden 化。+3/-3 行差分 (3 file)。検証 5 OK (iter735/826/831/832 invariant 込み)。
