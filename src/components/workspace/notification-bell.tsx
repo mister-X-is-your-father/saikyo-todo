@@ -167,7 +167,7 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                   data-severity={hint.severity}
                   aria-label={`通知 健全性: ${hint.label}`}
                 >
-                  {hint.label}
+                  <span aria-hidden="true">{hint.label}</span>
                 </span>
               )}
             </h2>
@@ -178,7 +178,7 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                 aria-label={`未読内訳: ${unreadBreakdown}`}
                 title={unreadBreakdown}
               >
-                {unreadBreakdown}
+                <span aria-hidden="true">{unreadBreakdown}</span>
               </span>
             ) : null}
           </div>
