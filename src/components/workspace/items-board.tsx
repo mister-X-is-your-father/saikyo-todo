@@ -225,6 +225,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           onClick={() => setView('today')}
           data-testid="view-today-btn"
           aria-pressed={view === 'today'}
+          aria-label="Today (今日のタスク優先順、scheduledFor=今日 + 期限近接)"
         >
           Today
         </Button>
@@ -235,6 +236,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           onClick={() => setView('inbox')}
           data-testid="view-inbox-btn"
           aria-pressed={view === 'inbox'}
+          aria-label="Inbox (未整理 / 未トリアージのタスク一覧)"
         >
           Inbox
         </Button>
@@ -245,6 +247,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           onClick={() => setView('kanban')}
           data-testid="view-kanban-btn"
           aria-pressed={view === 'kanban'}
+          aria-label="Kanban (status 別カラムで Item を可視化、DnD で status 移動)"
         >
           Kanban
         </Button>
@@ -255,6 +258,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           onClick={() => setView('backlog')}
           data-testid="view-backlog-btn"
           aria-pressed={view === 'backlog'}
+          aria-label="Backlog (Item 一覧テーブル、列ヘッダ click で sort、DnD で並び替え)"
         >
           Backlog
         </Button>
@@ -265,6 +269,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           onClick={() => setView('gantt')}
           data-testid="view-gantt-btn"
           aria-pressed={view === 'gantt'}
+          aria-label="Gantt (Item の期間 bar チャート、依存線 / critical path / 遅延を可視化)"
         >
           Gantt
         </Button>
@@ -275,6 +280,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           onClick={() => setView('dashboard')}
           data-testid="view-dashboard-btn"
           aria-pressed={view === 'dashboard'}
+          aria-label="Dashboard (PDCA / 進捗 / 健全性 widget の集約画面)"
         >
           Dashboard
         </Button>
