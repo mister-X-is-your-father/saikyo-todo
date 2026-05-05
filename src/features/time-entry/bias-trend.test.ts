@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import type { EstimateBiasReport } from './bias'
 import { buildItemDescriptionLookup } from './bias-selector'
 import {
+  biasTrendChipTone,
+  biasTrendToBriefSignal,
   computeBiasTrend,
   formatBiasTrendBadge,
   formatBiasTrendJa,
@@ -197,5 +199,50 @@ describe('formatBiasTrendBadge', () => {
   })
   it('inconclusive → · データ不足', () => {
     expect(formatBiasTrendBadge('inconclusive')).toEqual({ glyph: '·', label: 'データ不足' })
+  })
+})
+
+describe('biasTrendChipTone (iter804 — positive polarity ChipTone)', () => {
+  it('improving → success / worsening → warn / stable → info / inconclusive → idle', () => {
+    expect(biasTrendChipTone('improving')).toBe('success')
+    expect(biasTrendChipTone('worsening')).toBe('warn')
+    expect(biasTrendChipTone('stable')).toBe('info')
+    expect(biasTrendChipTone('inconclusive')).toBe('idle')
+  })
+})
+
+describe('biasTrendToBriefSignal (iter804 — AgentBriefSignal compose)', () => {
+  it('improving → tone=success、text に 改善 文言', () => {
+    const sig = biasTrendToBriefSignal({
+      direction: 'improving',
+      priorFactor: 1.5,
+      recentFactor: 1.2,
+      distanceDelta: 0.3,
+    })
+    expect(sig.tone).toBe('success')
+    expect(sig.text).toContain('改善')
+    expect(sig.text).toContain('1.50× → 1.20×')
+  })
+
+  it('worsening → tone=warn、text に 悪化 文言', () => {
+    const sig = biasTrendToBriefSignal({
+      direction: 'worsening',
+      priorFactor: 1.0,
+      recentFactor: 1.5,
+      distanceDelta: -0.5,
+    })
+    expect(sig.tone).toBe('warn')
+    expect(sig.text).toContain('悪化')
+  })
+
+  it('inconclusive → tone=idle、text に データ不足 文言', () => {
+    const sig = biasTrendToBriefSignal({
+      direction: 'inconclusive',
+      priorFactor: null,
+      recentFactor: null,
+      distanceDelta: null,
+    })
+    expect(sig.tone).toBe('idle')
+    expect(sig.text).toContain('データ不足')
   })
 })

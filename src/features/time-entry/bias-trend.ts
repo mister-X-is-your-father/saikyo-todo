@@ -16,6 +16,10 @@
  *   広がれば worsening、変化が小さければ stable、どちらかが unknown なら inconclusive
  * - `formatBiasTrendJa(trend)`: 1 行 JA 文面 (4 種類 + null 防衛)
  */
+import { type ChipTone } from '@/lib/ui/chip-tone'
+
+import { type AgentBriefSignal } from '@/features/agent/brief-signal'
+
 import type { BiasSample, EstimateBiasReport } from './bias'
 import { type ItemDescriptionLookup, selectBiasSamples } from './bias-selector'
 import type { TimeEntry } from './schema'
@@ -111,5 +115,45 @@ export function formatBiasTrendBadge(direction: BiasTrendDirection): {
     case 'inconclusive':
     default:
       return { glyph: '·', label: 'データ不足' }
+  }
+}
+
+/**
+ * iter804 ai-automation: bias trend direction → ChipTone (positive polarity =
+ * improving が見積精度向上 = 達成)。`agentReliabilityTone` (iter487) /
+ * `velocityChipTone` (iter802) と同じ ChipTone vocab に bind。
+ *
+ * 配色:
+ *  - 'improving'    → 'success' (emerald、見積精度 改善 = 達成)
+ *  - 'worsening'    → 'warn'    (amber、見積精度 悪化 = 注意)
+ *  - 'stable'       → 'info'    (blue、安定)
+ *  - 'inconclusive' → 'idle'    (slate、データ不足)
+ */
+const DIRECTION_TO_CHIP_TONE: Record<BiasTrendDirection, ChipTone> = {
+  improving: 'success',
+  worsening: 'warn',
+  stable: 'info',
+  inconclusive: 'idle',
+}
+
+export function biasTrendChipTone(direction: BiasTrendDirection): ChipTone {
+  return DIRECTION_TO_CHIP_TONE[direction]
+}
+
+/**
+ * iter804 ai-automation: bias trend を `AgentBriefSignal` 形式 (text + tone) に
+ * 変換する compose helper。iter794-803 の `*ToBriefSignal` パターン継承。
+ *
+ * caller (= AI 朝 brief / Slack daily digest / dashboard chip) は本 helper 出力を
+ * `composeAnalyticsSignals` の追加軸候補として活用 (= 見積精度 trend chip 表示)。
+ *
+ * text: `formatBiasTrendJa(trend)` (= '見積精度の変化: 改善 (1.50× → 1.20×)' 等)
+ *       compact 寄り、prior/recent factor 詳細を含む (= 数値が判定根拠で必須)
+ * tone: `biasTrendChipTone(trend.direction)` (positive polarity)
+ */
+export function biasTrendToBriefSignal(trend: BiasTrend): AgentBriefSignal {
+  return {
+    text: formatBiasTrendJa(trend),
+    tone: biasTrendChipTone(trend.direction),
   }
 }
