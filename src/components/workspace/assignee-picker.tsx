@@ -99,9 +99,13 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
         >
           <UserIcon className="size-4" aria-hidden="true" />
           {selectedLabels.length === 0 ? (
-            <span className="text-muted-foreground">未アサイン</span>
+            <span className="text-muted-foreground" aria-hidden="true">
+              未アサイン
+            </span>
           ) : (
-            <span className="truncate">{selectedLabels.join(', ')}</span>
+            <span className="truncate" aria-hidden="true">
+              {selectedLabels.join(', ')}
+            </span>
           )}
         </Button>
       </PopoverTrigger>
