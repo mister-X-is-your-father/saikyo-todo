@@ -591,7 +591,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                 }
               >
                 <Sparkles className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                {decompose.isPending ? 'AI 分解中…' : 'AI 分解'}
+                <span aria-hidden="true">{decompose.isPending ? 'AI 分解中…' : 'AI 分解'}</span>
               </Button>
             </div>
             <KeyResultList goalId={goal.id} goalTitle={goal.title} workspaceId={workspaceId} />
