@@ -22,7 +22,7 @@
  * 不正 category は 'other' に集約。
  */
 
-import { formatMinutes as formatMinutesShared, formatMinutesJa } from '@/lib/format-duration'
+import { formatMinutesJa } from '@/lib/format-duration'
 
 import { categoryLabel, TIME_ENTRY_CATEGORIES, type TimeEntryCategoryKey } from './categories'
 
@@ -78,8 +78,9 @@ export function groupTimeEntriesByCategory(
   return totals
 }
 
-/** 分を `'4h 30min'` / `'30min'` / `'2h'` / `'0min'` に整形。 iter490 で `lib/format-duration` に集約済、本 export は後方互換 re-export。 */
-export const formatMinutes = formatMinutesShared
+// iter818 refactor: formatMinutes (en) re-export を削除。caller は全て iter814 で
+// formatMinutesJa に migrate 済、test の duplicate も iter815 で削除済。en 表記が
+// 必要な場合は `@/lib/format-duration` から直接 import する。
 
 export interface FormatCategorySummaryOptions {
   /** 0 分カテゴリを省略するか (default true)。false で全 5 カテゴリを表示 */
