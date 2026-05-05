@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { computeWorkspaceMomentum, type MomentumFields } from '@/features/item/momentum'
+import { computeVelocity, type VelocityFields } from '@/features/item/velocity'
 import { buildWeeklyCompletionInsight } from '@/features/item/weekly-completion-insight'
 
 import { computeAgentReliability } from './agent-reliability'
@@ -29,7 +30,29 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(s.costTrend).toBeNull()
     expect(s.momentum).toBeNull()
     expect(s.weeklyCompletion).toBeNull()
+    expect(s.velocity).toBeNull()
     expect(analyticsSignalsToArray(s)).toEqual([])
+  })
+
+  it('iter803: velocity のみ → velocity signal、tone=success (up trend)', () => {
+    const items: VelocityFields[] = [
+      { doneAt: TODAY },
+      { doneAt: TODAY },
+      { doneAt: TODAY },
+      { doneAt: new Date(TODAY.getTime() - 5 * MS_PER_DAY) },
+    ]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const s = composeAnalyticsSignals({ velocity })
+    expect(s.velocity).not.toBeNull()
+    expect(s.velocity!.tone).toBe('success')
+    expect(s.velocity!.text).toContain('完了ペース')
+  })
+
+  it('iter803: velocity idle (= done なし) → tone=idle', () => {
+    const velocity = computeVelocity([], {}, TODAY)
+    const s = composeAnalyticsSignals({ velocity })
+    expect(s.velocity).not.toBeNull()
+    expect(s.velocity!.tone).toBe('idle')
   })
 
   it('weeklyCompletion のみ → weeklyCompletion signal (iter797)', () => {

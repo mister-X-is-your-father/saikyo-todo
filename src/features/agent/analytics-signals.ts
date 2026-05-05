@@ -31,6 +31,7 @@
 
 import { type DueHitRateStats, dueHitRateToBriefSignal } from '@/features/item/due-hit-rate'
 import { type WorkspaceMomentum, workspaceMomentumToBriefSignal } from '@/features/item/momentum'
+import { type VelocitySummary, velocityToBriefSignal } from '@/features/item/velocity'
 import {
   type WeeklyCompletionInsight,
   weeklyCompletionInsightToBriefSignal,
@@ -50,6 +51,8 @@ export interface AnalyticsSignalsInput {
   weeklyCompletion?: WeeklyCompletionInsight
   /** iter799 ai-automation: 6 軸目として due-hit-rate (期限達成率) も統合 */
   dueHitRate?: DueHitRateStats
+  /** iter803 basics: 7 軸目として velocity (完了ペース、直近 7 日 trend) も統合 */
+  velocity?: VelocitySummary
 }
 
 export interface AnalyticsSignals {
@@ -63,6 +66,8 @@ export interface AnalyticsSignals {
   weeklyCompletion: AgentBriefSignal | null
   /** iter799 ai-automation: 期限達成率 chip (positive polarity, hi=success) */
   dueHitRate: AgentBriefSignal | null
+  /** iter803 basics: 完了ペース chip (positive polarity, up=success、velocity hint) */
+  velocity: AgentBriefSignal | null
 }
 
 const EMPTY: AnalyticsSignals = {
@@ -74,6 +79,7 @@ const EMPTY: AnalyticsSignals = {
   momentum: null,
   weeklyCompletion: null,
   dueHitRate: null,
+  velocity: null,
 }
 
 export function composeAnalyticsSignals(input: AnalyticsSignalsInput): AnalyticsSignals {
@@ -99,6 +105,9 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
   if (input.dueHitRate) {
     out.dueHitRate = dueHitRateToBriefSignal(input.dueHitRate)
   }
+  if (input.velocity) {
+    out.velocity = velocityToBriefSignal(input.velocity)
+  }
   return out
 }
 
@@ -112,9 +121,10 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
  *  3. dueHitRate       (= 期限達成率、商品品質 SLA、cost と並ぶ severity 主)
  *  4. reliability      (= 全体 信頼性 chip)
  *  5. costTrend        (= cost 月次トレンド)
- *  6. weeklyCompletion (= 週次完了 trend、達成感 + やる気)
- *  7. momentum         (= backlog momentum)
- *  8. dominantRole     (= 主軸 role、informational、最後)
+ *  6. velocity         (= 完了ペース、weekly と並ぶ達成感系)
+ *  7. weeklyCompletion (= 週次完了 trend、達成感 + やる気)
+ *  8. momentum         (= backlog momentum)
+ *  9. dominantRole     (= 主軸 role、informational、最後)
  */
 export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
@@ -123,6 +133,7 @@ export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSi
     signals.dueHitRate,
     signals.reliability,
     signals.costTrend,
+    signals.velocity,
     signals.weeklyCompletion,
     signals.momentum,
     signals.dominantRole,
