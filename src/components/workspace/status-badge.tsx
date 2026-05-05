@@ -71,7 +71,11 @@ export function StatusBadge({
       data-testid={dataTestid}
     >
       <Icon className="h-3 w-3 shrink-0" aria-hidden="true" />
-      {iconOnly ? <span className="sr-only">{cfg.shortLabel}</span> : <span>{cfg.shortLabel}</span>}
+      {iconOnly ? (
+        <span className="sr-only">{cfg.shortLabel}</span>
+      ) : (
+        <span aria-hidden="true">{cfg.shortLabel}</span>
+      )}
     </Badge>
   )
 }
