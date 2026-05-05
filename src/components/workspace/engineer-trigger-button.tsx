@@ -95,11 +95,9 @@ export function EngineerTriggerButton({ item }: Props) {
         }
       >
         {trigger.isPending ? (
-          '起動中…'
+          <span aria-hidden="true">起動中…</span>
         ) : (
-          <>
-            <span aria-hidden="true">🛠 </span>Engineer に実装させる
-          </>
+          <span aria-hidden="true">🛠 Engineer に実装させる</span>
         )}
       </Button>
     </div>
