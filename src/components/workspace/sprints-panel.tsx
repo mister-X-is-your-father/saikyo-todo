@@ -566,11 +566,15 @@ function SprintCard({
                 </div>
               </div>
               {status === 'active' && (
-                <div className="text-muted-foreground flex items-center justify-between text-xs">
-                  <span>
+                <div
+                  className="text-muted-foreground flex items-center justify-between text-xs"
+                  role="group"
+                  aria-label={`Sprint「${sprint.name}」期間進捗 経過 ${elapsedDays} / ${totalDays} 日 (${elapsedPct}%)、残 ${remainingDays} 日`}
+                >
+                  <span aria-hidden="true">
                     経過 {elapsedDays} / {totalDays} 日 ({elapsedPct}%)
                   </span>
-                  <span>残 {remainingDays} 日</span>
+                  <span aria-hidden="true">残 {remainingDays} 日</span>
                 </div>
               )}
             </div>
