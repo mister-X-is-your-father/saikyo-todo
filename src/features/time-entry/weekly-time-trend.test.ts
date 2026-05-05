@@ -105,26 +105,30 @@ describe('formatWeeklyTimeTrendJa', () => {
     expect(formatWeeklyTimeTrendJa(r)).toBe('直近 14 日: 稼働記録なし')
   })
 
-  it('up は増加文言 + delta 表示', () => {
+  it('up は増加文言 + delta 表示 (iter812 ja-throughout)', () => {
     const r = computeWeeklyTimeTrend([E('2026-04-29', 180)], [E('2026-04-22', 60)])
-    expect(formatWeeklyTimeTrendJa(r)).toBe('稼働時間: 増加 (先週 1h → 今週 3h、+2h (+200%))')
-  })
-
-  it('prior=0 で deltaPct=null は (%) を含めない', () => {
-    const r = computeWeeklyTimeTrend([E('2026-04-29', 90)], [])
-    expect(formatWeeklyTimeTrendJa(r)).toBe('稼働時間: 増加 (先週 0min → 今週 1h 30min、+1h 30min)')
-  })
-
-  it('down は減少文言', () => {
-    const r = computeWeeklyTimeTrend([E('2026-04-29', 30)], [E('2026-04-22', 120)])
     expect(formatWeeklyTimeTrendJa(r)).toBe(
-      '稼働時間: 減少 (先週 2h → 今週 30min、-1h 30min (-75%))',
+      '稼働時間: 増加 (先週 1時間 → 今週 3時間、+2時間 (+200%))',
     )
   })
 
-  it('flat は安定文言', () => {
+  it('prior=0 で deltaPct=null は (%) を含めない (iter812 ja-throughout)', () => {
+    const r = computeWeeklyTimeTrend([E('2026-04-29', 90)], [])
+    expect(formatWeeklyTimeTrendJa(r)).toBe(
+      '稼働時間: 増加 (先週 0分 → 今週 1時間30分、+1時間30分)',
+    )
+  })
+
+  it('down は減少文言 (iter812 ja-throughout)', () => {
+    const r = computeWeeklyTimeTrend([E('2026-04-29', 30)], [E('2026-04-22', 120)])
+    expect(formatWeeklyTimeTrendJa(r)).toBe(
+      '稼働時間: 減少 (先週 2時間 → 今週 30分、-1時間30分 (-75%))',
+    )
+  })
+
+  it('flat は安定文言 (iter812 ja-throughout)', () => {
     const r = computeWeeklyTimeTrend([E('2026-04-29', 102)], [E('2026-04-22', 100)])
-    expect(formatWeeklyTimeTrendJa(r)).toBe('稼働時間: 安定 (先週 1h 40min → 今週 1h 42min)')
+    expect(formatWeeklyTimeTrendJa(r)).toBe('稼働時間: 安定 (先週 1時間40分 → 今週 1時間42分)')
   })
 })
 

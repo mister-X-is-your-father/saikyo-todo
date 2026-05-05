@@ -27,8 +27,8 @@
  */
 
 import { ISO_DATE_RE, shiftIsoDate } from '@/lib/date/iso'
+import { formatMinutesJa } from '@/lib/format-duration'
 
-import { formatMinutes } from './category-summary'
 import { safeMinutes } from './safe-minutes'
 
 export interface WeeklyTimeEntry {
@@ -119,10 +119,10 @@ export function formatWeeklyTimeTrendJa(trend: WeeklyTimeTrend): string {
   if (trend.direction === 'idle') {
     return '直近 14 日: 稼働記録なし'
   }
-  const cur = formatMinutes(trend.thisWeekMinutes)
-  const prev = formatMinutes(trend.priorWeekMinutes)
+  const cur = formatMinutesJa(trend.thisWeekMinutes)
+  const prev = formatMinutesJa(trend.priorWeekMinutes)
   const sign = trend.deltaMinutes > 0 ? '+' : ''
-  const delta = formatMinutes(Math.abs(trend.deltaMinutes))
+  const delta = formatMinutesJa(Math.abs(trend.deltaMinutes))
   const pctPart =
     trend.deltaPct === null ? '' : ` (${trend.deltaPct >= 0 ? '+' : ''}${trend.deltaPct}%)`
   if (trend.direction === 'flat') {
