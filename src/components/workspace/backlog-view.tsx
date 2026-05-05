@@ -151,7 +151,13 @@ function buildColumns(
         const v = getValue() as Date | string | null
         if (!v) return '—'
         const d = typeof v === 'string' ? new Date(v) : v
-        return d.toISOString().slice(0, 19).replace('T', ' ')
+        const iso = d.toISOString()
+        const display = iso.slice(0, 19).replace('T', ' ')
+        return (
+          <time dateTime={iso} aria-label={`最終更新 ${display}`}>
+            {display}
+          </time>
+        )
       },
     },
     {
