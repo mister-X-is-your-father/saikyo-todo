@@ -135,19 +135,28 @@ export function InboxView({
           aria-label={`GTD 分類: 2 分以内 ${gtdSummary.counts.immediate} 件、Project ${gtdSummary.counts.project} 件、次の action ${gtdSummary.counts['next-action']} 件`}
         >
           {gtdSummary.counts.immediate > 0 && (
-            <span className="inline-flex items-center gap-0.5 rounded-full border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-emerald-700">
-              <span aria-hidden="true">⚡</span>
+            <span
+              className="inline-flex items-center gap-0.5 rounded-full border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-emerald-700"
+              aria-hidden="true"
+            >
+              <span>⚡</span>
               <span>2 分 rule {gtdSummary.counts.immediate}</span>
             </span>
           )}
           {gtdSummary.counts.project > 0 && (
-            <span className="inline-flex items-center gap-0.5 rounded-full border border-sky-300 bg-sky-50 px-1.5 py-0.5 text-sky-700">
-              <span aria-hidden="true">🗂</span>
+            <span
+              className="inline-flex items-center gap-0.5 rounded-full border border-sky-300 bg-sky-50 px-1.5 py-0.5 text-sky-700"
+              aria-hidden="true"
+            >
+              <span>🗂</span>
               <span>Project {gtdSummary.counts.project}</span>
             </span>
           )}
           {gtdSummary.counts['next-action'] > 0 && (
-            <span className="inline-flex items-center gap-0.5 rounded-full border border-slate-300 bg-slate-50 px-1.5 py-0.5 text-slate-700">
+            <span
+              className="inline-flex items-center gap-0.5 rounded-full border border-slate-300 bg-slate-50 px-1.5 py-0.5 text-slate-700"
+              aria-hidden="true"
+            >
               <span>Next action {gtdSummary.counts['next-action']}</span>
             </span>
           )}
