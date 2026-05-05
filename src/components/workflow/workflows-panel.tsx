@@ -172,7 +172,7 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                       : 'Workflow を新規作成 (Cmd/Ctrl+Enter でも可)'
                 }
               >
-                {create.isPending ? '作成中…' : '作成'}
+                <span aria-hidden="true">{create.isPending ? '作成中…' : '作成'}</span>
               </Button>
             </div>
           </form>
@@ -335,7 +335,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             }
           >
             <Play className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-            {trigger.isPending ? '実行中…' : '実行'}
+            <span aria-hidden="true">{trigger.isPending ? '実行中…' : '実行'}</span>
           </Button>
           <Button
             size="sm"
