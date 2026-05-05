@@ -143,3 +143,24 @@ export function formatWorkspaceMomentumJa(m: WorkspaceMomentum): string {
   }
   return `${head} ${sign}${m.net} 件 ${labelMap[m.direction]} ${counts}`
 }
+
+/**
+ * iter791 basics: dashboard widget の小型 chip / Slack 通知 ペイロード 用の
+ * **compact** 1 行 ja-JP 文言。new/done 件数を省いた短縮形 (= 視覚は trend
+ * chip 配色で補強)、`formatCostMonthProjectionCompactJa` (iter498) と対称。
+ *
+ *   idle      → 'モメンタム: 活動なし'
+ *   balanced  → 'モメンタム: 安定 (±0)'
+ *   growing   → 'モメンタム: 成長 +3'
+ *   shrinking → 'モメンタム: 縮小 -2'
+ *
+ * caller (chip aria-label / Slack 通知) は本文字列をそのまま埋め込む想定。
+ * 詳細 (新規 / 完了 内訳) が必要な場面では既存 `formatWorkspaceMomentumJa` を使う。
+ */
+export function formatWorkspaceMomentumCompactJa(m: WorkspaceMomentum): string {
+  if (m.direction === 'idle') return 'モメンタム: 活動なし'
+  if (m.direction === 'balanced') return 'モメンタム: 安定 (±0)'
+  const sign = m.net > 0 ? '+' : ''
+  const label = m.direction === 'growing' ? '成長' : '縮小'
+  return `モメンタム: ${label} ${sign}${m.net}`
+}

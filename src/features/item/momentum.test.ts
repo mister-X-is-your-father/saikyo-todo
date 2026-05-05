@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   computeWorkspaceMomentum,
+  formatWorkspaceMomentumCompactJa,
   formatWorkspaceMomentumJa,
   momentumDirectionToTrend,
   type MomentumFields,
@@ -223,5 +224,51 @@ describe('momentumDirectionToTrend', () => {
     expect(momentumDirectionToTrend('shrinking')).toBe('down')
     expect(momentumDirectionToTrend('balanced')).toBe('flat')
     expect(momentumDirectionToTrend('idle')).toBe('idle')
+  })
+})
+
+describe('formatWorkspaceMomentumCompactJa (iter791 — chip / Slack 通知 用 短縮形)', () => {
+  it('idle → 「モメンタム: 活動なし」 (count 省略)', () => {
+    const m = computeWorkspaceMomentum([], {}, TODAY)
+    expect(formatWorkspaceMomentumCompactJa(m)).toBe('モメンタム: 活動なし')
+  })
+
+  it('balanced → 「モメンタム: 安定 (±0)」 (件数差は表示しない)', () => {
+    // intake=3 / done=3 で net=0 → ratio=0 → balanced (固定)
+    const items: MomentumFields[] = [
+      { createdAt: daysAgo(1), doneAt: null },
+      { createdAt: daysAgo(2), doneAt: null },
+      { createdAt: daysAgo(3), doneAt: null },
+      { createdAt: daysAgo(20), doneAt: daysAgo(0) },
+      { createdAt: daysAgo(20), doneAt: daysAgo(1) },
+      { createdAt: daysAgo(20), doneAt: daysAgo(2) },
+    ]
+    const m = computeWorkspaceMomentum(items, {}, TODAY)
+    expect(m.direction).toBe('balanced')
+    expect(formatWorkspaceMomentumCompactJa(m)).toBe('モメンタム: 安定 (±0)')
+  })
+
+  it('growing → 「モメンタム: 成長 +N」 (件数のみ、内訳省略)', () => {
+    const items: MomentumFields[] = [
+      { createdAt: daysAgo(1), doneAt: null },
+      { createdAt: daysAgo(2), doneAt: null },
+      { createdAt: daysAgo(3), doneAt: null },
+      { createdAt: daysAgo(20), doneAt: daysAgo(1) },
+    ]
+    const m = computeWorkspaceMomentum(items, {}, TODAY)
+    expect(m.direction).toBe('growing')
+    expect(formatWorkspaceMomentumCompactJa(m)).toBe(`モメンタム: 成長 +${m.net}`)
+  })
+
+  it('shrinking → 「モメンタム: 縮小 -N」 (sign 自動付与)', () => {
+    const items: MomentumFields[] = [
+      { createdAt: daysAgo(20), doneAt: daysAgo(0) },
+      { createdAt: daysAgo(20), doneAt: daysAgo(1) },
+      { createdAt: daysAgo(20), doneAt: daysAgo(2) },
+      { createdAt: daysAgo(1), doneAt: null },
+    ]
+    const m = computeWorkspaceMomentum(items, {}, TODAY)
+    expect(m.direction).toBe('shrinking')
+    expect(formatWorkspaceMomentumCompactJa(m)).toBe(`モメンタム: 縮小 ${m.net}`)
   })
 })
