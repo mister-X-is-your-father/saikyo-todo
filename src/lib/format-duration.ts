@@ -34,3 +34,30 @@ export function formatMinutes(min: number): string {
   if (m === 0) return `${h}h`
   return `${h}h ${m}min`
 }
+
+/**
+ * iter801 basics: 分単位 duration を ja-JP 表記 (`'1時間30分'` / `'45分'` /
+ * `'2時間'` / `'0分'`) に整形する pure helper。`formatMinutes` (英表記
+ * `1h 30min`) と対称な ja 表記版。
+ *
+ * 用途:
+ *  - Slack 通知 / chip aria-label / AI 朝 brief で日本語 UI と整合する duration
+ *    表記が欲しい (= `1h 30min` は SR で「いちエイチ」と読まれて聞き辛い)
+ *  - 既存 `formatMinutes` は en 系内部 logic / ASCII chip 向け、本 helper は
+ *    ja-facing UI / 通知 payload 向けに棲み分け
+ *
+ * 仕様:
+ *  - 0 / 負 / NaN / Infinity → '0分' (fail-soft、既存 formatMinutes と同じ extreme)
+ *  - 60 未満 → 'M分' (例: '15分', '59分')
+ *  - 60 の倍数 → 'H時間' (例: '1時間', '2時間')
+ *  - その他 → 'H時間M分' (例: '1時間30分', '8時間15分')
+ *  - 小数の分は Math.round (例: 89.4 → '1時間29分')
+ */
+export function formatMinutesJa(min: number): string {
+  const safe = Number.isFinite(min) ? Math.max(0, Math.round(min)) : 0
+  const h = Math.floor(safe / 60)
+  const m = safe % 60
+  if (h === 0) return `${m}分`
+  if (m === 0) return `${h}時間`
+  return `${h}時間${m}分`
+}

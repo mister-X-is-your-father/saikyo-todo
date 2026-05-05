@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import { formatMinutes } from './format-duration'
+import { formatMinutes, formatMinutesJa } from './format-duration'
 
 describe('formatMinutes (canonical 定義、iter490 集約)', () => {
   it('60 未満 → "Mmin"', () => {
@@ -36,5 +36,41 @@ describe('formatMinutes (canonical 定義、iter490 集約)', () => {
     expect(formatMinutes(NaN)).toBe('0min')
     expect(formatMinutes(Infinity)).toBe('0min')
     expect(formatMinutes(-Infinity)).toBe('0min')
+  })
+})
+
+describe('formatMinutesJa (iter801 — ja-JP 表記版、Slack/AI brief 用)', () => {
+  it('60 未満 → "M分"', () => {
+    expect(formatMinutesJa(0)).toBe('0分')
+    expect(formatMinutesJa(15)).toBe('15分')
+    expect(formatMinutesJa(59)).toBe('59分')
+  })
+
+  it('60 倍数 → "H時間"', () => {
+    expect(formatMinutesJa(60)).toBe('1時間')
+    expect(formatMinutesJa(120)).toBe('2時間')
+    expect(formatMinutesJa(480)).toBe('8時間')
+  })
+
+  it('混合 → "H時間M分"', () => {
+    expect(formatMinutesJa(90)).toBe('1時間30分')
+    expect(formatMinutesJa(135)).toBe('2時間15分')
+  })
+
+  it('小数は round (89.4 → 1時間29分)', () => {
+    expect(formatMinutesJa(89.4)).toBe('1時間29分')
+    expect(formatMinutesJa(89.6)).toBe('1時間30分')
+  })
+
+  it('不正値 (負 / NaN / Infinity) → 0分 fail-soft (formatMinutes と同 extreme)', () => {
+    expect(formatMinutesJa(-100)).toBe('0分')
+    expect(formatMinutesJa(NaN)).toBe('0分')
+    expect(formatMinutesJa(Infinity)).toBe('0分')
+    expect(formatMinutesJa(-Infinity)).toBe('0分')
+  })
+
+  it('formatMinutes と output 形式は異なる (en vs ja 棲み分け)', () => {
+    expect(formatMinutes(90)).toBe('1h 30min')
+    expect(formatMinutesJa(90)).toBe('1時間30分')
   })
 })
