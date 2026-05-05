@@ -24,7 +24,7 @@
  */
 
 import { MS_PER_DAY, parseIsoDateAsLocalMidnight } from '@/lib/date/iso'
-import { formatMinutes } from '@/lib/format-duration'
+import { formatMinutesJa } from '@/lib/format-duration'
 
 export interface LaneItemSource {
   id: string
@@ -149,7 +149,7 @@ export function summarizeLaneLoad(
 export function formatLaneLoadJa(summary: LaneLoadSummary): string {
   const itemPart = `${summary.itemCount} 件`
   const estimatePart =
-    summary.estimateMinutesTotal > 0 ? formatMinutes(summary.estimateMinutesTotal) : '見積なし'
+    summary.estimateMinutesTotal > 0 ? formatMinutesJa(summary.estimateMinutesTotal) : '見積なし'
   const conflictPart =
     summary.conflictPairCount === 0
       ? '重複なし'

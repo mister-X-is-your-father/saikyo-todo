@@ -182,7 +182,7 @@ describe('formatLaneLoadJa', () => {
     ).toBe('0 件 / 見積なし / 重複なし')
   })
 
-  it('見積あり / 重複なし → "5 件 / 8h / 重複なし"', () => {
+  it('見積あり / 重複なし → "5 件 / 8時間 / 重複なし" (iter809 ja-throughout)', () => {
     expect(
       formatLaneLoadJa({
         itemCount: 5,
@@ -190,10 +190,10 @@ describe('formatLaneLoadJa', () => {
         conflictPairCount: 0,
         conflictTotalDays: 0,
       }),
-    ).toBe('5 件 / 8h / 重複なし')
+    ).toBe('5 件 / 8時間 / 重複なし')
   })
 
-  it('見積 + 重複あり', () => {
+  it('見積 + 重複あり (iter809 ja-throughout)', () => {
     expect(
       formatLaneLoadJa({
         itemCount: 3,
@@ -201,10 +201,10 @@ describe('formatLaneLoadJa', () => {
         conflictPairCount: 2,
         conflictTotalDays: 4,
       }),
-    ).toBe('3 件 / 4h 30min / 重複 2 ペア (合計 4 日)')
+    ).toBe('3 件 / 4時間30分 / 重複 2 ペア (合計 4 日)')
   })
 
-  it('30 分単位', () => {
+  it('30 分単位 (iter809 ja-throughout)', () => {
     expect(
       formatLaneLoadJa({
         itemCount: 1,
@@ -212,7 +212,7 @@ describe('formatLaneLoadJa', () => {
         conflictPairCount: 0,
         conflictTotalDays: 0,
       }),
-    ).toBe('1 件 / 30min / 重複なし')
+    ).toBe('1 件 / 30分 / 重複なし')
   })
 })
 
