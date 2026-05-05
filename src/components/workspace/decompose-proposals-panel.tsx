@@ -210,7 +210,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                       : `保留中の提案 ${list.length} 件をすべて採用`
                   }
                 >
-                  全て採用
+                  <span aria-hidden="true">全て採用</span>
                 </Button>
                 <Button
                   type="button"
@@ -227,7 +227,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                       : `保留中の提案 ${list.length} 件をすべて却下`
                   }
                 >
-                  全て却下
+                  <span aria-hidden="true">全て却下</span>
                 </Button>
               </>
             )}
@@ -264,7 +264,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                 title="既存提案を全て却下してから再分解"
                 aria-label={`保留中の ${list.length} 件を全て却下してから AI 分解をやり直し`}
               >
-                やり直し
+                <span aria-hidden="true">やり直し</span>
               </Button>
             )}
           </div>
@@ -552,7 +552,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               : `「${proposal.title}」を採用して子タスクとして追加`
           }
         >
-          <span aria-hidden="true">✓ </span>採用
+          <span aria-hidden="true">✓ 採用</span>
         </Button>
         <Button
           size="sm"
