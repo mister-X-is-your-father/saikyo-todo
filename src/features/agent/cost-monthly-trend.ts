@@ -26,6 +26,7 @@
 import { rateToPct } from '@/lib/format-rate'
 import { type ChipTone, type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
+import { type AgentBriefSignal } from './agent-reliability'
 import {
   ANALYTICS_AGENT_ROLES,
   type AnalyticsAgentRole,
@@ -303,4 +304,21 @@ export function monthlyCostTrendChipClasses(
   direction: CostMonthDirection,
 ): MonthlyCostTrendChipClasses {
   return getChipToneClasses(TREND_TO_CHIP_TONE[direction])
+}
+
+/**
+ * iter795 basics: monthly cost trend を `AgentBriefSignal` 形式 (text + tone) に
+ * 変換する compose helper。iter794 `costMonthProjectionToBriefSignal` と同 pattern。
+ *
+ * caller (= AI 朝 brief / Slack daily digest / dashboard chip) は複数 helper の
+ * output を 同 array に concat → `.map(s => <Chip ... />)` で 1 行 render。
+ *
+ * tone は既存 `monthlyCostTrendTone` (iter792) を再利用 (= chip 配色と signal
+ * tone が完全一致)。text は compact 1 行版 (iter792 `formatMonthlyCostTrendCompactJa`)。
+ */
+export function monthlyCostTrendToBriefSignal(trend: MonthlyCostTrend): AgentBriefSignal {
+  return {
+    text: formatMonthlyCostTrendCompactJa(trend),
+    tone: monthlyCostTrendTone(trend.direction),
+  }
 }

@@ -8,6 +8,7 @@ import {
   formatMonthlyCostTrendCompactJa,
   formatMonthlyCostTrendJa,
   monthlyCostTrendChipClasses,
+  monthlyCostTrendToBriefSignal,
   monthlyCostTrendTone,
   rollupCostByMonth,
 } from './cost-monthly-trend'
@@ -414,5 +415,49 @@ describe('monthlyCostTrendTone / monthlyCostTrendChipClasses (iter792 — graphi
 
   it('idle → idle (slate、記録なし)', () => {
     expect(monthlyCostTrendTone('idle')).toBe('idle')
+  })
+})
+
+describe('monthlyCostTrendToBriefSignal (iter795 — AgentBriefSignal compose)', () => {
+  it('idle → tone=idle、text=記録なし', () => {
+    const trend = computeMonthlyCostTrend([], '2026-04-29')
+    const sig = monthlyCostTrendToBriefSignal(trend)
+    expect(sig.tone).toBe('idle')
+    expect(sig.text).toBe('AI コスト: 記録なし')
+  })
+
+  it('up → tone=warn (= chip 配色 amber と一致、cost 増 = 警戒)', () => {
+    const entries: CostMonthEntry[] = [
+      { month: '2026-04', costUsd: 1.5 },
+      { month: '2026-03', costUsd: 1.0 },
+    ]
+    const trend = computeMonthlyCostTrend(entries, '2026-04-29')
+    expect(trend.direction).toBe('up')
+    const sig = monthlyCostTrendToBriefSignal(trend)
+    expect(sig.tone).toBe('warn')
+    expect(sig.text).toContain('増加')
+  })
+
+  it('down → tone=success (= chip 配色 emerald と一致、cost 減 = 改善)', () => {
+    const entries: CostMonthEntry[] = [
+      { month: '2026-04', costUsd: 0.5 },
+      { month: '2026-03', costUsd: 1.0 },
+    ]
+    const trend = computeMonthlyCostTrend(entries, '2026-04-29')
+    expect(trend.direction).toBe('down')
+    const sig = monthlyCostTrendToBriefSignal(trend)
+    expect(sig.tone).toBe('success')
+    expect(sig.text).toContain('減少')
+  })
+
+  it('flat → tone=info (安定)', () => {
+    const entries: CostMonthEntry[] = [
+      { month: '2026-04', costUsd: 1.0 },
+      { month: '2026-03', costUsd: 1.0 },
+    ]
+    const trend = computeMonthlyCostTrend(entries, '2026-04-29')
+    expect(trend.direction).toBe('flat')
+    const sig = monthlyCostTrendToBriefSignal(trend)
+    expect(sig.tone).toBe('info')
   })
 })

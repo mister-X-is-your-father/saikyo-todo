@@ -31,6 +31,8 @@
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { type ChipTone, type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
+import { type AgentBriefSignal } from '@/features/agent/agent-reliability'
+
 export interface MomentumFields {
   createdAt: Date | string | null | undefined
   doneAt: Date | string | null | undefined
@@ -199,4 +201,21 @@ export function formatWorkspaceMomentumCompactJa(m: WorkspaceMomentum): string {
   const sign = m.net > 0 ? '+' : ''
   const label = m.direction === 'growing' ? '成長' : '縮小'
   return `モメンタム: ${label} ${sign}${m.net}`
+}
+
+/**
+ * iter795 basics: workspace momentum を `AgentBriefSignal` 形式 (text + tone) に
+ * 変換する compose helper。iter794 `costMonthProjectionToBriefSignal` と同 pattern。
+ *
+ * caller (= AI 朝 brief / Slack daily digest / dashboard chip) は複数 helper の
+ * output を 同 array に concat → `.map(s => <Chip ... />)` で 1 行 render。
+ *
+ * tone は既存 `momentumTone` (iter793) を再利用 (= chip 配色と signal tone が
+ * 完全一致)。text は compact 1 行版 (iter791 `formatWorkspaceMomentumCompactJa`)。
+ */
+export function workspaceMomentumToBriefSignal(m: WorkspaceMomentum): AgentBriefSignal {
+  return {
+    text: formatWorkspaceMomentumCompactJa(m),
+    tone: momentumTone(m.direction),
+  }
 }

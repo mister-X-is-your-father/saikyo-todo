@@ -8,6 +8,7 @@ import {
   momentumDirectionToTrend,
   type MomentumFields,
   momentumTone,
+  workspaceMomentumToBriefSignal,
 } from './momentum'
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
@@ -293,5 +294,42 @@ describe('momentumTone / momentumChipClasses (iter793 — graphical chip 配色)
   it('idle → idle (slate、活動なし)', () => {
     expect(momentumTone('idle')).toBe('idle')
     expect(momentumChipClasses('idle').bgClass).toBe('bg-slate-50')
+  })
+})
+
+describe('workspaceMomentumToBriefSignal (iter795 — AgentBriefSignal compose)', () => {
+  it('idle → text=活動なし、tone=idle', () => {
+    const m = computeWorkspaceMomentum([], {}, TODAY)
+    const sig = workspaceMomentumToBriefSignal(m)
+    expect(sig.text).toBe('モメンタム: 活動なし')
+    expect(sig.tone).toBe('idle')
+  })
+
+  it('growing → tone=warn (= chip 配色 amber と一致)', () => {
+    const items: MomentumFields[] = [
+      { createdAt: daysAgo(1), doneAt: null },
+      { createdAt: daysAgo(2), doneAt: null },
+      { createdAt: daysAgo(3), doneAt: null },
+      { createdAt: daysAgo(20), doneAt: daysAgo(1) },
+    ]
+    const m = computeWorkspaceMomentum(items, {}, TODAY)
+    expect(m.direction).toBe('growing')
+    const sig = workspaceMomentumToBriefSignal(m)
+    expect(sig.tone).toBe('warn')
+    expect(sig.text).toContain('成長')
+  })
+
+  it('shrinking → tone=success (= chip 配色 emerald と一致)', () => {
+    const items: MomentumFields[] = [
+      { createdAt: daysAgo(20), doneAt: daysAgo(0) },
+      { createdAt: daysAgo(20), doneAt: daysAgo(1) },
+      { createdAt: daysAgo(20), doneAt: daysAgo(2) },
+      { createdAt: daysAgo(1), doneAt: null },
+    ]
+    const m = computeWorkspaceMomentum(items, {}, TODAY)
+    expect(m.direction).toBe('shrinking')
+    const sig = workspaceMomentumToBriefSignal(m)
+    expect(sig.tone).toBe('success')
+    expect(sig.text).toContain('縮小')
   })
 })
