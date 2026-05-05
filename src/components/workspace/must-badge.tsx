@@ -33,13 +33,13 @@ interface Props {
 export function MustBadge({ className, iconOnly = false, 'data-testid': dataTestid }: Props) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700 ring-1 ring-inset ring-red-200 ${className ?? ''}`}
+      className={`inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700 ring-1 ring-red-200 ring-inset ${className ?? ''}`}
       role="img"
       aria-label="MUST タスク"
       data-testid={dataTestid}
     >
       <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
-      {iconOnly ? <span className="sr-only">MUST</span> : <span>MUST</span>}
+      {iconOnly ? <span className="sr-only">MUST</span> : <span aria-hidden="true">MUST</span>}
     </span>
   )
 }
