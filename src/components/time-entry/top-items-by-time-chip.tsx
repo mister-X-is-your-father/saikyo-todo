@@ -20,10 +20,10 @@ import { useMemo } from 'react'
 import { Flame } from 'lucide-react'
 
 import { isoDaysFromNow, todayISO } from '@/lib/date/iso'
+import { formatMinutesJa } from '@/lib/format-duration'
 import { TREND_GLYPH, trendToneClass } from '@/lib/ui/trend-tone'
 
 import { useItems } from '@/features/item/hooks'
-import { formatMinutes } from '@/features/time-entry/category-summary'
 import { computeDailyStreak, formatStreakSummary } from '@/features/time-entry/daily-streak'
 import { useTimeEntries } from '@/features/time-entry/hooks'
 import { formatTopItemsByTime, selectTopItemsByTime } from '@/features/time-entry/item-time-summary'
@@ -89,7 +89,7 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
   const toneClass = trendToneClass(summary.trend.direction, 'positive')
   const toneGlyph = TREND_GLYPH[summary.trend.direction]
   const peakLabel = summary.peak
-    ? `曜日 peak: ${weekdayLabelJa(summary.peak.key)}曜 (${formatMinutes(summary.peak.minutes)})`
+    ? `曜日 peak: ${weekdayLabelJa(summary.peak.key)}曜 (${formatMinutesJa(summary.peak.minutes)})`
     : null
   const fullWeekdayAria = peakLabel ? `${peakLabel} — 直近 14 日 ${summary.weekdayLine}` : null
   const streakActive = summary.streak.currentStreak > 0
@@ -167,7 +167,7 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
           >
             {summary.top.map((row, idx) => {
               const title = summary.titles.get(row.itemId) ?? '(無題)'
-              const label = formatMinutes(row.totalMinutes)
+              const label = formatMinutesJa(row.totalMinutes)
               return (
                 <li
                   key={row.itemId}
