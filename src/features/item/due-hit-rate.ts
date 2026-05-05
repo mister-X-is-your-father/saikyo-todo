@@ -23,6 +23,9 @@
 
 import { dueDateEndOfDayMs, parseDateOrNull } from '@/lib/date/iso'
 import { rateToPct } from '@/lib/format-rate'
+import { type ChipTone } from '@/lib/ui/chip-tone'
+
+import { type AgentBriefSignal } from '@/features/agent/agent-reliability'
 
 import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
 
@@ -154,4 +157,40 @@ export function formatDueHitRateJa(stats: DueHitRateStats): string {
   const pct = rateToPct(stats.hitRate)
   const tail = pct === 0 ? ' — 全て遅延' : ''
   return `期限達成率: ${pct}% (${stats.hit} / ${stats.total} 件${tail})`
+}
+
+/**
+ * iter798 basics: due-hit-rate を ChipTone (5 段階共通 vocab) に変換する糖衣。
+ * 既存 `dueHitRateTone` は 3 値 (good/neutral/warn) で dashboard chip 専用、
+ * 本 helper は analytics chip 全軸で共通の `ChipTone` (success/info/warn/idle)
+ * 軸に揃える。
+ *
+ * 配色 (positive polarity = hit rate 高いほど良い):
+ *  - hitRate >= 0.8         → 'success' (emerald、達成、existing 'good' 相当)
+ *  - 0.5 <= hitRate < 0.8   → 'info'    (blue、中立、existing 'neutral' 相当)
+ *  - hitRate < 0.5          → 'warn'    (amber、警戒、existing 'warn' 相当)
+ *  - total=0 / hitRate=null → 'idle'    (slate、該当なし、existing 'neutral' から区別)
+ *
+ * 既存 `dueHitRateTone` (iter343) は backward-compat 維持、新規 chip 配線は
+ * `dueHitRateChipTone` を使うことで analytics-signals 全軸と配色 vocabulary 統一。
+ */
+export function dueHitRateChipTone(stats: DueHitRateStats): ChipTone {
+  if (stats.total === 0 || stats.hitRate === null) return 'idle'
+  if (stats.hitRate >= 0.8) return 'success'
+  if (stats.hitRate >= 0.5) return 'info'
+  return 'warn'
+}
+
+/**
+ * iter798 basics: due-hit-rate を `AgentBriefSignal` 形式 (text + tone) に変換する
+ * compose helper。iter794-797 の `*ToBriefSignal` パターン継承。
+ *
+ * caller (= AI 朝 brief / Slack daily digest / dashboard chip) は本 helper 出力を
+ * `composeAnalyticsSignals` の 6 軸目候補として活用 (= 期限遵守度を chip 表示)。
+ */
+export function dueHitRateToBriefSignal(stats: DueHitRateStats): AgentBriefSignal {
+  return {
+    text: formatDueHitRateJa(stats),
+    tone: dueHitRateChipTone(stats),
+  }
 }

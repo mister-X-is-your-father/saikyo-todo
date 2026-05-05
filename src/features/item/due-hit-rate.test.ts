@@ -5,7 +5,9 @@ import {
   computeDueHitRateByPriority,
   countNonEmptyPriorityBuckets,
   type DueHitRateByPriorityFields,
+  dueHitRateChipTone,
   type DueHitRateFields,
+  dueHitRateToBriefSignal,
   dueHitRateTone,
   formatDueHitRateByPriorityJa,
   formatDueHitRateJa,
@@ -275,5 +277,49 @@ describe('integration: items → compute → format', () => {
     ]
     const stats = computeDueHitRate(items)
     expect(formatDueHitRateJa(stats)).toBe('期限達成率: 67% (2 / 3 件)')
+  })
+})
+
+describe('dueHitRateChipTone (iter798 — ChipTone 5 段階共通 vocab、analytics chip 配色統一)', () => {
+  it('hitRate >= 0.8 → success (emerald、達成)', () => {
+    expect(dueHitRateChipTone({ total: 5, hit: 4, miss: 1, hitRate: 0.8 })).toBe('success')
+    expect(dueHitRateChipTone({ total: 3, hit: 3, miss: 0, hitRate: 1 })).toBe('success')
+  })
+
+  it('0.5 <= hitRate < 0.8 → info (blue、中立)', () => {
+    expect(dueHitRateChipTone({ total: 4, hit: 2, miss: 2, hitRate: 0.5 })).toBe('info')
+    expect(dueHitRateChipTone({ total: 10, hit: 7, miss: 3, hitRate: 0.7 })).toBe('info')
+  })
+
+  it('hitRate < 0.5 → warn (amber、警戒)', () => {
+    expect(dueHitRateChipTone({ total: 4, hit: 1, miss: 3, hitRate: 0.25 })).toBe('warn')
+    expect(dueHitRateChipTone({ total: 5, hit: 0, miss: 5, hitRate: 0 })).toBe('warn')
+  })
+
+  it('total=0 / hitRate=null → idle (slate、該当なし、existing neutral から区別)', () => {
+    expect(dueHitRateChipTone({ total: 0, hit: 0, miss: 0, hitRate: null })).toBe('idle')
+  })
+})
+
+describe('dueHitRateToBriefSignal (iter798 — AgentBriefSignal compose)', () => {
+  it('high hit rate → tone=success、text=期限達成率 文言', () => {
+    const stats = { total: 10, hit: 9, miss: 1, hitRate: 0.9 }
+    const sig = dueHitRateToBriefSignal(stats)
+    expect(sig.tone).toBe('success')
+    expect(sig.text).toBe('期限達成率: 90% (9 / 10 件)')
+  })
+
+  it('low hit rate → tone=warn', () => {
+    const stats = { total: 10, hit: 3, miss: 7, hitRate: 0.3 }
+    const sig = dueHitRateToBriefSignal(stats)
+    expect(sig.tone).toBe('warn')
+    expect(sig.text).toBe('期限達成率: 30% (3 / 10 件)')
+  })
+
+  it('total=0 → tone=idle、text=該当なし', () => {
+    const stats = { total: 0, hit: 0, miss: 0, hitRate: null }
+    const sig = dueHitRateToBriefSignal(stats)
+    expect(sig.tone).toBe('idle')
+    expect(sig.text).toBe('完了 0 件 (該当なし)')
   })
 })
