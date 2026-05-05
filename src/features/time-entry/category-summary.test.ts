@@ -6,7 +6,6 @@ import { describe, expect, it } from 'vitest'
 import {
   type CategorySummaryEntry,
   formatCategorySummary,
-  formatMinutes,
   groupTimeEntriesByCategory,
   totalCategoryMinutes,
 } from './category-summary'
@@ -85,34 +84,10 @@ describe('groupTimeEntriesByCategory — 範囲フィルタ', () => {
   })
 })
 
-describe('formatMinutes', () => {
-  it('60 未満は "Nmin"', () => {
-    expect(formatMinutes(0)).toBe('0min')
-    expect(formatMinutes(15)).toBe('15min')
-    expect(formatMinutes(59)).toBe('59min')
-  })
-
-  it('60 以上の整時は "Nh"', () => {
-    expect(formatMinutes(60)).toBe('1h')
-    expect(formatMinutes(120)).toBe('2h')
-  })
-
-  it('時 + 分の混在は "Nh Mmin"', () => {
-    expect(formatMinutes(90)).toBe('1h 30min')
-    expect(formatMinutes(135)).toBe('2h 15min')
-  })
-
-  it('NaN / 負 / Infinity は 0min', () => {
-    expect(formatMinutes(Number.NaN)).toBe('0min')
-    expect(formatMinutes(-30)).toBe('0min')
-    expect(formatMinutes(Number.POSITIVE_INFINITY)).toBe('0min')
-  })
-
-  it('小数は round で整数に', () => {
-    expect(formatMinutes(59.4)).toBe('59min')
-    expect(formatMinutes(59.6)).toBe('1h')
-  })
-})
+// iter815 refactor: formatMinutes (en) の duplicate test 13 件は format-duration.test.ts
+// (canonical 11 件、iter490 集約) と完全重複だったので削除。本 file は category-summary
+// 固有の logic (groupTimeEntriesByCategory / formatCategorySummary / totalCategoryMinutes)
+// の test に集中する。re-export `formatMinutes` 自体は backward compat のため残置。
 
 describe('formatCategorySummary', () => {
   it('全カテゴリ非ゼロは固定順で連結', () => {
