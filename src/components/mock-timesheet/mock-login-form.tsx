@@ -99,7 +99,11 @@ export function MockLoginForm() {
         className="h-11 w-full"
         disabled={isPending}
         aria-busy={isPending || undefined}
-        aria-label={isPending ? '認証中… (mock-timesheet 認証処理を実行中)' : undefined}
+        aria-label={
+          isPending
+            ? '認証中… (mock-timesheet 認証処理を実行中)'
+            : 'ログイン (mock-timesheet email + password で認証)'
+        }
       >
         {isPending ? '認証中...' : 'ログイン'}
       </Button>
