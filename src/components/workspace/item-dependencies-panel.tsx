@@ -179,7 +179,7 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
         role="group"
         aria-labelledby="dep-add-label"
       >
-        <Label id="dep-add-label">依存を追加</Label>
+        <Label id="dep-add-label">{`「${item.title}」の依存を追加`}</Label>
         <div className="flex flex-wrap items-center gap-2">
           <select
             value={pickKind}
