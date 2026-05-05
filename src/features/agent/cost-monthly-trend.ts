@@ -24,6 +24,7 @@
  */
 
 import { rateToPct } from '@/lib/format-rate'
+import { type ChipTone, type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
 import {
   ANALYTICS_AGENT_ROLES,
@@ -246,4 +247,60 @@ export function formatMonthlyCostTrendJa(trend: MonthlyCostTrend): string {
     return `AI コスト: 増加 (先月 ${prev} → 今月 ${cur}、${sign}${delta}${pctPart})`
   }
   return `AI コスト: 減少 (先月 ${prev} → 今月 ${cur}、-${delta}${pctPart})`
+}
+
+/**
+ * iter792 ai-automation: dashboard widget の小型 chip / Slack 通知 ペイロード 用の
+ * **compact** 1 行 ja-JP 文言。delta% / USD 内訳を省いた短縮形 (= 視覚は
+ * `monthlyCostTrendChipClasses` で chip 配色補強)、`formatCostMonthProjectionCompactJa`
+ * (iter498) / `formatWorkspaceMomentumCompactJa` (iter791) と対称。
+ *
+ *   idle → 'AI コスト: 記録なし'
+ *   flat → 'AI コスト: 安定'
+ *   up   → 'AI コスト: 増加 (+30%)' (deltaPct null = 先月 0 → '増加 (新規)')
+ *   down → 'AI コスト: 減少 (-20%)'
+ */
+export function formatMonthlyCostTrendCompactJa(trend: MonthlyCostTrend): string {
+  if (trend.direction === 'idle') return 'AI コスト: 記録なし'
+  if (trend.direction === 'flat') return 'AI コスト: 安定'
+  if (trend.direction === 'up') {
+    // priorMonthUsd=0 + thisMonthUsd>0 で deltaPct=null (= 新規)、それ以外は %
+    if (trend.deltaPct === null) return 'AI コスト: 増加 (新規)'
+    return `AI コスト: 増加 (+${trend.deltaPct}%)`
+  }
+  // down: prior>0 必須 (prior=0 なら up に分岐) なので deltaPct は必ず数値
+  return `AI コスト: 減少 (${trend.deltaPct}%)`
+}
+
+/**
+ * iter792 ai-automation: monthly cost trend direction → ChipTone (negative polarity =
+ * up=warning / down=success)。chip 配色を 1 関数で揃え、AI brief / Slack daily
+ * digest payload を caller が組み立てやすくする。
+ *
+ * 配色 (cost = 増えると悪い、negative polarity):
+ *  - 'up'   → 'warn'    (amber、コスト増 = 注意)
+ *  - 'down' → 'success' (emerald、コスト減 = 改善)
+ *  - 'flat' → 'info'    (blue、安定 = 情報)
+ *  - 'idle' → 'idle'    (slate、記録なし)
+ *
+ * `agentReliabilityTone` (iter487) と同じ ChipTone 共通 vocabulary。
+ */
+const TREND_TO_CHIP_TONE: Record<CostMonthDirection, ChipTone> = {
+  up: 'warn',
+  down: 'success',
+  flat: 'info',
+  idle: 'idle',
+}
+
+export function monthlyCostTrendTone(direction: CostMonthDirection): ChipTone {
+  return TREND_TO_CHIP_TONE[direction]
+}
+
+/** alias to ChipToneClasses (`@/lib/ui/chip-tone`)。caller の import path を維持。 */
+export type MonthlyCostTrendChipClasses = ChipToneClasses
+
+export function monthlyCostTrendChipClasses(
+  direction: CostMonthDirection,
+): MonthlyCostTrendChipClasses {
+  return getChipToneClasses(TREND_TO_CHIP_TONE[direction])
 }

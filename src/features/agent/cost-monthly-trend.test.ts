@@ -5,7 +5,10 @@ import {
   computeMonthlyCostTrendByRole,
   type CostMonthEntry,
   formatMonthlyCostTrendByRoleJa,
+  formatMonthlyCostTrendCompactJa,
   formatMonthlyCostTrendJa,
+  monthlyCostTrendChipClasses,
+  monthlyCostTrendTone,
   rollupCostByMonth,
 } from './cost-monthly-trend'
 
@@ -337,5 +340,79 @@ describe('formatMonthlyCostTrendByRoleJa', () => {
     ]
     const trends = computeMonthlyCostTrendByRole(rows, '2026-04-29')
     expect(formatMonthlyCostTrendByRoleJa(trends)).toBe('AI コスト: PM 減少・Researcher 減少')
+  })
+})
+
+describe('formatMonthlyCostTrendCompactJa (iter792 — chip / Slack 用 短縮形)', () => {
+  it('idle → 「AI コスト: 記録なし」', () => {
+    const trend = computeMonthlyCostTrend([], '2026-04-29')
+    expect(trend.direction).toBe('idle')
+    expect(formatMonthlyCostTrendCompactJa(trend)).toBe('AI コスト: 記録なし')
+  })
+
+  it('flat → 「AI コスト: 安定」 (delta 詳細省略)', () => {
+    const entries: CostMonthEntry[] = [
+      { month: '2026-04', costUsd: 1.0 },
+      { month: '2026-03', costUsd: 1.0 },
+    ]
+    const trend = computeMonthlyCostTrend(entries, '2026-04-29')
+    expect(trend.direction).toBe('flat')
+    expect(formatMonthlyCostTrendCompactJa(trend)).toBe('AI コスト: 安定')
+  })
+
+  it('up + deltaPct あり → 「AI コスト: 増加 (+N%)」', () => {
+    const entries: CostMonthEntry[] = [
+      { month: '2026-04', costUsd: 1.5 },
+      { month: '2026-03', costUsd: 1.0 },
+    ]
+    const trend = computeMonthlyCostTrend(entries, '2026-04-29')
+    expect(trend.direction).toBe('up')
+    expect(formatMonthlyCostTrendCompactJa(trend)).toBe('AI コスト: 増加 (+50%)')
+  })
+
+  it('up + deltaPct=null (先月 0 → 今月 +α) → 「AI コスト: 増加 (新規)」', () => {
+    const entries: CostMonthEntry[] = [{ month: '2026-04', costUsd: 1.5 }]
+    const trend = computeMonthlyCostTrend(entries, '2026-04-29')
+    expect(trend.direction).toBe('up')
+    expect(trend.deltaPct).toBeNull()
+    expect(formatMonthlyCostTrendCompactJa(trend)).toBe('AI コスト: 増加 (新規)')
+  })
+
+  it('down → 「AI コスト: 減少 (-N%)」', () => {
+    const entries: CostMonthEntry[] = [
+      { month: '2026-04', costUsd: 0.5 },
+      { month: '2026-03', costUsd: 1.0 },
+    ]
+    const trend = computeMonthlyCostTrend(entries, '2026-04-29')
+    expect(trend.direction).toBe('down')
+    expect(formatMonthlyCostTrendCompactJa(trend)).toBe('AI コスト: 減少 (-50%)')
+  })
+
+  it('down + 今月 0 → deltaPct=-100% (down + prior>0 なら必ず数値)', () => {
+    const entries: CostMonthEntry[] = [{ month: '2026-03', costUsd: 1.0 }]
+    const trend = computeMonthlyCostTrend(entries, '2026-04-29')
+    expect(trend.direction).toBe('down')
+    expect(trend.deltaPct).toBe(-100)
+    expect(formatMonthlyCostTrendCompactJa(trend)).toBe('AI コスト: 減少 (-100%)')
+  })
+})
+
+describe('monthlyCostTrendTone / monthlyCostTrendChipClasses (iter792 — graphical chip)', () => {
+  it('up → warn (amber、コスト増 = 注意)', () => {
+    expect(monthlyCostTrendTone('up')).toBe('warn')
+    expect(monthlyCostTrendChipClasses('up').bgClass).toBe('bg-amber-50')
+  })
+
+  it('down → success (emerald、コスト減 = 改善)', () => {
+    expect(monthlyCostTrendTone('down')).toBe('success')
+    expect(monthlyCostTrendChipClasses('down').bgClass).toBe('bg-emerald-50')
+  })
+
+  it('flat → info (blue、安定)', () => {
+    expect(monthlyCostTrendTone('flat')).toBe('info')
+  })
+
+  it('idle → idle (slate、記録なし)', () => {
+    expect(monthlyCostTrendTone('idle')).toBe('idle')
   })
 })
