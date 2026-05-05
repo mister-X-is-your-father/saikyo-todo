@@ -267,6 +267,34 @@ describe('analyticsSignalsToArray (順序 + null 除去)', () => {
   })
 })
 
+describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', () => {
+  it('EMPTY (= 全 signal null) は AnalyticsSignals 全 field を必ず初期化 (= 新軸追加時の漏れ検知)', () => {
+    const empty = composeAnalyticsSignals({})
+    // すべての field が key として存在し、value=null を持つ
+    const expectedKeys = [
+      'reliability',
+      'dominantRole',
+      'concerningRole',
+      'costProjection',
+      'costTrend',
+      'momentum',
+      'weeklyCompletion',
+      'dueHitRate',
+      'velocity',
+      'biasTrend',
+    ] as const
+    expect(Object.keys(empty).sort()).toEqual([...expectedKeys].sort())
+    for (const k of expectedKeys) {
+      expect(empty[k]).toBeNull()
+    }
+    // analyticsSignalsToArray は EMPTY 入力で必ず空配列 (= 新 field 追加時に
+    // analyticsSignalsToArray の `ordered` array にも追加し忘れた場合は ここで
+    // 落ちないが、型レベルで Object.keys(empty).length === ordered.length チェック
+    // も追加可能)
+    expect(analyticsSignalsToArray(empty)).toEqual([])
+  })
+})
+
 describe('formatAnalyticsSignalsLineJa (iter816 — plain text 1 行 compose)', () => {
   it('全空 → 「記録なし」 sentinel', () => {
     const s = composeAnalyticsSignals({})
