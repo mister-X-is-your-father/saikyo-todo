@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter840 1/1] item-edit-dialog "Template として保存" button visible text を aria-hidden span で wrap (Item edit dialog footer の Template 保存 button): visible "Template として保存" / "保存中…" を aria-hidden で wrap、aria-label 単独経路。+3/-1 行。検証 5 OK (iter735/826/838/839 invariant 込み)。
 - ✅ [playwright-iter839 1/1] item-edit-dialog Save + Cancel button visible text を aria-hidden span で wrap (一括) (Item edit dialog footer の操作 button): visible "キャンセル" / "保存" / "保存中..." を aria-hidden で wrap、aria-label 単独経路。+2/-2 行。検証 5 OK (iter735/826/836/838 invariant 込み)。
 - ✅ [playwright-iter838 1/1] workflows-panel Workflow 作成 + 実行 button visible text を aria-hidden span で wrap (一括) (Workflow 作成 form + Workflow card 実行 button): +2/-2 行。検証 5 OK (iter735/826/836/837 invariant 込み)。
 - ✅ [playwright-iter837 1/1] sprint-defaults キャンセル + 保存 button visible text を aria-hidden span で wrap (一括) (Sprint デフォルト編集 form の操作 button): +2/-2 行。検証 5 OK (iter735/826/834/836 invariant 込み)。
