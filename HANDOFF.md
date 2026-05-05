@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter828 1/1] sprint-card 期間進捗 row に role=group + aria-label 集約 + 内側 aria-hidden (Sprint Card active 期間進捗 status row): plain visible text のみで Sprint context が aria-label 集約に欠落していたのを page-specific naming + aria-hidden span に整備。+6/-2 行。検証 5 OK (iter735/819/826/827 invariant 込み)。
 - ✅ [playwright-iter827 1/1] quick-add estimate chip 内 visible aria-hidden 統合 (QuickAdd preview chip): emoji + text を 1 aria-hidden span に統合、内側 重複なし。+1/-2 行。検証 5 OK (iter735/819/825/826 invariant 込み)。
 - ✅ [playwright-iter826 1/1] backlog-view updatedAt cell を <time dateTime> + aria-label 化 (Backlog view の更新列 cell): plain string return から HTML5 <time dateTime> + aria-label="最終更新 ..." に格上げ。同 file dueDate cell の semantic と統一。+12/-2 行。検証 5 OK (iter735/819/824/825 invariant 込み)。
 - ✅ [playwright-iter825 1/1] today-view dueTime span に aria-label 追加 (Today view の Item row 内 期限時刻): visible "HH:MM" のみで context 無く SR ユーザは「期限時刻なのか」 が分からなかった。fix: aria-label="期限時刻 HH:MM" + 内側 aria-hidden で wrap。+6/-1 行。検証 5 OK (iter735/819/823/824 invariant 込み)。
