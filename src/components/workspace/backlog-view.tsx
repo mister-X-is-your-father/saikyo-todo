@@ -283,7 +283,7 @@ export function BacklogView({ workspaceId, items }: Props) {
           aria-label={`Backlog 見積サマリ: ${estimateSummary}`}
         >
           <span aria-hidden="true">⏱</span>
-          <span>{estimateSummary}</span>
+          <span aria-hidden="true">{estimateSummary}</span>
         </span>
       </div>
       <div data-testid="backlog-view" className="max-h-[600px] overflow-auto rounded-lg border">
