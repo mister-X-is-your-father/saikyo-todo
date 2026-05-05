@@ -163,7 +163,7 @@ export function CalendarView({ workspaceId }: Props) {
         <div
           className="flex items-center gap-2"
           role="group"
-          aria-label="カレンダー日付ナビゲーション (前日 / 翌日 / 今日)"
+          aria-label={`カレンダー日付ナビゲーション (現在: ${format(date, 'yyyy年M月d日 (eee)')}、前日 / 翌日 / 今日)`}
         >
           <Button
             variant="outline"
