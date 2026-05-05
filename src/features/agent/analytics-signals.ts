@@ -36,11 +36,8 @@ import {
   weeklyCompletionInsightToBriefSignal,
 } from '@/features/item/weekly-completion-insight'
 
-import {
-  type AgentBriefSignal,
-  type AgentReliability,
-  composeAgentBriefSignals,
-} from './agent-reliability'
+import { type AgentReliability, composeAgentBriefSignals } from './agent-reliability'
+import { type AgentBriefSignal } from './brief-signal'
 import { type CostMonthProjection, costMonthProjectionToBriefSignal } from './cost-month-projection'
 import { type MonthlyCostTrend, monthlyCostTrendToBriefSignal } from './cost-monthly-trend'
 

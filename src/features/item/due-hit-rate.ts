@@ -25,7 +25,7 @@ import { dueDateEndOfDayMs, parseDateOrNull } from '@/lib/date/iso'
 import { rateToPct } from '@/lib/format-rate'
 import { type ChipTone } from '@/lib/ui/chip-tone'
 
-import { type AgentBriefSignal } from '@/features/agent/agent-reliability'
+import { type AgentBriefSignal } from '@/features/agent/brief-signal'
 
 import { bucketByPriorityWith, PRIORITY_ORDER, type PriorityKey } from './priority'
 

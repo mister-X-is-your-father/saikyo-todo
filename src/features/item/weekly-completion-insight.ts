@@ -27,7 +27,7 @@
 import { formatLocalISO, MS_PER_DAY, parseDateOrNull, toLocalMidnight } from '@/lib/date/iso'
 import { type ChipTone } from '@/lib/ui/chip-tone'
 
-import { type AgentBriefSignal } from '@/features/agent/agent-reliability'
+import { type AgentBriefSignal } from '@/features/agent/brief-signal'
 
 export interface WeeklyCompletionItemFields {
   doneAt: Date | string | null | undefined

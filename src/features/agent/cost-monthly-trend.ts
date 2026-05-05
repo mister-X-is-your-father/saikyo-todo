@@ -26,12 +26,12 @@
 import { rateToPct } from '@/lib/format-rate'
 import { type ChipTone, type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
-import { type AgentBriefSignal } from './agent-reliability'
 import {
   ANALYTICS_AGENT_ROLES,
   type AnalyticsAgentRole,
   analyticsRoleLabelJa,
 } from './analytics-roles'
+import { type AgentBriefSignal } from './brief-signal'
 import { safeUsd } from './cost-safe-usd'
 
 const ISO_MONTH_RE = /^\d{4}-\d{2}$/

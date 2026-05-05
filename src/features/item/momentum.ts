@@ -31,7 +31,7 @@
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { type ChipTone, type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
-import { type AgentBriefSignal } from '@/features/agent/agent-reliability'
+import { type AgentBriefSignal } from '@/features/agent/brief-signal'
 
 export interface MomentumFields {
   createdAt: Date | string | null | undefined

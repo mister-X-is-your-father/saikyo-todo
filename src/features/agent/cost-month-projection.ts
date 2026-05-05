@@ -35,7 +35,7 @@
 
 import { type ChipTone, type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
-import { type AgentBriefSignal } from './agent-reliability'
+import { type AgentBriefSignal } from './brief-signal'
 import { safeUsd } from './cost-safe-usd'
 
 const ISO_DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/

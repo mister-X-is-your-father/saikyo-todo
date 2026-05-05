@@ -237,10 +237,13 @@ export function formatDominantRoleJa(dominant: DominantRoleResult | null): strin
  *    `agentReliabilityTone` / 主軸の場合は 'info' (中立、informational signal) を採用
  *  - signals 配列形式は AI brief / Slack 通知 / dashboard chip 共通 format
  */
-export interface AgentBriefSignal {
-  text: string
-  tone: ChipTone
-}
+/**
+ * iter800 refactor: AgentBriefSignal は ./brief-signal.ts に移動。
+ * 後方互換のため import + re-export を維持 (= 既存 import path を壊さない)。
+ */
+import { type AgentBriefSignal } from './brief-signal'
+
+export type { AgentBriefSignal }
 
 export interface AgentBriefSignals {
   reliability: AgentBriefSignal
