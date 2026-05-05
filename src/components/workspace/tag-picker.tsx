@@ -95,9 +95,11 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
         >
           <TagIcon className="size-4" aria-hidden="true" />
           {selectedLabels.length === 0 ? (
-            <span className="text-muted-foreground">タグなし</span>
+            <span className="text-muted-foreground" aria-hidden="true">
+              タグなし
+            </span>
           ) : (
-            <span className="flex flex-wrap gap-1">
+            <span className="flex flex-wrap gap-1" aria-hidden="true">
               {selectedLabels.map((t) =>
                 t ? (
                   <span
