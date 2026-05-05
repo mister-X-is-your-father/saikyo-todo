@@ -63,7 +63,7 @@ export function ItemPlanGenerateButton({ workspaceId, item, assignees }: Props) 
       }
     >
       <BotIcon className="size-4" aria-hidden="true" />
-      {generate.isPending ? 'Plan 生成中…' : 'Plan を生成'}
+      <span aria-hidden="true">{generate.isPending ? 'Plan 生成中…' : 'Plan を生成'}</span>
     </Button>
   )
 }

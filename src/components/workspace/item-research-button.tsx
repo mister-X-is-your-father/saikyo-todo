@@ -54,7 +54,7 @@ export function ItemResearchButton({ workspaceId, item }: Props) {
             : `「${item.title}」を AI 調査して Doc を作成`
       }
     >
-      {research.isPending ? '調査中…' : 'AI 調査'}
+      <span aria-hidden="true">{research.isPending ? '調査中…' : 'AI 調査'}</span>
     </Button>
   )
 }
