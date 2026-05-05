@@ -3,6 +3,7 @@
 import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
+import { formatMinutesJa } from '@/lib/format-duration'
 
 import { categoryLabel } from '@/features/time-entry/categories'
 import { useSyncTimeEntry } from '@/features/time-entry/hooks'
@@ -46,14 +47,6 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
       pending
     </Badge>
   )
-}
-
-function formatMinutes(m: number): string {
-  const h = Math.floor(m / 60)
-  const mm = m % 60
-  if (h === 0) return `${mm}分`
-  if (mm === 0) return `${h}h`
-  return `${h}h${mm}m`
 }
 
 export function TimeEntriesTable({
@@ -113,7 +106,7 @@ export function TimeEntriesTable({
               </td>
               <td className="py-2">{categoryLabel(e.category)}</td>
               <td className="max-w-[320px] truncate py-2">{e.description || '—'}</td>
-              <td className="py-2 text-right">{formatMinutes(e.durationMinutes)}</td>
+              <td className="py-2 text-right">{formatMinutesJa(e.durationMinutes)}</td>
               <td className="py-2">
                 <SyncBadge status={e.syncStatus} />
                 {e.syncError && (
