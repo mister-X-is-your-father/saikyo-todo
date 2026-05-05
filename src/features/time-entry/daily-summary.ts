@@ -23,8 +23,7 @@
  */
 
 import { formatLocalISO, parseIsoDateAsLocalMidnight, toLocalMidnight } from '@/lib/date/iso'
-
-import { formatMinutes } from './category-summary'
+import { formatMinutesJa } from '@/lib/format-duration'
 
 /** 集計に必要な最小 structural subset。 */
 export interface DailySummaryEntry {
@@ -103,7 +102,7 @@ export function formatDailyMinutesSeries(series: readonly DailyMinutes[]): strin
   const parts: string[] = []
   for (const d of reversed) {
     if (d.minutes === 0) continue
-    parts.push(`${formatShortDate(d.date)} ${formatMinutes(d.minutes)}`)
+    parts.push(`${formatShortDate(d.date)} ${formatMinutesJa(d.minutes)}`)
   }
   return parts.length === 0 ? '0 件' : parts.join(' / ')
 }

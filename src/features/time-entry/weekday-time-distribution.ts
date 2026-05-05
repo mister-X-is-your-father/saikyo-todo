@@ -23,8 +23,8 @@
  */
 
 import { ISO_DATE_RE } from '@/lib/date/iso'
+import { formatMinutesJa } from '@/lib/format-duration'
 
-import { formatMinutes } from './category-summary'
 import { safeMinutes } from './safe-minutes'
 
 export const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
@@ -137,7 +137,7 @@ export function formatWeekdayTimeDistributionJa(
   for (const k of WEEKDAY_KEYS) {
     const m = totals[k]
     if (hideZero && m === 0) continue
-    parts.push(`${WEEKDAY_LABEL_JA[k]} ${formatMinutes(m)}`)
+    parts.push(`${WEEKDAY_LABEL_JA[k]} ${formatMinutesJa(m)}`)
   }
   if (parts.length === 0) return '0 件'
   return parts.join(' / ')

@@ -116,7 +116,7 @@ describe('formatDailyMinutesSeries', () => {
       { date: '2026-04-26', minutes: 60 }, // 1h
       { date: '2026-04-27', minutes: 300 }, // 5h
     ]
-    expect(formatDailyMinutesSeries(series)).toBe('4/27 5h / 4/26 1h / 4/25 4h')
+    expect(formatDailyMinutesSeries(series)).toBe('4/27 5時間 / 4/26 1時間 / 4/25 4時間')
   })
 
   it('0 分日は省略', () => {
@@ -125,7 +125,7 @@ describe('formatDailyMinutesSeries', () => {
       { date: '2026-04-26', minutes: 0 }, // 省略
       { date: '2026-04-27', minutes: 120 },
     ]
-    expect(formatDailyMinutesSeries(series)).toBe('4/27 2h / 4/25 1h')
+    expect(formatDailyMinutesSeries(series)).toBe('4/27 2時間 / 4/25 1時間')
   })
 
   it('全 0 → "0 件"', () => {
@@ -141,11 +141,11 @@ describe('formatDailyMinutesSeries', () => {
   })
 
   it('日付は M/D で年省略', () => {
-    expect(formatDailyMinutesSeries([{ date: '2026-04-05', minutes: 30 }])).toBe('4/5 30min')
+    expect(formatDailyMinutesSeries([{ date: '2026-04-05', minutes: 30 }])).toBe('4/5 30分')
   })
 
   it('時 + 分の混在も正しく整形', () => {
-    expect(formatDailyMinutesSeries([{ date: '2026-04-27', minutes: 90 }])).toBe('4/27 1h 30min')
+    expect(formatDailyMinutesSeries([{ date: '2026-04-27', minutes: 90 }])).toBe('4/27 1時間30分')
   })
 })
 
@@ -171,6 +171,6 @@ describe('集計 + 系列 + 整形 統合', () => {
       e({ workDate: '2026-04-27', durationMinutes: 300 }), // 5h
     ]
     const series = dailyMinutesSeries(entries, { windowDays: 3 }, TODAY)
-    expect(formatDailyMinutesSeries(series)).toBe('4/27 5h / 4/25 4h')
+    expect(formatDailyMinutesSeries(series)).toBe('4/27 5時間 / 4/25 4時間')
   })
 })

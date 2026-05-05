@@ -148,7 +148,7 @@ describe('formatWeekdayTimeDistributionJa', () => {
       sat: 0,
       sun: 0,
     })
-    expect(out).toBe('月 4h / 火 6h / 金 1h 30min')
+    expect(out).toBe('月 4時間 / 火 6時間 / 金 1時間30分')
   })
 
   it('shows all 7 weekdays when hideZero=false', () => {
@@ -156,7 +156,7 @@ describe('formatWeekdayTimeDistributionJa', () => {
       { mon: 60, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0 },
       { hideZero: false },
     )
-    expect(out).toBe('月 1h / 火 0min / 水 0min / 木 0min / 金 0min / 土 0min / 日 0min')
+    expect(out).toBe('月 1時間 / 火 0分 / 水 0分 / 木 0分 / 金 0分 / 土 0分 / 日 0分')
   })
 
   it('returns "0 件" sentinel when all zero', () => {
@@ -188,7 +188,7 @@ describe('integration: 1 週分 entries → distribution + peak + format', () =>
     expect(totals).toEqual({ mon: 240, tue: 360, wed: 300, thu: 150, fri: 180, sat: 0, sun: 0 })
     expect(findPeakWeekday(totals)).toEqual({ key: 'tue', minutes: 360 })
     expect(formatWeekdayTimeDistributionJa(totals)).toBe(
-      '月 4h / 火 6h / 水 5h / 木 2h 30min / 金 3h',
+      '月 4時間 / 火 6時間 / 水 5時間 / 木 2時間30分 / 金 3時間',
     )
   })
 })
