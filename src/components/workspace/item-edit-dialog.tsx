@@ -933,7 +933,9 @@ function ItemEditDialogInner({
                   : `「${item.title}」と全ての子孫 (subtask) を Template として保存 (再利用可)`
               }
             >
-              {createTemplateFromItem.isPending ? '保存中…' : 'Template として保存'}
+              <span aria-hidden="true">
+                {createTemplateFromItem.isPending ? '保存中…' : 'Template として保存'}
+              </span>
             </Button>
           )}
           <Button
