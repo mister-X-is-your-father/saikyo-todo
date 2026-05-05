@@ -187,7 +187,7 @@ export function TemplateItemsEditor({ templateId }: Props) {
                 : '子 Item を Template に追加'
           }
         >
-          + 追加
+          <span aria-hidden="true">+ 追加</span>
         </Button>
       </form>
 
