@@ -456,7 +456,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
               data-testid={`goal-status-${goal.id}`}
               aria-label={`Goal「${goal.title}」のステータス: ${goalStatusLabelJa(status)}`}
             >
-              {goalStatusLabelJa(status)}
+              <span aria-hidden="true">{goalStatusLabelJa(status)}</span>
             </Badge>
           </div>
           {goal.description && (

@@ -506,7 +506,7 @@ function SprintCard({
               data-testid={`sprint-status-${sprint.id}`}
               aria-label={`Sprint「${sprint.name}」のステータス: ${sprintStatusLabelJa(status)}`}
             >
-              {sprintStatusLabelJa(status)}
+              <span aria-hidden="true">{sprintStatusLabelJa(status)}</span>
             </Badge>
           </div>
         </CardHeader>
