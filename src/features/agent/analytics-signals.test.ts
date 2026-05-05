@@ -55,6 +55,46 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(s.velocity!.tone).toBe('idle')
   })
 
+  it('iter805: biasTrend のみ → biasTrend signal、tone=success (improving)', () => {
+    const s = composeAnalyticsSignals({
+      biasTrend: {
+        direction: 'improving',
+        priorFactor: 1.5,
+        recentFactor: 1.2,
+        distanceDelta: 0.3,
+      },
+    })
+    expect(s.biasTrend).not.toBeNull()
+    expect(s.biasTrend!.tone).toBe('success')
+    expect(s.biasTrend!.text).toContain('改善')
+  })
+
+  it('iter805: 全 8 軸入力 → 表示順で biasTrend が dueHitRate の直後 (4 番手) に並ぶ', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 15, completed: 15, failed: 0 },
+    ])
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 }
+    const s = composeAnalyticsSignals({
+      reliability,
+      dueHitRate,
+      biasTrend: {
+        direction: 'improving',
+        priorFactor: 1.5,
+        recentFactor: 1.2,
+        distanceDelta: 0.3,
+      },
+    })
+    const arr = analyticsSignalsToArray(s)
+    // 順序: concerning (null) → costProjection (null) → dueHitRate → biasTrend →
+    // reliability → costTrend (null) → velocity (null) → weekly (null) →
+    // momentum (null) → dominantRole (= 唯一 PM)
+    expect(arr.length).toBe(4)
+    expect(arr[0]).toBe(s.dueHitRate)
+    expect(arr[1]).toBe(s.biasTrend)
+    expect(arr[2]).toBe(s.reliability)
+    expect(arr[3]).toBe(s.dominantRole)
+  })
+
   it('weeklyCompletion のみ → weeklyCompletion signal (iter797)', () => {
     const insight = buildWeeklyCompletionInsight(
       [{ doneAt: new Date(2026, 3, 28, 12, 0, 0) }, { doneAt: new Date(2026, 3, 29, 12, 0, 0) }],

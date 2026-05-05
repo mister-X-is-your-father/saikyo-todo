@@ -36,6 +36,7 @@ import {
   type WeeklyCompletionInsight,
   weeklyCompletionInsightToBriefSignal,
 } from '@/features/item/weekly-completion-insight'
+import { type BiasTrend, biasTrendToBriefSignal } from '@/features/time-entry/bias-trend'
 
 import { type AgentReliability, composeAgentBriefSignals } from './agent-reliability'
 import { type AgentBriefSignal } from './brief-signal'
@@ -53,6 +54,8 @@ export interface AnalyticsSignalsInput {
   dueHitRate?: DueHitRateStats
   /** iter803 basics: 7 軸目として velocity (完了ペース、直近 7 日 trend) も統合 */
   velocity?: VelocitySummary
+  /** iter805 refactor: 8 軸目として bias-trend (見積精度の変化) も統合 */
+  biasTrend?: BiasTrend
 }
 
 export interface AnalyticsSignals {
@@ -68,6 +71,8 @@ export interface AnalyticsSignals {
   dueHitRate: AgentBriefSignal | null
   /** iter803 basics: 完了ペース chip (positive polarity, up=success、velocity hint) */
   velocity: AgentBriefSignal | null
+  /** iter805 refactor: 見積精度の変化 chip (positive polarity, improving=success) */
+  biasTrend: AgentBriefSignal | null
 }
 
 const EMPTY: AnalyticsSignals = {
@@ -80,6 +85,7 @@ const EMPTY: AnalyticsSignals = {
   weeklyCompletion: null,
   dueHitRate: null,
   velocity: null,
+  biasTrend: null,
 }
 
 export function composeAnalyticsSignals(input: AnalyticsSignalsInput): AnalyticsSignals {
@@ -108,6 +114,9 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
   if (input.velocity) {
     out.velocity = velocityToBriefSignal(input.velocity)
   }
+  if (input.biasTrend) {
+    out.biasTrend = biasTrendToBriefSignal(input.biasTrend)
+  }
   return out
 }
 
@@ -119,18 +128,20 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
  *  1. concerningRole   (= 弱点 role 警告、最優先)
  *  2. costProjection   (= 月末コスト予測、cost 軸の主)
  *  3. dueHitRate       (= 期限達成率、商品品質 SLA、cost と並ぶ severity 主)
- *  4. reliability      (= 全体 信頼性 chip)
- *  5. costTrend        (= cost 月次トレンド)
- *  6. velocity         (= 完了ペース、weekly と並ぶ達成感系)
- *  7. weeklyCompletion (= 週次完了 trend、達成感 + やる気)
- *  8. momentum         (= backlog momentum)
- *  9. dominantRole     (= 主軸 role、informational、最後)
+ *  4. biasTrend        (= 見積精度の変化、品質系 trend、severity 主の補佐)
+ *  5. reliability      (= 全体 信頼性 chip)
+ *  6. costTrend        (= cost 月次トレンド)
+ *  7. velocity         (= 完了ペース、weekly と並ぶ達成感系)
+ *  8. weeklyCompletion (= 週次完了 trend、達成感 + やる気)
+ *  9. momentum         (= backlog momentum)
+ * 10. dominantRole     (= 主軸 role、informational、最後)
  */
 export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
     signals.concerningRole,
     signals.costProjection,
     signals.dueHitRate,
+    signals.biasTrend,
     signals.reliability,
     signals.costTrend,
     signals.velocity,
