@@ -995,7 +995,7 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                 data-testid="sprint-defaults-cancel"
                 aria-label="Sprint デフォルトの編集をキャンセル"
               >
-                キャンセル
+                <span aria-hidden="true">キャンセル</span>
               </Button>
               <Button
                 type="submit"
@@ -1010,7 +1010,7 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                     : 'Sprint デフォルト (基本曜日 / 期間) を保存'
                 }
               >
-                {upd.isPending ? '保存中…' : '保存'}
+                <span aria-hidden="true">{upd.isPending ? '保存中…' : '保存'}</span>
               </Button>
             </div>
           </form>
