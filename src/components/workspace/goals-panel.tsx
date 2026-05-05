@@ -593,7 +593,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                 {decompose.isPending ? 'AI 分解中…' : 'AI 分解'}
               </Button>
             </div>
-            <KeyResultList goalId={goal.id} workspaceId={workspaceId} />
+            <KeyResultList goalId={goal.id} goalTitle={goal.title} workspaceId={workspaceId} />
           </CardContent>
         )}
       </Card>
@@ -601,7 +601,15 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
   )
 }
 
-function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: string }) {
+function KeyResultList({
+  goalId,
+  goalTitle,
+  workspaceId,
+}: {
+  goalId: string
+  goalTitle: string
+  workspaceId: string
+}) {
   const list = useKeyResults(goalId)
   const progress = useGoalProgress(goalId)
   const create = useCreateKeyResult(goalId, workspaceId)
@@ -744,7 +752,7 @@ function KeyResultList({ goalId, workspaceId }: { goalId: string; workspaceId: s
       <form
         className="space-y-2 rounded border border-dashed p-2"
         noValidate
-        aria-label="Key Result 追加フォーム"
+        aria-label={`Goal「${goalTitle}」の Key Result 追加フォーム`}
         aria-busy={create.isPending || undefined}
         onSubmit={(e) => {
           e.preventDefault()
