@@ -30,6 +30,10 @@
  */
 
 import { type WorkspaceMomentum, workspaceMomentumToBriefSignal } from '@/features/item/momentum'
+import {
+  type WeeklyCompletionInsight,
+  weeklyCompletionInsightToBriefSignal,
+} from '@/features/item/weekly-completion-insight'
 
 import {
   type AgentBriefSignal,
@@ -44,6 +48,8 @@ export interface AnalyticsSignalsInput {
   costProjection?: CostMonthProjection
   costTrend?: MonthlyCostTrend
   momentum?: WorkspaceMomentum
+  /** iter797 ai-automation: 5 軸目として weekly completion insight も統合 */
+  weeklyCompletion?: WeeklyCompletionInsight
 }
 
 export interface AnalyticsSignals {
@@ -53,6 +59,8 @@ export interface AnalyticsSignals {
   costProjection: AgentBriefSignal | null
   costTrend: AgentBriefSignal | null
   momentum: AgentBriefSignal | null
+  /** iter797 ai-automation: 週次完了 trend chip (positive polarity, up=success) */
+  weeklyCompletion: AgentBriefSignal | null
 }
 
 const EMPTY: AnalyticsSignals = {
@@ -62,6 +70,7 @@ const EMPTY: AnalyticsSignals = {
   costProjection: null,
   costTrend: null,
   momentum: null,
+  weeklyCompletion: null,
 }
 
 export function composeAnalyticsSignals(input: AnalyticsSignalsInput): AnalyticsSignals {
@@ -81,6 +90,9 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
   if (input.momentum) {
     out.momentum = workspaceMomentumToBriefSignal(input.momentum)
   }
+  if (input.weeklyCompletion) {
+    out.weeklyCompletion = weeklyCompletionInsightToBriefSignal(input.weeklyCompletion)
+  }
   return out
 }
 
@@ -89,12 +101,13 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
  * の `AgentBriefSignal[]` 配列に変換。caller は `.map(s => <Chip ... />)` で 1 行 render。
  *
  * 表示順:
- *  1. concerningRole (= 弱点 role 警告、最優先)
- *  2. costProjection (= 月末コスト予測、cost 軸の主)
- *  3. reliability    (= 全体 信頼性 chip)
- *  4. costTrend      (= cost 月次トレンド)
- *  5. momentum       (= backlog momentum)
- *  6. dominantRole   (= 主軸 role、informational、最後)
+ *  1. concerningRole   (= 弱点 role 警告、最優先)
+ *  2. costProjection   (= 月末コスト予測、cost 軸の主)
+ *  3. reliability      (= 全体 信頼性 chip)
+ *  4. costTrend        (= cost 月次トレンド)
+ *  5. weeklyCompletion (= 週次完了 trend、達成感 + やる気)
+ *  6. momentum         (= backlog momentum)
+ *  7. dominantRole     (= 主軸 role、informational、最後)
  */
 export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
@@ -102,6 +115,7 @@ export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSi
     signals.costProjection,
     signals.reliability,
     signals.costTrend,
+    signals.weeklyCompletion,
     signals.momentum,
     signals.dominantRole,
   ]

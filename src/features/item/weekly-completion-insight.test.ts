@@ -15,6 +15,8 @@ import {
   buildWeeklyCompletionInsight,
   dayOfWeekLabelJa,
   formatWeeklyCompletionInsightJa,
+  weeklyCompletionInsightToBriefSignal,
+  weeklyCompletionInsightTone,
   type WeeklyCompletionItemFields,
   weeklyDirectionHintJa,
 } from './weekly-completion-insight'
@@ -174,5 +176,41 @@ describe('weeklyDirectionHintJa', () => {
     expect(weeklyDirectionHintJa('up')).toContain('改善')
     expect(weeklyDirectionHintJa('flat')).toContain('安定')
     expect(weeklyDirectionHintJa('down')).toContain('低下')
+  })
+})
+
+describe('weeklyCompletionInsightTone (iter797 — positive polarity ChipTone)', () => {
+  it('up → success (emerald、完了 増 = 達成)', () => {
+    expect(weeklyCompletionInsightTone('up')).toBe('success')
+  })
+
+  it('down → warn (amber、完了 減 = 注意)', () => {
+    expect(weeklyCompletionInsightTone('down')).toBe('warn')
+  })
+
+  it('flat → info / idle → idle', () => {
+    expect(weeklyCompletionInsightTone('flat')).toBe('info')
+    expect(weeklyCompletionInsightTone('idle')).toBe('idle')
+  })
+})
+
+describe('weeklyCompletionInsightToBriefSignal (iter797 — AgentBriefSignal compose)', () => {
+  it('idle (両週 0) → tone=idle', () => {
+    const insight = buildWeeklyCompletionInsight([], TODAY)
+    expect(insight.direction).toBe('idle')
+    const sig = weeklyCompletionInsightToBriefSignal(insight)
+    expect(sig.tone).toBe('idle')
+    expect(sig.text).toContain('今週 0 件')
+  })
+
+  it('up (今週 +α、前週 0) → tone=success、text に 今週 件数', () => {
+    const insight = buildWeeklyCompletionInsight(
+      [mk(new Date(2026, 3, 28, 12, 0, 0)), mk(new Date(2026, 3, 29, 12, 0, 0))],
+      TODAY,
+    )
+    expect(insight.direction).toBe('up')
+    const sig = weeklyCompletionInsightToBriefSignal(insight)
+    expect(sig.tone).toBe('success')
+    expect(sig.text).toContain('今週 2 件')
   })
 })

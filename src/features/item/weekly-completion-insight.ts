@@ -25,6 +25,9 @@
  *   - `weekly-time-trend.ts` は時間 (= duration minutes)、本 helper は件数 (= done count)
  */
 import { formatLocalISO, MS_PER_DAY, parseDateOrNull, toLocalMidnight } from '@/lib/date/iso'
+import { type ChipTone } from '@/lib/ui/chip-tone'
+
+import { type AgentBriefSignal } from '@/features/agent/agent-reliability'
 
 export interface WeeklyCompletionItemFields {
   doneAt: Date | string | null | undefined
@@ -203,6 +206,47 @@ export function weeklyDirectionHintJa(direction: WeeklyCompletionDirection): str
       return '前週並み — 安定運用'
     case 'down':
       return '前週比 低下 — 何か engulf 要因あれば見直し'
+  }
+}
+
+/**
+ * iter797 ai-automation: weekly completion direction → ChipTone (positive polarity =
+ * up が 完了件数 増 = 成功)。`agentReliabilityTone` (iter487) / `momentumTone` (iter793)
+ * と同じ ChipTone vocabulary に bind。
+ *
+ * 配色 (positive polarity = 完了 多いほど良い):
+ *  - 'up'   → 'success' (emerald、完了件数 増 = 達成)
+ *  - 'down' → 'warn'    (amber、完了件数 減 = 注意)
+ *  - 'flat' → 'info'    (blue、安定)
+ *  - 'idle' → 'idle'    (slate、両週とも記録なし)
+ */
+const DIRECTION_TO_CHIP_TONE: Record<WeeklyCompletionDirection, ChipTone> = {
+  up: 'success',
+  down: 'warn',
+  flat: 'info',
+  idle: 'idle',
+}
+
+export function weeklyCompletionInsightTone(direction: WeeklyCompletionDirection): ChipTone {
+  return DIRECTION_TO_CHIP_TONE[direction]
+}
+
+/**
+ * iter797 ai-automation: weekly completion insight を `AgentBriefSignal` 形式
+ * (text + tone) に変換する compose helper。iter794-795 の `*ToBriefSignal` パターン。
+ *
+ * caller (= AI 朝 brief / Slack daily digest / dashboard chip area) は本 helper を
+ * `composeAnalyticsSignals` に渡すことで analytics 5 軸目として参加可能。
+ *
+ * tone は `weeklyCompletionInsightTone` (= chip 配色と完全一致)、text は既存
+ * `formatWeeklyCompletionInsightJa` (compact 寄り、長くて 30 文字程度)。
+ */
+export function weeklyCompletionInsightToBriefSignal(
+  insight: WeeklyCompletionInsight,
+): AgentBriefSignal {
+  return {
+    text: formatWeeklyCompletionInsightJa(insight),
+    tone: weeklyCompletionInsightTone(insight.direction),
   }
 }
 

@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { computeWorkspaceMomentum, type MomentumFields } from '@/features/item/momentum'
+import { buildWeeklyCompletionInsight } from '@/features/item/weekly-completion-insight'
 
 import { computeAgentReliability } from './agent-reliability'
 import { analyticsSignalsToArray, composeAnalyticsSignals } from './analytics-signals'
@@ -27,7 +28,18 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(s.costProjection).toBeNull()
     expect(s.costTrend).toBeNull()
     expect(s.momentum).toBeNull()
+    expect(s.weeklyCompletion).toBeNull()
     expect(analyticsSignalsToArray(s)).toEqual([])
+  })
+
+  it('weeklyCompletion のみ → weeklyCompletion signal (iter797)', () => {
+    const insight = buildWeeklyCompletionInsight(
+      [{ doneAt: new Date(2026, 3, 28, 12, 0, 0) }, { doneAt: new Date(2026, 3, 29, 12, 0, 0) }],
+      new Date(2026, 3, 30, 12, 0, 0),
+    )
+    const s = composeAnalyticsSignals({ weeklyCompletion: insight })
+    expect(s.weeklyCompletion).not.toBeNull()
+    expect(s.weeklyCompletion!.tone).toBe('success') // up = 完了 増 = 達成
   })
 
   it('reliability のみ → reliability + dominant signal (healthy/dominant あり)', () => {
