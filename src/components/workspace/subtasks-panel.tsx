@@ -170,7 +170,7 @@ function SubtaskTreeNode({
         aria-label={`${index + 1} 番目 (深さ ${depth + 1})`}
         data-testid={`subtask-step-${item.id}`}
       >
-        {index + 1}
+        <span aria-hidden="true">{index + 1}</span>
       </span>
       <StatusBadge
         status={item.status}
