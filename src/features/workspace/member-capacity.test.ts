@@ -120,14 +120,14 @@ describe('formatMemberCapacityLoadJa', () => {
     expect(formatMemberCapacityLoadJa(r)).toContain('余裕時間 算定不能')
   })
 
-  it('free 50% → "余裕あり: 残 4h / capacity 8h (50%)"', () => {
+  it('free 50% → "余裕あり: 残 4時間 / capacity 8時間 (50%)" (iter808 ja-throughout)', () => {
     const r = computeMemberCapacityLoad([{ estimateMinutes: 240, status: 'todo' }], 480, DONE)
-    expect(formatMemberCapacityLoadJa(r)).toBe('余裕あり: 残 4h / capacity 8h (50%)')
+    expect(formatMemberCapacityLoadJa(r)).toBe('余裕あり: 残 4時間 / capacity 8時間 (50%)')
   })
 
-  it('overloaded 120% → "オーバー: 1h 36min超 / capacity 8h (120%)"', () => {
+  it('overloaded 120% → "オーバー: 1時間36分超 / capacity 8時間 (120%)" (iter808 ja-throughout)', () => {
     const r = computeMemberCapacityLoad([{ estimateMinutes: 576, status: 'todo' }], 480, DONE)
-    expect(formatMemberCapacityLoadJa(r)).toBe('オーバー: 1h 36min超 / capacity 8h (120%)')
+    expect(formatMemberCapacityLoadJa(r)).toBe('オーバー: 1時間36分超 / capacity 8時間 (120%)')
   })
 
   it('未見積 N 件は末尾 chip で付与', () => {
@@ -140,7 +140,9 @@ describe('formatMemberCapacityLoadJa', () => {
       480,
       DONE,
     )
-    expect(formatMemberCapacityLoadJa(r)).toBe('余裕あり: 残 4h / capacity 8h (50%) / 未見積 2 件')
+    expect(formatMemberCapacityLoadJa(r)).toBe(
+      '余裕あり: 残 4時間 / capacity 8時間 (50%) / 未見積 2 件',
+    )
   })
 
   it('未見積 0 件は chip 省略', () => {
