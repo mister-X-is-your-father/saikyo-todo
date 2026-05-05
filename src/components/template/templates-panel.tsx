@@ -266,7 +266,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
                     onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
                     aria-expanded={expandedId === t.id}
                     aria-controls={`template-body-${t.id}`}
-                    aria-label={`Template「${t.name}」の詳細を${expandedId === t.id ? '閉じる' : '開く'}`}
+                    aria-label={`Template「${t.name}」(${t.kind}${t.scheduleCron ? ` · ${t.scheduleCron}` : ''}) の詳細を${expandedId === t.id ? '閉じる' : '開く'}`}
                   >
                     <CardTitle className="text-base" role="heading" aria-level={3}>
                       {t.name}
