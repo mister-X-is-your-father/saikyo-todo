@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 import {
   computeCostMonthProjection,
   costMonthProjectionChipClasses,
+  costMonthProjectionToBriefSignal,
   costMonthProjectionTone,
   formatCostMonthProjectionCompactJa,
   formatCostMonthProjectionJa,
@@ -250,5 +251,52 @@ describe('costMonthProjectionChipClasses (Tailwind 3 軸 class、iter481 dueProx
     const c = costMonthProjectionChipClasses('idle')
     expect(c.textClass).toBe('text-slate-600')
     expect(c.ringClass).toBe('ring-slate-200')
+  })
+})
+
+describe('costMonthProjectionToBriefSignal (iter794 — AgentBriefSignal 形式 compose)', () => {
+  it('safe → text=compactJa、tone=info (= 共有 ChipTone vocab)', () => {
+    const p = computeCostMonthProjection({
+      thisMonthUsd: 1,
+      today: '2026-04-10',
+      monthlyLimitUsd: 5,
+    })
+    expect(p.riskLevel).toBe('safe')
+    const sig = costMonthProjectionToBriefSignal(p)
+    expect(sig.text).toBe(formatCostMonthProjectionCompactJa(p))
+    expect(sig.tone).toBe('info')
+  })
+
+  it('warn → tone=urgent (= chip 配色と一致、costMonthProjectionChipClasses("warn") が amber-100 = ChipTone urgent)', () => {
+    const p = computeCostMonthProjection({
+      thisMonthUsd: 4.5,
+      today: '2026-04-30',
+      monthlyLimitUsd: 5,
+    })
+    expect(p.riskLevel).toBe('warn')
+    const sig = costMonthProjectionToBriefSignal(p)
+    expect(sig.tone).toBe('urgent')
+  })
+
+  it('over → tone=danger (= 月末超過見込み)', () => {
+    const p = computeCostMonthProjection({
+      thisMonthUsd: 6,
+      today: '2026-04-30',
+      monthlyLimitUsd: 5,
+    })
+    expect(p.riskLevel).toBe('over')
+    const sig = costMonthProjectionToBriefSignal(p)
+    expect(sig.tone).toBe('danger')
+  })
+
+  it('idle (today 不正) → tone=idle、text=compact idle 文言', () => {
+    const p = computeCostMonthProjection({
+      thisMonthUsd: 1,
+      today: 'garbage',
+    })
+    expect(p.riskLevel).toBe('idle')
+    const sig = costMonthProjectionToBriefSignal(p)
+    expect(sig.tone).toBe('idle')
+    expect(sig.text).toBe('AI コスト: 不明 (today 不正)')
   })
 })

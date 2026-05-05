@@ -35,6 +35,7 @@
 
 import { type ChipTone, type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
+import { type AgentBriefSignal } from './agent-reliability'
 import { safeUsd } from './cost-safe-usd'
 
 const ISO_DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/
@@ -263,4 +264,29 @@ export function formatCostMonthProjectionJa(p: CostMonthProjection): string {
     return `⚠ 今月予測 ${proj} / 上限 ${lim} — 警告ライン超過見込み ${tail}`
   }
   return `今月予測 ${proj} / 上限 ${lim} ${tail}`
+}
+
+/**
+ * iter794 ai-automation: cost-month-projection を `AgentBriefSignal` 形式
+ * (text + tone) に変換する compose helper。AI 朝 brief / Slack daily digest /
+ * dashboard chip は signals 配列を `.map(s => <Chip text={s.text} tone={s.tone} />)`
+ * のように 1 行 render したい。本 helper で「compute → 1 signal」が 1 関数化。
+ *
+ * iter497 `composeAgentBriefSignals` (agent-reliability) と同じ AgentBriefSignal 型
+ * を共有することで、caller は **複数 helper の output を同 array に concat** できる:
+ *   const signals = [
+ *     ...Object.values(composeAgentBriefSignals(reliability)).filter(Boolean),
+ *     costMonthProjectionToBriefSignal(projection),
+ *     ...
+ *   ]
+ *
+ * tone は既存 `costMonthProjectionTone` (iter482) ではなく shared ChipTone vocab
+ * の `costMonthProjectionChipClasses` 経路 (iter485) と整合する RISK_TO_SHARED_CHIP_TONE
+ * を再利用 (= chip 配色と signal tone が一致)。
+ */
+export function costMonthProjectionToBriefSignal(p: CostMonthProjection): AgentBriefSignal {
+  return {
+    text: formatCostMonthProjectionCompactJa(p),
+    tone: RISK_TO_SHARED_CHIP_TONE[p.riskLevel],
+  }
 }
