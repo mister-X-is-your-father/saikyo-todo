@@ -77,16 +77,14 @@ export default async function HomePage() {
                   aria-label={`${ws.name} (slug: ${ws.slug}, role: ${ws.role}) を開く`}
                   data-testid={`workspace-link-${ws.id}`}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between" aria-hidden="true">
                     <div>
                       <h3 className="font-medium">{ws.name}</h3>
                       <p className="text-muted-foreground text-xs">
                         /{ws.slug} · あなたの role: {ws.role}
                       </p>
                     </div>
-                    <span className="text-muted-foreground text-xs" aria-hidden>
-                      →
-                    </span>
+                    <span className="text-muted-foreground text-xs">→</span>
                   </div>
                 </Link>
               </li>
