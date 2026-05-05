@@ -578,7 +578,7 @@ function SprintCard({
             <form
               className="space-y-2 rounded border border-dashed p-2"
               noValidate
-              aria-label="Sprint 編集フォーム"
+              aria-label={`Sprint「${sprint.name}」期間編集フォーム`}
               aria-busy={update.isPending || undefined}
               onSubmit={async (e) => {
                 e.preventDefault()
