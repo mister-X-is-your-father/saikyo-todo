@@ -31,7 +31,7 @@ export function WorkspaceHeader({ title, role, subtitle, pageActions, utility }:
             className="shrink-0"
             aria-label={`あなたの workspace role: ${role}`}
           >
-            {role}
+            <span aria-hidden="true">{role}</span>
           </Badge>
         </div>
         <p className="text-muted-foreground mt-1 truncate text-xs">{subtitle}</p>
