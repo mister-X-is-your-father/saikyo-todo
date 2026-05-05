@@ -80,7 +80,7 @@ export function RecoveryPlanSection({ item, heavyAssignees = [], today, classNam
               data-testid={`recovery-action-${action.kind}`}
             >
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground text-[10px] tabular-nums">
+                <span className="text-muted-foreground text-[10px] tabular-nums" aria-hidden="true">
                   {action.rank}.
                 </span>
                 <SeverityChip
