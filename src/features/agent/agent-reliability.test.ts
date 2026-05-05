@@ -9,10 +9,12 @@ import {
   agentRoleLabelJa,
   composeAgentBriefSignals,
   computeAgentReliability,
+  concerningRoleTone,
   dominantRole,
   formatAgentReliabilityCompactJa,
   formatAgentReliabilityJa,
   formatDominantRoleJa,
+  formatMostConcerningRoleJa,
   mostConcerningRole,
   reliabilityLevelLabelJa,
 } from './agent-reliability'
@@ -259,15 +261,16 @@ describe('mostConcerningRole (信頼性最低 role 検出、pm-recovery/Slack al
 })
 
 describe('composeAgentBriefSignals (AI 朝 brief / Slack daily digest 用 1 関数集約)', () => {
-  it('idle → reliability=記録なし / dominant=null', () => {
+  it('idle → reliability=記録なし / dominant=null / concerning=null', () => {
     const stats = computeAgentReliability([])
     const sig = composeAgentBriefSignals(stats)
     expect(sig.reliability.text).toBe('AI 信頼性: 記録なし')
     expect(sig.reliability.tone).toBe('idle')
     expect(sig.dominantRole).toBeNull()
+    expect(sig.concerningRole).toBeNull()
   })
 
-  it('healthy + dominant → 2 signal', () => {
+  it('healthy + dominant → 2 signal、concerning は null (= 弱点 chip 非表示)', () => {
     const stats = computeAgentReliability([
       { role: 'pm', invocations: 15, completed: 15, failed: 0 },
       { role: 'researcher', invocations: 8, completed: 8, failed: 0 },
@@ -278,9 +281,10 @@ describe('composeAgentBriefSignals (AI 朝 brief / Slack daily digest 用 1 関�
     expect(sig.dominantRole).not.toBeNull()
     expect(sig.dominantRole!.text).toBe('主軸: PM (15 呼出、65%)')
     expect(sig.dominantRole!.tone).toBe('info')
+    expect(sig.concerningRole).toBeNull()
   })
 
-  it('critical 単独稼働 → reliability=danger / dominant 唯一稼働', () => {
+  it('critical 単独稼働 → reliability=danger / dominant 唯一稼働 / concerning=danger 弱点', () => {
     const stats = computeAgentReliability([
       { role: 'pm', invocations: 10, completed: 5, failed: 5 },
     ])
@@ -289,6 +293,51 @@ describe('composeAgentBriefSignals (AI 朝 brief / Slack daily digest 用 1 関�
     expect(sig.reliability.text).toContain('要調査')
     expect(sig.dominantRole!.text).toBe('主軸: PM (10 呼出、唯一稼働)')
     expect(sig.dominantRole!.tone).toBe('info')
+    expect(sig.concerningRole).not.toBeNull()
+    expect(sig.concerningRole!.text).toBe('弱点: PM 要調査 (50%)')
+    expect(sig.concerningRole!.tone).toBe('danger')
+  })
+
+  it('healthy + warn 混在 → concerning は warn role を amber tone で', () => {
+    const stats = computeAgentReliability([
+      { role: 'pm', invocations: 20, completed: 20, failed: 0 },
+      { role: 'researcher', invocations: 15, completed: 13, failed: 2 },
+    ])
+    const sig = composeAgentBriefSignals(stats)
+    expect(sig.concerningRole).not.toBeNull()
+    expect(sig.concerningRole!.text).toBe('弱点: Researcher 注意 (87%)')
+    expect(sig.concerningRole!.tone).toBe('warn')
+  })
+})
+
+describe('formatMostConcerningRoleJa / concerningRoleTone (iter789)', () => {
+  it('null → 弱点: 該当なし', () => {
+    expect(formatMostConcerningRoleJa(null)).toBe('弱点: 該当なし')
+  })
+
+  it('critical PM → 弱点: PM 要調査 (success rate %)', () => {
+    expect(formatMostConcerningRoleJa({ role: 'pm', level: 'critical', successRate: 0.5 })).toBe(
+      '弱点: PM 要調査 (50%)',
+    )
+  })
+
+  it('warn Researcher → 弱点: Researcher 注意 (87%)', () => {
+    expect(
+      formatMostConcerningRoleJa({ role: 'researcher', level: 'warn', successRate: 0.87 }),
+    ).toBe('弱点: Researcher 注意 (87%)')
+  })
+
+  it('mostConcerningRole の戻り値を直接渡せる (composition pattern)', () => {
+    const stats = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 6, failed: 4 },
+    ])
+    const concerning = mostConcerningRole(stats)
+    expect(formatMostConcerningRoleJa(concerning)).toBe('弱点: PM 要調査 (60%)')
+  })
+
+  it('concerningRoleTone: critical → danger / warn → warn', () => {
+    expect(concerningRoleTone('critical')).toBe('danger')
+    expect(concerningRoleTone('warn')).toBe('warn')
   })
 })
 

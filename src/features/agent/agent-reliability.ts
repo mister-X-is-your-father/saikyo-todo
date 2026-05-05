@@ -243,6 +243,12 @@ export interface AgentBriefSignals {
   reliability: AgentBriefSignal
   /** dominantRole は totalInvocations=0 時 null */
   dominantRole: AgentBriefSignal | null
+  /**
+   * iter789 ai-automation: 信頼性 'warn' / 'critical' role が 1 つでもあれば
+   * 弱点 signal を 1 件返す (= mostConcerningRole の text + tone)。全 role
+   * healthy / idle なら null (= 弱点なし、chip 非表示で OK)。
+   */
+  concerningRole: AgentBriefSignal | null
 }
 
 /**
@@ -264,7 +270,8 @@ export interface AgentBriefSignals {
  */
 export interface ConcerningRoleResult {
   role: AgentRole
-  level: ReliabilityLevel
+  /** mostConcerningRole は warn / critical のみ返す (healthy/idle は null) */
+  level: 'warn' | 'critical'
   successRate: number
 }
 
@@ -287,6 +294,37 @@ export function mostConcerningRole(stats: AgentReliability): ConcerningRoleResul
   return null
 }
 
+/**
+ * iter789 ai-automation: 弱点 role を ja-JP 1 行に整形 (chip / aria-label /
+ * Slack alert / pre-mortem 共通)。`mostConcerningRole` (iter499) で取り出した
+ * `ConcerningRoleResult` を text 化する。
+ *  - null → '弱点: 該当なし'
+ *  - critical → '弱点: PM 要調査 (50%)' (= 早急対応が必要、success rate を rateToPct で 整数 %)
+ *  - warn     → '弱点: Researcher 注意 (87%)' (= 監視継続)
+ *
+ * `formatDominantRoleJa` (主軸 = 量) と対称な「弱点 = 質」 1 行 chip を提供。
+ * tone は caller が `concerningRoleTone` で chip 配色する。
+ */
+export function formatMostConcerningRoleJa(concerning: ConcerningRoleResult | null): string {
+  if (!concerning) return '弱点: 該当なし'
+  const label = ROLE_LABEL_JA[concerning.role]
+  const levelLabel = LEVEL_LABEL_JA[concerning.level]
+  const pct = rateToPct(concerning.successRate)
+  return `弱点: ${label} ${levelLabel} (${pct}%)`
+}
+
+/**
+ * iter789 ai-automation: 弱点 role の severity → ChipTone。
+ *  - 'critical' → 'danger' (rose、緊急対応)
+ *  - 'warn'     → 'warn'   (amber、監視)
+ *
+ * 'healthy' / 'idle' は弱点 chip 非表示が前提なので map 不要 (= caller は
+ * `mostConcerningRole(...) === null` で出さない)。
+ */
+export function concerningRoleTone(level: 'warn' | 'critical'): ChipTone {
+  return level === 'critical' ? 'danger' : 'warn'
+}
+
 export function composeAgentBriefSignals(stats: AgentReliability): AgentBriefSignals {
   const reliability: AgentBriefSignal = {
     text: formatAgentReliabilityCompactJa(stats),
@@ -300,7 +338,14 @@ export function composeAgentBriefSignals(stats: AgentReliability): AgentBriefSig
         tone: 'info',
       }
     : null
-  return { reliability, dominantRole: dominantSignal }
+  const concerning = mostConcerningRole(stats)
+  const concerningSignal: AgentBriefSignal | null = concerning
+    ? {
+        text: formatMostConcerningRoleJa(concerning),
+        tone: concerningRoleTone(concerning.level),
+      }
+    : null
+  return { reliability, dominantRole: dominantSignal, concerningRole: concerningSignal }
 }
 
 /**
