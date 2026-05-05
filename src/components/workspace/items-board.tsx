@@ -415,7 +415,11 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
                 aria-label={label}
                 data-testid="filter-count"
               >
-                {filterActive ? `${filtered.length} / ${totalActive} 件` : `${filtered.length} 件`}
+                <span aria-hidden="true">
+                  {filterActive
+                    ? `${filtered.length} / ${totalActive} 件`
+                    : `${filtered.length} 件`}
+                </span>
               </span>
             )
           })()}
