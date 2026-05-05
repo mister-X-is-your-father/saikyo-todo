@@ -533,6 +533,7 @@ function SprintCard({
                           ? 'text-emerald-700'
                           : ''
                     }`}
+                    aria-hidden="true"
                   >
                     {done} / {total} ({pct}%)
                   </span>
