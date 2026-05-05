@@ -124,15 +124,17 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                   aria-label={`今日完了予測 ${formatTodayForecastJa(forecast)}`}
                 >
                   <Timer className="h-3.5 w-3.5" aria-hidden="true" />
-                  <span className="font-medium tabular-nums">
+                  <span className="font-medium tabular-nums" aria-hidden="true">
                     {Math.floor(forecast.totalEstimateMin / 60)}h{forecast.totalEstimateMin % 60}m
                   </span>
-                  <span className="text-[11px] opacity-80">の見積 / 残</span>
-                  <span className="font-medium tabular-nums">
+                  <span className="text-[11px] opacity-80" aria-hidden="true">
+                    の見積 / 残
+                  </span>
+                  <span className="font-medium tabular-nums" aria-hidden="true">
                     {Math.floor(forecast.remainingMinutesUntilEnd / 60)}h
                     {forecast.remainingMinutesUntilEnd % 60}m
                   </span>
-                  <span className="ml-auto font-semibold">
+                  <span className="ml-auto font-semibold" aria-hidden="true">
                     {forecast.canFinishToday
                       ? `余裕 ${-forecast.overflowMin}m`
                       : `超過 ${forecast.overflowMin}m`}
