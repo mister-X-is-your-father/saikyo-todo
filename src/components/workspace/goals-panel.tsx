@@ -427,6 +427,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                             ? 'text-emerald-700'
                             : ''
                       }`}
+                      aria-hidden="true"
                     >
                       {goalPct}%
                     </span>
