@@ -148,16 +148,18 @@ export function WorkspaceModeSelector({ workspaceId }: Props) {
                 data-testid={`mode-option-${opt.value}`}
                 data-selected={selected ? 'true' : 'false'}
               >
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5" aria-hidden="true">
                   <Icon
                     className={cn('h-4 w-4', selected ? 'text-primary' : 'text-muted-foreground')}
-                    aria-hidden="true"
                   />
                   <span className={cn('text-sm font-medium', selected && 'text-primary')}>
                     {opt.label}
                   </span>
                 </div>
-                <span className="text-muted-foreground text-[11px] leading-tight">
+                <span
+                  className="text-muted-foreground text-[11px] leading-tight"
+                  aria-hidden="true"
+                >
                   {opt.description}
                 </span>
               </button>
