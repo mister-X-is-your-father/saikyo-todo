@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter838 1/1] workflows-panel Workflow 作成 + 実行 button visible text を aria-hidden span で wrap (一括) (Workflow 作成 form + Workflow card 実行 button): +2/-2 行。検証 5 OK (iter735/826/836/837 invariant 込み)。
 - ✅ [playwright-iter837 1/1] sprint-defaults キャンセル + 保存 button visible text を aria-hidden span で wrap (一括) (Sprint デフォルト編集 form の操作 button): +2/-2 行。検証 5 OK (iter735/826/834/836 invariant 込み)。
 - ✅ [playwright-iter836 1/1] sprint + goal create button visible "作成" / "作成中…" を aria-hidden span で wrap (一括) (Sprint 作成 form + Goal 作成 form の Submit button): visible text を aria-hidden で wrap、aria-label 単独経路。+2/-2 行 (2 file)。検証 5 OK (iter735/826/834/835 invariant 込み)。
 - ✅ [playwright-iter835 1/1] template-items-editor 追加 button visible "+ 追加" を aria-hidden span で wrap (Template card 内 子 Item 追加 button): +1/-1 行。検証 5 OK (iter735/826/833/834 invariant 込み)。
