@@ -149,7 +149,11 @@ export function SignupForm() {
         disabled={isPending}
         aria-busy={isPending || undefined}
         data-testid="signup-submit"
-        aria-label={isPending ? 'アカウント作成中…' : 'アカウントを作成 (サインアップ)'}
+        aria-label={
+          isPending
+            ? 'アカウント作成中… (サインアップ処理を実行中)'
+            : 'アカウントを作成 (サインアップ)'
+        }
       >
         {isPending ? '作成中…' : 'サインアップ'}
       </Button>
