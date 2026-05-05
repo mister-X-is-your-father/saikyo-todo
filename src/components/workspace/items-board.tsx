@@ -227,7 +227,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           aria-pressed={view === 'today'}
           aria-label="Today (今日のタスク優先順、scheduledFor=今日 + 期限近接)"
         >
-          Today
+          <span aria-hidden="true">Today</span>
         </Button>
         <Button
           variant={view === 'inbox' ? 'default' : 'outline'}
@@ -238,7 +238,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           aria-pressed={view === 'inbox'}
           aria-label="Inbox (未整理 / 未トリアージのタスク一覧)"
         >
-          Inbox
+          <span aria-hidden="true">Inbox</span>
         </Button>
         <Button
           variant={view === 'kanban' ? 'default' : 'outline'}
@@ -249,7 +249,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           aria-pressed={view === 'kanban'}
           aria-label="Kanban (status 別カラムで Item を可視化、DnD で status 移動)"
         >
-          Kanban
+          <span aria-hidden="true">Kanban</span>
         </Button>
         <Button
           variant={view === 'backlog' ? 'default' : 'outline'}
@@ -260,7 +260,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           aria-pressed={view === 'backlog'}
           aria-label="Backlog (Item 一覧テーブル、列ヘッダ click で sort、DnD で並び替え)"
         >
-          Backlog
+          <span aria-hidden="true">Backlog</span>
         </Button>
         <Button
           variant={view === 'gantt' ? 'default' : 'outline'}
@@ -271,7 +271,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           aria-pressed={view === 'gantt'}
           aria-label="Gantt (Item の期間 bar チャート、依存線 / critical path / 遅延を可視化)"
         >
-          Gantt
+          <span aria-hidden="true">Gantt</span>
         </Button>
         <Button
           variant={view === 'dashboard' ? 'default' : 'outline'}
@@ -282,7 +282,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           aria-pressed={view === 'dashboard'}
           aria-label="Dashboard (PDCA / 進捗 / 健全性 widget の集約画面)"
         >
-          Dashboard
+          <span aria-hidden="true">Dashboard</span>
         </Button>
         <Button
           variant={view === 'daily' ? 'default' : 'outline'}
@@ -293,7 +293,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           aria-pressed={view === 'daily'}
           aria-label="日次レビュー画面 (個人 期間 = 今日)"
         >
-          日次
+          <span aria-hidden="true">日次</span>
         </Button>
         <Button
           variant={view === 'weekly' ? 'default' : 'outline'}
@@ -304,7 +304,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           aria-pressed={view === 'weekly'}
           aria-label="週次レビュー画面 (個人 期間 = 今週)"
         >
-          週次
+          <span aria-hidden="true">週次</span>
         </Button>
         <Button
           variant={view === 'monthly' ? 'default' : 'outline'}
@@ -315,7 +315,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           aria-pressed={view === 'monthly'}
           aria-label="月次レビュー画面 (個人 期間 = 今月)"
         >
-          月次
+          <span aria-hidden="true">月次</span>
         </Button>
         <div
           className="ml-4 flex items-center gap-2 text-sm"
