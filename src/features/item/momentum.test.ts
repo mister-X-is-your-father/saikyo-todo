@@ -4,8 +4,10 @@ import {
   computeWorkspaceMomentum,
   formatWorkspaceMomentumCompactJa,
   formatWorkspaceMomentumJa,
+  momentumChipClasses,
   momentumDirectionToTrend,
   type MomentumFields,
+  momentumTone,
 } from './momentum'
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
@@ -270,5 +272,26 @@ describe('formatWorkspaceMomentumCompactJa (iter791 — chip / Slack 通知 用 
     const m = computeWorkspaceMomentum(items, {}, TODAY)
     expect(m.direction).toBe('shrinking')
     expect(formatWorkspaceMomentumCompactJa(m)).toBe(`モメンタム: 縮小 ${m.net}`)
+  })
+})
+
+describe('momentumTone / momentumChipClasses (iter793 — graphical chip 配色)', () => {
+  it('growing → warn (amber、backlog 増 = 警戒)', () => {
+    expect(momentumTone('growing')).toBe('warn')
+    expect(momentumChipClasses('growing').bgClass).toBe('bg-amber-50')
+  })
+
+  it('shrinking → success (emerald、backlog 縮小 = 改善)', () => {
+    expect(momentumTone('shrinking')).toBe('success')
+    expect(momentumChipClasses('shrinking').bgClass).toBe('bg-emerald-50')
+  })
+
+  it('balanced → info (blue、安定)', () => {
+    expect(momentumTone('balanced')).toBe('info')
+  })
+
+  it('idle → idle (slate、活動なし)', () => {
+    expect(momentumTone('idle')).toBe('idle')
+    expect(momentumChipClasses('idle').bgClass).toBe('bg-slate-50')
   })
 })

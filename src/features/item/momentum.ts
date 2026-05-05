@@ -29,6 +29,7 @@
  */
 
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
+import { type ChipTone, type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
 export interface MomentumFields {
   createdAt: Date | string | null | undefined
@@ -142,6 +143,41 @@ export function formatWorkspaceMomentumJa(m: WorkspaceMomentum): string {
     shrinking: '縮小中',
   }
   return `${head} ${sign}${m.net} 件 ${labelMap[m.direction]} ${counts}`
+}
+
+/**
+ * iter793 basics: workspace momentum direction → ChipTone (negative polarity =
+ * growing が backlog 増 = 警戒)。`agentReliabilityTone` (iter487) /
+ * `monthlyCostTrendTone` (iter792) と同じ ChipTone vocabulary に bind し、
+ * dashboard chip / Slack daily digest payload で chip 配色を 1 関数で揃える。
+ *
+ * 配色 (negative polarity):
+ *  - 'growing'   → 'warn'    (amber、backlog 成長 = 注意)
+ *  - 'shrinking' → 'success' (emerald、backlog 縮小 = 改善)
+ *  - 'balanced'  → 'info'    (blue、安定 = 情報)
+ *  - 'idle'      → 'idle'    (slate、活動なし)
+ *
+ * 既存 `momentumDirectionToTrend` は `TrendDirection` ('up'/'down'/'flat'/'idle')
+ * 軸への変換 (lib/ui/trend-tone.ts と組合せ用)、本 helper は ChipTone (severity 軸)
+ * への変換。caller は context に応じて使い分ける (= chip area 配色 vs trend chip
+ * の glyph + class)。
+ */
+const DIRECTION_TO_CHIP_TONE: Record<MomentumDirection, ChipTone> = {
+  growing: 'warn',
+  shrinking: 'success',
+  balanced: 'info',
+  idle: 'idle',
+}
+
+export function momentumTone(direction: MomentumDirection): ChipTone {
+  return DIRECTION_TO_CHIP_TONE[direction]
+}
+
+/** alias to ChipToneClasses (`@/lib/ui/chip-tone`)。caller の import path を維持。 */
+export type MomentumChipClasses = ChipToneClasses
+
+export function momentumChipClasses(direction: MomentumDirection): MomentumChipClasses {
+  return getChipToneClasses(DIRECTION_TO_CHIP_TONE[direction])
 }
 
 /**
