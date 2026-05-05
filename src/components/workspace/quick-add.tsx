@@ -221,8 +221,7 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
               data-testid="quick-add-estimate"
               aria-label={`見積 ${formatEstimate(preview.estimateMinutes)}`}
             >
-              <span aria-hidden="true">🕐 </span>
-              {formatEstimate(preview.estimateMinutes)}
+              <span aria-hidden="true">🕐 {formatEstimate(preview.estimateMinutes)}</span>
             </span>
           )}
           {/* iter267: bias calibration が利用可能なら校正値を annotation で表示。
