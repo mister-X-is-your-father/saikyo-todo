@@ -244,7 +244,7 @@ function CommentItem({
           <div
             className="flex justify-end gap-2"
             role="group"
-            aria-label="コメント編集の操作 (キャンセル / 保存)"
+            aria-label={`コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」の編集操作 (キャンセル / 保存)`}
           >
             <Button
               type="button"
