@@ -701,7 +701,9 @@ function KeyResultList({
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
-                    <span className="font-mono text-xs">{pct}%</span>
+                    <span className="font-mono text-xs" aria-hidden="true">
+                      {pct}%
+                    </span>
                     <button
                       type="button"
                       onClick={() => void handleDelete(kr.id, kr.title)}
