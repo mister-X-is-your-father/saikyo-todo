@@ -29,6 +29,7 @@
  * 揃える utility。
  */
 
+import { type DueHitRateStats, dueHitRateToBriefSignal } from '@/features/item/due-hit-rate'
 import { type WorkspaceMomentum, workspaceMomentumToBriefSignal } from '@/features/item/momentum'
 import {
   type WeeklyCompletionInsight,
@@ -50,6 +51,8 @@ export interface AnalyticsSignalsInput {
   momentum?: WorkspaceMomentum
   /** iter797 ai-automation: 5 軸目として weekly completion insight も統合 */
   weeklyCompletion?: WeeklyCompletionInsight
+  /** iter799 ai-automation: 6 軸目として due-hit-rate (期限達成率) も統合 */
+  dueHitRate?: DueHitRateStats
 }
 
 export interface AnalyticsSignals {
@@ -61,6 +64,8 @@ export interface AnalyticsSignals {
   momentum: AgentBriefSignal | null
   /** iter797 ai-automation: 週次完了 trend chip (positive polarity, up=success) */
   weeklyCompletion: AgentBriefSignal | null
+  /** iter799 ai-automation: 期限達成率 chip (positive polarity, hi=success) */
+  dueHitRate: AgentBriefSignal | null
 }
 
 const EMPTY: AnalyticsSignals = {
@@ -71,6 +76,7 @@ const EMPTY: AnalyticsSignals = {
   costTrend: null,
   momentum: null,
   weeklyCompletion: null,
+  dueHitRate: null,
 }
 
 export function composeAnalyticsSignals(input: AnalyticsSignalsInput): AnalyticsSignals {
@@ -93,6 +99,9 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
   if (input.weeklyCompletion) {
     out.weeklyCompletion = weeklyCompletionInsightToBriefSignal(input.weeklyCompletion)
   }
+  if (input.dueHitRate) {
+    out.dueHitRate = dueHitRateToBriefSignal(input.dueHitRate)
+  }
   return out
 }
 
@@ -103,16 +112,18 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
  * 表示順:
  *  1. concerningRole   (= 弱点 role 警告、最優先)
  *  2. costProjection   (= 月末コスト予測、cost 軸の主)
- *  3. reliability      (= 全体 信頼性 chip)
- *  4. costTrend        (= cost 月次トレンド)
- *  5. weeklyCompletion (= 週次完了 trend、達成感 + やる気)
- *  6. momentum         (= backlog momentum)
- *  7. dominantRole     (= 主軸 role、informational、最後)
+ *  3. dueHitRate       (= 期限達成率、商品品質 SLA、cost と並ぶ severity 主)
+ *  4. reliability      (= 全体 信頼性 chip)
+ *  5. costTrend        (= cost 月次トレンド)
+ *  6. weeklyCompletion (= 週次完了 trend、達成感 + やる気)
+ *  7. momentum         (= backlog momentum)
+ *  8. dominantRole     (= 主軸 role、informational、最後)
  */
 export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
     signals.concerningRole,
     signals.costProjection,
+    signals.dueHitRate,
     signals.reliability,
     signals.costTrend,
     signals.weeklyCompletion,

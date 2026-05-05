@@ -42,6 +42,20 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(s.weeklyCompletion!.tone).toBe('success') // up = 完了 増 = 達成
   })
 
+  it('dueHitRate のみ → dueHitRate signal (iter799)、tone=success (= 高達成)', () => {
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 }
+    const s = composeAnalyticsSignals({ dueHitRate })
+    expect(s.dueHitRate).not.toBeNull()
+    expect(s.dueHitRate!.tone).toBe('success')
+    expect(s.dueHitRate!.text).toContain('期限達成率')
+  })
+
+  it('dueHitRate 低 → tone=warn', () => {
+    const dueHitRate = { total: 10, hit: 3, miss: 7, hitRate: 0.3 }
+    const s = composeAnalyticsSignals({ dueHitRate })
+    expect(s.dueHitRate!.tone).toBe('warn')
+  })
+
   it('reliability のみ → reliability + dominant signal (healthy/dominant あり)', () => {
     const reliability = computeAgentReliability([
       { role: 'pm', invocations: 15, completed: 15, failed: 0 },
@@ -137,12 +151,35 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     const arr = analyticsSignalsToArray(s)
     expect(arr.length).toBe(6)
     // 表示順: concerning (severity 1) → costProjection → reliability → costTrend → momentum → dominantRole
+    // (iter799: dueHitRate / weeklyCompletion 未指定 → スキップ)
     expect(arr[0]).toBe(s.concerningRole)
     expect(arr[1]).toBe(s.costProjection)
     expect(arr[2]).toBe(s.reliability)
     expect(arr[3]).toBe(s.costTrend)
     expect(arr[4]).toBe(s.momentum)
     expect(arr[5]).toBe(s.dominantRole)
+  })
+
+  it('iter799: dueHitRate も含めた 6 軸 + 4 reliability sub = 7 signal、新表示順 で整列', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 15, completed: 15, failed: 0 },
+      { role: 'researcher', invocations: 8, completed: 8, failed: 0 },
+    ])
+    const costProjection = computeCostMonthProjection({
+      thisMonthUsd: 1,
+      today: '2026-04-10',
+      monthlyLimitUsd: 5,
+    })
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 }
+    const s = composeAnalyticsSignals({ reliability, costProjection, dueHitRate })
+    const arr = analyticsSignalsToArray(s)
+    // 新順序: concerning (null) → costProjection → dueHitRate → reliability → costTrend (null) →
+    // weeklyCompletion (null) → momentum (null) → dominantRole
+    expect(arr.length).toBe(4)
+    expect(arr[0]).toBe(s.costProjection)
+    expect(arr[1]).toBe(s.dueHitRate)
+    expect(arr[2]).toBe(s.reliability)
+    expect(arr[3]).toBe(s.dominantRole)
   })
 })
 
