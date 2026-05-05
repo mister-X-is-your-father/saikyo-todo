@@ -108,7 +108,7 @@ export function ActivityLog({ itemId }: { itemId: string }) {
               data-severity={hint.severity}
               aria-label={`Activity 状態: ${hint.label}`}
             >
-              {hint.label}
+              <span aria-hidden="true">{hint.label}</span>
             </span>
           )}
           {topActor && (
@@ -118,7 +118,7 @@ export function ActivityLog({ itemId }: { itemId: string }) {
               aria-label={formatTopActorJa(topActor)}
               title={formatTopActorJa(topActor)}
             >
-              ⭐ {formatTopActorJa(topActor)}
+              <span aria-hidden="true">⭐ {formatTopActorJa(topActor)}</span>
             </span>
           )}
         </div>
