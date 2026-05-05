@@ -31,8 +31,8 @@
  */
 
 import { ISO_DATE_RE } from '@/lib/date/iso'
+import { formatMinutesJa } from '@/lib/format-duration'
 
-import { formatMinutes } from './category-summary'
 import { safeMinutes } from './safe-minutes'
 
 /** 集計に必要な最小 structural subset (TimeEntry のサブセット)。 */
@@ -121,7 +121,7 @@ export function formatTopItemsByTime(
   if (top.length === 0) return '実績 0 件 (該当なし)'
   const parts = top.map((r) => {
     const t = titles?.get(r.itemId) ?? fallbackTitle(r.itemId)
-    return `${t} (${formatMinutes(r.totalMinutes)})`
+    return `${t} (${formatMinutesJa(r.totalMinutes)})`
   })
   return `実績 top ${top.length}: ${parts.join(' / ')}`
 }

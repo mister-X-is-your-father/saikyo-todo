@@ -135,21 +135,23 @@ describe('formatTopItemsByTime', () => {
       { itemId: 'b', totalMinutes: 90, entryCount: 1 },
       { itemId: 'a', totalMinutes: 60, entryCount: 2 },
     ]
-    expect(formatTopItemsByTime(top, titles)).toBe('実績 top 2: タスクB (1h 30min) / タスクA (1h)')
+    expect(formatTopItemsByTime(top, titles)).toBe(
+      '実績 top 2: タスクB (1時間30分) / タスクA (1時間)',
+    )
   })
 
   it('titles 未指定 / 欠落は (無題: <id 先頭 8 文字>) で fallback', () => {
     const top = [
       { itemId: '12345678-abcd-efff-0000-000000000000', totalMinutes: 30, entryCount: 1 },
     ]
-    expect(formatTopItemsByTime(top)).toBe('実績 top 1: (無題: 12345678) (30min)')
+    expect(formatTopItemsByTime(top)).toBe('実績 top 1: (無題: 12345678) (30分)')
   })
 
   it('空配列は sentinel', () => {
     expect(formatTopItemsByTime([])).toBe('実績 0 件 (該当なし)')
   })
 
-  it('formatMinutes と整合 (2h / 30min / 0min boundary)', () => {
+  it('formatMinutesJa と整合 (2時間 / 30分 / 1分 boundary、iter811 ja-throughout)', () => {
     const titles = new Map([
       ['x', 'X'],
       ['y', 'Y'],
@@ -160,7 +162,7 @@ describe('formatTopItemsByTime', () => {
       { itemId: 'y', totalMinutes: 30, entryCount: 1 },
       { itemId: 'z', totalMinutes: 1, entryCount: 1 },
     ]
-    expect(formatTopItemsByTime(top, titles)).toBe('実績 top 3: X (2h) / Y (30min) / Z (1min)')
+    expect(formatTopItemsByTime(top, titles)).toBe('実績 top 3: X (2時間) / Y (30分) / Z (1分)')
   })
 })
 
@@ -179,7 +181,7 @@ describe('統合: 4 helper の連携', () => {
     ])
     const top = selectTopItemsByTime(entries, 5, { from: '2026-04-29', to: '2026-04-29' })
     expect(formatTopItemsByTime(top, titles)).toBe(
-      '実績 top 2: PR レビュー (1h 30min) / バグ修正 (45min)',
+      '実績 top 2: PR レビュー (1時間30分) / バグ修正 (45分)',
     )
   })
 })
