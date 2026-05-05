@@ -182,7 +182,7 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
               data-testid="active-timer-estimate"
               aria-label={`見積 ${estimateMinutes}分`}
             >
-              見積 {estimateMinutes}分
+              <span aria-hidden="true">見積 {estimateMinutes}分</span>
             </span>
           ) : null}
           {calibrated && calibrated.deltaMinutes !== 0 ? (
@@ -195,7 +195,7 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
               role="img"
               aria-label={`校正後 ${calibrated.calibratedMinutes}分 (${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正)`}
             >
-              → {calibrated.calibratedMinutes}分
+              <span aria-hidden="true">→ {calibrated.calibratedMinutes}分</span>
             </span>
           ) : null}
         </div>
