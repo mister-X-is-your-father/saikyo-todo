@@ -944,7 +944,7 @@ function ItemEditDialogInner({
             data-testid="item-edit-cancel"
             aria-label={`「${item.title}」の編集をキャンセル`}
           >
-            キャンセル
+            <span aria-hidden="true">キャンセル</span>
           </Button>
           <Button
             type="button"
@@ -962,7 +962,7 @@ function ItemEditDialogInner({
                   : `「${item.title}」を保存 (Cmd/Ctrl+S でも可、楽観ロックで version が進む)`
             }
           >
-            {update.isPending ? '保存中...' : '保存'}
+            <span aria-hidden="true">{update.isPending ? '保存中...' : '保存'}</span>
           </Button>
         </DialogFooter>
       </DialogContent>
