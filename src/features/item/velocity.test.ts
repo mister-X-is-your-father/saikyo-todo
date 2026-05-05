@@ -17,8 +17,10 @@ import {
   formatVelocityHintJa,
   formatVelocitySummary,
   type VelocityByPriorityFields,
+  velocityChipTone,
   type VelocityFields,
   type VelocitySummary,
+  velocityToBriefSignal,
 } from './velocity'
 
 const TODAY = new Date(2026, 3, 28) // 2026-04-28
@@ -316,5 +318,55 @@ describe('computeBestStreak / formatBestStreakJa (iter459)', () => {
 
   it('1 日 → "!" なし', () => {
     expect(formatBestStreakJa(1)).toBe('直近 7 日の最長連続: 1 日')
+  })
+})
+
+describe('velocityChipTone (iter802 — positive polarity ChipTone)', () => {
+  it('up → success / down → warn / flat → info / idle → idle', () => {
+    expect(velocityChipTone('up')).toBe('success')
+    expect(velocityChipTone('down')).toBe('warn')
+    expect(velocityChipTone('flat')).toBe('info')
+    expect(velocityChipTone('idle')).toBe('idle')
+  })
+})
+
+describe('velocityToBriefSignal (iter802 — AgentBriefSignal compose)', () => {
+  it('idle (= done なし) → text=完了ペース: 完了なし、tone=idle', () => {
+    const summary: VelocitySummary = { byDay: [], total: 0, avgPerDay: 0, trend: 'flat' }
+    const sig = velocityToBriefSignal(summary)
+    expect(sig.tone).toBe('idle')
+    expect(sig.text).toBe('完了ペース: 完了なし')
+  })
+
+  it('up trend → tone=success', () => {
+    // 末尾に done が増える 7 日 byDay
+    const items: VelocityFields[] = [
+      { doneAt: dt(0) },
+      { doneAt: dt(0) },
+      { doneAt: dt(0) },
+      { doneAt: dt(1) },
+      { doneAt: dt(1) },
+      { doneAt: dt(5) },
+    ]
+    const summary = computeVelocity(items, {}, TODAY)
+    expect(summary.trend).toBe('up')
+    const sig = velocityToBriefSignal(summary)
+    expect(sig.tone).toBe('success')
+    expect(sig.text).toBe('完了ペース: 加速中')
+  })
+
+  it('down trend → tone=warn', () => {
+    // 前半に done 多 / 後半に done 少
+    const items: VelocityFields[] = [
+      { doneAt: dt(5) },
+      { doneAt: dt(5) },
+      { doneAt: dt(5) },
+      { doneAt: dt(0) },
+    ]
+    const summary = computeVelocity(items, {}, TODAY)
+    expect(summary.trend).toBe('down')
+    const sig = velocityToBriefSignal(summary)
+    expect(sig.tone).toBe('warn')
+    expect(sig.text).toBe('完了ペース: 減速中')
   })
 })

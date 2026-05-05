@@ -21,6 +21,9 @@
  */
 import { formatLocalISO, MS_PER_DAY, parseDateOrNull, toLocalMidnight } from '@/lib/date/iso'
 import { makeHintLabelFormatter } from '@/lib/hint'
+import { type ChipTone } from '@/lib/ui/chip-tone'
+
+import { type AgentBriefSignal } from '@/features/agent/brief-signal'
 
 import { bucketByPriorityWith, formatPriorityBucketsLabeled, type PriorityKey } from './priority'
 
@@ -316,4 +319,46 @@ export function formatBestStreakJa(streak: number, windowDays: number = 7): stri
   if (streak === 0) return `直近 ${windowDays} 日の最長連続: 0 日 (該当なし)`
   if (streak === 1) return `直近 ${windowDays} 日の最長連続: 1 日`
   return `直近 ${windowDays} 日の最長連続: ${streak} 日!`
+}
+
+/**
+ * iter802 ai-automation: velocity の VelocityHint → ChipTone (positive polarity =
+ * up が完了 増 = 成功)。`agentReliabilityTone` (iter487) / `weeklyCompletionInsightTone`
+ * (iter797) と同じ ChipTone vocab に bind。
+ *
+ * 配色 (positive polarity):
+ *  - 'up'   → 'success' (emerald、加速中)
+ *  - 'down' → 'warn'    (amber、減速中)
+ *  - 'flat' → 'info'    (blue、安定)
+ *  - 'idle' → 'idle'    (slate、完了なし)
+ */
+const HINT_TO_CHIP_TONE: Record<VelocityHint, ChipTone> = {
+  up: 'success',
+  down: 'warn',
+  flat: 'info',
+  idle: 'idle',
+}
+
+export function velocityChipTone(hint: VelocityHint): ChipTone {
+  return HINT_TO_CHIP_TONE[hint]
+}
+
+/**
+ * iter802 ai-automation: velocity を `AgentBriefSignal` 形式 (text + tone) に変換する
+ * compose helper。iter794-797 / iter798 / iter799 の `*ToBriefSignal` パターン継承。
+ *
+ * caller (= AI 朝 brief / Slack daily digest / dashboard chip) は本 helper 出力を
+ * `composeAnalyticsSignals` の追加軸候補として活用 (= 完了ペース chip 表示)。
+ *
+ * text: `formatVelocityHintJa(summary)` (例: '完了ペース: 加速中')
+ *       compact 寄り、件数 / avg 詳細は省略 (詳細 disclosure は formatVelocitySummary)
+ * tone: `velocityChipTone(classifyVelocityHint(summary))` (positive polarity)
+ */
+export function velocityToBriefSignal(summary: VelocitySummary): AgentBriefSignal {
+  const hint = classifyVelocityHint(summary)
+  // text format: '完了ペース: <jp 1-word hint>' (例: '完了ペース: 加速中')
+  return {
+    text: `完了ペース: ${VELOCITY_HINT_LABEL_JA[hint]}`,
+    tone: velocityChipTone(hint),
+  }
 }
