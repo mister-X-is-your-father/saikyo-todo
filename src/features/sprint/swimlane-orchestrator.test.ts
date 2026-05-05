@@ -52,7 +52,7 @@ describe('computeSprintSwimlane', () => {
     expect(rows[0]!.items[0]!.position.leftPct).toBe(0)
     expect(rows[0]!.items[0]!.position.widthPct).toBe(100)
     expect(rows[0]!.items[0]!.conflicted).toBe(false)
-    expect(rows[0]!.loadSummaryJa).toBe('1 件 / 8h / 重複なし')
+    expect(rows[0]!.loadSummaryJa).toBe('1 件 / 8時間 / 重複なし')
     expect(rows[0]!.conflictsJa).toBe('時間重複なし')
   })
 
@@ -297,7 +297,7 @@ describe('formatSprintSwimlanePopulationJa', () => {
     ).toBe('0 lane / 0 件')
   })
 
-  it('通常 sprint → "3 lane / 12 件 / 80h"', () => {
+  it('通常 sprint → "3 lane / 12 件 / 80時間" (iter810 ja-throughout)', () => {
     expect(
       formatSprintSwimlanePopulationJa({
         laneCount: 3,
@@ -308,10 +308,10 @@ describe('formatSprintSwimlanePopulationJa', () => {
         conflictedLaneCount: 0,
         conflictPairTotal: 0,
       }),
-    ).toBe('3 lane / 12 件 / 80h')
+    ).toBe('3 lane / 12 件 / 80時間')
   })
 
-  it('延べ count が unique と異なる場合は両方表記', () => {
+  it('延べ count が unique と異なる場合は両方表記 (iter810 ja-throughout)', () => {
     expect(
       formatSprintSwimlanePopulationJa({
         laneCount: 3,
@@ -322,10 +322,10 @@ describe('formatSprintSwimlanePopulationJa', () => {
         conflictedLaneCount: 0,
         conflictPairTotal: 0,
       }),
-    ).toBe('3 lane / 12 件 (延べ 14) / 80h')
+    ).toBe('3 lane / 12 件 (延べ 14) / 80時間')
   })
 
-  it('重複あり → "重複 N lane (M ペア)" 末尾追加', () => {
+  it('重複あり → "重複 N lane (M ペア)" 末尾追加 (iter810 ja-throughout)', () => {
     expect(
       formatSprintSwimlanePopulationJa({
         laneCount: 3,
@@ -336,7 +336,7 @@ describe('formatSprintSwimlanePopulationJa', () => {
         conflictedLaneCount: 2,
         conflictPairTotal: 3,
       }),
-    ).toBe('3 lane / 12 件 / 80h / 重複 2 lane (3 ペア)')
+    ).toBe('3 lane / 12 件 / 80時間 / 重複 2 lane (3 ペア)')
   })
 
   it('見積 0 → "見積なし"', () => {
@@ -364,7 +364,7 @@ describe('formatSprintSwimlanePopulationJa', () => {
         conflictedLaneCount: 0,
         conflictPairTotal: 0,
       }),
-    ).toBe('3 lane / 12 件 / 80h・未割当 1 lane')
+    ).toBe('3 lane / 12 件 / 80時間・未割当 1 lane')
   })
 
   it('全部入り (重複 + 未割当 + 延べ != unique)', () => {
@@ -378,10 +378,10 @@ describe('formatSprintSwimlanePopulationJa', () => {
         conflictedLaneCount: 2,
         conflictPairTotal: 3,
       }),
-    ).toBe('4 lane / 12 件 (延べ 14) / 80h 30min / 重複 2 lane (3 ペア)・未割当 1 lane')
+    ).toBe('4 lane / 12 件 (延べ 14) / 80時間30分 / 重複 2 lane (3 ペア)・未割当 1 lane')
   })
 
-  it('estimateMinutesTotal < 60 → "Nmin" 表記', () => {
+  it('estimateMinutesTotal < 60 → "N分" 表記 (iter810 ja-throughout)', () => {
     expect(
       formatSprintSwimlanePopulationJa({
         laneCount: 1,
@@ -392,6 +392,6 @@ describe('formatSprintSwimlanePopulationJa', () => {
         conflictedLaneCount: 0,
         conflictPairTotal: 0,
       }),
-    ).toBe('1 lane / 1 件 / 45min')
+    ).toBe('1 lane / 1 件 / 45分')
   })
 })
