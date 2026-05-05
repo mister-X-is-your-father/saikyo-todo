@@ -173,6 +173,26 @@ commit body には 6 軸該当部 を 1 行ずつ (4 個以下、該当のみ)�
 - 既存の `features/item/` をコピペベースに
 - 規約自体を変えたいときは **先に ARCHITECTURE.md / 本書を更新** してから実装
 
+## analytics chip / signal 共通 vocabulary (iter789-816 で確立)
+
+dashboard chip / AI 朝 brief / Slack daily digest payload で「analytics 全軸の
+signal」 を 1 関数で集約する pattern が確立済 (28 iter substrate)。
+
+- **共通 signal 型**: `src/features/agent/brief-signal.ts` の `AgentBriefSignal`
+  (`{ text: string; tone: ChipTone }`)
+- **chip 配色 vocab**: `src/lib/ui/chip-tone.ts` の 5 段階 ChipTone
+  (`'success' | 'info' | 'warn' | 'danger' | 'idle'` + 'urgent')
+- **8 軸 helper** (各々 `*ToBriefSignal` + `*ChipTone` を export):
+  reliability / cost-projection / cost-trend / momentum / weekly-completion /
+  due-hit-rate / velocity / bias-trend
+- **統合 compose**: `src/features/agent/analytics-signals.ts` の
+  `composeAnalyticsSignals(input)` → `AnalyticsSignals` →
+  `analyticsSignalsToArray(signals)` で順序整列 + null 除去 →
+  `formatAnalyticsSignalsLineJa(signals)` で 1 行 ja text
+- **duration 表記**: `src/lib/format-duration.ts` の `formatMinutesJa`
+  (ja-throughout `'1時間30分'` / `'45分'` / `'0分'`)。en の `formatMinutes`
+  は内部 logic 用に残置、UI / chip / SR text は ja 採用
+
 ## autonomous loop 補助スクリプト (`scripts/autonomous/`)
 
 iter254 で導入。autonomous loop の冒頭・最後で叩くと、暗算していた判定が
