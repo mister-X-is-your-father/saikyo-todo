@@ -630,7 +630,7 @@ function ImportStatusBadge({ status }: { status: string }) {
       className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${cls}`}
       aria-label={`Pull ステータス: ${label}`}
     >
-      {label}
+      <span aria-hidden="true">{label}</span>
     </span>
   )
 }

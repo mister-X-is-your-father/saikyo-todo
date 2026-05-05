@@ -899,7 +899,7 @@ function RunStatusBadge({ status }: { status: string }) {
       className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${cls}`}
       aria-label={`実行ステータス: ${label}`}
     >
-      {label}
+      <span aria-hidden="true">{label}</span>
     </span>
   )
 }
