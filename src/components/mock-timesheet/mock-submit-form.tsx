@@ -155,7 +155,11 @@ export function MockSubmitForm() {
         disabled={isPending}
         aria-busy={isPending || undefined}
         className="h-11 w-full"
-        aria-label={isPending ? '送信中… (mock-timesheet 工数送信処理を実行中)' : undefined}
+        aria-label={
+          isPending
+            ? '送信中… (mock-timesheet 工数送信処理を実行中)'
+            : '工数を送信 (mock-timesheet 入力フォーム)'
+        }
       >
         {isPending ? '送信中...' : '送信'}
       </Button>
