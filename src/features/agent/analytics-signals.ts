@@ -151,3 +151,24 @@ export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSi
   ]
   return ordered.filter((s): s is AgentBriefSignal => s !== null)
 }
+
+/**
+ * iter816 basics: AnalyticsSignals を 1 行 plain text に整形する compose helper。
+ * AI 朝 brief prompt / Slack daily digest の text 部分 (= 視覚的 chip ではなく plain
+ * text channel) で「signal text を `/` 区切りで連結」する pattern を 1 関数化。
+ *
+ * caller pattern:
+ *   const signals = composeAnalyticsSignals({...})
+ *   const line = formatAnalyticsSignalsLineJa(signals)
+ *   // → '弱点: PM 要調査 (50%) / AI コスト: 増加 (+30%) / AI 信頼性: 注意 (...)'
+ *
+ * 0 件 (= 全 signal null) → '記録なし'。
+ *
+ * `analyticsSignalsToArray` で順序整列 + null 除去 → text join、空配列 sentinel。
+ * tone は plain text では落とす (= 視覚 chip 経路でのみ使用)。
+ */
+export function formatAnalyticsSignalsLineJa(signals: AnalyticsSignals): string {
+  const arr = analyticsSignalsToArray(signals)
+  if (arr.length === 0) return '記録なし'
+  return arr.map((s) => s.text).join(' / ')
+}

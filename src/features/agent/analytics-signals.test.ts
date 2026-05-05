@@ -9,7 +9,11 @@ import { computeVelocity, type VelocityFields } from '@/features/item/velocity'
 import { buildWeeklyCompletionInsight } from '@/features/item/weekly-completion-insight'
 
 import { computeAgentReliability } from './agent-reliability'
-import { analyticsSignalsToArray, composeAnalyticsSignals } from './analytics-signals'
+import {
+  analyticsSignalsToArray,
+  composeAnalyticsSignals,
+  formatAnalyticsSignalsLineJa,
+} from './analytics-signals'
 import { computeCostMonthProjection } from './cost-month-projection'
 import { computeMonthlyCostTrend, type CostMonthEntry } from './cost-monthly-trend'
 
@@ -260,5 +264,25 @@ describe('analyticsSignalsToArray (順序 + null 除去)', () => {
     expect(arr[0]).toBe(s.reliability)
     expect(arr[1]).toBe(s.momentum)
     expect(arr[2]).toBe(s.dominantRole)
+  })
+})
+
+describe('formatAnalyticsSignalsLineJa (iter816 — plain text 1 行 compose)', () => {
+  it('全空 → 「記録なし」 sentinel', () => {
+    const s = composeAnalyticsSignals({})
+    expect(formatAnalyticsSignalsLineJa(s)).toBe('記録なし')
+  })
+
+  it('reliability + dueHitRate → " / " 区切りで text 連結 (順序整列、tone 落ち)', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 9, failed: 1 },
+    ])
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 }
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const line = formatAnalyticsSignalsLineJa(s)
+    // 順序: dueHitRate → reliability → dominantRole (concerning は warn 87% 不出)
+    expect(line).toContain('期限達成率: 90%')
+    expect(line).toContain('AI 信頼性')
+    expect(line).toContain(' / ')
   })
 })
