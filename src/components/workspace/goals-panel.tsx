@@ -256,7 +256,7 @@ export function GoalsPanel({ workspaceId }: Props) {
                       : 'Goal を新規作成'
                 }
               >
-                {createMut.isPending ? '作成中…' : '作成'}
+                <span aria-hidden="true">{createMut.isPending ? '作成中…' : '作成'}</span>
               </Button>
             </div>
           </form>
