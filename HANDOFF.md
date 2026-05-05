@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter832 1/1] goals-panel Goal AI 分解 button visible text を aria-hidden span で wrap (Goal Card 内 AI 分解 button): "AI 分解中…" / "AI 分解" を aria-hidden で wrap。+1/-1 行。検証 5 OK (iter735/826/830/831 invariant 込み)。
 - ✅ [playwright-iter831 1/1] engineer-trigger-button visible text を aria-hidden span 統合 (Item edit dialog → Engineer Agent button): emoji+text を 1 aria-hidden span に統合、aria-label 単独経路。+3/-3 行。検証 5 OK (iter735/826/829/830 invariant 込み)。
 - ✅ [playwright-iter830 1/1] home page Workspace Link 内 outer div を aria-hidden で wrap (/ home page workspace 一覧 Link): Link aria-label が完全 content 含むのに内側 visible h3/p の重複。fix: outer flex div に aria-hidden + 矢印 span の aria-hidden 削除 (二重不要)。+1/-3 行差分 (簡潔化)。検証 5 OK (iter735/826/828/829 invariant 込み)。
 - ✅ [playwright-iter829 1/1] archived-items-panel restore button visible text を aria-hidden span で wrap (Archive view の Restore button): "復元" / "復元中…" を aria-hidden で wrap、aria-label 単独経路。+1/-1 行。検証 5 OK (iter735/825/826/828 invariant 込み)。
