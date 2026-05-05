@@ -60,7 +60,7 @@ export function EngineerTriggerButton({ item }: Props) {
     <div
       className="flex items-center gap-2"
       role="group"
-      aria-label="Engineer Agent 起動 (PR 自動起票 toggle / 実装起動)"
+      aria-label={`「${item.title}」を Engineer Agent に投入 (PR 自動起票 toggle / 実装起動)`}
     >
       <label className="flex items-center gap-1 text-xs">
         <input
