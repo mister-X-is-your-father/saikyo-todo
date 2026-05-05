@@ -322,7 +322,7 @@ function ItemEditDialogInner({
                 setDod(item.dod ?? '')
               }}
             >
-              最新を読み込み
+              <span aria-hidden="true">最新を読み込み</span>
             </button>
           </div>
         )}
