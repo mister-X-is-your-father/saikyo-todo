@@ -124,7 +124,7 @@ export function StartTimerButton({ item, size = 'default' }: Props) {
       title={otherActive ? fullHint : undefined}
     >
       <Timer className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-      {visibleLabel}
+      <span aria-hidden="true">{visibleLabel}</span>
     </Button>
   )
 }
