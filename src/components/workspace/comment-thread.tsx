@@ -285,7 +285,7 @@ function CommentItem({
             <div
               className="mt-2 flex justify-end gap-2"
               role="group"
-              aria-label="自分のコメント操作 (編集 / 削除)"
+              aria-label={`コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」の操作 (編集 / 削除、自分の投稿のみ)`}
             >
               <button
                 type="button"
