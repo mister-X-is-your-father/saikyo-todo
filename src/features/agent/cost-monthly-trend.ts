@@ -25,6 +25,11 @@
 
 import { rateToPct } from '@/lib/format-rate'
 
+import {
+  ANALYTICS_AGENT_ROLES,
+  type AnalyticsAgentRole,
+  analyticsRoleLabelJa,
+} from './analytics-roles'
 import { safeUsd } from './cost-safe-usd'
 
 const ISO_MONTH_RE = /^\d{4}-\d{2}$/
@@ -176,14 +181,10 @@ function formatUsd(usd: number): string {
  *       'AI コスト: PM 増加 (先月 $0.50 → 今月 $0.80、+$0.30 (+60%))・Researcher 安定'
  *     役割名 → 「PM」「Researcher」 (TIER_LABEL と同じ視覚短ラベル)
  */
-export type AgentRole = 'pm' | 'researcher'
+/** 後方互換 alias (旧 export を維持)。analytics 系の narrowed agent role。 */
+export type AgentRole = AnalyticsAgentRole
 
 export type MonthlyCostTrendByRole = Record<AgentRole, MonthlyCostTrend>
-
-const ROLE_LABEL_JA: Record<AgentRole, string> = {
-  pm: 'PM',
-  researcher: 'Researcher',
-}
 
 export function computeMonthlyCostTrendByRole(
   rows: readonly { month: string; role: string; costUsd: number }[],
@@ -217,9 +218,9 @@ export function formatMonthlyCostTrendByRoleJa(trends: MonthlyCostTrendByRole): 
   const allIdle = (Object.values(trends) as MonthlyCostTrend[]).every((t) => t.direction === 'idle')
   if (allIdle) return 'AI コスト: 先月今月とも記録なし'
   const parts: string[] = []
-  for (const role of ['pm', 'researcher'] as const) {
+  for (const role of ANALYTICS_AGENT_ROLES) {
     const t = trends[role]
-    const label = ROLE_LABEL_JA[role]
+    const label = analyticsRoleLabelJa(role)
     if (t.direction === 'idle') parts.push(`${label} 記録なし`)
     else if (t.direction === 'up') parts.push(`${label} 増加`)
     else if (t.direction === 'down') parts.push(`${label} 減少`)

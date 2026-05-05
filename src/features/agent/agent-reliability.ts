@@ -35,7 +35,14 @@
 import { rateToPct } from '@/lib/format-rate'
 import { type ChipTone, type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
-export type AgentRole = 'pm' | 'researcher'
+import {
+  ANALYTICS_AGENT_ROLES,
+  type AnalyticsAgentRole,
+  analyticsRoleLabelJa,
+} from './analytics-roles'
+
+/** 後方互換 alias (旧 export を維持)。analytics 系の narrowed agent role。 */
+export type AgentRole = AnalyticsAgentRole
 
 export type ReliabilityLevel = 'healthy' | 'warn' | 'critical' | 'idle'
 
@@ -57,7 +64,7 @@ export interface AgentReliability {
   byRole: Record<AgentRole, RoleReliability>
 }
 
-const DEFAULT_ROLES: readonly AgentRole[] = ['pm', 'researcher'] as const
+const DEFAULT_ROLES: readonly AgentRole[] = ANALYTICS_AGENT_ROLES
 
 const HEALTHY_THRESHOLD = 0.95
 const WARN_THRESHOLD = 0.8
@@ -122,11 +129,6 @@ export function computeAgentReliability(
   }
 }
 
-const ROLE_LABEL_JA: Record<AgentRole, string> = {
-  pm: 'PM',
-  researcher: 'Researcher',
-}
-
 const LEVEL_LABEL_JA: Record<ReliabilityLevel, string> = {
   healthy: '健全',
   warn: '注意',
@@ -149,8 +151,9 @@ const LEVEL_LABEL_JA: Record<ReliabilityLevel, string> = {
  *  - 本 helper は **domain 固有 (信頼性 level / role 名)** のラベル
  *  - caller は 2 つを組み合わせて 'PM 健全 (達成)' のような richer 文言を作れる
  */
+/** 旧 export を維持しつつ analytics-roles の `analyticsRoleLabelJa` に委譲 (iter790)。 */
 export function agentRoleLabelJa(role: AgentRole): string {
-  return ROLE_LABEL_JA[role]
+  return analyticsRoleLabelJa(role)
 }
 
 export function reliabilityLevelLabelJa(level: ReliabilityLevel): string {
@@ -206,7 +209,7 @@ export function dominantRole(stats: AgentReliability): DominantRoleResult | null
  */
 export function formatDominantRoleJa(dominant: DominantRoleResult | null): string {
   if (!dominant) return '主軸: 記録なし'
-  const label = ROLE_LABEL_JA[dominant.role]
+  const label = analyticsRoleLabelJa(dominant.role)
   if (dominant.share >= 1) {
     return `主軸: ${label} (${dominant.invocations} 呼出、唯一稼働)`
   }
@@ -307,7 +310,7 @@ export function mostConcerningRole(stats: AgentReliability): ConcerningRoleResul
  */
 export function formatMostConcerningRoleJa(concerning: ConcerningRoleResult | null): string {
   if (!concerning) return '弱点: 該当なし'
-  const label = ROLE_LABEL_JA[concerning.role]
+  const label = analyticsRoleLabelJa(concerning.role)
   const levelLabel = LEVEL_LABEL_JA[concerning.level]
   const pct = rateToPct(concerning.successRate)
   return `弱点: ${label} ${levelLabel} (${pct}%)`
@@ -357,10 +360,10 @@ export function composeAgentBriefSignals(stats: AgentReliability): AgentBriefSig
 export function formatAgentReliabilityJa(stats: AgentReliability): string {
   if (stats.reliabilityLevel === 'idle') return 'AI 信頼性: 記録なし'
   const parts: string[] = []
-  for (const role of ['pm', 'researcher'] as const) {
+  for (const role of ANALYTICS_AGENT_ROLES) {
     const r = stats.byRole[role]
     if (!r) continue
-    const label = ROLE_LABEL_JA[role]
+    const label = analyticsRoleLabelJa(role)
     if (r.reliabilityLevel === 'idle') {
       parts.push(`${label} 記録なし`)
     } else {
