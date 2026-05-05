@@ -459,6 +459,15 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
                 aria-invalid={(isMust && !dod.trim()) || undefined}
                 minLength={1}
                 maxLength={2000}
+                aria-label={
+                  dod.length === 0
+                    ? '提案 DoD (MUST 必須、最大 2000 文字、完了条件を具体記述)'
+                    : dod.trim() === ''
+                      ? `提案 DoD (現在 ${dod.length} / 2000 文字、空白のみは不正)`
+                      : dod.length > 1900
+                        ? `提案 DoD (現在 ${dod.length} / 2000 文字、上限近接)`
+                        : `提案 DoD (現在 ${dod.length} / 2000 文字)`
+                }
               />
             </div>
           )}
