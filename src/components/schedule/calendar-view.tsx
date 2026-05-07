@@ -196,7 +196,7 @@ export function CalendarView({ workspaceId }: Props) {
             aria-label={`表示日を今日 (${format(new Date(), 'M月d日 (eee)')}) にリセット`}
             data-testid="calendar-today-btn"
           >
-            今日
+            <span aria-hidden="true">今日</span>
           </Button>
         </div>
         <div className="text-muted-foreground text-xs">
