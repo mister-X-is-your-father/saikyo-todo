@@ -100,7 +100,7 @@ export function ErrorState({
           onClick={onRetry}
           aria-label={`「${message}」をクリアして再試行`}
         >
-          再試行
+          <span aria-hidden="true">再試行</span>
         </Button>
       )}
     </div>
