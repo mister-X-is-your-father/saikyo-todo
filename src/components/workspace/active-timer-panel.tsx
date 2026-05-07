@@ -296,7 +296,7 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
           data-testid="active-timer-stop"
         >
           <Square className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-          停止
+          <span aria-hidden="true">停止</span>
         </Button>
       </div>
     </div>
