@@ -155,7 +155,7 @@ export function SignupForm() {
             : 'アカウントを作成 (サインアップ)'
         }
       >
-        {isPending ? '作成中…' : 'サインアップ'}
+        <span aria-hidden="true">{isPending ? '作成中…' : 'サインアップ'}</span>
       </Button>
     </form>
   )
