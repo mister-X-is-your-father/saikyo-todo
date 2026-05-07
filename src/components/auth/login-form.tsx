@@ -122,7 +122,7 @@ export function LoginForm() {
           isPending ? 'ログイン中… (認証処理を実行中)' : 'ログイン (メール + パスワードで認証)'
         }
       >
-        {isPending ? 'ログイン中…' : 'ログイン'}
+        <span aria-hidden="true">{isPending ? 'ログイン中…' : 'ログイン'}</span>
       </Button>
     </form>
   )
