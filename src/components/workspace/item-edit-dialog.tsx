@@ -336,14 +336,14 @@ function ItemEditDialogInner({
               data-testid="tab-base"
               aria-label="基本タブ — タイトル / 状態 / 期限 / MUST / 担当 / Tag / DoD を編集"
             >
-              基本
+              <span aria-hidden="true">基本</span>
             </TabsTrigger>
             <TabsTrigger
               value="summary"
               data-testid="tab-summary"
               aria-label="サマリ タブ — この案件の進捗 / 依存 / 最終更新を一目で確認"
             >
-              サマリ
+              <span aria-hidden="true">サマリ</span>
             </TabsTrigger>
             <TabsTrigger
               value="subtasks"
@@ -356,7 +356,7 @@ function ItemEditDialogInner({
                   : '子タスク タブ'
               }
             >
-              <span>子タスク</span>
+              <span aria-hidden="true">子タスク</span>
               {descendantsProgress && descendantsProgress.total > 0 ? (
                 <span
                   className={`ml-1 inline-flex items-center justify-center rounded-full px-1.5 text-[10px] font-medium ring-1 ring-inset ${
@@ -382,7 +382,7 @@ function ItemEditDialogInner({
                   : '依存タブ'
               }
             >
-              <span>依存</span>
+              <span aria-hidden="true">依存</span>
               {depsReadiness && depsReadiness.isBlocked ? (
                 <span
                   className="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-100 px-1 text-[10px] font-medium text-amber-800 ring-1 ring-amber-300 ring-inset"
@@ -399,14 +399,14 @@ function ItemEditDialogInner({
               data-testid="tab-comments"
               aria-label="コメントタブ — 議論履歴 + @メンション + AI Plan 投下"
             >
-              コメント
+              <span aria-hidden="true">コメント</span>
             </TabsTrigger>
             <TabsTrigger
               value="activity"
               data-testid="tab-activity"
               aria-label="アクティビティタブ — 編集履歴 (audit_log) を時系列表示"
             >
-              アクティビティ
+              <span aria-hidden="true">アクティビティ</span>
             </TabsTrigger>
           </TabsList>
 
