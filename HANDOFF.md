@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter845 1/1] signup-form submit button visible "サインアップ" / "作成中…" を aria-hidden span で wrap (Signup page Submit button): iter844 で login 側を統一済 → signup 側も同 pattern に追従、auth 2 surface の visible aria-hidden 規約を統一。+1/-1 行 (1 file)。検証 6 OK (iter735/841/843/844 invariant 込み)。経路 B (script) で codify。次 iter 候補: active-timer-panel Pause/Resume/Stop visible / workspace-mode-selector radio visible / create-workspace-form 作成 button visible。
 - ✅ [playwright-iter844 1/1] login-form submit button visible "ログイン" / "ログイン中…" を aria-hidden span で wrap (Login page Submit button): aria-label が完全 content を含むのに aria-hidden 無し → visible を span aria-hidden、aria-label 単独経路。+1/-1 行 (1 file)。検証 6 OK (iter735/826/841/842/843 invariant 込み)。経路 B (script) で codify。次 iter 候補: signup-form 側も同 pattern (visible "サインアップ" / "作成中…" を span 化)、active-timer-panel の Pause/Resume/Stop button visible 確認。
 - ✅ [playwright-iter843 1/1] item-edit-dialog reload button visible "最新を読み込み" を aria-hidden span で wrap (Item edit dialog conflict reload button): +1/-1 行。検証 5 OK (iter735/826/841/842 invariant 込み)。
 - ✅ [playwright-iter842 1/1] decompose-proposals-panel 4 button visible text を aria-hidden span で wrap (一括): +5/-3 行。検証 5 OK (iter735/826/838/841 invariant 込み)。
