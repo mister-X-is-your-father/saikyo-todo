@@ -110,11 +110,11 @@ export function BulkActionBar({ workspaceId }: Props) {
         data-testid="bulk-delete"
         aria-label={
           bulkDelete.isPending
-            ? `選択 ${count} 件を soft delete 中…`
-            : `選択 ${count} 件を soft delete`
+            ? `選択 ${count} 件を削除中… (soft delete: ゴミ箱で 30 日保持)`
+            : `選択 ${count} 件を削除 (soft delete: ゴミ箱で 30 日保持)`
         }
       >
-        削除
+        <span aria-hidden="true">削除</span>
       </Button>
       <Button
         size="sm"
