@@ -237,10 +237,12 @@ export function TodayView({
                           // に伝える単一 source。iter435 / iter436 で title= 系 date
                           // 表示を統一。
                           <span className="text-red-600" aria-label={`期限 ${it.dueDate}`}>
-                            期限{' '}
-                            <time dateTime={it.dueDate}>
-                              {formatFriendlyDate(it.dueDate, todayDate)}
-                            </time>
+                            <span aria-hidden="true">
+                              期限{' '}
+                              <time dateTime={it.dueDate}>
+                                {formatFriendlyDate(it.dueDate, todayDate)}
+                              </time>
+                            </span>
                           </span>
                         )}
                         <StatusBadge status={it.status} />
