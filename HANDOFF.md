@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter905 1/1] sprint-swimlane population div visible text を aria-hidden span で wrap (sprint-swimlane-population): aria-label "Sprint 全体:" prefix で SR meta context 提示、視覚 compact 維持。+1/-1 行 (1 file)。検証 1 OK + iter904 disclosure-summary invariant と矛盾なし。経路 B (script) で codify。次 iter 候補: 残 chip / aria-hidden audit。
 - ✅ [playwright-iter904 1/1] team-capacity / wf-node-run-output 2 summary visible text を aria-hidden span で wrap (一括 details/summary disclosure pattern): iter887 sprint-swimlane-summary と同 pattern を 2 件追従、details/summary disclosure の SR UX 規約を 3 件で統一。+2/-2 行 (2 file、2 summary)。検証 2 OK + iter887 sprint-swimlane invariant と矛盾なし。経路 B (script) で codify。次 iter 候補: その他 details/summary 適用 / 共通 widget audit / 残 chip。
 - ✅ [playwright-iter903 1/1] subtasks-panel subtask-childcount chip visible text を aria-hidden span で wrap (subtask-childcount): aria-label の「このタスクには子タスクが」 prefix で SR meta context 提示、visible compact "{count} 件" 維持。+1/-1 行 (1 file)。検証 1 OK + iter902 LeadStat invariant と矛盾なし。経路 B (script) で codify。次 iter 候補: subtask-step (✅ ) / 共通 widget audit / 残 chip。
 - ✅ [playwright-iter902 1/1] pdca-panel LeadStat に role="img" + 集約 aria-label + visible aria-hidden 化 (LeadStat 関数): iter901 PdcaStat 同 pattern を sub-stat (lead time / cycle time) にも適用、panel 内 stat card 規約統一完了。+9/-3 行 (1 file)。検証 1 OK + iter901 PdcaStat invariant と矛盾なし。経路 B (script) で codify。次 iter 候補: 共通 widget audit / dashboard 残 chip / item-summary-panel 内 chip。
