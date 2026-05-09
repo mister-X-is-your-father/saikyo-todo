@@ -190,7 +190,11 @@ export function InboxView({
               除き focusable child を持てない) のため <span> に降格。
               outer div が単一 interactive element + 全行 click + keyboard
               (Enter/Space) accessible。 */}
-          <span className="truncate text-left font-medium" data-testid={`inbox-title-${it.id}`}>
+          <span
+            className="truncate text-left font-medium"
+            data-testid={`inbox-title-${it.id}`}
+            aria-hidden="true"
+          >
             {it.title}
           </span>
           {it.isMust && <MustBadge data-testid={`inbox-must-${it.id}`} />}
