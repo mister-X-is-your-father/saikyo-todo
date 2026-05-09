@@ -718,11 +718,17 @@ export function GanttView({
                     )}
                     {/* 短い bar (< 60px) では title 省略して d だけにする */}
                     {barWidth >= 60 && (
-                      <span className="truncate font-medium" style={{ maxWidth: barWidth - 32 }}>
+                      <span
+                        className="truncate font-medium"
+                        style={{ maxWidth: barWidth - 32 }}
+                        aria-hidden="true"
+                      >
                         {item.title}
                       </span>
                     )}
-                    <span className="ml-auto shrink-0 opacity-75">{spanDays}d</span>
+                    <span className="ml-auto shrink-0 opacity-75" aria-hidden="true">
+                      {spanDays}d
+                    </span>
                   </div>
                 )}
               </div>
