@@ -770,16 +770,19 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
                   <ChevronRight className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 )}
                 <RunStatusBadge status={r.status} />
-                <span className="text-muted-foreground">{r.triggerKind}</span>
+                <span className="text-muted-foreground" aria-hidden="true">
+                  {r.triggerKind}
+                </span>
                 <time
                   className="text-muted-foreground tabular-nums"
                   dateTime={
                     r.startedAt instanceof Date ? r.startedAt.toISOString() : (r.startedAt ?? '')
                   }
+                  aria-hidden="true"
                 >
                   {formatRunTime(r)}
                 </time>
-                <span className="text-muted-foreground ml-auto tabular-nums">
+                <span className="text-muted-foreground ml-auto tabular-nums" aria-hidden="true">
                   {formatRunDuration(r)}
                 </span>
               </button>
