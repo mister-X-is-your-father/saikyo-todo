@@ -348,7 +348,9 @@ export function GanttView({
           </span>
         )}
         <label className="ml-auto flex items-center gap-1 text-xs">
-          <span className="text-muted-foreground">zoom</span>
+          <span className="text-muted-foreground" aria-hidden="true">
+            zoom
+          </span>
           <select
             value={zoom}
             onChange={(e) => setZoom(e.target.value as typeof zoom)}
@@ -377,7 +379,7 @@ export function GanttView({
             className="size-3.5 cursor-pointer accent-current"
             aria-label={showDeps ? '依存線を表示中 (クリックで非表示)' : '依存線を表示する'}
           />
-          依存線
+          <span aria-hidden="true">依存線</span>
         </label>
         <label data-testid="gantt-hide-done-toggle" className="flex items-center gap-1 text-xs">
           <input
@@ -389,7 +391,7 @@ export function GanttView({
               hideDone ? '完了済を隠している (クリックで表示)' : '完了済を隠す (現在は表示中)'
             }
           />
-          完了済を隠す
+          <span aria-hidden="true">完了済を隠す</span>
         </label>
         {todayX !== null && (
           <button
