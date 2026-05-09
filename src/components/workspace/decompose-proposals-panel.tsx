@@ -522,12 +522,12 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
         data-testid={`proposal-${proposal.id}-edit-btn`}
         aria-label={`提案「${proposal.title}」を編集${proposal.isMust ? ' (MUST)' : ''}`}
       >
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" aria-hidden="true">
           {proposal.isMust && <MustBadge />}
           <span className="truncate font-medium">{proposal.title}</span>
         </div>
         {proposal.description && (
-          <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs">
+          <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs" aria-hidden="true">
             {proposal.description}
           </p>
         )}
