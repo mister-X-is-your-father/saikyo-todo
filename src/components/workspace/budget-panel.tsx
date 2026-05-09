@@ -102,13 +102,21 @@ export function BudgetPanel({ workspaceId }: Props) {
         <CardTitle className="flex items-center gap-2 text-base" role="heading" aria-level={2}>
           AI 月次コスト
           {s.exceeded && (
-            <span className="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-700">
-              上限到達
+            <span
+              className="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-700"
+              role="img"
+              aria-label="AI コスト 上限到達 (新規 Agent 起動 不可)"
+            >
+              <span aria-hidden="true">上限到達</span>
             </span>
           )}
           {!s.exceeded && s.warnTriggered && (
-            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
-              警告
+            <span
+              className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700"
+              role="img"
+              aria-label="AI コスト 警告閾値 到達 (上限近接)"
+            >
+              <span aria-hidden="true">警告</span>
             </span>
           )}
         </CardTitle>
