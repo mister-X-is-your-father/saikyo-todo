@@ -921,7 +921,7 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
               data-testid="sprint-defaults-edit-btn"
               aria-label={`Sprint デフォルト (現在: ${DOW_JA[cur.startDow]}曜開始 / ${cur.lengthDays} 日) の編集モードを開く`}
             >
-              編集
+              <span aria-hidden="true">編集</span>
             </Button>
           </div>
         ) : (

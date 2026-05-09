@@ -195,7 +195,7 @@ export function BudgetPanel({ workspaceId }: Props) {
               data-testid="budget-edit-btn"
               aria-label="AI 月次コスト上限と警告閾値の編集モードを開く"
             >
-              上限を変更
+              <span aria-hidden="true">上限を変更</span>
             </Button>
           </div>
         ) : (
