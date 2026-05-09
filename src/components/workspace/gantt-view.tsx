@@ -306,14 +306,14 @@ export function GanttView({
           baselineCount > 0 ? ` / baseline ${baselineCount} 件` : ''
         }${slipItemCount > 0 ? ` / 遅延 ${slipItemCount} 件 計 ${totalSlipDays} 日` : ''})`}
       >
-        <span>
+        <span aria-hidden="true">
           表示範囲 <span className="text-foreground font-mono">{totalSpanDays}</span> 日
         </span>
-        <span>
+        <span aria-hidden="true">
           表示中 Item <span className="text-foreground font-mono">{withDates.length}</span> 件
         </span>
         {projectDurationDays !== undefined && projectDurationDays > 0 && (
-          <span>
+          <span aria-hidden="true">
             CPM 期間 <span className="text-foreground font-mono">{projectDurationDays}</span> 日
           </span>
         )}
@@ -330,7 +330,7 @@ export function GanttView({
           </span>
         )}
         {baselineCount > 0 && (
-          <span data-testid="gantt-summary-baseline">
+          <span data-testid="gantt-summary-baseline" aria-hidden="true">
             baseline <span className="text-foreground font-mono">{baselineCount}</span> 件
           </span>
         )}
