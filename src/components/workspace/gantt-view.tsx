@@ -402,7 +402,7 @@ export function GanttView({
             title="今日の縦線まで横スクロール"
             aria-label={`Gantt timeline を今日 (${format(new Date(), 'M月d日 (eee)')}) の縦線まで横スクロール`}
           >
-            今日へジャンプ
+            <span aria-hidden="true">今日へジャンプ</span>
           </button>
         )}
       </div>
