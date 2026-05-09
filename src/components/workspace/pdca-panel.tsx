@@ -266,9 +266,15 @@ function DailyBars({
 
 function LeadStat({ label, value, unit }: { label: string; value: number; unit: string }) {
   return (
-    <div className="rounded border p-2 text-center">
-      <div className="text-muted-foreground text-xs">{label}</div>
-      <div className="font-mono text-lg">
+    <div
+      className="rounded border p-2 text-center"
+      role="img"
+      aria-label={`${label}: ${value} ${unit}`}
+    >
+      <div className="text-muted-foreground text-xs" aria-hidden="true">
+        {label}
+      </div>
+      <div className="font-mono text-lg" aria-hidden="true">
         {value} <span className="text-xs">{unit}</span>
       </div>
     </div>
