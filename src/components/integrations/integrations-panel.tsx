@@ -543,7 +543,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     : 'External Source を新規作成'
               }
             >
-              {create.isPending ? '作成中…' : '作成'}
+              <span aria-hidden="true">{create.isPending ? '作成中…' : '作成'}</span>
             </Button>
           </div>
         </form>
