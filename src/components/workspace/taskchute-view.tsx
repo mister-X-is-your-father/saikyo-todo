@@ -109,7 +109,10 @@ export function TaskChuteView({ workspaceId, items }: Props) {
         <CardTitle className="flex items-center gap-1.5 text-base" role="heading" aria-level={2}>
           <Sparkles className="h-4 w-4" aria-hidden="true" />
           TaskChute (今日の 1 列 timeline)
-          <span className="text-muted-foreground ml-auto text-[11px] font-normal">
+          <span
+            className="text-muted-foreground ml-auto text-[11px] font-normal"
+            aria-hidden="true"
+          >
             {ordered.length} 件
           </span>
         </CardTitle>
