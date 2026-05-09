@@ -114,7 +114,7 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
             data-testid="estimate-bias-tendency"
             aria-label={`傾向: ${label}`}
           >
-            {label}
+            <span aria-hidden="true">{label}</span>
           </span>
         </CardTitle>
       </CardHeader>
