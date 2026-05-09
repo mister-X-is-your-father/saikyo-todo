@@ -175,7 +175,7 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
                 }
                 aria-label={`lane: ${row.loadSummaryJa} / ${row.conflictsJa}`}
               >
-                {row.loadSummaryJa}
+                <span aria-hidden="true">{row.loadSummaryJa}</span>
               </span>
             </div>
             <div
