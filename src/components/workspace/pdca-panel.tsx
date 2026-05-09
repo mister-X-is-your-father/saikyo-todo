@@ -192,17 +192,24 @@ function PdcaStat({
   color: string
 }) {
   return (
-    <div className="rounded border p-2">
-      <div className="flex items-center gap-1.5">
+    <div
+      className="rounded border p-2"
+      role="img"
+      aria-label={`${label}: ${value} 件 (${sub})`}
+    >
+      <div className="flex items-center gap-1.5" aria-hidden="true">
         <span
           className="inline-block h-2 w-2 rounded-full"
           style={{ background: color }}
-          aria-hidden
         />
         <span className="text-xs font-medium">{label}</span>
       </div>
-      <div className="mt-1 font-mono text-2xl">{value}</div>
-      <div className="text-muted-foreground text-[10px]">{sub}</div>
+      <div className="mt-1 font-mono text-2xl" aria-hidden="true">
+        {value}
+      </div>
+      <div className="text-muted-foreground text-[10px]" aria-hidden="true">
+        {sub}
+      </div>
     </div>
   )
 }
