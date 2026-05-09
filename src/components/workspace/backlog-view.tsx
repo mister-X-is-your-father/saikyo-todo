@@ -116,7 +116,7 @@ function buildColumns(
           data-testid={`backlog-title-${row.original.id}`}
           aria-label={`「${String(getValue())}」を編集`}
         >
-          {String(getValue())}
+          <span aria-hidden="true">{String(getValue())}</span>
         </button>
       ),
     },
