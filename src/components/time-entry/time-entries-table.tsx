@@ -21,7 +21,7 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
         aria-label="外部同期: 完了"
         data-testid="sync-badge"
       >
-        synced
+        <span aria-hidden="true">synced</span>
       </Badge>
     )
   }
@@ -33,7 +33,7 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
         aria-label="外部同期: 失敗"
         data-testid="sync-badge"
       >
-        failed
+        <span aria-hidden="true">failed</span>
       </Badge>
     )
   }
@@ -44,7 +44,7 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
       aria-label="外部同期: 未実行"
       data-testid="sync-badge"
     >
-      pending
+      <span aria-hidden="true">pending</span>
     </Badge>
   )
 }
@@ -116,7 +116,7 @@ export function TimeEntriesTable({
                     aria-label={`同期エラー: ${e.syncError}`}
                     data-testid={`sync-error-${e.id}`}
                   >
-                    {e.syncError}
+                    <span aria-hidden="true">{e.syncError}</span>
                   </div>
                 )}
               </td>
