@@ -675,7 +675,7 @@ function SprintCard({
                   data-testid={`sprint-period-cancel-${sprint.id}`}
                   aria-label={`Sprint「${sprint.name}」の期間編集をキャンセル`}
                 >
-                  キャンセル
+                  <span aria-hidden="true">キャンセル</span>
                 </Button>
                 <Button
                   type="submit"
@@ -690,7 +690,7 @@ function SprintCard({
                       : `Sprint「${sprint.name}」の期間を保存`
                   }
                 >
-                  {update.isPending ? '保存中…' : '保存'}
+                  <span aria-hidden="true">{update.isPending ? '保存中…' : '保存'}</span>
                 </Button>
               </div>
             </form>
@@ -711,7 +711,7 @@ function SprintCard({
                 aria-label={`Sprint「${sprint.name}」の期間を編集`}
               >
                 <CalendarRange className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                期間
+                <span aria-hidden="true">期間</span>
               </Button>
             )}
             {status === 'planning' && (
@@ -730,7 +730,7 @@ function SprintCard({
                 }
               >
                 <Play className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                稼働開始
+                <span aria-hidden="true">稼働開始</span>
               </Button>
             )}
             {status === 'active' && (
@@ -750,7 +750,7 @@ function SprintCard({
                   }
                 >
                   <CheckCircle className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                  完了
+                  <span aria-hidden="true">完了</span>
                 </Button>
                 <Button
                   size="sm"
@@ -766,7 +766,7 @@ function SprintCard({
                   }
                 >
                   <Pause className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                  計画に戻す
+                  <span aria-hidden="true">計画に戻す</span>
                 </Button>
               </>
             )}
@@ -792,7 +792,7 @@ function SprintCard({
                 }
               >
                 <X className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                中止
+                <span aria-hidden="true">中止</span>
               </Button>
             )}
             {(status === 'active' || status === 'completed') && (
@@ -812,7 +812,9 @@ function SprintCard({
                 }
               >
                 <Sparkles className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                {retroPending ? '振り返り生成中…' : '振り返り生成'}
+                <span aria-hidden="true">
+                  {retroPending ? '振り返り生成中…' : '振り返り生成'}
+                </span>
               </Button>
             )}
             {(status === 'planning' || status === 'active') && (
@@ -834,11 +836,13 @@ function SprintCard({
                 }
               >
                 <Sparkles className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                {premortemPending
-                  ? 'Pre-mortem 生成中…'
-                  : sprint.premortemGeneratedAt
-                    ? 'Pre-mortem 再生成'
-                    : 'Pre-mortem 生成'}
+                <span aria-hidden="true">
+                  {premortemPending
+                    ? 'Pre-mortem 生成中…'
+                    : sprint.premortemGeneratedAt
+                      ? 'Pre-mortem 再生成'
+                      : 'Pre-mortem 生成'}
+                </span>
               </Button>
             )}
           </div>
