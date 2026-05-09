@@ -854,11 +854,21 @@ function WorkflowNodeRunsList({ runId }: { runId: string }) {
           className="bg-background space-y-1 rounded border p-1.5"
           data-testid={`wf-node-run-${nr.id}`}
         >
-          <div className="flex items-center gap-2 text-[11px]">
+          <div
+            className="flex items-center gap-2 text-[11px]"
+            role="img"
+            aria-label={`node ${nr.nodeId} (${nr.nodeType}) ステータス ${nr.status}${
+              nr.durationMs != null ? ` 実行時間 ${nr.durationMs} ms` : ''
+            }`}
+          >
             <RunStatusBadge status={nr.status} />
-            <span className="font-mono">{nr.nodeId}</span>
-            <span className="text-muted-foreground">({nr.nodeType})</span>
-            <span className="text-muted-foreground ml-auto tabular-nums">
+            <span className="font-mono" aria-hidden="true">
+              {nr.nodeId}
+            </span>
+            <span className="text-muted-foreground" aria-hidden="true">
+              ({nr.nodeType})
+            </span>
+            <span className="text-muted-foreground ml-auto tabular-nums" aria-hidden="true">
               {nr.durationMs != null ? `${nr.durationMs}ms` : '—'}
             </span>
           </div>
