@@ -97,7 +97,7 @@ export function BulkActionBar({ workspaceId }: Props) {
               : `選択 ${count} 件を「${s.label}」に変更`
           }
         >
-          {s.label} に
+          <span aria-hidden="true">{s.label} に</span>
         </Button>
       ))}
       <Button
@@ -124,7 +124,7 @@ export function BulkActionBar({ workspaceId }: Props) {
         data-testid="bulk-clear"
         aria-label="選択を解除"
       >
-        解除
+        <span aria-hidden="true">解除</span>
       </Button>
     </div>
   )
