@@ -339,7 +339,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
               data-testid="filter-must"
               aria-label={must ? 'MUST のみ表示中 (クリックで解除)' : 'MUST のみ表示に絞り込む'}
             />
-            MUST のみ
+            <span aria-hidden="true">MUST のみ</span>
           </label>
           <select
             value={statusFilter ?? ''}
