@@ -298,7 +298,7 @@ export function GoalsPanel({ workspaceId }: Props) {
                 el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
               }}
             >
-              作成フォームへ
+              <span aria-hidden="true">作成フォームへ</span>
             </button>
           }
         />
@@ -490,7 +490,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                         : `Goal「${goal.title}」を完了`
                     }
                   >
-                    完了
+                    <span aria-hidden="true">完了</span>
                   </Button>
                   <Button
                     type="button"
