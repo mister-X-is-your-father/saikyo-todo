@@ -1421,15 +1421,35 @@ export function DashboardView({ workspaceId }: Props) {
                             ? 'text-xs font-semibold text-amber-600'
                             : 'text-muted-foreground text-xs'
                       }
+                      aria-label={
+                        item.dueDate
+                          ? `期限 ${item.dueDate}${overdue ? ' (期限超過)' : soon ? ' (期日近)' : ''}`
+                          : '期限なし'
+                      }
                     >
-                      {item.dueDate ? (
-                        <time dateTime={item.dueDate}>{item.dueDate}</time>
-                      ) : (
-                        '期限なし'
-                      )}
+                      <span aria-hidden="true">
+                        {item.dueDate ? (
+                          <time dateTime={item.dueDate}>{item.dueDate}</time>
+                        ) : (
+                          '期限なし'
+                        )}
+                      </span>
                     </span>
-                    <span className="text-muted-foreground text-xs">
-                      {item.doneAt ? '完了' : overdue ? '期限超過' : soon ? '期日近' : ''}
+                    <span
+                      className="text-muted-foreground text-xs"
+                      aria-label={
+                        item.doneAt
+                          ? '完了済'
+                          : overdue
+                            ? '状態: 期限超過'
+                            : soon
+                              ? '状態: 期日近'
+                              : ''
+                      }
+                    >
+                      <span aria-hidden="true">
+                        {item.doneAt ? '完了' : overdue ? '期限超過' : soon ? '期日近' : ''}
+                      </span>
                     </span>
                   </li>
                 )
