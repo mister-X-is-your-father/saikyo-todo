@@ -190,7 +190,7 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
                     : `${periodLabelJa(period)}ゴールを保存`
               }
             >
-              {upsertGoal.isPending ? '保存中…' : 'ゴール保存'}
+              <span aria-hidden="true">{upsertGoal.isPending ? '保存中…' : 'ゴール保存'}</span>
             </Button>
           </div>
         </CardContent>
