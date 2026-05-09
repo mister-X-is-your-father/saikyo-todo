@@ -908,9 +908,15 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
       <CardContent className="space-y-2">
         {!editing ? (
           <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span data-testid="sprint-defaults-summary">
-              基本: <strong>{DOW_JA[cur.startDow]}曜開始</strong> /{' '}
-              <strong>{cur.lengthDays} 日</strong>
+            <span
+              data-testid="sprint-defaults-summary"
+              role="img"
+              aria-label={`Sprint デフォルト: ${DOW_JA[cur.startDow]}曜開始 / ${cur.lengthDays} 日`}
+            >
+              <span aria-hidden="true">
+                基本: <strong>{DOW_JA[cur.startDow]}曜開始</strong> /{' '}
+                <strong>{cur.lengthDays} 日</strong>
+              </span>
             </span>
             <Button
               type="button"
