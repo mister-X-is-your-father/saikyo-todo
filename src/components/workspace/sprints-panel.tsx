@@ -730,7 +730,7 @@ function SprintCard({
                 }
               >
                 <Play className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                稼働開始
+                <span aria-hidden="true">稼働開始</span>
               </Button>
             )}
             {status === 'active' && (
@@ -750,7 +750,7 @@ function SprintCard({
                   }
                 >
                   <CheckCircle className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                  完了
+                  <span aria-hidden="true">完了</span>
                 </Button>
                 <Button
                   size="sm"
@@ -766,7 +766,7 @@ function SprintCard({
                   }
                 >
                   <Pause className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                  計画に戻す
+                  <span aria-hidden="true">計画に戻す</span>
                 </Button>
               </>
             )}
@@ -792,7 +792,7 @@ function SprintCard({
                 }
               >
                 <X className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                中止
+                <span aria-hidden="true">中止</span>
               </Button>
             )}
             {(status === 'active' || status === 'completed') && (
