@@ -31,7 +31,7 @@ export default function LoginPage() {
           data-testid="signup-link"
           aria-label="アカウントをお持ちでない方はこちらでサインアップ"
         >
-          サインアップ
+          <span aria-hidden="true">サインアップ</span>
         </Link>
       </CardFooter>
     </Card>
