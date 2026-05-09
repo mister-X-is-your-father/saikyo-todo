@@ -172,7 +172,7 @@ function ActivityRow({
             }`}
             aria-label={entry.actorType === 'agent' ? '実行者: AI Agent' : '実行者: ユーザ'}
           >
-            {entry.actorType === 'agent' ? 'AI' : 'user'}
+            <span aria-hidden="true">{entry.actorType === 'agent' ? 'AI' : 'user'}</span>
           </span>
         </div>
         <time
