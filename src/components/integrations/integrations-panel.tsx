@@ -167,7 +167,7 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             }
           >
             <Play className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-            {trigger.isPending ? 'Pull 中…' : 'Pull'}
+            <span aria-hidden="true">{trigger.isPending ? 'Pull 中…' : 'Pull'}</span>
           </Button>
           <Button
             size="sm"
@@ -183,7 +183,7 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
                 : `Source「${src.name}」を${src.enabled ? '無効化' : '有効化'}`
             }
           >
-            {src.enabled ? '無効化' : '有効化'}
+            <span aria-hidden="true">{src.enabled ? '無効化' : '有効化'}</span>
           </Button>
           <Button
             size="sm"
@@ -204,7 +204,7 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             ) : (
               <ChevronRight className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             )}
-            履歴
+            <span aria-hidden="true">履歴</span>
           </Button>
           <Button
             size="sm"
