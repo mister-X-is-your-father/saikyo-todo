@@ -41,7 +41,12 @@ function FmtTime({ value }: { value: Date | string | null | undefined }) {
   if (!value) return <>-</>
   const d = typeof value === 'string' ? parseISO(value) : value
   if (!isValid(d)) return <>-</>
-  return <time dateTime={d.toISOString()}>{format(d, 'yyyy-MM-dd HH:mm')}</time>
+  const display = format(d, 'yyyy-MM-dd HH:mm')
+  return (
+    <time dateTime={d.toISOString()} aria-label={`日時 ${display}`}>
+      <span aria-hidden="true">{display}</span>
+    </time>
+  )
 }
 
 export function ArchivedItemsPanel({ workspaceId }: Props) {
