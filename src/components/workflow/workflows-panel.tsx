@@ -806,7 +806,8 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
               title={`同じ input で再実行 (${formatRunTime(r)})`}
               data-testid={`wf-run-rerun-${r.id}`}
             >
-              <Play className="h-3 w-3" aria-hidden="true" />再
+              <Play className="h-3 w-3" aria-hidden="true" />
+              <span aria-hidden="true">再</span>
             </button>
           </li>
         )
