@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter925 1/1] sprint-defaults-summary span に role="img" + 集約 aria-label + visible aria-hidden 化 (sprint-defaults-summary): role 無しで visible 順次 → 集約 aria-label 「Sprint デフォルト: ${dow}曜開始 / ${len} 日」 1 unit 化、edit-btn 隣接 context 補強。+9/-3 行 (1 file)。検証 1 OK + iter923 FmtTime invariant と矛盾なし。経路 B (script) で codify。
 - 📋 [playwright-iter924 chore] iter851-923 a11y/aria-hidden 規約 sweep 完了 (約 73 iter 連続): Item edit / Auth / Sprint / Goal / Workflow / Template / Integration / time-entry / Schedule / Gantt / Today / Inbox / Backlog / Quick add / Notification / Operation board / Dashboard / Activity log / Recovery plan / SeverityChip / DashboardChip / PdcaStat / LeadStat / FmtTime / RunStatusBadge 等 25+ component family 横断で「役割明示 + 集約 aria-label + visible aria-hidden」 規約を統一。SR 単独経路化と視覚 compact 表示の補完規約を view 横断で統一、新規 user の SR onboarding UX 大幅向上。次 iter は新 phase / queue 消化に移行。
 
 - ✅ [playwright-iter923 1/1] archived-items-panel FmtTime helper に aria-label + visible aria-hidden 化 (一括 archive table 期限 / アーカイブ日時 cell 共通 helper): aria-label "日時 ${display}" prefix で SR meta context 提示、共通 helper 改善で archive table 2 cell 一括影響。+6/-1 行 (1 file)。検証 1 OK + iter922 period-due-time invariant と矛盾なし。経路 B (script) で codify。次 iter 候補: 残 visible 共通 helper / 完了。
