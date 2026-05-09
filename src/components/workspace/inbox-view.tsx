@@ -117,7 +117,7 @@ export function InboxView({
           data-severity={healthChip.severity}
           aria-label={`Inbox 健全性: ${healthChip.label}`}
         >
-          {healthChip.label}
+          <span aria-hidden="true">{healthChip.label}</span>
         </span>
       </div>
       {/* iter544 (queue GT-3 wire-up): GTD Inbox Process classification の bucket count chip 群 */}
