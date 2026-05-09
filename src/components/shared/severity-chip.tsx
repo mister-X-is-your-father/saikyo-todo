@@ -54,9 +54,16 @@ export function SeverityChip({
   const inner = (
     <>
       {icon ? <span aria-hidden="true">{icon}</span> : null}
-      <span className="truncate font-medium">{label}</span>
+      <span className="truncate font-medium" aria-hidden="true">
+        {label}
+      </span>
       {delta !== undefined ? (
-        <span className="shrink-0 text-[10px] font-semibold opacity-90">{delta}</span>
+        <span
+          className="shrink-0 text-[10px] font-semibold opacity-90"
+          aria-hidden="true"
+        >
+          {delta}
+        </span>
       ) : null}
     </>
   )
