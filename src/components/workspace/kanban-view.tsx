@@ -335,7 +335,7 @@ function KanbanCard({
               (item.doneAt ? 'text-muted-foreground line-through' : '')
             }
           >
-            {item.title}
+            <span aria-hidden="true">{item.title}</span>
           </button>
         </div>
         <div className="flex shrink-0 items-center gap-1">

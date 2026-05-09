@@ -1404,7 +1404,7 @@ export function DashboardView({ workspaceId }: Props) {
                         data-testid={`dashboard-must-title-${item.id}`}
                         aria-label={`MUST「${item.title}」を編集`}
                       >
-                        {item.title}
+                        <span aria-hidden="true">{item.title}</span>
                       </button>
                       {item.dod ? (
                         <span className="text-muted-foreground truncate text-xs">
