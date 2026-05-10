@@ -13,7 +13,7 @@ export function OfflineRetryButton() {
       aria-label="再読み込みして再試行 (ページ全体を読み直して接続を回復)"
       className="h-11 px-4"
     >
-      再読み込みして再試行
+      <span aria-hidden="true">再読み込みして再試行</span>
     </Button>
   )
 }
