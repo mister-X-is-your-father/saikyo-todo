@@ -174,7 +174,7 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
                   : `「${preview.title}」を作成 (Enter でも可)`
           }
         >
-          <span aria-hidden="true">{create.isPending ? '...' : '作成'}</span>
+          <span aria-hidden="true">{create.isPending ? '作成中…' : '作成'}</span>
         </Button>
       </div>
       {preview && preview.title && (
