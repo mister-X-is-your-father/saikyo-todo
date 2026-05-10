@@ -87,8 +87,8 @@ export default async function WorkspacePage({ params }: PageProps) {
                 <Link href={`/${workspaceId}/archive`}>Archive</Link>
               </Button>
               <Button variant="outline" asChild size="sm" className="min-h-11">
-                <Link href="/" aria-label="Workspace 一覧へ戻る">
-                  <span aria-hidden="true">← </span>一覧
+                <Link href="/" aria-label="一覧 (Workspace 一覧へ戻る)">
+                  <span aria-hidden="true">← 一覧</span>
                 </Link>
               </Button>
             </nav>
