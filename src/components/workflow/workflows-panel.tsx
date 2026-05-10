@@ -522,9 +522,9 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                   onClick={() => setGraphText(appendNodePreset(graphText, preset))}
                   data-testid={`wf-node-preset-${preset.type}-${wf.id}`}
                   title={preset.title}
-                  aria-label={`graph に ${preset.title} の skeleton node を追加`}
+                  aria-label={`+ ${preset.type} を追加 (graph に ${preset.title} の skeleton node)`}
                 >
-                  + {preset.type}
+                  <span aria-hidden="true">+ {preset.type}</span>
                 </Button>
               ))}
             </div>
@@ -806,7 +806,8 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
               title={`同じ input で再実行 (${formatRunTime(r)})`}
               data-testid={`wf-run-rerun-${r.id}`}
             >
-              <Play className="h-3 w-3" aria-hidden="true" />再
+              <Play className="h-3 w-3" aria-hidden="true" />
+              <span aria-hidden="true">再</span>
             </button>
           </li>
         )
