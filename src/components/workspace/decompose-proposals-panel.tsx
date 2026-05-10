@@ -425,10 +425,10 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               aria-keyshortcuts="Meta+Enter Control+Enter"
               aria-label={
                 description.length === 0
-                  ? '提案 description (任意、最大 10000 文字、Markdown 可、Cmd/Ctrl+Enter で保存)'
+                  ? '説明 (Cmd/Ctrl+Enter で保存): 提案 description、任意、最大 10000 文字、Markdown 可'
                   : description.length > 9500
-                    ? `提案 description (現在 ${description.length} / 10000 文字、上限近接、Cmd/Ctrl+Enter で保存)`
-                    : `提案 description (現在 ${description.length} / 10000 文字、Cmd/Ctrl+Enter で保存)`
+                    ? `説明 (Cmd/Ctrl+Enter で保存): 提案 description、現在 ${description.length} / 10000 文字、上限近接`
+                    : `説明 (Cmd/Ctrl+Enter で保存): 提案 description、現在 ${description.length} / 10000 文字`
               }
             />
           </div>

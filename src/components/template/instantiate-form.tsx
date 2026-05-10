@@ -95,10 +95,10 @@ export function InstantiateForm({ workspaceId, template }: Props) {
           maxLength={500}
           aria-label={
             override.length === 0
-              ? `Template「${template.name}」展開時の root Item タイトル (任意、最大 500 文字、省略時は「${template.name}」)`
+              ? `root Item タイトル (任意): Template「${template.name}」展開時、最大 500 文字、省略時は「${template.name}」`
               : override.length > 480
-                ? `root Item タイトル (現在 ${override.length} / 500 文字、上限近接)`
-                : `root Item タイトル (現在 ${override.length} / 500 文字)`
+                ? `root Item タイトル (任意): 現在 ${override.length} / 500 文字、上限近接`
+                : `root Item タイトル (任意): 現在 ${override.length} / 500 文字`
           }
         />
       </div>
