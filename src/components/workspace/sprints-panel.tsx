@@ -725,12 +725,12 @@ function SprintCard({
                 data-testid={`sprint-activate-${sprint.id}`}
                 aria-label={
                   changing
-                    ? `Sprint「${sprint.name}」のステータスを変更中…`
-                    : `Sprint「${sprint.name}」を稼働開始`
+                    ? `Sprint「${sprint.name}」を稼働開始中… (planning → active 遷移)`
+                    : `Sprint「${sprint.name}」を稼働開始 (planning → active へ遷移)`
                 }
               >
                 <Play className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                稼働開始
+                <span aria-hidden="true">稼働開始</span>
               </Button>
             )}
             {status === 'active' && (
