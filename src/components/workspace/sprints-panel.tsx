@@ -761,12 +761,12 @@ function SprintCard({
                   onClick={() => onStatusChange('planning')}
                   aria-label={
                     changing
-                      ? `Sprint「${sprint.name}」のステータスを変更中…`
-                      : `Sprint「${sprint.name}」を計画に戻す`
+                      ? `Sprint「${sprint.name}」を計画に戻す処理中… (active → planning 遷移)`
+                      : `Sprint「${sprint.name}」を計画に戻す (active → planning へ遷移)`
                   }
                 >
                   <Pause className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                  計画に戻す
+                  <span aria-hidden="true">計画に戻す</span>
                 </Button>
               </>
             )}
