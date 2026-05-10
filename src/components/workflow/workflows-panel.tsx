@@ -537,10 +537,10 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
               data-testid={`wf-editor-graph-${wf.id}`}
               aria-label={
                 graphText.length === 0
-                  ? 'graph JSON (workflow の node 定義を JSON で記述、上のプリセット button で skeleton 追加可)'
+                  ? 'graph ({ nodes: [...], edges: [...] }): workflow の node 定義 JSON、上のプリセット button で skeleton 追加可'
                   : error?.startsWith('graph JSON 不正')
-                    ? `graph JSON (現在 ${graphText.length} 文字、JSON parse error あり)`
-                    : `graph JSON (現在 ${graphText.length} 文字、node 定義 JSON)`
+                    ? `graph ({ nodes: [...], edges: [...] }): 現在 ${graphText.length} 文字、JSON parse error あり`
+                    : `graph ({ nodes: [...], edges: [...] }): 現在 ${graphText.length} 文字、node 定義 JSON`
               }
               aria-invalid={error?.startsWith('graph JSON 不正') || undefined}
               aria-describedby={error ? `wf-editor-error-${wf.id}` : undefined}
@@ -634,10 +634,10 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
               data-testid={`wf-editor-trigger-${wf.id}`}
               aria-label={
                 triggerText.length === 0
-                  ? 'trigger JSON (manual / cron / item-event / webhook の 4 種、上のプリセット button で template 挿入可)'
+                  ? 'trigger ({ kind: "manual" | "cron" | "item-event" | "webhook" }): manual / cron / item-event / webhook の 4 種、上のプリセット button で template 挿入可'
                   : error?.startsWith('trigger JSON 不正')
-                    ? `trigger JSON (現在 ${triggerText.length} 文字、JSON parse error あり)`
-                    : `trigger JSON (現在 ${triggerText.length} 文字、起動条件 JSON)`
+                    ? `trigger ({ kind: "manual" | "cron" | "item-event" | "webhook" }): 現在 ${triggerText.length} 文字、JSON parse error あり`
+                    : `trigger ({ kind: "manual" | "cron" | "item-event" | "webhook" }): 現在 ${triggerText.length} 文字、起動条件 JSON`
               }
               aria-invalid={error?.startsWith('trigger JSON 不正') || undefined}
               aria-describedby={error ? `wf-editor-error-${wf.id}` : undefined}
