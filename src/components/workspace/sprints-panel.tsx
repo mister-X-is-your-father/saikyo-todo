@@ -973,8 +973,8 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                 aria-required="true"
                 aria-label={
                   length < 1 || length > 90
-                    ? `Sprint 期間 (日数) の有効範囲は 1-90、現在値 ${length} は範囲外`
-                    : `Sprint 期間 (日数、1-90、現在: ${length} 日)`
+                    ? `期間 (日): Sprint デフォルト期間の日数、有効範囲は 1-90、現在値 ${length} は範囲外`
+                    : `期間 (日): Sprint デフォルト期間の日数、1-90、現在 ${length} 日`
                 }
                 aria-invalid={length < 1 || length > 90 || undefined}
                 inputMode="numeric"
