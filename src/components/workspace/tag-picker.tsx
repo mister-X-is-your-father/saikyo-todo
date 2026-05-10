@@ -151,7 +151,7 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
                       style={{ backgroundColor: t.color }}
                       aria-hidden="true"
                     />
-                    {t.name}
+                    <span aria-hidden="true">{t.name}</span>
                   </CommandItem>
                 )
               })}
@@ -164,8 +164,10 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
                     void handleCreate()
                   }}
                   data-testid="tag-create-new"
+                  aria-label={`新規タグ「${query.trim()}」を作成して付与する`}
                 >
-                  <PlusIcon className="mr-2 size-4" aria-hidden="true" />「{query.trim()}」を作成
+                  <PlusIcon className="mr-2 size-4" aria-hidden="true" />
+                  <span aria-hidden="true">「{query.trim()}」を作成</span>
                 </CommandItem>
               </CommandGroup>
             )}
