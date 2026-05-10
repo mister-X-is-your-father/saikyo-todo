@@ -68,8 +68,9 @@ export function PdcaPanel({ workspaceId }: Props) {
               onClick={() => setDays(30)}
               data-testid="pdca-period-30"
               aria-pressed={days === 30}
+              aria-label={`集計期間を 30 日に切替${days === 30 ? ' (現在選択中)' : ''}`}
             >
-              30 日
+              <span aria-hidden="true">30 日</span>
             </Button>
             <Button
               size="sm"
@@ -78,8 +79,9 @@ export function PdcaPanel({ workspaceId }: Props) {
               onClick={() => setDays(90)}
               data-testid="pdca-period-90"
               aria-pressed={days === 90}
+              aria-label={`集計期間を 90 日に切替${days === 90 ? ' (現在選択中)' : ''}`}
             >
-              90 日
+              <span aria-hidden="true">90 日</span>
             </Button>
           </div>
         </div>
