@@ -346,7 +346,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             aria-label={`Workflow「${wf.name}」の graph / trigger を編集`}
           >
             <Pencil className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-            編集
+            <span aria-hidden="true">編集</span>
           </Button>
           <Button
             size="sm"
@@ -383,7 +383,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             ) : (
               <ChevronRight className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             )}
-            履歴
+            <span aria-hidden="true">履歴</span>
           </Button>
           <Button
             size="sm"
