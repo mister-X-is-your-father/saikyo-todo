@@ -163,8 +163,8 @@ export function TemplatesPanel({ workspaceId }: Props) {
                 aria-keyshortcuts="Meta+Enter Control+Enter"
                 aria-label={
                   description.length === 0
-                    ? 'Template の説明 (任意、このテンプレートが何を生成するか、Cmd/Ctrl+Enter で作成)'
-                    : `Template の説明 (現在 ${description.length} 文字、Cmd/Ctrl+Enter で作成)`
+                    ? '説明 (Cmd/Ctrl+Enter で作成): Template の説明、任意、このテンプレートが何を生成するか'
+                    : `説明 (Cmd/Ctrl+Enter で作成): Template の説明、現在 ${description.length} 文字`
                 }
               />
             </div>

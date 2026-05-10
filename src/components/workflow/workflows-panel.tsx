@@ -149,10 +149,10 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                 aria-keyshortcuts="Meta+Enter Control+Enter"
                 aria-label={
                   description.length === 0
-                    ? 'Workflow の説明 (任意、最大 2000 文字、Cmd/Ctrl+Enter で作成)'
+                    ? '説明 (任意、Cmd/Ctrl+Enter で作成): Workflow の説明、最大 2000 文字'
                     : description.length > 1900
-                      ? `Workflow の説明 (現在 ${description.length} / 2000 文字、上限近接、Cmd/Ctrl+Enter で作成)`
-                      : `Workflow の説明 (現在 ${description.length} / 2000 文字、Cmd/Ctrl+Enter で作成)`
+                      ? `説明 (任意、Cmd/Ctrl+Enter で作成): Workflow の説明、現在 ${description.length} / 2000 文字、上限近接`
+                      : `説明 (任意、Cmd/Ctrl+Enter で作成): Workflow の説明、現在 ${description.length} / 2000 文字`
                 }
               />
             </div>
