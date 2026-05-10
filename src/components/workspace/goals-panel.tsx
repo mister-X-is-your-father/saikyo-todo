@@ -503,11 +503,11 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     data-testid={`goal-archive-${goal.id}`}
                     aria-label={
                       update.isPending
-                        ? `Goal「${goal.title}」のステータスを更新中…`
-                        : `Goal「${goal.title}」をアーカイブ`
+                        ? `Goal「${goal.title}」をアーカイブ中… (現状態 → archived 遷移)`
+                        : `Goal「${goal.title}」をアーカイブ (現状態 → archived 遷移、後で active 復帰可)`
                     }
                   >
-                    アーカイブ
+                    <span aria-hidden="true">アーカイブ</span>
                   </Button>
                 </>
               )}
@@ -541,11 +541,11 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     data-testid={`goal-archive-${goal.id}`}
                     aria-label={
                       update.isPending
-                        ? `Goal「${goal.title}」のステータスを更新中…`
-                        : `Goal「${goal.title}」をアーカイブ`
+                        ? `Goal「${goal.title}」をアーカイブ中… (現状態 → archived 遷移)`
+                        : `Goal「${goal.title}」をアーカイブ (現状態 → archived 遷移、後で active 復帰可)`
                     }
                   >
-                    アーカイブ
+                    <span aria-hidden="true">アーカイブ</span>
                   </Button>
                 </>
               )}
