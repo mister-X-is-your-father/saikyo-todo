@@ -105,7 +105,7 @@ export function MockLoginForm() {
             : 'ログイン (mock-timesheet email + password で認証)'
         }
       >
-        {isPending ? '認証中...' : 'ログイン'}
+        <span aria-hidden="true">{isPending ? '認証中…' : 'ログイン'}</span>
       </Button>
       <p className="text-muted-foreground text-xs">
         開発用: <code>ops@example.com</code> / <code>password1234</code>

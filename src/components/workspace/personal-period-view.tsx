@@ -186,11 +186,11 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
                 !dirty
                   ? `${periodLabelJa(period)}ゴールに変更がないため保存不要`
                   : upsertGoal.isPending
-                    ? `${periodLabelJa(period)}ゴールを保存中…`
-                    : `${periodLabelJa(period)}ゴールを保存`
+                    ? `保存中… (${periodLabelJa(period)}ゴールを保存中)`
+                    : `ゴール保存 (${periodLabelJa(period)}のゴール文を保存)`
               }
             >
-              {upsertGoal.isPending ? '保存中…' : 'ゴール保存'}
+              <span aria-hidden="true">{upsertGoal.isPending ? '保存中…' : 'ゴール保存'}</span>
             </Button>
           </div>
         </CardContent>
