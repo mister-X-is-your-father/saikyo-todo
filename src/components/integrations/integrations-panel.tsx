@@ -179,11 +179,11 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             data-testid={`src-toggle-${src.id}`}
             aria-label={
               update.isPending
-                ? `Source「${src.name}」の状態を更新中…`
-                : `Source「${src.name}」を${src.enabled ? '無効化' : '有効化'}`
+                ? `Source「${src.name}」を${src.enabled ? '無効化' : '有効化'}中… (enabled flag 切替)`
+                : `Source「${src.name}」を${src.enabled ? '無効化 (Pull button + cron 自動 import を停止)' : '有効化 (Pull button + cron 自動 import を再開)'}`
             }
           >
-            {src.enabled ? '無効化' : '有効化'}
+            <span aria-hidden="true">{src.enabled ? '無効化' : '有効化'}</span>
           </Button>
           <Button
             size="sm"
