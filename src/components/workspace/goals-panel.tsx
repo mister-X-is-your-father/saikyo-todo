@@ -486,11 +486,11 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     data-testid={`goal-complete-${goal.id}`}
                     aria-label={
                       update.isPending
-                        ? `Goal「${goal.title}」のステータスを更新中…`
-                        : `Goal「${goal.title}」を完了`
+                        ? `Goal「${goal.title}」を完了中… (active → completed 遷移)`
+                        : `Goal「${goal.title}」を完了 (active → completed へ遷移)`
                     }
                   >
-                    完了
+                    <span aria-hidden="true">完了</span>
                   </Button>
                   <Button
                     type="button"
