@@ -183,7 +183,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               }
             >
               <X className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-              中止
+              <span aria-hidden="true">中止</span>
             </Button>
           </div>
         )}
@@ -244,12 +244,12 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               title="既存の提案を残したまま追加で分解"
               aria-label={
                 list.length > 0
-                  ? `既存の保留中 ${list.length} 件を残して追加で AI 分解`
-                  : 'AI 分解を再実行'
+                  ? `追加分解 (既存の保留中 ${list.length} 件を残して AI 分解を再実行)`
+                  : `再分解 (AI 分解を再実行)`
               }
             >
               <RotateCw className="h-3.5 w-3.5" aria-hidden="true" />
-              {list.length > 0 ? '追加分解' : '再分解'}
+              <span aria-hidden="true">{list.length > 0 ? '追加分解' : '再分解'}</span>
             </Button>
             {list.length > 0 && (
               <Button
