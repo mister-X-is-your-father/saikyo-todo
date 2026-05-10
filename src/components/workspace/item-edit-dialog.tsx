@@ -862,17 +862,19 @@ function ItemEditDialogInner({
               }
               aria-label={
                 setBaseline.isPending
-                  ? `「${item.title}」のベースラインを記録中…`
+                  ? `「${item.title}」ベースライン記録中… (startDate / dueDate を当初計画として保存)`
                   : item.baselineStartDate
-                    ? `「${item.title}」のベースラインを現在の startDate / dueDate に更新 (旧 baseline: ${item.baselineStartDate} → ${item.baselineEndDate})`
-                    : `「${item.title}」の startDate / dueDate を当初計画 (baseline) として保存`
+                    ? `「${item.title}」ベースライン更新 (現在の startDate / dueDate に上書き、旧 baseline: ${item.baselineStartDate} → ${item.baselineEndDate})`
+                    : `「${item.title}」ベースライン記録 (現在の startDate / dueDate を当初計画として保存)`
               }
             >
-              {setBaseline.isPending
-                ? '記録中…'
-                : item.baselineStartDate
-                  ? 'ベースライン更新'
-                  : 'ベースライン記録'}
+              <span aria-hidden="true">
+                {setBaseline.isPending
+                  ? 'ベースライン記録中…'
+                  : item.baselineStartDate
+                    ? 'ベースライン更新'
+                    : 'ベースライン記録'}
+              </span>
             </Button>
           )}
           {item.baselineStartDate && !item.archivedAt && (
