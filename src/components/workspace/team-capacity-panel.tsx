@@ -70,7 +70,7 @@ export function TeamCapacityPanel({ workspaceId }: Props) {
           data-testid="team-capacity-summary-toggle"
         >
           <Users className="h-4 w-4" aria-hidden="true" />
-          チームメンバー 余裕時間 (今日 / 今週)
+          <span aria-hidden="true">チームメンバー 余裕時間 (今日 / 今週)</span>
         </summary>
         {open && <PanelBody workspaceId={workspaceId} />}
       </details>
