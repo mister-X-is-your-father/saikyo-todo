@@ -157,12 +157,12 @@ export function GoalsPanel({ workspaceId }: Props) {
                   autoComplete="off"
                   aria-label={
                     title.length === 0
-                      ? 'Goal Objective (必須、最大 200 文字、なに / なぜを 1 行で)'
+                      ? 'Objective (なに / なぜ): Goal の Objective、必須、最大 200 文字、1 行で'
                       : title.trim() === ''
-                        ? `Goal Objective (現在 ${title.length} / 200 文字、空白のみは不正)`
+                        ? `Objective (なに / なぜ): Goal の Objective、現在 ${title.length} / 200 文字、空白のみは不正`
                         : title.length > 180
-                          ? `Goal Objective (現在 ${title.length} / 200 文字、上限近接)`
-                          : `Goal Objective (現在 ${title.length} / 200 文字)`
+                          ? `Objective (なに / なぜ): Goal の Objective、現在 ${title.length} / 200 文字、上限近接`
+                          : `Objective (なに / なぜ): Goal の Objective、現在 ${title.length} / 200 文字`
                   }
                 />
               </div>
