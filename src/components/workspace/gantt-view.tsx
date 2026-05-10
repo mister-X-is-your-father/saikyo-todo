@@ -354,7 +354,7 @@ export function GanttView({
             onChange={(e) => setZoom(e.target.value as typeof zoom)}
             className="rounded border bg-transparent px-1 py-0.5 text-xs"
             data-testid="gantt-zoom-select"
-            aria-label={`Gantt の 1 日あたりの幅 (現在: ${
+            aria-label={`zoom: Gantt の 1 日あたりの幅 (現在: ${
               zoom === 'compact'
                 ? '狭 24px/day'
                 : zoom === 'normal'
