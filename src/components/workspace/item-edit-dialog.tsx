@@ -637,10 +637,10 @@ function ItemEditDialogInner({
                   aria-label={(() => {
                     const current = (krsList.data ?? []).find((k) => k.id === item.keyResultId)
                     return assignKr.isPending
-                      ? 'Key Result 割当を更新中…'
+                      ? 'Key Result (OKR) 割当を更新中…'
                       : current
-                        ? `Key Result「${current.title}」(Goal「${current.goalTitle}」) に割当中 (変更で別 KR へ移動)`
-                        : 'Key Result 未割当 (選択で稼働中 Goal の KR に割当)'
+                        ? `Key Result (OKR)「${current.title}」(Goal「${current.goalTitle}」) に割当中 (変更で別 KR へ移動)`
+                        : 'Key Result (OKR) 未割当 (選択で稼働中 Goal の KR に割当)'
                   })()}
                 >
                   <option value="">未割当</option>
