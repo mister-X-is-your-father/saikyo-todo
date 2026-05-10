@@ -158,10 +158,10 @@ export function MockSubmitForm() {
         aria-label={
           isPending
             ? '送信中… (mock-timesheet 工数送信処理を実行中)'
-            : '工数を送信 (mock-timesheet 入力フォーム)'
+            : '送信 (mock-timesheet 入力フォームから工数を送信)'
         }
       >
-        {isPending ? '送信中...' : '送信'}
+        <span aria-hidden="true">{isPending ? '送信中…' : '送信'}</span>
       </Button>
       {lastRef && (
         // iter444: 送信成功後の external_ref 表示を SR にも届ける。toast.success
