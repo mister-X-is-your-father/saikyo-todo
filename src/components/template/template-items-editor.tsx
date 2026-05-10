@@ -216,9 +216,10 @@ export function TemplateItemsEditor({ templateId }: Props) {
               {it.dueOffsetDays != null ? (
                 <span
                   className="text-muted-foreground text-xs"
+                  role="img"
                   aria-label={`期日 offset +${it.dueOffsetDays} 日`}
                 >
-                  +{it.dueOffsetDays}日
+                  <span aria-hidden="true">+{it.dueOffsetDays}日</span>
                 </span>
               ) : null}
               <Button
