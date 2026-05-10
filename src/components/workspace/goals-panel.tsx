@@ -524,11 +524,11 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     data-testid={`goal-reactivate-${goal.id}`}
                     aria-label={
                       update.isPending
-                        ? `Goal「${goal.title}」のステータスを更新中…`
-                        : `Goal「${goal.title}」を active に戻す`
+                        ? `Goal「${goal.title}」を active に戻す処理中… (現状態 → active 遷移)`
+                        : `Goal「${goal.title}」を active に戻す (現状態 → active 遷移、再開して KR を更新可能に)`
                     }
                   >
-                    active に戻す
+                    <span aria-hidden="true">active に戻す</span>
                   </Button>
                   <Button
                     type="button"
@@ -561,11 +561,11 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                   data-testid={`goal-reactivate-${goal.id}`}
                   aria-label={
                     update.isPending
-                      ? `Goal「${goal.title}」のステータスを更新中…`
-                      : `Goal「${goal.title}」を active に戻す`
+                      ? `Goal「${goal.title}」を active に戻す処理中… (現状態 → active 遷移)`
+                      : `Goal「${goal.title}」を active に戻す (現状態 → active 遷移、再開して KR を更新可能に)`
                   }
                 >
-                  active に戻す
+                  <span aria-hidden="true">active に戻す</span>
                 </Button>
               )}
               <Button
