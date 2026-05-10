@@ -190,7 +190,7 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
                     : `${periodLabelJa(period)}ゴールを保存`
               }
             >
-              {upsertGoal.isPending ? '保存中…' : 'ゴール保存'}
+              <span aria-hidden="true">{upsertGoal.isPending ? '保存中…' : 'ゴール保存'}</span>
             </Button>
           </div>
         </CardContent>
@@ -237,7 +237,7 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
                     data-testid={`period-title-${period}-${it.id}`}
                     aria-label={`「${it.title}」を編集`}
                   >
-                    {it.title}
+                    <span aria-hidden="true">{it.title}</span>
                   </button>
                   {it.isMust && <MustBadge data-testid={`period-must-${period}-${it.id}`} />}
                   <div className="ml-auto shrink-0">
