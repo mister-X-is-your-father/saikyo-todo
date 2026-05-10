@@ -745,12 +745,12 @@ function SprintCard({
                   data-testid={`sprint-complete-${sprint.id}`}
                   aria-label={
                     changing
-                      ? `Sprint「${sprint.name}」のステータスを変更中…`
-                      : `Sprint「${sprint.name}」を完了`
+                      ? `Sprint「${sprint.name}」を完了中… (active → completed 遷移)`
+                      : `Sprint「${sprint.name}」を完了 (active → completed へ遷移)`
                   }
                 >
                   <CheckCircle className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                  完了
+                  <span aria-hidden="true">完了</span>
                 </Button>
                 <Button
                   size="sm"
