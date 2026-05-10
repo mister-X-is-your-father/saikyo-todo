@@ -404,8 +404,8 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                   spellCheck={false}
                   aria-label={
                     projectIds.length === 0
-                      ? 'project IDs (必須、1 件以上、カンマ区切り — 例: proj-a, proj-b)'
-                      : `project IDs (現在 ${projectIds.length} 文字、カンマ区切り)`
+                      ? 'project IDs (1 件以上): 必須、カンマ区切り — 例: proj-a, proj-b'
+                      : `project IDs (1 件以上): 現在 ${projectIds.length} 文字、カンマ区切り`
                   }
                 />
               </div>
@@ -467,8 +467,8 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     spellCheck={false}
                     aria-label={
                       itemsPath.length === 0
-                        ? 'items path (任意、JSON dot-path、省略で response root を items 配列とみなす — 例: data.items)'
-                        : `items path (現在 ${itemsPath.length} 文字、JSON dot-path)`
+                        ? 'items path (任意): JSON dot-path、省略で response root を items 配列とみなす — 例: data.items'
+                        : `items path (任意): 現在 ${itemsPath.length} 文字、JSON dot-path`
                     }
                   />
                 </div>
@@ -483,8 +483,8 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     spellCheck={false}
                     aria-label={
                       duePath.length === 0
-                        ? 'due path (任意、各 item から期日を取り出す JSON dot-path — 例: due_date)'
-                        : `due path (現在 ${duePath.length} 文字、JSON dot-path)`
+                        ? 'due path (任意): 各 item から期日を取り出す JSON dot-path — 例: due_date'
+                        : `due path (任意): 現在 ${duePath.length} 文字、JSON dot-path`
                     }
                   />
                 </div>
