@@ -183,7 +183,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               }
             >
               <X className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-              中止
+              <span aria-hidden="true">中止</span>
             </Button>
           </div>
         )}
@@ -249,7 +249,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               }
             >
               <RotateCw className="h-3.5 w-3.5" aria-hidden="true" />
-              {list.length > 0 ? '追加分解' : '再分解'}
+              <span aria-hidden="true">{list.length > 0 ? '追加分解' : '再分解'}</span>
             </Button>
             {list.length > 0 && (
               <Button
@@ -486,7 +486,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               data-testid={`proposal-${proposal.id}-edit-cancel`}
               aria-label={`「${proposal.title}」の編集をキャンセル`}
             >
-              キャンセル
+              <span aria-hidden="true">キャンセル</span>
             </Button>
             <Button
               type="submit"
@@ -502,7 +502,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
                   : `提案「${proposal.title}」の編集を保存 (Cmd/Ctrl+Enter でも可)`
               }
             >
-              {update.isPending ? '保存中…' : '保存'}
+              <span aria-hidden="true">{update.isPending ? '保存中…' : '保存'}</span>
             </Button>
           </div>
         </form>
