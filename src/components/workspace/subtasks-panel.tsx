@@ -571,11 +571,13 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
               !bulkText.trim()
                 ? '子タスクを追加するには改行区切りで入力してください'
                 : create.isPending
-                  ? `子タスク ${pendingTitleCount} 件を追加中…`
-                  : `子タスク ${pendingTitleCount} 件をまとめて追加`
+                  ? `${pendingTitleCount} 件追加中… (子タスクをまとめて追加)`
+                  : `${pendingTitleCount} 件追加 (子タスクをまとめて追加、Cmd/Ctrl+Enter でも可)`
             }
           >
-            {create.isPending ? '追加中…' : `${pendingTitleCount} 件追加`}
+            <span aria-hidden="true">
+              {create.isPending ? `${pendingTitleCount} 件追加中…` : `${pendingTitleCount} 件追加`}
+            </span>
           </Button>
         </div>
       </div>
