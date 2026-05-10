@@ -547,10 +547,10 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
           aria-keyshortcuts="Meta+Enter Control+Enter"
           aria-label={
             bulkText === ''
-              ? '子タスクを改行区切りで bulk 追加 (Cmd/Ctrl+Enter で追加)'
+              ? '改行区切りで bulk 追加 (Cmd/Ctrl+Enter で追加): 子タスク bulk 追加用 textarea'
               : pendingTitleCount === 0
-                ? '子タスクを改行区切りで bulk 追加 (現在 空行のみで追加対象なし)'
-                : `子タスクを改行区切りで bulk 追加 (現在 ${pendingTitleCount} 件、Cmd/Ctrl+Enter で追加)`
+                ? '改行区切りで bulk 追加 (Cmd/Ctrl+Enter で追加): 現在 空行のみで追加対象なし'
+                : `改行区切りで bulk 追加 (Cmd/Ctrl+Enter で追加): 現在 ${pendingTitleCount} 件 検出`
           }
           data-testid="subtasks-bulk-input"
         />
