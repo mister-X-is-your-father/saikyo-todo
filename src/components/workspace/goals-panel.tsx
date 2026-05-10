@@ -851,14 +851,14 @@ function KeyResultList({
             data-testid={`kr-add-btn-${goalId}`}
             aria-label={
               !krTitle.trim()
-                ? 'Key Result を追加するにはタイトルを入力してください'
+                ? 'KR 追加: Key Result を追加するにはタイトルを入力してください'
                 : create.isPending
-                  ? 'Key Result を追加中…'
-                  : 'Key Result をこの Goal に追加'
+                  ? 'KR 追加中… (Key Result を追加中)'
+                  : 'KR 追加 (Key Result をこの Goal に追加)'
             }
           >
             <Plus className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-            KR 追加
+            <span aria-hidden="true">KR 追加</span>
           </Button>
         </div>
       </form>
