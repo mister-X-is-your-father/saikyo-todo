@@ -358,11 +358,11 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             data-testid={`wf-toggle-${wf.id}`}
             aria-label={
               update.isPending
-                ? `Workflow「${wf.name}」の状態を更新中…`
-                : `Workflow「${wf.name}」を${wf.enabled ? '無効化' : '有効化'}`
+                ? `Workflow「${wf.name}」を${wf.enabled ? '無効化' : '有効化'}中… (enabled flag 切替)`
+                : `Workflow「${wf.name}」を${wf.enabled ? '無効化 (実行 button + cron 自動 trigger を停止)' : '有効化 (実行 button + cron 自動 trigger を再開)'}`
             }
           >
-            {wf.enabled ? '無効化' : '有効化'}
+            <span aria-hidden="true">{wf.enabled ? '無効化' : '有効化'}</span>
           </Button>
           <Button
             size="sm"
