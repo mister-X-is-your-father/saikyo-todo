@@ -109,8 +109,10 @@ export function StartTimerButton({ item, size = 'default' }: Props) {
       : '別 Item を停止して計測開始'
     : '計測開始'
   const fullHint = otherActive
-    ? `「${activeItemTitle}」のタイマーを停止して「${item.title}」の計測を開始`
-    : `「${item.title}」のタイマーを開始`
+    ? isCompact
+      ? `切替して開始 (「${activeItemTitle}」のタイマーを停止 → 「${item.title}」の計測開始)`
+      : `別 Item を停止して計測開始 (「${activeItemTitle}」のタイマー停止 → 「${item.title}」の計測開始)`
+    : `計測開始 (「${item.title}」のタイマー開始)`
 
   return (
     <Button
