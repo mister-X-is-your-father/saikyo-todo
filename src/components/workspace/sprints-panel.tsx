@@ -708,10 +708,10 @@ function SprintCard({
                 onClick={() => setEditing(true)}
                 data-testid={`sprint-period-edit-btn-${sprint.id}`}
                 title="期間を編集"
-                aria-label={`Sprint「${sprint.name}」の期間を編集`}
+                aria-label={`期間 (Sprint「${sprint.name}」の期間を編集)`}
               >
                 <CalendarRange className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                期間
+                <span aria-hidden="true">期間</span>
               </Button>
             )}
             {status === 'planning' && (
@@ -919,9 +919,9 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
               className="min-h-11"
               onClick={() => setEditing(true)}
               data-testid="sprint-defaults-edit-btn"
-              aria-label={`Sprint デフォルト (現在: ${DOW_JA[cur.startDow]}曜開始 / ${cur.lengthDays} 日) の編集モードを開く`}
+              aria-label={`編集 (Sprint デフォルト 現在: ${DOW_JA[cur.startDow]}曜開始 / ${cur.lengthDays} 日 を編集モードで開く)`}
             >
-              編集
+              <span aria-hidden="true">編集</span>
             </Button>
           </div>
         ) : (
