@@ -195,7 +195,7 @@ export function BudgetPanel({ workspaceId }: Props) {
               data-testid="budget-edit-btn"
               aria-label="AI 月次コスト上限と警告閾値の編集モードを開く"
             >
-              上限を変更
+              <span aria-hidden="true">上限を変更</span>
             </Button>
           </div>
         ) : (
@@ -283,7 +283,7 @@ export function BudgetPanel({ workspaceId }: Props) {
                 data-testid="budget-edit-cancel"
                 aria-label="AI 月次コスト上限の編集をキャンセル"
               >
-                キャンセル
+                <span aria-hidden="true">キャンセル</span>
               </Button>
               <Button
                 type="submit"
@@ -298,7 +298,7 @@ export function BudgetPanel({ workspaceId }: Props) {
                     : 'AI 月次コスト上限と警告閾値を保存'
                 }
               >
-                {update.isPending ? '保存中…' : '保存'}
+                <span aria-hidden="true">{update.isPending ? '保存中…' : '保存'}</span>
               </Button>
             </div>
           </form>
