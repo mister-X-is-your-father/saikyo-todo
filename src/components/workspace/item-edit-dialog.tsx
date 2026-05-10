@@ -900,11 +900,13 @@ function ItemEditDialogInner({
               title="baseline 列を NULL に戻す"
               aria-label={
                 clearBaseline.isPending
-                  ? `「${item.title}」のベースラインをクリア中…`
-                  : `「${item.title}」のベースライン (${item.baselineStartDate} → ${item.baselineEndDate}) をクリア`
+                  ? `「${item.title}」ベースラインクリア中… (baseline 列を NULL に戻す)`
+                  : `「${item.title}」ベースラインクリア (現在 ${item.baselineStartDate} → ${item.baselineEndDate} を NULL に戻す)`
               }
             >
-              {clearBaseline.isPending ? 'クリア中…' : 'baseline クリア'}
+              <span aria-hidden="true">
+                {clearBaseline.isPending ? 'ベースラインクリア中…' : 'ベースラインクリア'}
+              </span>
             </Button>
           )}
           {!item.archivedAt && (
