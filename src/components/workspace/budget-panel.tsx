@@ -193,9 +193,9 @@ export function BudgetPanel({ workspaceId }: Props) {
               variant="ghost"
               onClick={startEdit}
               data-testid="budget-edit-btn"
-              aria-label="AI 月次コスト上限と警告閾値の編集モードを開く"
+              aria-label="上限を変更 (AI 月次コスト上限と警告閾値の編集モードを開く)"
             >
-              上限を変更
+              <span aria-hidden="true">上限を変更</span>
             </Button>
           </div>
         ) : (
@@ -281,9 +281,9 @@ export function BudgetPanel({ workspaceId }: Props) {
                 onClick={() => setEditing(false)}
                 disabled={update.isPending}
                 data-testid="budget-edit-cancel"
-                aria-label="AI 月次コスト上限の編集をキャンセル"
+                aria-label="キャンセル (AI 月次コスト上限の編集を破棄)"
               >
-                キャンセル
+                <span aria-hidden="true">キャンセル</span>
               </Button>
               <Button
                 type="submit"
@@ -294,11 +294,11 @@ export function BudgetPanel({ workspaceId }: Props) {
                 data-testid="budget-save-btn"
                 aria-label={
                   update.isPending
-                    ? 'AI 月次コスト上限を保存中…'
-                    : 'AI 月次コスト上限と警告閾値を保存'
+                    ? '保存中… (AI 月次コスト上限を保存中)'
+                    : '保存 (AI 月次コスト上限と警告閾値を保存)'
                 }
               >
-                {update.isPending ? '保存中…' : '保存'}
+                <span aria-hidden="true">{update.isPending ? '保存中…' : '保存'}</span>
               </Button>
             </div>
           </form>
