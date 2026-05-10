@@ -31,7 +31,7 @@ export default function SignupPage() {
           className="text-primary focus-visible:ring-ring relative z-10 inline-flex min-h-11 items-center rounded px-2 py-2 underline underline-offset-4 focus-visible:ring-2 focus-visible:outline-none"
           aria-label="既にアカウントをお持ちの方はこちらでログイン"
         >
-          ログイン
+          <span aria-hidden="true">ログイン</span>
         </Link>
       </CardFooter>
     </Card>
