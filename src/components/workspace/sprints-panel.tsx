@@ -294,10 +294,10 @@ export function SprintsPanel({ workspaceId }: Props) {
                 aria-keyshortcuts="Meta+Enter Control+Enter"
                 aria-label={
                   goal.length === 0
-                    ? 'Sprint ゴール (任意、最大 500 文字、この Sprint で達成したいこと、Cmd/Ctrl+Enter で作成)'
+                    ? 'ゴール (任意、Cmd/Ctrl+Enter で作成): Sprint ゴール、最大 500 文字、この Sprint で達成したいこと'
                     : goal.length > 480
-                      ? `Sprint ゴール (現在 ${goal.length} / 500 文字、上限近接、Cmd/Ctrl+Enter で作成)`
-                      : `Sprint ゴール (現在 ${goal.length} / 500 文字、Cmd/Ctrl+Enter で作成)`
+                      ? `ゴール (任意、Cmd/Ctrl+Enter で作成): Sprint ゴール、現在 ${goal.length} / 500 文字、上限近接`
+                      : `ゴール (任意、Cmd/Ctrl+Enter で作成): Sprint ゴール、現在 ${goal.length} / 500 文字`
                 }
               />
             </div>
