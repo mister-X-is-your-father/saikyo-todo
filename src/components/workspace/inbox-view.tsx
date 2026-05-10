@@ -79,14 +79,14 @@ export function InboxView({
             className="text-primary hover:bg-muted focus-visible:ring-ring mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline focus-visible:ring-2 focus-visible:outline-none"
             data-testid="inbox-empty-quick-add"
             aria-keyshortcuts="q"
-            aria-label="クイック追加入力欄にフォーカス (q キーでも可)"
+            aria-label="クイック追加にフォーカス (キー: q、入力欄にスクロール+focus)"
             onClick={() => {
               const el = document.getElementById('quick-add-input') as HTMLInputElement | null
               el?.focus()
               el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
             }}
           >
-            クイック追加にフォーカス (キー: q)
+            <span aria-hidden="true">クイック追加にフォーカス (キー: q)</span>
           </button>
         }
       />
