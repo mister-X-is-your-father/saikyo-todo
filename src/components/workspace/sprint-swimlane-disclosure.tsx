@@ -65,7 +65,7 @@ export function SprintSwimlaneDisclosure({
         data-testid={`sprint-swimlane-summary-${sprintId}`}
       >
         <Users className="h-3.5 w-3.5" aria-hidden="true" />
-        担当者ビュー (swim-lane Gantt)
+        <span aria-hidden="true">担当者ビュー (swim-lane Gantt)</span>
       </summary>
       {open && (
         <SwimlaneBody
