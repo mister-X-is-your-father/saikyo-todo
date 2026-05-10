@@ -192,12 +192,12 @@ function ActivityRow({
           aria-controls={detailId}
           aria-label={
             open
-              ? `「${label}」の差分 (before / after) を閉じる`
-              : `「${label}」の差分 (before / after) を見る`
+              ? `詳細を閉じる (「${label}」の差分 before / after を閉じる)`
+              : `詳細を見る (「${label}」の差分 before / after を表示)`
           }
           data-testid={`activity-detail-toggle-${entry.id}`}
         >
-          {open ? '詳細を閉じる' : '詳細を見る'}
+          <span aria-hidden="true">{open ? '詳細を閉じる' : '詳細を見る'}</span>
         </button>
       )}
       {open && hasDetail && (

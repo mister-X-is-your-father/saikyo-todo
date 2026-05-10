@@ -400,9 +400,9 @@ export function GanttView({
             // gantt-summary banner の sibling chip / checkbox と垂直 align も保持)
             className="text-foreground hover:bg-muted focus-visible:ring-ring relative rounded border px-2 py-0.5 text-xs before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
             title="今日の縦線まで横スクロール"
-            aria-label={`Gantt timeline を今日 (${format(new Date(), 'M月d日 (eee)')}) の縦線まで横スクロール`}
+            aria-label={`今日へジャンプ (Gantt timeline を ${format(new Date(), 'M月d日 (eee)')} の縦線まで横スクロール)`}
           >
-            今日へジャンプ
+            <span aria-hidden="true">今日へジャンプ</span>
           </button>
         )}
       </div>
