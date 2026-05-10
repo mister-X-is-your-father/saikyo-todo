@@ -788,11 +788,13 @@ function SprintCard({
                 }}
                 data-testid={`sprint-cancel-${sprint.id}`}
                 aria-label={
-                  changing ? `Sprint「${sprint.name}」を中止中…` : `Sprint「${sprint.name}」を中止`
+                  changing
+                    ? `Sprint「${sprint.name}」を中止中… (status を cancelled に遷移)`
+                    : `Sprint「${sprint.name}」を中止 (status を cancelled に、割当 Item は残る)`
                 }
               >
                 <X className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                中止
+                <span aria-hidden="true">中止</span>
               </Button>
             )}
             {(status === 'active' || status === 'completed') && (
