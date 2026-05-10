@@ -170,9 +170,10 @@ function ActivityRow({
                 ? 'bg-primary/10 text-primary'
                 : 'bg-muted text-muted-foreground'
             }`}
+            role="img"
             aria-label={entry.actorType === 'agent' ? '実行者: AI Agent' : '実行者: ユーザ'}
           >
-            {entry.actorType === 'agent' ? 'AI' : 'user'}
+            <span aria-hidden="true">{entry.actorType === 'agent' ? 'AI' : 'user'}</span>
           </span>
         </div>
         <time
@@ -197,7 +198,7 @@ function ActivityRow({
           }
           data-testid={`activity-detail-toggle-${entry.id}`}
         >
-          {open ? '詳細を閉じる' : '詳細を見る'}
+          <span aria-hidden="true">{open ? '詳細を閉じる' : '詳細を見る'}</span>
         </button>
       )}
       {open && hasDetail && (
