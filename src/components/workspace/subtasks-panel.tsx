@@ -187,7 +187,7 @@ function SubtaskTreeNode({
           aria-label={`このタスクには子タスクが ${grandchildren.length} 件あります`}
           data-testid={`subtask-childcount-${item.id}`}
         >
-          {grandchildren.length} 件
+          <span aria-hidden="true">{grandchildren.length} 件</span>
         </span>
       )}
       {item.isMust && <MustBadge />}
@@ -575,7 +575,9 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
                   : `子タスク ${pendingTitleCount} 件をまとめて追加`
             }
           >
-            {create.isPending ? '追加中…' : `${pendingTitleCount} 件追加`}
+            <span aria-hidden="true">
+              {create.isPending ? '追加中…' : `${pendingTitleCount} 件追加`}
+            </span>
           </Button>
         </div>
       </div>
