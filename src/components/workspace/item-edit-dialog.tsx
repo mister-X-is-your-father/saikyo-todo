@@ -792,11 +792,13 @@ function ItemEditDialogInner({
               data-testid="item-edit-unarchive"
               aria-label={
                 unarchive.isPending
-                  ? `「${item.title}」をアーカイブから復元中…`
-                  : `「${item.title}」をアーカイブから復元`
+                  ? `「${item.title}」アーカイブ復元中… (アーカイブから戻す)`
+                  : `「${item.title}」アーカイブ復元 (アーカイブから戻して再び編集可能に)`
               }
             >
-              {unarchive.isPending ? '復元中…' : 'アーカイブ復元'}
+              <span aria-hidden="true">
+                {unarchive.isPending ? 'アーカイブ復元中…' : 'アーカイブ復元'}
+              </span>
             </Button>
           ) : (
             <Button
