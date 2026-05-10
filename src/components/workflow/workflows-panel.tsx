@@ -211,14 +211,14 @@ export function WorkflowsPanel({ workspaceId }: Props) {
               type="button"
               className="text-primary hover:bg-muted focus-visible:ring-ring mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline focus-visible:ring-2 focus-visible:outline-none"
               data-testid="workflows-empty-create"
-              aria-label="Workflow 作成フォームの『名前』入力欄にフォーカス"
+              aria-label="Workflow 作成フォームへ移動 (『名前』入力欄にフォーカス)"
               onClick={() => {
                 const el = document.getElementById('wf-name') as HTMLInputElement | null
                 el?.focus()
                 el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
               }}
             >
-              作成フォームへ
+              <span aria-hidden="true">作成フォームへ</span>
             </button>
           }
         />

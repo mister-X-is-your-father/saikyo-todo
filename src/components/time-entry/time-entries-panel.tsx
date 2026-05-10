@@ -54,14 +54,14 @@ export function TimeEntriesPanel({ workspaceId }: { workspaceId: string }) {
                   type="button"
                   className="text-primary hover:bg-muted focus-visible:ring-ring mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline focus-visible:ring-2 focus-visible:outline-none"
                   data-testid="time-entries-empty-create"
-                  aria-label="稼働記録 作成フォームの『勤務日』入力欄にフォーカス"
+                  aria-label="稼働記録 作成フォームへ移動 (『勤務日』入力欄にフォーカス)"
                   onClick={() => {
                     const el = document.getElementById('teDate') as HTMLInputElement | null
                     el?.focus()
                     el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
                   }}
                 >
-                  作成フォームへ
+                  <span aria-hidden="true">作成フォームへ</span>
                 </button>
               }
             />
