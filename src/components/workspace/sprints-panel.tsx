@@ -621,10 +621,10 @@ function SprintCard({
                     aria-required="true"
                     aria-label={
                       editStart === ''
-                        ? 'Sprint 開始日 (必須、終了日以前)'
+                        ? '開始: Sprint 開始日 (必須、終了日以前)'
                         : isInvalidDateRange(editStart, editEnd)
-                          ? `Sprint 開始日 (現在: ${editStart} (${dayOfWeekJa(editStart)})、終了日 ${editEnd} より後で不正)`
-                          : `Sprint 開始日 (現在: ${editStart} (${dayOfWeekJa(editStart)}))`
+                          ? `開始 (${dayOfWeekJa(editStart)}): Sprint 開始日 ${editStart}、終了日 ${editEnd} より後で不正`
+                          : `開始 (${dayOfWeekJa(editStart)}): Sprint 開始日 ${editStart}`
                     }
                     aria-invalid={isInvalidDateRange(editStart, editEnd) || undefined}
                     className="h-8 text-xs"
@@ -646,10 +646,10 @@ function SprintCard({
                     aria-required="true"
                     aria-label={
                       editEnd === ''
-                        ? 'Sprint 終了日 (必須、開始日以降)'
+                        ? '終了: Sprint 終了日 (必須、開始日以降)'
                         : isInvalidDateRange(editStart, editEnd)
-                          ? `Sprint 終了日 (現在: ${editEnd} (${dayOfWeekJa(editEnd)})、開始日 ${editStart} より前で不正)`
-                          : `Sprint 終了日 (現在: ${editEnd} (${dayOfWeekJa(editEnd)}))`
+                          ? `終了 (${dayOfWeekJa(editEnd)}): Sprint 終了日 ${editEnd}、開始日 ${editStart} より前で不正`
+                          : `終了 (${dayOfWeekJa(editEnd)}): Sprint 終了日 ${editEnd}`
                     }
                     aria-invalid={isInvalidDateRange(editStart, editEnd) || undefined}
                     className="h-8 text-xs"
