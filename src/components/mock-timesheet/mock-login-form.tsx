@@ -84,9 +84,16 @@ export function MockLoginForm() {
           required
           aria-required="true"
           aria-invalid={form.formState.errors.password ? true : undefined}
-          aria-describedby={form.formState.errors.password ? 'tsPassword-error' : undefined}
+          aria-describedby={
+            form.formState.errors.password ? 'tsPassword-hint tsPassword-error' : 'tsPassword-hint'
+          }
           {...form.register('password')}
         />
+        {/* iter888: tsEmail-hint と同 pattern。seed password (form 下に表示済) を
+            hint で誘導し、自動入力テスト用 mock の趣旨を SR / 視覚双方で明示。 */}
+        <p id="tsPassword-hint" className="text-muted-foreground text-xs">
+          mock-timesheet 用パスワード (フォーム下の seed 参照: password1234)。
+        </p>
         {form.formState.errors.password && (
           <p id="tsPassword-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.password.message}
