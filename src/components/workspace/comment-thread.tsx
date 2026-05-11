@@ -130,7 +130,9 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
                   : 'コメントを投稿 (Cmd/Ctrl+Enter でも可、@user で言及・通知)'
             }
           >
-            {create.isPending ? '送信中…' : '投稿'}
+            <span aria-hidden="true">
+              {create.isPending ? '投稿中…' : '投稿'}
+            </span>
           </Button>
         </div>
       </div>
