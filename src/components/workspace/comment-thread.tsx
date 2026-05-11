@@ -255,7 +255,7 @@ function CommentItem({
               data-testid={`comment-edit-cancel-${comment.id}`}
               aria-label="コメントの編集をキャンセル"
             >
-              キャンセル
+              <span aria-hidden="true">キャンセル</span>
             </Button>
             <Button
               type="button"
@@ -274,7 +274,7 @@ function CommentItem({
                     : 'コメントの編集を保存 (Cmd/Ctrl+Enter でも可)'
               }
             >
-              保存
+              <span aria-hidden="true">{update.isPending ? '保存中…' : '保存'}</span>
             </Button>
           </div>
         </div>
@@ -299,7 +299,7 @@ function CommentItem({
                 data-testid={`comment-edit-${comment.id}`}
                 aria-label={`コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を編集`}
               >
-                編集
+                <span aria-hidden="true">編集</span>
               </button>
               <button
                 type="button"
@@ -314,7 +314,7 @@ function CommentItem({
                     : `コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を削除`
                 }
               >
-                削除
+                <span aria-hidden="true">削除</span>
               </button>
             </div>
           )}
