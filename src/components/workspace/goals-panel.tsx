@@ -771,7 +771,8 @@ function KeyResultList({
             value={krTitle}
             onChange={(e) => setKrTitle(e.target.value)}
             placeholder="KR タイトル (例: p95 < 200ms)"
-            className="flex-1"
+            // iter895: mode-M mobile target — flex-1 + min-h-11 (iter889-894 統一)
+            className="min-h-11 flex-1"
             data-testid={`kr-title-input-${goalId}`}
             aria-label={
               krTitle.length === 0
@@ -792,7 +793,7 @@ function KeyResultList({
           <select
             value={mode}
             onChange={(e) => setMode(e.target.value as ProgressMode)}
-            className="rounded border px-2 py-1 text-xs"
+            className="min-h-11 rounded border px-2 py-1 text-xs"
             required
             aria-required="true"
             aria-label={`KR 進捗算出モード (現在: ${
@@ -814,7 +815,7 @@ function KeyResultList({
               value={target}
               onChange={(e) => setTarget(e.target.value)}
               placeholder="例: 100"
-              className="w-32 text-sm"
+              className="min-h-11 w-32 text-sm"
               required
               aria-required="true"
               aria-invalid={(target !== '' && Number.isNaN(Number(target))) || undefined}
@@ -834,7 +835,7 @@ function KeyResultList({
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
               placeholder="例: 件 / %"
-              className="w-24 text-sm"
+              className="min-h-11 w-24 text-sm"
               aria-label={
                 unit.length === 0
                   ? '単位 (任意、最大 20 文字、目標値とセット — 例: 件 / % / hours)'
