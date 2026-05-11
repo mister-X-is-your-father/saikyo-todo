@@ -586,7 +586,8 @@ function ItemEditDialogInner({
                   onChange={(e) => void handleSprintChange(e.target.value || null)}
                   disabled={assignSprint.isPending}
                   aria-busy={assignSprint.isPending || undefined}
-                  className="w-full rounded border px-2 py-1.5 text-sm"
+                  // iter902: mode-M mobile target — min-h-11 (iter901 sweep follow-up)
+                  className="min-h-11 w-full rounded border px-2 py-1.5 text-sm"
                   data-testid="edit-item-sprint"
                   aria-label={(() => {
                     const current = (sprintsList.data ?? []).find((s) => s.id === item.sprintId)
@@ -637,7 +638,7 @@ function ItemEditDialogInner({
                   onChange={(e) => void handleKrChange(e.target.value || null)}
                   disabled={assignKr.isPending}
                   aria-busy={assignKr.isPending || undefined}
-                  className="w-full rounded border px-2 py-1.5 text-sm"
+                  className="min-h-11 w-full rounded border px-2 py-1.5 text-sm"
                   data-testid="edit-item-kr"
                   aria-label={(() => {
                     const current = (krsList.data ?? []).find((k) => k.id === item.keyResultId)
@@ -726,6 +727,7 @@ function ItemEditDialogInner({
                   aria-describedby="editDod-hint"
                   data-testid="edit-item-dod"
                   autoComplete="off"
+                  className="min-h-11"
                   aria-label={
                     dod.length === 0
                       ? 'DoD 完了条件 (MUST item は必須、空欄では保存・done 遷移不可)'
