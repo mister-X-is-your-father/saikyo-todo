@@ -67,7 +67,7 @@ export function IntegrationsPanel({ workspaceId }: Props) {
                 el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
               }}
             >
-              作成フォームへ
+              <span aria-hidden="true">作成フォームへ</span>
             </button>
           }
         />
