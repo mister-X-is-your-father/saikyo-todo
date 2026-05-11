@@ -138,7 +138,9 @@ export function TimeEntriesTable({
                           }Sync`
                     }
                   >
-                    {e.syncStatus === 'failed' ? '再Sync' : 'Sync'}
+                    <span aria-hidden="true">
+                      {e.syncStatus === 'failed' ? '再Sync' : 'Sync'}
+                    </span>
                   </Button>
                 )}
               </td>
