@@ -57,6 +57,8 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
           placeholder="task を検索…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
+          // iter905: mode-M mobile target — h-8 → min-h-11 (iter889-904 統一)
+          className="min-h-11"
         />
       </div>
       <div className="max-h-72 overflow-auto">
@@ -110,6 +112,7 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
                   ? '割込み / 休憩のメモ (任意、空欄で「割込み」 fallback)'
                   : `割込み / 休憩のメモ (現在 ${interruptNote.length} 文字)`
               }
+              className="min-h-11"
             />
             <Button
               type="button"
