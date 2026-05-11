@@ -325,7 +325,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                 id="src-kind"
                 value={kind}
                 onChange={(e) => setKind(e.target.value as 'yamory' | 'custom-rest')}
-                className="h-9 w-full rounded-md border px-3 py-1 text-sm"
+                className="min-h-11 w-full rounded-md border px-3 py-1 text-sm"
                 required
                 aria-required="true"
                 aria-label={`Source 種別 (現在: ${
@@ -353,6 +353,8 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                 minLength={1}
                 maxLength={200}
                 autoComplete="off"
+                // iter897: mode-M mobile target (iter889-896 統一)
+                className="min-h-11"
                 aria-label={
                   name.length === 0
                     ? 'Source 名前 (必須、最大 200 文字、識別しやすい名前 — 例: Yamory チーム A)'
@@ -383,6 +385,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                   // new-password で suggest は出るが既存 password 補完を避ける。
                   autoComplete="new-password"
                   spellCheck={false}
+                  className="min-h-11"
                   data-testid="src-token"
                   aria-label={
                     token.length === 0
