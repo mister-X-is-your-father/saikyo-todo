@@ -19,8 +19,6 @@ async function main(): Promise<void> {
     resolve(process.cwd(), 'src/components/workspace/sprints-panel.tsx'),
     'utf8',
   )
-  const startOk =
-    /data-testid=\{`sprint-edit-start-\$\{sprint\.id\}`\}|className="min-h-11 text-xs"/g.test(sp)
   const count = (sp.match(/className="min-h-11 text-xs"/g) ?? []).length
   if (count >= 2) {
     findings.push({
