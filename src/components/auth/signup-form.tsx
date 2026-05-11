@@ -134,8 +134,11 @@ export function SignupForm() {
           }
           {...form.register('password')}
         />
+        {/* iter887: 8 文字以上 だけでは「強度・記憶しやすさ」 mental model 不足。覚えやすい
+            パスフレーズ + 8 文字以上の最小要件 + ログイン時の再認証経路 を 1 行で示す。
+            login-form 側 (iter741 hint) と意図的に異なり、新規設定時の指針を中心に置く。 */}
         <p id="signup-password-hint" className="text-muted-foreground text-xs">
-          8 文字以上
+          8 文字以上。覚えやすいパスフレーズ推奨 (例: 単語複数 + 記号)。忘れたら再サインアップ。
         </p>
         {form.formState.errors.password && (
           <p id="signup-password-error" className="text-destructive text-xs" role="alert">
