@@ -524,7 +524,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                   title={preset.title}
                   aria-label={`graph に ${preset.title} の skeleton node を追加`}
                 >
-                  + {preset.type}
+                  <span aria-hidden="true">+ {preset.type}</span>
                 </Button>
               ))}
             </div>
