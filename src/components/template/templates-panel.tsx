@@ -201,7 +201,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
                     : 'Template を新規作成 (Cmd/Ctrl+Enter でも可)'
               }
             >
-              作成
+              <span aria-hidden="true">{createMut.isPending ? '作成中…' : '作成'}</span>
             </Button>
           </form>
         </CardContent>
@@ -250,7 +250,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
                 el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
               }}
             >
-              作成フォームへ
+              <span aria-hidden="true">作成フォームへ</span>
             </button>
           }
         />
