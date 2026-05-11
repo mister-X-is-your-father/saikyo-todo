@@ -866,11 +866,13 @@ function ItemEditDialogInner({
                     : `「${item.title}」の startDate / dueDate を当初計画 (baseline) として保存`
               }
             >
-              {setBaseline.isPending
-                ? '記録中…'
-                : item.baselineStartDate
-                  ? 'ベースライン更新'
-                  : 'ベースライン記録'}
+              <span aria-hidden="true">
+                {setBaseline.isPending
+                  ? '記録中…'
+                  : item.baselineStartDate
+                    ? 'ベースライン更新'
+                    : 'ベースライン記録'}
+              </span>
             </Button>
           )}
           {item.baselineStartDate && !item.archivedAt && (
@@ -900,7 +902,9 @@ function ItemEditDialogInner({
                   : `「${item.title}」のベースライン (${item.baselineStartDate} → ${item.baselineEndDate}) をクリア`
               }
             >
-              {clearBaseline.isPending ? 'クリア中…' : 'baseline クリア'}
+              <span aria-hidden="true">
+                {clearBaseline.isPending ? 'クリア中…' : 'baseline クリア'}
+              </span>
             </Button>
           )}
           {!item.archivedAt && (
