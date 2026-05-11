@@ -47,7 +47,7 @@ export default async function TimeEntriesPage({ params }: PageProps) {
         subtitle={`やったこと + 時間を記録 · ${user.email ?? ''}`}
         pageActions={
           <Button variant="outline" asChild size="sm" className="min-h-11">
-            <Link href={`/`} aria-label="Workspace ホームへ戻る">
+            <Link href={`/${workspaceId}`} aria-label="Workspace ホームへ戻る">
               <span aria-hidden="true">← Workspace</span>
             </Link>
           </Button>

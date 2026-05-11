@@ -47,7 +47,7 @@ export default async function GoalsPage({ params }: PageProps) {
         subtitle={`Objective + Key Results · ${user.email ?? ''}`}
         pageActions={
           <Button variant="outline" asChild size="sm" className="min-h-11">
-            <Link href={`/`} aria-label="Workspace ホームへ戻る">
+            <Link href={`/${workspaceId}`} aria-label="Workspace ホームへ戻る">
               <span aria-hidden="true">← Workspace</span>
             </Link>
           </Button>
