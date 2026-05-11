@@ -74,6 +74,8 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           required
           aria-required="true"
           max={new Date().toISOString().slice(0, 10)}
+          // iter892: mode-M mobile target — h-8 → min-h-11 (WCAG 2.5.8 AAA + iOS 44pt、time-entry 入力 form 全体統一)
+          className="min-h-11"
           aria-label={(() => {
             const today = new Date().toISOString().slice(0, 10)
             if (workDate === '') return '日付 (必須、今日まで指定可、未来日付は不正)'
@@ -92,7 +94,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           id="teCategory"
           value={category}
           onChange={(e) => setCategory(e.target.value as TimeEntryCategoryKey)}
-          className="h-9 rounded border px-2 text-sm"
+          className="min-h-11 rounded border px-2 text-sm"
           required
           aria-required="true"
           aria-label={`カテゴリ (現在: ${TIME_ENTRY_CATEGORIES.find((c) => c.key === category)?.label ?? category})`}
@@ -118,6 +120,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           aria-invalid={(description.length > 0 && description.trim() === '') || undefined}
           minLength={1}
           maxLength={500}
+          className="min-h-11"
           aria-label={
             description.length === 0
               ? '作業内容 (必須、最大 500 文字、何をやったかを 1 行で)'
@@ -142,7 +145,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           step={15}
           value={durationMinutes}
           onChange={(e) => setDurationMinutes(Number(e.target.value))}
-          className="w-24"
+          className="min-h-11 w-24"
           required
           aria-required="true"
           aria-invalid={durationMinutes <= 0 || durationMinutes > 24 * 60 || undefined}
