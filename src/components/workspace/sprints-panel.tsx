@@ -812,7 +812,9 @@ function SprintCard({
                 }
               >
                 <Sparkles className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                {retroPending ? '振り返り生成中…' : '振り返り生成'}
+                <span aria-hidden="true">
+                  {retroPending ? '振り返り生成中…' : '振り返り生成'}
+                </span>
               </Button>
             )}
             {(status === 'planning' || status === 'active') && (
@@ -834,11 +836,13 @@ function SprintCard({
                 }
               >
                 <Sparkles className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                {premortemPending
-                  ? 'Pre-mortem 生成中…'
-                  : sprint.premortemGeneratedAt
-                    ? 'Pre-mortem 再生成'
-                    : 'Pre-mortem 生成'}
+                <span aria-hidden="true">
+                  {premortemPending
+                    ? 'Pre-mortem 生成中…'
+                    : sprint.premortemGeneratedAt
+                      ? 'Pre-mortem 再生成'
+                      : 'Pre-mortem 生成'}
+                </span>
               </Button>
             )}
           </div>
