@@ -389,6 +389,8 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               aria-invalid={!title.trim() || undefined}
               minLength={1}
               maxLength={500}
+              // iter908: mode-M mobile target — h-8 → min-h-11 (iter889-907 統一)
+              className="min-h-11"
               aria-label={
                 title.length === 0
                   ? '提案タイトル (必須、最大 500 文字)'
@@ -459,6 +461,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
                 aria-invalid={(isMust && !dod.trim()) || undefined}
                 minLength={1}
                 maxLength={2000}
+                className="min-h-11"
                 aria-label={
                   dod.length === 0
                     ? '提案 DoD (MUST 必須、最大 2000 文字、完了条件を具体記述)'
