@@ -115,7 +115,7 @@ export function DataWidgetCard({
             className="text-muted-foreground flex items-center justify-center gap-2 py-6 text-sm"
           >
             <Loader2 className="h-4 w-4 motion-safe:animate-spin" aria-hidden="true" />
-            読み込み中...
+            読み込み中…
           </div>
         ) : errorMsg ? (
           <div

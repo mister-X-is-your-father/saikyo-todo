@@ -241,7 +241,7 @@ export function CalendarView({ workspaceId }: Props) {
                 aria-live="polite"
               >
                 <Loader2 className="mr-2 h-4 w-4 motion-safe:animate-spin" aria-hidden="true" />
-                読み込み中...
+                読み込み中…
               </div>
             ) : (
               <TimelineLane
@@ -278,7 +278,7 @@ export function CalendarView({ workspaceId }: Props) {
                 aria-live="polite"
               >
                 <Loader2 className="mr-2 h-4 w-4 motion-safe:animate-spin" aria-hidden="true" />
-                読み込み中...
+                読み込み中…
               </div>
             ) : (
               <TimelineLane
