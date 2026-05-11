@@ -119,7 +119,7 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
               data-testid="schedule-picker-interrupt-add"
               aria-label={`割込み / 休憩として追加${interruptNote ? ` (メモ: ${interruptNote})` : ''}`}
             >
-              割込みとして追加
+              <span aria-hidden="true">割込みとして追加</span>
             </Button>
           </div>
         </div>
@@ -133,7 +133,7 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
           data-testid="schedule-picker-cancel"
           aria-label="task pick をキャンセル"
         >
-          キャンセル
+          <span aria-hidden="true">キャンセル</span>
         </Button>
       </div>
     </div>
