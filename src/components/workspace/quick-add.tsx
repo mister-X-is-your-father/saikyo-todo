@@ -154,7 +154,8 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
           // 各回新規入力なので "off" でドロップダウンを抑制 (頻繁な入力 hot path で
           // suggested 候補のチラ見えは集中阻害)。
           autoComplete="off"
-          className="flex-1"
+          // iter898: mode-M mobile target — flex-1 + min-h-11 (iter889-897 統一、最頻 entry point)
+          className="min-h-11 flex-1"
         />
         <Button
           type="button"
