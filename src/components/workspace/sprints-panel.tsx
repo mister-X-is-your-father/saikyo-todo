@@ -215,6 +215,8 @@ export function SprintsPanel({ workspaceId }: Props) {
                   maxLength={100}
                   // iter344: app 固有 input なので browser auto-fill 候補は無関係 → off
                   autoComplete="off"
+                  // iter893: mode-M mobile target (iter889-892 統一) — h-8 → min-h-11 (WCAG 2.5.8 AAA)
+                  className="min-h-11"
                   aria-label={
                     name.length === 0
                       ? 'Sprint 名前 (必須、最大 100 文字)'
@@ -237,6 +239,7 @@ export function SprintsPanel({ workspaceId }: Props) {
                   aria-required="true"
                   aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   max={endDate || undefined}
+                  className="min-h-11"
                   aria-label={
                     startDate === ''
                       ? 'Sprint 開始日 (必須、終了日以前)'
@@ -258,6 +261,7 @@ export function SprintsPanel({ workspaceId }: Props) {
                   aria-required="true"
                   aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   min={startDate || undefined}
+                  className="min-h-11"
                   aria-label={
                     endDate === ''
                       ? 'Sprint 終了日 (必須、開始日以降)'
