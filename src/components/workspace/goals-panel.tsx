@@ -298,7 +298,7 @@ export function GoalsPanel({ workspaceId }: Props) {
                 el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
               }}
             >
-              作成フォームへ
+              <span aria-hidden="true">作成フォームへ</span>
             </button>
           }
         />
@@ -858,7 +858,7 @@ function KeyResultList({
             }
           >
             <Plus className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-            KR 追加
+            <span aria-hidden="true">KR 追加</span>
           </Button>
         </div>
       </form>
