@@ -796,7 +796,9 @@ function ItemEditDialogInner({
                   : `「${item.title}」をアーカイブから復元`
               }
             >
-              {unarchive.isPending ? '復元中…' : 'アーカイブ復元'}
+              <span aria-hidden="true">
+                {unarchive.isPending ? '復元中…' : 'アーカイブ復元'}
+              </span>
             </Button>
           ) : (
             <Button
@@ -825,7 +827,9 @@ function ItemEditDialogInner({
                   : `「${item.title}」をアーカイブ (後で復元可能)`
               }
             >
-              {archive.isPending ? 'アーカイブ中…' : 'アーカイブ'}
+              <span aria-hidden="true">
+                {archive.isPending ? 'アーカイブ中…' : 'アーカイブ'}
+              </span>
             </Button>
           )}
           {item.startDate && item.dueDate && !item.archivedAt && (
