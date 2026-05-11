@@ -64,6 +64,8 @@ export function CreateWorkspaceForm() {
           enterKeyHint="next"
           aria-invalid={form.formState.errors.name ? true : undefined}
           aria-describedby={form.formState.errors.name ? 'ws-name-error' : undefined}
+          // iter890: mode-M mobile audit (iter889 follow-up) — Input h-8 → min-h-11 (44px、WCAG 2.5.8 AAA)
+          className="min-h-11"
           {...form.register('name')}
         />
         {form.formState.errors.name && (
@@ -91,6 +93,7 @@ export function CreateWorkspaceForm() {
           aria-describedby={
             form.formState.errors.slug ? 'ws-slug-hint ws-slug-error' : 'ws-slug-hint'
           }
+          className="min-h-11"
           {...form.register('slug')}
         />
         <p id="ws-slug-hint" className="text-muted-foreground text-xs">
