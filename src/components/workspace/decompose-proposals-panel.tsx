@@ -249,7 +249,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               }
             >
               <RotateCw className="h-3.5 w-3.5" aria-hidden="true" />
-              {list.length > 0 ? '追加分解' : '再分解'}
+              <span aria-hidden="true">{list.length > 0 ? '追加分解' : '再分解'}</span>
             </Button>
             {list.length > 0 && (
               <Button
