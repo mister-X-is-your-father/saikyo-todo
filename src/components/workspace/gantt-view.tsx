@@ -352,7 +352,8 @@ export function GanttView({
           <select
             value={zoom}
             onChange={(e) => setZoom(e.target.value as typeof zoom)}
-            className="rounded border bg-transparent px-1 py-0.5 text-xs"
+            // iter907: mode-M mobile target — h-default → min-h-11 (iter889-906 統一)
+            className="min-h-11 rounded border bg-transparent px-1 py-0.5 text-xs"
             data-testid="gantt-zoom-select"
             aria-label={`Gantt の 1 日あたりの幅 (現在: ${
               zoom === 'compact'
