@@ -110,7 +110,7 @@ export function TeamContextEditor({ workspaceId }: Props) {
                   : 'チームコンテキストを保存 (AI プロンプト末尾に inject)'
             }
           >
-            {upd.isPending ? '保存中…' : '保存'}
+            <span aria-hidden="true">{upd.isPending ? '保存中…' : '保存'}</span>
           </Button>
         </div>
       </CardContent>
