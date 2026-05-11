@@ -442,7 +442,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     id="src-method"
                     value={method}
                     onChange={(e) => setMethod(e.target.value as 'GET' | 'POST')}
-                    className="h-9 w-full rounded-md border px-3 py-1 text-sm"
+                    className="min-h-11 w-full rounded-md border px-3 py-1 text-sm"
                     required
                     aria-required="true"
                     aria-label={`HTTP メソッド (現在: ${

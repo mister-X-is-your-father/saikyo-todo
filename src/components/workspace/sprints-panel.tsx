@@ -945,7 +945,7 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                 id="sprint-defaults-dow"
                 value={dow}
                 onChange={(e) => setDow(Number(e.target.value))}
-                className="h-9 rounded-md border px-2 text-sm"
+                className="min-h-11 rounded-md border px-2 text-sm"
                 required
                 aria-required="true"
                 aria-label={`Sprint 基本曜日 (現在: ${DOW_JA[dow] ?? dow}曜開始)`}
@@ -970,7 +970,7 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                 step={1}
                 value={length}
                 onChange={(e) => setLength(Number(e.target.value))}
-                className="h-9 w-20 text-sm"
+                className="min-h-11 w-20 text-sm"
                 required
                 aria-required="true"
                 aria-label={

@@ -28,13 +28,11 @@ async function main(): Promise<void> {
     [/id="editStart"[\s\S]{0,400}className="min-h-11"/, 'editStart'],
     [/id="editDue"[\s\S]{0,400}className="min-h-11"/, 'editDue'],
   ]
-  let allOk = true
   for (const [re, label] of checks) {
     if (re.test(ied)) {
       findings.push({ level: 'info', message: `item-edit-dialog ${label} min-h-11 適用 OK` })
     } else {
       findings.push({ level: 'warning', message: `item-edit-dialog ${label} min-h-11 未適用` })
-      allOk = false
     }
   }
 
