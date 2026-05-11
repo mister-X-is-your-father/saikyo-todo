@@ -68,9 +68,12 @@ export default async function RootLayout({
          * 通常時は sr-only で SR のみが認識。WCAG 2.4.1 Bypass Blocks 対応。
          * 各 page の <main> 要素に `id="main-content"` を付与する必要がある。
          */}
+        {/* iter851: focus:not-sr-only は padding:0 を reset するので px-3/py-2 は無視される。
+            focus:px-3 focus:py-2 focus:min-h-11 focus:inline-flex focus:items-center で focus 時
+            のみ 44px 縦 (WCAG 2.5.8 AAA Target Size) を確保し、keyboard / touch 双方の click 目標を担保。 */}
         <a
           href="#main-content"
-          className="bg-primary text-primary-foreground sr-only z-50 rounded px-3 py-2 text-sm font-medium focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+          className="bg-primary text-primary-foreground sr-only z-50 rounded text-sm font-medium focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:inline-flex focus:min-h-11 focus:items-center focus:px-3 focus:py-2"
         >
           メインコンテンツへスキップ
         </a>
