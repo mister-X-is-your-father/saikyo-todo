@@ -92,7 +92,7 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-xs">集計中...</p>
+          <p className="text-muted-foreground text-xs">集計中…</p>
         </CardContent>
       </Card>
     )

@@ -840,7 +840,7 @@ export function DashboardView({ workspaceId }: Props) {
     return { stale, summary, detail }
   }, [itemsQ.data])
 
-  if (summary.isLoading) return <Loading message="ダッシュボード読込中..." />
+  if (summary.isLoading) return <Loading message="ダッシュボード読込中…" />
   if (summary.error) {
     return (
       <ErrorState
@@ -1308,7 +1308,7 @@ export function DashboardView({ workspaceId }: Props) {
         </CardHeader>
         <CardContent>
           {burndown.isLoading ? (
-            <Loading message="グラフ読込中..." />
+            <Loading message="グラフ読込中…" />
           ) : burndown.error ? (
             <ErrorState
               message={isAppError(burndown.error) ? burndown.error.message : '取得失敗'}

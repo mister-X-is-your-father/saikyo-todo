@@ -50,7 +50,7 @@ async function main(): Promise<void> {
     // 行が // で始まる/含む && '読み込み中...' を含む → comment、許可
     const lines = text.split('\n')
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]
+      const line = lines[i] ?? ''
       if (!line.includes('読み込み中...')) continue
       const isComment = /^\s*(\*|\/\/|\/\*)/.test(line) || /\/\/.*読み込み中\.\.\./.test(line)
       if (!isComment) {

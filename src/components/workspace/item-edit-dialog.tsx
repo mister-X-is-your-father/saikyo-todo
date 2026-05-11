@@ -964,7 +964,7 @@ function ItemEditDialogInner({
                   : `「${item.title}」を保存 (Cmd/Ctrl+S でも可、楽観ロックで version が進む)`
             }
           >
-            <span aria-hidden="true">{update.isPending ? '保存中...' : '保存'}</span>
+            <span aria-hidden="true">{update.isPending ? '保存中…' : '保存'}</span>
           </Button>
         </DialogFooter>
       </DialogContent>
