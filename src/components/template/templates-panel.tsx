@@ -106,6 +106,8 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   minLength={1}
                   maxLength={200}
                   autoComplete="off"
+                  // iter896: mode-M mobile target — h-8 → min-h-11 (iter889-895 統一)
+                  className="min-h-11"
                   aria-label={
                     name.length === 0
                       ? 'Template 名前 (必須、最大 200 文字、何を生成するかが分かる名前)'
@@ -123,7 +125,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   id="tmpl-kind"
                   value={kind}
                   onChange={(e) => setKind(e.target.value as 'manual' | 'recurring')}
-                  className="h-9 w-full rounded-md border px-3 py-1 text-sm"
+                  className="min-h-11 w-full rounded-md border px-3 py-1 text-sm"
                   required
                   aria-required="true"
                   aria-label={`Template 種別 (現在: ${
@@ -176,7 +178,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   value={scheduleCron}
                   onChange={(e) => setScheduleCron(e.target.value)}
                   placeholder="0 9 * * 1  (毎週月曜 09:00)"
-                  className="font-mono"
+                  className="min-h-11 font-mono"
                   autoComplete="off"
                   spellCheck={false}
                   aria-label={
