@@ -62,6 +62,8 @@ export function MockLoginForm() {
           aria-describedby={
             form.formState.errors.email ? 'tsEmail-hint tsEmail-error' : 'tsEmail-hint'
           }
+          // iter889: mode-M mobile audit — Input h-8 (32px) → min-h-11 (44px、WCAG 2.5.8 AAA)
+          className="min-h-11"
           {...form.register('email')}
         />
         {/* iter738: signup-form / login-form (iter735race-737race) と同 form hint pattern。
@@ -87,6 +89,7 @@ export function MockLoginForm() {
           aria-describedby={
             form.formState.errors.password ? 'tsPassword-hint tsPassword-error' : 'tsPassword-hint'
           }
+          className="min-h-11"
           {...form.register('password')}
         />
         {/* iter888: tsEmail-hint と同 pattern。seed password (form 下に表示済) を

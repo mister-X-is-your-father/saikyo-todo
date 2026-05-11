@@ -70,6 +70,9 @@ export function LoginForm() {
           aria-describedby={
             form.formState.errors.email ? 'login-email-hint email-error' : 'login-email-hint'
           }
+          // iter889: mode-M mobile audit — shadcn Input default h-8 (32px) は mobile touch target 不足。
+          // min-h-11 (44px) で WCAG 2.5.8 AAA Target Size + iOS recommended (44pt) を満たす。
+          className="min-h-11"
           {...form.register('email')}
         />
         {/* iter737: signup-form 側 (iter735race/iter736race) と同 pattern。
@@ -98,6 +101,7 @@ export function LoginForm() {
               ? 'login-password-hint password-error'
               : 'login-password-hint'
           }
+          className="min-h-11"
           {...form.register('password')}
         />
         {/* iter741: form hint pattern (iter733race-740race と同じ) を login password にも適用。

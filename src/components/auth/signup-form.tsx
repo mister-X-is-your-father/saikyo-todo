@@ -71,6 +71,8 @@ export function SignupForm() {
               ? 'displayName-hint displayName-error'
               : 'displayName-hint'
           }
+          // iter889: mode-M mobile audit — Input h-8 (32px) → min-h-11 (44px、WCAG 2.5.8 AAA + iOS 44pt)
+          className="min-h-11"
           {...form.register('displayName')}
         />
         {/* iter735: pattern エラー前に format hint を出す (create-workspace-form
@@ -103,6 +105,7 @@ export function SignupForm() {
               ? 'signup-email-hint signup-email-error'
               : 'signup-email-hint'
           }
+          className="min-h-11"
           {...form.register('email')}
         />
         {/* iter736: email format hint を pattern エラー前に提示
@@ -132,6 +135,7 @@ export function SignupForm() {
               ? 'signup-password-hint signup-password-error'
               : 'signup-password-hint'
           }
+          className="min-h-11"
           {...form.register('password')}
         />
         {/* iter887: 8 文字以上 だけでは「強度・記憶しやすさ」 mental model 不足。覚えやすい
