@@ -355,7 +355,7 @@ export function SprintsPanel({ workspaceId }: Props) {
                 el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
               }}
             >
-              作成フォームへ
+              <span aria-hidden="true">作成フォームへ</span>
             </button>
           }
         />
@@ -675,7 +675,7 @@ function SprintCard({
                   data-testid={`sprint-period-cancel-${sprint.id}`}
                   aria-label={`Sprint「${sprint.name}」の期間編集をキャンセル`}
                 >
-                  キャンセル
+                  <span aria-hidden="true">キャンセル</span>
                 </Button>
                 <Button
                   type="submit"
@@ -690,7 +690,7 @@ function SprintCard({
                       : `Sprint「${sprint.name}」の期間を保存`
                   }
                 >
-                  {update.isPending ? '保存中…' : '保存'}
+                  <span aria-hidden="true">{update.isPending ? '保存中…' : '保存'}</span>
                 </Button>
               </div>
             </form>
@@ -919,7 +919,7 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
               data-testid="sprint-defaults-edit-btn"
               aria-label={`Sprint デフォルト (現在: ${DOW_JA[cur.startDow]}曜開始 / ${cur.lengthDays} 日) の編集モードを開く`}
             >
-              編集
+              <span aria-hidden="true">編集</span>
             </Button>
           </div>
         ) : (
