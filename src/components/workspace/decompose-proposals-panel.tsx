@@ -484,9 +484,9 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               onClick={() => setEditing(false)}
               disabled={update.isPending}
               data-testid={`proposal-${proposal.id}-edit-cancel`}
-              aria-label={`「${proposal.title}」の編集をキャンセル`}
+              aria-label={`キャンセル (「${proposal.title}」の編集をキャンセル)`}
             >
-              キャンセル
+              <span aria-hidden="true">キャンセル</span>
             </Button>
             <Button
               type="submit"
@@ -498,11 +498,11 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               aria-keyshortcuts="Meta+Enter Control+Enter"
               aria-label={
                 update.isPending
-                  ? `提案「${proposal.title}」の編集を保存中…`
-                  : `提案「${proposal.title}」の編集を保存 (Cmd/Ctrl+Enter でも可)`
+                  ? `保存中… (提案「${proposal.title}」の編集を保存中)`
+                  : `保存 (提案「${proposal.title}」の編集を保存、Cmd/Ctrl+Enter でも可)`
               }
             >
-              {update.isPending ? '保存中…' : '保存'}
+              <span aria-hidden="true">{update.isPending ? '保存中…' : '保存'}</span>
             </Button>
           </div>
         </form>
