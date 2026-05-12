@@ -807,12 +807,12 @@ function SprintCard({
                 title="PM Agent が完了/未完 items を要約して Retro Doc を生成"
                 aria-label={
                   retroPending
-                    ? `Sprint「${sprint.name}」の振り返りを生成中…`
-                    : `Sprint「${sprint.name}」の振り返り Doc を生成 (PM Agent が完了/未完 items を要約)`
+                    ? `振り返り生成中… (Sprint「${sprint.name}」)`
+                    : `振り返り生成 (Sprint「${sprint.name}」、PM Agent が完了/未完 items を要約)`
                 }
               >
                 <Sparkles className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                {retroPending ? '振り返り生成中…' : '振り返り生成'}
+                <span aria-hidden="true">{retroPending ? '振り返り生成中…' : '振り返り生成'}</span>
               </Button>
             )}
             {(status === 'planning' || status === 'active') && (
