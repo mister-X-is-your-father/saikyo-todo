@@ -48,10 +48,10 @@ export function ItemResearchButton({ workspaceId, item }: Props) {
       data-testid={`research-btn-${item.id}`}
       aria-label={
         item.status === 'done'
-          ? `「${item.title}」は完了済のため AI 調査不可`
+          ? `AI 調査 (「${item.title}」は完了済のため AI 調査不可)`
           : research.isPending
-            ? `「${item.title}」を AI 調査中…`
-            : `「${item.title}」を AI 調査して Doc を作成`
+            ? `調査中… (「${item.title}」を AI 調査)`
+            : `AI 調査 (「${item.title}」を AI 調査して Doc を作成)`
       }
     >
       <span aria-hidden="true">{research.isPending ? '調査中…' : 'AI 調査'}</span>
