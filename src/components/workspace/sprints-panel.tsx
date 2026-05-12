@@ -708,10 +708,10 @@ function SprintCard({
                 onClick={() => setEditing(true)}
                 data-testid={`sprint-period-edit-btn-${sprint.id}`}
                 title="期間を編集"
-                aria-label={`Sprint「${sprint.name}」の期間を編集`}
+                aria-label={`期間 (Sprint「${sprint.name}」の期間を編集)`}
               >
                 <CalendarRange className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                期間
+                <span aria-hidden="true">期間</span>
               </Button>
             )}
             {status === 'planning' && (
@@ -725,12 +725,12 @@ function SprintCard({
                 data-testid={`sprint-activate-${sprint.id}`}
                 aria-label={
                   changing
-                    ? `Sprint「${sprint.name}」のステータスを変更中…`
-                    : `Sprint「${sprint.name}」を稼働開始`
+                    ? `稼働開始 中… (Sprint「${sprint.name}」)`
+                    : `稼働開始 (Sprint「${sprint.name}」)`
                 }
               >
                 <Play className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                稼働開始
+                <span aria-hidden="true">稼働開始</span>
               </Button>
             )}
             {status === 'active' && (
@@ -745,12 +745,12 @@ function SprintCard({
                   data-testid={`sprint-complete-${sprint.id}`}
                   aria-label={
                     changing
-                      ? `Sprint「${sprint.name}」のステータスを変更中…`
-                      : `Sprint「${sprint.name}」を完了`
+                      ? `完了 中… (Sprint「${sprint.name}」)`
+                      : `完了 (Sprint「${sprint.name}」)`
                   }
                 >
                   <CheckCircle className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                  完了
+                  <span aria-hidden="true">完了</span>
                 </Button>
                 <Button
                   size="sm"
@@ -761,12 +761,12 @@ function SprintCard({
                   onClick={() => onStatusChange('planning')}
                   aria-label={
                     changing
-                      ? `Sprint「${sprint.name}」のステータスを変更中…`
-                      : `Sprint「${sprint.name}」を計画に戻す`
+                      ? `計画に戻す 中… (Sprint「${sprint.name}」)`
+                      : `計画に戻す (Sprint「${sprint.name}」)`
                   }
                 >
                   <Pause className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                  計画に戻す
+                  <span aria-hidden="true">計画に戻す</span>
                 </Button>
               </>
             )}
@@ -788,11 +788,13 @@ function SprintCard({
                 }}
                 data-testid={`sprint-cancel-${sprint.id}`}
                 aria-label={
-                  changing ? `Sprint「${sprint.name}」を中止中…` : `Sprint「${sprint.name}」を中止`
+                  changing
+                    ? `中止 中… (Sprint「${sprint.name}」)`
+                    : `中止 (Sprint「${sprint.name}」)`
                 }
               >
                 <X className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                中止
+                <span aria-hidden="true">中止</span>
               </Button>
             )}
             {(status === 'active' || status === 'completed') && (
