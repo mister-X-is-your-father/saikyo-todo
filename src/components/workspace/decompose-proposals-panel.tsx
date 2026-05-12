@@ -548,8 +548,8 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
           title="採用 → 子タスクとして追加"
           aria-label={
             disabled
-              ? `「${proposal.title}」を採用処理中…`
-              : `「${proposal.title}」を採用して子タスクとして追加`
+              ? `採用 中… (「${proposal.title}」を採用)`
+              : `採用 (「${proposal.title}」を採用して子タスクとして追加)`
           }
         >
           <span aria-hidden="true">✓ 採用</span>
@@ -564,7 +564,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
           data-testid={`proposal-${proposal.id}-reject`}
           title="却下"
           aria-label={
-            disabled ? `「${proposal.title}」を却下処理中…` : `「${proposal.title}」を却下`
+            disabled ? `却下 中… (「${proposal.title}」)` : `却下 (「${proposal.title}」)`
           }
         >
           <X className="h-3.5 w-3.5" aria-hidden="true" />
