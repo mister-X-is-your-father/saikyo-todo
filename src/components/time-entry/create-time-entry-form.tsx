@@ -168,7 +168,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           aria-label={create.isPending ? '稼働記録を作成中…' : '稼働記録を作成'}
           className="h-11 px-4"
         >
-          {create.isPending ? '...' : '記録'}
+          <span aria-hidden="true">{create.isPending ? '...' : '記録'}</span>
         </Button>
       </div>
     </form>
