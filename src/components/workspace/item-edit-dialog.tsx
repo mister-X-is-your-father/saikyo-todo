@@ -929,8 +929,8 @@ function ItemEditDialogInner({
               title="この Item と全ての子孫 (subtask) を Template として保存 (再利用可)"
               aria-label={
                 createTemplateFromItem.isPending
-                  ? `「${item.title}」を Template に保存中…`
-                  : `「${item.title}」と全ての子孫 (subtask) を Template として保存 (再利用可)`
+                  ? `保存中… (「${item.title}」を Template に保存)`
+                  : `Template として保存 (「${item.title}」と全ての子孫 (subtask) を Template として保存、再利用可)`
               }
             >
               <span aria-hidden="true">
@@ -944,7 +944,7 @@ function ItemEditDialogInner({
             className="min-h-11"
             onClick={() => onOpenChange(false)}
             data-testid="item-edit-cancel"
-            aria-label={`「${item.title}」の編集をキャンセル`}
+            aria-label={`キャンセル (「${item.title}」の編集をキャンセル)`}
           >
             <span aria-hidden="true">キャンセル</span>
           </Button>
@@ -958,10 +958,10 @@ function ItemEditDialogInner({
             aria-keyshortcuts="Meta+S Control+S"
             aria-label={
               !title.trim()
-                ? '保存するにはタイトルを入力してください'
+                ? '保存 (現状は無効: タイトルを入力してください)'
                 : update.isPending
-                  ? `「${item.title}」を保存中…`
-                  : `「${item.title}」を保存 (Cmd/Ctrl+S でも可、楽観ロックで version が進む)`
+                  ? `保存中... (「${item.title}」)`
+                  : `保存 (「${item.title}」を保存、Cmd/Ctrl+S でも可、楽観ロックで version が進む)`
             }
           >
             <span aria-hidden="true">{update.isPending ? '保存中...' : '保存'}</span>
