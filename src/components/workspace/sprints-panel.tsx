@@ -827,18 +827,20 @@ function SprintCard({
                 title="PM Agent が想定リスクと早期警報を Pre-mortem Doc にまとめる"
                 aria-label={
                   premortemPending
-                    ? `Sprint「${sprint.name}」の Pre-mortem を生成中…`
+                    ? `Pre-mortem 生成中… (Sprint「${sprint.name}」)`
                     : sprint.premortemGeneratedAt
-                      ? `Sprint「${sprint.name}」の Pre-mortem を再生成 (PM Agent が想定リスクと早期警報を Doc にまとめる)`
-                      : `Sprint「${sprint.name}」の Pre-mortem を生成 (PM Agent が想定リスクと早期警報を Doc にまとめる)`
+                      ? `Pre-mortem 再生成 (Sprint「${sprint.name}」、PM Agent が想定リスクと早期警報を Doc にまとめる)`
+                      : `Pre-mortem 生成 (Sprint「${sprint.name}」、PM Agent が想定リスクと早期警報を Doc にまとめる)`
                 }
               >
                 <Sparkles className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                {premortemPending
-                  ? 'Pre-mortem 生成中…'
-                  : sprint.premortemGeneratedAt
-                    ? 'Pre-mortem 再生成'
-                    : 'Pre-mortem 生成'}
+                <span aria-hidden="true">
+                  {premortemPending
+                    ? 'Pre-mortem 生成中…'
+                    : sprint.premortemGeneratedAt
+                      ? 'Pre-mortem 再生成'
+                      : 'Pre-mortem 生成'}
+                </span>
               </Button>
             )}
           </div>
