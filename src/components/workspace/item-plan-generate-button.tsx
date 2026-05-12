@@ -58,8 +58,8 @@ export function ItemPlanGenerateButton({ workspaceId, item, assignees }: Props) 
       data-testid={`generate-plan-btn-${item.id}`}
       aria-label={
         generate.isPending
-          ? `「${item.title}」の Plan を生成中…`
-          : `「${item.title}」の AI 担当が実行計画を comment に投下します`
+          ? `Plan 生成中… (「${item.title}」の Plan)`
+          : `Plan を生成 (「${item.title}」の AI 担当が実行計画を comment に投下します)`
       }
     >
       <BotIcon className="size-4" aria-hidden="true" />
