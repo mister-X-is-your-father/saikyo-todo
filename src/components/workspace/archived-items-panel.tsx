@@ -139,7 +139,7 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
                   data-testid={`archive-title-link-${item.id}`}
                   aria-label={`「${item.title}」を開く (${fmt(item.archivedAt)} にアーカイブ)`}
                 >
-                  {item.title}
+                  <span aria-hidden="true">{item.title}</span>
                 </Link>
               </td>
               <td className="px-3 py-2 text-xs">
