@@ -123,15 +123,19 @@ export function TaskChuteView({ workspaceId, items }: Props) {
             aria-label={`合計 ${ticker.totalEstimateMin} 分 / 完了済 ${ticker.doneEstimateMin} 分 / 残 ${ticker.remainingEstimateMin} 分`}
           >
             <Timer className="text-muted-foreground h-3.5 w-3.5" aria-hidden="true" />
-            <span className="font-medium tabular-nums">
+            <span className="font-medium tabular-nums" aria-hidden="true">
               合計 {Math.floor(ticker.totalEstimateMin / 60)}h{ticker.totalEstimateMin % 60}m
             </span>
-            <span className="text-muted-foreground">/ 完了</span>
-            <span className="font-medium text-emerald-700 tabular-nums">
+            <span className="text-muted-foreground" aria-hidden="true">
+              / 完了
+            </span>
+            <span className="font-medium text-emerald-700 tabular-nums" aria-hidden="true">
               {Math.floor(ticker.doneEstimateMin / 60)}h{ticker.doneEstimateMin % 60}m
             </span>
-            <span className="text-muted-foreground">/ 残</span>
-            <span className="font-medium text-amber-700 tabular-nums">
+            <span className="text-muted-foreground" aria-hidden="true">
+              / 残
+            </span>
+            <span className="font-medium text-amber-700 tabular-nums" aria-hidden="true">
               {Math.floor(ticker.remainingEstimateMin / 60)}h{ticker.remainingEstimateMin % 60}m
             </span>
             {ticker.estimateUnknownCount > 0 ? (
