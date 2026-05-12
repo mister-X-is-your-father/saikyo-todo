@@ -604,7 +604,9 @@ function SourceImportHistory({ sourceId }: { sourceId: string }) {
             className="text-muted-foreground ml-auto tabular-nums"
             aria-label={`fetched ${r.fetchedCount} / created ${r.createdCount} / updated ${r.updatedCount}`}
           >
-            f={r.fetchedCount} / c={r.createdCount} / u={r.updatedCount}
+            <span aria-hidden="true">
+              f={r.fetchedCount} / c={r.createdCount} / u={r.updatedCount}
+            </span>
           </span>
           {r.error && (
             <span
