@@ -90,8 +90,8 @@ export function EngineerTriggerButton({ item }: Props) {
         data-testid="engineer-trigger-btn"
         aria-label={
           trigger.isPending
-            ? `Engineer Agent に「${item.title}」を投入中…`
-            : `Engineer Agent に「${item.title}」を実装させる${autoPr ? ' (PR 自動起票)' : ''}`
+            ? `起動中… (Engineer Agent に「${item.title}」を投入)`
+            : `Engineer に実装させる (Engineer Agent に「${item.title}」を実装させる${autoPr ? '、PR 自動起票' : ''})`
         }
       >
         {trigger.isPending ? (
