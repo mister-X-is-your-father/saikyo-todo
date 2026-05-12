@@ -236,7 +236,7 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
               role="img"
               aria-label={`校正後 ${formatEstimate(calibrated.calibratedMinutes)} (${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正)`}
             >
-              → {formatEstimate(calibrated.calibratedMinutes)}
+              <span aria-hidden="true">→ {formatEstimate(calibrated.calibratedMinutes)}</span>
             </span>
           )}
           {preview.isMust && (
