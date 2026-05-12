@@ -615,7 +615,7 @@ function SourceImportHistory({ sourceId }: { sourceId: string }) {
               aria-label={`Pull エラー: ${r.error}`}
               role="alert"
             >
-              {r.error}
+              <span aria-hidden="true">{r.error}</span>
             </span>
           )}
         </li>
