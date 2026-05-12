@@ -290,8 +290,8 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
           aria-busy={create.isPending || undefined}
           aria-label={
             create.isPending
-              ? 'タイマーを停止して稼働記録を作成中…'
-              : 'タイマーを停止して稼働記録に保存'
+              ? '停止 中… (タイマーを停止して稼働記録を作成中)'
+              : '停止 (タイマーを停止して稼働記録に保存)'
           }
           data-testid="active-timer-stop"
         >
