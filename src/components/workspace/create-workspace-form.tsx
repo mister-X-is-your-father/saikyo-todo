@@ -108,7 +108,7 @@ export function CreateWorkspaceForm() {
         disabled={isPending}
         aria-busy={isPending || undefined}
         data-testid="create-workspace-submit"
-        aria-label={isPending ? 'Workspace を作成中…' : 'Workspace を新規作成'}
+        aria-label={isPending ? '作成中... (Workspace を作成中)' : '作成 (Workspace を新規作成)'}
       >
         <span aria-hidden="true">{isPending ? '作成中...' : '作成'}</span>
       </Button>
