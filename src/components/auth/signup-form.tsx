@@ -151,8 +151,8 @@ export function SignupForm() {
         data-testid="signup-submit"
         aria-label={
           isPending
-            ? 'アカウント作成中… (サインアップ処理を実行中)'
-            : 'アカウントを作成 (サインアップ)'
+            ? '作成中… (アカウント作成中、サインアップ処理を実行中)'
+            : 'サインアップ (アカウントを新規作成)'
         }
       >
         <span aria-hidden="true">{isPending ? '作成中…' : 'サインアップ'}</span>
