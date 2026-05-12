@@ -124,13 +124,13 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
             aria-keyshortcuts="Meta+Enter Control+Enter"
             aria-label={
               !body.trim()
-                ? 'コメントを投稿するには本文を入力してください'
+                ? '投稿 (現状は無効: 本文を入力してください)'
                 : create.isPending
-                  ? 'コメントを投稿中…'
-                  : 'コメントを投稿 (Cmd/Ctrl+Enter でも可、@user で言及・通知)'
+                  ? '送信中… (コメントを投稿中)'
+                  : '投稿 (コメントを投稿、Cmd/Ctrl+Enter でも可、@user で言及・通知)'
             }
           >
-            {create.isPending ? '送信中…' : '投稿'}
+            <span aria-hidden="true">{create.isPending ? '送信中…' : '投稿'}</span>
           </Button>
         </div>
       </div>
