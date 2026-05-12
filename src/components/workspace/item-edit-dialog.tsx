@@ -304,7 +304,7 @@ function ItemEditDialogInner({
               // conflict banner row 内 layout を保持)
               className="focus-visible:ring-ring relative shrink-0 rounded border border-amber-600/50 px-2 py-1 text-[11px] font-medium before:absolute before:-inset-3 before:content-[''] hover:bg-amber-600/20 focus-visible:ring-2 focus-visible:outline-none"
               data-testid="item-edit-reload"
-              aria-label="自分の編集内容を破棄してサーバの最新値を読み込み直す"
+              aria-label="最新を読み込み (自分の編集内容を破棄してサーバの最新値を読み込み直す)"
               onClick={() => {
                 if (
                   !window.confirm(
@@ -792,11 +792,11 @@ function ItemEditDialogInner({
               data-testid="item-edit-unarchive"
               aria-label={
                 unarchive.isPending
-                  ? `「${item.title}」をアーカイブから復元中…`
-                  : `「${item.title}」をアーカイブから復元`
+                  ? `復元中… (「${item.title}」をアーカイブから復元)`
+                  : `アーカイブ復元 (「${item.title}」をアーカイブから復元)`
               }
             >
-              {unarchive.isPending ? '復元中…' : 'アーカイブ復元'}
+              <span aria-hidden="true">{unarchive.isPending ? '復元中…' : 'アーカイブ復元'}</span>
             </Button>
           ) : (
             <Button
@@ -821,11 +821,11 @@ function ItemEditDialogInner({
               data-testid="item-edit-archive"
               aria-label={
                 archive.isPending
-                  ? `「${item.title}」をアーカイブ中…`
-                  : `「${item.title}」をアーカイブ (後で復元可能)`
+                  ? `アーカイブ中… (「${item.title}」)`
+                  : `アーカイブ (「${item.title}」をアーカイブ、後で復元可能)`
               }
             >
-              {archive.isPending ? 'アーカイブ中…' : 'アーカイブ'}
+              <span aria-hidden="true">{archive.isPending ? 'アーカイブ中…' : 'アーカイブ'}</span>
             </Button>
           )}
           {item.startDate && item.dueDate && !item.archivedAt && (
