@@ -600,7 +600,7 @@ export function GanttView({
                     role="img"
                     aria-label="MUST タスク"
                   >
-                    MUST
+                    <span aria-hidden="true">MUST</span>
                   </span>
                 )}
               </div>
