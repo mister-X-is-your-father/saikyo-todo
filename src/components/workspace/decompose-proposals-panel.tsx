@@ -206,8 +206,8 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                   data-testid="proposals-accept-all"
                   aria-label={
                     accept.isPending
-                      ? `保留中の提案 ${list.length} 件を採用中…`
-                      : `保留中の提案 ${list.length} 件をすべて採用`
+                      ? `全て採用 中… (保留中の提案 ${list.length} 件)`
+                      : `全て採用 (保留中の提案 ${list.length} 件)`
                   }
                 >
                   <span aria-hidden="true">全て採用</span>
@@ -223,8 +223,8 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                   data-testid="proposals-reject-all"
                   aria-label={
                     rejectAll.isPending
-                      ? `保留中の提案 ${list.length} 件を却下中…`
-                      : `保留中の提案 ${list.length} 件をすべて却下`
+                      ? `全て却下 中… (保留中の提案 ${list.length} 件)`
+                      : `全て却下 (保留中の提案 ${list.length} 件)`
                   }
                 >
                   <span aria-hidden="true">全て却下</span>
@@ -244,12 +244,12 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               title="既存の提案を残したまま追加で分解"
               aria-label={
                 list.length > 0
-                  ? `既存の保留中 ${list.length} 件を残して追加で AI 分解`
-                  : 'AI 分解を再実行'
+                  ? `追加分解 (既存の保留中 ${list.length} 件を残して追加で AI 分解)`
+                  : '再分解 (AI 分解を再実行)'
               }
             >
               <RotateCw className="h-3.5 w-3.5" aria-hidden="true" />
-              {list.length > 0 ? '追加分解' : '再分解'}
+              <span aria-hidden="true">{list.length > 0 ? '追加分解' : '再分解'}</span>
             </Button>
             {list.length > 0 && (
               <Button
@@ -262,7 +262,7 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                 onClick={() => void handleRedecompose({ clearExisting: true })}
                 data-testid="proposals-redecompose-fresh"
                 title="既存提案を全て却下してから再分解"
-                aria-label={`保留中の ${list.length} 件を全て却下してから AI 分解をやり直し`}
+                aria-label={`やり直し (保留中の ${list.length} 件を全て却下してから AI 分解)`}
               >
                 <span aria-hidden="true">やり直し</span>
               </Button>
