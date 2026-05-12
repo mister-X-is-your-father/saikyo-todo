@@ -452,8 +452,8 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
           data-testid="subtasks-progress-summary"
           data-pct-done={descendantsProgress.pctDone}
         >
-          <div className="text-xs font-medium">
-            <span aria-hidden="true">📋 </span>
+          <div className="text-xs font-medium" aria-hidden="true">
+            <span>📋 </span>
             {formatDescendantsActivityHintJa(descendantsProgress)}
           </div>
           <div className="text-muted-foreground mt-0.5 text-[11px]" aria-hidden="true">
