@@ -166,12 +166,12 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
           aria-keyshortcuts="Enter"
           aria-label={
             !preview?.title
-              ? 'タスクを作成するにはタイトルを入力してください (Enter でも可)'
+              ? '作成 (現状は無効: タイトルを入力してください、Enter でも可)'
               : preview.isMust
-                ? 'MUST タスクは編集ダイアログから DoD を入力して作成してください'
+                ? '作成 (現状は無効: MUST タスクは編集ダイアログから DoD を入力して作成してください)'
                 : create.isPending
-                  ? `「${preview.title}」を作成中…`
-                  : `「${preview.title}」を作成 (Enter でも可)`
+                  ? `作成 中... (「${preview.title}」を作成中)`
+                  : `作成 (「${preview.title}」を作成、Enter でも可)`
           }
         >
           <span aria-hidden="true">{create.isPending ? '...' : '作成'}</span>
