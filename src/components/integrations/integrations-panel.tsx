@@ -160,14 +160,14 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             title="手動 pull (sync 実行、30s timeout)"
             aria-label={
               !src.enabled
-                ? `Source「${src.name}」は無効化中のため Pull 不可`
+                ? `Pull (Source「${src.name}」は無効化中のため Pull 不可)`
                 : trigger.isPending
-                  ? `Source「${src.name}」を Pull 中…`
-                  : `Source「${src.name}」を手動 Pull (sync 実行、30s timeout)`
+                  ? `Pull 中… (Source「${src.name}」)`
+                  : `Pull (Source「${src.name}」を手動 Pull、sync 実行、30s timeout)`
             }
           >
             <Play className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-            {trigger.isPending ? 'Pull 中…' : 'Pull'}
+            <span aria-hidden="true">{trigger.isPending ? 'Pull 中…' : 'Pull'}</span>
           </Button>
           <Button
             size="sm"
@@ -179,11 +179,11 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             data-testid={`src-toggle-${src.id}`}
             aria-label={
               update.isPending
-                ? `Source「${src.name}」の状態を更新中…`
-                : `Source「${src.name}」を${src.enabled ? '無効化' : '有効化'}`
+                ? `${src.enabled ? '無効化' : '有効化'} 中… (Source「${src.name}」)`
+                : `${src.enabled ? '無効化' : '有効化'} (Source「${src.name}」)`
             }
           >
-            {src.enabled ? '無効化' : '有効化'}
+            <span aria-hidden="true">{src.enabled ? '無効化' : '有効化'}</span>
           </Button>
           <Button
             size="sm"
@@ -194,8 +194,8 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             aria-controls={`src-imports-${src.id}`}
             aria-label={
               importsOpen
-                ? `Source「${src.name}」の Pull 履歴 (直近 5 件) を閉じる`
-                : `Source「${src.name}」の Pull 履歴 (直近 5 件) を表示`
+                ? `履歴 (Source「${src.name}」の Pull 履歴 直近 5 件を閉じる)`
+                : `履歴 (Source「${src.name}」の Pull 履歴 直近 5 件を表示)`
             }
             data-testid={`src-imports-toggle-${src.id}`}
           >
@@ -204,7 +204,7 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             ) : (
               <ChevronRight className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             )}
-            履歴
+            <span aria-hidden="true">履歴</span>
           </Button>
           <Button
             size="sm"
