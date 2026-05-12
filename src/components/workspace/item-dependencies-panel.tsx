@@ -245,7 +245,7 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
                   : '選択した Item を依存先として追加'
             }
           >
-            {add.isPending ? '追加中…' : '追加'}
+            <span aria-hidden="true">{add.isPending ? '追加中…' : '追加'}</span>
           </Button>
         </div>
         <p className="text-muted-foreground text-xs">循環 (A → B → A) になる依存は拒否されます</p>
