@@ -149,7 +149,7 @@ export function InstantiateForm({ workspaceId, template }: Props) {
             : `Template「${template.name}」を即実行 (Instantiate)`
         }
       >
-        {mut.isPending ? '展開中...' : '即実行 (Instantiate)'}
+        <span aria-hidden="true">{mut.isPending ? '展開中...' : '即実行 (Instantiate)'}</span>
       </Button>
     </form>
   )
