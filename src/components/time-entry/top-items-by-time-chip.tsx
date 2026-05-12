@@ -184,13 +184,13 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
                     {title}
                   </span>
                   <span className="font-mono tabular-nums" aria-label={`合計 ${label}`}>
-                    {label}
+                    <span aria-hidden="true">{label}</span>
                   </span>
                   <span
                     className="text-muted-foreground text-[10px] tabular-nums"
                     aria-label={`${row.entryCount} 件`}
                   >
-                    {row.entryCount} 件
+                    <span aria-hidden="true">{row.entryCount} 件</span>
                   </span>
                 </li>
               )
