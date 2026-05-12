@@ -673,9 +673,9 @@ function SprintCard({
                     setEditEnd(sprint.endDate)
                   }}
                   data-testid={`sprint-period-cancel-${sprint.id}`}
-                  aria-label={`Sprint「${sprint.name}」の期間編集をキャンセル`}
+                  aria-label={`キャンセル (Sprint「${sprint.name}」の期間編集をキャンセル)`}
                 >
-                  キャンセル
+                  <span aria-hidden="true">キャンセル</span>
                 </Button>
                 <Button
                   type="submit"
@@ -686,11 +686,11 @@ function SprintCard({
                   data-testid={`sprint-period-save-${sprint.id}`}
                   aria-label={
                     update.isPending
-                      ? `Sprint「${sprint.name}」の期間を保存中…`
-                      : `Sprint「${sprint.name}」の期間を保存`
+                      ? `保存中… (Sprint「${sprint.name}」の期間を保存中)`
+                      : `保存 (Sprint「${sprint.name}」の期間を保存)`
                   }
                 >
-                  {update.isPending ? '保存中…' : '保存'}
+                  <span aria-hidden="true">{update.isPending ? '保存中…' : '保存'}</span>
                 </Button>
               </div>
             </form>
