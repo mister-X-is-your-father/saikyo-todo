@@ -218,7 +218,7 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                 el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
               }}
             >
-              作成フォームへ
+              <span aria-hidden="true">作成フォームへ</span>
             </button>
           }
         />
@@ -667,7 +667,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
             data-testid={`wf-editor-cancel-${wf.id}`}
             aria-label={`Workflow「${wf.name}」の編集をキャンセル`}
           >
-            キャンセル
+            <span aria-hidden="true">キャンセル</span>
           </Button>
           <Button
             type="button"
@@ -682,7 +682,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                 : `Workflow「${wf.name}」の graph / trigger を保存`
             }
           >
-            {saving ? '保存中…' : '保存'}
+            <span aria-hidden="true">{saving ? '保存中…' : '保存'}</span>
           </Button>
         </DialogFooter>
       </DialogContent>
