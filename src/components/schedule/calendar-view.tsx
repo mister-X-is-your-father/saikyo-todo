@@ -193,7 +193,7 @@ export function CalendarView({ workspaceId }: Props) {
             size="sm"
             className="min-h-11"
             onClick={() => setDate(startOfDay(new Date()))}
-            aria-label={`表示日を今日 (${format(new Date(), 'M月d日 (eee)')}) にリセット`}
+            aria-label={`今日 (表示日を ${format(new Date(), 'M月d日 (eee)')} にリセット)`}
             data-testid="calendar-today-btn"
           >
             <span aria-hidden="true">今日</span>
