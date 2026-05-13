@@ -15,6 +15,7 @@ import {
   formatAnalyticsSignalsBadgeJa,
   formatAnalyticsSignalsLineJa,
   pickAnalyticsSignalsWorstTone,
+  pickMostPressingAnalyticsSignal,
 } from './analytics-signals'
 import { computeCostMonthProjection } from './cost-month-projection'
 import { computeMonthlyCostTrend, type CostMonthEntry } from './cost-monthly-trend'
@@ -376,5 +377,53 @@ describe('formatAnalyticsSignalsBadgeJa (iter851 — 1 chip overall badge)', () 
     const dueHitRate = { total: 10, hit: 3, miss: 7, hitRate: 0.3 }
     const s = composeAnalyticsSignals({ dueHitRate })
     expect(formatAnalyticsSignalsBadgeJa(s)).toBe('注意 (1 件)')
+  })
+})
+
+describe('pickMostPressingAnalyticsSignal (iter852 — 最も pressing な 1 signal full text+tone)', () => {
+  it('全空 → null sentinel', () => {
+    expect(pickMostPressingAnalyticsSignal(composeAnalyticsSignals({}))).toBeNull()
+  })
+
+  it('danger 1 件 + success 多数 → danger signal を返す (text + tone とも)', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 }, // critical = danger concerningRole
+    ])
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 } // success
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const top = pickMostPressingAnalyticsSignal(s)
+    expect(top).not.toBeNull()
+    expect(top!.tone).toBe('danger')
+    // concerningRole は弱点 role 文言 = 'PM' 等を含む (composeAgentBriefSignals 経由)
+    expect(top!.text).toBeTruthy()
+  })
+
+  it('同 rank (success 2 件) → display 順先頭採用 (= dueHitRate が velocity より先)', () => {
+    // dueHitRate (= success, display 順 3 番目) + velocity (= success, display 順 7 番目)
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 } // success
+    const items: VelocityFields[] = [{ doneAt: TODAY }, { doneAt: TODAY }]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const s = composeAnalyticsSignals({ dueHitRate, velocity })
+    const top = pickMostPressingAnalyticsSignal(s)
+    expect(top).not.toBeNull()
+    expect(top!.tone).toBe('success')
+    // display 順 で dueHitRate が velocity より先頭、同 rank → dueHitRate
+    expect(top).toBe(s.dueHitRate)
+  })
+
+  it('warn vs info → warn (= rank 3 > 2) 採用、display 順は関係ない', () => {
+    // dueHitRate warn (rank 3, display 順 3 番目) + costProjection info (rank 2, display 順 2 番目)
+    const dueHitRate = { total: 10, hit: 3, miss: 7, hitRate: 0.3 } // warn
+    const costProjection = computeCostMonthProjection({
+      thisMonthUsd: 1,
+      today: '2026-04-10',
+      monthlyLimitUsd: 5,
+    }) // info
+    const s = composeAnalyticsSignals({ dueHitRate, costProjection })
+    const top = pickMostPressingAnalyticsSignal(s)
+    expect(top).not.toBeNull()
+    // costProjection が display 順先 (= arr[0]) だが rank が低い → dueHitRate (warn) を採用
+    expect(top!.tone).toBe('warn')
+    expect(top).toBe(s.dueHitRate)
   })
 })

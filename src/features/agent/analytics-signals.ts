@@ -29,7 +29,12 @@
  * 揃える utility。
  */
 
-import { type ChipTone, chipToneLabelJa, pickHighestSeverityTone } from '@/lib/ui/chip-tone'
+import {
+  type ChipTone,
+  chipToneAttentionRank,
+  chipToneLabelJa,
+  pickHighestSeverityTone,
+} from '@/lib/ui/chip-tone'
 
 import { type DueHitRateStats, dueHitRateToBriefSignal } from '@/features/item/due-hit-rate'
 import { type WorkspaceMomentum, workspaceMomentumToBriefSignal } from '@/features/item/momentum'
@@ -215,4 +220,52 @@ export function formatAnalyticsSignalsBadgeJa(signals: AnalyticsSignals): string
   const worst = pickHighestSeverityTone(arr.map((s) => s.tone))
   // arr.length > 0 が保証されているため worst は必ず非 null
   return `${chipToneLabelJa(worst!)} (${arr.length} 件)`
+}
+
+/**
+ * iter852 ai-automation: AnalyticsSignals → 最も pressing (= 最高 attention rank +
+ * 同 rank なら display 順先頭) な 1 signal を full (text + tone) で返す。
+ *
+ * 用途: モバイル dashboard header / Slack thread initial reply / AI 朝 brief の
+ * 「先頭 chip 1 つだけ」 表示で「中身」 (text + tone) も欲しいケース。
+ * iter851 `pickAnalyticsSignalsWorstTone` (tone のみ) と `formatAnalyticsSignalsBadgeJa`
+ * (text=label+count) の中間に位置する: 「具体的にどの軸が問題か」 まで返す。
+ *
+ * 仕様:
+ *  - 全 signal null → null sentinel
+ *  - 1+ signal → analyticsSignalsToArray (= severity 順整列済) を attention rank で
+ *    安定 sort、先頭 1 件を返す
+ *  - 同 rank 複数 → analyticsSignalsToArray の display 順 (concerningRole →
+ *    costProjection → dueHitRate → biasTrend → reliability → costTrend → velocity →
+ *    weeklyCompletion → momentum → dominantRole) で 先頭採用 (stable)
+ *
+ * caller pattern (mobile header):
+ *   const top = pickMostPressingAnalyticsSignal(signals)
+ *   if (top) {
+ *     const c = getChipToneClasses(top.tone)
+ *     return <span className={...c.bgClass...}>{top.text}</span>
+ *   }
+ *
+ * iter851 helpers との関係:
+ *  - `pickAnalyticsSignalsWorstTone` (tone のみ、最小 caller 例 = chip 配色)
+ *  - `pickMostPressingAnalyticsSignal` (full signal、caller は text も使う)
+ *  - `formatAnalyticsSignalsBadgeJa` (集計 text、N 件込み、最小 dashboard chip)
+ *  - `formatAnalyticsSignalsLineJa` (全 signal 結合 text、AI 朝 brief / Slack body 用)
+ */
+export function pickMostPressingAnalyticsSignal(
+  signals: AnalyticsSignals,
+): AgentBriefSignal | null {
+  const arr = analyticsSignalsToArray(signals)
+  if (arr.length === 0) return null
+  let best: AgentBriefSignal = arr[0]!
+  let bestRank = chipToneAttentionRank(best.tone)
+  for (let i = 1; i < arr.length; i++) {
+    const candidate = arr[i]!
+    const rank = chipToneAttentionRank(candidate.tone)
+    if (rank > bestRank) {
+      best = candidate
+      bestRank = rank
+    }
+  }
+  return best
 }
