@@ -12,7 +12,9 @@ import { computeAgentReliability } from './agent-reliability'
 import {
   analyticsSignalsToArray,
   composeAnalyticsSignals,
+  formatAnalyticsSignalsBadgeJa,
   formatAnalyticsSignalsLineJa,
+  pickAnalyticsSignalsWorstTone,
 } from './analytics-signals'
 import { computeCostMonthProjection } from './cost-month-projection'
 import { computeMonthlyCostTrend, type CostMonthEntry } from './cost-monthly-trend'
@@ -312,5 +314,67 @@ describe('formatAnalyticsSignalsLineJa (iter816 — plain text 1 行 compose)', 
     expect(line).toContain('期限達成率: 90%')
     expect(line).toContain('AI 信頼性')
     expect(line).toContain(' / ')
+  })
+})
+
+describe('pickAnalyticsSignalsWorstTone (iter851 — overall attention tone)', () => {
+  it('全空 → null sentinel', () => {
+    expect(pickAnalyticsSignalsWorstTone(composeAnalyticsSignals({}))).toBeNull()
+  })
+
+  it('healthy 系のみ (success / info) → success より info が attention rank 上位 (info=2 > success=0)', () => {
+    const costProjection = computeCostMonthProjection({
+      thisMonthUsd: 1,
+      today: '2026-04-10',
+      monthlyLimitUsd: 5,
+    })
+    // velocity = success、costProjection = info の混在
+    const items: VelocityFields[] = [{ doneAt: TODAY }, { doneAt: TODAY }]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const s = composeAnalyticsSignals({ velocity, costProjection })
+    expect(pickAnalyticsSignalsWorstTone(s)).toBe('info')
+  })
+
+  it('danger 1 件 + success 多数 → danger を採用 (severity 軸が常に優先)', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 }, // critical = danger concerningRole
+    ])
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 } // success
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    expect(pickAnalyticsSignalsWorstTone(s)).toBe('danger')
+  })
+
+  it('warn のみ → warn', () => {
+    const dueHitRate = { total: 10, hit: 3, miss: 7, hitRate: 0.3 } // warn
+    const s = composeAnalyticsSignals({ dueHitRate })
+    expect(pickAnalyticsSignalsWorstTone(s)).toBe('warn')
+  })
+})
+
+describe('formatAnalyticsSignalsBadgeJa (iter851 — 1 chip overall badge)', () => {
+  it('全空 → 「記録なし」 sentinel', () => {
+    expect(formatAnalyticsSignalsBadgeJa(composeAnalyticsSignals({}))).toBe('記録なし')
+  })
+
+  it('danger 1 件 → 「緊急 (N 件)」', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 }, // critical → danger concerningRole + reliability warn + dominant info
+    ])
+    const s = composeAnalyticsSignals({ reliability })
+    // 3 signal (concerning danger / reliability / dominant)
+    const badge = formatAnalyticsSignalsBadgeJa(s)
+    expect(badge).toMatch(/^緊急 \(\d+ 件\)$/)
+  })
+
+  it('success のみ → 「達成 (1 件)」', () => {
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 }
+    const s = composeAnalyticsSignals({ dueHitRate })
+    expect(formatAnalyticsSignalsBadgeJa(s)).toBe('達成 (1 件)')
+  })
+
+  it('warn 1 件 → 「注意 (1 件)」', () => {
+    const dueHitRate = { total: 10, hit: 3, miss: 7, hitRate: 0.3 }
+    const s = composeAnalyticsSignals({ dueHitRate })
+    expect(formatAnalyticsSignalsBadgeJa(s)).toBe('注意 (1 件)')
   })
 })

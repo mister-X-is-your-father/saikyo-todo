@@ -29,6 +29,8 @@
  * 揃える utility。
  */
 
+import { type ChipTone, chipToneLabelJa, pickHighestSeverityTone } from '@/lib/ui/chip-tone'
+
 import { type DueHitRateStats, dueHitRateToBriefSignal } from '@/features/item/due-hit-rate'
 import { type WorkspaceMomentum, workspaceMomentumToBriefSignal } from '@/features/item/momentum'
 import { type VelocitySummary, velocityToBriefSignal } from '@/features/item/velocity'
@@ -171,4 +173,46 @@ export function formatAnalyticsSignalsLineJa(signals: AnalyticsSignals): string 
   const arr = analyticsSignalsToArray(signals)
   if (arr.length === 0) return '記録なし'
   return arr.map((s) => s.text).join(' / ')
+}
+
+/**
+ * iter851 basics: AnalyticsSignals → 全 signal の中で最も attention rank の高い
+ * (= 最も「対応必要」) tone を 1 つ返す。dashboard header / Slack digest /
+ * AI 朝 brief で「analytics 全体の health を 1 chip で要約」する caller 用。
+ *
+ * 仕様:
+ *  - 全 signal null → null sentinel (= caller は chip 非表示)
+ *  - 1+ signal → severity 軸 (danger > urgent > warn > info > idle) で最大、
+ *    success (positive 軸) は rank 0 で最下位 (= 「対応不要」の意味)
+ *  - 同 rank 複数 → 配列順 (analyticsSignalsToArray の表示順) 先頭採用 (stable)
+ *
+ * 注: text 内容は捨て tone だけ抽出する utility。text も欲しい場合は
+ * analyticsSignalsToArray + 各 signal の tone / text を直接参照。
+ */
+export function pickAnalyticsSignalsWorstTone(signals: AnalyticsSignals): ChipTone | null {
+  const arr = analyticsSignalsToArray(signals)
+  if (arr.length === 0) return null
+  return pickHighestSeverityTone(arr.map((s) => s.tone))
+}
+
+/**
+ * iter851 basics: AnalyticsSignals → 1 chip overall badge text (ja-JP)。
+ * caller pattern (dashboard header):
+ *   const text = formatAnalyticsSignalsBadgeJa(composeAnalyticsSignals({...}))
+ *   // → '緊急 (4 件)' / '注意 (2 件)' / '達成 (3 件)' / '記録なし'
+ *
+ * 仕様:
+ *  - 全 null → '記録なし' sentinel
+ *  - 1+ signal → `${chipToneLabelJa(worstTone)} (${count} 件)` 形式
+ *  - chip 1 件分を要約、SR / Slack header / dashboard at-a-glance 用
+ *
+ * `pickAnalyticsSignalsWorstTone` + `analyticsSignalsToArray.length` を組み合わせた
+ * ergonomic wrapper。tone は chipToneLabelJa (iter491) で ja-JP 1 単語化。
+ */
+export function formatAnalyticsSignalsBadgeJa(signals: AnalyticsSignals): string {
+  const arr = analyticsSignalsToArray(signals)
+  if (arr.length === 0) return '記録なし'
+  const worst = pickHighestSeverityTone(arr.map((s) => s.tone))
+  // arr.length > 0 が保証されているため worst は必ず非 null
+  return `${chipToneLabelJa(worst!)} (${arr.length} 件)`
 }
