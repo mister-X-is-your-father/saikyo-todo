@@ -348,7 +348,9 @@ export function GanttView({
           </span>
         )}
         <label className="ml-auto flex items-center gap-1 text-xs">
-          <span className="text-muted-foreground">zoom</span>
+          <span className="text-muted-foreground" aria-hidden="true">
+            zoom
+          </span>
           <select
             value={zoom}
             onChange={(e) => setZoom(e.target.value as typeof zoom)}
