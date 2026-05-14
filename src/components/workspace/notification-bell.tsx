@@ -244,13 +244,14 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                         <Icon className="h-3 w-3" aria-hidden="true" />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs leading-snug">
+                        {/* iter882: body は outer button の aria-label に既に
+                            formatNotificationBody(n) を含めるため SR には重複。
+                            aria-hidden="true" で visible 経路のみに限定し、SR は
+                            button aria-label を単独経路にする。<time> は aria-label
+                            に含まれないので aria-hidden は外し SR に届ける。 */}
+                        <p className="text-xs leading-snug" aria-hidden="true">
                           {!n.readAt && (
-                            <span
-                              className="bg-primary mr-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full align-middle"
-                              role="img"
-                              aria-label="未読"
-                            />
+                            <span className="bg-primary mr-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full align-middle" />
                           )}
                           {formatNotificationBody(n)}
                         </p>
