@@ -122,9 +122,9 @@ export function BulkActionBar({ workspaceId }: Props) {
         variant="ghost"
         onClick={() => clear()}
         data-testid="bulk-clear"
-        aria-label="選択を解除"
+        aria-label={`解除: 選択 ${count} 件を一括操作の対象から外す`}
       >
-        解除
+        <span aria-hidden="true">解除</span>
       </Button>
     </div>
   )
