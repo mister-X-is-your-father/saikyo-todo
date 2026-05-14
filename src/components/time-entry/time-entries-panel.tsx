@@ -61,7 +61,7 @@ export function TimeEntriesPanel({ workspaceId }: { workspaceId: string }) {
                     el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
                   }}
                 >
-                  作成フォームへ
+                  <span aria-hidden="true">作成フォームへ</span>
                 </button>
               }
             />
