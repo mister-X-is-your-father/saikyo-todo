@@ -172,7 +172,7 @@ export function TaskChuteView({ workspaceId, items }: Props) {
                 className="hover:text-primary focus-visible:ring-ring flex-1 truncate rounded text-left text-sm transition focus-visible:ring-2 focus-visible:outline-none"
                 aria-label={`${item.title} を編集`}
               >
-                {item.title}
+                <span aria-hidden="true">{item.title}</span>
               </button>
               {item.isMust ? <MustBadge /> : null}
               {/*
