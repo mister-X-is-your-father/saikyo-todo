@@ -10,10 +10,12 @@ import { buildWeeklyCompletionInsight } from '@/features/item/weekly-completion-
 
 import { computeAgentReliability } from './agent-reliability'
 import {
+  type AnalyticsSignals,
   analyticsSignalsToArray,
   composeAnalyticsSignals,
   formatAnalyticsSignalsLineJa,
 } from './analytics-signals'
+import { type AgentBriefSignal } from './brief-signal'
 import { computeCostMonthProjection } from './cost-month-projection'
 import { computeMonthlyCostTrend, type CostMonthEntry } from './cost-monthly-trend'
 
@@ -292,6 +294,24 @@ describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', (
     // 落ちないが、型レベルで Object.keys(empty).length === ordered.length チェック
     // も追加可能)
     expect(analyticsSignalsToArray(empty)).toEqual([])
+  })
+
+  it('iter852 ai-automation: 全 signal 非 null → analyticsSignalsToArray length が AnalyticsSignals field 数と完全一致 (= ordered 配列追加漏れ検知)', () => {
+    // 新軸を AnalyticsSignals に追加した時、composeAnalyticsSignals の if 分岐 / EMPTY 初期化を
+    // 更新しても、analyticsSignalsToArray の `ordered` 配列への追加を忘れると、
+    // 「signal は埋まるが chip 列には出ない」 silent regression になる。本テストは
+    // 全 signal が非 null の AnalyticsSignals を直接構築し、変換後の配列長が
+    // field 数 (= Object.keys(empty).length) と完全一致することを assert する。
+    const empty = composeAnalyticsSignals({})
+    const stub: AgentBriefSignal = { text: 'stub', tone: 'info' }
+    // 全 field を非 null で埋めた AnalyticsSignals (key set は empty と同一)
+    const allSet = Object.fromEntries(
+      Object.keys(empty).map((k) => [k, stub]),
+    ) as unknown as AnalyticsSignals
+    const arr = analyticsSignalsToArray(allSet)
+    expect(arr.length).toBe(Object.keys(empty).length)
+    // 全 signal が stub 参照 (= 配列内に missing field なし)
+    expect(arr.every((s) => s === stub)).toBe(true)
   })
 })
 
