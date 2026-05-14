@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter880 1/1] bulk-action-bar 2 button (status 変更 + 解除) visible text を aria-hidden span で wrap (一括 1 file): iter850 (削除) と合わせて BulkActionBar 内 3 button 全段 wrap 統一。+2/-2 行。検証 3 OK。経路 B で codify。
 - ✅ [playwright-iter879 1/1] notification-bell 全て既読 button visible "全て既読" を aria-hidden span で wrap (workspace header NotificationBell popover): aria-label に 4 状態完全表現するのに visible のみ aria-hidden 無し → iter844-878 sweep 続編。+1/-1 行。検証 3 OK (新 wrap + 2 既存 wrap regression)。経路 B で codify。
 - ✅ [playwright-iter878 1/1] item-dependencies-panel 2 button (依存追加 + 依存解除) visible text を aria-hidden span で wrap (一括 1 file): aria-label に意図 + ref.title 完全表現するのに visible のみ aria-hidden 無し → iter844-877 sweep 続編。+2/-2 行。検証 2 OK。経路 B で codify。
 - ✅ [playwright-iter877 1/1] operation-board-widget 2 quick-wins/focus button + taskchute-view title button visible {item.title} を aria-hidden span 化 (一括 2 file): operation-board は inner 2 span (estimateMin + title) aria-hidden、taskchute は title button visible {item.title} を span aria-hidden で wrap → iter844-876 sweep を Operation Board + TaskChute にも展開。+12/-4 行 (2 file)。検証 3 OK。経路 B で codify。
