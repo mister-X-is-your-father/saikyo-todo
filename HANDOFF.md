@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter888 1/1] 2 MUST checkbox label visible text を aria-hidden span 化 (item-edit-dialog + template-items-editor): MUST checkbox の <label> 内 visible は aria-label と完全重複 → wrap。+7/-3 行 (2 file)。
 - ✅ [playwright-iter887 1/1] engineer-trigger-button PR 自動起票 label visible を aria-hidden span 化 (Item edit dialog → AI 担当 → Engineer trigger toggle): iter885/886 と同 pattern を Engineer trigger にも展開。+3/-1 行。
 - ✅ [playwright-iter886 1/1] gantt-view 2 checkbox label (依存線 / 完了済を隠す) visible text を aria-hidden span 化 (Gantt view 上部 filter): iter885 と同 pattern を Gantt にも展開、+2/-2 行。
 - ✅ [playwright-iter885 1/1] items-board MUST のみ filter label visible text を aria-hidden span 化 (workspace home view-switcher filter checkbox): <label> 内 checkbox aria-label が完全 content を含む → visible 'MUST のみ' を aria-hidden で wrap、SR の重複読み上げ排除。+1/-1 行。
