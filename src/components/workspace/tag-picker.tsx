@@ -164,8 +164,10 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
                     void handleCreate()
                   }}
                   data-testid="tag-create-new"
+                  aria-label={`「${query.trim()}」を新規タグとして作成 (色はデフォルト #64748b、後で変更可)`}
                 >
-                  <PlusIcon className="mr-2 size-4" aria-hidden="true" />「{query.trim()}」を作成
+                  <PlusIcon className="mr-2 size-4" aria-hidden="true" />
+                  <span aria-hidden="true">「{query.trim()}」を作成</span>
                 </CommandItem>
               </CommandGroup>
             )}
