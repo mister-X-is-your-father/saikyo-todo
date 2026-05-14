@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter878 1/1] item-dependencies-panel 2 button (依存追加 + 依存解除) visible text を aria-hidden span で wrap (一括 1 file): aria-label に意図 + ref.title 完全表現するのに visible のみ aria-hidden 無し → iter844-877 sweep 続編。+2/-2 行。検証 2 OK。経路 B で codify。
 - ✅ [playwright-iter877 1/1] operation-board-widget 2 quick-wins/focus button + taskchute-view title button visible {item.title} を aria-hidden span 化 (一括 2 file): operation-board は inner 2 span (estimateMin + title) aria-hidden、taskchute は title button visible {item.title} を span aria-hidden で wrap → iter844-876 sweep を Operation Board + TaskChute にも展開。+12/-4 行 (2 file)。検証 3 OK。経路 B で codify。
 - ✅ [playwright-iter876 1/1] backlog-view 2 button (title + 編集) visible text を aria-hidden span で wrap (一括 1 file): title button visible {String(getValue())} は item.title 表示 + aria-label 埋め込み、編集 button visible "編集" は aria-label に item title 完全表現 → iter844-875 sweep を Backlog にも展開。+2/-2 行 (1 file)。検証 2 OK。経路 B で codify。
 - ✅ [playwright-iter875 1/1] inbox-view + personal-period-view Item title visible {it.title} を aria-hidden span 化 (一括 2 file): inbox は title span 自体に aria-hidden="true"、personal-period は button 子 span で wrap (inbox は outer div role=button 構造) → iter874 続編。+8/-2 行 (2 file)。検証 2 OK。経路 B で codify。
