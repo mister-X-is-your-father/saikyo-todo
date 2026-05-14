@@ -444,7 +444,9 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
                   : 'MUST が OFF: 通常タスク (クリックで ON、DoD 必須化)'
               }
             />
-            <span className="font-medium text-red-700">MUST</span>
+            <span className="font-medium text-red-700" aria-hidden="true">
+              MUST
+            </span>
           </label>
           {isMust && (
             <div className="space-y-1">
