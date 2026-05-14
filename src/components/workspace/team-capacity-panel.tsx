@@ -149,21 +149,25 @@ function PanelBody({ workspaceId }: Props) {
             data-load-week={week.loadStatus}
           >
             <div className="font-medium" aria-label={`member: ${name}`}>
-              {name}
+              <span aria-hidden="true">{name}</span>
             </div>
             <div
               className={TONE_CLASS[today.loadStatus]}
               aria-label={`今日: ${formatMemberCapacityLoadJa(today)}`}
             >
-              <span className="text-muted-foreground mr-1">今日</span>
-              {formatMemberCapacityLoadJa(today)}
+              <span aria-hidden="true">
+                <span className="text-muted-foreground mr-1">今日</span>
+                {formatMemberCapacityLoadJa(today)}
+              </span>
             </div>
             <div
               className={TONE_CLASS[week.loadStatus]}
               aria-label={`今週: ${formatMemberCapacityLoadJa(week)}`}
             >
-              <span className="text-muted-foreground mr-1">今週</span>
-              {formatMemberCapacityLoadJa(week)}
+              <span aria-hidden="true">
+                <span className="text-muted-foreground mr-1">今週</span>
+                {formatMemberCapacityLoadJa(week)}
+              </span>
             </div>
           </li>
         )
