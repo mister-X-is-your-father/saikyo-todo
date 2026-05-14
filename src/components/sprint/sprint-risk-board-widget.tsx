@@ -116,7 +116,13 @@ export function SprintRiskBoardWidget<T extends RiskBoardItemFields>({
                           entry.reasons.length > 0 ? ` / 理由 ${entry.reasons.length} 件` : ''
                         })`}
                       >
-                        {inner}
+                        {/* iter883: outer button aria-label に title + riskScore + 理由件数
+                            完全表現 → 内側 visible JSX を aria-hidden で wrap し SR
+                            重複読み上げ排除。非 button case (div) は inner を露出 (visible
+                            text が accessible name 経路、aria-label 無し)。 */}
+                        <span className="contents" aria-hidden="true">
+                          {inner}
+                        </span>
                       </button>
                     ) : (
                       <div className="flex items-center gap-2 px-1 py-1">{inner}</div>
