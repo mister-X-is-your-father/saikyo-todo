@@ -53,7 +53,7 @@ export default function OfflinePage() {
           aria-label="ホームに戻る (アプリの起点画面に遷移、オンライン復帰後は最新状態を表示)"
           className={cn(buttonVariants({ variant: 'outline' }), 'h-11 px-4')}
         >
-          ホームに戻る
+          <span aria-hidden="true">ホームに戻る</span>
         </Link>
       </div>
     </main>
