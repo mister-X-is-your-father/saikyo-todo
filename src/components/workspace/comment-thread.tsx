@@ -130,7 +130,7 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
                   : 'コメントを投稿 (Cmd/Ctrl+Enter でも可、@user で言及・通知)'
             }
           >
-            {create.isPending ? '送信中…' : '投稿'}
+            <span aria-hidden="true">{create.isPending ? '送信中…' : '投稿'}</span>
           </Button>
         </div>
       </div>
@@ -255,7 +255,7 @@ function CommentItem({
               data-testid={`comment-edit-cancel-${comment.id}`}
               aria-label="コメントの編集をキャンセル"
             >
-              キャンセル
+              <span aria-hidden="true">キャンセル</span>
             </Button>
             <Button
               type="button"
@@ -274,7 +274,7 @@ function CommentItem({
                     : 'コメントの編集を保存 (Cmd/Ctrl+Enter でも可)'
               }
             >
-              保存
+              <span aria-hidden="true">保存</span>
             </Button>
           </div>
         </div>
@@ -299,7 +299,7 @@ function CommentItem({
                 data-testid={`comment-edit-${comment.id}`}
                 aria-label={`コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を編集`}
               >
-                編集
+                <span aria-hidden="true">編集</span>
               </button>
               <button
                 type="button"
@@ -314,7 +314,7 @@ function CommentItem({
                     : `コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を削除`
                 }
               >
-                削除
+                <span aria-hidden="true">削除</span>
               </button>
             </div>
           )}
