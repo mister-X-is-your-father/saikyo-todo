@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter884 1/1] workflows-panel 5 preset button (node + trigger 4 種) visible text を aria-hidden span で wrap (一括 1 file): WorkflowEditorDialog 内 5 preset button (node skeleton + manual / cron / item-event / webhook trigger) は aria-label に意図完全表現するのに visible のみ aria-hidden 無し → 既存 wrap (iter860 5 件 + 作成 + 実行) と合わせて Workflow surface 12 button 全段 wrap 統一。+5/-5 行。
 - ✅ [playwright-iter883 1/1] sprint-risk-board-widget button case で inner JSX を aria-hidden で wrap (Sprint Risk Board 上位 risk row、Item edit dialog / sprint page で render): button case は aria-label に title + riskScore + 理由件数完全表現するのに inner JSX が visible 重複露出 → <span className=contents aria-hidden=true> で wrap。div case (非 button) は変更なし。+8/-1 行 (1 file)。検証 3 OK。経路 B で codify。
 - ✅ [playwright-iter882 1/1] notification-bell notification item body <p> を aria-hidden 化 (workspace header NotificationBell popover item button 内 body): outer button aria-label に formatNotificationBody(n) が含まれるため SR には body 重複 → body <p> aria-hidden で aria-label 単独経路。<time> は aria-label に含まれないので aria-hidden 外し relativeTime SR 届ける。inline 未読 indicator も削除 (readAt 情報は outer aria-label 完全表現)。+8/-5 行 (1 file)。検証 3 OK。経路 B で codify。
 - ✅ [playwright-iter881 1/1] workspace home の Workspace 一覧へ戻る Link visible "一覧" を aria-hidden span 化 (workspace [workspaceId] page header back Link): aria-label に '一覧' 完全表現するのに visible のみ aria-hidden 無し → iter844-880 sweep 続編。+2/-1 行。検証 1 OK。経路 B で codify。
