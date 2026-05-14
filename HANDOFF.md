@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter875 1/1] inbox-view + personal-period-view Item title visible {it.title} を aria-hidden span 化 (一括 2 file): inbox は title span 自体に aria-hidden="true"、personal-period は button 子 span で wrap (inbox は outer div role=button 構造) → iter874 続編。+8/-2 行 (2 file)。検証 2 OK。経路 B で codify。
 - ✅ [playwright-iter874 1/1] today-view + kanban-view Item title button visible {item.title} を aria-hidden span で wrap (一括 2 file): aria-label に item.title 埋め込み済みだが visible のみ aria-hidden 無し → iter871/873 と同 pattern を主要 view にも展開。+2/-2 行 (2 file)。検証 2 OK。経路 B で codify。次 iter 候補: inbox-view / personal-period-view / backlog-view 残 title visible-text wrap。
 - ✅ [playwright-iter873 1/1] archived-items-panel title Link visible {item.title} を aria-hidden span で wrap (/<wsId>/archive Item title Link): aria-label に item.title 埋め込み済みだが visible のみ aria-hidden 無し → iter871 (dashboard MUST title) と同 pattern。+1/-1 行。検証 2 OK (iter829 restore wrap regression 込み)。経路 B で codify。
 - ✅ [playwright-iter872 1/1] time-entries-table Sync button + time-entries-panel 作成フォームへ button visible text を aria-hidden span で wrap (一括 2 file): 2 button は aria-label に description + 状態を完全表現するのに visible のみ aria-hidden 無し → iter844-871 sweep 続編。+2/-2 行 (2 file)。検証 2 OK。経路 B で codify。次 iter 候補: 残 visible-text or 別 a11y 軸。
