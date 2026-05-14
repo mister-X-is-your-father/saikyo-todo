@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter873 1/1] archived-items-panel title Link visible {item.title} を aria-hidden span で wrap (/<wsId>/archive Item title Link): aria-label に item.title 埋め込み済みだが visible のみ aria-hidden 無し → iter871 (dashboard MUST title) と同 pattern。+1/-1 行。検証 2 OK (iter829 restore wrap regression 込み)。経路 B で codify。
 - ✅ [playwright-iter872 1/1] time-entries-table Sync button + time-entries-panel 作成フォームへ button visible text を aria-hidden span で wrap (一括 2 file): 2 button は aria-label に description + 状態を完全表現するのに visible のみ aria-hidden 無し → iter844-871 sweep 続編。+2/-2 行 (2 file)。検証 2 OK。経路 B で codify。次 iter 候補: 残 visible-text or 別 a11y 軸。
 - ✅ [playwright-iter871 1/1] dashboard-view MUST title button visible {item.title} を aria-hidden span で wrap (期限近接 MUST タスク section): aria-label "MUST「${item.title}」を編集" に item.title を埋め込み済みだが visible 子 text のみで aria-hidden 無し → SR 二重読み上げ排除。iter844-870 sweep 続編。+1/-1 行。検証 2 OK。経路 B で codify。次 iter 候補: 残 visible-text or 別 a11y 軸。
 - ✅ [playwright-iter870 1/1] subtasks-panel bulk-add button + team-context-editor 保存 button visible text を aria-hidden span で wrap (一括 2 file) (Item edit dialog → 子タスク tab bulk-add + workspace settings team-context save): 2 button は aria-label に意図 + 件数 / 状態を完全表現するのに visible のみ aria-hidden 無し → iter844-869 sweep 続編。+5/-2 行 (2 file)。検証 2 OK (static grep)。経路 B で codify。次 iter 候補: 残 visible-text or 別 a11y 軸 (focus order / contrast / ARIA roles / mobile)。
