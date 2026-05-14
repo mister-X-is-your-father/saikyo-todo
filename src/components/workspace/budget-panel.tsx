@@ -133,7 +133,9 @@ export function BudgetPanel({ workspaceId }: Props) {
             <span className="font-mono">
               ${s.spent.toFixed(2)} / {limitLabel}
               {s.limit !== null && (
-                <span className="text-muted-foreground ml-1">({ratioPct}%)</span>
+                <span className="text-muted-foreground ml-1" aria-hidden="true">
+                  ({ratioPct}%)
+                </span>
               )}
             </span>
           </div>
