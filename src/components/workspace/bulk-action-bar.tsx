@@ -93,11 +93,11 @@ export function BulkActionBar({ workspaceId }: Props) {
           data-testid={`bulk-status-${s.key}`}
           aria-label={
             bulkStatus.isPending
-              ? `選択 ${count} 件のステータスを変更中…`
-              : `選択 ${count} 件を「${s.label}」に変更`
+              ? `${s.label} に変更中… (選択 ${count} 件)`
+              : `${s.label} に変更: 選択 ${count} 件のステータスを更新`
           }
         >
-          {s.label} に
+          <span aria-hidden="true">{s.label} に</span>
         </Button>
       ))}
       <Button
