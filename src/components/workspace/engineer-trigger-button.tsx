@@ -74,7 +74,9 @@ export function EngineerTriggerButton({ item }: Props) {
               : 'PR 自動起票が OFF: Engineer 起動時は commit のみ、PR は人間が後で push (クリックで ON)'
           }
         />
-        <span className="text-muted-foreground">PR 自動起票</span>
+        <span className="text-muted-foreground" aria-hidden="true">
+          PR 自動起票
+        </span>
       </label>
       <Button
         type="button"
