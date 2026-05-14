@@ -218,7 +218,7 @@ export function TodayView({
                           data-testid={`today-title-${it.id}`}
                           aria-label={`「${it.title}」を編集`}
                         >
-                          {it.title}
+                          <span aria-hidden="true">{it.title}</span>
                         </button>
                         {it.isMust && <MustBadge data-testid={`today-must-${it.id}`} />}
                       </div>
