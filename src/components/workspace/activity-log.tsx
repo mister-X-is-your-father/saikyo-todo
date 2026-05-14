@@ -163,7 +163,9 @@ function ActivityRow({
           >
             <Icon className="h-3 w-3" aria-hidden="true" />
           </span>
-          <span className="font-medium">{label}</span>
+          <span className="font-medium" aria-hidden="true">
+            {label}
+          </span>
           <span
             className={`rounded px-1.5 py-0.5 text-[10px] ${
               entry.actorType === 'agent'
@@ -172,7 +174,7 @@ function ActivityRow({
             }`}
             aria-label={entry.actorType === 'agent' ? '実行者: AI Agent' : '実行者: ユーザ'}
           >
-            {entry.actorType === 'agent' ? 'AI' : 'user'}
+            <span aria-hidden="true">{entry.actorType === 'agent' ? 'AI' : 'user'}</span>
           </span>
         </div>
         <time
@@ -197,7 +199,7 @@ function ActivityRow({
           }
           data-testid={`activity-detail-toggle-${entry.id}`}
         >
-          {open ? '詳細を閉じる' : '詳細を見る'}
+          <span aria-hidden="true">{open ? '詳細を閉じる' : '詳細を見る'}</span>
         </button>
       )}
       {open && hasDetail && (
