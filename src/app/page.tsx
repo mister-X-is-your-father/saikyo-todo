@@ -42,7 +42,7 @@ export default async function HomePage() {
             data-testid="logout-btn"
             aria-label="ログアウトしてログイン画面に戻る"
           >
-            ログアウト
+            <span aria-hidden="true">ログアウト</span>
           </Button>
         </form>
       </header>

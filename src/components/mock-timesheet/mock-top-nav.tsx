@@ -30,7 +30,7 @@ export function MockTopNav({ sessionId }: { sessionId: string }) {
             type="submit"
             aria-label="mock-timesheet session をログアウト"
           >
-            ログアウト
+            <span aria-hidden="true">ログアウト</span>
           </Button>
         </form>
       </nav>
