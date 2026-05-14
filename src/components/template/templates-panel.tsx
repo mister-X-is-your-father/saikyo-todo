@@ -201,7 +201,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
                     : 'Template を新規作成 (Cmd/Ctrl+Enter でも可)'
               }
             >
-              作成
+              <span aria-hidden="true">作成</span>
             </Button>
           </form>
         </CardContent>
