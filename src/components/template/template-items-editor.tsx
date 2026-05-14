@@ -153,7 +153,7 @@ export function TemplateItemsEditor({ templateId }: Props) {
                 : 'MUST が OFF: 通常タスク (クリックで ON、DoD 必須化)'
             }
           />
-          MUST (絶対落とさない)
+          <span aria-hidden="true">MUST (絶対落とさない)</span>
         </label>
         {isMust ? (
           <Textarea
