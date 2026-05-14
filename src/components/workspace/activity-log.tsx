@@ -197,7 +197,7 @@ function ActivityRow({
           }
           data-testid={`activity-detail-toggle-${entry.id}`}
         >
-          {open ? '詳細を閉じる' : '詳細を見る'}
+          <span aria-hidden="true">{open ? '詳細を閉じる' : '詳細を見る'}</span>
         </button>
       )}
       {open && hasDetail && (
