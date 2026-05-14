@@ -37,9 +37,9 @@ async function main(): Promise<void> {
     'utf8',
   )
 
-  // 1. Sync button 動的 visible
+  // 1. Sync button 動的 visible (multi-line or single-line both OK)
   if (
-    /<span aria-hidden="true">\n\s+\{e\.syncStatus === 'failed' \? '再Sync' : 'Sync'\}\n\s+<\/span>/.test(
+    /<span aria-hidden="true">\s*\{e\.syncStatus === 'failed' \? '再Sync' : 'Sync'\}\s*<\/span>/.test(
       tet,
     )
   ) {
