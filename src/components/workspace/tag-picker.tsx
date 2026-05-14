@@ -151,7 +151,7 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
                       style={{ backgroundColor: t.color }}
                       aria-hidden="true"
                     />
-                    {t.name}
+                    <span aria-hidden="true">{t.name}</span>
                   </CommandItem>
                 )
               })}
