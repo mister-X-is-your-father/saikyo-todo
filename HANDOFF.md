@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter894 1/1] budget-panel 実績/上限 行内 ({ratioPct}%) visible を aria-hidden span 化 (AI 月次コスト Card 上部の inline ratio): 直下 progressbar aria-label に同 ratioPct を含むため SR 重複 → iter819-823 同 pattern を AI コスト bar にも展開。+3/-1 行。
 - ✅ [playwright-iter891-893 1/1] templates / workflows / sprints / goals / integrations panel の empty-state 「作成フォームへ」 CTA button visible を一括 aria-hidden span 化 (5 panel cross-cut): iter869 (today/inbox/items-board クイック追加にフォーカス) + iter872 (time-entries 作成フォームへ) と同 pattern を残 5 panel に展開、empty state CTA 全 8 surface で visible aria-hidden 規約完全統一。+5/-5 行 (5 file: templates / workflows / sprints / goals / integrations、各 1 行差分)。iter891 templates+workflows 一括 + 後追い 1 file (templates 単独 commit), iter892 sprints+goals 一括, iter893 integrations 単独 で計 4 commit (Edit Read 前 制約により分割)。
 - ✅ [playwright-iter890 1/1] gantt-view zoom select label visible 'zoom' を aria-hidden span 化 (Gantt zoom 切替 label): select に aria-label 設定済 → 親 <label> 内 visible 'zoom' を wrap。+3/-1 行。
 - ✅ [playwright-iter889 1/1] decompose-proposals-panel MUST checkbox label visible を aria-hidden span 化 (AI 分解提案 MUST 切替): iter888 と同 pattern を Decompose proposals MUST 切替にも展開。+3/-1 行。
