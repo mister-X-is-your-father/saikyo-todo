@@ -116,7 +116,7 @@ function buildColumns(
           data-testid={`backlog-title-${row.original.id}`}
           aria-label={`「${String(getValue())}」を編集`}
         >
-          {String(getValue())}
+          <span aria-hidden="true">{String(getValue())}</span>
         </button>
       ),
     },
@@ -182,7 +182,7 @@ function buildColumns(
             data-testid={`backlog-edit-${row.original.id}`}
             aria-label={`「${row.original.title}」を編集`}
           >
-            編集
+            <span aria-hidden="true">編集</span>
           </Button>
           <ItemDecomposeButton workspaceId={workspaceId} item={row.original} />
           <ItemResearchButton workspaceId={workspaceId} item={row.original} />
