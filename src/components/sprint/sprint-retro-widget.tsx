@@ -138,8 +138,10 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
                     : '納品 = 計画 (差分なし)'
               }
             >
-              {delta > 0 ? '+' : ''}
-              {delta}
+              <span aria-hidden="true">
+                {delta > 0 ? '+' : ''}
+                {delta}
+              </span>
             </dd>
           </div>
         </dl>
