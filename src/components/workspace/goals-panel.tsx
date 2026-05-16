@@ -789,7 +789,7 @@ function KeyResultList({
           <select
             value={mode}
             onChange={(e) => setMode(e.target.value as ProgressMode)}
-            className="rounded border px-2 py-1 text-xs"
+            className="min-h-11 rounded border px-2 py-1 text-xs"
             required
             aria-required="true"
             aria-label={`KR 進捗算出モード (現在: ${

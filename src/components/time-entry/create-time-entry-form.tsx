@@ -93,7 +93,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           id="teCategory"
           value={category}
           onChange={(e) => setCategory(e.target.value as TimeEntryCategoryKey)}
-          className="h-9 rounded border px-2 text-sm"
+          className="min-h-11 rounded border px-2 text-sm"
           required
           aria-required="true"
           aria-label={`カテゴリ (現在: ${TIME_ENTRY_CATEGORIES.find((c) => c.key === category)?.label ?? category})`}

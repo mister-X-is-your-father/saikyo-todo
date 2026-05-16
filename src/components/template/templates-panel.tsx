@@ -124,7 +124,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   id="tmpl-kind"
                   value={kind}
                   onChange={(e) => setKind(e.target.value as 'manual' | 'recurring')}
-                  className="h-9 w-full rounded-md border px-3 py-1 text-sm"
+                  className="min-h-11 w-full rounded-md border px-3 py-1 text-sm"
                   required
                   aria-required="true"
                   aria-label={`Template 種別 (現在: ${
