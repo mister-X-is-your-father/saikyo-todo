@@ -57,6 +57,7 @@ export function LoginForm() {
         <IMEInput
           id="email"
           type="email"
+          className="h-11"
           autoComplete="email"
           inputMode="email"
           enterKeyHint="next"
@@ -88,6 +89,7 @@ export function LoginForm() {
         <IMEInput
           id="password"
           type="password"
+          className="h-11"
           autoComplete="current-password"
           enterKeyHint="send"
           required

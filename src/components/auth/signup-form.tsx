@@ -56,6 +56,7 @@ export function SignupForm() {
         <Label htmlFor="displayName">表示名</Label>
         <IMEInput
           id="displayName"
+          className="h-11"
           autoComplete="name"
           enterKeyHint="next"
           autoFocus
@@ -89,6 +90,7 @@ export function SignupForm() {
         <IMEInput
           id="email"
           type="email"
+          className="h-11"
           autoComplete="email"
           inputMode="email"
           enterKeyHint="next"
@@ -121,6 +123,7 @@ export function SignupForm() {
         <IMEInput
           id="password"
           type="password"
+          className="h-11"
           autoComplete="new-password"
           enterKeyHint="send"
           required
