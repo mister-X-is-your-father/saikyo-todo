@@ -51,6 +51,7 @@ export function MockLoginForm() {
         <IMEInput
           id="tsEmail"
           type="email"
+          className="h-11"
           autoComplete="email"
           inputMode="email"
           autoCorrect="off"
@@ -80,6 +81,7 @@ export function MockLoginForm() {
         <IMEInput
           id="tsPassword"
           type="password"
+          className="h-11"
           autoComplete="current-password"
           required
           aria-required="true"

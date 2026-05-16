@@ -68,6 +68,7 @@ export function MockSubmitForm() {
         <IMEInput
           id="tsDate"
           type="date"
+          className="h-11"
           aria-invalid={form.formState.errors.workDate ? true : undefined}
           aria-describedby={form.formState.errors.workDate ? 'tsDate-error' : undefined}
           {...form.register('workDate')}
@@ -104,6 +105,7 @@ export function MockSubmitForm() {
         <Label htmlFor="tsDescription">作業内容</Label>
         <IMEInput
           id="tsDescription"
+          className="h-11"
           aria-invalid={form.formState.errors.description ? true : undefined}
           aria-describedby={
             form.formState.errors.description
@@ -128,6 +130,7 @@ export function MockSubmitForm() {
         <IMEInput
           id="tsHours"
           type="number"
+          className="h-11"
           step="0.25"
           min="0.25"
           max="24"
