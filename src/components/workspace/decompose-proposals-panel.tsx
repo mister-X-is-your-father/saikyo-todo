@@ -382,6 +382,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
             <IMEInput
               ref={titleRef}
               id={`p-title-${proposal.id}`}
+              className="h-11"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
@@ -454,6 +455,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               <IMEInput
                 ref={dodRef}
                 id={`p-dod-${proposal.id}`}
+                className="h-11"
                 value={dod}
                 onChange={(e) => setDod(e.target.value)}
                 required
