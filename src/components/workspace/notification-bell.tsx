@@ -244,13 +244,9 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                         <Icon className="h-3 w-3" aria-hidden="true" />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs leading-snug">
+                        <p className="text-xs leading-snug" aria-hidden="true">
                           {!n.readAt && (
-                            <span
-                              className="bg-primary mr-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full align-middle"
-                              role="img"
-                              aria-label="未読"
-                            />
+                            <span className="bg-primary mr-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full align-middle" />
                           )}
                           {formatNotificationBody(n)}
                         </p>
@@ -261,8 +257,9 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                               ? n.createdAt.toISOString()
                               : new Date(n.createdAt).toISOString()
                           }
+                          aria-label={`${formatRelativeTime(n.createdAt)} (${n.createdAt instanceof Date ? n.createdAt.toISOString() : new Date(n.createdAt).toISOString()})`}
                         >
-                          {formatRelativeTime(n.createdAt)}
+                          <span aria-hidden="true">{formatRelativeTime(n.createdAt)}</span>
                         </time>
                       </div>
                     </button>
