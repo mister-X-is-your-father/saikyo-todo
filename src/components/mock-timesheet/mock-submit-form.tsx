@@ -87,7 +87,7 @@ export function MockSubmitForm() {
           aria-describedby={form.formState.errors.category ? 'tsCategory-error' : undefined}
           aria-label={`カテゴリ (現在: ${TIME_ENTRY_CATEGORIES.find((c) => c.key === form.watch('category'))?.label ?? form.watch('category')})`}
           {...form.register('category')}
-          className="w-full rounded border px-3 py-2 text-sm"
+          className="min-h-11 w-full rounded border px-3 py-2 text-sm"
         >
           {TIME_ENTRY_CATEGORIES.map((c) => (
             <option key={c.key} value={c.key}>
