@@ -89,6 +89,7 @@ export function InstantiateForm({ workspaceId, template }: Props) {
         <Label htmlFor={`override-${template.id}`}>root Item タイトル (任意)</Label>
         <IMEInput
           id={`override-${template.id}`}
+          className="h-11"
           placeholder={template.name}
           value={override}
           onChange={(e) => setOverride(e.target.value)}
@@ -112,6 +113,7 @@ export function InstantiateForm({ workspaceId, template }: Props) {
               <Label htmlFor={`var-${template.id}-${v}`}>変数: {v}</Label>
               <IMEInput
                 id={`var-${template.id}-${v}`}
+                className="h-11"
                 value={values[v] ?? ''}
                 onChange={(e) => setValues({ ...values, [v]: e.target.value })}
                 required

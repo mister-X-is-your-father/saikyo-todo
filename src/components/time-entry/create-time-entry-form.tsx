@@ -69,6 +69,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
         <IMEInput
           id="teDate"
           type="date"
+          className="h-11"
           value={workDate}
           onChange={(e) => setWorkDate(e.target.value)}
           required
@@ -110,6 +111,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
         </Label>
         <IMEInput
           id="teDescription"
+          className="h-11"
           placeholder="例: PR レビュー + フィードバック対応"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -142,7 +144,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           step={15}
           value={durationMinutes}
           onChange={(e) => setDurationMinutes(Number(e.target.value))}
-          className="w-24"
+          className="h-11 w-24"
           required
           aria-required="true"
           aria-invalid={durationMinutes <= 0 || durationMinutes > 24 * 60 || undefined}
