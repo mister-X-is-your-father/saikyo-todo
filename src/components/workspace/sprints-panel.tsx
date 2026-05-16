@@ -967,7 +967,7 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                 step={1}
                 value={length}
                 onChange={(e) => setLength(Number(e.target.value))}
-                className="h-9 w-20 text-sm"
+                className="min-h-11 w-20 text-sm"
                 required
                 aria-required="true"
                 aria-label={

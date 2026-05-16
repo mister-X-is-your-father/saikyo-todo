@@ -118,7 +118,7 @@ export function TemplateItemsEditor({ templateId }: Props) {
             placeholder="期日 offset 日"
             value={dueOffset}
             onChange={(e) => setDueOffset(e.target.value)}
-            className="h-9 w-28 rounded-md border px-2 text-sm"
+            className="min-h-11 w-28 rounded-md border px-2 text-sm"
             aria-label={(() => {
               if (dueOffset === '')
                 return '期日 offset (任意、日数 — 展開日 + N 日後を期日に設定、0-365)'

@@ -325,7 +325,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                 id="src-kind"
                 value={kind}
                 onChange={(e) => setKind(e.target.value as 'yamory' | 'custom-rest')}
-                className="h-9 w-full rounded-md border px-3 py-1 text-sm"
+                className="min-h-11 w-full rounded-md border px-3 py-1 text-sm"
                 required
                 aria-required="true"
                 aria-label={`Source 種別 (現在: ${
@@ -439,7 +439,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     id="src-method"
                     value={method}
                     onChange={(e) => setMethod(e.target.value as 'GET' | 'POST')}
-                    className="h-9 w-full rounded-md border px-3 py-1 text-sm"
+                    className="min-h-11 w-full rounded-md border px-3 py-1 text-sm"
                     required
                     aria-required="true"
                     aria-label={`HTTP メソッド (現在: ${
