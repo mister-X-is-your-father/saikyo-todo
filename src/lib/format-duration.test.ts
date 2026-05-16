@@ -37,6 +37,21 @@ describe('formatMinutes (canonical 定義、iter490 集約)', () => {
     expect(formatMinutes(Infinity)).toBe('0min')
     expect(formatMinutes(-Infinity)).toBe('0min')
   })
+
+  it('境界 boundary: round が 60 倍数を跨ぐと "Hh" に格上げ (59.6 → 1h、59.4 → 59min)', () => {
+    expect(formatMinutes(59.6)).toBe('1h')
+    expect(formatMinutes(59.4)).toBe('59min')
+    expect(formatMinutes(119.6)).toBe('2h')
+    expect(formatMinutes(119.4)).toBe('1h 59min')
+  })
+
+  it('大入力 (1 日超): 24h+ も正しく "Hh Mmin" を返す', () => {
+    expect(formatMinutes(1440)).toBe('24h')
+    expect(formatMinutes(1500)).toBe('25h')
+    expect(formatMinutes(1530)).toBe('25h 30min')
+    expect(formatMinutes(7200)).toBe('120h')
+    expect(formatMinutes(10080)).toBe('168h')
+  })
 })
 
 describe('formatMinutesJa (iter801 — ja-JP 表記版、Slack/AI brief 用)', () => {
@@ -72,5 +87,20 @@ describe('formatMinutesJa (iter801 — ja-JP 表記版、Slack/AI brief 用)', (
   it('formatMinutes と output 形式は異なる (en vs ja 棲み分け)', () => {
     expect(formatMinutes(90)).toBe('1h 30min')
     expect(formatMinutesJa(90)).toBe('1時間30分')
+  })
+
+  it('境界 boundary: round が 60 倍数を跨ぐと "H時間" に格上げ (59.6 → 1時間、59.4 → 59分)', () => {
+    expect(formatMinutesJa(59.6)).toBe('1時間')
+    expect(formatMinutesJa(59.4)).toBe('59分')
+    expect(formatMinutesJa(119.6)).toBe('2時間')
+    expect(formatMinutesJa(119.4)).toBe('1時間59分')
+  })
+
+  it('大入力 (1 日超): 24時間+ も正しく "H時間M分" を返す', () => {
+    expect(formatMinutesJa(1440)).toBe('24時間')
+    expect(formatMinutesJa(1500)).toBe('25時間')
+    expect(formatMinutesJa(1530)).toBe('25時間30分')
+    expect(formatMinutesJa(7200)).toBe('120時間')
+    expect(formatMinutesJa(10080)).toBe('168時間')
   })
 })
