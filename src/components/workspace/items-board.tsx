@@ -344,7 +344,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           <select
             value={statusFilter ?? ''}
             onChange={(e) => setStatusFilter(e.target.value || null)}
-            className="rounded border px-2 py-1 text-sm"
+            className="min-h-11 rounded border px-2 py-1 text-sm"
             data-testid="filter-status"
             aria-label={
               statusFilter
@@ -368,7 +368,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           <select
             value={sprintFilter ?? ''}
             onChange={(e) => setSprintFilter(e.target.value || null)}
-            className="rounded border px-2 py-1 text-sm"
+            className="min-h-11 rounded border px-2 py-1 text-sm"
             data-testid="filter-sprint"
             aria-label={
               sprintFilter
