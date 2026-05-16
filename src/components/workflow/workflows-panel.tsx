@@ -218,7 +218,7 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                 el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
               }}
             >
-              作成フォームへ
+              <span aria-hidden="true">作成フォームへ</span>
             </button>
           }
         />
@@ -346,7 +346,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             aria-label={`Workflow「${wf.name}」の graph / trigger を編集`}
           >
             <Pencil className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-            編集
+            <span aria-hidden="true">編集</span>
           </Button>
           <Button
             size="sm"
@@ -362,7 +362,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
                 : `Workflow「${wf.name}」を${wf.enabled ? '無効化' : '有効化'}`
             }
           >
-            {wf.enabled ? '無効化' : '有効化'}
+            <span aria-hidden="true">{wf.enabled ? '無効化' : '有効化'}</span>
           </Button>
           <Button
             size="sm"
@@ -383,7 +383,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             ) : (
               <ChevronRight className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             )}
-            履歴
+            <span aria-hidden="true">履歴</span>
           </Button>
           <Button
             size="sm"
@@ -524,7 +524,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                   title={preset.title}
                   aria-label={`graph に ${preset.title} の skeleton node を追加`}
                 >
-                  + {preset.type}
+                  <span aria-hidden="true">+ {preset.type}</span>
                 </Button>
               ))}
             </div>
@@ -569,7 +569,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                 title="手動 trigger 専用 (実行 button から起動)"
                 aria-label="trigger を manual (手動実行のみ) に切替"
               >
-                manual
+                <span aria-hidden="true">manual</span>
               </Button>
               <Button
                 type="button"
@@ -583,7 +583,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                 title="cron trigger (例: 毎日 09:00)"
                 aria-label="trigger を cron (毎日 09:00 等) に切替"
               >
-                cron
+                <span aria-hidden="true">cron</span>
               </Button>
               <Button
                 type="button"
@@ -599,7 +599,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                 title="item-event (create / update / status_change / complete)"
                 aria-label="trigger を item-event (create / update / status_change / complete) に切替"
               >
-                item-event
+                <span aria-hidden="true">item-event</span>
               </Button>
               <Button
                 type="button"
@@ -622,7 +622,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                 title="webhook trigger (POST /api/workflows/webhook/<secret>)"
                 aria-label="trigger を webhook (POST /api/workflows/webhook/<secret>) に切替"
               >
-                webhook
+                <span aria-hidden="true">webhook</span>
               </Button>
             </div>
             <Textarea
@@ -667,7 +667,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
             data-testid={`wf-editor-cancel-${wf.id}`}
             aria-label={`Workflow「${wf.name}」の編集をキャンセル`}
           >
-            キャンセル
+            <span aria-hidden="true">キャンセル</span>
           </Button>
           <Button
             type="button"
@@ -682,7 +682,7 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                 : `Workflow「${wf.name}」の graph / trigger を保存`
             }
           >
-            {saving ? '保存中…' : '保存'}
+            <span aria-hidden="true">{saving ? '保存中…' : '保存'}</span>
           </Button>
         </DialogFooter>
       </DialogContent>
