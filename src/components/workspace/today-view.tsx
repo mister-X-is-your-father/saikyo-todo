@@ -158,7 +158,7 @@ export function TodayView({
                 el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
               }}
             >
-              クイック追加にフォーカス (キー: q)
+              <span aria-hidden="true">クイック追加にフォーカス (キー: q)</span>
             </button>
           }
         />
