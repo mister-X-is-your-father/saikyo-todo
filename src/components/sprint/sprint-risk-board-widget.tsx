@@ -84,7 +84,11 @@ export function SprintRiskBoardWidget<T extends RiskBoardItemFields>({
               {board.topRisk.map((entry) => {
                 const sev = riskSeverity(entry.riskScore)
                 const titleEl = (
-                  <span className="flex-1 truncate text-sm" title={entry.item.title}>
+                  <span
+                    className="flex-1 truncate text-sm"
+                    title={entry.item.title}
+                    aria-hidden="true"
+                  >
                     {entry.item.title}
                   </span>
                 )
