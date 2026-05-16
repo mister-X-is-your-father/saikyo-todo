@@ -770,12 +770,15 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
                   <ChevronRight className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 )}
                 <RunStatusBadge status={r.status} />
-                <span className="text-muted-foreground">{r.triggerKind}</span>
+                <span className="text-muted-foreground" aria-hidden="true">
+                  {r.triggerKind}
+                </span>
                 <time
                   className="text-muted-foreground tabular-nums"
                   dateTime={
                     r.startedAt instanceof Date ? r.startedAt.toISOString() : (r.startedAt ?? '')
                   }
+                  aria-hidden="true"
                 >
                   {formatRunTime(r)}
                 </time>
@@ -806,7 +809,8 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
               title={`同じ input で再実行 (${formatRunTime(r)})`}
               data-testid={`wf-run-rerun-${r.id}`}
             >
-              <Play className="h-3 w-3" aria-hidden="true" />再
+              <Play className="h-3 w-3" aria-hidden="true" />
+              <span aria-hidden="true">再</span>
             </button>
           </li>
         )
