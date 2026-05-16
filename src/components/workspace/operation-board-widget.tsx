@@ -169,10 +169,15 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                         className="hover:bg-muted/60 focus-visible:ring-ring flex w-full items-center gap-1 truncate rounded px-1 py-0.5 text-left focus-visible:ring-2 focus-visible:outline-none"
                         aria-label={`${it.title} を開く (見積 ${it.estimateMin}分)`}
                       >
-                        <span className="text-muted-foreground text-[10px] tabular-nums">
+                        <span
+                          className="text-muted-foreground text-[10px] tabular-nums"
+                          aria-hidden="true"
+                        >
                           {it.estimateMin}m
                         </span>
-                        <span className="truncate">{it.title}</span>
+                        <span className="truncate" aria-hidden="true">
+                          {it.title}
+                        </span>
                       </button>
                     </li>
                   ))}
@@ -193,10 +198,15 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                         className="hover:bg-muted/60 focus-visible:ring-ring flex w-full items-center gap-1 truncate rounded px-1 py-0.5 text-left focus-visible:ring-2 focus-visible:outline-none"
                         aria-label={`${it.title} を開く (集中 ${it.estimateMin}分)`}
                       >
-                        <span className="text-muted-foreground text-[10px] tabular-nums">
+                        <span
+                          className="text-muted-foreground text-[10px] tabular-nums"
+                          aria-hidden="true"
+                        >
                           {it.estimateMin}m
                         </span>
-                        <span className="truncate">{it.title}</span>
+                        <span className="truncate" aria-hidden="true">
+                          {it.title}
+                        </span>
                       </button>
                     </li>
                   ))}
@@ -295,7 +305,7 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                 <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
               )}
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
-              昨日 done {board.doneYesterday.count} 件
+              <span aria-hidden="true">昨日 done {board.doneYesterday.count} 件</span>
             </button>
             {showDoneYesterday && (
               <div id="operation-board-done-yesterday-list" className="pt-1 pl-5">
