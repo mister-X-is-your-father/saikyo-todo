@@ -118,30 +118,21 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
           className="grid grid-cols-3 gap-2 text-xs"
           aria-label={`計画 vs 納品 (計画 ${planned} 件 / 納品 ${delivered} 件 / 差分 ${delta > 0 ? '+' : ''}${delta} 件)`}
         >
-          <div>
+          <div aria-hidden="true">
             <dt className="text-muted-foreground">計画</dt>
             <dd className="text-base font-semibold tabular-nums">{planned}</dd>
           </div>
-          <div>
+          <div aria-hidden="true">
             <dt className="text-muted-foreground">納品</dt>
             <dd className="text-base font-semibold tabular-nums">{delivered}</dd>
           </div>
-          <div>
+          <div aria-hidden="true">
             <dt className="text-muted-foreground">差分</dt>
             <dd
               className={`text-base font-semibold tabular-nums ${delta < 0 ? 'text-rose-700' : delta > 0 ? 'text-emerald-700' : ''}`}
-              aria-label={
-                delta < 0
-                  ? `納品 - 計画 ${delta} 件 (未達)`
-                  : delta > 0
-                    ? `納品 - 計画 +${delta} 件 (超過達成)`
-                    : '納品 = 計画 (差分なし)'
-              }
             >
-              <span aria-hidden="true">
-                {delta > 0 ? '+' : ''}
-                {delta}
-              </span>
+              {delta > 0 ? '+' : ''}
+              {delta}
             </dd>
           </div>
         </dl>
