@@ -493,6 +493,7 @@ function ItemEditDialogInner({
               <Label htmlFor="editTitle">タイトル</Label>
               <IMEInput
                 id="editTitle"
+                className="h-11"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
@@ -516,6 +517,7 @@ function ItemEditDialogInner({
               <Label htmlFor="editDescription">説明</Label>
               <IMEInput
                 id="editDescription"
+                className="h-11"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 maxLength={10_000}
@@ -535,6 +537,7 @@ function ItemEditDialogInner({
                 <IMEInput
                   id="editStart"
                   type="date"
+                  className="h-11"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   data-testid="edit-item-start-date"
@@ -557,6 +560,7 @@ function ItemEditDialogInner({
                   ref={dueDateRef}
                   id="editDue"
                   type="date"
+                  className="h-11"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
                   data-testid="edit-item-due-date"
@@ -717,6 +721,7 @@ function ItemEditDialogInner({
                 <IMEInput
                   ref={dodRef}
                   id="editDod"
+                  className="h-11"
                   value={dod}
                   onChange={(e) => setDod(e.target.value)}
                   required
