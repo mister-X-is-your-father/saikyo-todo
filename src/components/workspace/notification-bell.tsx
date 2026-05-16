@@ -200,7 +200,7 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
             }
           >
             <CheckCheck className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-            全て既読
+            <span aria-hidden="true">全て既読</span>
           </Button>
         </div>
         <div className="max-h-96 overflow-y-auto">
