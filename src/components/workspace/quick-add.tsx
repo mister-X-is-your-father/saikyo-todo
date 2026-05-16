@@ -186,7 +186,9 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
           aria-atomic="true"
           aria-label={`解析結果: ${previewSummary}`}
         >
-          <span className="truncate font-mono">→ {preview.title}</span>
+          <span className="truncate font-mono" aria-hidden="true">
+            → {preview.title}
+          </span>
           {preview.scheduledFor && (
             // iter439: 旧 <span title> (mouse hover only) は SR / keyboard で
             // ISO 日付不可達。<time dateTime> 要素に格上げ (HTML5 semantic、
@@ -196,8 +198,10 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
               dateTime={preview.scheduledFor}
               aria-label={`予定 ${preview.scheduledFor}${preview.dueTime ? ` ${preview.dueTime}` : ''}`}
             >
-              {formatFriendlyDate(preview.scheduledFor, new Date())}
-              {preview.dueTime ? ` ${preview.dueTime}` : ''}
+              <span aria-hidden="true">
+                {formatFriendlyDate(preview.scheduledFor, new Date())}
+                {preview.dueTime ? ` ${preview.dueTime}` : ''}
+              </span>
             </time>
           )}
           {preview.priority && (
