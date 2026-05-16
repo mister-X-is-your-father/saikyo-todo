@@ -138,7 +138,7 @@ function buildColumns(
         if (!v) return '—'
         return (
           <time dateTime={v} aria-label={`期限 ${v}`}>
-            {formatFriendlyDate(v, today)}
+            <span aria-hidden="true">{formatFriendlyDate(v, today)}</span>
           </time>
         )
       },
@@ -155,7 +155,7 @@ function buildColumns(
         const display = iso.slice(0, 19).replace('T', ' ')
         return (
           <time dateTime={iso} aria-label={`最終更新 ${display}`}>
-            {display}
+            <span aria-hidden="true">{display}</span>
           </time>
         )
       },
