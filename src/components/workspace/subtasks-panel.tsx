@@ -575,7 +575,9 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
                   : `子タスク ${pendingTitleCount} 件をまとめて追加`
             }
           >
-            {create.isPending ? '追加中…' : `${pendingTitleCount} 件追加`}
+            <span aria-hidden="true">
+              {create.isPending ? '追加中…' : `${pendingTitleCount} 件追加`}
+            </span>
           </Button>
         </div>
       </div>
