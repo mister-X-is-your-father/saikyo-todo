@@ -97,6 +97,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
                 <Label htmlFor="tmpl-name">名前</Label>
                 <IMEInput
                   id="tmpl-name"
+                  className="h-11"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="例: クライアント onboarding"
@@ -176,7 +177,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   value={scheduleCron}
                   onChange={(e) => setScheduleCron(e.target.value)}
                   placeholder="0 9 * * 1  (毎週月曜 09:00)"
-                  className="font-mono"
+                  className="h-11 font-mono"
                   autoComplete="off"
                   spellCheck={false}
                   aria-label={

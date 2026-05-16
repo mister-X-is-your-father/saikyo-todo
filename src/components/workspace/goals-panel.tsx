@@ -146,6 +146,7 @@ export function GoalsPanel({ workspaceId }: Props) {
                 <Label htmlFor="goal-title">Objective (なに / なぜ)</Label>
                 <IMEInput
                   id="goal-title"
+                  className="h-11"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="例: 2026 Q2 — システム速度を体感半分に"
@@ -767,7 +768,7 @@ function KeyResultList({
             value={krTitle}
             onChange={(e) => setKrTitle(e.target.value)}
             placeholder="KR タイトル (例: p95 < 200ms)"
-            className="flex-1"
+            className="h-11 flex-1"
             data-testid={`kr-title-input-${goalId}`}
             aria-label={
               krTitle.length === 0

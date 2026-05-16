@@ -205,6 +205,7 @@ export function SprintsPanel({ workspaceId }: Props) {
                 <Label htmlFor="sprint-name">名前</Label>
                 <IMEInput
                   id="sprint-name"
+                  className="h-11"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="例: 2026 W18 Sprint"
