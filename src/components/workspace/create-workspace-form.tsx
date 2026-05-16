@@ -53,6 +53,7 @@ export function CreateWorkspaceForm() {
         <Label htmlFor="name">Workspace 名</Label>
         <IMEInput
           id="name"
+          className="h-11"
           placeholder="例: チーム A"
           required
           aria-required="true"
@@ -76,6 +77,7 @@ export function CreateWorkspaceForm() {
         <Label htmlFor="slug">URL slug</Label>
         <IMEInput
           id="slug"
+          className="h-11"
           placeholder="team-a"
           required
           aria-required="true"
