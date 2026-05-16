@@ -253,7 +253,7 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
                       dateTime={it.dueDate}
                       aria-label={`期限 ${it.dueDate}`}
                     >
-                      {it.dueDate}
+                      <span aria-hidden="true">{it.dueDate}</span>
                     </time>
                   )}
                 </li>
