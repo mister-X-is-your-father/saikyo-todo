@@ -139,19 +139,19 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
           className="text-muted-foreground mt-2 grid grid-cols-3 gap-2 text-[11px]"
           aria-label={`見積バイアス内訳 (見積内 ${report.underCount} 件 / ±10% 以内 ${report.onCount} 件 / 超過 ${report.overCount} 件)`}
         >
-          <div>
+          <div aria-hidden="true">
             <dt>見積内 (under)</dt>
             <dd className="text-foreground tabular-nums" data-testid="estimate-bias-under">
               {report.underCount}
             </dd>
           </div>
-          <div>
+          <div aria-hidden="true">
             <dt>±10%以内 (on)</dt>
             <dd className="text-foreground tabular-nums" data-testid="estimate-bias-on">
               {report.onCount}
             </dd>
           </div>
-          <div>
+          <div aria-hidden="true">
             <dt>超過 (over)</dt>
             <dd className="text-foreground tabular-nums" data-testid="estimate-bias-over">
               {report.overCount}
