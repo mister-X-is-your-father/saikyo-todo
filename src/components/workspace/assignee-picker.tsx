@@ -146,7 +146,7 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
                       className={cn('mr-2 size-4', checked ? 'opacity-100' : 'opacity-0')}
                       aria-hidden="true"
                     />
-                    {label}
+                    <span aria-hidden="true">{label}</span>
                   </CommandItem>
                 )
               })}
@@ -176,7 +176,7 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
                         aria-hidden="true"
                       />
                       <BotIcon className="text-muted-foreground mr-2 size-4" aria-hidden="true" />
-                      {label}
+                      <span aria-hidden="true">{label}</span>
                     </CommandItem>
                   )
                 })}
