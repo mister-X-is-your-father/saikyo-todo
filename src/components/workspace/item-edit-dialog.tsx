@@ -585,7 +585,7 @@ function ItemEditDialogInner({
                   onChange={(e) => void handleSprintChange(e.target.value || null)}
                   disabled={assignSprint.isPending}
                   aria-busy={assignSprint.isPending || undefined}
-                  className="w-full rounded border px-2 py-1.5 text-sm"
+                  className="min-h-11 w-full rounded border px-2 py-1.5 text-sm"
                   data-testid="edit-item-sprint"
                   aria-label={(() => {
                     const current = (sprintsList.data ?? []).find((s) => s.id === item.sprintId)
@@ -636,7 +636,7 @@ function ItemEditDialogInner({
                   onChange={(e) => void handleKrChange(e.target.value || null)}
                   disabled={assignKr.isPending}
                   aria-busy={assignKr.isPending || undefined}
-                  className="w-full rounded border px-2 py-1.5 text-sm"
+                  className="min-h-11 w-full rounded border px-2 py-1.5 text-sm"
                   data-testid="edit-item-kr"
                   aria-label={(() => {
                     const current = (krsList.data ?? []).find((k) => k.id === item.keyResultId)

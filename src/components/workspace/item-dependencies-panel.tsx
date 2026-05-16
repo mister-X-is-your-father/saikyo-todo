@@ -184,7 +184,7 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
           <select
             value={pickKind}
             onChange={(e) => setPickKind(e.target.value as 'prerequisite' | 'related')}
-            className="rounded border px-2 py-1.5 text-sm"
+            className="min-h-11 rounded border px-2 py-1.5 text-sm"
             required
             aria-required="true"
             data-testid="dep-kind"
@@ -202,7 +202,7 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
           <select
             value={pickId}
             onChange={(e) => setPickId(e.target.value)}
-            className="min-w-[260px] flex-1 rounded border px-2 py-1.5 text-sm"
+            className="min-h-11 min-w-[260px] flex-1 rounded border px-2 py-1.5 text-sm"
             data-testid="dep-target"
             required
             aria-required="true"
