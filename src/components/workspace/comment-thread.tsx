@@ -189,7 +189,7 @@ function CommentItem({
               role="img"
               aria-label="AI Agent による投稿"
             >
-              AI
+              <span aria-hidden="true">AI</span>
             </span>
           )}
         </span>
