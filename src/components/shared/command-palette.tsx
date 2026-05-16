@@ -137,7 +137,7 @@ export function CommandPalette({ commands, items, onSelectItem }: CommandPalette
                       dateTime={item.dueDate}
                       aria-label={`期限 ${item.dueDate}`}
                     >
-                      {formatFriendlyDate(item.dueDate, today)}
+                      <span aria-hidden="true">{formatFriendlyDate(item.dueDate, today)}</span>
                     </time>
                   )}
                   {item.isMust && <MustBadge className="ml-auto" />}
