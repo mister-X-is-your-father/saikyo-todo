@@ -205,17 +205,28 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
             </time>
           )}
           {preview.priority && (
-            <span className={`rounded px-1.5 py-0.5 ${PRIO_COLOR[preview.priority]}`}>
+            <span
+              className={`rounded px-1.5 py-0.5 ${PRIO_COLOR[preview.priority]}`}
+              aria-hidden="true"
+            >
               p{preview.priority}
             </span>
           )}
           {preview.tags.map((t) => (
-            <span key={t} className="rounded bg-indigo-100 px-1.5 py-0.5 text-indigo-700">
+            <span
+              key={t}
+              className="rounded bg-indigo-100 px-1.5 py-0.5 text-indigo-700"
+              aria-hidden="true"
+            >
               #{t}
             </span>
           ))}
           {preview.assignees.map((a) => (
-            <span key={a} className="rounded bg-emerald-100 px-1.5 py-0.5 text-emerald-700">
+            <span
+              key={a}
+              className="rounded bg-emerald-100 px-1.5 py-0.5 text-emerald-700"
+              aria-hidden="true"
+            >
               @{a}
             </span>
           ))}
