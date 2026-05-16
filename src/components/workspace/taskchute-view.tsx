@@ -187,7 +187,7 @@ export function TaskChuteView({ workspaceId, items }: Props) {
                 role="img"
                 aria-label={priorityLabel(item.priority)}
               >
-                P{item.priority ?? 4}
+                <span aria-hidden="true">P{item.priority ?? 4}</span>
               </span>
               <StatusBadge status={item.status} />
               {(() => {
@@ -200,7 +200,7 @@ export function TaskChuteView({ workspaceId, items }: Props) {
                     aria-label={`予測完了時刻 ${tickerRow.eta}`}
                     data-testid={`taskchute-eta-${item.id}`}
                   >
-                    →{tickerRow.eta}
+                    <span aria-hidden="true">→{tickerRow.eta}</span>
                   </span>
                 )
               })()}
