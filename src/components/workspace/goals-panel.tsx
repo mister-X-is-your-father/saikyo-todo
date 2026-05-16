@@ -490,7 +490,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                         : `Goal「${goal.title}」を完了`
                     }
                   >
-                    完了
+                    <span aria-hidden="true">完了</span>
                   </Button>
                   <Button
                     type="button"
@@ -507,7 +507,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                         : `Goal「${goal.title}」をアーカイブ`
                     }
                   >
-                    アーカイブ
+                    <span aria-hidden="true">アーカイブ</span>
                   </Button>
                 </>
               )}
@@ -528,7 +528,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                         : `Goal「${goal.title}」を active に戻す`
                     }
                   >
-                    active に戻す
+                    <span aria-hidden="true">active に戻す</span>
                   </Button>
                   <Button
                     type="button"
@@ -545,7 +545,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                         : `Goal「${goal.title}」をアーカイブ`
                     }
                   >
-                    アーカイブ
+                    <span aria-hidden="true">アーカイブ</span>
                   </Button>
                 </>
               )}
@@ -565,7 +565,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                       : `Goal「${goal.title}」を active に戻す`
                   }
                 >
-                  active に戻す
+                  <span aria-hidden="true">active に戻す</span>
                 </Button>
               )}
               <Button
