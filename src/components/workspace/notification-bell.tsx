@@ -237,8 +237,7 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                     >
                       <span
                         className={`mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full ring-1 ring-inset ${visual.bgClass} ${visual.textClass} ${visual.ringClass}`}
-                        role="img"
-                        aria-label={visual.label}
+                        aria-hidden="true"
                         data-testid={`notification-type-icon-${n.type}`}
                       >
                         <Icon className="h-3 w-3" aria-hidden="true" />
