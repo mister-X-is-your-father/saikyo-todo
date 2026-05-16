@@ -99,19 +99,19 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
             className="grid grid-cols-3 gap-2 text-xs"
             aria-label={`Lead time 統計 (平均 ${stats.leadTimeAvgHours}h / 中央 ${stats.leadTimeMedianHours ?? '不明'}h / 期間 ${stats.cycleDurationDays}d)`}
           >
-            <div>
+            <div aria-hidden="true">
               <dt className="text-muted-foreground">平均 lead</dt>
               <dd className="text-base font-semibold tabular-nums">{stats.leadTimeAvgHours}h</dd>
             </div>
             {stats.leadTimeMedianHours !== null ? (
-              <div>
+              <div aria-hidden="true">
                 <dt className="text-muted-foreground">中央 lead</dt>
                 <dd className="text-base font-semibold tabular-nums">
                   {stats.leadTimeMedianHours}h
                 </dd>
               </div>
             ) : null}
-            <div>
+            <div aria-hidden="true">
               <dt className="text-muted-foreground">期間 (日)</dt>
               <dd className="text-base font-semibold tabular-nums">{stats.cycleDurationDays}d</dd>
             </div>
@@ -123,15 +123,15 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
           className="grid grid-cols-3 gap-2 text-xs"
           aria-label={`ステータス分布 (完了 ${stats.done} 件 / 未完了 ${stats.inProgressOrTodo} 件 / cancelled ${stats.cancelled} 件)`}
         >
-          <div>
+          <div aria-hidden="true">
             <dt className="text-muted-foreground">完了</dt>
             <dd className="font-semibold text-emerald-700 tabular-nums">{stats.done}</dd>
           </div>
-          <div>
+          <div aria-hidden="true">
             <dt className="text-muted-foreground">未完了</dt>
             <dd className="font-semibold tabular-nums">{stats.inProgressOrTodo}</dd>
           </div>
-          <div>
+          <div aria-hidden="true">
             <dt className="text-muted-foreground">cancelled</dt>
             <dd className="text-muted-foreground font-semibold tabular-nums">{stats.cancelled}</dd>
           </div>
