@@ -782,7 +782,7 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
                 >
                   {formatRunTime(r)}
                 </time>
-                <span className="text-muted-foreground ml-auto tabular-nums">
+                <span className="text-muted-foreground ml-auto tabular-nums" aria-hidden="true">
                   {formatRunDuration(r)}
                 </span>
               </button>
