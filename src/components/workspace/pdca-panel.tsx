@@ -105,7 +105,10 @@ export function PdcaPanel({ workspaceId }: Props) {
         {/* PDCA 比率バー (1 行) */}
         {total > 0 && (
           <div className="space-y-1">
-            <div className="text-muted-foreground text-xs" id="pdca-dist-label">
+            {/* iter914: 視覚 label "分布" は下の role="img" bar の aria-label
+                "分布 (合計 N): Plan X (Y%) / ..." が完全 content を持つため、
+                SR では bar 1 経路に集約 (iter907/909-912 続編)。orphaned id 除去。 */}
+            <div className="text-muted-foreground text-xs" aria-hidden="true">
               分布
             </div>
             <div
