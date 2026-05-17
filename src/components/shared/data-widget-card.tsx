@@ -24,7 +24,7 @@
  *     <ol>{...}</ol>
  *   </DataWidgetCard>
  */
-import type { ReactNode } from 'react'
+import { type ReactNode, useId } from 'react'
 
 import { AlertTriangle, Loader2 } from 'lucide-react'
 
@@ -81,17 +81,19 @@ export function DataWidgetCard({
   testId,
 }: Props) {
   const errorMsg = getErrorMessage(error)
+  // iter930: region aria-label と CardTitle visible (title + count chip) が同 content
+  // を持っていたため SR が landmark + heading 2 経路 で同 string を announce。
+  // useId で安定 id 生成 + aria-labelledby で region/heading 1 source 集約
+  // (iter926 dashboard MUST / iter928/929 region sweep の DataWidgetCard 横展開、
+  // 本 component を使う全 widget が一気に 1 source 化)。
+  const headingId = useId()
 
   return (
-    <Card
-      className={cn(className)}
-      data-testid={testId}
-      role="region"
-      aria-label={count !== undefined ? `${title} (${count} 件)` : title}
-    >
+    <Card className={cn(className)} data-testid={testId} role="region" aria-labelledby={headingId}>
       <CardHeader className="pb-2">
         <div className="flex items-center gap-1.5">
           <CardTitle
+            id={headingId}
             className="flex flex-1 items-center gap-1.5 text-sm"
             role="heading"
             aria-level={2}
