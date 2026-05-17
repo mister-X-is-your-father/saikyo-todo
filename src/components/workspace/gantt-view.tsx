@@ -306,14 +306,18 @@ export function GanttView({
           baselineCount > 0 ? ` / baseline ${baselineCount} 件` : ''
         }${slipItemCount > 0 ? ` / 遅延 ${slipItemCount} 件 計 ${totalSlipDays} 日` : ''})`}
       >
-        <span>
+        {/* iter917: parent role="group" aria-label が "表示範囲 X 日 / 表示中 Item Y 件
+            / CPM 期間 Z 日 / ..." 完全 content を持つため、内側 3 span は visible
+            duplicate → aria-hidden で SR 単独経路に集約 (critical / baseline / slip
+            兄弟 chip 既同 pattern、iter913 baseline 揃え と全 5 chip 一貫化)。 */}
+        <span aria-hidden="true">
           表示範囲 <span className="text-foreground font-mono">{totalSpanDays}</span> 日
         </span>
-        <span>
+        <span aria-hidden="true">
           表示中 Item <span className="text-foreground font-mono">{withDates.length}</span> 件
         </span>
         {projectDurationDays !== undefined && projectDurationDays > 0 && (
-          <span>
+          <span aria-hidden="true">
             CPM 期間 <span className="text-foreground font-mono">{projectDurationDays}</span> 日
           </span>
         )}
