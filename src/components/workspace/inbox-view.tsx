@@ -161,6 +161,9 @@ export function InboxView({
               className="inline-flex items-center gap-0.5 rounded-full border border-slate-300 bg-slate-50 px-1.5 py-0.5 text-slate-700"
               aria-hidden="true"
             >
+              {/* iter932: 兄弟 chip (immediate ⚡ / project 🗂) と視覚一貫性を揃え、
+                  next-action にも ➡ emoji を付与 (parent aria-hidden で SR 影響なし)。 */}
+              <span>➡️</span>
               <span>Next action {gtdSummary.counts['next-action']}</span>
             </span>
           )}
