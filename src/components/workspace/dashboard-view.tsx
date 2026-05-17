@@ -1365,7 +1365,12 @@ export function DashboardView({ workspaceId }: Props) {
       {/* MUST 一覧 */}
       <Card role="region" aria-label={`MUST Item 一覧 ${s.items.length} 件`}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base" role="heading" aria-level={2}>
+          <CardTitle
+            id="dashboard-must-list-heading"
+            className="flex items-center gap-2 text-base"
+            role="heading"
+            aria-level={2}
+          >
             <Flame className="h-4 w-4 text-red-500" aria-hidden="true" />
             MUST Item 一覧
           </CardTitle>
@@ -1377,7 +1382,10 @@ export function DashboardView({ workspaceId }: Props) {
               description="絶対に落とせないタスクに MUST を立ててください"
             />
           ) : (
-            <ul className="divide-y text-sm" aria-label={`MUST Item 一覧 ${s.items.length} 件`}>
+            // iter926: ul の aria-label が parent Card region aria-label と完全一致
+            // していたため SR が 2 回 announce → ul は heading に aria-labelledby
+            // で連携、region と list の役割を分離 (Card = region landmark, ul = list)。
+            <ul className="divide-y text-sm" aria-labelledby="dashboard-must-list-heading">
               {s.items.map((item) => {
                 const overdue = item.dueDate && item.dueDate < todayStr && !item.doneAt
                 const soon =
