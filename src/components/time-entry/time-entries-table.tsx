@@ -12,6 +12,9 @@ import type { TimeEntry } from '@/features/time-entry/schema'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
+// iter921: aria-label "外部同期: ${jaLabel}" を持つ 3 Badge いずれも visible
+// "synced" / "failed" / "pending" が aria-hidden 無し → 内側 visible を
+// aria-hidden span で wrap、aria-label 単独 SR 経路に集約 (iter918-920 続編)。
 function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
   if (status === 'synced') {
     return (
@@ -21,7 +24,7 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
         aria-label="外部同期: 完了"
         data-testid="sync-badge"
       >
-        synced
+        <span aria-hidden="true">synced</span>
       </Badge>
     )
   }
@@ -33,7 +36,7 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
         aria-label="外部同期: 失敗"
         data-testid="sync-badge"
       >
-        failed
+        <span aria-hidden="true">failed</span>
       </Badge>
     )
   }
@@ -44,7 +47,7 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
       aria-label="外部同期: 未実行"
       data-testid="sync-badge"
     >
-      pending
+      <span aria-hidden="true">pending</span>
     </Badge>
   )
 }
