@@ -441,9 +441,13 @@ export function GanttView({
               background: 'rgba(220, 38, 38, 0.7)', // red-600 半透明
             }}
           >
+            {/* iter927: parent div aria-label "今日 (yyyy年M月d日 (eee)) の縦線"
+                が完全 content を持つため、内側 visible "今日" badge span は
+                aria-hidden で SR 単独経路に集約 (iter918-926 続編)。 */}
             <span
               className="absolute -top-0.5 left-1 rounded bg-red-600 px-1 py-0.5 text-[10px] leading-none text-white"
               style={{ whiteSpace: 'nowrap' }}
+              aria-hidden="true"
             >
               今日
             </span>
