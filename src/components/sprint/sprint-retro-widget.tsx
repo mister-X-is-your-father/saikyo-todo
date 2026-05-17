@@ -228,10 +228,14 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
           <div
             className="bg-muted/40 flex items-center gap-2 rounded p-2 text-xs"
             data-testid="retro-comparison"
+            role="group"
+            aria-label={`前 Sprint 比 ${trendLabel(cmp.trend)}: 完了率 ${cmp.completionDelta > 0 ? '+' : ''}${cmp.completionDelta}pt / 納品 ${cmp.doneDelta > 0 ? '+' : ''}${cmp.doneDelta} 件`}
           >
             {trendIcon(cmp.trend)}
-            <span className="font-medium">前 Sprint 比 {trendLabel(cmp.trend)}</span>
-            <span className="text-muted-foreground tabular-nums">
+            <span className="font-medium" aria-hidden="true">
+              前 Sprint 比 {trendLabel(cmp.trend)}
+            </span>
+            <span className="text-muted-foreground tabular-nums" aria-hidden="true">
               完了率 {cmp.completionDelta > 0 ? '+' : ''}
               {cmp.completionDelta}pt / 納品 {cmp.doneDelta > 0 ? '+' : ''}
               {cmp.doneDelta} 件
