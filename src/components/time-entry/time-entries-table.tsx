@@ -119,7 +119,7 @@ export function TimeEntriesTable({
                     aria-label={`同期エラー: ${e.syncError}`}
                     data-testid={`sync-error-${e.id}`}
                   >
-                    {e.syncError}
+                    <span aria-hidden="true">{e.syncError}</span>
                   </div>
                 )}
               </td>
