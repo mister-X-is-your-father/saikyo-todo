@@ -187,9 +187,7 @@ export function SprintRiskBoardWidget<T extends RiskBoardItemFields>({
                     className="border-b last:border-0"
                     data-testid={`risk-load-row-${load.id}`}
                   >
-                    <td className="truncate py-1" title={load.id}>
-                      {load.name}
-                    </td>
+                    <td className="truncate py-1">{load.name}</td>
                     <td className="py-1 text-right tabular-nums">{load.itemCount}</td>
                     <td className="py-1 text-right tabular-nums">
                       {load.mustCount > 0 ? (
