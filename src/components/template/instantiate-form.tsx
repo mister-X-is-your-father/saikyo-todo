@@ -137,7 +137,14 @@ export function InstantiateForm({ workspaceId, template }: Props) {
           ))}
         </div>
       ) : (
-        <p className="text-muted-foreground text-xs">変数なし (そのまま展開)</p>
+        <p
+          className="text-muted-foreground text-xs"
+          role="status"
+          aria-live="polite"
+          data-testid={`instantiate-vars-empty-${template.id}`}
+        >
+          変数なし (そのまま展開)
+        </p>
       )}
       <Button
         type="submit"
