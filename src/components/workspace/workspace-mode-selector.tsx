@@ -102,10 +102,15 @@ export function WorkspaceModeSelector({ workspaceId }: Props) {
     <Card
       data-testid="workspace-mode-selector"
       role="region"
-      aria-label={`作業モード設定 (現在: ${MODE_OPTIONS.find((o) => o.value === current)?.label ?? current})`}
+      aria-labelledby="workspace-mode-selector-heading"
     >
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-1.5 text-sm" role="heading" aria-level={2}>
+        <CardTitle
+          id="workspace-mode-selector-heading"
+          className="flex items-center gap-1.5 text-sm"
+          role="heading"
+          aria-level={2}
+        >
           <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
           作業モード (workspace default)
         </CardTitle>
