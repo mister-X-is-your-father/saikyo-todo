@@ -1300,9 +1300,20 @@ export function DashboardView({ workspaceId }: Props) {
       ) : null}
 
       {/* Burndown */}
-      <Card role="region" aria-label="MUST Item の バーンダウン グラフ (直近 14 日)">
+      {/* iter929: region aria-label "MUST Item の バーンダウン グラフ (直近 14 日)" と
+          CardTitle visible "バーンダウン (14 日)" が overlap content を持つため、
+          heading に id を付け aria-labelledby で region/heading 1 source に集約
+          (iter926 dashboard MUST 一覧 / iter928 today-view groups と同 pattern)。
+          視覚 heading 簡潔さ維持のため region は heading text を引用、
+          MUST 文脈は親 Dashboard region で補足。 */}
+      <Card role="region" aria-labelledby="dashboard-burndown-heading">
         <CardHeader>
-          <CardTitle className="text-base" role="heading" aria-level={2}>
+          <CardTitle
+            id="dashboard-burndown-heading"
+            className="text-base"
+            role="heading"
+            aria-level={2}
+          >
             バーンダウン (14 日)
           </CardTitle>
         </CardHeader>
