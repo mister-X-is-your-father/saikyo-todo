@@ -175,7 +175,11 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
     >
       <div className="min-w-0 flex-1">
         <div className="text-muted-foreground text-[10px]">
-          タスク タイマー
+          {/* iter922: parent region aria-label "タスクタイマー (経過 ${X} 計測中|一時停止中)"
+              が prefix 同梱、視覚 label "タスク タイマー" は二重読み上げ →
+              aria-hidden span で wrap、aria-label 単独 SR 経路に集約 (iter918-921 続編)。
+              estimate / calibrated chip は独立 aria-label を持つため visible のまま。 */}
+          <span aria-hidden="true">タスク タイマー</span>
           {estimateMinutes ? (
             <span
               className="ml-1 rounded bg-cyan-100 px-1 text-[9px] text-cyan-700"
