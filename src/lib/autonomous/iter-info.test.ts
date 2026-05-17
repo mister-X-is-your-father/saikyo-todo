@@ -35,6 +35,16 @@ describe('parseIterFromGitLog', () => {
     // "v253" / "phase6.15" 等の merely-digit token を iter として誤検出しない
     expect(parseIterFromGitLog('aaa v253 phase6.15 release')).toBe(0)
   })
+
+  it('returns max iter when multiple iter tokens appear on the same line', () => {
+    // 1 行に複数 iter が出る (rebase / merge commit / 引用 commit body 等) ケース
+    expect(parseIterFromGitLog('feat: iter5 続編、iter12 で foo / iter9 で bar')).toBe(12)
+  })
+
+  it('ignores "iter" without a digit suffix', () => {
+    // "iteration" / "literally" 等は "iter" + 非 digit のため非マッチ
+    expect(parseIterFromGitLog('aaa iteration test iter loop')).toBe(0)
+  })
 })
 
 describe('decideBaseTrack', () => {
