@@ -518,13 +518,12 @@ function SprintCard({
           {showProgress && (
             <div className="space-y-2">
               <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
+                {/* iter912: 視覚 label / 数値行は progressbar (下) の aria-label が完全 content
+                    を持つため二重読み上げ排除 (iter907 StatCard / iter909/910/911 dl 続編)。 */}
+                <div className="flex items-center justify-between text-xs" aria-hidden="true">
                   <span className="text-muted-foreground inline-flex items-center gap-1">
-                    {ToneIcon && (
-                      <ToneIcon aria-hidden="true" className={`h-3.5 w-3.5 ${toneIconClass}`} />
-                    )}
+                    {ToneIcon && <ToneIcon className={`h-3.5 w-3.5 ${toneIconClass}`} />}
                     <span>完了率</span>
-                    <span className="sr-only">({sprintProgressToneLabel(tone)})</span>
                   </span>
                   <span
                     className={`font-mono ${
@@ -534,7 +533,6 @@ function SprintCard({
                           ? 'text-emerald-700'
                           : ''
                     }`}
-                    aria-hidden="true"
                   >
                     {done} / {total} ({pct}%)
                   </span>
