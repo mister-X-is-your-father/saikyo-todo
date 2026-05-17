@@ -330,8 +330,14 @@ export function GanttView({
           </span>
         )}
         {baselineCount > 0 && (
-          <span data-testid="gantt-summary-baseline">
-            baseline <span className="text-foreground font-mono">{baselineCount}</span> 件
+          <span
+            data-testid="gantt-summary-baseline"
+            title="baseline = 計画策定時に固定した開始/終了日 (実績との遅延差分計測の基準)"
+            aria-label={`baseline ${baselineCount} 件 (計画策定時に固定した開始/終了日、実績との遅延差分計測の基準)`}
+          >
+            <span aria-hidden="true">
+              baseline <span className="font-mono">{baselineCount}</span> 件
+            </span>
           </span>
         )}
         {slipItemCount > 0 && (
