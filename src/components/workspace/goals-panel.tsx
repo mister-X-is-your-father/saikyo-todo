@@ -665,7 +665,12 @@ function KeyResultList({
   return (
     <div className="space-y-3">
       {(list.data ?? []).length === 0 ? (
-        <p className="text-muted-foreground py-4 text-center text-xs">
+        <p
+          className="text-muted-foreground py-4 text-center text-xs"
+          role="status"
+          aria-live="polite"
+          data-testid={`krs-empty-${goalId}`}
+        >
           KR がありません。下のフォームから追加。
         </p>
       ) : (
