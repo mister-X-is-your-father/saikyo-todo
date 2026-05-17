@@ -108,7 +108,11 @@ export function InboxView({
       aria-label={`Inbox view (${inbox.length} 件、scheduledFor も期限も未設定、健全性: ${healthChip.label})`}
     >
       <div className="mb-1 flex items-center gap-2 px-2 text-xs">
-        <span className="text-muted-foreground">
+        {/* iter923: parent region aria-label "Inbox view (${N} 件、scheduledFor も
+            期限も未設定、健全性: ${label})" が完全 content を持つため、内側
+            visible count + scheduledFor 説明 span は二重読み上げ → aria-hidden 化、
+            region aria-label 単独 SR 経路に集約 (iter918-922 続編)。 */}
+        <span className="text-muted-foreground" aria-hidden="true">
           {inbox.length} 件 — scheduledFor も期限も未設定
         </span>
         <span
