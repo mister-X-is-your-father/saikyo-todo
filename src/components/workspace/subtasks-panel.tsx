@@ -452,8 +452,12 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
           data-testid="subtasks-progress-summary"
           data-pct-done={descendantsProgress.pctDone}
         >
-          <div className="text-xs font-medium">
-            <span aria-hidden="true">📋 </span>
+          {/* iter916: parent aria-label "サマリ: ${activityHint} — ${progress}" が
+              完全 content を持つため、視覚 2 行 (activity hint + progress) は
+              aria-hidden で覆い SR 単独経路に集約 (iter907/909-915 続編、aria-live
+              status region 内の visible duplicate 排除)。 */}
+          <div className="text-xs font-medium" aria-hidden="true">
+            <span>📋 </span>
             {formatDescendantsActivityHintJa(descendantsProgress)}
           </div>
           <div className="text-muted-foreground mt-0.5 text-[11px]" aria-hidden="true">
