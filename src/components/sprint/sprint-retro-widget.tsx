@@ -81,9 +81,13 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
       <div className="space-y-4">
         {/* 完了率 + progress bar */}
         <div>
-          <div className="mb-1 flex items-center justify-between">
+          {/* iter924: 視覚 label "完了率" + 数値 行は下の progressbar aria-label
+              "Sprint Retro 完了率 ${pct}% (${sevLabel})" が完全 content を持つため、
+              SR では progressbar 単独経路に集約 (iter912 SprintCard / iter915 GoalCard
+              と同 pattern を SprintRetroWidget の 完了率 row に展開)。 */}
+          <div className="mb-1 flex items-center justify-between" aria-hidden="true">
             <span className="text-xs font-medium">完了率</span>
-            <span className="text-2xl font-semibold tabular-nums" aria-hidden="true">
+            <span className="text-2xl font-semibold tabular-nums">
               {summary.completionRate}
               <span className="text-muted-foreground ml-0.5 text-sm">%</span>
             </span>
