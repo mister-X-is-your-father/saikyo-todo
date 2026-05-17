@@ -175,12 +175,14 @@ export function TodayView({
       <p className="text-muted-foreground text-xs">
         キーボード: j/k で移動 · Enter または e で編集 · x または Space で完了切替 · Esc で解除
       </p>
-      {groups.map(
-        (g) =>
+      {groups.map((g) => {
+        const headingId = `today-group-heading-${g.label.replace(/[^a-zA-Z0-9]/g, '-')}`
+        return (
           g.items.length > 0 && (
-            <Card key={g.label} role="region" aria-label={`${g.label} ${g.items.length} 件`}>
+            <Card key={g.label} role="region" aria-labelledby={headingId}>
               <CardHeader className="pb-2">
                 <CardTitle
+                  id={headingId}
                   className={`text-base ${g.label === '期限超過' ? 'text-red-600' : ''}`}
                   role="heading"
                   aria-level={2}
@@ -255,8 +257,9 @@ export function TodayView({
                 })}
               </CardContent>
             </Card>
-          ),
-      )}
+          )
+        )
+      })}
     </div>
   )
 }
