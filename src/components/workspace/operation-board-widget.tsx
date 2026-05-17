@@ -140,7 +140,10 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                       : `超過 ${forecast.overflowMin}m`}
                   </span>
                   {forecast.estimateUnknownCount > 0 ? (
-                    <span className="text-[10px] opacity-70">
+                    // iter918: parent role="status" aria-label "今日完了予測 ${...} 件 見積なし)"
+                    // 既同梱、内側 visible のみ aria-hidden 抜けで二重読み上げ → 兄弟 4 span
+                    // (Timer / 合計 / の見積 残 / 残値 / 余裕|超過) と同 pattern に揃え。
+                    <span className="text-[10px] opacity-70" aria-hidden="true">
                       (見積無 {forecast.estimateUnknownCount})
                     </span>
                   ) : null}
