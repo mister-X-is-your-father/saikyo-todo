@@ -409,16 +409,13 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
               </p>
               {goalPct !== null && (
                 <div className="mt-1.5 space-y-0.5">
-                  <div className="flex items-center justify-between text-xs">
+                  {/* iter915: 視覚 label / 数値行は下の progressbar aria-label
+                      "Goal「X」全体進捗 N% (health)" が完全 content を持つため、
+                      SR では progressbar 単独経路に集約 (iter912 SprintCard と同 pattern)。 */}
+                  <div className="flex items-center justify-between text-xs" aria-hidden="true">
                     <span className="text-muted-foreground inline-flex items-center gap-1">
-                      {ToneIcon && (
-                        <ToneIcon
-                          aria-hidden="true"
-                          className={`h-3.5 w-3.5 ${TIER_ICON_CLASS[tier]}`}
-                        />
-                      )}
+                      {ToneIcon && <ToneIcon className={`h-3.5 w-3.5 ${TIER_ICON_CLASS[tier]}`} />}
                       <span>全体進捗</span>
-                      {health && <span className="sr-only">({health.label})</span>}
                     </span>
                     <span
                       className={`font-mono ${
@@ -428,7 +425,6 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                             ? 'text-emerald-700'
                             : ''
                       }`}
-                      aria-hidden="true"
                     >
                       {goalPct}%
                     </span>
