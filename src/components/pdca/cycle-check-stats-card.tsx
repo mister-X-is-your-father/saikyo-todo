@@ -69,9 +69,13 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
       <div className="space-y-4 text-sm">
         {/* 完了率 progress bar */}
         <div>
-          <div className="mb-1 flex items-center justify-between">
+          {/* iter925: 視覚 label "完了率" + 数値 行は下の progressbar aria-label
+              "PDCA Cycle 完了率 ${pct}% (${sevLabel})" が完全 content を持つため、
+              SR では progressbar 単独経路に集約 (iter912 SprintCard / iter915
+              GoalCard / iter924 SprintRetroWidget と同 pattern、4 widget 完全一貫)。 */}
+          <div className="mb-1 flex items-center justify-between" aria-hidden="true">
             <span className="text-xs font-medium">完了率</span>
-            <span className="text-2xl font-semibold tabular-nums" aria-hidden="true">
+            <span className="text-2xl font-semibold tabular-nums">
               {stats.completionRate}
               <span className="text-muted-foreground ml-0.5 text-sm">%</span>
             </span>
