@@ -145,7 +145,10 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
         data-tone={readinessVisual.tone}
       >
         <ReadinessIcon className="h-3 w-3 shrink-0" aria-hidden="true" />
-        <span>{readinessSummary}</span>
+        {/* iter920: parent role="status" aria-label "依存サマリ (${toneLabel}): ${readinessSummary}"
+            が完全 content を持つため、内側 visible {readinessSummary} は二重読み上げ →
+            aria-hidden で SR 単独経路に集約 (iter918 operation-board / iter907/909-919 続編)。 */}
+        <span aria-hidden="true">{readinessSummary}</span>
       </div>
       <Section
         title="前提条件 (これが終わらないと進められない)"
