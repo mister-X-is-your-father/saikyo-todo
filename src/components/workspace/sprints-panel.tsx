@@ -555,13 +555,12 @@ function SprintCard({
                     style={{ width: `${pct}%` }}
                     aria-hidden="true"
                   />
-                  {/* ideal 線 (経過率) */}
+                  {/* ideal 線 (経過率) — 装飾、SR には sibling 「期間進捗」 div が経過 % を伝える */}
                   {status === 'active' && (
                     <div
                       className="bg-foreground/40 absolute top-0 h-full w-px"
                       style={{ left: `${elapsedPct}%` }}
                       aria-hidden="true"
-                      aria-label={`理想ライン ${elapsedPct}%`}
                     />
                   )}
                 </div>
