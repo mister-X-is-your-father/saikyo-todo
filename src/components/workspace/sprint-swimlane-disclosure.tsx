@@ -153,7 +153,7 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
         aria-label={`Sprint 全体: ${populationLabel}`}
         data-testid="sprint-swimlane-population"
       >
-        {populationLabel}
+        <span aria-hidden="true">{populationLabel}</span>
       </div>
       <ul className="space-y-1" aria-label={`Sprint Swimlane lane 一覧 ${rows.length} 件`}>
         {rows.map((row) => (
@@ -175,7 +175,7 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
                 }
                 aria-label={`lane: ${row.loadSummaryJa} / ${row.conflictsJa}`}
               >
-                {row.loadSummaryJa}
+                <span aria-hidden="true">{row.loadSummaryJa}</span>
               </span>
             </div>
             <div
