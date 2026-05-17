@@ -390,8 +390,9 @@ function KanbanCard({
           <span
             className="text-muted-foreground bg-muted inline-flex items-center rounded-full px-2 py-0.5 text-[10px]"
             data-testid={`kanban-child-count-${item.id}`}
+            aria-label={`子タスク ${childCount} 件`}
           >
-            子 {childCount} 件
+            <span aria-hidden="true">子 {childCount} 件</span>
           </span>
         ) : (
           <span />
