@@ -528,7 +528,12 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
       >
         <div className="flex items-center gap-1.5">
           {proposal.isMust && <MustBadge />}
-          <span className="truncate font-medium">{proposal.title}</span>
+          {/* iter919: button aria-label "提案「X」を編集 (MUST)" が title 同梱、
+              内側 visible {proposal.title} は二重読み上げ → aria-hidden で
+              SR 単独経路に集約 (iter862/894 inbox-view 同 pattern)。 */}
+          <span className="truncate font-medium" aria-hidden="true">
+            {proposal.title}
+          </span>
         </div>
         {proposal.description && (
           <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs">
