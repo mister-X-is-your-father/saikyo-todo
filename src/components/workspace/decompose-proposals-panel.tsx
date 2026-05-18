@@ -390,6 +390,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               aria-invalid={!title.trim() || undefined}
               minLength={1}
               maxLength={500}
+              enterKeyHint="next"
               aria-label={
                 title.length === 0
                   ? '提案タイトル (必須、最大 500 文字)'
@@ -463,6 +464,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
                 aria-invalid={(isMust && !dod.trim()) || undefined}
                 minLength={1}
                 maxLength={2000}
+                enterKeyHint="send"
                 aria-label={
                   dod.length === 0
                     ? '提案 DoD (MUST 必須、最大 2000 文字、完了条件を具体記述)'
