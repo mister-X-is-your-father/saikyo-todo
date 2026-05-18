@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter989 1/1] workflows/page.tsx back-Link aria-label (workspace back sweep 4/8)。+2/-2 行 (1 file)。検証: scripts/explore-uiux-workflows-page-back-link-aria-label-iter989.ts (2 OK)。次 iter 候補: 残 4 page (time-entries / templates / integrations / archive)。
 - ✅ [playwright-iter988 1/1] pdca/page.tsx back-Link aria-label (workspace back sweep 3/8)。+2/-2 行 (1 file)。検証: scripts/explore-uiux-pdca-page-back-link-aria-label-iter988.ts (4 OK)。次 iter 候補: 残 5 page (workflows / time-entries / templates / integrations / archive)。
 - ✅ [playwright-iter987 1/1] goals/page.tsx back-Link に aria-label="Workspace dashboard に戻る" + visible aria-hidden span wrap (workspace back-Link sweep 2/8)。+2/-2 行 (1 file)。視覚 / 動作不変。検証: scripts/explore-uiux-goals-page-back-link-aria-label-iter987.ts (3 OK)。次 iter 候補: 残 6 page (pdca / workflows / time-entries / templates / integrations / archive)。
 - ✅ [playwright-iter986 1/1] sprints/page.tsx の Workspace 戻り Link に aria-label="Workspace dashboard に戻る" 付与 + visible "← Workspace" を aria-hidden span で wrap (iter918-940 sweep pattern を workspace 戻り Link に展開、workspace 戻り Link sweep 1/8 着地)。+2/-2 行 (1 file)。視覚 / 動作不変。検証: scripts/explore-uiux-sprints-page-back-link-aria-label-iter986.ts (3 OK)。次 iter 候補: 残 7 workspace sub-page back-Link (goals / pdca / workflows / time-entries / templates / integrations / archive)。
