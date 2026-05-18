@@ -379,7 +379,10 @@ export function GanttView({
             <option value="wide">広 (64px/day)</option>
           </select>
         </label>
-        <label data-testid="gantt-show-deps-toggle" className="flex items-center gap-1 text-xs">
+        <label
+          data-testid="gantt-show-deps-toggle"
+          className="flex min-h-11 items-center gap-1 text-xs"
+        >
           <input
             type="checkbox"
             checked={showDeps}
@@ -389,7 +392,10 @@ export function GanttView({
           />
           <span aria-hidden="true">依存線</span>
         </label>
-        <label data-testid="gantt-hide-done-toggle" className="flex items-center gap-1 text-xs">
+        <label
+          data-testid="gantt-hide-done-toggle"
+          className="flex min-h-11 items-center gap-1 text-xs"
+        >
           <input
             type="checkbox"
             checked={hideDone}
