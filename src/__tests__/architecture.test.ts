@@ -330,6 +330,13 @@ describe('architecture: Service / Action 規約', () => {
       if (!/aria-label="Workspace dashboard に戻る"/.test(src)) {
         violations.push(`${relative(ROOT, pageFile)}: back-Link に aria-label 不在`)
       }
+      // iter986-993 sweep: visible "← Workspace" を <span aria-hidden="true"> で wrap し
+      // SR aria-label 単独経路を担保 (二重読み上げ防止)
+      if (!/<span aria-hidden="true">← Workspace<\/span>/.test(src)) {
+        violations.push(
+          `${relative(ROOT, pageFile)}: back-Link 内 "← Workspace" が aria-hidden span で wrap されていない`,
+        )
+      }
     }
     expect(violations).toEqual([])
   })
