@@ -94,6 +94,7 @@ export function InstantiateForm({ workspaceId, template }: Props) {
           value={override}
           onChange={(e) => setOverride(e.target.value)}
           maxLength={500}
+          enterKeyHint="next"
           aria-label={
             override.length === 0
               ? `Template「${template.name}」展開時の root Item タイトル (任意、最大 500 文字、省略時は「${template.name}」)`
@@ -132,6 +133,7 @@ export function InstantiateForm({ workspaceId, template }: Props) {
                   return `Mustache 変数「${v}」 (現在 ${val.length} / 500 文字)`
                 })()}
                 maxLength={500}
+                enterKeyHint="next"
               />
             </div>
           ))}
