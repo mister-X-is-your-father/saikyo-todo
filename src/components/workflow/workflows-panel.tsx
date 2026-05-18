@@ -112,6 +112,7 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                 minLength={1}
                 maxLength={200}
                 autoComplete="off"
+                enterKeyHint="next"
                 aria-label={
                   name.length === 0
                     ? 'Workflow 名前 (必須、最大 200 文字、何を自動化するか分かる名前)'
