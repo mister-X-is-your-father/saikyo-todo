@@ -256,4 +256,44 @@ describe('architecture: Service / Action 規約', () => {
     }
     expect(violations).toEqual([])
   })
+
+  // -----------------------------------------------------------
+  // 6. src/app 配下の <main> 要素は WCAG 2.4.1 (Bypass Blocks) の skip-link 対応が必須:
+  //    - id="main-content" (layout.tsx の <a href="#main-content"> の target)
+  //    - tabIndex={-1} (skip-link 起動時に programmatic focus を main へ移すため)
+  //    iter389 で skip-link 導入、iter948 で HomePage main の tabIndex={-1} 漏れを修正、
+  //    本 test で全 page / layout の <main> に regression が入らないよう gating。
+  //    判定: <main で始まる要素を含むファイルは id="main-content" と tabIndex={-1} 必須。
+  // -----------------------------------------------------------
+  it('src/app の <main> は id="main-content" + tabIndex={-1} を持つ (skip-link target)', () => {
+    const appDir = join(SRC, 'app')
+    const appFiles = walk(appDir).filter(
+      (f) =>
+        (extname(f) === '.tsx' || extname(f) === '.ts') &&
+        !f.endsWith('.test.ts') &&
+        !f.endsWith('.test.tsx'),
+    )
+    // コメント (/* ... */ / // ...) を除去してから JSX `<main` を判定する。
+    // root layout.tsx には skip-link の説明 JSDoc に `<main>` 文字列が含まれるため
+    // 素朴な regex だと false positive になる (iter952 で実検証)。
+    function stripComments(src: string): string {
+      return src
+        .replace(/\/\*[\s\S]*?\*\//g, '') // block comment
+        .replace(/(^|[^:])\/\/[^\n]*/g, '$1') // line comment (URL の // を避けるため前置文字を消費)
+    }
+    const violations: string[] = []
+    for (const f of appFiles) {
+      const src = stripComments(read(f))
+      if (!/<main\b/.test(src)) continue
+      const hasId = /<main[\s\S]{0,400}id="main-content"/.test(src)
+      const hasTabIndex = /<main[\s\S]{0,400}tabIndex=\{-1\}/.test(src)
+      if (!hasId) {
+        violations.push(`${relative(ROOT, f)}: <main> に id="main-content" 不在 (skip-link target)`)
+      }
+      if (!hasTabIndex) {
+        violations.push(`${relative(ROOT, f)}: <main> に tabIndex={-1} 不在 (skip-link focus 移動)`)
+      }
+    }
+    expect(violations).toEqual([])
+  })
 })
