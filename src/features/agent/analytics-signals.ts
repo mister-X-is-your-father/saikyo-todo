@@ -31,9 +31,9 @@
 
 import {
   type ChipTone,
-  chipToneAttentionRank,
   countItemsByTone,
   formatToneCountsJa,
+  pickHighestSeverityTone,
 } from '@/lib/ui/chip-tone'
 
 import { type DueHitRateStats, dueHitRateToBriefSignal } from '@/features/item/due-hit-rate'
@@ -230,11 +230,13 @@ export function formatAnalyticsSignalsToneSummaryJa(signals: AnalyticsSignals): 
  *
  * 仕様:
  *   - non-null signal を `analyticsSignalsToArray` で順序整列 + null 除去
- *   - 各 signal の tone から `chipToneAttentionRank` (= danger 5 > urgent 4 > warn 3
- *     > info 2 > idle 1 > success 0) を取って max
+ *   - 各 signal の tone から `pickHighestSeverityTone` (lib/ui/chip-tone) で最悪 tone を選出
  *   - 同 rank が複数の場合は `analyticsSignalsToArray` の表示順 (= concerningRole が
- *     dueHitRate より優先) を保つ (stable max)
+ *     dueHitRate より優先) を保つ (stable max、`.find` で配列先頭 match を採る)
  *   - 全 null → null sentinel
+ *
+ * iter960 refactor: 手書き max loop を `pickHighestSeverityTone` + `.find(tone match)` に
+ * 簡素化 (lib/ui/chip-tone の既存 helper を再利用、max-by-tone の semantics を 1 module に集約)。
  *
  * 既存 helper との関係:
  *   - `countAnalyticsSignalsByTone`: 分布集計 (= headline summary 文字列向け)
@@ -244,15 +246,7 @@ export function formatAnalyticsSignalsToneSummaryJa(signals: AnalyticsSignals): 
 export function pickHighestSeveritySignal(signals: AnalyticsSignals): AgentBriefSignal | null {
   const arr = analyticsSignalsToArray(signals)
   if (arr.length === 0) return null
-  let best: AgentBriefSignal = arr[0]!
-  let bestRank = chipToneAttentionRank(best.tone)
-  for (let i = 1; i < arr.length; i++) {
-    const cand = arr[i]!
-    const r = chipToneAttentionRank(cand.tone)
-    if (r > bestRank) {
-      best = cand
-      bestRank = r
-    }
-  }
-  return best
+  const topTone = pickHighestSeverityTone(arr.map((s) => s.tone))
+  // topTone は arr が非空なら必ず非 null だが防御で fallback、find は array 順 (stable max)
+  return arr.find((s) => s.tone === topTone) ?? null
 }
