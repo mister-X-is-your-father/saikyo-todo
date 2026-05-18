@@ -71,6 +71,7 @@ export interface WeeklyInsightOptions {
 }
 
 import { formatUtcISO, parseDateOrNull } from '@/lib/date/iso'
+import { round1 } from '@/lib/round-decimal'
 
 const DAY_LABELS_MON_FIRST = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
 const DAY_LABELS_SUN_FIRST = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
@@ -165,7 +166,7 @@ export function buildWeeklyInsight(
       if (c <= avg * 0.5 && avg - c >= 1) {
         anomalies.push({
           kind: 'lowCompletionDay',
-          message: `${labels[i]} の完了が ${c} 件 (週平均 ${Math.round(avg * 10) / 10})`,
+          message: `${labels[i]} の完了が ${c} 件 (週平均 ${round1(avg)})`,
         })
         break // 1 件で止める
       }
@@ -180,7 +181,7 @@ export function buildWeeklyInsight(
       if (c >= avg * 2 && c - avg >= 1) {
         anomalies.push({
           kind: 'highCompletionDay',
-          message: `${labels[i]} に完了 ${c} 件 集中 (週平均 ${Math.round(avg * 10) / 10})`,
+          message: `${labels[i]} に完了 ${c} 件 集中 (週平均 ${round1(avg)})`,
         })
         break
       }

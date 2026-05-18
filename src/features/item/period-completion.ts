@@ -19,6 +19,7 @@
  *  - from > to の場合は全 0 + null
  */
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
+import { round1 } from '@/lib/round-decimal'
 
 /** 期間集計に必要な Item の structural subset。 */
 export interface PeriodCompletionFields {
@@ -97,7 +98,7 @@ export function summarizePeriodCompletion<T extends PeriodCompletionFields>(
   const avgCompletionDays =
     completedWithCreatedCount === 0
       ? null
-      : Math.round((totalCompletionMs / completedWithCreatedCount / MS_PER_DAY) * 10) / 10
+      : round1(totalCompletionMs / completedWithCreatedCount / MS_PER_DAY)
 
   return { itemsCompleted, mustCompletedCount, itemsAdded, avgCompletionDays, periodDays }
 }

@@ -27,6 +27,7 @@
  * AI 不使用、副作用無し、依存無し。pure helper + Vitest 単体 test で網羅。
  */
 import { parseDateOrNull } from '@/lib/date/iso'
+import { round1 } from '@/lib/round-decimal'
 
 export interface CycleCheckItemFields {
   id: string
@@ -135,10 +136,10 @@ export function buildCycleCheckStats(
   let leadTimeMedianHours: number | null = null
   if (leadTimes.length > 0) {
     const sum = leadTimes.reduce((a, b) => a + b, 0)
-    leadTimeAvgHours = Math.round((sum / leadTimes.length) * 10) / 10
+    leadTimeAvgHours = round1(sum / leadTimes.length)
     const sorted = [...leadTimes].sort((a, b) => a - b)
     const med = median(sorted)
-    leadTimeMedianHours = med === null ? null : Math.round(med * 10) / 10
+    leadTimeMedianHours = med === null ? null : round1(med)
   }
 
   return {

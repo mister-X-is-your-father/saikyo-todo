@@ -25,6 +25,7 @@
  */
 
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
+import { round1 } from '@/lib/round-decimal'
 
 import { initPriorityRecord, normalizePriority, PRIORITY_ORDER, type PriorityKey } from './priority'
 
@@ -90,7 +91,7 @@ export function computeCompletionDaysByPriority<T extends CompletionDaysFields>(
     if (count === 0) continue
     result[k] = {
       count,
-      avgDays: Math.round((totalMs / count / MS_PER_DAY) * 10) / 10,
+      avgDays: round1(totalMs / count / MS_PER_DAY),
     }
   }
   return result
@@ -146,6 +147,6 @@ export function computePriorityLatencyGap(
     lowKey: low,
     highDays,
     lowDays,
-    gapDays: Math.round((lowDays - highDays) * 10) / 10,
+    gapDays: round1(lowDays - highDays),
   }
 }
