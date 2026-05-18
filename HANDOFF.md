@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter982 1/1] templates/page.tsx main に aria-label="Templates ワークパッケージ定義" 付与、workspace page sweep 6/8 着地。+1/-0 行 (1 file)。視覚 / 動作不変。検証: scripts/explore-uiux-templates-page-main-aria-label-iter982.ts (6 OK)。次 iter 候補: 残 2 page (integrations / archive / dashboard)。
 - ✅ [playwright-iter981 1/1] time-entries/page.tsx main に aria-label="稼働入力 やったこと + 時間を記録" 付与、workspace page sweep 5/8 着地。+1/-0 行 (1 file)。視覚 / 動作不変。検証: scripts/explore-uiux-time-entries-page-main-aria-label-iter981.ts (5 OK)。次 iter 候補: 残 3 page (templates / integrations / archive / dashboard)。
 - ✅ [playwright-iter980 1/1] workflows/page.tsx main に aria-label="Workflows 自動化ワークフロー (n8n 風)" 付与 (iter977-979 sweep continuation、workspace page sweep 4/8 着地)。+1/-0 行 (1 file)。視覚 / 動作不変。検証: scripts/explore-uiux-workflows-page-main-aria-label-iter980.ts (4 OK、iter977/978/979 invariant 込み)。次 iter 候補: 残 4 page (time-entries / templates / integrations / archive / dashboard)。
 - ✅ [playwright-iter979 1/1] pdca/page.tsx main に aria-label="PDCA Plan / Do / Check / Act + Lead time" 付与 (iter977/978 sweep continuation、workspace page sweep 3/8 着地)。+1/-0 行 (1 file)。視覚 / 動作不変。検証: scripts/explore-uiux-pdca-page-main-aria-label-iter979.ts (4 OK、iter735/977/978 invariant 込み)。次 iter 候補: 残 5 page (workflows / time-entries / templates / integrations / archive / dashboard)。
