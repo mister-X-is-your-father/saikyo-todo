@@ -75,6 +75,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           required
           aria-required="true"
           max={new Date().toISOString().slice(0, 10)}
+          enterKeyHint="next"
           aria-label={(() => {
             const today = new Date().toISOString().slice(0, 10)
             if (workDate === '') return '日付 (必須、今日まで指定可、未来日付は不正)'
@@ -120,6 +121,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           aria-invalid={(description.length > 0 && description.trim() === '') || undefined}
           minLength={1}
           maxLength={500}
+          enterKeyHint="next"
           aria-label={
             description.length === 0
               ? '作業内容 (必須、最大 500 文字、何をやったかを 1 行で)'
@@ -149,6 +151,7 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           aria-required="true"
           aria-invalid={durationMinutes <= 0 || durationMinutes > 24 * 60 || undefined}
           inputMode="numeric"
+          enterKeyHint="send"
           aria-label={(() => {
             if (durationMinutes <= 0)
               return `分 (1 以上、最大 1440 = 24h、現在値 ${durationMinutes} は不正)`
