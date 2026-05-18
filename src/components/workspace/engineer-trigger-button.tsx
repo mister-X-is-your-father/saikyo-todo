@@ -62,7 +62,7 @@ export function EngineerTriggerButton({ item }: Props) {
       role="group"
       aria-label={`「${item.title}」を Engineer Agent に投入 (PR 自動起票 toggle / 実装起動)`}
     >
-      <label className="flex items-center gap-1 text-xs">
+      <label className="flex min-h-11 items-center gap-1 text-xs">
         <input
           type="checkbox"
           checked={autoPr}
