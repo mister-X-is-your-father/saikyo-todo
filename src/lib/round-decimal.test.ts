@@ -58,3 +58,32 @@ describe('round2 (iter965)', () => {
     expect(round2(1.1 + 2.2)).toBe(3.3)
   })
 })
+
+describe('round1 / round2 edge cases (iter966 — coverage 補強)', () => {
+  it('round1 / round2: 0 → 0 (sign preserve)', () => {
+    expect(Object.is(round1(0), 0)).toBe(true)
+    expect(Object.is(round2(0), 0)).toBe(true)
+  })
+
+  it('round1 / round2: 非常に大きい値 → そのまま (overflow しない)', () => {
+    expect(round1(1e10)).toBe(1e10)
+    expect(round2(1e10)).toBe(1e10)
+  })
+
+  it('round1 / round2: NaN → NaN (= Math.round(NaN) は NaN)', () => {
+    expect(Number.isNaN(round1(NaN))).toBe(true)
+    expect(Number.isNaN(round2(NaN))).toBe(true)
+  })
+
+  it('round1 / round2: Infinity → Infinity', () => {
+    expect(round1(Infinity)).toBe(Infinity)
+    expect(round2(-Infinity)).toBe(-Infinity)
+  })
+
+  it('round1 と round2: round2(x) は同 x の round1 より同等以上の精度 (= round2 切り上げ → round1 が必要なら追加丸めて等しくなる)', () => {
+    // 1.456 → round2 = 1.46 → round1 = 1.5
+    expect(round1(round2(1.456))).toBe(round1(1.456))
+    // 1.44 → round2 = 1.44 → round1 = 1.4
+    expect(round1(round2(1.44))).toBe(round1(1.44))
+  })
+})
