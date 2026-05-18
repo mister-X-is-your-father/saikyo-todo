@@ -543,6 +543,7 @@ function ItemEditDialogInner({
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   data-testid="edit-item-start-date"
+                  enterKeyHint="next"
                   aria-invalid={isInvalidDateRange(startDate, dueDate) || undefined}
                   aria-label={
                     startDate === ''
@@ -566,6 +567,7 @@ function ItemEditDialogInner({
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
                   data-testid="edit-item-due-date"
+                  enterKeyHint="next"
                   aria-invalid={isInvalidDateRange(startDate, dueDate) || undefined}
                   aria-label={
                     dueDate === ''
