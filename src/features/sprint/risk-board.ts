@@ -261,6 +261,59 @@ export function extractHeavyAssignees<T extends RiskBoardItemFields>(
 }
 
 /**
+ * iter952 ai-automation: assignee 別 severity 分布の集計。
+ *
+ * sprint planning chip / dashboard summary で「高負荷 2人 / 繁忙 1人 / 通常 3人 / 余裕 0人」
+ * を出すための pure helper。`assigneeLoadSeverity` を各 assignee に適用して 4 軸 counts を作る。
+ *
+ * 用途:
+ *   - sprint risk-board widget の team summary chip
+ *   - AI Slack 通知での「team 全体は X 状態」 1 行
+ *   - Pre-mortem prompt の前提 context (heavy 担当の数で warning 出すかの判定)
+ *
+ * 担当無し (assigneeLoad.size === 0) → 全 0 のレコードを返す (UI 側で「未割当」分岐を判別可)。
+ *
+ * `extractHeavyAssignees` (id 配列) と並ぶ、severity 別の数量集計版。
+ */
+export interface AssigneeLoadSeverityCounts {
+  overloaded: number
+  busy: number
+  normal: number
+  light: number
+}
+
+export function countAssigneesBySeverity<T extends RiskBoardItemFields>(
+  summary: SprintRiskBoardSummary<T>,
+): AssigneeLoadSeverityCounts {
+  const counts: AssigneeLoadSeverityCounts = { overloaded: 0, busy: 0, normal: 0, light: 0 }
+  for (const load of summary.assigneeLoad.values()) {
+    counts[assigneeLoadSeverity(load)] += 1
+  }
+  return counts
+}
+
+/**
+ * iter952 ai-automation: severity counts を chip 文言に整形。
+ *   '高負荷 2人 / 繁忙 1人 / 通常 3人 / 余裕 0人'   (全担当)
+ *   '高負荷 2人 / 繁忙 1人 / 通常 3人'              (余裕 0 は省略)
+ *   '余裕 5人'                                       (全員 light)
+ *   '担当なし'                                       (assigneeLoad 空)
+ *
+ * 0 人の severity は省略 (= 視覚 noise 削減)、全 0 (= 担当無し) は「担当なし」一語、
+ * 全員同一 severity の場合も「X N人」 1 軸表示。
+ */
+export function formatAssigneeLoadSeverityCountsJa(counts: AssigneeLoadSeverityCounts): string {
+  const total = counts.overloaded + counts.busy + counts.normal + counts.light
+  if (total === 0) return '担当なし'
+  const parts: string[] = []
+  if (counts.overloaded > 0) parts.push(`${SEVERITY_LABEL_JA.overloaded} ${counts.overloaded}人`)
+  if (counts.busy > 0) parts.push(`${SEVERITY_LABEL_JA.busy} ${counts.busy}人`)
+  if (counts.normal > 0) parts.push(`${SEVERITY_LABEL_JA.normal} ${counts.normal}人`)
+  if (counts.light > 0) parts.push(`${SEVERITY_LABEL_JA.light} ${counts.light}人`)
+  return parts.join(' / ')
+}
+
+/**
  * AI prompt / dashboard chip 用 sprint 全体の board サマリ 1 行:
  *   'リスクあり 5 件 (top: 期限超過 12 日 score 60 / 今日が期限 score 50)'
  *   '安全 (リスク item なし)' (= 全 score 0)

@@ -4,9 +4,11 @@ import {
   assigneeLoadSeverity,
   buildSprintRiskBoard,
   computeRiskScore,
+  countAssigneesBySeverity,
   dayDiffISO,
   extractHeavyAssignees,
   formatAssigneeLoadJa,
+  formatAssigneeLoadSeverityCountsJa,
   formatSprintRiskBoardJa,
   type RiskBoardItemFields,
 } from './risk-board'
@@ -367,5 +369,100 @@ describe('extractHeavyAssignees', () => {
     ]
     const summary = buildSprintRiskBoard(items, { today: TODAY })
     expect(extractHeavyAssignees(summary)).toEqual(['u1', 'u2'])
+  })
+})
+
+describe('countAssigneesBySeverity (iter952)', () => {
+  it('担当無し → 全 0', () => {
+    const items: RiskBoardItemFields[] = []
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    expect(countAssigneesBySeverity(summary)).toEqual({
+      overloaded: 0,
+      busy: 0,
+      normal: 0,
+      light: 0,
+    })
+  })
+
+  it('4 severity が各 1 人ずつ → 4 軸 1 ずつ', () => {
+    // 各 user に score 別の item を割り当て
+    const items: RiskBoardItemFields[] = [
+      // u1 overloaded: overdue 30 + must 15 + blocked 25 + priority 1 = 12 + blocking 5 = 87 + dueDate 過去多日... 1 個で OK
+      mk({
+        id: 'a',
+        assigneeIds: ['u1'],
+        dueDate: '2026-04-20',
+        isMust: true,
+        priority: 1,
+        status: 'blocked',
+        blockingCount: 10,
+      }),
+      // u2 busy: today+must = 25+15 = 40, +2 個で 80
+      mk({ id: 'b1', assigneeIds: ['u2'], dueDate: TODAY, isMust: true }),
+      mk({ id: 'b2', assigneeIds: ['u2'], dueDate: TODAY, isMust: true }),
+      // u3 normal: today only = 25
+      mk({ id: 'c', assigneeIds: ['u3'], dueDate: TODAY }),
+      // u4 light: priority 4 のみ = 0、すなわち itemCount > 0 だが score 0 → light
+      mk({ id: 'd', assigneeIds: ['u4'] }),
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    expect(countAssigneesBySeverity(summary)).toEqual({
+      overloaded: 1,
+      busy: 1,
+      normal: 1,
+      light: 1,
+    })
+  })
+
+  it('全員 light (= score 0) → light のみカウント', () => {
+    const items: RiskBoardItemFields[] = [
+      mk({ id: 'a', assigneeIds: ['u1'] }),
+      mk({ id: 'b', assigneeIds: ['u2'] }),
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    expect(countAssigneesBySeverity(summary)).toEqual({
+      overloaded: 0,
+      busy: 0,
+      normal: 0,
+      light: 2,
+    })
+  })
+
+  it('1 item 複数 assignee は両方の load に二重カウント (= 共同担当)', () => {
+    // u1, u2 共同で 1 item 担当 → 各々が itemCount=1
+    const items: RiskBoardItemFields[] = [mk({ id: 'a', assigneeIds: ['u1', 'u2'] })]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    expect(countAssigneesBySeverity(summary)).toEqual({
+      overloaded: 0,
+      busy: 0,
+      normal: 0,
+      light: 2,
+    })
+  })
+})
+
+describe('formatAssigneeLoadSeverityCountsJa (iter952)', () => {
+  it('全 0 → 「担当なし」', () => {
+    expect(
+      formatAssigneeLoadSeverityCountsJa({ overloaded: 0, busy: 0, normal: 0, light: 0 }),
+    ).toBe('担当なし')
+  })
+
+  it('4 軸 全 1 → 「高負荷 1人 / 繁忙 1人 / 通常 1人 / 余裕 1人」', () => {
+    expect(
+      formatAssigneeLoadSeverityCountsJa({ overloaded: 1, busy: 1, normal: 1, light: 1 }),
+    ).toBe('高負荷 1人 / 繁忙 1人 / 通常 1人 / 余裕 1人')
+  })
+
+  it('一部 0 → その軸は省略 (視覚 noise 削減)', () => {
+    expect(
+      formatAssigneeLoadSeverityCountsJa({ overloaded: 2, busy: 1, normal: 3, light: 0 }),
+    ).toBe('高負荷 2人 / 繁忙 1人 / 通常 3人')
+  })
+
+  it('全員 light → 「余裕 N人」', () => {
+    expect(
+      formatAssigneeLoadSeverityCountsJa({ overloaded: 0, busy: 0, normal: 0, light: 5 }),
+    ).toBe('余裕 5人')
   })
 })
