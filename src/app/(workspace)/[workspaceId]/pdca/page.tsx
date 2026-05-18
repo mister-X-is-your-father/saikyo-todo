@@ -48,8 +48,8 @@ export default async function PdcaPage({ params }: PageProps) {
         subtitle={`Plan / Do / Check / Act + Lead time · ${user.email ?? ''}`}
         pageActions={
           <Button variant="outline" asChild size="sm" className="min-h-11">
-            <Link href={`/${workspaceId}`}>
-              <span aria-hidden="true">← </span>Workspace
+            <Link href={`/${workspaceId}`} aria-label="Workspace dashboard に戻る">
+              <span aria-hidden="true">← Workspace</span>
             </Link>
           </Button>
         }
