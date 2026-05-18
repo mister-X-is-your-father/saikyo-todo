@@ -691,7 +691,7 @@ function ItemEditDialogInner({
                 />
               </div>
             </div>
-            <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm">
               <input
                 type="checkbox"
                 checked={isMust}
