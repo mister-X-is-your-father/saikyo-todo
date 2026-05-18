@@ -9,6 +9,7 @@ import {
   extractHeavyAssignees,
   formatAssigneeLoadJa,
   formatAssigneeLoadSeverityCountsJa,
+  formatSprintRiskBoardAlertJa,
   formatSprintRiskBoardJa,
   pickMostLoadedAssignee,
   pickRiskiestItem,
@@ -562,5 +563,65 @@ describe('pickRiskiestItem (iter959)', () => {
     const items: RiskBoardItemFields[] = [mk({ id: 'a', dueDate: TODAY })]
     const summary = buildSprintRiskBoard(items, { today: TODAY })
     expect(pickRiskiestItem(summary)).toBe(summary.topRisk[0])
+  })
+})
+
+describe('formatSprintRiskBoardAlertJa (iter962)', () => {
+  it('空 sprint → 「安全 sprint」 sentinel', () => {
+    const summary = buildSprintRiskBoard([], { today: TODAY })
+    expect(formatSprintRiskBoardAlertJa(summary)).toBe('安全 sprint (リスク item / 担当負荷なし)')
+  })
+
+  it('全 score 0 + 全員 light → 「安全 sprint」 sentinel', () => {
+    const items: RiskBoardItemFields[] = [mk({ id: 'a', assigneeIds: ['u1'] })]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    expect(formatSprintRiskBoardAlertJa(summary)).toBe('安全 sprint (リスク item / 担当負荷なし)')
+  })
+
+  it('リスク item + 高負荷担当の両方 → 「最重 item: ... / 最重担当: ...」', () => {
+    const items: RiskBoardItemFields[] = [
+      mk({
+        id: 'a',
+        assigneeIds: ['u1'],
+        dueDate: '2026-04-20',
+        isMust: true,
+        priority: 1,
+        status: 'blocked',
+        blockingCount: 5,
+      }),
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    const line = formatSprintRiskBoardAlertJa(summary)
+    expect(line).toContain('最重 item:')
+    expect(line).toContain('score')
+    expect(line).toContain('最重担当:')
+    expect(line).toContain(' / ')
+  })
+
+  it('リスク item のみ (担当無し) → 「最重 item: ...」 only', () => {
+    const items: RiskBoardItemFields[] = [
+      mk({ id: 'a', dueDate: '2026-04-20', isMust: true, priority: 1 }),
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    const line = formatSprintRiskBoardAlertJa(summary)
+    expect(line).toContain('最重 item:')
+    expect(line).not.toContain('最重担当:')
+    expect(line).not.toContain(' / ')
+  })
+
+  it('assigneeNames 渡し → user id ではなく表示名で出力', () => {
+    const items: RiskBoardItemFields[] = [
+      mk({
+        id: 'a',
+        assigneeIds: ['u1'],
+        dueDate: '2026-04-20',
+        isMust: true,
+        priority: 1,
+        status: 'blocked',
+      }),
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    const line = formatSprintRiskBoardAlertJa(summary, { u1: 'Alice' })
+    expect(line).toContain('最重担当: Alice')
   })
 })

@@ -402,5 +402,42 @@ export function formatSprintRiskBoardJa<T extends RiskBoardItemFields>(
   return `リスクあり ${risky.length} 件 (top: ${tops})`
 }
 
+/**
+ * iter962 ai-automation: 「最重 item + 最重担当」を 1 行に統合した alert summary。
+ *
+ * iter958 pickMostLoadedAssignee + iter959 pickRiskiestItem の出力を合成して、
+ * Slack 通知 / AI Pre-mortem prompt / dashboard top alert chip 用の 1 行 ja-JP に整形。
+ *
+ * 出力例:
+ *   - '最重 item: 期限超過 12 日 score 60 / 最重担当: u1abc12... (高負荷)'  (両方あり)
+ *   - '最重 item: 期限超過 12 日 score 60'  (担当無し / 全員 light)
+ *   - '最重担当: u1abc12... (高負荷)'        (リスク item 無し)
+ *   - '安全 sprint (リスク item / 担当負荷なし)'  (どちらも null)
+ *
+ * `formatSprintRiskBoardJa` (top 2 reason 連結) と並ぶ高 level summary、本 helper は
+ * 「単一 alert」 で「最初に見せる 1 行」 を担当 (= 詳細 chip は widget の table 側で展開)。
+ *
+ * assigneeNames option: id → 表示名 マップ (未指定 / 該当無し → id の先頭 8 文字 + '...')。
+ */
+export function formatSprintRiskBoardAlertJa<T extends RiskBoardItemFields>(
+  summary: SprintRiskBoardSummary<T>,
+  assigneeNames?: Record<string, string>,
+): string {
+  const riskiest = pickRiskiestItem(summary)
+  const mostLoaded = pickMostLoadedAssignee(summary)
+  const parts: string[] = []
+  if (riskiest !== null) {
+    const head = riskiest.reasons[0] ?? '(reason 不明)'
+    parts.push(`最重 item: ${head} score ${riskiest.riskScore}`)
+  }
+  if (mostLoaded !== null && mostLoaded.severity !== 'light') {
+    const name = assigneeNames?.[mostLoaded.id] ?? `${mostLoaded.id.slice(0, 8)}...`
+    const sevLabel = SEVERITY_LABEL_JA[mostLoaded.severity]
+    parts.push(`最重担当: ${name} (${sevLabel})`)
+  }
+  if (parts.length === 0) return '安全 sprint (リスク item / 担当負荷なし)'
+  return parts.join(' / ')
+}
+
 // 内部 helper を test しやすく named export
 export { computeRiskScore, dayDiffISO }
