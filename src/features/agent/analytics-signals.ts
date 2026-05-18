@@ -29,6 +29,8 @@
  * 揃える utility。
  */
 
+import { type ChipTone, formatToneCountsJa } from '@/lib/ui/chip-tone'
+
 import { type DueHitRateStats, dueHitRateToBriefSignal } from '@/features/item/due-hit-rate'
 import { type WorkspaceMomentum, workspaceMomentumToBriefSignal } from '@/features/item/momentum'
 import { type VelocitySummary, velocityToBriefSignal } from '@/features/item/velocity'
@@ -171,4 +173,53 @@ export function formatAnalyticsSignalsLineJa(signals: AnalyticsSignals): string 
   const arr = analyticsSignalsToArray(signals)
   if (arr.length === 0) return '記録なし'
   return arr.map((s) => s.text).join(' / ')
+}
+
+/**
+ * iter954 ai-automation: AnalyticsSignals の non-null signal を ChipTone 別に件数集計。
+ *
+ * 用途: AI 朝 brief / Slack daily digest の冒頭 headline で「全 chip の tone 分布」を
+ * 1 行で出すための substrate。caller は本 helper → `formatToneCountsJa(counts)` →
+ * '緊急 1 / 注意 2 / 達成 3' の 1 行 summary を作れる。
+ *
+ * `countItemsByTone` (lib/ui/chip-tone) の AnalyticsSignals 特化版 (= getTone callback の
+ * boilerplate を caller が書かなくて済む)。0 signal 入力 → 全 0 の Record (= UI 側で「記録なし」分岐可)。
+ *
+ * 既存 helper との関係:
+ *   - `analyticsSignalsToArray`: null 除去 + 表示順整列 (chip 個別 render 用)
+ *   - `formatAnalyticsSignalsLineJa`: 全 signal text を `/` 連結 (= 個別 text 並び)
+ *   - 本 helper: tone 別 件数集計 (= signal の severity distribution、headline 用)
+ */
+export function countAnalyticsSignalsByTone(signals: AnalyticsSignals): Record<ChipTone, number> {
+  const counts: Record<ChipTone, number> = {
+    danger: 0,
+    urgent: 0,
+    warn: 0,
+    info: 0,
+    idle: 0,
+    success: 0,
+  }
+  const arr = analyticsSignalsToArray(signals)
+  for (const s of arr) {
+    counts[s.tone] += 1
+  }
+  return counts
+}
+
+/**
+ * iter954 ai-automation: AnalyticsSignals の tone 分布を 1 行 ja-JP に整形 (headline 用)。
+ *
+ *   countAnalyticsSignalsByTone(signals) → formatToneCountsJa(counts)
+ *
+ * 全 signal null → '0 件' (= 既存 formatToneCountsJa の空 sentinel)、
+ * その他 → '緊急 1 / 要対応 2 / 達成 3' のような 1 行。
+ *
+ * caller pattern (Slack daily digest 冒頭):
+ *   const signals = composeAnalyticsSignals({ ... })
+ *   const headline = formatAnalyticsSignalsToneSummaryJa(signals)
+ *   const detail = formatAnalyticsSignalsLineJa(signals)
+ *   // → Slack '今日の analytics: 緊急 1 / 要対応 2 / 達成 3\n${detail}'
+ */
+export function formatAnalyticsSignalsToneSummaryJa(signals: AnalyticsSignals): string {
+  return formatToneCountsJa(countAnalyticsSignalsByTone(signals))
 }

@@ -12,7 +12,9 @@ import { computeAgentReliability } from './agent-reliability'
 import {
   analyticsSignalsToArray,
   composeAnalyticsSignals,
+  countAnalyticsSignalsByTone,
   formatAnalyticsSignalsLineJa,
+  formatAnalyticsSignalsToneSummaryJa,
 } from './analytics-signals'
 import { computeCostMonthProjection } from './cost-month-projection'
 import { computeMonthlyCostTrend, type CostMonthEntry } from './cost-monthly-trend'
@@ -312,5 +314,73 @@ describe('formatAnalyticsSignalsLineJa (iter816 — plain text 1 行 compose)', 
     expect(line).toContain('期限達成率: 90%')
     expect(line).toContain('AI 信頼性')
     expect(line).toContain(' / ')
+  })
+})
+
+describe('countAnalyticsSignalsByTone (iter954)', () => {
+  it('全空 → 全 0', () => {
+    const s = composeAnalyticsSignals({})
+    expect(countAnalyticsSignalsByTone(s)).toEqual({
+      danger: 0,
+      urgent: 0,
+      warn: 0,
+      info: 0,
+      idle: 0,
+      success: 0,
+    })
+  })
+
+  it('reliability + dueHitRate (90% hit、success) → signal の tone を集計', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 9, failed: 1 },
+    ])
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 }
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const counts = countAnalyticsSignalsByTone(s)
+    // 全 signal 数 = analyticsSignalsToArray(s).length と一致
+    const arr = analyticsSignalsToArray(s)
+    const total =
+      counts.danger + counts.urgent + counts.warn + counts.info + counts.idle + counts.success
+    expect(total).toBe(arr.length)
+    // dueHitRate 90% は success tone (= 高めの hit rate)
+    expect(counts.success).toBeGreaterThanOrEqual(1)
+  })
+
+  it('signal が複数 success tone なら success count が複数', () => {
+    // velocity (up trend) + weeklyCompletion (up) で success が 2 つ
+    const items: VelocityFields[] = [
+      { doneAt: TODAY },
+      { doneAt: TODAY },
+      { doneAt: TODAY },
+      { doneAt: new Date(TODAY.getTime() - 5 * MS_PER_DAY) },
+    ]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const s = composeAnalyticsSignals({ velocity })
+    const counts = countAnalyticsSignalsByTone(s)
+    const arr = analyticsSignalsToArray(s)
+    const total =
+      counts.danger + counts.urgent + counts.warn + counts.info + counts.idle + counts.success
+    expect(total).toBe(arr.length)
+    expect(arr.length).toBeGreaterThan(0)
+  })
+})
+
+describe('formatAnalyticsSignalsToneSummaryJa (iter954)', () => {
+  it('全空 → 「0 件」 sentinel (= formatToneCountsJa 経由)', () => {
+    const s = composeAnalyticsSignals({})
+    expect(formatAnalyticsSignalsToneSummaryJa(s)).toBe('0 件')
+  })
+
+  it('実 signal 入り → ja-JP tone 別 件数の 1 行', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 9, failed: 1 },
+    ])
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 }
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const summary = formatAnalyticsSignalsToneSummaryJa(s)
+    // 0 件 sentinel ではない
+    expect(summary).not.toBe('0 件')
+    // ja-JP label が含まれる (= chipToneLabelJa の語彙)
+    expect(summary).toMatch(/緊急|要対応|注意|通常|対象外|達成/)
   })
 })
