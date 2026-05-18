@@ -296,4 +296,41 @@ describe('architecture: Service / Action 規約', () => {
     }
     expect(violations).toEqual([])
   })
+
+  // -----------------------------------------------------------
+  // 7. src/app/(workspace)/[workspaceId]/ 配下の sub-page (page.tsx) は
+  //    Workspace dashboard 戻り Link に aria-label="Workspace dashboard に戻る" を持つ。
+  //    iter986-993 sweep で 8 sub-page (sprints/goals/pdca/workflows/time-entries/
+  //    templates/integrations/archive) を統一済、本 test で regression 防止。
+  //    判定: <Link href={`/${workspaceId}`} を含む sub-page は aria-label を必須。
+  //    dashboard 自身 (workspaceId/page.tsx) は対象外 (back-link を持たない)。
+  // -----------------------------------------------------------
+  it('workspace sub-page back-Link は aria-label="Workspace dashboard に戻る" を持つ', () => {
+    const wsRoot = join(SRC, 'app', '(workspace)', '[workspaceId]')
+    const subDirs: string[] = []
+    try {
+      for (const entry of readdirSync(wsRoot)) {
+        const full = join(wsRoot, entry)
+        if (statSync(full).isDirectory()) subDirs.push(full)
+      }
+    } catch {
+      return
+    }
+    const violations: string[] = []
+    for (const subDir of subDirs) {
+      const pageFile = join(subDir, 'page.tsx')
+      let src: string
+      try {
+        src = readFileSync(pageFile, 'utf-8')
+      } catch {
+        continue
+      }
+      // workspace dashboard 戻り Link (href={`/${workspaceId}`}) を含む sub-page か
+      if (!/<Link\s[\s\S]{0,200}href=\{`\/\$\{workspaceId\}`\}/.test(src)) continue
+      if (!/aria-label="Workspace dashboard に戻る"/.test(src)) {
+        violations.push(`${relative(ROOT, pageFile)}: back-Link に aria-label 不在`)
+      }
+    }
+    expect(violations).toEqual([])
+  })
 })
