@@ -32,7 +32,14 @@ export default async function MockEntriesPage() {
         送信済み一覧 ({entries.length} 件)
       </h2>
       {entries.length === 0 ? (
-        <p className="text-muted-foreground text-sm">まだ送信されていません。</p>
+        <p
+          role="status"
+          aria-live="polite"
+          data-testid="mock-entries-empty"
+          className="text-muted-foreground text-sm"
+        >
+          まだ送信されていません。
+        </p>
       ) : (
         <table className="w-full text-sm" data-testid="mock-entries-table">
           <caption className="sr-only">
