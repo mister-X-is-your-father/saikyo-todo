@@ -156,6 +156,7 @@ export function GoalsPanel({ workspaceId }: Props) {
                   minLength={1}
                   maxLength={200}
                   autoComplete="off"
+                  enterKeyHint="next"
                   aria-label={
                     title.length === 0
                       ? 'Goal Objective (必須、最大 200 文字、なに / なぜを 1 行で)'
@@ -178,6 +179,7 @@ export function GoalsPanel({ workspaceId }: Props) {
                   aria-required="true"
                   aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   max={endDate || undefined}
+                  enterKeyHint="next"
                   aria-label={
                     startDate === ''
                       ? 'Goal 開始日 (必須、終了日以前)'
@@ -199,6 +201,7 @@ export function GoalsPanel({ workspaceId }: Props) {
                   aria-required="true"
                   aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   min={startDate || undefined}
+                  enterKeyHint="next"
                   aria-label={
                     endDate === ''
                       ? 'Goal 終了日 (必須、開始日以降)'
