@@ -69,6 +69,7 @@ export function MockSubmitForm() {
           id="tsDate"
           type="date"
           className="h-11"
+          enterKeyHint="next"
           aria-invalid={form.formState.errors.workDate ? true : undefined}
           aria-describedby={form.formState.errors.workDate ? 'tsDate-error' : undefined}
           {...form.register('workDate')}
@@ -106,6 +107,7 @@ export function MockSubmitForm() {
         <IMEInput
           id="tsDescription"
           className="h-11"
+          enterKeyHint="next"
           aria-invalid={form.formState.errors.description ? true : undefined}
           aria-describedby={
             form.formState.errors.description
@@ -134,6 +136,7 @@ export function MockSubmitForm() {
           step="0.25"
           min="0.25"
           max="24"
+          enterKeyHint="send"
           aria-invalid={form.formState.errors.hoursDecimal ? true : undefined}
           aria-describedby={
             form.formState.errors.hoursDecimal ? 'tsHours-hint tsHours-error' : 'tsHours-hint'
