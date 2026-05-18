@@ -15,6 +15,7 @@
  *
  * 副作用なし、依存は Item type のみ。Vitest 単体 test で網羅。
  */
+import { extractEstimateMinutes } from '@/features/item/estimate'
 import type { Item } from '@/features/item/schema'
 
 export interface OperationBoardSummary {
@@ -61,8 +62,12 @@ function dueTimeMinutes(dueTime: string | null | undefined): number {
  * Eisenhower 風 score (高いほど推奨):
  *   urgency = dueDate 近接度 (today=10, tomorrow=6, thisWeek=2, none=0, overdue=15)
  *   importance = isMust ? 10 : (5 - priority) * 2  (priority 1→8, 4→2)
- *   shortBonus = description / dod から見積 30 分以下なら +3 (素早く片付くもの優先)
+ *   shortBonus = description の `見積: <duration>` が 30 分以下なら +3 (素早く片付くもの優先)
  * 合計 score、tie は createdAt 古い順。
+ *
+ * iter942 ai-automation: 旧 docstring が「shortBonus +3」を約束しているのに本体未実装の
+ * drift を解消 (extractEstimateMinutes で description プレフィクスを parse、≤30 min で +3)。
+ * estimate 不明な item は score 変化なし (= 旧 behavior 互換)。
  */
 function eisenhowerScore(it: Item, today: string): number {
   let urgency = 0
@@ -76,7 +81,10 @@ function eisenhowerScore(it: Item, today: string): number {
 
   const importance = it.isMust ? 10 : Math.max(2, (5 - it.priority) * 2)
 
-  return urgency + importance
+  const estimate = extractEstimateMinutes(it.description)
+  const shortBonus = estimate !== undefined && estimate <= 30 ? 3 : 0
+
+  return urgency + importance + shortBonus
 }
 
 export function buildOperationBoard(items: Item[], today: string): OperationBoardSummary {

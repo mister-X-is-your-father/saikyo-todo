@@ -106,6 +106,54 @@ describe('eisenhowerScore', () => {
     const sched = mk({ id: 's', scheduledFor: TODAY, priority: 3 })
     expect(eisenhowerScore(sched, TODAY)).toBeGreaterThan(0)
   })
+
+  it('iter942: description の 見積 ≤ 30 分は shortBonus +3 (素早く片付くもの優先)', () => {
+    const short = mk({
+      id: 'short',
+      scheduledFor: TODAY,
+      priority: 3,
+      description: '見積: 20分\n本文',
+    })
+    const baseline = mk({
+      id: 'baseline',
+      scheduledFor: TODAY,
+      priority: 3,
+      description: '',
+    })
+    expect(eisenhowerScore(short, TODAY) - eisenhowerScore(baseline, TODAY)).toBe(3)
+  })
+
+  it('iter942: 見積 > 30 分は shortBonus 無し (=旧 behavior 互換)', () => {
+    const longTask = mk({
+      id: 'long',
+      scheduledFor: TODAY,
+      priority: 3,
+      description: '見積: 1時間30分\n本文',
+    })
+    const baseline = mk({
+      id: 'baseline',
+      scheduledFor: TODAY,
+      priority: 3,
+      description: '',
+    })
+    expect(eisenhowerScore(longTask, TODAY)).toBe(eisenhowerScore(baseline, TODAY))
+  })
+
+  it('iter942: 見積 ぴったり 30 分は境界含む (≤ 30 で +3)', () => {
+    const at30 = mk({
+      id: '30',
+      scheduledFor: TODAY,
+      priority: 3,
+      description: '見積: 30分',
+    })
+    const baseline = mk({
+      id: 'baseline',
+      scheduledFor: TODAY,
+      priority: 3,
+      description: '',
+    })
+    expect(eisenhowerScore(at30, TODAY) - eisenhowerScore(baseline, TODAY)).toBe(3)
+  })
 })
 
 describe('buildOperationBoard', () => {
