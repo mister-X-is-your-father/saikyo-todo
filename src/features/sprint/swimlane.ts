@@ -24,6 +24,7 @@
  */
 
 import { MS_PER_DAY, parseIsoDateAsLocalMidnight } from '@/lib/date/iso'
+import { round2 } from '@/lib/round-decimal'
 
 export interface SwimlanePeriod {
   /** sprint or 表示範囲の start (ISO `YYYY-MM-DD`) */
@@ -139,6 +140,4 @@ function formatIso(d: Date): string {
   return `${y}-${m}-${day}`
 }
 
-function round2(n: number): number {
-  return Math.round(n * 100) / 100
-}
+// iter965 refactor: round2 は lib/round-decimal.ts に集約。

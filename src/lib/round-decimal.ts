@@ -25,3 +25,17 @@
 export function round1(n: number): number {
   return Math.round(n * 10) / 10
 }
+
+/**
+ * iter965 refactor: 浮動小数を 2 桁 (= 小数点以下 2 桁) で丸める。
+ *
+ * 経緯: swimlane.ts に local round2 (= Math.round(n * 100) / 100) があったが、round1 と同様
+ * lib に集約 (= 命名 / 動作の vocabulary 統一)。新規 caller (% / cost 2-decimal 表記) も同 lib 経由。
+ *
+ *   round2(1.4545) → 1.45 (round-half-to-even ではなく Math.round の銀行家丸めでない挙動)
+ *   round2(0.005)  → 0.01 (Math.round(0.5) = 1 → 0.01)
+ *   round2(1.005)  → 1.01 (浮動小数の精度で 1.0049999... → round 1 → 0.01)
+ */
+export function round2(n: number): number {
+  return Math.round(n * 100) / 100
+}
