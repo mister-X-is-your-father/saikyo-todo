@@ -330,7 +330,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
               .join(' + ') || '絞り込みなし'
           })`}
         >
-          <label htmlFor="filter-must" className="flex items-center gap-1">
+          <label htmlFor="filter-must" className="flex min-h-11 items-center gap-1">
             <input
               id="filter-must"
               type="checkbox"
