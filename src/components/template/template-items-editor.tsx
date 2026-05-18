@@ -142,7 +142,7 @@ export function TemplateItemsEditor({ templateId }: Props) {
             }
           />
         </div>
-        <label className="flex items-center gap-1 text-sm">
+        <label className="flex min-h-11 items-center gap-1 text-sm">
           <input
             type="checkbox"
             checked={isMust}
