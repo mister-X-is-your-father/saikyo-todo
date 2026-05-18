@@ -774,6 +774,7 @@ function KeyResultList({
             placeholder="KR タイトル (例: p95 < 200ms)"
             className="h-11 flex-1"
             data-testid={`kr-title-input-${goalId}`}
+            enterKeyHint="next"
             aria-label={
               krTitle.length === 0
                 ? 'KR タイトル (必須、最大 300 文字、達成判定可能な数値目標が望ましい)'
@@ -830,6 +831,7 @@ function KeyResultList({
               // で mobile に小数 keypad を呼出。step=any で arrow キー / spinner で小数入力可。
               inputMode="decimal"
               step="any"
+              enterKeyHint="next"
             />
             <Input
               value={unit}
@@ -843,6 +845,7 @@ function KeyResultList({
               }
               maxLength={20}
               autoComplete="off"
+              enterKeyHint="send"
             />
           </div>
         )}
