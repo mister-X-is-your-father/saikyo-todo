@@ -112,6 +112,7 @@ export function TemplateItemsEditor({ templateId }: Props) {
             minLength={1}
             maxLength={500}
             autoComplete="off"
+            enterKeyHint="next"
           />
           <input
             type="number"
@@ -133,6 +134,7 @@ export function TemplateItemsEditor({ templateId }: Props) {
             max={365}
             step={1}
             inputMode="numeric"
+            enterKeyHint="send"
             aria-invalid={
               (dueOffset !== '' &&
                 (Number.isNaN(Number(dueOffset)) ||
