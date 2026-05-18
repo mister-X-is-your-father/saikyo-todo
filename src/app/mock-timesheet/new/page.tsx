@@ -20,6 +20,7 @@ export default async function MockNewPage() {
     <main
       id="main-content"
       tabIndex={-1}
+      aria-label="Mock Timesheet 新規送信"
       className="mx-auto max-w-xl space-y-6 p-6 focus-visible:outline-none"
     >
       <MockTopNav sessionId={sessionId} />
