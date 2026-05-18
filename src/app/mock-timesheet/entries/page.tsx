@@ -24,10 +24,13 @@ export default async function MockEntriesPage() {
     <main
       id="main-content"
       tabIndex={-1}
+      aria-labelledby="mock-entries-heading"
       className="mx-auto max-w-3xl space-y-6 p-6 focus-visible:outline-none"
     >
       <MockTopNav sessionId={sessionId} />
-      <h2 className="text-lg font-semibold">送信済み一覧 ({entries.length} 件)</h2>
+      <h2 id="mock-entries-heading" className="text-lg font-semibold">
+        送信済み一覧 ({entries.length} 件)
+      </h2>
       {entries.length === 0 ? (
         <p className="text-muted-foreground text-sm">まだ送信されていません。</p>
       ) : (
