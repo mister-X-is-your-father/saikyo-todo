@@ -763,6 +763,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter993 1/1] archive/page.tsx back-Link aria-label (workspace back sweep 8/8 完備、全 sub-page 適用済)。+2/-2 行 (1 file)。検証: scripts/explore-uiux-archive-page-back-link-aria-label-iter993.ts (9 OK、全 7 sub-page invariant cross-check 込み)。workspace 配下 back-Link sweep 全 8 件完了。次 iter 候補: 別 sweep 領域 (workspace dashboard nav 8 Link / その他)。
+- ✅ [playwright-iter992 1/1] integrations/page.tsx back-Link aria-label (workspace back sweep 7/8)。+2/-2 行 (1 file)。検証: scripts/explore-uiux-integrations-page-back-link-aria-label-iter992.ts (2 OK)。次 iter 候補: 残 1 page (archive)。
 - ✅ [playwright-iter991 1/1] templates/page.tsx back-Link aria-label (workspace back sweep 6/8)。+2/-2 行 (1 file)。検証: scripts/explore-uiux-templates-page-back-link-aria-label-iter991.ts (2 OK)。次 iter 候補: 残 2 page (integrations / archive)。
 - ✅ [playwright-iter990 1/1] time-entries/page.tsx back-Link aria-label (workspace back sweep 5/8)。+2/-2 行 (1 file)。検証: scripts/explore-uiux-time-entries-page-back-link-aria-label-iter990.ts (2 OK)。次 iter 候補: 残 3 page (templates / integrations / archive)。
 - ✅ [playwright-iter989 1/1] workflows/page.tsx back-Link aria-label (workspace back sweep 4/8)。+2/-2 行 (1 file)。検証: scripts/explore-uiux-workflows-page-back-link-aria-label-iter989.ts (2 OK)。次 iter 候補: 残 4 page (time-entries / templates / integrations / archive)。
