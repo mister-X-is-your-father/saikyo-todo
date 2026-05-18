@@ -353,6 +353,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                 minLength={1}
                 maxLength={200}
                 autoComplete="off"
+                enterKeyHint="next"
                 aria-label={
                   name.length === 0
                     ? 'Source 名前 (必須、最大 200 文字、識別しやすい名前 — 例: Yamory チーム A)'
@@ -383,6 +384,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                   // new-password で suggest は出るが既存 password 補完を避ける。
                   autoComplete="new-password"
                   spellCheck={false}
+                  enterKeyHint="next"
                   data-testid="src-token"
                   aria-label={
                     token.length === 0
@@ -402,6 +404,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                   aria-required="true"
                   autoComplete="off"
                   spellCheck={false}
+                  enterKeyHint="send"
                   aria-label={
                     projectIds.length === 0
                       ? 'project IDs (必須、1 件以上、カンマ区切り — 例: proj-a, proj-b)'
@@ -425,6 +428,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     aria-required="true"
                     autoComplete="off"
                     spellCheck={false}
+                    enterKeyHint="next"
                     data-testid="src-url"
                     aria-label={
                       url.length === 0
@@ -465,6 +469,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     placeholder="例: data.items (省略で root)"
                     autoComplete="off"
                     spellCheck={false}
+                    enterKeyHint="next"
                     aria-label={
                       itemsPath.length === 0
                         ? 'items path (任意、JSON dot-path、省略で response root を items 配列とみなす — 例: data.items)'
@@ -481,6 +486,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     placeholder="例: due_date"
                     autoComplete="off"
                     spellCheck={false}
+                    enterKeyHint="next"
                     aria-label={
                       duePath.length === 0
                         ? 'due path (任意、各 item から期日を取り出す JSON dot-path — 例: due_date)'
@@ -499,6 +505,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     minLength={1}
                     autoComplete="off"
                     spellCheck={false}
+                    enterKeyHint="next"
                     aria-label={
                       idPath.length === 0
                         ? 'id path (必須、各 item の一意 ID を取り出す JSON dot-path — 例: id)'
@@ -517,6 +524,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     minLength={1}
                     autoComplete="off"
                     spellCheck={false}
+                    enterKeyHint="send"
                     aria-label={
                       titlePath.length === 0
                         ? 'title path (必須、各 item のタイトルを取り出す JSON dot-path — 例: title または name)'
