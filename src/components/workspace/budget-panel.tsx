@@ -226,6 +226,7 @@ export function BudgetPanel({ workspaceId }: Props) {
                 placeholder="例: 50.00"
                 // iter349: USD 通貨額は decimal 入力 (.50) 必須、mobile に小数 keypad を呼出。
                 inputMode="decimal"
+                enterKeyHint="next"
                 data-testid="budget-limit-input"
                 aria-label={
                   draftLimit === ''
@@ -254,6 +255,7 @@ export function BudgetPanel({ workspaceId }: Props) {
                 value={draftWarn}
                 onChange={(e) => setDraftWarn(e.target.value)}
                 inputMode="decimal"
+                enterKeyHint="send"
                 data-testid="budget-warn-input"
                 aria-label={
                   draftWarn === '' || Number.isNaN(Number(draftWarn))
