@@ -39,6 +39,7 @@ export default async function ArchivePage({ params }: PageProps) {
     <main
       id="main-content"
       tabIndex={-1}
+      aria-label="アーカイブ済 Item 一覧"
       className="container mx-auto max-w-5xl space-y-6 p-4 focus-visible:outline-none md:p-6"
     >
       <WorkspaceHeader
