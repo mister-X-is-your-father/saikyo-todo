@@ -22,7 +22,11 @@ export default async function HomePage() {
   const workspaces = await loadWorkspaces()
 
   return (
-    <main id="main-content" className="container mx-auto max-w-3xl space-y-8 p-6">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="container mx-auto max-w-3xl space-y-8 p-6 focus-visible:outline-none"
+    >
       <header className="flex items-center justify-between" aria-label="最強TODO ホーム">
         <h1 className="text-3xl font-bold">最強TODO</h1>
         <form
