@@ -152,7 +152,7 @@ export function NotificationPreferencesButton({ Icon = Settings }: { Icon?: Luci
               <li key={spec.key} className="px-3 py-2" data-notification-type={spec.type}>
                 <Label
                   htmlFor={`pref-${spec.key}`}
-                  className="flex cursor-pointer items-start gap-3 text-xs leading-snug"
+                  className="flex min-h-11 cursor-pointer items-start gap-3 text-xs leading-snug"
                 >
                   <input
                     id={`pref-${spec.key}`}
