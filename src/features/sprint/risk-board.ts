@@ -314,6 +314,49 @@ export function formatAssigneeLoadSeverityCountsJa(counts: AssigneeLoadSeverityC
 }
 
 /**
+ * iter958 basics: 最も負荷の高い 1 assignee を抽出。
+ *
+ * sprint planning で「最初に救済する 1 人」を決めるための pure helper。
+ * extractHeavyAssignees (配列、threshold 別) と並ぶ単一抽出版。
+ *
+ * 仕様:
+ *   - 比較指標: assigneeLoad.totalScore (= 負荷の重み付き合計、score 加重)
+ *   - tie-break: id 昇順 (deterministic、UI 表示で安定)
+ *   - 空 assigneeLoad (担当無し) → null
+ *   - 全員 totalScore=0 (= light) でも 1 人返す (= caller が threshold 判定したい場合は
+ *     assigneeLoadSeverity(load) で別途検査)
+ *
+ * 用途:
+ *   - SprintRiskBoardWidget の「最初に救済する人」chip (= 「@user1 (高負荷)」)
+ *   - AI Pre-mortem prompt の context 「最重 1 人は X、reassign 候補」
+ *   - Slack 通知「@user1 が高負荷、relief 要検討」
+ */
+export interface RiskBoardMostLoadedAssignee {
+  id: string
+  load: RiskBoardAssigneeLoad
+  severity: AssigneeLoadSeverity
+}
+
+export function pickMostLoadedAssignee<T extends RiskBoardItemFields>(
+  summary: SprintRiskBoardSummary<T>,
+): RiskBoardMostLoadedAssignee | null {
+  let best: { id: string; load: RiskBoardAssigneeLoad } | null = null
+  for (const [id, load] of summary.assigneeLoad) {
+    if (best === null) {
+      best = { id, load }
+      continue
+    }
+    if (load.totalScore > best.load.totalScore) {
+      best = { id, load }
+    } else if (load.totalScore === best.load.totalScore && id < best.id) {
+      best = { id, load }
+    }
+  }
+  if (best === null) return null
+  return { id: best.id, load: best.load, severity: assigneeLoadSeverity(best.load) }
+}
+
+/**
  * AI prompt / dashboard chip 用 sprint 全体の board サマリ 1 行:
  *   'リスクあり 5 件 (top: 期限超過 12 日 score 60 / 今日が期限 score 50)'
  *   '安全 (リスク item なし)' (= 全 score 0)

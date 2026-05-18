@@ -10,6 +10,7 @@ import {
   formatAssigneeLoadJa,
   formatAssigneeLoadSeverityCountsJa,
   formatSprintRiskBoardJa,
+  pickMostLoadedAssignee,
   type RiskBoardItemFields,
 } from './risk-board'
 
@@ -464,5 +465,63 @@ describe('formatAssigneeLoadSeverityCountsJa (iter952)', () => {
     expect(
       formatAssigneeLoadSeverityCountsJa({ overloaded: 0, busy: 0, normal: 0, light: 5 }),
     ).toBe('余裕 5人')
+  })
+})
+
+describe('pickMostLoadedAssignee (iter958)', () => {
+  it('担当無し → null', () => {
+    const summary = buildSprintRiskBoard([], { today: TODAY })
+    expect(pickMostLoadedAssignee(summary)).toBeNull()
+  })
+
+  it('単一 assignee → その人を返す', () => {
+    const items: RiskBoardItemFields[] = [mk({ id: 'a', assigneeIds: ['u1'], dueDate: TODAY })]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    const top = pickMostLoadedAssignee(summary)
+    expect(top).not.toBeNull()
+    expect(top!.id).toBe('u1')
+    expect(top!.severity).toBe('normal') // today due 25 score → normal
+  })
+
+  it('totalScore 高い側を返す (u1 overloaded vs u2 light)', () => {
+    const items: RiskBoardItemFields[] = [
+      mk({
+        id: 'a',
+        assigneeIds: ['u1'],
+        dueDate: '2026-04-20',
+        isMust: true,
+        priority: 1,
+        status: 'blocked',
+        blockingCount: 5,
+      }),
+      mk({ id: 'b', assigneeIds: ['u2'] }),
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    const top = pickMostLoadedAssignee(summary)
+    expect(top!.id).toBe('u1')
+    expect(top!.severity).toBe('overloaded')
+  })
+
+  it('tie-break: 同 totalScore は id 昇順 (deterministic)', () => {
+    // u2 と u3 が同 totalScore (= 各 today due item を 1 個ずつ)、id 昇順で u2 が勝つ
+    const items: RiskBoardItemFields[] = [
+      mk({ id: 'a', assigneeIds: ['u3'], dueDate: TODAY }),
+      mk({ id: 'b', assigneeIds: ['u2'], dueDate: TODAY }),
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    const top = pickMostLoadedAssignee(summary)
+    expect(top!.id).toBe('u2')
+  })
+
+  it('全員 light (= score 0) でも先頭 1 人を返す (= severity 別判定は caller 責務)', () => {
+    const items: RiskBoardItemFields[] = [
+      mk({ id: 'a', assigneeIds: ['u2'] }),
+      mk({ id: 'b', assigneeIds: ['u1'] }),
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    const top = pickMostLoadedAssignee(summary)
+    // 同 score 0 のため tie-break で u1 (id 昇順)
+    expect(top!.id).toBe('u1')
+    expect(top!.severity).toBe('light')
   })
 })
