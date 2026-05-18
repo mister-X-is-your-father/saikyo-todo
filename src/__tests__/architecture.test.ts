@@ -340,4 +340,38 @@ describe('architecture: Service / Action 規約', () => {
     }
     expect(violations).toEqual([])
   })
+
+  // -----------------------------------------------------------
+  // 8. src/app/(workspace)/[workspaceId]/ 配下の page.tsx 全 (dashboard 含 9 page) は
+  //    <main> に aria-label を持ち、SR landmark nav で page 識別可能化済。
+  //    iter977-985 sweep で 9 page (workspace dashboard + 8 sub-page) を統一済、
+  //    本 test で regression 防止。
+  //    判定: <main を含む workspace 配下 page.tsx は <main> に aria-label を必須。
+  // -----------------------------------------------------------
+  it('workspace 配下 page.tsx の <main> は aria-label を持つ (SR landmark 識別)', () => {
+    const wsRoot = join(SRC, 'app', '(workspace)', '[workspaceId]')
+    const pageFiles: string[] = []
+    function collectPages(dir: string): void {
+      try {
+        for (const entry of readdirSync(dir)) {
+          const full = join(dir, entry)
+          const st = statSync(full)
+          if (st.isDirectory()) collectPages(full)
+          else if (entry === 'page.tsx') pageFiles.push(full)
+        }
+      } catch {
+        return
+      }
+    }
+    collectPages(wsRoot)
+    const violations: string[] = []
+    for (const f of pageFiles) {
+      const src = readFileSync(f, 'utf-8')
+      if (!/<main\b/.test(src)) continue
+      if (!/<main[\s\S]{0,400}aria-label=/.test(src)) {
+        violations.push(`${relative(ROOT, f)}: <main> に aria-label 不在 (SR landmark 識別)`)
+      }
+    }
+    expect(violations).toEqual([])
+  })
 })
