@@ -216,6 +216,7 @@ export function SprintsPanel({ workspaceId }: Props) {
                   maxLength={100}
                   // iter344: app 固有 input なので browser auto-fill 候補は無関係 → off
                   autoComplete="off"
+                  enterKeyHint="next"
                   aria-label={
                     name.length === 0
                       ? 'Sprint 名前 (必須、最大 100 文字)'
@@ -238,6 +239,7 @@ export function SprintsPanel({ workspaceId }: Props) {
                   aria-required="true"
                   aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   max={endDate || undefined}
+                  enterKeyHint="next"
                   aria-label={
                     startDate === ''
                       ? 'Sprint 開始日 (必須、終了日以前)'
@@ -259,6 +261,7 @@ export function SprintsPanel({ workspaceId }: Props) {
                   aria-required="true"
                   aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   min={startDate || undefined}
+                  enterKeyHint="next"
                   aria-label={
                     endDate === ''
                       ? 'Sprint 終了日 (必須、開始日以降)'
