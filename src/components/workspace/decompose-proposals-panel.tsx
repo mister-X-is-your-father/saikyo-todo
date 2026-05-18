@@ -433,7 +433,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               }
             />
           </div>
-          <label className="flex items-center gap-1.5 text-xs">
+          <label className="flex min-h-11 items-center gap-1.5 text-xs">
             <input
               type="checkbox"
               checked={isMust}
