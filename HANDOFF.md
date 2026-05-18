@@ -763,6 +763,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter985 1/1] workspace dashboard /[workspaceId]/page.tsx main に aria-label="Workspace dashboard (Today / Inbox / Kanban / Backlog / Gantt / Dashboard)" 付与、workspace page sweep 9/9 完備 (8 sub-page + 1 dashboard、全 workspace page で SR landmark nav 識別可能化 sweep 飽和)。+1/-0 行 (1 file)。視覚 / 動作不変。検証: scripts/explore-uiux-workspace-dashboard-main-aria-label-iter985.ts (9 OK)。次 iter 候補: 全 page sweep 完備、別 sweep 領域 (form aria-busy / Card region / shared component) へ pivot。
+- ✅ [playwright-iter984 1/1] archive/page.tsx main に aria-label="アーカイブ済 Item 一覧" 付与、workspace page sweep 8/8 着地 (archive sub-page)。+1/-0 行 (1 file)。視覚 / 動作不変。検証: scripts/explore-uiux-archive-page-main-aria-label-iter984.ts (8 OK)。次 iter 候補: workspace dashboard /[workspaceId]/page.tsx (sweep 9/9 完備)。
 - ✅ [playwright-iter983 1/1] integrations/page.tsx main に aria-label="API 連携 外部 API (Yamory / カスタム REST) → Item 取込" 付与、workspace page sweep 7/8 着地。+1/-0 行 (1 file)。視覚 / 動作不変。検証: scripts/explore-uiux-integrations-page-main-aria-label-iter983.ts (7 OK)。次 iter 候補: 残 1 page (archive) + workspace dashboard。
 - ✅ [playwright-iter982 1/1] templates/page.tsx main に aria-label="Templates ワークパッケージ定義" 付与、workspace page sweep 6/8 着地。+1/-0 行 (1 file)。視覚 / 動作不変。検証: scripts/explore-uiux-templates-page-main-aria-label-iter982.ts (6 OK)。次 iter 候補: 残 2 page (integrations / archive / dashboard)。
 - ✅ [playwright-iter981 1/1] time-entries/page.tsx main に aria-label="稼働入力 やったこと + 時間を記録" 付与、workspace page sweep 5/8 着地。+1/-0 行 (1 file)。視覚 / 動作不変。検証: scripts/explore-uiux-time-entries-page-main-aria-label-iter981.ts (5 OK)。次 iter 候補: 残 3 page (templates / integrations / archive / dashboard)。
