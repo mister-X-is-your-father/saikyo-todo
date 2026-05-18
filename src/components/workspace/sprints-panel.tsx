@@ -625,7 +625,7 @@ function SprintCard({
                           : `Sprint 開始日 (現在: ${editStart} (${dayOfWeekJa(editStart)}))`
                     }
                     aria-invalid={isInvalidDateRange(editStart, editEnd) || undefined}
-                    className="h-8 text-xs"
+                    className="min-h-11 text-xs"
                     data-testid={`sprint-edit-start-${sprint.id}`}
                   />
                 </div>
@@ -650,7 +650,7 @@ function SprintCard({
                           : `Sprint 終了日 (現在: ${editEnd} (${dayOfWeekJa(editEnd)}))`
                     }
                     aria-invalid={isInvalidDateRange(editStart, editEnd) || undefined}
-                    className="h-8 text-xs"
+                    className="min-h-11 text-xs"
                     data-testid={`sprint-edit-end-${sprint.id}`}
                   />
                 </div>
