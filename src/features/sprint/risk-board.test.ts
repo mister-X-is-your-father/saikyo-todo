@@ -624,4 +624,22 @@ describe('formatSprintRiskBoardAlertJa (iter962)', () => {
     const line = formatSprintRiskBoardAlertJa(summary, { u1: 'Alice' })
     expect(line).toContain('最重担当: Alice')
   })
+
+  it('iter967: light severity 担当のみ (= 最重担当が low load) → 「最重担当」 出力に含めない (= alert 必要なし)', () => {
+    // risk item は high score、担当は priority 4 1 件 → light
+    const items: RiskBoardItemFields[] = [
+      mk({
+        id: 'a',
+        dueDate: '2026-04-20',
+        isMust: true,
+        priority: 1,
+        status: 'blocked',
+      }), // 担当無し risk item
+      mk({ id: 'b', assigneeIds: ['u_light'] }), // light な担当 (score 0)
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    const line = formatSprintRiskBoardAlertJa(summary)
+    expect(line).toContain('最重 item:')
+    expect(line).not.toContain('最重担当:') // light は除外
+  })
 })
