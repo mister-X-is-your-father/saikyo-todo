@@ -15,7 +15,10 @@ export function MockTopNav({ sessionId }: { sessionId: string }) {
           <span className="font-mono">{sessionId}</span>
         </p>
       </div>
-      <nav aria-label="mock-timesheet ナビゲーション" className="flex items-center gap-2">
+      <nav
+        aria-label="mock-timesheet (新規入力 / 入力一覧 / ログアウト)"
+        className="flex items-center gap-2"
+      >
         <Button variant="outline" size="sm" className="min-h-11" asChild>
           <Link href="/mock-timesheet/new">新規入力</Link>
         </Button>

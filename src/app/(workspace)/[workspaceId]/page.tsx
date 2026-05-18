@@ -60,7 +60,7 @@ export default async function WorkspacePage({ params }: PageProps) {
           <>
             <HeartbeatButton workspaceId={workspaceId} />
             <nav
-              aria-label="ワークスペース内ナビゲーション"
+              aria-label="ワークスペース内 (Goals / Sprints / PDCA / Templates / Workflows / API / Time / Archive)"
               className="flex flex-wrap items-center gap-2"
             >
               <Button variant="outline" asChild size="sm" className="min-h-11">
