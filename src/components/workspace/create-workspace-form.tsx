@@ -64,9 +64,16 @@ export function CreateWorkspaceForm() {
           autoComplete="off"
           enterKeyHint="next"
           aria-invalid={form.formState.errors.name ? true : undefined}
-          aria-describedby={form.formState.errors.name ? 'ws-name-error' : undefined}
+          aria-describedby={
+            form.formState.errors.name ? 'ws-name-hint ws-name-error' : 'ws-name-hint'
+          }
           {...form.register('name')}
         />
+        {/* iter949: form hint pattern (iter735-741 sweep) を ws-name にも適用。
+            隣接 slug 側 (ws-slug-hint) と同 a11y structure に揃え、name の 50 文字上限と用途を提示。 */}
+        <p id="ws-name-hint" className="text-muted-foreground text-xs">
+          チームメンバーに表示される Workspace 名。最大 50 文字。例: チーム A
+        </p>
         {form.formState.errors.name && (
           <p id="ws-name-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.name.message}
