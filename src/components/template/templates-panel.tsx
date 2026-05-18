@@ -107,6 +107,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   minLength={1}
                   maxLength={200}
                   autoComplete="off"
+                  enterKeyHint="next"
                   aria-label={
                     name.length === 0
                       ? 'Template 名前 (必須、最大 200 文字、何を生成するかが分かる名前)'
@@ -180,6 +181,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   className="h-11 font-mono"
                   autoComplete="off"
                   spellCheck={false}
+                  enterKeyHint="send"
                   aria-label={
                     scheduleCron.length === 0
                       ? 'cron 式 (任意、5 フィールド標準 cron 形式 — 例: 「0 9 * * 1」 で毎週月曜 09:00)'
