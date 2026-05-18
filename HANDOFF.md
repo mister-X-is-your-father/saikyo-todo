@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter994 1/1] workspace-header.tsx <header> aria-label "Workspace header: ${title}" → "Workspace: ${title}" (" header" suffix 削除、iter945 sweep を WorkspaceHeader に展開、9 page 一括反映): element tag 名 redundant 排除、SR Verbose mode で同 word "header" 二重 announce のリスク解消。+0/-7 文字 (1 file, 1 行 + comment 1 行)。視覚 / DOM / 動作不変。検証: scripts/explore-uiux-workspace-header-aria-label-iter994.ts (4 OK)。次 iter 候補: 他 redundant header / nav / role suffix sweep / shared component。
 - ✅ [playwright-iter993 1/1] archive/page.tsx back-Link aria-label (workspace back sweep 8/8 完備、全 sub-page 適用済)。+2/-2 行 (1 file)。検証: scripts/explore-uiux-archive-page-back-link-aria-label-iter993.ts (9 OK、全 7 sub-page invariant cross-check 込み)。workspace 配下 back-Link sweep 全 8 件完了。次 iter 候補: 別 sweep 領域 (workspace dashboard nav 8 Link / その他)。
 - ✅ [playwright-iter992 1/1] integrations/page.tsx back-Link aria-label (workspace back sweep 7/8)。+2/-2 行 (1 file)。検証: scripts/explore-uiux-integrations-page-back-link-aria-label-iter992.ts (2 OK)。次 iter 候補: 残 1 page (archive)。
 - ✅ [playwright-iter991 1/1] templates/page.tsx back-Link aria-label (workspace back sweep 6/8)。+2/-2 行 (1 file)。検証: scripts/explore-uiux-templates-page-back-link-aria-label-iter991.ts (2 OK)。次 iter 候補: 残 2 page (integrations / archive)。
