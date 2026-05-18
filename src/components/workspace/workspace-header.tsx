@@ -19,9 +19,10 @@ export function WorkspaceHeader({ title, role, subtitle, pageActions, utility }:
   return (
     // iter763: <header> は implicit banner landmark なので aria-label で page 固有
     // 名前を付けて SR ユーザの landmark navigation で複数 page header を区別可能に。
+    // iter994: " header" suffix を削除 (iter945 sweep、element tag 名 redundant)。
     <header
       className="flex flex-wrap items-start justify-between gap-3"
-      aria-label={`Workspace header: ${title}`}
+      aria-label={`Workspace: ${title}`}
     >
       <div className="min-w-0">
         <div className="flex items-center gap-2">
