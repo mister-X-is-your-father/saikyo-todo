@@ -293,6 +293,19 @@ describe('architecture: Service / Action 規約', () => {
       if (!hasTabIndex) {
         violations.push(`${relative(ROOT, f)}: <main> に tabIndex={-1} 不在 (skip-link focus 移動)`)
       }
+      // iter946/947/954/977-985 sweep: <main> に aria-label / aria-labelledby いずれかで
+      // landmark accessible name を持ち、SR landmark nav (rotor) で page 識別可能化。
+      // app/page.tsx HomePage は generic h1 "最強TODO" のため aria-label 設定が悪手、
+      // 除外 (h1 + header の組合せで識別可)。
+      const isHomePage = f.endsWith(join('app', 'page.tsx'))
+      if (isHomePage) continue
+      const hasAriaLabel = /<main[\s\S]{0,400}aria-label=/.test(src)
+      const hasAriaLabelledby = /<main[\s\S]{0,400}aria-labelledby=/.test(src)
+      if (!hasAriaLabel && !hasAriaLabelledby) {
+        violations.push(
+          `${relative(ROOT, f)}: <main> に aria-label / aria-labelledby いずれも不在 (SR landmark 識別)`,
+        )
+      }
     }
     expect(violations).toEqual([])
   })
