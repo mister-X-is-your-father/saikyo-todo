@@ -29,7 +29,12 @@
  * 揃える utility。
  */
 
-import { type ChipTone, countItemsByTone, formatToneCountsJa } from '@/lib/ui/chip-tone'
+import {
+  type ChipTone,
+  chipToneAttentionRank,
+  countItemsByTone,
+  formatToneCountsJa,
+} from '@/lib/ui/chip-tone'
 
 import { type DueHitRateStats, dueHitRateToBriefSignal } from '@/features/item/due-hit-rate'
 import { type WorkspaceMomentum, workspaceMomentumToBriefSignal } from '@/features/item/momentum'
@@ -213,4 +218,41 @@ export function countAnalyticsSignalsByTone(signals: AnalyticsSignals): Record<C
  */
 export function formatAnalyticsSignalsToneSummaryJa(signals: AnalyticsSignals): string {
   return formatToneCountsJa(countAnalyticsSignalsByTone(signals))
+}
+
+/**
+ * iter957 ai-automation: AnalyticsSignals 中で最も attention rank が高い signal を抽出。
+ *
+ * 用途:
+ *   - AI 朝 brief / Slack daily digest の「最重要 1 行」 headline (= 「⚠️ PM 信頼性 50%」)
+ *   - dashboard summary chip area 上部の「優先 alert」 1 chip
+ *   - notification badge tone (= 最悪 signal の tone を採用)
+ *
+ * 仕様:
+ *   - non-null signal を `analyticsSignalsToArray` で順序整列 + null 除去
+ *   - 各 signal の tone から `chipToneAttentionRank` (= danger 5 > urgent 4 > warn 3
+ *     > info 2 > idle 1 > success 0) を取って max
+ *   - 同 rank が複数の場合は `analyticsSignalsToArray` の表示順 (= concerningRole が
+ *     dueHitRate より優先) を保つ (stable max)
+ *   - 全 null → null sentinel
+ *
+ * 既存 helper との関係:
+ *   - `countAnalyticsSignalsByTone`: 分布集計 (= headline summary 文字列向け)
+ *   - `analyticsSignalsToArray`: 全 signal 配列 (= chip 個別 render 向け)
+ *   - 本 helper: 単一 signal 抽出 (= 1 chip alert / badge tone 向け)
+ */
+export function pickHighestSeveritySignal(signals: AnalyticsSignals): AgentBriefSignal | null {
+  const arr = analyticsSignalsToArray(signals)
+  if (arr.length === 0) return null
+  let best: AgentBriefSignal = arr[0]!
+  let bestRank = chipToneAttentionRank(best.tone)
+  for (let i = 1; i < arr.length; i++) {
+    const cand = arr[i]!
+    const r = chipToneAttentionRank(cand.tone)
+    if (r > bestRank) {
+      best = cand
+      bestRank = r
+    }
+  }
+  return best
 }

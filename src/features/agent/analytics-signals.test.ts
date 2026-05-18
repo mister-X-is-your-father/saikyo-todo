@@ -15,6 +15,7 @@ import {
   countAnalyticsSignalsByTone,
   formatAnalyticsSignalsLineJa,
   formatAnalyticsSignalsToneSummaryJa,
+  pickHighestSeveritySignal,
 } from './analytics-signals'
 import { computeCostMonthProjection } from './cost-month-projection'
 import { computeMonthlyCostTrend, type CostMonthEntry } from './cost-monthly-trend'
@@ -382,5 +383,50 @@ describe('formatAnalyticsSignalsToneSummaryJa (iter954)', () => {
     expect(summary).not.toBe('0 件')
     // ja-JP label が含まれる (= chipToneLabelJa の語彙)
     expect(summary).toMatch(/緊急|要対応|注意|通常|対象外|達成/)
+  })
+})
+
+describe('pickHighestSeveritySignal (iter957 — 最重要 1 signal)', () => {
+  it('全空 → null', () => {
+    const s = composeAnalyticsSignals({})
+    expect(pickHighestSeveritySignal(s)).toBeNull()
+  })
+
+  it('reliability critical (danger) + dueHitRate 90% (success) → danger signal が勝つ', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 }, // critical
+    ])
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 }
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const top = pickHighestSeveritySignal(s)
+    expect(top).not.toBeNull()
+    expect(top!.tone).toBe('danger')
+  })
+
+  it('全て success → success signal を返す (= 全部正常時の代表 chip)', () => {
+    const items: VelocityFields[] = [
+      { doneAt: TODAY },
+      { doneAt: TODAY },
+      { doneAt: TODAY },
+      { doneAt: new Date(TODAY.getTime() - 5 * MS_PER_DAY) },
+    ]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const s = composeAnalyticsSignals({ velocity })
+    const top = pickHighestSeveritySignal(s)
+    expect(top).not.toBeNull()
+    expect(top!.tone).toBe('success')
+  })
+
+  it('同 rank が複数の場合は array 順 (= concerningRole / costProjection / dueHitRate 順) で先頭', () => {
+    // 全て warn の場合、analyticsSignalsToArray の表示順 (= concerningRole が先) で stable max
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 8, failed: 2 }, // warn 80%
+    ])
+    const dueHitRate = { total: 10, hit: 5, miss: 5, hitRate: 0.5 } // warn 50%
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const top = pickHighestSeveritySignal(s)
+    expect(top).not.toBeNull()
+    // concerningRole が array の先頭、warn 同 rank なので stable max で勝つ
+    expect(top!.tone).toBe('warn')
   })
 })
