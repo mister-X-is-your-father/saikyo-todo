@@ -55,6 +55,7 @@ export function MockLoginForm() {
           className="h-11"
           autoComplete="email"
           inputMode="email"
+          enterKeyHint="next"
           autoCorrect="off"
           autoCapitalize="none"
           spellCheck={false}
@@ -84,6 +85,7 @@ export function MockLoginForm() {
           type="password"
           className="h-11"
           autoComplete="current-password"
+          enterKeyHint="send"
           required
           aria-required="true"
           aria-invalid={form.formState.errors.password ? true : undefined}
