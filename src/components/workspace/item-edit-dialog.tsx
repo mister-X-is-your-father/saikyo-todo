@@ -502,6 +502,7 @@ function ItemEditDialogInner({
                 minLength={1}
                 maxLength={500}
                 autoComplete="off"
+                enterKeyHint="next"
                 aria-label={
                   title.length === 0
                     ? 'タイトル (必須、最大 500 文字)'
@@ -522,6 +523,7 @@ function ItemEditDialogInner({
                 onChange={(e) => setDescription(e.target.value)}
                 maxLength={10_000}
                 autoComplete="off"
+                enterKeyHint="next"
                 aria-label={
                   description.length === 0
                     ? '説明 (任意、最大 10000 文字、Markdown 可)'
