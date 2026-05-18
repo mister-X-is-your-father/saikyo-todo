@@ -11,6 +11,7 @@ import {
   formatAssigneeLoadSeverityCountsJa,
   formatSprintRiskBoardJa,
   pickMostLoadedAssignee,
+  pickRiskiestItem,
   type RiskBoardItemFields,
 } from './risk-board'
 
@@ -523,5 +524,43 @@ describe('pickMostLoadedAssignee (iter958)', () => {
     // 同 score 0 のため tie-break で u1 (id 昇順)
     expect(top!.id).toBe('u1')
     expect(top!.severity).toBe('light')
+  })
+})
+
+describe('pickRiskiestItem (iter959)', () => {
+  it('空 items → null', () => {
+    const summary = buildSprintRiskBoard([], { today: TODAY })
+    expect(pickRiskiestItem(summary)).toBeNull()
+  })
+
+  it('全 score 0 (= 安全 sprint) → null (= alert 非表示判断)', () => {
+    const items: RiskBoardItemFields[] = [mk({ id: 'a' }), mk({ id: 'b' })]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    expect(pickRiskiestItem(summary)).toBeNull()
+  })
+
+  it('複数 item で最高 score を返す (= summary.topRisk[0])', () => {
+    const items: RiskBoardItemFields[] = [
+      mk({ id: 'low', dueDate: TODAY }), // score 25 (today due)
+      mk({
+        id: 'high',
+        dueDate: '2026-04-20', // overdue 10d → score 30
+        isMust: true, // +15
+        priority: 1, // +12
+        status: 'blocked', // +25
+      }),
+      mk({ id: 'safe', dueDate: '2026-05-30' }), // > 7d future → score 0
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    const top = pickRiskiestItem(summary)
+    expect(top).not.toBeNull()
+    expect(top!.item.id).toBe('high')
+    expect(top!.riskScore).toBeGreaterThan(50)
+  })
+
+  it('返却は summary.topRisk[0] と同一 reference', () => {
+    const items: RiskBoardItemFields[] = [mk({ id: 'a', dueDate: TODAY })]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    expect(pickRiskiestItem(summary)).toBe(summary.topRisk[0])
   })
 })

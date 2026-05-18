@@ -314,6 +314,30 @@ export function formatAssigneeLoadSeverityCountsJa(counts: AssigneeLoadSeverityC
 }
 
 /**
+ * iter959 ai-automation: 最もリスクが高い 1 item を抽出 (= summary.topRisk[0] の null-safe wrapper)。
+ *
+ * sprint planning で「最初に確認する 1 件」 chip / Pre-mortem prompt の「最重 1 item」 context 用。
+ * pickMostLoadedAssignee と並ぶ「単一 最重 抽出」 pattern の item 軸版。
+ *
+ * 仕様:
+ *   - summary.all は score 降順 sort 済 (buildSprintRiskBoard 時点)、本 helper は topRisk[0] を返す
+ *   - 空 items / 全 score 0 (= 安全 sprint) → null sentinel (= caller は alert 非表示判断)
+ *   - topRisk[0] が score 0 なら null 扱い (= 「リスクある item は無し」 → 表示しない)
+ *
+ * 既存 helper との関係:
+ *   - `formatSprintRiskBoardJa`: top 2 を `/` で連結 (= 詳細 chip 文言)
+ *   - `summary.topRisk`: top N 配列 (= widget の table)
+ *   - 本 helper: 単一 最重 item (= 1 chip alert / Slack 1 行)
+ */
+export function pickRiskiestItem<T extends RiskBoardItemFields>(
+  summary: SprintRiskBoardSummary<T>,
+): RiskBoardEntry<T> | null {
+  const top = summary.topRisk[0]
+  if (!top || top.riskScore === 0) return null
+  return top
+}
+
+/**
  * iter958 basics: 最も負荷の高い 1 assignee を抽出。
  *
  * sprint planning で「最初に救済する 1 人」を決めるための pure helper。
