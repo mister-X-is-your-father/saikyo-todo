@@ -629,6 +629,7 @@ function SprintCard({
                     }
                     aria-invalid={isInvalidDateRange(editStart, editEnd) || undefined}
                     className="min-h-11 text-xs"
+                    enterKeyHint="next"
                     data-testid={`sprint-edit-start-${sprint.id}`}
                   />
                 </div>
@@ -654,6 +655,7 @@ function SprintCard({
                     }
                     aria-invalid={isInvalidDateRange(editStart, editEnd) || undefined}
                     className="min-h-11 text-xs"
+                    enterKeyHint="send"
                     data-testid={`sprint-edit-end-${sprint.id}`}
                   />
                 </div>
