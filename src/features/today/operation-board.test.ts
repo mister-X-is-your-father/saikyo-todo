@@ -7,6 +7,7 @@ import {
   dayOffsetISO,
   dueTimeMinutes,
   eisenhowerScore,
+  formatOperationBoardHeadlineJa,
   isItemActive,
 } from './operation-board'
 
@@ -249,5 +250,55 @@ describe('buildOperationBoard', () => {
   it('recommended が null になる (候補無し)', () => {
     const r = buildOperationBoard([mk({ id: 'future', scheduledFor: '2026-05-10' })], TODAY)
     expect(r.recommended).toBeNull()
+  })
+})
+
+describe('formatOperationBoardHeadlineJa (iter963)', () => {
+  it('全 0 → 「全て片付き済」 sentinel', () => {
+    const r = buildOperationBoard([], TODAY)
+    expect(formatOperationBoardHeadlineJa(r)).toBe(
+      '全て片付き済 (今日の MUST / overdue / 推奨なし)',
+    )
+  })
+
+  it('MUST 3 + overdue 2 + recommended (estimate 30) → 3 軸 連結', () => {
+    const items: Item[] = [
+      mk({ id: 'm1', isMust: true, scheduledFor: TODAY, description: '見積: 30分' }),
+      mk({ id: 'm2', isMust: true, scheduledFor: TODAY }),
+      mk({ id: 'm3', isMust: true, dueDate: TODAY }),
+      mk({ id: 'o1', dueDate: '2026-04-20' }),
+      mk({ id: 'o2', dueDate: '2026-04-25' }),
+    ]
+    const r = buildOperationBoard(items, TODAY)
+    const line = formatOperationBoardHeadlineJa(r)
+    expect(line).toContain('今日 MUST 3')
+    expect(line).toContain('overdue 2')
+    expect(line).toContain('推奨:')
+    expect(line).toContain(' / ')
+  })
+
+  it('MUST のみ → MUST + 推奨 (overdue 軸は省略)', () => {
+    const items: Item[] = [mk({ id: 'm1', isMust: true, scheduledFor: TODAY })]
+    const r = buildOperationBoard(items, TODAY)
+    const line = formatOperationBoardHeadlineJa(r)
+    expect(line).toContain('今日 MUST 1')
+    expect(line).not.toContain('overdue')
+    expect(line).toContain('推奨:')
+  })
+
+  it('overdue のみ (= MUST なし + 推奨は overdue になる)', () => {
+    const items: Item[] = [mk({ id: 'o1', dueDate: '2026-04-20' })]
+    const r = buildOperationBoard(items, TODAY)
+    const line = formatOperationBoardHeadlineJa(r)
+    expect(line).toContain('overdue 1')
+    expect(line).toContain('推奨:')
+  })
+
+  it('recommended に estimate なし → 「(見積 X 分)」 省略', () => {
+    const items: Item[] = [mk({ id: 'm1', isMust: true, scheduledFor: TODAY, description: '' })]
+    const r = buildOperationBoard(items, TODAY)
+    const line = formatOperationBoardHeadlineJa(r)
+    expect(line).toContain('推奨:')
+    expect(line).not.toContain('見積')
   })
 })

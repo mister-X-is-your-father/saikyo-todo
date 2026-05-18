@@ -169,5 +169,32 @@ export function buildOperationBoard(items: Item[], today: string): OperationBoar
   }
 }
 
+/**
+ * iter963 basics: 「今日の作戦盤」 headline を 1 行 ja-JP に整形 (AI 朝 brief / Slack daily digest 用)。
+ *
+ * iter521 buildOperationBoard の summary を「最初に伝える 1 行」 に圧縮する高 level helper。
+ * mustToday / overdue / recommended の 3 軸を順に並べ、0 件軸は省略 (= 視覚 noise 削減)。
+ *
+ * 出力例:
+ *   - '今日 MUST 3 / overdue 2 / 推奨: 「タスクX」 (見積 30 分)'  (全 3 軸あり + 推奨に estimate)
+ *   - '今日 MUST 3 / 推奨: 「タスクX」'                          (overdue 0、estimate なし)
+ *   - 'overdue 5 件'                                              (MUST 0、推奨 0)
+ *   - '全て片付き済 (今日の MUST / overdue / 推奨なし)'           (全 0)
+ *
+ * formatSprintRiskBoardAlertJa (iter962) と並ぶ「最初に伝える 1 行」 pattern。
+ */
+export function formatOperationBoardHeadlineJa(summary: OperationBoardSummary): string {
+  const parts: string[] = []
+  if (summary.mustToday.count > 0) parts.push(`今日 MUST ${summary.mustToday.count}`)
+  if (summary.overdue.total > 0) parts.push(`overdue ${summary.overdue.total}`)
+  if (summary.recommended !== null) {
+    const est = extractEstimateMinutes(summary.recommended.description)
+    const estPart = est !== undefined ? ` (見積 ${est} 分)` : ''
+    parts.push(`推奨: 「${summary.recommended.title}」${estPart}`)
+  }
+  if (parts.length === 0) return '全て片付き済 (今日の MUST / overdue / 推奨なし)'
+  return parts.join(' / ')
+}
+
 // 内部 helper を test しやすくするため named export
 export { dayOffsetISO, dueTimeMinutes, eisenhowerScore }
