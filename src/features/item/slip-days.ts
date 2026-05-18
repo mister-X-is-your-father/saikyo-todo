@@ -21,6 +21,7 @@
 
 import { dueDateEndOfDayMs, MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { formatTitleDaysListJa } from '@/lib/format-list'
+import { round1 } from '@/lib/round-decimal'
 
 import { bucketByPriorityWith, formatPriorityBucketsLabeled, type PriorityKey } from './priority'
 
@@ -52,10 +53,7 @@ export interface ComputeSlipDaysOptions {
 const EMPTY: SlipDaysStats = { count: 0, avgDays: null, medianDays: null, maxDays: null }
 
 // iter360 refactor: dueDateEndOfDayMs は lib/date/iso.ts に集約。
-
-function round1(n: number): number {
-  return Math.round(n * 10) / 10
-}
+// iter955 refactor: round1 は lib/round-decimal.ts に集約。
 
 export function computeSlipDays<T extends SlipDaysFields>(
   items: readonly T[],

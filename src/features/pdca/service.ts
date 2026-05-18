@@ -22,6 +22,7 @@ import { items } from '@/lib/db/schema'
 import { withUserDb } from '@/lib/db/scoped-client'
 import { ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
+import { round1 } from '@/lib/round-decimal'
 
 export interface PdcaSummary {
   /** 集計対象期間 (ISO YYYY-MM-DD) */
@@ -142,9 +143,9 @@ export const pdcaService = {
           act: actCount,
         },
         leadTimeDays: {
-          avg: Math.round(avg * 10) / 10,
-          p50: Math.round(p50 * 10) / 10,
-          p95: Math.round(p95 * 10) / 10,
+          avg: round1(avg),
+          p50: round1(p50),
+          p95: round1(p95),
           n: leadTimes.length,
         },
         daily: dailyArr,

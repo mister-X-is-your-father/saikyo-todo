@@ -19,6 +19,7 @@
 import { z } from 'zod'
 
 import { extractFirstJsonObject } from '@/lib/json/extract-first-object'
+import { round1 } from '@/lib/round-decimal'
 
 export const StructuredPlanStepSchema = z.object({
   /** subtask の title (1-200 文字) */
@@ -367,14 +368,13 @@ export function hasParallelOpportunity(plan: NormalizedStructuredPlan): boolean 
  * 用途: AI plan 受信時の chip 「並列化で 1.5x 短縮可」、Slack 通知の優先度判定。
  * `hasParallelOpportunity` の数値版 (= boolean だけでは「どれくらい速くなるか」が出ない)。
  *
- * 計算精度: 浮動小数 (Math.round(x * 10) / 10 で 1 桁丸めて返す、test 安定)。
+ * 計算精度: 共通 `round1` (lib/round-decimal) で 1 桁丸めて返す、test 安定。
  */
 export function computePlanSpeedupRatio(plan: NormalizedStructuredPlan): number | null {
   if (plan.steps.length === 0) return null
   const critical = computePlanCriticalPathMin(plan)
   if (critical === null || critical === 0) return null
-  const ratio = plan.totalEstMin / critical
-  return Math.round(ratio * 10) / 10
+  return round1(plan.totalEstMin / critical)
 }
 
 /**

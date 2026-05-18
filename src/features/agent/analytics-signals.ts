@@ -29,7 +29,7 @@
  * 揃える utility。
  */
 
-import { type ChipTone, formatToneCountsJa } from '@/lib/ui/chip-tone'
+import { type ChipTone, countItemsByTone, formatToneCountsJa } from '@/lib/ui/chip-tone'
 
 import { type DueHitRateStats, dueHitRateToBriefSignal } from '@/features/item/due-hit-rate'
 import { type WorkspaceMomentum, workspaceMomentumToBriefSignal } from '@/features/item/momentum'
@@ -185,25 +185,16 @@ export function formatAnalyticsSignalsLineJa(signals: AnalyticsSignals): string 
  * `countItemsByTone` (lib/ui/chip-tone) の AnalyticsSignals 特化版 (= getTone callback の
  * boilerplate を caller が書かなくて済む)。0 signal 入力 → 全 0 の Record (= UI 側で「記録なし」分岐可)。
  *
+ * iter955 refactor: 内部実装を共通 `countItemsByTone` に委譲 (forEach 手書きを排除、
+ * tone 0 初期化の責務を共通 helper に集約)。出力 shape は不変。
+ *
  * 既存 helper との関係:
  *   - `analyticsSignalsToArray`: null 除去 + 表示順整列 (chip 個別 render 用)
  *   - `formatAnalyticsSignalsLineJa`: 全 signal text を `/` 連結 (= 個別 text 並び)
  *   - 本 helper: tone 別 件数集計 (= signal の severity distribution、headline 用)
  */
 export function countAnalyticsSignalsByTone(signals: AnalyticsSignals): Record<ChipTone, number> {
-  const counts: Record<ChipTone, number> = {
-    danger: 0,
-    urgent: 0,
-    warn: 0,
-    info: 0,
-    idle: 0,
-    success: 0,
-  }
-  const arr = analyticsSignalsToArray(signals)
-  for (const s of arr) {
-    counts[s.tone] += 1
-  }
-  return counts
+  return countItemsByTone(analyticsSignalsToArray(signals), (s) => s.tone)
 }
 
 /**
