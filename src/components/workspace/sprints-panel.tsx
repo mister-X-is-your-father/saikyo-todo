@@ -979,6 +979,7 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                 }
                 aria-invalid={length < 1 || length > 90 || undefined}
                 inputMode="numeric"
+                enterKeyHint="send"
                 data-testid="sprint-defaults-length"
               />
             </div>
