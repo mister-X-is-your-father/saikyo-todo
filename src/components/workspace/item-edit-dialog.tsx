@@ -734,6 +734,7 @@ function ItemEditDialogInner({
                   aria-describedby="editDod-hint"
                   data-testid="edit-item-dod"
                   autoComplete="off"
+                  enterKeyHint="send"
                   aria-label={
                     dod.length === 0
                       ? 'DoD 完了条件 (MUST item は必須、空欄では保存・done 遷移不可)'
