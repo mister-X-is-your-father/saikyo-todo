@@ -196,5 +196,49 @@ export function formatOperationBoardHeadlineJa(summary: OperationBoardSummary): 
   return parts.join(' / ')
 }
 
+/**
+ * iter964 ai-automation: recommended item の「なぜ推奨されたか」を 1 単語ラベルで返す。
+ *
+ * eisenhowerScore の構成要素から推奨理由を逆引きして、UI chip / SR aria-label / Slack 通知で
+ * 「why」 を 0.5 秒で説明する。formatOperationBoardHeadlineJa (iter963) が 1 行 alert を
+ * 担当するのに対し、本 helper は 「推奨理由の語彙」 を pure に出す (= 「MUST 期限超過」 等の
+ * 1 単語に対応する semantic key を返す、UI 側は label / icon に bind)。
+ *
+ * 4 段階の reason key (優先順、上位が成立すれば上位を採る):
+ *   - 'overdue-must' — overdue + MUST (= 最緊急)
+ *   - 'overdue'      — dueDate < today (MUST なし)
+ *   - 'must-today'   — isMust + (scheduledFor=today or dueDate=today)
+ *   - 'today'        — それ以外で今日 active (= 普通の今日推奨)
+ *
+ * null item → null sentinel。
+ *
+ * 用途:
+ *   - operation-board-widget の推奨行に chip「(MUST 期限超過)」 を sub-label として表示
+ *   - AI brief の「推奨: 「title」 (MUST 期限超過)」 1 行追記
+ *   - Slack 通知の reason 説明
+ */
+export type RecommendedReason = 'overdue-must' | 'overdue' | 'must-today' | 'today'
+
+export function pickRecommendedReason(item: Item | null, today: string): RecommendedReason | null {
+  if (item === null) return null
+  const isOverdue = item.dueDate !== null && item.dueDate !== undefined && item.dueDate < today
+  if (isOverdue && item.isMust) return 'overdue-must'
+  if (isOverdue) return 'overdue'
+  if (item.isMust && (item.scheduledFor === today || item.dueDate === today)) return 'must-today'
+  return 'today'
+}
+
+const RECOMMENDED_REASON_LABEL_JA: Record<RecommendedReason, string> = {
+  'overdue-must': 'MUST 期限超過',
+  overdue: '期限超過',
+  'must-today': '今日の MUST',
+  today: '今日 推奨',
+}
+
+export function formatRecommendedReasonJa(reason: RecommendedReason | null): string {
+  if (reason === null) return '推奨なし'
+  return RECOMMENDED_REASON_LABEL_JA[reason]
+}
+
 // 内部 helper を test しやすくするため named export
 export { dayOffsetISO, dueTimeMinutes, eisenhowerScore }

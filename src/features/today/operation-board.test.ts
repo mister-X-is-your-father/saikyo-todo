@@ -8,7 +8,9 @@ import {
   dueTimeMinutes,
   eisenhowerScore,
   formatOperationBoardHeadlineJa,
+  formatRecommendedReasonJa,
   isItemActive,
+  pickRecommendedReason,
 } from './operation-board'
 
 const TODAY = '2026-04-30'
@@ -300,5 +302,51 @@ describe('formatOperationBoardHeadlineJa (iter963)', () => {
     const line = formatOperationBoardHeadlineJa(r)
     expect(line).toContain('推奨:')
     expect(line).not.toContain('見積')
+  })
+})
+
+describe('pickRecommendedReason / formatRecommendedReasonJa (iter964)', () => {
+  it('null item → null + 「推奨なし」 sentinel', () => {
+    expect(pickRecommendedReason(null, TODAY)).toBeNull()
+    expect(formatRecommendedReasonJa(null)).toBe('推奨なし')
+  })
+
+  it('overdue + MUST → overdue-must', () => {
+    const item = mk({ id: 'om', dueDate: '2026-04-20', isMust: true })
+    expect(pickRecommendedReason(item, TODAY)).toBe('overdue-must')
+    expect(formatRecommendedReasonJa('overdue-must')).toBe('MUST 期限超過')
+  })
+
+  it('overdue + non-MUST → overdue', () => {
+    const item = mk({ id: 'o', dueDate: '2026-04-20' })
+    expect(pickRecommendedReason(item, TODAY)).toBe('overdue')
+    expect(formatRecommendedReasonJa('overdue')).toBe('期限超過')
+  })
+
+  it('MUST + scheduledFor=today → must-today', () => {
+    const item = mk({ id: 'mt', scheduledFor: TODAY, isMust: true })
+    expect(pickRecommendedReason(item, TODAY)).toBe('must-today')
+    expect(formatRecommendedReasonJa('must-today')).toBe('今日の MUST')
+  })
+
+  it('MUST + dueDate=today → must-today', () => {
+    const item = mk({ id: 'mt', dueDate: TODAY, isMust: true })
+    expect(pickRecommendedReason(item, TODAY)).toBe('must-today')
+  })
+
+  it('non-MUST + scheduledFor=today → today (= 普通の今日推奨)', () => {
+    const item = mk({ id: 't', scheduledFor: TODAY, isMust: false })
+    expect(pickRecommendedReason(item, TODAY)).toBe('today')
+    expect(formatRecommendedReasonJa('today')).toBe('今日 推奨')
+  })
+
+  it('overdue + MUST が最優先 (= MUST + scheduledFor=today より勝つ)', () => {
+    const item = mk({
+      id: 'om',
+      dueDate: '2026-04-20', // overdue
+      scheduledFor: TODAY, // today scheduled
+      isMust: true,
+    })
+    expect(pickRecommendedReason(item, TODAY)).toBe('overdue-must')
   })
 })
