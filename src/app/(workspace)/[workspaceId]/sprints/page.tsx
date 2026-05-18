@@ -48,8 +48,8 @@ export default async function SprintsPage({ params }: PageProps) {
         subtitle={`計画 → 稼働 → 完了 · ${user.email ?? ''}`}
         pageActions={
           <Button variant="outline" asChild size="sm" className="min-h-11">
-            <Link href={`/${workspaceId}`}>
-              <span aria-hidden="true">← </span>Workspace
+            <Link href={`/${workspaceId}`} aria-label="Workspace dashboard に戻る">
+              <span aria-hidden="true">← Workspace</span>
             </Link>
           </Button>
         }
