@@ -3,9 +3,11 @@ import { describe, expect, it } from 'vitest'
 import {
   classifyStructuredPlanHint,
   computePlanCriticalPathMin,
+  computePlanSpeedupRatio,
   extractFirstJsonObject,
   formatCriticalPathJa,
   formatLongestStepJa,
+  formatPlanSpeedupRatioJa,
   formatStructuredPlanHintJa,
   formatStructuredPlanJa,
   hasParallelOpportunity,
@@ -566,5 +568,101 @@ describe('hasParallelOpportunity', () => {
         dodSummary: 'x',
       }),
     ).toBe(true)
+  })
+})
+
+describe('computePlanSpeedupRatio', () => {
+  it('空 plan → null (steps 0)', () => {
+    expect(computePlanSpeedupRatio({ steps: [], totalEstMin: 0, dodSummary: 'x' })).toBe(null)
+  })
+
+  it('線形依存 (a→b→c) → 1.0 (= 並列化機会なし)', () => {
+    expect(
+      computePlanSpeedupRatio({
+        steps: [
+          { title: 'a', est_min: 30, dod: '', dependencies: [] },
+          { title: 'b', est_min: 60, dod: '', dependencies: ['a'] },
+          { title: 'c', est_min: 30, dod: '', dependencies: ['b'] },
+        ],
+        totalEstMin: 120,
+        dodSummary: 'x',
+      }),
+    ).toBe(1)
+  })
+
+  it('全並列 (依存無し 3 step、各 30 min) → 3.0', () => {
+    expect(
+      computePlanSpeedupRatio({
+        steps: [
+          { title: 'a', est_min: 30, dod: '', dependencies: [] },
+          { title: 'b', est_min: 30, dod: '', dependencies: [] },
+          { title: 'c', est_min: 30, dod: '', dependencies: [] },
+        ],
+        totalEstMin: 90,
+        dodSummary: 'x',
+      }),
+    ).toBe(3)
+  })
+
+  it('diamond (a=10, b=50, c=80, d=20、critical=a+c+d=110、total=160) → 1.5', () => {
+    // total/critical = 160/110 = 1.4545... → round(14.545)/10 = 14.5/10 = 1.5? 実際 14.545→15 round
+    // 160/110 = 1.45454... × 10 = 14.5454... round → 15 → 1.5
+    expect(
+      computePlanSpeedupRatio({
+        steps: [
+          { title: 'a', est_min: 10, dod: '', dependencies: [] },
+          { title: 'b', est_min: 50, dod: '', dependencies: ['a'] },
+          { title: 'c', est_min: 80, dod: '', dependencies: ['a'] },
+          { title: 'd', est_min: 20, dod: '', dependencies: ['b', 'c'] },
+        ],
+        totalEstMin: 160,
+        dodSummary: 'x',
+      }),
+    ).toBe(1.5)
+  })
+
+  it('cycle → null', () => {
+    expect(
+      computePlanSpeedupRatio({
+        steps: [
+          { title: 'a', est_min: 10, dod: '', dependencies: ['b'] },
+          { title: 'b', est_min: 10, dod: '', dependencies: ['a'] },
+        ],
+        totalEstMin: 20,
+        dodSummary: 'x',
+      }),
+    ).toBe(null)
+  })
+
+  it('1 step のみ → 1.0 (totalEstMin === criticalMin)', () => {
+    expect(
+      computePlanSpeedupRatio({
+        steps: [{ title: 'a', est_min: 60, dod: '', dependencies: [] }],
+        totalEstMin: 60,
+        dodSummary: 'x',
+      }),
+    ).toBe(1)
+  })
+})
+
+describe('formatPlanSpeedupRatioJa', () => {
+  it('null → 「不定 (cycle)」', () => {
+    expect(formatPlanSpeedupRatioJa(null)).toBe('不定 (cycle)')
+  })
+
+  it('1.0 → 「線形 (並列化機会なし)」', () => {
+    expect(formatPlanSpeedupRatioJa(1)).toBe('線形 (並列化機会なし)')
+  })
+
+  it('1.5 → 「並列化で 1.5x 短縮可」', () => {
+    expect(formatPlanSpeedupRatioJa(1.5)).toBe('並列化で 1.5x 短縮可')
+  })
+
+  it('3.0 → 「並列化で 3x 短縮可」 (1 桁丸めなので 3.0 ではなく 3)', () => {
+    expect(formatPlanSpeedupRatioJa(3)).toBe('並列化で 3x 短縮可')
+  })
+
+  it('境界 0.5 (= 理論上不可だが防御): 1.0 以下扱い → 線形', () => {
+    expect(formatPlanSpeedupRatioJa(0.5)).toBe('線形 (並列化機会なし)')
   })
 })

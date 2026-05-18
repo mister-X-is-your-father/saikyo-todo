@@ -356,5 +356,41 @@ export function hasParallelOpportunity(plan: NormalizedStructuredPlan): boolean 
   return critical < plan.totalEstMin
 }
 
+/**
+ * iter944 ai-automation: 並列化による speedup 比 (= totalEstMin / criticalMin) を返す。
+ *
+ * - 1.0 = 線形 (= 並列化機会なし)
+ * - 2.0 = 並列で半分の時間
+ * - N.0 = 全 N step が同時並列可能 (全 step 独立 / diamond の理想形)
+ * - null = cycle (criticalMin null) もしくは steps 空
+ *
+ * 用途: AI plan 受信時の chip 「並列化で 1.5x 短縮可」、Slack 通知の優先度判定。
+ * `hasParallelOpportunity` の数値版 (= boolean だけでは「どれくらい速くなるか」が出ない)。
+ *
+ * 計算精度: 浮動小数 (Math.round(x * 10) / 10 で 1 桁丸めて返す、test 安定)。
+ */
+export function computePlanSpeedupRatio(plan: NormalizedStructuredPlan): number | null {
+  if (plan.steps.length === 0) return null
+  const critical = computePlanCriticalPathMin(plan)
+  if (critical === null || critical === 0) return null
+  const ratio = plan.totalEstMin / critical
+  return Math.round(ratio * 10) / 10
+}
+
+/**
+ * iter944 ai-automation: speedup ratio を chip 文言に整形。
+ *   '並列化で 2.0x 短縮可'   (ratio > 1.0)
+ *   '線形 (並列化機会なし)'  (ratio === 1.0)
+ *   '不定 (cycle)'           (ratio === null)
+ *
+ * 1.0 ぴったり (= 線形) と それ以外 を区別。1 桁丸めで「1.0x」 のような無意味表示を避ける
+ * (= 1.0 は「線形」、>1.0 のみ「Nx 短縮可」)。
+ */
+export function formatPlanSpeedupRatioJa(ratio: number | null): string {
+  if (ratio === null) return '不定 (cycle)'
+  if (ratio <= 1.0) return '線形 (並列化機会なし)'
+  return `並列化で ${ratio}x 短縮可`
+}
+
 // 内部 helper を test しやすく named export
 export { extractFirstJsonObject }
