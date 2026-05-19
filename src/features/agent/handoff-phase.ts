@@ -133,6 +133,46 @@ export function getHandoffPhaseDescriptor(phase: AiHandoffPhase): PhaseDescripto
 }
 
 /**
+ * iter1004 ai-automation: ユーザ side action 待ち phase か判定する pure predicate。
+ *
+ * true: phase ∈ { pending-handoff, plan-ready-for-review, review-requested }
+ *   = AI が user に処理を返した状態。`descriptor.primaryActionLabel != null` かつ
+ *     `no-ai` を除外したもの (= 「AI workflow 内で user に handoff されている」)
+ * false: それ以外
+ *   - no-ai      = AI workflow 外 (= 人間担当のみ、descriptor は「AI に任せる」を出すが
+ *                  「待ち」 ではなく初期状態)
+ *   - in-execution = AI 実行中、user は待つだけ
+ *   - completed  = cycle 完了
+ *
+ * 用途: dashboard 「AI handoff 待ち N 件」 filter / Slack 通知「あなたの操作待ち」 chip /
+ * Backlog 「Plan 確認 + Review 待ち」 集計。
+ */
+export function isHandoffWaitingForUser(phase: AiHandoffPhase): boolean {
+  return (
+    phase === 'pending-handoff' || phase === 'plan-ready-for-review' || phase === 'review-requested'
+  )
+}
+
+/**
+ * iter1004 ai-automation: AI workflow 進行中 phase か判定する pure predicate。
+ *
+ * true: phase ∈ { pending-handoff, plan-ready-for-review, in-execution, review-requested }
+ *   = AI が関わっている item (= no-ai / completed 以外)
+ * false:
+ *   - no-ai      = 人間担当のみ (= AI workflow 外)
+ *   - completed  = cycle 終了 (= AI も人間も「やること」 が無い)
+ *
+ * 用途: dashboard 「AI が今関わっている item 数」 / Backlog 「AI workflow 中」 filter /
+ * Sprint plan「AI cycle 中の item 抜く / 残す」 集計。
+ *
+ * `isHandoffWaitingForUser` との差分: `isHandoffActive` は in-execution を含む
+ * (= AI 実行中も active)、`isHandoffWaitingForUser` は user action 必要なものだけ。
+ */
+export function isHandoffActive(phase: AiHandoffPhase): boolean {
+  return phase !== 'no-ai' && phase !== 'completed'
+}
+
+/**
  * iter538 ai-automation polish: AI handoff phase の 1 行 status (chip aria-label /
  * AI prompt / Slack 通知 用)。
  *   '人間担当 — AssigneePicker で AI を選ぶと「AI に任せた」モードに切替'

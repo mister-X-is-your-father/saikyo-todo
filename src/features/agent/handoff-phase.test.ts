@@ -8,6 +8,8 @@ import {
   getAiHandoffPhase,
   getHandoffPhaseDescriptor,
   type HandoffItemFields,
+  isHandoffActive,
+  isHandoffWaitingForUser,
 } from './handoff-phase'
 
 const HUMAN: AssigneeRef = { actorType: 'user', actorId: 'u1' }
@@ -120,6 +122,67 @@ describe('getHandoffPhaseDescriptor', () => {
   it('severity: completed=ok, no-ai=muted', () => {
     expect(getHandoffPhaseDescriptor('completed').severity).toBe('ok')
     expect(getHandoffPhaseDescriptor('no-ai').severity).toBe('muted')
+  })
+})
+
+describe('isHandoffWaitingForUser', () => {
+  it('user action 必要な 3 phase は true', () => {
+    expect(isHandoffWaitingForUser('pending-handoff')).toBe(true)
+    expect(isHandoffWaitingForUser('plan-ready-for-review')).toBe(true)
+    expect(isHandoffWaitingForUser('review-requested')).toBe(true)
+  })
+
+  it('それ以外の 3 phase は false', () => {
+    expect(isHandoffWaitingForUser('no-ai')).toBe(false)
+    expect(isHandoffWaitingForUser('in-execution')).toBe(false)
+    expect(isHandoffWaitingForUser('completed')).toBe(false)
+  })
+
+  it('全 6 phase で boolean を返す (total coverage)', () => {
+    const phases: AiHandoffPhase[] = [
+      'no-ai',
+      'pending-handoff',
+      'plan-ready-for-review',
+      'in-execution',
+      'review-requested',
+      'completed',
+    ]
+    for (const p of phases) {
+      expect(typeof isHandoffWaitingForUser(p)).toBe('boolean')
+    }
+  })
+})
+
+describe('isHandoffActive', () => {
+  it('AI workflow 4 phase は true', () => {
+    expect(isHandoffActive('pending-handoff')).toBe(true)
+    expect(isHandoffActive('plan-ready-for-review')).toBe(true)
+    expect(isHandoffActive('in-execution')).toBe(true)
+    expect(isHandoffActive('review-requested')).toBe(true)
+  })
+
+  it('no-ai / completed は false', () => {
+    expect(isHandoffActive('no-ai')).toBe(false)
+    expect(isHandoffActive('completed')).toBe(false)
+  })
+
+  it('isHandoffWaitingForUser の superset (in-execution だけ違う)', () => {
+    const phases: AiHandoffPhase[] = [
+      'no-ai',
+      'pending-handoff',
+      'plan-ready-for-review',
+      'in-execution',
+      'review-requested',
+      'completed',
+    ]
+    for (const p of phases) {
+      if (isHandoffWaitingForUser(p)) {
+        expect(isHandoffActive(p)).toBe(true)
+      }
+    }
+    // 差分: in-execution は active だが waiting ではない
+    expect(isHandoffActive('in-execution')).toBe(true)
+    expect(isHandoffWaitingForUser('in-execution')).toBe(false)
   })
 })
 
