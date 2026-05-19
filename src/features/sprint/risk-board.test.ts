@@ -9,11 +9,13 @@ import {
   extractHeavyAssignees,
   formatAssigneeLoadJa,
   formatAssigneeLoadSeverityCountsJa,
+  formatRiskBoardCountsJa,
   formatSprintRiskBoardAlertJa,
   formatSprintRiskBoardJa,
   pickMostLoadedAssignee,
   pickRiskiestItem,
   type RiskBoardItemFields,
+  summarizeRiskBoardCounts,
 } from './risk-board'
 
 const TODAY = '2026-04-30'
@@ -641,5 +643,64 @@ describe('formatSprintRiskBoardAlertJa (iter962)', () => {
     const line = formatSprintRiskBoardAlertJa(summary)
     expect(line).toContain('最重 item:')
     expect(line).not.toContain('最重担当:') // light は除外
+  })
+})
+
+describe('summarizeRiskBoardCounts (iter1006)', () => {
+  it('空 sprint → total=0 / risky=0 / safe=0 / totalRiskScore=0', () => {
+    const summary = buildSprintRiskBoard([], { today: TODAY })
+    const counts = summarizeRiskBoardCounts(summary)
+    expect(counts).toEqual({ total: 0, risky: 0, safe: 0, totalRiskScore: 0 })
+  })
+
+  it('全 safe (score 0) → risky=0 / safe=N', () => {
+    const items = [mk({ id: 'a' }), mk({ id: 'b' })]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    const counts = summarizeRiskBoardCounts(summary)
+    expect(counts.total).toBe(2)
+    expect(counts.risky).toBe(0)
+    expect(counts.safe).toBe(2)
+    expect(counts.totalRiskScore).toBe(0)
+  })
+
+  it('mix: risky 2 件 / safe 1 件 + totalRiskScore 累計', () => {
+    const items = [
+      mk({ id: 'a' }), // 0
+      mk({ id: 'b', isMust: true }), // 15
+      mk({ id: 'c', status: 'blocked' }), // 25
+    ]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    const counts = summarizeRiskBoardCounts(summary)
+    expect(counts.total).toBe(3)
+    expect(counts.risky).toBe(2)
+    expect(counts.safe).toBe(1)
+    expect(counts.totalRiskScore).toBe(40)
+  })
+
+  it('safe = total - risky の invariant', () => {
+    const items = [mk({ id: 'a' }), mk({ id: 'b', isMust: true }), mk({ id: 'c', dueDate: TODAY })]
+    const summary = buildSprintRiskBoard(items, { today: TODAY })
+    const counts = summarizeRiskBoardCounts(summary)
+    expect(counts.safe).toBe(counts.total - counts.risky)
+  })
+})
+
+describe('formatRiskBoardCountsJa (iter1006)', () => {
+  it('total=0 → 「対象なし」', () => {
+    expect(formatRiskBoardCountsJa({ total: 0, risky: 0, safe: 0, totalRiskScore: 0 })).toBe(
+      '対象なし',
+    )
+  })
+
+  it('risky=0 (total > 0) → 「安全 (リスク item なし)」', () => {
+    expect(formatRiskBoardCountsJa({ total: 5, risky: 0, safe: 5, totalRiskScore: 0 })).toBe(
+      '安全 (リスク item なし)',
+    )
+  })
+
+  it('risky > 0 → 「リスク risky/total 件 (合計 score N)」', () => {
+    expect(formatRiskBoardCountsJa({ total: 12, risky: 3, safe: 9, totalRiskScore: 75 })).toBe(
+      'リスク 3/12 件 (合計 score 75)',
+    )
   })
 })

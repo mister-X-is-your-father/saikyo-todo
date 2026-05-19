@@ -314,6 +314,65 @@ export function formatAssigneeLoadSeverityCountsJa(counts: AssigneeLoadSeverityC
 }
 
 /**
+ * iter1006 basics: SprintRiskBoardSummary 全体の count + 合計 score を 1 構造体に集約。
+ *
+ * 既存 `formatSprintRiskBoardJa` は内部で `summary.all.filter((e) => e.riskScore > 0)` の
+ * inline 計算をしており、別 caller (dashboard chip / Slack 通知 / Pre-mortem prompt) が同じ
+ * 集計を re-do していた。本 helper で「リスク量」 を 1 構造体に統合、`countAssigneesBySeverity`
+ * (iter951) と並ぶ「全体 distribution 集約」 pattern の item 軸版。
+ *
+ * 仕様:
+ *   - total: 全 item 件数 (= summary.all.length)
+ *   - risky: riskScore > 0 の件数
+ *   - safe: total - risky (= riskScore === 0 の件数)
+ *   - totalRiskScore: 全 riskScore の合計 (= sprint 全体のリスク量、別 sprint trend 比較用)
+ *
+ * 用途:
+ *   - dashboard 「リスク 5/12 件 (合計 score 120)」 chip
+ *   - Slack 通知 trend「前 sprint vs 今 sprint totalRiskScore Δ」
+ *   - AI Pre-mortem prompt の context (= 全体 risk 量を 1 行で要約)
+ */
+export interface SprintRiskBoardCounts {
+  total: number
+  risky: number
+  safe: number
+  totalRiskScore: number
+}
+
+export function summarizeRiskBoardCounts<T extends RiskBoardItemFields>(
+  summary: SprintRiskBoardSummary<T>,
+): SprintRiskBoardCounts {
+  let totalRiskScore = 0
+  let risky = 0
+  for (const e of summary.all) {
+    totalRiskScore += e.riskScore
+    if (e.riskScore > 0) risky += 1
+  }
+  return {
+    total: summary.all.length,
+    risky,
+    safe: summary.all.length - risky,
+    totalRiskScore,
+  }
+}
+
+/**
+ * iter1006 basics: count summary を chip 文言に整形。
+ *
+ *   '対象なし'                                  (= total=0)
+ *   '安全 (リスク item なし)'                    (= risky=0)
+ *   'リスク 3/12 件 (合計 score 75)'             (= risky > 0)
+ *
+ * `formatSprintRiskBoardJa` (top reason 詳細) / `formatSprintRiskBoardAlertJa`
+ * (最重 1 item / 最重 1 担当) と並ぶ「count 軸」 1 行 summary。
+ */
+export function formatRiskBoardCountsJa(counts: SprintRiskBoardCounts): string {
+  if (counts.total === 0) return '対象なし'
+  if (counts.risky === 0) return '安全 (リスク item なし)'
+  return `リスク ${counts.risky}/${counts.total} 件 (合計 score ${counts.totalRiskScore})`
+}
+
+/**
  * iter959 ai-automation: 最もリスクが高い 1 item を抽出 (= summary.topRisk[0] の null-safe wrapper)。
  *
  * sprint planning で「最初に確認する 1 件」 chip / Pre-mortem prompt の「最重 1 item」 context 用。
