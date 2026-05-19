@@ -11,6 +11,7 @@ import {
   formatStatusCounts,
   getStatusVisual,
   groupItemsByStatus,
+  isTerminalStatus,
   KNOWN_STATUS_KEYS,
   statusCountsToSeverityCounts,
   type StatusIconKey,
@@ -325,5 +326,30 @@ describe('statusCountsToSeverityCounts', () => {
       unknown: 1,
     })
     expect(r.danger).toBe(0)
+  })
+})
+
+describe('isTerminalStatus (iter1015)', () => {
+  it("'done' / 'cancelled' は true", () => {
+    expect(isTerminalStatus('done')).toBe(true)
+    expect(isTerminalStatus('cancelled')).toBe(true)
+  })
+
+  it("'todo' / 'in_progress' / 'blocked' / 'unknown' は false", () => {
+    expect(isTerminalStatus('todo')).toBe(false)
+    expect(isTerminalStatus('in_progress')).toBe(false)
+    expect(isTerminalStatus('blocked')).toBe(false)
+    expect(isTerminalStatus('unknown')).toBe(false)
+  })
+
+  it('null / undefined / 空文字 は false (= 終端と見做さない)', () => {
+    expect(isTerminalStatus(null)).toBe(false)
+    expect(isTerminalStatus(undefined)).toBe(false)
+    expect(isTerminalStatus('')).toBe(false)
+  })
+
+  it('未知 string も false', () => {
+    expect(isTerminalStatus('archived')).toBe(false)
+    expect(isTerminalStatus('paused')).toBe(false)
   })
 })

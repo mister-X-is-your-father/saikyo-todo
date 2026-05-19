@@ -32,6 +32,8 @@
  */
 import { rateToPct } from '@/lib/format-rate'
 
+import { isTerminalStatus } from '@/features/item/status-visual'
+
 export interface TickerItemFields {
   id: string
   /** done 判定: doneAt 非 null or status='done'/cancelled */
@@ -60,7 +62,7 @@ export interface TaskChuteTicker<T extends TickerItemFields> {
 
 function isDone(it: TickerItemFields): boolean {
   if (it.doneAt) return true
-  if (it.status === 'done' || it.status === 'cancelled') return true
+  if (isTerminalStatus(it.status)) return true
   return false
 }
 

@@ -128,6 +128,23 @@ export function normalizeStatus(s: string | null | undefined): StatusKey {
   return 'unknown'
 }
 
+/**
+ * iter1015 refactor: status が「終端」 (= done / cancelled) かを判定する pure predicate。
+ *
+ * 経緯: `status === 'done' || status === 'cancelled'` の inline 比較が src/ 配下 5 箇所で
+ * 重複していた (taskchute/cumulative-remaining / item/overdue-active 2x /
+ * dashboard/weekly-insight / cycle-check-stats 内 等)。本 helper で 1 source of truth に集約、
+ * 「終端 status」 の vocabulary 統一。
+ *
+ *   - 'done' / 'cancelled' → true
+ *   - 'todo' / 'in_progress' / 'blocked' / 'unknown' / null / undefined → false
+ *
+ * 用途: active item filter / overdue active 集計 / 完了済除外 / 終端後の楽観更新 skip 等。
+ */
+export function isTerminalStatus(s: string | null | undefined): boolean {
+  return s === 'done' || s === 'cancelled'
+}
+
 export function groupItemsByStatus<T extends { status: string | null | undefined }>(
   items: readonly T[],
 ): StatusGroups<T> {

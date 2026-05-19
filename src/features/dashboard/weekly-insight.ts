@@ -74,6 +74,8 @@ import { formatUtcISO, parseDateOrNull } from '@/lib/date/iso'
 import { rateToPct } from '@/lib/format-rate'
 import { round1 } from '@/lib/round-decimal'
 
+import { isTerminalStatus } from '@/features/item/status-visual'
+
 const DAY_LABELS_MON_FIRST = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
 const DAY_LABELS_SUN_FIRST = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 
@@ -190,7 +192,7 @@ export function buildWeeklyInsight(
   // (2) overdue spike: 今 active で dueDate < weekStart の数
   let overdueCount = 0
   for (const it of items) {
-    if (it.status === 'done' || it.status === 'cancelled') continue
+    if (isTerminalStatus(it.status)) continue
     if (it.doneAt) continue
     const due = parseDateLike(it.dueDate)
     if (!due) continue

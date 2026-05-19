@@ -33,7 +33,7 @@ import {
   formatPriorityBucketsCountWithDays,
   type PriorityKey,
 } from './priority'
-import { normalizeStatus } from './status-visual'
+import { isTerminalStatus, normalizeStatus } from './status-visual'
 
 export interface OverdueActiveFields {
   status: string | null | undefined
@@ -103,7 +103,7 @@ export function computeOverdueActive<T extends OverdueActiveFields>(
     if (dueMs >= todayMidnightMs) continue // overdue は厳密に dueDate < today
 
     const statusKey = normalizeStatus(it.status)
-    if (statusKey === 'done' || statusKey === 'cancelled') continue
+    if (isTerminalStatus(statusKey)) continue
     // StatusKey = 'todo' | 'in_progress' | 'done' | 'cancelled' | 'blocked' | 'unknown'
     // done / cancelled は除外済、残り 4 種は OverdueActiveStatusKey と互換
     byStatus[statusKey as OverdueActiveStatusKey] += 1
@@ -243,7 +243,7 @@ export function pickOverdueActiveItems<T extends OverdueActiveFields>(
     const dueMs = dueMidnight.getTime()
     if (dueMs >= todayMidnightMs) continue
     const statusKey = normalizeStatus(it.status)
-    if (statusKey === 'done' || statusKey === 'cancelled') continue
+    if (isTerminalStatus(statusKey)) continue
     const overdueDays = Math.floor((todayMidnightMs - dueMs) / MS_PER_DAY)
     enriched.push({ entry: { item: it, overdueDays }, index: i })
   }
