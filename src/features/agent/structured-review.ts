@@ -19,6 +19,7 @@
 import { z } from 'zod'
 
 import { extractFirstJsonObject } from '@/lib/json/extract-first-object'
+import { round2 } from '@/lib/round-decimal'
 
 export const ChecklistStatusSchema = z.enum(['ok', 'warn', 'fail'])
 export type ChecklistStatus = z.infer<typeof ChecklistStatusSchema>
@@ -205,6 +206,52 @@ export function formatTopImprovementJa(improvement: Improvement | null): string 
   const truncated =
     improvement.title.length > 80 ? `${improvement.title.slice(0, 79)}…` : improvement.title
   return `${sevGlyph} 優先改善: ${truncated} [${improvement.severity}]`
+}
+
+/**
+ * iter1002 ai-automation: review checklist の合格率 (= ok / total) を返す。
+ *
+ * - 1.0 = 全 pass (完璧 review)
+ * - 0.0 = 全部 fail
+ * - 0.5 = 半分 pass (= 不合格、verdict moderate/severe)
+ * - null = checklist 空 (= 評価対象なし、summarizeReview 経由なら schema 上 reject される筈)
+ *
+ * iter944 `computePlanSpeedupRatio` (plan 並列度 metric) と並ぶ「単一 ratio metric」
+ * pattern の review 軸版。fail/warn は distinct 扱いで除外、ok のみカウント。
+ * round2 で 2 桁丸め (= 5/7 → 0.71、3/8 → 0.38 を区別可能)。
+ *
+ * 用途:
+ *   - dashboard 「Review pass率 80%」 progress bar / chip
+ *   - Slack 通知の数値見出し
+ *   - 過去 review との trend 比較 (1 ratio で連続定量化、AI prompt context)
+ */
+export function computeReviewPassRatio(summary: Pick<ReviewSummary, 'byStatus'>): number | null {
+  const total = summary.byStatus.ok + summary.byStatus.warn + summary.byStatus.fail
+  if (total === 0) return null
+  return round2(summary.byStatus.ok / total)
+}
+
+/**
+ * iter1002 ai-automation: pass ratio を chip / Slack 1 行に整形。
+ *   '合格率 100% (5/5、完璧)'
+ *   '合格率 80% (4/5)'
+ *   '合格率 0% (0/3、要全面再 review)'
+ *   '評価なし (checklist 空)'
+ *
+ * 整数 % で見やすく (= ratio * 100 を Math.round)、count breakdown (ok/total) も同行に
+ * 含めて「率 + 件数」両方が即 read-out 可能。0% / 100% は ベタ hint を明示で
+ * SR にも「完璧」「要全面再 review」 が読み取れる。
+ */
+export function formatReviewPassRatioJa(
+  ratio: number | null,
+  summary: Pick<ReviewSummary, 'byStatus'>,
+): string {
+  if (ratio === null) return '評価なし (checklist 空)'
+  const total = summary.byStatus.ok + summary.byStatus.warn + summary.byStatus.fail
+  const pct = Math.round(ratio * 100)
+  if (ratio >= 1.0) return `合格率 100% (${summary.byStatus.ok}/${total}、完璧)`
+  if (ratio <= 0.0) return `合格率 0% (0/${total}、要全面再 review)`
+  return `合格率 ${pct}% (${summary.byStatus.ok}/${total})`
 }
 
 /**

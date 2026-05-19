@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 
 import {
   classifyReviewVerdictHint,
+  computeReviewPassRatio,
   extractFirstJsonObject,
+  formatReviewPassRatioJa,
   formatReviewSummaryJa,
   formatReviewVerdictHintJa,
   formatTopImprovementJa,
@@ -372,6 +374,64 @@ describe('formatTopImprovementJa', () => {
     const out = formatTopImprovementJa({ title: longTitle, rationale: 'r', severity: 'high' })
     expect(out).toContain('…')
     expect(out.length).toBeLessThanOrEqual(120) // glyph + prefix + suffix の余裕込み
+  })
+})
+
+describe('computeReviewPassRatio', () => {
+  it('全 0 → null', () => {
+    expect(computeReviewPassRatio({ byStatus: { ok: 0, warn: 0, fail: 0 } })).toBeNull()
+  })
+
+  it('全 ok → 1.0', () => {
+    expect(computeReviewPassRatio({ byStatus: { ok: 5, warn: 0, fail: 0 } })).toBe(1)
+  })
+
+  it('全 fail → 0', () => {
+    expect(computeReviewPassRatio({ byStatus: { ok: 0, warn: 0, fail: 3 } })).toBe(0)
+  })
+
+  it('mix 4/5 → 0.8', () => {
+    expect(computeReviewPassRatio({ byStatus: { ok: 4, warn: 1, fail: 0 } })).toBe(0.8)
+  })
+
+  it('5/7 → 0.71 (round2 2 桁丸め)', () => {
+    expect(computeReviewPassRatio({ byStatus: { ok: 5, warn: 1, fail: 1 } })).toBe(0.71)
+  })
+
+  it('warn / fail 両方含む total で正規化', () => {
+    expect(computeReviewPassRatio({ byStatus: { ok: 2, warn: 1, fail: 1 } })).toBe(0.5)
+  })
+})
+
+describe('formatReviewPassRatioJa', () => {
+  it('null → 「評価なし (checklist 空)」', () => {
+    expect(formatReviewPassRatioJa(null, { byStatus: { ok: 0, warn: 0, fail: 0 } })).toBe(
+      '評価なし (checklist 空)',
+    )
+  })
+
+  it('100% → 「合格率 100% (5/5、完璧)」', () => {
+    expect(formatReviewPassRatioJa(1, { byStatus: { ok: 5, warn: 0, fail: 0 } })).toBe(
+      '合格率 100% (5/5、完璧)',
+    )
+  })
+
+  it('0% → 「合格率 0% (0/3、要全面再 review)」', () => {
+    expect(formatReviewPassRatioJa(0, { byStatus: { ok: 0, warn: 0, fail: 3 } })).toBe(
+      '合格率 0% (0/3、要全面再 review)',
+    )
+  })
+
+  it('80% → 「合格率 80% (4/5)」 (count breakdown も含む)', () => {
+    expect(formatReviewPassRatioJa(0.8, { byStatus: { ok: 4, warn: 1, fail: 0 } })).toBe(
+      '合格率 80% (4/5)',
+    )
+  })
+
+  it('71% → 整数 % で丸め', () => {
+    expect(formatReviewPassRatioJa(0.71, { byStatus: { ok: 5, warn: 1, fail: 1 } })).toBe(
+      '合格率 71% (5/7)',
+    )
   })
 })
 
