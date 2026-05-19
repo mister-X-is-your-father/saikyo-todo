@@ -85,9 +85,19 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
   // どちらかが loading 中 → 小さい placeholder (主 panel を妨げない)
   if (entriesQ.isLoading || itemsQ.isLoading) {
     return (
-      <Card aria-busy="true" data-testid="estimate-bias-insight-loading">
+      <Card
+        aria-busy="true"
+        data-testid="estimate-bias-insight-loading"
+        role="region"
+        aria-labelledby="estimate-bias-insight-loading-heading"
+      >
         <CardHeader>
-          <CardTitle className="text-base" role="heading" aria-level={2}>
+          <CardTitle
+            id="estimate-bias-insight-loading-heading"
+            className="text-base"
+            role="heading"
+            aria-level={2}
+          >
             見積精度 (直近)
           </CardTitle>
         </CardHeader>
@@ -105,9 +115,18 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
   const tone = TENDENCY_TONE[report.tendency]
 
   return (
-    <Card data-testid="estimate-bias-insight">
+    <Card
+      data-testid="estimate-bias-insight"
+      role="region"
+      aria-labelledby="estimate-bias-insight-heading"
+    >
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base" role="heading" aria-level={2}>
+        <CardTitle
+          id="estimate-bias-insight-heading"
+          className="flex items-center gap-2 text-base"
+          role="heading"
+          aria-level={2}
+        >
           <span>見積精度 (直近)</span>
           <span
             className={`rounded border px-2 py-0.5 text-[11px] ${tone}`}

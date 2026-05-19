@@ -135,9 +135,14 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
 
   return (
     <div className="space-y-4" data-testid={`personal-period-view-${period}`}>
-      <Card>
+      <Card role="region" aria-labelledby={`personal-period-goal-heading-${period}`}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base" role="heading" aria-level={2}>
+          <CardTitle
+            id={`personal-period-goal-heading-${period}`}
+            className="text-base"
+            role="heading"
+            aria-level={2}
+          >
             {periodLabelJa(period)}ゴール ({periodKey})
           </CardTitle>
         </CardHeader>
