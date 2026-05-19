@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
 import type { CombinedHygieneScore } from './combined-hygiene'
-import { formatHygieneAxisFocusJa, pickWeakestHygieneAxis } from './hygiene-axis-focus'
+import {
+  formatHygieneAxisFocusJa,
+  formatHygieneAxisStrongestJa,
+  pickStrongestHygieneAxis,
+  pickWeakestHygieneAxis,
+} from './hygiene-axis-focus'
 
 function score(d: number | null, dod: number | null, desc: number | null): CombinedHygieneScore {
   const rates = [d, dod, desc].filter((r): r is number => r !== null)
@@ -73,5 +78,49 @@ describe('formatHygieneAxisFocusJa', () => {
   it('boundary 30% is treated as neutral (>= 0.3 → neutral)', () => {
     const r = pickWeakestHygieneAxis(score(0.3, null, null))
     expect(formatHygieneAxisFocusJa(r)).toBe('重点軸: 期限 30% — 改善余地あり')
+  })
+})
+
+describe('pickStrongestHygieneAxis (iter1017)', () => {
+  it('全軸 null → null', () => {
+    expect(pickStrongestHygieneAxis(score(null, null, null))).toBeNull()
+  })
+
+  it('単軸有り → その軸', () => {
+    const r = pickStrongestHygieneAxis(score(0.8, null, null))
+    expect(r?.axis).toBe('dueDate')
+    expect(r?.pct).toBe(80)
+  })
+
+  it('最大 rate を返す', () => {
+    const r = pickStrongestHygieneAxis(score(0.5, 0.9, 0.3))
+    expect(r?.axis).toBe('dod')
+    expect(r?.pct).toBe(90)
+  })
+
+  it('同 rate tie は HYGIENE_AXIS_ORDER 順 (dueDate > dod > description)', () => {
+    const r = pickStrongestHygieneAxis(score(0.7, 0.7, 0.7))
+    expect(r?.axis).toBe('dueDate')
+  })
+})
+
+describe('formatHygieneAxisStrongestJa (iter1017)', () => {
+  it('null → 「未完了 0 件 (該当なし)」', () => {
+    expect(formatHygieneAxisStrongestJa(null)).toBe('未完了 0 件 (該当なし)')
+  })
+
+  it('>= 0.7 → 「達成度高め」', () => {
+    const r = pickStrongestHygieneAxis(score(0.9, null, null))
+    expect(formatHygieneAxisStrongestJa(r)).toBe('強み軸: 期限 90% (達成度高め)')
+  })
+
+  it('0.3-0.69 → hint なし', () => {
+    const r = pickStrongestHygieneAxis(score(0.5, null, null))
+    expect(formatHygieneAxisStrongestJa(r)).toBe('強み軸: 期限 50%')
+  })
+
+  it('< 0.3 → 「全軸要改善」', () => {
+    const r = pickStrongestHygieneAxis(score(0.2, null, null))
+    expect(formatHygieneAxisStrongestJa(r)).toBe('強み軸: 期限 20% (全軸要改善)')
   })
 })

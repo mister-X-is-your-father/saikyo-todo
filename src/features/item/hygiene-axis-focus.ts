@@ -78,3 +78,55 @@ export function formatHygieneAxisFocusJa(focus: HygieneAxisFocus | null): string
   if (focus.rate < 0.7) return `重点軸: ${focus.label} ${focus.pct}% — 改善余地あり`
   return `重点軸: ${focus.label} ${focus.pct}% (全軸良好)`
 }
+
+/**
+ * iter1017 ai-automation: Planning hygiene 3 軸の「最強軸」を抽出 (= pickWeakestHygieneAxis
+ * の対称、最高 rate)。
+ *
+ * 用途:
+ *   - dashboard chip 「強み: 期限 90% (= ほぼ全 item に期限あり)」 で達成 highlight (やる気)
+ *   - AI 朝 brief 「強み軸を維持しつつ弱み軸を改善」 のような bi-directional context
+ *   - pm-agent prompt 「team の強み」 context
+ *
+ * 仕様:
+ *   - input: CombinedHygieneScore (iter369)
+ *   - 集計対象: rate !== null (= 該当 item があった軸のみ)
+ *   - 同 rate 同点 → axis 順序 (HYGIENE_AXIS_ORDER) を優先 (deterministic、weakest と同 tiebreak)
+ *   - 全軸 null → null
+ */
+export function pickStrongestHygieneAxis(score: CombinedHygieneScore): HygieneAxisFocus | null {
+  let best: HygieneAxisFocus | null = null
+  for (const axis of HYGIENE_AXIS_ORDER) {
+    const rate =
+      axis === 'dueDate'
+        ? score.dueDateRate
+        : axis === 'dod'
+          ? score.dodRate
+          : score.descriptionRate
+    if (rate === null) continue
+    // 同 rate 同点 → axis 順序 (= 着手依存順、stable iteration) を優先 → strict greater than
+    if (best === null || rate > best.rate) {
+      best = {
+        axis,
+        rate,
+        pct: rateToPct(rate),
+        label: HYGIENE_AXIS_LABEL[axis],
+      }
+    }
+  }
+  return best
+}
+
+/**
+ * iter1017 ai-automation: pickStrongestHygieneAxis の出力を chip 文言に整形。
+ *   '強み軸: 期限 90% (達成度高め)'    (rate >= 0.7)
+ *   '強み軸: 期限 50%'                (0.3..0.7、中庸)
+ *   '強み軸: 期限 25% (全軸要改善)'    (rate < 0.3 = 全軸 weak、強みでも未到達)
+ *   '未完了 0 件 (該当なし)'           (null)
+ */
+export function formatHygieneAxisStrongestJa(focus: HygieneAxisFocus | null): string {
+  if (focus === null) return '未完了 0 件 (該当なし)'
+  if (focus.rate >= 0.7) return `強み軸: ${focus.label} ${focus.pct}% (達成度高め)`
+  if (focus.rate >= 0.3) return `強み軸: ${focus.label} ${focus.pct}%`
+  return `強み軸: ${focus.label} ${focus.pct}% (全軸要改善)`
+}
