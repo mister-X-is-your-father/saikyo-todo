@@ -89,3 +89,51 @@ export const ReorderItemInputSchema = z.object({
   nextSiblingId: z.string().uuid().nullable(),
 })
 export type ReorderItemInput = z.infer<typeof ReorderItemInputSchema>
+
+/**
+ * 連絡待ちモード WT-1 (queue: 連絡待ち WT-1)
+ * GTD Waiting For を時間軸 + 通知 channel で独立管理する jsonb state。
+ * 詳細: ~/.claude/plans/saikyo-waiting-mode-plan.md §2.1
+ */
+export const WaitingForStateSchema = z
+  .object({
+    kind: z.enum(['internal', 'external']),
+    targetUserId: z.string().uuid().nullish(),
+    targetContactId: z.string().uuid().nullish(),
+    targetLabel: z.string().min(1).max(200),
+    requestedAt: z.string().datetime(),
+    reminderCadenceDays: z.number().int().min(1).max(365).nullish(),
+    lastRemindedAt: z.string().datetime().nullish(),
+    slackChannelId: z.string().max(64).nullish(),
+    note: z.string().max(2000).nullish(),
+  })
+  .superRefine((v, ctx) => {
+    if (v.kind === 'internal' && !v.targetUserId) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['targetUserId'],
+        message: 'internal の場合 targetUserId が必要',
+      })
+    }
+    if (v.kind === 'external' && !v.targetContactId) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['targetContactId'],
+        message: 'external の場合 targetContactId が必要',
+      })
+    }
+  })
+export type WaitingForState = z.infer<typeof WaitingForStateSchema>
+
+export const SetWaitingForInputSchema = z.object({
+  id: z.string().uuid(),
+  expectedVersion: z.number().int().nonnegative(),
+  state: WaitingForStateSchema,
+})
+export type SetWaitingForInput = z.infer<typeof SetWaitingForInputSchema>
+
+export const ClearWaitingForInputSchema = z.object({
+  id: z.string().uuid(),
+  expectedVersion: z.number().int().nonnegative(),
+})
+export type ClearWaitingForInput = z.infer<typeof ClearWaitingForInputSchema>

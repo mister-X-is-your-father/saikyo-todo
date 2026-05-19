@@ -64,6 +64,20 @@ export async function clearItemChuteMarksAction(input: {
   return await actionWrap(() => itemService.clearChuteMarks(input))
 }
 
+/**
+ * iter (queue WT-1): 連絡待ち state を set / clear。
+ */
+export async function setItemWaitingForAction(input: unknown): Promise<Result<Item>> {
+  return await actionWrap(() => itemService.setWaitingFor(input))
+}
+
+export async function clearItemWaitingForAction(input: {
+  id: string
+  expectedVersion: number
+}): Promise<Result<Item>> {
+  return await actionWrap(() => itemService.clearWaitingFor(input))
+}
+
 export async function unarchiveItemAction(input: {
   id: string
   expectedVersion: number

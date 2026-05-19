@@ -21,6 +21,7 @@ import {
   bulkUpdateItemStatusAction,
   clearItemBaselineAction,
   clearItemChuteMarksAction,
+  clearItemWaitingForAction,
   createItemAction,
   listItemAssigneesAction,
   listItemsAction,
@@ -34,6 +35,7 @@ import {
   setItemAssigneesAction,
   setItemBaselineAction,
   setItemTagsAction,
+  setItemWaitingForAction,
   softDeleteItemAction,
   toggleCompleteItemAction,
   unarchiveItemAction,
@@ -351,6 +353,31 @@ export function useClearItemChuteMarks(workspaceId: string) {
   return useMutation({
     mutationFn: async (input: { id: string; expectedVersion: number }) =>
       unwrap(await clearItemChuteMarksAction(input)),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
+}
+
+/**
+ * iter (queue WT-1): 連絡待ち state を set。
+ */
+export function useSetItemWaitingFor(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: unknown) => unwrap(await setItemWaitingForAction(input)),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
+}
+
+/** iter (queue WT-1): 連絡待ち state を解除 (返答が来た)。 */
+export function useClearItemWaitingFor(workspaceId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: { id: string; expectedVersion: number }) =>
+      unwrap(await clearItemWaitingForAction(input)),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
     },

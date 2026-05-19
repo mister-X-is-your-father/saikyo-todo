@@ -642,6 +642,71 @@ export const itemService = {
     })
   },
 
+  /**
+   * iter (queue WT-1): 連絡待ち state を set。GTD Waiting For を時間軸 + 通知 channel 統合で管理。
+   * 詳細: ~/.claude/plans/saikyo-waiting-mode-plan.md
+   */
+  async setWaitingFor(input: unknown): Promise<Result<Item>> {
+    const { SetWaitingForInputSchema } = await import('./schema')
+    const parsed = SetWaitingForInputSchema.safeParse(input)
+    if (!parsed.success) return err(new ValidationError('入力内容を確認してください', parsed.error))
+    return await mutateWithGuard<Item>({
+      findById: (tx, id) => itemRepository.findById(tx, id),
+      id: parsed.data.id,
+      notFoundMessage: NOT_FOUND,
+      fn: async (tx, before, user) => {
+        const updated = await itemRepository.updateWithLock(
+          tx,
+          parsed.data.id,
+          parsed.data.expectedVersion,
+          { waitingFor: parsed.data.state as unknown as Record<string, unknown> },
+        )
+        if (!updated) return err(new ConflictError())
+        await recordAudit(tx, {
+          workspaceId: before.workspaceId,
+          actorType: 'user',
+          actorId: user.id,
+          targetType: 'item',
+          targetId: updated.id,
+          action: 'set_waiting_for',
+          before: { waitingFor: before.waitingFor },
+          after: { waitingFor: updated.waitingFor },
+        })
+        return ok(updated)
+      },
+    })
+  },
+
+  /** iter (queue WT-1): 連絡待ち state を解除 (= 返答が来た)。 */
+  async clearWaitingFor(input: { id: string; expectedVersion: number }): Promise<Result<Item>> {
+    if (!input.id) return err(new ValidationError('id 必須'))
+    return await mutateWithGuard<Item>({
+      findById: (tx, id) => itemRepository.findById(tx, id),
+      id: input.id,
+      notFoundMessage: NOT_FOUND,
+      fn: async (tx, before, user) => {
+        if (!before.waitingFor) {
+          return err(new ValidationError('連絡待ち状態ではありません'))
+        }
+        const updated = await itemRepository.updateWithLock(tx, input.id, input.expectedVersion, {
+          waitingFor: null,
+        })
+        if (!updated) return err(new ConflictError())
+        await recordAudit(tx, {
+          workspaceId: before.workspaceId,
+          actorType: 'user',
+          actorId: user.id,
+          targetType: 'item',
+          targetId: updated.id,
+          action: 'clear_waiting_for',
+          before: { waitingFor: before.waitingFor },
+          after: { waitingFor: null },
+        })
+        return ok(updated)
+      },
+    })
+  },
+
   /** Unarchive (アーカイブ復元)。archived_at を NULL に戻す。 */
   async unarchive(input: { id: string; expectedVersion: number }): Promise<Result<Item>> {
     if (!input.id) return err(new ValidationError('id 必須'))

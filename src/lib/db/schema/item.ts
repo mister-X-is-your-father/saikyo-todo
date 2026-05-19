@@ -77,6 +77,13 @@ export const items = pgTable(
     startedAt: timestamp('started_at', { withTimezone: true }),
     completedAt: timestamp('completed_at', { withTimezone: true }),
     /**
+     * iter (queue WT-1): 連絡待ちモード (Waiting For) の状態。
+     * null = 待ちでない、jsonb = WaitingForState ({kind, targetUserId?, targetContactId?,
+     * targetLabel, requestedAt, reminderCadenceDays?, lastRemindedAt?, slackChannelId?, note?})。
+     * 詳細: ~/.claude/plans/saikyo-waiting-mode-plan.md §2.1
+     */
+    waitingFor: jsonb('waiting_for'),
+    /**
      * Phase 5.1: Sprint 割当 (nullable)。Sprint 削除 (cancelled) で外す方針なので
      * `set null` ではなく `restrict` 相当の意図はないが、sprints は cancelled で
      * soft delete 代替なので物理削除は cascade では起きない。`set null` で十分。
