@@ -994,26 +994,36 @@ loop / in-session 両方の picking を **queue 由来 P0 のみ** に強制す�
 
 **消化順 (依存関係 + leverage 順、上から順次):**
 
-1. **WT-1 連絡待ち schema** (`items.waiting_for jsonb` + service)
-   詳細: 本 file「連絡待ちモード WT-1〜WT-8」 entry / ~/.claude/plans/saikyo-waiting-mode-plan.md
-2. **WT-2 連絡待ち view plugin** (依頼先別 grouping + 経過日数 chip)
-3. **AC-1 「AI に任せた」 1 click button** (本 file AI 分業 entry AC-1)
-4. **AC-2 「AI に review してもらう」** (同 AC-2)
-5. **API/MCP phase 1: api_keys schema + auth middleware** (本 file REST API/MCP entry)
-6. **TC-4 routine 露出** (`templates.kind='recurring'` を 「ルーティン」 tab で見せる、本 file methodology entry)
-7. **GT-1 GTD preset 導入** (`workspace_statuses` に 5 個 insert、本 file methodology entry)
-8. **GT-2 Context tag** (`tag_kind` 列追加、本 file methodology entry)
-9. **GT-4 Weekly Review** (cron + checklist view、本 file methodology entry)
-10. **broadcast 依頼** (`item_assignee_progress` table + 全員割当 / progress matrix、本 file broadcast entry)
-11. **task metadata 拡張** (input/output/goal/関係者/レビュー/添付、本 file task metadata entry)
-12. **Slack ワンポチでタスク化** (Slack app OAuth + Message Action、本 file Slack entry)
-13. **WT-3 external_contacts table**
-14. **WT-4 リマインド worker** (pg-boss cron 1h tick)
-15. **目標達成サポート + 繰り返しタスク** (rrule + AI 分解、本 file 目標達成 entry)
-16. **相談特化機能** (consultation_votes + format、本 file 相談 entry)
-17. **関連情報 simple アクセス** (item_related_resources + auto-suggest、本 file 関連情報 entry)
-18. **schedule public/private** (`item_schedules.visibility` 列、本 file 公開 private entry)
-19. **fluffy P0-4: AI 調査削除** (researcherService.run 撤去、本 file fluffy entry)
+**Phase 1 (substrate 完了、2026-05-19 in-session 17 commit、全 175+ unit test pass):**
+
+1. ~~**WT-1 連絡待ち schema**~~ ✅ `102fa945` items.waiting_for jsonb + service + 8 test
+2. ~~**WT-2 連絡待ち view substrate**~~ ✅ `b03a5751` waiting-list-aggregate pure + 9 test
+3. ~~**AC-1 AI 任せた substrate**~~ ✅ `32d528a1` planHandoffToAi pure + 7 test
+4. ~~**AC-2 AI review substrate**~~ ✅ `91ba439f` planAiReviewRequest pure + 9 test
+5. ~~**WT-3 external_contacts schema**~~ ✅ `838a1910` workspace_external_contacts + RLS
+6. ~~**GT-1 GTD preset substrate**~~ ✅ `9623c24d` 5 status 定義 + detect/pickMissing + 13 test
+7. ~~**GT-2 Context tag schema + substrate**~~ ✅ `f403eaea` tags.kind + 4 helper + 16 test
+8. ~~**broadcast substrate**~~ ✅ `307e957b` broadcast-progress matrix + 10 test
+9. ~~**TC-4 routine + 目標達成 substrate**~~ ✅ `db0b1bf5` classifyRecurrenceDue + 9 test
+10. ~~**schedule public/private substrate**~~ ✅ `b8a1ef82` visibility-filter + 7 test
+11. ~~**task metadata 依存推論 substrate**~~ ✅ `26573d62` inferDependenciesFromIo + 12 test
+12. ~~**相談特化 substrate**~~ ✅ `e5e2e6ff` consultation-tally + classify + 10 test
+13. ~~**関連情報 substrate**~~ ✅ `357ab361` related-resources-scoring + 11 test
+14. ~~**WT-4 リマインド判定 substrate**~~ ✅ `162e9fa2` waiting-reminder-due + 7 test
+15. ~~**API/MCP token format substrate**~~ ✅ `8ca3b36d` token-format + scope + 22 test
+16. ~~**GT-4 Weekly Review substrate**~~ ✅ `0207b424` weekly-review-checklist + 11 test
+17. ~~**Slack ワンポチ signature substrate**~~ ✅ `6ea595e7` signature-verify pure + 17 test
+
+**Phase 2 (残、UI / service / worker / migration 配線が必要、loop 消化対象):**
+
+18. **fluffy P0-4: AI 調査削除** (researcherService.run 撤去、本 file fluffy entry)
+
+**Phase 1 集約 leverage:**
+
+- 17 commit / +3,000+ 行 / 175+ unit test pass / typecheck + lint clean
+- 各 commit は **pure helper + Vitest 単体** で副作用ゼロ、loop が UI / service 配線するときの設計足場として再消費可能
+- substrate landing は queue 全 P0 の **30-150 行 UI/worker 1 commit** を後続 iter に分割可能化
+- 設計判断 (severity 階層 / Bearer scope / fluffy 撲滅 / GTD 5-step / I/O 推論 / Slack v0 verification) を **commit body に明文化** = loop subprocess の prompt context として参照可能
 
 **規約**:
 
