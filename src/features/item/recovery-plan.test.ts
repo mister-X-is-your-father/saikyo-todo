@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   buildRecoveryPlan,
+  countRecoveryActionsByKind,
   dayDiffISO,
   formatRecoveryPlanJa,
   formatTopRecoveryActionJa,
@@ -329,6 +330,65 @@ describe('formatTopRecoveryActionJa', () => {
         rationale: 'Y',
       }),
     ).toBe('次の一手: 担当再分配')
+  })
+})
+
+describe('countRecoveryActionsByKind', () => {
+  it('空 actions → 全 kind 0', () => {
+    expect(countRecoveryActionsByKind({ actions: [] })).toEqual({
+      unblock: 0,
+      reassign: 0,
+      split: 0,
+      reschedule: 0,
+      escalate: 0,
+    })
+  })
+
+  it('複数 kind を集計', () => {
+    expect(
+      countRecoveryActionsByKind({
+        actions: [
+          { rank: 1, kind: 'unblock', title: 'X', rationale: 'Y' },
+          { rank: 2, kind: 'reassign', title: 'A', rationale: 'B' },
+          { rank: 3, kind: 'escalate', title: 'E', rationale: 'F' },
+        ],
+      }),
+    ).toEqual({
+      unblock: 1,
+      reassign: 1,
+      split: 0,
+      reschedule: 0,
+      escalate: 1,
+    })
+  })
+
+  it('同 kind が複数あれば加算 (汎用形)', () => {
+    expect(
+      countRecoveryActionsByKind({
+        actions: [
+          { rank: 1, kind: 'split', title: 'X', rationale: 'Y' },
+          { rank: 2, kind: 'split', title: 'A', rationale: 'B' },
+        ],
+      }),
+    ).toEqual({
+      unblock: 0,
+      reassign: 0,
+      split: 2,
+      reschedule: 0,
+      escalate: 0,
+    })
+  })
+
+  it('recoveryActionKindCountsToSeverityCounts と連結可能 (canonical flow)', () => {
+    const plan = {
+      actions: [
+        { rank: 1, kind: 'escalate' as const, title: 'E', rationale: 'F' },
+        { rank: 2, kind: 'split' as const, title: 'X', rationale: 'Y' },
+      ],
+    }
+    const kindCounts = countRecoveryActionsByKind(plan)
+    const sevCounts = recoveryActionKindCountsToSeverityCounts(kindCounts)
+    expect(sevCounts).toEqual({ ok: 0, info: 1, warn: 0, danger: 1, muted: 0 })
   })
 })
 

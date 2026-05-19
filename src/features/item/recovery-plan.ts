@@ -283,3 +283,39 @@ export function formatTopRecoveryActionJa(action: RecoveryAction | null): string
   if (action === null) return '次の一手: なし'
   return `次の一手: ${recoveryActionKindLabelJa(action.kind)}`
 }
+
+/**
+ * iter1003 basics: RecoveryPlan の actions[] を `Record<RecoveryActionKind, number>`
+ * に集約する pure helper。
+ *
+ * 既存 `recoveryActionKindCountsToSeverityCounts` (iter538) が「kind counts → severity counts」
+ * を担当する一方、その input (= kind counts) を生成する helper が無く caller が inline で
+ * `for (const a of plan.actions) counts[a.kind]++` を書く必要があった。本 helper で
+ * canonical flow を完成:
+ *
+ *   const kindCounts = countRecoveryActionsByKind(plan)
+ *   const sevCounts = recoveryActionKindCountsToSeverityCounts(kindCounts)
+ *   formatSeverityCountsJa(sevCounts)
+ *
+ * 仕様:
+ *   - 各 kind の件数 (= 救済 plan 内の出現回数、通常 max 1 件 / kind だが汎用形)
+ *   - 全 kind を 0 で initialize (空欄無し、formatSeverityCountsJa が均一な分布を扱える)
+ *   - isApplicable=false / actions=[] → 全 0
+ *
+ * 用途: dashboard 救済 chip 群、Slack daily digest「救済 action 分布」、AI 朝 brief。
+ */
+export function countRecoveryActionsByKind(
+  plan: Pick<RecoveryPlan, 'actions'>,
+): Record<RecoveryActionKind, number> {
+  const counts: Record<RecoveryActionKind, number> = {
+    unblock: 0,
+    reassign: 0,
+    split: 0,
+    reschedule: 0,
+    escalate: 0,
+  }
+  for (const a of plan.actions) {
+    counts[a.kind] += 1
+  }
+  return counts
+}
