@@ -187,6 +187,64 @@ export const formatWaitingHintJa = makeHintLabelFormatter(
 )
 
 /**
+ * iter1001 basics: 全 waiting item から「最も古い (= 経過日数最大)」 1 件を抽出。
+ *
+ * iter958 `pickMostLoadedAssignee` (risk-board) / iter959 `pickRiskiestItem` /
+ * iter506 `pickTopActor` (audit-activity) / iter487 `pickLongestStep`
+ * (structured-plan) と並ぶ「単一 最重 抽出」 pattern の waiting 軸版。
+ *
+ * 用途:
+ *   - Slack daily digest 「最古は <title> (12 日経過)」 (caller が title 補完)
+ *   - dashboard 「最古 escalation 候補」 chip (= summary の oldestDays に加えて item 参照)
+ *   - WT-7 リマインド worker の「最初に escalate を送る対象」 選定
+ *
+ * 仕様:
+ *   - requestedAt null は除外 (= elapsedWaitingDays が null の item)
+ *   - 同 days は insertion order 先頭 (deterministic、caller が並び順で制御可能)
+ *   - 全 null or 空 → null
+ *   - generic T で item 自体を返却 (= caller の item shape を透過)
+ *
+ * summarizeWaitingItems.oldestDays と相補: 集約値だけでなく item reference 自体が必要な
+ * 場面 (Slack で title 補完 / dashboard で click target 化) を担当。
+ */
+export interface OldestWaitingItem<T extends WaitingItemFields> {
+  item: T
+  days: number
+  severity: Severity
+}
+
+export function pickOldestWaitingItem<T extends WaitingItemFields>(
+  items: readonly T[],
+  now: Date = new Date(),
+): OldestWaitingItem<T> | null {
+  let best: { item: T; days: number } | null = null
+  for (const it of items) {
+    const d = elapsedWaitingDays(it, now)
+    if (d === null) continue
+    if (best === null || d > best.days) {
+      best = { item: it, days: d }
+    }
+  }
+  if (best === null) return null
+  return { item: best.item, days: best.days, severity: waitingElapsedSeverity(best.days) }
+}
+
+/**
+ * iter1001 basics: pickOldestWaitingItem の出力を chip / Slack 通知 1 行 (item 参照なし版)。
+ *   '最古: 12 日経過 (escalate 検討)'   (days >= 7)
+ *   '最古: 3 日経過'                    (days < 7)
+ *   'なし'                              (picked null = 全 requestedAt 不明 or 空)
+ *
+ * caller が title を足す場合は `${formatOldestWaitingDaysJa(picked)} — ${title}` 等で
+ * 接続 (= 本 helper は title 知識を持たない、形式は formatWaitingStatusJa と整合)。
+ */
+export function formatOldestWaitingDaysJa(picked: { days: number } | null): string {
+  if (picked === null) return 'なし'
+  const escalate = picked.days >= 7 ? ' (escalate 検討)' : ''
+  return `最古: ${picked.days} 日経過${escalate}`
+}
+
+/**
  * AI prompt / chip aria-label / Slack 通知用 1 行 waiting status:
  *   '依頼から 5 日経過 (次リマインド 1 日後)'
  *   '依頼から 8 日経過 (escalate 検討)'

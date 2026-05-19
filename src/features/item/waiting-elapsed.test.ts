@@ -3,10 +3,12 @@ import { describe, expect, it } from 'vitest'
 import {
   classifyWaitingHint,
   elapsedWaitingDays,
+  formatOldestWaitingDaysJa,
   formatWaitingHintJa,
   formatWaitingStatusJa,
   formatWaitingSummaryJa,
   nextReminderInDays,
+  pickOldestWaitingItem,
   summarizeWaitingItems,
   waitingElapsedSeverity,
   type WaitingItemFields,
@@ -269,6 +271,64 @@ describe('classifyWaitingHint', () => {
         summary({ total: 1, bySeverity: { ok: 1, warn: 0, danger: 0, muted: 0 } }),
       ),
     ).toBe('mild')
+  })
+})
+
+describe('pickOldestWaitingItem', () => {
+  it('空 → null', () => {
+    expect(pickOldestWaitingItem([], NOW)).toBeNull()
+  })
+
+  it('全 requestedAt null → null', () => {
+    expect(
+      pickOldestWaitingItem([{ requestedAt: null }, { requestedAt: undefined }], NOW),
+    ).toBeNull()
+  })
+
+  it('最大 days を 1 件抽出 + severity bind', () => {
+    const items = [
+      { id: 'a', requestedAt: days(2) }, // 2d ok
+      { id: 'b', requestedAt: days(10) }, // 10d danger
+      { id: 'c', requestedAt: days(5) }, // 5d warn
+    ]
+    const r = pickOldestWaitingItem(items, NOW)
+    expect(r?.item.id).toBe('b')
+    expect(r?.days).toBe(10)
+    expect(r?.severity).toBe('danger')
+  })
+
+  it('null requestedAt は除外して比較', () => {
+    const items = [
+      { id: 'a', requestedAt: null },
+      { id: 'b', requestedAt: days(4) },
+    ]
+    expect(pickOldestWaitingItem(items, NOW)?.item.id).toBe('b')
+  })
+
+  it('同 days は insertion order 先頭 (deterministic)', () => {
+    const items = [
+      { id: 'first', requestedAt: days(5) },
+      { id: 'second', requestedAt: days(5) },
+    ]
+    expect(pickOldestWaitingItem(items, NOW)?.item.id).toBe('first')
+  })
+})
+
+describe('formatOldestWaitingDaysJa', () => {
+  it('null → 「なし」', () => {
+    expect(formatOldestWaitingDaysJa(null)).toBe('なし')
+  })
+
+  it('< 7d → escalate hint なし', () => {
+    expect(formatOldestWaitingDaysJa({ days: 3 })).toBe('最古: 3 日経過')
+  })
+
+  it('>= 7d → escalate hint 付与', () => {
+    expect(formatOldestWaitingDaysJa({ days: 12 })).toBe('最古: 12 日経過 (escalate 検討)')
+  })
+
+  it('境界 (7d ぴったり) も escalate hint 付与', () => {
+    expect(formatOldestWaitingDaysJa({ days: 7 })).toBe('最古: 7 日経過 (escalate 検討)')
   })
 })
 
