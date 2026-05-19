@@ -17,6 +17,7 @@
  * 1 関数で取り出せ、urgency / due-proximity / must-risk と組合わせて proactive な提案
  * (例: "今日 3 件着手可能、うち MUST 1 / 期限切れ 1") が組み立てられる。
  */
+import { formatLocalISO } from '@/lib/date/iso'
 import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 
 import { computeUrgency, type UrgencyFields } from './urgency'
@@ -86,9 +87,6 @@ function startOfDayLocal(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate())
 }
 
-function formatISOLocal(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
+// iter1010 refactor: formatISOLocal (1 callsite に局在) を lib/date/iso.formatLocalISO に統合。
+// 旧 inline 名 (formatISOLocal) を alias で維持 (= caller の sentence-level 差分最小化)。
+const formatISOLocal = formatLocalISO

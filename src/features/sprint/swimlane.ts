@@ -23,7 +23,7 @@
  *  - 開始 / 終了 ISO が不正 / null → null sentinel
  */
 
-import { MS_PER_DAY, parseIsoDateAsLocalMidnight } from '@/lib/date/iso'
+import { formatLocalISO, MS_PER_DAY, parseIsoDateAsLocalMidnight } from '@/lib/date/iso'
 import { round2 } from '@/lib/round-decimal'
 
 export interface SwimlanePeriod {
@@ -133,11 +133,8 @@ export function groupItemsByAssigneeKey<T extends { id: string }>(
   return out
 }
 
-function formatIso(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
+// iter1010 refactor: formatIso (4 callsite に局在) を lib/date/iso.formatLocalISO に統合。
+// 旧 inline 名 (formatIso) を alias で維持 (= caller の sentence-level 差分最小化)。
+const formatIso = formatLocalISO
 
 // iter965 refactor: round2 は lib/round-decimal.ts に集約。

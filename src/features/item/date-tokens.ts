@@ -20,7 +20,7 @@
  *  10. 相対: `+3d` / `+2w`
  */
 
-import { MS_PER_DAY } from '@/lib/date/iso'
+import { formatLocalISO, MS_PER_DAY } from '@/lib/date/iso'
 
 const WEEKDAY_JA: Record<string, number> = {
   日: 0,
@@ -99,12 +99,9 @@ const MONTH_EN: Record<string, number> = {
 const MONTH_EN_PATTERN =
   '(?:january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sept|sep|oct|nov|dec)'
 
-export function isoDate(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
+// iter1010 refactor: 旧 inline 実装 (3 行 padStart) を lib/date/iso.formatLocalISO に集約。
+// public export 名 (isoDate) は test caller 多数 (date-tokens.test.ts ~30+ assertion) のため維持。
+export const isoDate = formatLocalISO
 
 export function addDays(d: Date, n: number): Date {
   const x = new Date(d)

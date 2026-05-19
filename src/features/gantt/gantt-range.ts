@@ -16,6 +16,8 @@
 
 import { addDays, differenceInCalendarDays } from 'date-fns'
 
+import { formatLocalISO } from '@/lib/date/iso'
+
 /** Gantt 行の最小入力 (start/due の Date が必須)。caller 側で `toDate` 通過想定。 */
 export interface GanttRow {
   start: Date
@@ -108,12 +110,6 @@ export function computeMonthBoundaries(days: readonly Date[]): number[] {
  */
 export function formatGanttRangeJa(range: GanttRange | null): string {
   if (range === null) return 'Gantt 範囲なし'
-  const fmt = (d: Date): string => {
-    const y = d.getFullYear()
-    const m = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
-    return `${y}-${m}-${day}`
-  }
   const days = computeTotalDays(range)
-  return `Gantt 範囲: ${fmt(range.start)} 〜 ${fmt(range.end)} (${days} 日間)`
+  return `Gantt 範囲: ${formatLocalISO(range.start)} 〜 ${formatLocalISO(range.end)} (${days} 日間)`
 }
