@@ -81,9 +81,9 @@ export function WorkflowsPanel({ workspaceId }: Props) {
       data-testid="workflows-panel"
       aria-label="Workflow 一覧と新規作成"
     >
-      <Card>
+      <Card role="region" aria-labelledby="workflows-new-heading">
         <CardHeader>
-          <CardTitle className="text-base" role="heading" aria-level={2}>
+          <CardTitle id="workflows-new-heading" className="text-base" role="heading" aria-level={2}>
             新規 Workflow
           </CardTitle>
         </CardHeader>

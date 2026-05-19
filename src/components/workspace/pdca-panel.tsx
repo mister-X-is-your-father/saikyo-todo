@@ -50,10 +50,10 @@ export function PdcaPanel({ workspaceId }: Props) {
   const total = counts.plan + counts.do + counts.check + counts.act
 
   return (
-    <Card data-testid="pdca-panel">
+    <Card data-testid="pdca-panel" role="region" aria-labelledby="pdca-panel-heading">
       <CardHeader>
         <div className="flex items-center justify-between gap-2">
-          <CardTitle className="text-base" role="heading" aria-level={2}>
+          <CardTitle id="pdca-panel-heading" className="text-base" role="heading" aria-level={2}>
             PDCA ({days} 日間)
           </CardTitle>
           <div

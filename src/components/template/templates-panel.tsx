@@ -75,9 +75,9 @@ export function TemplatesPanel({ workspaceId }: Props) {
 
   return (
     <div className="space-y-6" data-testid="templates-panel">
-      <Card>
+      <Card role="region" aria-labelledby="templates-new-heading">
         <CardHeader>
-          <CardTitle className="text-base" role="heading" aria-level={2}>
+          <CardTitle id="templates-new-heading" className="text-base" role="heading" aria-level={2}>
             新規 Template
           </CardTitle>
         </CardHeader>

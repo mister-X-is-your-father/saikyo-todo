@@ -300,9 +300,14 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
   }
 
   return (
-    <Card>
+    <Card role="region" aria-labelledby="integrations-new-source-heading">
       <CardHeader>
-        <CardTitle className="text-base" role="heading" aria-level={2}>
+        <CardTitle
+          id="integrations-new-source-heading"
+          className="text-base"
+          role="heading"
+          aria-level={2}
+        >
           新規 Source
         </CardTitle>
       </CardHeader>
