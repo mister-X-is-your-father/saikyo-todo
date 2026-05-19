@@ -27,6 +27,7 @@
  * AI 不使用、副作用無し、依存無し。pure helper + Vitest 単体 test で網羅。
  */
 import { parseDateOrNull } from '@/lib/date/iso'
+import { rateToPct } from '@/lib/format-rate'
 import { round1 } from '@/lib/round-decimal'
 
 export interface CycleCheckItemFields {
@@ -130,7 +131,7 @@ export function buildCycleCheckStats(
   }
 
   const total = items.length
-  const completionRate = total === 0 ? 0 : Math.round((done / total) * 100)
+  const completionRate = total === 0 ? 0 : rateToPct(done / total)
 
   let leadTimeAvgHours: number | null = null
   let leadTimeMedianHours: number | null = null

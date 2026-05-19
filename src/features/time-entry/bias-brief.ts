@@ -11,6 +11,8 @@
  * 入力 = `EstimateBiasReport` 1 つ。出力は固定 3 要素の文字列配列。
  * 配列にすることで UI 側で `<ul>` / `\n` join / Slack mrkdwn など好みの形に組める。
  */
+import { rateToPct } from '@/lib/format-rate'
+
 import type { EstimateBiasReport } from './bias'
 
 export interface BiasBrief {
@@ -77,7 +79,7 @@ export function formatBiasBriefText(report: EstimateBiasReport): string {
 
 function pct(num: number, denom: number): number {
   if (denom === 0) return 0
-  return Math.round((num / denom) * 100)
+  return rateToPct(num / denom)
 }
 
 function calibrated(estimate: number, factor: number | null): number {

@@ -18,6 +18,7 @@
  */
 import { z } from 'zod'
 
+import { rateToPct } from '@/lib/format-rate'
 import { extractFirstJsonObject } from '@/lib/json/extract-first-object'
 import { round2 } from '@/lib/round-decimal'
 
@@ -248,7 +249,7 @@ export function formatReviewPassRatioJa(
 ): string {
   if (ratio === null) return '評価なし (checklist 空)'
   const total = summary.byStatus.ok + summary.byStatus.warn + summary.byStatus.fail
-  const pct = Math.round(ratio * 100)
+  const pct = rateToPct(ratio)
   if (ratio >= 1.0) return `合格率 100% (${summary.byStatus.ok}/${total}、完璧)`
   if (ratio <= 0.0) return `合格率 0% (0/${total}、要全面再 review)`
   return `合格率 ${pct}% (${summary.byStatus.ok}/${total})`

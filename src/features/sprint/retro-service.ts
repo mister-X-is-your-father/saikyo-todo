@@ -21,6 +21,7 @@ import type { ToolLoopInput } from '@/lib/ai/tool-loop'
 import { items, sprints } from '@/lib/db/schema'
 import { adminDb } from '@/lib/db/scoped-client'
 import { NotFoundError, ValidationError } from '@/lib/errors'
+import { rateToPct } from '@/lib/format-rate'
 import { err, type Result } from '@/lib/result'
 
 import { type PmRunOutput, pmService } from '@/features/agent/pm-service'
@@ -122,9 +123,7 @@ export function buildRetroUserMessage(params: {
   const mustMissed = params.itemSummaries.filter((i) => i.isMust && i.status !== 'done')
 
   const completionRate =
-    params.itemSummaries.length === 0
-      ? 0
-      : Math.round((done.length / params.itemSummaries.length) * 100)
+    params.itemSummaries.length === 0 ? 0 : rateToPct(done.length / params.itemSummaries.length)
 
   const itemList = (label: string, list: ItemSummary[]) => {
     if (list.length === 0) return `${label}: なし`

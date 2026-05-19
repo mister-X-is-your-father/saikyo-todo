@@ -20,6 +20,8 @@
  * を必ず明示してくれ (タイミング依存の flake を避けるため)。
  */
 
+import { rateToPct } from '@/lib/format-rate'
+
 import { addDaysISO, daysBetween, todayISO } from './sprint-date-helpers'
 
 export interface BurndownInput {
@@ -55,10 +57,10 @@ export function computeSprintBurndown(input: BurndownInput): SprintBurndown {
   const totalDays = Math.max(1, daysBetween(input.startDate, input.endDate) + 1)
   const elapsedDays = Math.max(0, Math.min(totalDays, daysBetween(input.startDate, today) + 1))
   const remainingDays = Math.max(0, daysBetween(today, input.endDate))
-  const elapsedPct = Math.round((elapsedDays / totalDays) * 100)
+  const elapsedPct = rateToPct(elapsedDays / totalDays)
   const total = Math.max(0, input.total)
   const done = Math.max(0, input.done)
-  const completionPct = total === 0 ? 0 : Math.round((done / total) * 100)
+  const completionPct = total === 0 ? 0 : rateToPct(done / total)
   const isOnTrack = total === 0 ? true : completionPct >= elapsedPct - 10
   return { totalDays, elapsedDays, remainingDays, elapsedPct, completionPct, isOnTrack }
 }

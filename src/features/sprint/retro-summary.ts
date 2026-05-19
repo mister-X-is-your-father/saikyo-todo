@@ -23,6 +23,8 @@
  *     (本 helper と orthogonal、retro widget は両方を使う)。
  *   - `groupItemsByStatus` も使えるが、本 helper は数値だけ返したいので独自集計。
  */
+import { rateToPct } from '@/lib/format-rate'
+
 import { normalizeStatus } from '@/features/item/status-visual'
 
 export interface SprintRetroItemFields {
@@ -151,7 +153,7 @@ export function buildSprintRetroSummary(
     }
   }
 
-  const completionRate = total === 0 ? 0 : Math.round((breakdown.done / total) * 100)
+  const completionRate = total === 0 ? 0 : rateToPct(breakdown.done / total)
   const planned = total - breakdown.cancelled
   const delivered = breakdown.done
   const delta = delivered - planned

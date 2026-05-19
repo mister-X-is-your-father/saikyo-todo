@@ -28,6 +28,7 @@
 
 import { ISO_DATE_RE, shiftIsoDate } from '@/lib/date/iso'
 import { formatMinutesJa } from '@/lib/format-duration'
+import { rateToPct } from '@/lib/format-rate'
 
 import { safeMinutes } from './safe-minutes'
 
@@ -92,7 +93,7 @@ export function computeWeeklyTimeTrend(
   const deltaMinutes = thisWeekMinutes - priorWeekMinutes
   let deltaPct: number | null = null
   if (priorWeekMinutes > 0) {
-    deltaPct = Math.round((deltaMinutes / priorWeekMinutes) * 100)
+    deltaPct = rateToPct(deltaMinutes / priorWeekMinutes)
   }
 
   let direction: WeeklyTimeDirection

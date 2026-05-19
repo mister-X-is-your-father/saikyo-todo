@@ -12,6 +12,8 @@
  * `{actualMinutes, estimateMinutes}[]` の sample 配列を渡すだけ。
  */
 
+import { rateToPct } from '@/lib/format-rate'
+
 export interface BiasSample {
   actualMinutes: number
   estimateMinutes: number | null
@@ -164,7 +166,7 @@ function clamp(value: number, min: number, max: number): number {
 
 function pct(num: number, denom: number): number {
   if (denom === 0) return 0
-  return Math.round((num / denom) * 100)
+  return rateToPct(num / denom)
 }
 
 /**

@@ -31,6 +31,7 @@
  */
 
 import { formatMinutesJa } from '@/lib/format-duration'
+import { rateToPct } from '@/lib/format-rate'
 import { type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
 export type CapacityLoadStatus = 'free' | 'comfortable' | 'tight' | 'overloaded' | 'unknown'
@@ -94,7 +95,7 @@ export function computeMemberCapacityLoad(
   }
 
   const remainingMinutes = capacityMinutes - usedMinutes
-  const utilizationPct = Math.round((usedMinutes / capacityMinutes) * 100)
+  const utilizationPct = rateToPct(usedMinutes / capacityMinutes)
   const loadStatus: CapacityLoadStatus =
     utilizationPct < 60
       ? 'free'

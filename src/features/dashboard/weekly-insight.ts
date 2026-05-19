@@ -71,6 +71,7 @@ export interface WeeklyInsightOptions {
 }
 
 import { formatUtcISO, parseDateOrNull } from '@/lib/date/iso'
+import { rateToPct } from '@/lib/format-rate'
 import { round1 } from '@/lib/round-decimal'
 
 const DAY_LABELS_MON_FIRST = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
@@ -151,8 +152,7 @@ export function buildWeeklyInsight(
   const prevWeekTotal = byDayPrev.reduce((a, b) => a + b, 0)
   const weekDelta = {
     count: currentWeekTotal - prevWeekTotal,
-    percent:
-      prevWeekTotal === 0 ? null : Math.round((currentWeekTotal / prevWeekTotal) * 100 - 100),
+    percent: prevWeekTotal === 0 ? null : rateToPct(currentWeekTotal / prevWeekTotal) - 100,
   }
 
   // anomaly 検出 (1-3 件、純 algorithm)

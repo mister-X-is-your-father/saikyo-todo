@@ -25,6 +25,7 @@
  *   - `weekly-time-trend.ts` は時間 (= duration minutes)、本 helper は件数 (= done count)
  */
 import { formatLocalISO, MS_PER_DAY, parseDateOrNull, toLocalMidnight } from '@/lib/date/iso'
+import { rateToPct } from '@/lib/format-rate'
 import { type ChipTone } from '@/lib/ui/chip-tone'
 
 import { type AgentBriefSignal } from '@/features/agent/brief-signal'
@@ -115,11 +116,7 @@ export function buildWeeklyCompletionInsight<T extends WeeklyCompletionItemField
 
   const deltaCount = thisWeekTotal - priorWeekTotal
   const deltaPct: number | null =
-    priorWeekTotal === 0
-      ? thisWeekTotal === 0
-        ? 0
-        : null
-      : Math.round((deltaCount / priorWeekTotal) * 100)
+    priorWeekTotal === 0 ? (thisWeekTotal === 0 ? 0 : null) : rateToPct(deltaCount / priorWeekTotal)
 
   let direction: WeeklyCompletionDirection
   if (thisWeekTotal === 0 && priorWeekTotal === 0) {

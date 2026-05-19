@@ -25,6 +25,7 @@
  *   - 全 done (= isComplete) は pctDone === 100 && total > 0
  */
 import { fullPathOf, isPathDescendantOf } from '@/lib/db/ltree-path'
+import { rateToPct } from '@/lib/format-rate'
 
 import { normalizeStatus } from './status-visual'
 
@@ -103,7 +104,7 @@ export function summarizeDescendantsProgress(
   if (total === 0) return EMPTY_RESULT
 
   const denom = total - counts.cancelled
-  const pctDone = denom === 0 ? 0 : Math.round((counts.done / denom) * 100)
+  const pctDone = denom === 0 ? 0 : rateToPct(counts.done / denom)
   return {
     total,
     done: counts.done,
