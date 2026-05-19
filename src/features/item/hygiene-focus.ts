@@ -70,3 +70,33 @@ export function formatHygieneFocusJa(focus: HygieneFocus | null): string {
         : ''
   return `${head}: P${focus.priority} Hygiene ${focus.score}${suffix}`
 }
+
+/**
+ * iter1020 refactor: pickWeakestHygienePriority と対称な「最強 (= 最高 score) priority」 抽出。
+ *
+ * iter1017 `pickStrongestHygieneAxis` (= 3 軸の最強) と並ぶ「最強 priority」 pattern。
+ * dashboard / AI brief で「強み + 弱み」 を bi-directional に出すための pair helper。
+ *
+ * 仕様 (pickWeakestHygienePriority と対称):
+ *   - 集計対象: score !== null + eligibleAxes > 0
+ *   - 同 score 同点 → priority 数値が小さい (= P1 寄り = 重要度高い) を優先 → strict greater than
+ *   - 全 priority が空 → null
+ */
+export function pickStrongestHygienePriority(
+  byPriority: CombinedHygieneByPriority,
+): HygieneFocus | null {
+  let best: HygieneFocus | null = null
+  for (const k of PRIORITY_ORDER) {
+    const s = byPriority[k]
+    if (s.score === null || s.eligibleAxes === 0) continue
+    if (best === null || s.score > best.score) {
+      best = {
+        priority: k,
+        score: s.score,
+        tone: combinedHygieneTone(s),
+        eligibleAxes: s.eligibleAxes,
+      }
+    }
+  }
+  return best
+}

@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest'
 
 import type { CombinedHygieneScore } from './combined-hygiene'
 import type { CombinedHygieneByPriority } from './combined-hygiene-by-priority'
-import { formatHygieneFocusJa, pickWeakestHygienePriority } from './hygiene-focus'
+import {
+  formatHygieneFocusJa,
+  pickStrongestHygienePriority,
+  pickWeakestHygienePriority,
+} from './hygiene-focus'
 
 function score(value: number | null, eligibleAxes = 3): CombinedHygieneScore {
   if (value === null) {
@@ -97,5 +101,31 @@ describe('formatHygieneFocusJa', () => {
   it('formats good tone without suffix', () => {
     const r = pickWeakestHygienePriority(byPriority(80, null, null, null))
     expect(formatHygieneFocusJa(r)).toBe('良好: P1 Hygiene 80')
+  })
+})
+
+describe('pickStrongestHygienePriority (iter1020)', () => {
+  it('全 null → null', () => {
+    expect(pickStrongestHygienePriority(byPriority(null, null, null, null))).toBeNull()
+  })
+
+  it('最高 score の priority を返す', () => {
+    const bp = byPriority(50, 80, 30, 90)
+    const r = pickStrongestHygienePriority(bp)
+    expect(r?.priority).toBe(4)
+    expect(r?.score).toBe(90)
+  })
+
+  it('同 score tie → P1 寄り (priority 数値小) 優先', () => {
+    const bp = byPriority(70, 70, 70, 70)
+    const r = pickStrongestHygienePriority(bp)
+    expect(r?.priority).toBe(1)
+  })
+
+  it('eligibleAxes=0 は除外', () => {
+    const bp = byPriority(null, 50, null, null)
+    const r = pickStrongestHygienePriority(bp)
+    expect(r?.priority).toBe(2)
+    expect(r?.score).toBe(50)
   })
 })
