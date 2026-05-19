@@ -36,7 +36,7 @@
 import { type ChipTone, type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
 import { type AgentBriefSignal } from './brief-signal'
-import { safeUsd } from './cost-safe-usd'
+import { formatUsd, safeUsd } from './cost-safe-usd'
 
 const ISO_DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/
 
@@ -154,12 +154,7 @@ export function computeCostMonthProjection(input: CostMonthProjectionInput): Cos
   }
 }
 
-/** USD を `'$1.23'` (>=1) / `'$0.123'` (<1) / `'$0.00'` (=0) 形式に整形。 */
-function formatUsd(usd: number): string {
-  const safe = Number.isFinite(usd) ? Math.max(0, usd) : 0
-  const decimals = safe < 1 ? 3 : 2
-  return `$${safe.toFixed(decimals)}`
-}
+// iter1022 refactor: 旧 inline formatUsd (= 2 file 重複) を lib/cost-safe-usd.formatUsd に集約。
 
 /**
  * AI 朝 brief / chip 表示用に projection を 1 行 ja-JP 文言で。

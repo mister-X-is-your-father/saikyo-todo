@@ -32,7 +32,7 @@ import {
   analyticsRoleLabelJa,
 } from './analytics-roles'
 import { type AgentBriefSignal } from './brief-signal'
-import { safeUsd } from './cost-safe-usd'
+import { formatUsd, safeUsd } from './cost-safe-usd'
 
 const ISO_MONTH_RE = /^\d{4}-\d{2}$/
 const ISO_DATE_PREFIX_RE = /^\d{4}-\d{2}/
@@ -156,13 +156,7 @@ export function computeMonthlyCostTrend(
   }
 }
 
-/** USD を `'$1.234'` (3 桁固定) / `'$0.01'` 形式に整形。$0 は `'$0.00'`。 */
-function formatUsd(usd: number): string {
-  const safe = Number.isFinite(usd) ? Math.max(0, usd) : 0
-  // 1 USD 未満は 3 桁、それ以上は 2 桁 (人が読みやすく)
-  const decimals = safe < 1 ? 3 : 2
-  return `$${safe.toFixed(decimals)}`
-}
+// iter1022 refactor: 旧 inline formatUsd (= 2 file 重複) を lib/cost-safe-usd.formatUsd に集約。
 
 /**
  * iter484 ai-automation: role 別 (pm / researcher) に this vs prior month trend を

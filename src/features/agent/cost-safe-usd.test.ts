@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest'
 
-import { safeUsd } from './cost-safe-usd'
+import { formatUsd, safeUsd } from './cost-safe-usd'
 
 describe('safeUsd', () => {
   it('finite な正値はそのまま返す', () => {
@@ -24,5 +24,27 @@ describe('safeUsd', () => {
   it('NaN / Infinity は 0 にクランプ', () => {
     expect(safeUsd(NaN)).toBe(0)
     expect(safeUsd(Infinity)).toBe(0)
+  })
+})
+
+describe('formatUsd (iter1022)', () => {
+  it('0 / 負値 / NaN / Infinity → $0.00', () => {
+    expect(formatUsd(0)).toBe('$0.00')
+    expect(formatUsd(-1)).toBe('$0.00')
+    expect(formatUsd(NaN)).toBe('$0.00')
+    expect(formatUsd(Infinity)).toBe('$0.00')
+  })
+
+  it('1 未満は 3 桁小数 ($0.123)', () => {
+    expect(formatUsd(0.123)).toBe('$0.123')
+    expect(formatUsd(0.001)).toBe('$0.001')
+    expect(formatUsd(0.5)).toBe('$0.500')
+  })
+
+  it('1 以上は 2 桁小数 ($1.23)', () => {
+    expect(formatUsd(1)).toBe('$1.00')
+    expect(formatUsd(1.234)).toBe('$1.23')
+    expect(formatUsd(12.5)).toBe('$12.50')
+    expect(formatUsd(123.456)).toBe('$123.46')
   })
 })
