@@ -136,3 +136,45 @@ export const formatNotificationActivityHintJa = makeHintLabelFormatter(
   classifyNotificationActivityHint,
   NOTIFICATION_HINT_LABEL_JA,
 )
+
+/**
+ * iter1009 ai-automation: 最多 type を持つ notification 軸を抽出 (= 「今日の通知は主に何系?」)。
+ *
+ * iter506 `pickTopActor` (audit-activity) と並ぶ「単一 最重 抽出」 pattern の notification
+ * 軸版。groupNotificationsByType の output (= NotificationCountByType) を input にして、
+ * 最多 count の type を返す。
+ *
+ * 仕様:
+ *   - 全 count 0 → null
+ *   - 複数 type が同値 max → NOTIFICATION_TYPE_KEYS の宣言順で先頭 (deterministic、
+ *     heartbeat > mention > invite > sync-failure > unknown)
+ *   - 用途: dashboard chip 「主軸: メンション (12 件)」、Slack 通知の見出し
+ */
+export function pickDominantNotificationType(
+  counts: Readonly<NotificationCountByType>,
+): { type: NotificationTypeKey; count: number } | null {
+  let best: { type: NotificationTypeKey; count: number } | null = null
+  for (const k of NOTIFICATION_TYPE_KEYS) {
+    const c = counts[k]
+    if (c > 0 && (best === null || c > best.count)) {
+      best = { type: k, count: c }
+    }
+  }
+  return best
+}
+
+/**
+ * iter1009 ai-automation: pickDominantNotificationType の出力を chip 文言に整形。
+ *   '通知の主軸: メンション (12 件)'  (= 全 type が non-zero の中で最多)
+ *   '通知の主軸: なし'                 (= picked null = 全 count 0)
+ *
+ * caller (= notification-bell aria-label / dashboard chip / Slack daily digest) は本
+ * 文字列をそのまま埋め込む。type label は `notificationTypeLabel` 経由 (= 既存 ja-JP
+ * vocabulary と完全一致)。
+ */
+export function formatDominantNotificationTypeJa(
+  picked: { type: NotificationTypeKey; count: number } | null,
+): string {
+  if (picked === null) return '通知の主軸: なし'
+  return `通知の主軸: ${notificationTypeLabel(picked.type)} (${picked.count} 件)`
+}

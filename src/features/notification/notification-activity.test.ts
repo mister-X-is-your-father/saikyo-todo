@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   classifyNotificationActivityHint,
+  formatDominantNotificationTypeJa,
   formatNotificationActivityHintJa,
   formatNotificationActivitySummary,
   groupNotificationsByType,
@@ -9,6 +10,7 @@ import {
   type NotificationActivityEntry,
   type NotificationCountByType,
   notificationTypeLabel,
+  pickDominantNotificationType,
 } from './notification-activity'
 
 const N = (
@@ -231,5 +233,59 @@ describe('formatNotificationActivityHintJa', () => {
     expect(formatNotificationActivityHintJa(counts({ heartbeat: 3 }))).toBe('通常')
     expect(formatNotificationActivityHintJa(counts({ mention: 5 }))).toBe('多め')
     expect(formatNotificationActivityHintJa(counts({ 'sync-failure': 1 }))).toBe('異常')
+  })
+})
+
+describe('pickDominantNotificationType (iter1009)', () => {
+  function counts(over: Partial<NotificationCountByType>): NotificationCountByType {
+    return { heartbeat: 0, mention: 0, invite: 0, 'sync-failure': 0, unknown: 0, ...over }
+  }
+
+  it('全 0 → null', () => {
+    expect(pickDominantNotificationType(counts({}))).toBeNull()
+  })
+
+  it('1 type のみ → その type', () => {
+    expect(pickDominantNotificationType(counts({ mention: 5 }))).toEqual({
+      type: 'mention',
+      count: 5,
+    })
+  })
+
+  it('混在: 最多 type を抽出', () => {
+    const c = counts({ heartbeat: 3, mention: 7, invite: 1 })
+    expect(pickDominantNotificationType(c)).toEqual({ type: 'mention', count: 7 })
+  })
+
+  it('同値 tie → NOTIFICATION_TYPE_KEYS 宣言順先頭 (heartbeat > mention)', () => {
+    const c = counts({ heartbeat: 5, mention: 5 })
+    expect(pickDominantNotificationType(c)).toEqual({ type: 'heartbeat', count: 5 })
+  })
+
+  it('count 0 type は skip', () => {
+    // heartbeat=0、mention=2 → mention 採用 (= 0 は最多候補に含まれない)
+    expect(pickDominantNotificationType(counts({ mention: 2 }))).toEqual({
+      type: 'mention',
+      count: 2,
+    })
+  })
+})
+
+describe('formatDominantNotificationTypeJa (iter1009)', () => {
+  it('null → 「通知の主軸: なし」', () => {
+    expect(formatDominantNotificationTypeJa(null)).toBe('通知の主軸: なし')
+  })
+
+  it('mention → ラベル + 件数', () => {
+    expect(formatDominantNotificationTypeJa({ type: 'mention', count: 12 })).toBe(
+      '通知の主軸: メンション (12 件)',
+    )
+  })
+
+  it('sync-failure → ラベル + 件数 (notificationTypeLabel 経由整合)', () => {
+    const out = formatDominantNotificationTypeJa({ type: 'sync-failure', count: 3 })
+    expect(out).toContain('通知の主軸: ')
+    expect(out).toContain('(3 件)')
+    expect(out).toBe(`通知の主軸: ${notificationTypeLabel('sync-failure')} (3 件)`)
   })
 })
