@@ -124,9 +124,9 @@ export function GoalsPanel({ workspaceId }: Props) {
     <div className="space-y-6">
       <WorkspaceModeSelector workspaceId={workspaceId} />
       <TeamContextEditor workspaceId={workspaceId} />
-      <Card>
+      <Card role="region" aria-labelledby="goals-new-heading">
         <CardHeader>
-          <CardTitle className="text-base" role="heading" aria-level={2}>
+          <CardTitle id="goals-new-heading" className="text-base" role="heading" aria-level={2}>
             新規 Goal (Objective)
           </CardTitle>
         </CardHeader>

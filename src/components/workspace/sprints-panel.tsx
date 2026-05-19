@@ -183,9 +183,9 @@ export function SprintsPanel({ workspaceId }: Props) {
     <div className="space-y-6">
       <SprintDefaultsEditor workspaceId={workspaceId} />
 
-      <Card>
+      <Card role="region" aria-labelledby="sprints-new-heading">
         <CardHeader>
-          <CardTitle className="text-base" role="heading" aria-level={2}>
+          <CardTitle id="sprints-new-heading" className="text-base" role="heading" aria-level={2}>
             新規 Sprint
           </CardTitle>
         </CardHeader>
@@ -900,9 +900,13 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
   }
 
   return (
-    <Card data-testid="sprint-defaults-editor">
+    <Card
+      data-testid="sprint-defaults-editor"
+      role="region"
+      aria-labelledby="sprint-defaults-heading"
+    >
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm" role="heading" aria-level={2}>
+        <CardTitle id="sprint-defaults-heading" className="text-sm" role="heading" aria-level={2}>
           Sprint デフォルト (workspace 全体)
         </CardTitle>
       </CardHeader>
