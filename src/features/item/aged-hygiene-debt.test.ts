@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  agedHygieneDebtSeverity,
+  type AgedHygieneDebtStats,
   computeAgedHygieneDebt,
   formatAgedHygieneDebtJa,
+  hasStagnantDebtAlert,
   pickStagnantDebtItems,
 } from './aged-hygiene-debt'
 
@@ -119,5 +122,57 @@ describe('pickStagnantDebtItems', () => {
   it('returns empty array when no debt', () => {
     const items: Item[] = [item({ createdAt: daysAgoIso(45), dueDate: '2026-05-01' })]
     expect(pickStagnantDebtItems(items, TODAY)).toEqual([])
+  })
+})
+
+describe('agedHygieneDebtSeverity (iter1016)', () => {
+  function mkStats(over: Partial<AgedHygieneDebtStats>): AgedHygieneDebtStats {
+    return {
+      totalDebt: 0,
+      byAge: { new: 0, recent: 0, stale: 0, ancient: 0, unknown: 0 },
+      oldestAgeDays: null,
+      stagnantDebtCount: 0,
+      ...over,
+    }
+  }
+
+  it('totalDebt=0 → ok (健全)', () => {
+    expect(agedHygieneDebtSeverity(mkStats({}))).toBe('ok')
+  })
+
+  it('debt あり / 全件新規 (stagnant=0) → info', () => {
+    expect(agedHygieneDebtSeverity(mkStats({ totalDebt: 3, stagnantDebtCount: 0 }))).toBe('info')
+  })
+
+  it('stagnant 1-3 → warn', () => {
+    expect(agedHygieneDebtSeverity(mkStats({ totalDebt: 5, stagnantDebtCount: 1 }))).toBe('warn')
+    expect(agedHygieneDebtSeverity(mkStats({ totalDebt: 5, stagnantDebtCount: 3 }))).toBe('warn')
+  })
+
+  it('stagnant >= 4 → danger', () => {
+    expect(agedHygieneDebtSeverity(mkStats({ totalDebt: 10, stagnantDebtCount: 4 }))).toBe('danger')
+    expect(agedHygieneDebtSeverity(mkStats({ totalDebt: 10, stagnantDebtCount: 8 }))).toBe('danger')
+  })
+})
+
+describe('hasStagnantDebtAlert (iter1016)', () => {
+  function mkStats(over: Partial<AgedHygieneDebtStats>): AgedHygieneDebtStats {
+    return {
+      totalDebt: 0,
+      byAge: { new: 0, recent: 0, stale: 0, ancient: 0, unknown: 0 },
+      oldestAgeDays: null,
+      stagnantDebtCount: 0,
+      ...over,
+    }
+  }
+
+  it('ok / info は false', () => {
+    expect(hasStagnantDebtAlert(mkStats({}))).toBe(false)
+    expect(hasStagnantDebtAlert(mkStats({ totalDebt: 3, stagnantDebtCount: 0 }))).toBe(false)
+  })
+
+  it('warn / danger は true', () => {
+    expect(hasStagnantDebtAlert(mkStats({ totalDebt: 5, stagnantDebtCount: 2 }))).toBe(true)
+    expect(hasStagnantDebtAlert(mkStats({ totalDebt: 10, stagnantDebtCount: 5 }))).toBe(true)
   })
 })

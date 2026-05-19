@@ -95,3 +95,40 @@ export function pickStagnantDebtItems<T extends AgedHygieneDebtFields>(
   const groups: AgingGroups<T> = groupItemsByAge(debts, today)
   return [...groups.ancient, ...groups.stale]
 }
+
+/**
+ * iter1016 basics: aged-hygiene-debt の severity 4 段分類 (chip tone bind 用)。
+ *
+ * iter944 retroCompletionSeverity / iter1013 cycleCheckSeverity 等と並ぶ
+ * 「4 段 severity 分類」 pattern の aged-hygiene-debt 軸版。
+ *
+ * 仕様:
+ *   - totalDebt === 0 → 'ok' (= debt なし、健全)
+ *   - stagnantDebtCount === 0 → 'info' (= debt あるが全件新規、まだ triage 余裕あり)
+ *   - stagnantDebtCount <= 3 → 'warn' (= 停滞 debt が少数、放置すると悪化)
+ *   - stagnantDebtCount >= 4 → 'danger' (= 停滞 debt が多発、要 sweep)
+ *
+ * 用途:
+ *   - dashboard chip 配色 (= ok/info/warn/danger を SeverityChip に bind)
+ *   - Slack daily digest 「stale debt 状況」 alert
+ *   - AI prompt 「triage 緊急度」 context
+ */
+export type AgedHygieneDebtSeverity = 'ok' | 'info' | 'warn' | 'danger'
+
+export function agedHygieneDebtSeverity(stats: AgedHygieneDebtStats): AgedHygieneDebtSeverity {
+  if (stats.totalDebt === 0) return 'ok'
+  if (stats.stagnantDebtCount === 0) return 'info'
+  if (stats.stagnantDebtCount <= 3) return 'warn'
+  return 'danger'
+}
+
+/**
+ * iter1016 basics: 停滞 debt が「無視できない量 (warn/danger)」 か判定する pure predicate。
+ *
+ * 用途: dashboard 「triage 必要 N 件」 filter / Slack 通知出すか否か gate /
+ * AI prompt の「triage urging」 context 判定。
+ */
+export function hasStagnantDebtAlert(stats: AgedHygieneDebtStats): boolean {
+  const sev = agedHygieneDebtSeverity(stats)
+  return sev === 'warn' || sev === 'danger'
+}
