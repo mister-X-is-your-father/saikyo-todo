@@ -100,6 +100,31 @@ export function formatFreshlyDoneSummary<T extends FreshlyDoneItemFields>(
   return `完了 ${entries.length}: ${parts.join(' / ')}`
 }
 
+/**
+ * iter1021 basics: dashboard 小型 chip / Slack daily digest 用 compact 1 行 (title list 省略)。
+ *
+ * iter791 `formatWorkspaceMomentumCompactJa` (= 内訳省略 compact) と同 pattern の
+ * freshly-done 軸版。詳細 title list (`formatFreshlyDoneSummary`) は dashboard hover や
+ * AI brief 詳細 panel 向け、本 helper は header chip / Slack 通知 1 行向け。
+ *
+ *   '完了 3 件 (直近 7 日)'   (1 件以上)
+ *   '完了 0 件 (直近 7 日)'   (空)
+ *
+ * `thresholdDays` を渡すと sentinel に反映 (= 「直近 14 日」 等)。caller (chip aria-label /
+ * Slack 通知) は本文字列をそのまま埋め込む。
+ *
+ * 用途:
+ *   - dashboard header chip (= 5 文字 chip 内に framing)
+ *   - Slack daily digest 「今週の完了 N 件」 1 行 summary
+ *   - AI prompt 「最近の達成」 数値文脈
+ */
+export function formatFreshlyDoneCompactJa<T extends FreshlyDoneItemFields>(
+  entries: readonly FreshlyDoneItemEntry<T>[],
+  thresholdDays: number = 7,
+): string {
+  return `完了 ${entries.length} 件 (直近 ${thresholdDays} 日)`
+}
+
 // iter305 refactor: parseDateOrNull (lib/date/iso) に集約。
 
 /**

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   computeFreshlyDoneByPriority,
   formatFreshlyDoneByPriorityJa,
+  formatFreshlyDoneCompactJa,
   formatFreshlyDoneSummary,
   type FreshlyDoneItemEntry,
   type FreshlyDoneItemFields,
@@ -203,5 +204,26 @@ describe('computeFreshlyDoneByPriority / formatFreshlyDoneByPriorityJa (iter437)
     expect(formatFreshlyDoneByPriorityJa(computeFreshlyDoneByPriority([]), 14)).toBe(
       '完了 0 件 (直近 14 日)',
     )
+  })
+})
+
+describe('formatFreshlyDoneCompactJa (iter1021)', () => {
+  it('空 → 「完了 0 件 (直近 7 日)」', () => {
+    expect(formatFreshlyDoneCompactJa<FreshlyDoneItemFields>([])).toBe('完了 0 件 (直近 7 日)')
+  })
+
+  it('1 件 → 「完了 1 件 (直近 7 日)」 (title list は省略)', () => {
+    const entries: FreshlyDoneItemEntry<FreshlyDoneItemFields>[] = [
+      {
+        item: { doneAt: new Date(), priority: 1 } as FreshlyDoneItemFields,
+        daysSinceDone: 0,
+        priority: 1,
+      },
+    ]
+    expect(formatFreshlyDoneCompactJa(entries)).toBe('完了 1 件 (直近 7 日)')
+  })
+
+  it('thresholdDays override 反映', () => {
+    expect(formatFreshlyDoneCompactJa<FreshlyDoneItemFields>([], 14)).toBe('完了 0 件 (直近 14 日)')
   })
 })
