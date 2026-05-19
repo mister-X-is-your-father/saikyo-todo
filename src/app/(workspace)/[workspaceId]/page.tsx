@@ -64,28 +64,68 @@ export default async function WorkspacePage({ params }: PageProps) {
               className="flex flex-wrap items-center gap-2"
             >
               <Button variant="outline" asChild size="sm" className="min-h-11">
-                <Link href={`/${workspaceId}/goals`}>Goals</Link>
+                <Link
+                  href={`/${workspaceId}/goals`}
+                  aria-label="Goals: OKR / Goals (Objective + Key Results) ページへ移動"
+                >
+                  Goals
+                </Link>
               </Button>
               <Button variant="outline" asChild size="sm" className="min-h-11">
-                <Link href={`/${workspaceId}/sprints`}>Sprints</Link>
+                <Link
+                  href={`/${workspaceId}/sprints`}
+                  aria-label="Sprints: Sprint 計画 → 稼働 → 完了 ページへ移動"
+                >
+                  Sprints
+                </Link>
               </Button>
               <Button variant="outline" asChild size="sm" className="min-h-11">
-                <Link href={`/${workspaceId}/pdca`}>PDCA</Link>
+                <Link
+                  href={`/${workspaceId}/pdca`}
+                  aria-label="PDCA: Plan / Do / Check / Act + Lead time ページへ移動"
+                >
+                  PDCA
+                </Link>
               </Button>
               <Button variant="outline" asChild size="sm" className="min-h-11">
-                <Link href={`/${workspaceId}/templates`}>Templates</Link>
+                <Link
+                  href={`/${workspaceId}/templates`}
+                  aria-label="Templates: ワークパッケージ定義 ページへ移動"
+                >
+                  Templates
+                </Link>
               </Button>
               <Button variant="outline" asChild size="sm" className="min-h-11">
-                <Link href={`/${workspaceId}/workflows`}>Workflows</Link>
+                <Link
+                  href={`/${workspaceId}/workflows`}
+                  aria-label="Workflows: 自動化ワークフロー (n8n 風) ページへ移動"
+                >
+                  Workflows
+                </Link>
               </Button>
               <Button variant="outline" asChild size="sm" className="min-h-11">
-                <Link href={`/${workspaceId}/integrations`}>API 連携</Link>
+                <Link
+                  href={`/${workspaceId}/integrations`}
+                  aria-label="API 連携: 外部 API (Yamory / カスタム REST) → Item 取込 ページへ移動"
+                >
+                  API 連携
+                </Link>
               </Button>
               <Button variant="outline" asChild size="sm" className="min-h-11">
-                <Link href={`/${workspaceId}/time-entries`}>Time Entries</Link>
+                <Link
+                  href={`/${workspaceId}/time-entries`}
+                  aria-label="Time Entries: 稼働入力 やったこと + 時間を記録 ページへ移動"
+                >
+                  Time Entries
+                </Link>
               </Button>
               <Button variant="outline" asChild size="sm" className="min-h-11">
-                <Link href={`/${workspaceId}/archive`}>Archive</Link>
+                <Link
+                  href={`/${workspaceId}/archive`}
+                  aria-label="Archive: アーカイブ済 Item 一覧 ページへ移動"
+                >
+                  Archive
+                </Link>
               </Button>
               <Button variant="outline" asChild size="sm" className="min-h-11">
                 <Link href="/" aria-label="Workspace 一覧へ戻る">
