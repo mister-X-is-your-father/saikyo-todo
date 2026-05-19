@@ -82,3 +82,32 @@ export const PLAN_COMMENT_MARKER = '🤖 実行計画 (案)'
 export function isPlanComment(commentBody: string): boolean {
   return commentBody.trimStart().startsWith(PLAN_COMMENT_MARKER)
 }
+
+/**
+ * iter1014 ai-automation: AI Review comment の先頭 marker (= handoff-phase.ts の
+ * `hasAiReviewComment` 判定に使う sentinel)。`PLAN_COMMENT_MARKER` (= '🤖 実行計画 (案)')
+ * と対称な「✅ レビュー結果」 marker、AI が item の DoD 達成 / 成果物 review を完了した
+ * 時の comment 先頭に書く。
+ *
+ * getAiHandoffPhase (handoff-phase.ts) は signals.hasAiReviewComment を読むが、その
+ * boolean を作る caller (= item の comment listing を読む service / repository) が
+ * 「何を marker と見做すか」 を 1 文字列で固定するための source of truth。
+ *
+ * 用途:
+ *   - service / repository で comments を走査して isReviewComment で marker 判定
+ *   - UI で AI が出した review summary を folding 表示 (= 先頭 marker 行で identify)
+ *   - Slack 通知「AI レビュー結果が出ました」 経路の sentinel
+ */
+export const REVIEW_COMMENT_MARKER = '✅ レビュー結果'
+
+/**
+ * iter1014 ai-automation: Comment 本文が AI review の comment かを判定。
+ * `isPlanComment` と同 logic (= 先頭 marker、trimStart 許容、別位置 false)。
+ *
+ * getAiHandoffPhase の signals.hasAiReviewComment を組み立てる caller (= comment
+ * listing を持つ service / repository) は `comments.some(c => isReviewComment(c.body))`
+ * で boolean を作れる。
+ */
+export function isReviewComment(commentBody: string): boolean {
+  return commentBody.trimStart().startsWith(REVIEW_COMMENT_MARKER)
+}

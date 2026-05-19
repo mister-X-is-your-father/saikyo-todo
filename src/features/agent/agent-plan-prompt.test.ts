@@ -6,7 +6,9 @@ import { describe, expect, it } from 'vitest'
 import {
   buildPlanGenerationUserMessage,
   isPlanComment,
+  isReviewComment,
   PLAN_COMMENT_MARKER,
+  REVIEW_COMMENT_MARKER,
 } from './agent-plan-prompt'
 
 describe('agent-plan-prompt', () => {
@@ -98,6 +100,37 @@ describe('agent-plan-prompt', () => {
 
     it('PLAN_COMMENT_MARKER は固定値 (UI 側との 一致 sentinel)', () => {
       expect(PLAN_COMMENT_MARKER).toBe('🤖 実行計画 (案)')
+    })
+  })
+
+  describe('isReviewComment (iter1014)', () => {
+    it('先頭 marker 一致 → true', () => {
+      expect(isReviewComment('✅ レビュー結果\n\nDoD は満たしました')).toBe(true)
+    })
+
+    it('先頭 whitespace 許容', () => {
+      expect(isReviewComment('  ✅ レビュー結果\n本文')).toBe(true)
+    })
+
+    it('中間 marker は false (誤検知防止)', () => {
+      expect(isReviewComment('はじめに ✅ レビュー結果 (途中で出てきた)')).toBe(false)
+    })
+
+    it('marker 無し → false', () => {
+      expect(isReviewComment('単なるコメント')).toBe(false)
+    })
+
+    it('空文字は false', () => {
+      expect(isReviewComment('')).toBe(false)
+    })
+
+    it('REVIEW_COMMENT_MARKER は固定値 (UI 側との 一致 sentinel)', () => {
+      expect(REVIEW_COMMENT_MARKER).toBe('✅ レビュー結果')
+    })
+
+    it('plan marker (🤖) との誤判定なし', () => {
+      expect(isReviewComment('🤖 実行計画 (案)\n本文')).toBe(false)
+      expect(isPlanComment('✅ レビュー結果\n本文')).toBe(false)
     })
   })
 })
