@@ -19,9 +19,14 @@ export function TimeEntriesPanel({ workspaceId }: { workspaceId: string }) {
     <div className="space-y-4">
       <EstimateBiasInsight workspaceId={workspaceId} />
       <TopItemsByTimeChip workspaceId={workspaceId} />
-      <Card>
+      <Card role="region" aria-labelledby="time-entries-new-heading">
         <CardHeader>
-          <CardTitle className="text-base" role="heading" aria-level={2}>
+          <CardTitle
+            id="time-entries-new-heading"
+            className="text-base"
+            role="heading"
+            aria-level={2}
+          >
             新規 稼働記録
           </CardTitle>
         </CardHeader>
@@ -30,9 +35,14 @@ export function TimeEntriesPanel({ workspaceId }: { workspaceId: string }) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card role="region" aria-labelledby="time-entries-list-heading">
         <CardHeader>
-          <CardTitle className="text-base" role="heading" aria-level={2}>
+          <CardTitle
+            id="time-entries-list-heading"
+            className="text-base"
+            role="heading"
+            aria-level={2}
+          >
             <span aria-hidden="true">一覧 {q.data ? `(${q.data.length} 件)` : ''}</span>
             <span className="sr-only">{q.data ? `一覧 ${q.data.length} 件` : '一覧'}</span>
           </CardTitle>

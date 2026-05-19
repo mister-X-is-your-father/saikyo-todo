@@ -201,9 +201,14 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         }}
       />
 
-      <Card>
+      <Card role="region" aria-labelledby="items-board-quick-add-heading">
         <CardHeader>
-          <CardTitle className="text-base" role="heading" aria-level={2}>
+          <CardTitle
+            id="items-board-quick-add-heading"
+            className="text-base"
+            role="heading"
+            aria-level={2}
+          >
             新規 Item (クイック追加)
           </CardTitle>
         </CardHeader>
