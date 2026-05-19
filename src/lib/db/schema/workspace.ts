@@ -153,3 +153,39 @@ export type WorkspaceMember = typeof workspaceMembers.$inferSelect
 export type WorkspaceSettings = typeof workspaceSettings.$inferSelect
 export type WorkspaceStatus = typeof workspaceStatuses.$inferSelect
 export type WorkspaceInvitation = typeof workspaceInvitations.$inferSelect
+
+/**
+ * iter (queue WT-3): チーム外の連絡先 (顧客 / 外部 PM / freelancer 等)。
+ * 連絡待ち (`items.waiting_for.kind='external'`) の target として参照される。
+ * 詳細: ~/.claude/plans/saikyo-waiting-mode-plan.md §2.2
+ */
+export const workspaceExternalContacts = pgTable(
+  'workspace_external_contacts',
+  {
+    id: id(),
+    workspaceId: uuid('workspace_id')
+      .notNull()
+      .references(() => workspaces.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    email: text('email'),
+    slackUserId: text('slack_user_id'),
+    role: text('role'),
+    note: text('note'),
+    createdBy: uuid('created_by')
+      .notNull()
+      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    ...mutationMarkers,
+    ...timestamps,
+  },
+  (t) => [
+    index('idx_ws_external_contacts_active')
+      .on(t.workspaceId)
+      .where(sql`deleted_at is null`),
+    index('idx_ws_external_contacts_slack')
+      .on(t.workspaceId, t.slackUserId)
+      .where(sql`deleted_at is null and slack_user_id is not null`),
+  ],
+)
+
+export type WorkspaceExternalContact = typeof workspaceExternalContacts.$inferSelect
+export type WorkspaceExternalContactInsert = typeof workspaceExternalContacts.$inferInsert
