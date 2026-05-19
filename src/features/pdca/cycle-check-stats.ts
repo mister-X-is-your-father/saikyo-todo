@@ -187,5 +187,36 @@ export function formatCycleCheckStatsJa(stats: CycleCheckStats): string {
   )
 }
 
+/**
+ * iter1013 basics: PDCA cycle が「健全なペース」 か「危険」 か 1 行で要約する compact chip。
+ *
+ * 既存 `formatCycleCheckStatsJa` は詳細サマリ (= 完了率 + lead + 遅延 + active overdue) で
+ * 4 軸を 1 行に並べるが、dashboard top の小型 chip では「severity ラベル + 完了率 + total」
+ * の 3 軸だけで十分。本 helper は cycleCheckSeverity と `completionRate / total` を
+ * 短く整形した compact 版。
+ *
+ * 出力例:
+ *   - '進行 80% (4/5)'    (severity='ok' / 'info'、健全)
+ *   - '注意 30% (3/10)'   (severity='warn'、completionRate < 50)
+ *   - '危険 10% (1/10)'   (severity='danger'、completionRate < 25)
+ *   - '空 cycle'           (total=0、まだ item 紐付けなし)
+ *
+ * 用途:
+ *   - PdcaCycleCard header chip (1 chip 5 文字以内目標)
+ *   - Slack daily digest 「進行中 cycle: <title> ${formatCycleCheckCompactJa}」
+ *   - AI prompt 「cycle ヘルス 1 行」 context
+ */
+export function formatCycleCheckCompactJa(stats: CycleCheckStats): string {
+  if (stats.total === 0) return '空 cycle'
+  const sev = cycleCheckSeverity(stats)
+  const headLabel: Record<typeof sev, string> = {
+    ok: '順調',
+    info: '進行',
+    warn: '注意',
+    danger: '危険',
+  }
+  return `${headLabel[sev]} ${stats.completionRate}% (${stats.done}/${stats.total})`
+}
+
 // 内部 helper を test しやすく named export
 export { median, parseDateLike }

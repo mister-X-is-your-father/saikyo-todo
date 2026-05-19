@@ -5,6 +5,7 @@ import {
   type CycleCheckItemFields,
   cycleCheckSeverity,
   type CycleCheckStats,
+  formatCycleCheckCompactJa,
   formatCycleCheckStatsJa,
   median,
   parseDateLike,
@@ -306,5 +307,51 @@ describe('cycleCheckSeverity', () => {
   it('< 25 → danger', () => {
     expect(cycleCheckSeverity(mkStats({ completionRate: 0 }))).toBe('danger')
     expect(cycleCheckSeverity(mkStats({ completionRate: 24 }))).toBe('danger')
+  })
+})
+
+describe('formatCycleCheckCompactJa (iter1013)', () => {
+  function mkStats(over: Partial<CycleCheckStats>): CycleCheckStats {
+    return {
+      total: 5,
+      done: 0,
+      cancelled: 0,
+      inProgressOrTodo: 0,
+      completionRate: 0,
+      leadTimeAvgHours: null,
+      leadTimeMedianHours: null,
+      lateCompletionCount: 0,
+      inFlightOverdueCount: 0,
+      cycleDurationDays: 7,
+      ...over,
+    }
+  }
+
+  it('total=0 → 「空 cycle」', () => {
+    expect(formatCycleCheckCompactJa(mkStats({ total: 0 }))).toBe('空 cycle')
+  })
+
+  it('ok (>= 75%) → 「順調」', () => {
+    expect(formatCycleCheckCompactJa(mkStats({ total: 5, done: 4, completionRate: 80 }))).toBe(
+      '順調 80% (4/5)',
+    )
+  })
+
+  it('info (50-74) → 「進行」', () => {
+    expect(formatCycleCheckCompactJa(mkStats({ total: 4, done: 2, completionRate: 50 }))).toBe(
+      '進行 50% (2/4)',
+    )
+  })
+
+  it('warn (25-49) → 「注意」', () => {
+    expect(formatCycleCheckCompactJa(mkStats({ total: 10, done: 3, completionRate: 30 }))).toBe(
+      '注意 30% (3/10)',
+    )
+  })
+
+  it('danger (< 25) → 「危険」', () => {
+    expect(formatCycleCheckCompactJa(mkStats({ total: 10, done: 1, completionRate: 10 }))).toBe(
+      '危険 10% (1/10)',
+    )
   })
 })
