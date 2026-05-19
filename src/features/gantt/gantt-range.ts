@@ -88,3 +88,32 @@ export function computeMonthBoundaries(days: readonly Date[]): number[] {
   }
   return boundaries
 }
+
+/**
+ * iter1008 basics: GanttRange を ja-JP 1 行に整形 (chip / aria-label / Slack 通知 用)。
+ *
+ *   - null → 'Gantt 範囲なし'
+ *   - 通常 → 'Gantt 範囲: 2026-04-01 〜 2026-05-31 (61 日間)'
+ *
+ * caller (= gantt-view header aria-label / dashboard widget / AI prompt) は本文字列を
+ * そのまま埋め込み可能。`computeTotalDays` を内部呼び出して日数も同行に含める。
+ *
+ * 日付フォーマットは Locale 依存最小化のため ISO `YYYY-MM-DD` 固定 (= `padStart`)。
+ * 時刻 fraction は無視 (= 日付のみ)、`computeTodayX` (時刻精度) との視覚 reference 軸。
+ *
+ * 既存 helper との関係:
+ *   - `computeGanttRange`: rows → range null-able 計算
+ *   - `computeTotalDays`: range → 日数
+ *   - 本 helper: 上記 2 つの output を 1 行 chip 文言に整形 (= UI 直 bind 経路)
+ */
+export function formatGanttRangeJa(range: GanttRange | null): string {
+  if (range === null) return 'Gantt 範囲なし'
+  const fmt = (d: Date): string => {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+  }
+  const days = computeTotalDays(range)
+  return `Gantt 範囲: ${fmt(range.start)} 〜 ${fmt(range.end)} (${days} 日間)`
+}

@@ -10,6 +10,7 @@ import {
   computeMonthBoundaries,
   computeTodayX,
   computeTotalDays,
+  formatGanttRangeJa,
 } from './gantt-range'
 
 const D = (y: number, m: number, d: number) => new Date(y, m - 1, d)
@@ -163,5 +164,31 @@ describe('computeMonthBoundaries', () => {
 
   it('1 件は境界なし (前日比較が無いので)', () => {
     expect(computeMonthBoundaries([D(2026, 4, 15)])).toEqual([])
+  })
+})
+
+describe('formatGanttRangeJa (iter1008)', () => {
+  it('null → 「Gantt 範囲なし」', () => {
+    expect(formatGanttRangeJa(null)).toBe('Gantt 範囲なし')
+  })
+
+  it('通常 range → 「Gantt 範囲: YYYY-MM-DD 〜 YYYY-MM-DD (N 日間)」', () => {
+    const r = computeGanttRange([{ start: D(2026, 4, 1), due: D(2026, 5, 31) }])
+    expect(formatGanttRangeJa(r)).toBe('Gantt 範囲: 2026-03-31 〜 2026-06-01 (63 日間)')
+  })
+
+  it('ISO 形式 padding: 1 月 5 日 → "01-05"', () => {
+    const r: { start: Date; end: Date } = { start: D(2026, 1, 5), end: D(2026, 1, 9) }
+    expect(formatGanttRangeJa(r)).toBe('Gantt 範囲: 2026-01-05 〜 2026-01-09 (5 日間)')
+  })
+
+  it('単一日 (start=end) → 1 日間', () => {
+    const r: { start: Date; end: Date } = { start: D(2026, 4, 10), end: D(2026, 4, 10) }
+    expect(formatGanttRangeJa(r)).toBe('Gantt 範囲: 2026-04-10 〜 2026-04-10 (1 日間)')
+  })
+
+  it('年跨ぎ range も整形可能', () => {
+    const r: { start: Date; end: Date } = { start: D(2025, 12, 30), end: D(2026, 1, 5) }
+    expect(formatGanttRangeJa(r)).toBe('Gantt 範囲: 2025-12-30 〜 2026-01-05 (7 日間)')
   })
 })
