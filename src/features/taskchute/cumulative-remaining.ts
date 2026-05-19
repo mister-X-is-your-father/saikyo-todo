@@ -30,6 +30,7 @@
  *
  * 副作用なし、依存なし。pure helper + Vitest 単体 test で網羅。
  */
+import { rateToPct } from '@/lib/format-rate'
 
 export interface TickerItemFields {
   id: string
@@ -180,6 +181,50 @@ export function formatTickerHeaderJa<T extends TickerItemFields>(
   const unknownPart =
     ticker.estimateUnknownCount > 0 ? ` (${ticker.estimateUnknownCount} 件 見積なし)` : ''
   return `合計 ${total} / 残 ${remaining}${etaPart}${unknownPart}`
+}
+
+/**
+ * iter1012 ai-automation: TaskChute ticker の進捗率 (= done / total estimate) を返す。
+ *
+ * iter1002 `computeReviewPassRatio` / iter944 `computePlanSpeedupRatio` / iter1007
+ * `computeActorConcentration` と並ぶ「単一 ratio metric」 pattern の taskchute 軸版。
+ *
+ * 仕様:
+ *   - totalEstimateMin === 0 → null (= 全件 見積なし or 0 件、`formatTickerHeaderJa` と
+ *     同じ '0m' sentinel に整合する null sentinel)
+ *   - 通常 → 0-100 整数 (done / total を rateToPct で 0 桁丸め)
+ *   - done > total は起こらない (= 同 ticker 内で計算済) が防御で min(100) は不要
+ *
+ * 用途:
+ *   - TaskChute header chip 「進捗 65%」 (= formatDurationJa と並ぶ chip 軸)
+ *   - dashboard progress bar
+ *   - AI prompt 「today work how much done?」 数値根拠
+ *   - Slack daily digest 「今日の TaskChute 進捗 65%」
+ */
+export function computeTickerProgressPct<T extends TickerItemFields>(
+  ticker: Pick<TaskChuteTicker<T>, 'totalEstimateMin' | 'doneEstimateMin'>,
+): number | null {
+  if (ticker.totalEstimateMin === 0) return null
+  return rateToPct(ticker.doneEstimateMin / ticker.totalEstimateMin)
+}
+
+/**
+ * iter1012 ai-automation: TaskChute ticker progress を chip 文言に整形。
+ *   '進捗 65% (2h45m / 4h12m 完了)'
+ *   '進捗 100% (全件完了)'
+ *   '進捗 0% (未着手)'
+ *   '進捗なし (見積なし)'   (= ratio null)
+ */
+export function formatTickerProgressJa<T extends TickerItemFields>(
+  ticker: Pick<TaskChuteTicker<T>, 'totalEstimateMin' | 'doneEstimateMin'>,
+): string {
+  const ratio = computeTickerProgressPct(ticker)
+  if (ratio === null) return '進捗なし (見積なし)'
+  if (ratio >= 100) return '進捗 100% (全件完了)'
+  if (ratio <= 0) return '進捗 0% (未着手)'
+  const done = formatDurationJa(ticker.doneEstimateMin)
+  const total = formatDurationJa(ticker.totalEstimateMin)
+  return `進捗 ${ratio}% (${done} / ${total} 完了)`
 }
 
 // 内部 helper を test しやすく named export

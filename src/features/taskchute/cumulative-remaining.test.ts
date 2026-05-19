@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest'
 
 import {
   buildTaskChuteTicker,
+  computeTickerProgressPct,
   formatDurationJa,
   formatHHMM,
   formatTickerHeaderJa,
+  formatTickerProgressJa,
   isDone,
   type TickerItemFields,
 } from './cumulative-remaining'
@@ -207,5 +209,53 @@ describe('formatTickerHeaderJa', () => {
     expect(out).toContain('合計 1h30m')
     expect(out).toContain('残 0m')
     expect(out).not.toContain('終わる予測')
+  })
+})
+
+describe('computeTickerProgressPct (iter1012)', () => {
+  it('total=0 → null', () => {
+    expect(computeTickerProgressPct({ totalEstimateMin: 0, doneEstimateMin: 0 })).toBeNull()
+  })
+
+  it('done=0 → 0', () => {
+    expect(computeTickerProgressPct({ totalEstimateMin: 60, doneEstimateMin: 0 })).toBe(0)
+  })
+
+  it('done=total → 100', () => {
+    expect(computeTickerProgressPct({ totalEstimateMin: 60, doneEstimateMin: 60 })).toBe(100)
+  })
+
+  it('mid: 30/120 → 25', () => {
+    expect(computeTickerProgressPct({ totalEstimateMin: 120, doneEstimateMin: 30 })).toBe(25)
+  })
+
+  it('2/3 → 67 (round)', () => {
+    expect(computeTickerProgressPct({ totalEstimateMin: 90, doneEstimateMin: 60 })).toBe(67)
+  })
+})
+
+describe('formatTickerProgressJa (iter1012)', () => {
+  it('null (total=0) → 「進捗なし (見積なし)」', () => {
+    expect(formatTickerProgressJa({ totalEstimateMin: 0, doneEstimateMin: 0 })).toBe(
+      '進捗なし (見積なし)',
+    )
+  })
+
+  it('100% → 「進捗 100% (全件完了)」', () => {
+    expect(formatTickerProgressJa({ totalEstimateMin: 60, doneEstimateMin: 60 })).toBe(
+      '進捗 100% (全件完了)',
+    )
+  })
+
+  it('0% → 「進捗 0% (未着手)」', () => {
+    expect(formatTickerProgressJa({ totalEstimateMin: 60, doneEstimateMin: 0 })).toBe(
+      '進捗 0% (未着手)',
+    )
+  })
+
+  it('mid 25% → 「進捗 25% (X / Y 完了)」', () => {
+    expect(formatTickerProgressJa({ totalEstimateMin: 120, doneEstimateMin: 30 })).toBe(
+      '進捗 25% (30m / 2h 完了)',
+    )
   })
 })
