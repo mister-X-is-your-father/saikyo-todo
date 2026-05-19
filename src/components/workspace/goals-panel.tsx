@@ -383,7 +383,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
 
   return (
     <li data-testid={`goal-card-${goal.id}`}>
-      <Card>
+      <Card role="region" aria-labelledby={`goal-card-heading-${goal.id}`}>
         <CardHeader className="pb-2">
           <div className="flex items-start gap-2">
             <button
@@ -402,7 +402,12 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
               )}
             </button>
             <div className="min-w-0 flex-1">
-              <CardTitle className="truncate text-base" role="heading" aria-level={3}>
+              <CardTitle
+                id={`goal-card-heading-${goal.id}`}
+                className="truncate text-base"
+                role="heading"
+                aria-level={3}
+              >
                 {goal.title}
               </CardTitle>
               <p className="text-muted-foreground mt-0.5 text-xs">

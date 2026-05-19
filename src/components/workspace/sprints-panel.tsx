@@ -489,11 +489,16 @@ function SprintCard({
 
   return (
     <li data-testid={`sprint-card-${sprint.id}`}>
-      <Card>
+      <Card role="region" aria-labelledby={`sprint-card-heading-${sprint.id}`}>
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <CardTitle className="truncate text-base" role="heading" aria-level={3}>
+              <CardTitle
+                id={`sprint-card-heading-${sprint.id}`}
+                className="truncate text-base"
+                role="heading"
+                aria-level={3}
+              >
                 {sprint.name}
               </CardTitle>
               <p

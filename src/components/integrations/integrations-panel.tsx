@@ -133,9 +133,18 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
   }
 
   return (
-    <Card data-testid={`src-card-${src.id}`}>
+    <Card
+      data-testid={`src-card-${src.id}`}
+      role="region"
+      aria-labelledby={`src-card-heading-${src.id}`}
+    >
       <CardHeader className="pb-2">
-        <CardTitle className="truncate text-base" role="heading" aria-level={3}>
+        <CardTitle
+          id={`src-card-heading-${src.id}`}
+          className="truncate text-base"
+          role="heading"
+          aria-level={3}
+        >
           {src.name}
         </CardTitle>
         <p className="text-muted-foreground mt-0.5 text-xs">

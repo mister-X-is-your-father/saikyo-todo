@@ -261,7 +261,11 @@ export function TemplatesPanel({ workspaceId }: Props) {
         <ul className="space-y-3" aria-label={`Template 一覧 ${list.data!.length} 件`}>
           {list.data!.map((t) => (
             <li key={t.id}>
-              <Card data-testid="template-card">
+              <Card
+                data-testid="template-card"
+                role="region"
+                aria-labelledby={`template-card-heading-${t.id}`}
+              >
                 <CardHeader className="flex flex-row items-center justify-between">
                   <button
                     type="button"
@@ -271,7 +275,12 @@ export function TemplatesPanel({ workspaceId }: Props) {
                     aria-controls={`template-body-${t.id}`}
                     aria-label={`Template「${t.name}」(${t.kind}${t.scheduleCron ? ` · ${t.scheduleCron}` : ''}) の詳細を${expandedId === t.id ? '閉じる' : '開く'}`}
                   >
-                    <CardTitle className="text-base" role="heading" aria-level={3}>
+                    <CardTitle
+                      id={`template-card-heading-${t.id}`}
+                      className="text-base"
+                      role="heading"
+                      aria-level={3}
+                    >
                       {t.name}
                       <span className="text-muted-foreground ml-2 text-xs font-normal">
                         [{t.kind}
