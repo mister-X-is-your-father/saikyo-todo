@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  type AgingKind,
   agingLabel,
+  agingSeverity,
   classifyBacklogAgingHint,
   countAgingItemsOlderThanWeek,
   countItemsByAge,
@@ -364,5 +366,42 @@ describe('classifyBacklogAgingHint / formatBacklogAgingHintJa (iter447)', () => 
 
   it('unknown は集計対象外 (stagnant に含まない)', () => {
     expect(classifyBacklogAgingHint(c({ unknown: 100 }))).toBe('fresh')
+  })
+})
+
+describe('agingSeverity (iter1018)', () => {
+  function c(over: Partial<Record<AgingKind, number>>): Record<AgingKind, number> {
+    return { new: 0, recent: 0, stale: 0, ancient: 0, unknown: 0, ...over }
+  }
+
+  it('全 0 → ok', () => {
+    expect(agingSeverity(c({}))).toBe('ok')
+  })
+
+  it('全 new/recent → ok', () => {
+    expect(agingSeverity(c({ new: 3, recent: 5 }))).toBe('ok')
+  })
+
+  it('stale 1-4 → info', () => {
+    expect(agingSeverity(c({ stale: 1 }))).toBe('info')
+    expect(agingSeverity(c({ stale: 4 }))).toBe('info')
+  })
+
+  it('stale >= 5 → warn (ancient なし)', () => {
+    expect(agingSeverity(c({ stale: 5 }))).toBe('warn')
+  })
+
+  it('ancient 1-4 → warn', () => {
+    expect(agingSeverity(c({ ancient: 1 }))).toBe('warn')
+    expect(agingSeverity(c({ ancient: 4 }))).toBe('warn')
+  })
+
+  it('ancient >= 5 → danger', () => {
+    expect(agingSeverity(c({ ancient: 5 }))).toBe('danger')
+    expect(agingSeverity(c({ ancient: 10 }))).toBe('danger')
+  })
+
+  it('unknown は severity 判定に含めない', () => {
+    expect(agingSeverity(c({ unknown: 100 }))).toBe('ok')
   })
 })

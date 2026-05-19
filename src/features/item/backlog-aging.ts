@@ -163,6 +163,33 @@ export function countAgingItemsOlderThanWeek(counts: Readonly<Record<AgingKind, 
 }
 
 /**
+ * iter1018 basics: aging counts の severity 4 段分類 (chip tone bind / Slack 通知 gate)。
+ *
+ * iter944 retroCompletionSeverity / iter1013 cycleCheckSeverity / iter1016
+ * agedHygieneDebtSeverity と並ぶ「4 段 severity 分類」 pattern の backlog-aging 軸版。
+ *
+ * 仕様:
+ *   - ancient >= 5 → 'danger' (= 30+ 日 5 件以上、要 sweep)
+ *   - ancient >= 1 || stale >= 5 → 'warn' (= 30+ 日 1 件 or 7-30 日 5 件以上)
+ *   - stale >= 1 → 'info' (= 7-30 日 1 件以上、軽い停滞)
+ *   - 全て new/recent (= < 7 日) → 'ok' (= 全 active 新鮮)
+ *   - 全 0 (= 集計対象なし) も 'ok'
+ *
+ * unknown は severity 判定に含めない (= 年齢不明、停滞かどうか判断できない)。
+ *
+ * 用途: dashboard chip 配色 / Slack 通知「stale backlog alert」 / AI prompt context。
+ */
+export type AgingSeverity = 'ok' | 'info' | 'warn' | 'danger'
+
+export function agingSeverity(counts: Readonly<Record<AgingKind, number>>): AgingSeverity {
+  if (counts.ancient >= 5) return 'danger'
+  if (counts.ancient >= 1) return 'warn'
+  if (counts.stale >= 5) return 'warn'
+  if (counts.stale >= 1) return 'info'
+  return 'ok'
+}
+
+/**
  * iter389 ai-automation: priority 別の `countItemsByAge` を計算する pure helper。
  *
  * iter344 due-hit-rate / iter362 dod-coverage / iter364 due-date-coverage /
