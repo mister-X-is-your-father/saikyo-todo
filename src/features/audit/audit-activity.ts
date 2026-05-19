@@ -18,6 +18,8 @@
 
 import { parseDateOrNull } from '@/lib/date/iso'
 import { formatNonZeroCounts } from '@/lib/format-counts'
+import { rateToPct } from '@/lib/format-rate'
+import { round2 } from '@/lib/round-decimal'
 
 import { type AuditActionCategory, getAuditActionCategory } from './action-visual'
 
@@ -226,4 +228,53 @@ export function pickTopActor(
 export function formatTopActorJa(top: { actorId: string; count: number } | null): string {
   if (top === null) return '主軸: なし (該当 actor なし)'
   return `主軸: ${top.actorId} (${top.count} 操作)`
+}
+
+/**
+ * iter1007 ai-automation: 最多 actor の活動シェア (= top actor count / total) を返す。
+ *
+ * 「workload は 1 人に集中しているか? それとも均等?」 を 1 数値で判定する metric。
+ * iter944 `computePlanSpeedupRatio` / iter1002 `computeReviewPassRatio` と並ぶ
+ * 「単一 ratio metric」 pattern の audit 軸版。
+ *
+ * 仕様:
+ *   - 空 Map / total=0 → null
+ *   - 1 actor のみ → 1.0 (= 100% 集中)
+ *   - N actor 均等分布 → 1/N
+ *   - round2 で 2 桁丸め (= 5/7 → 0.71 を区別可能)
+ *
+ * 用途:
+ *   - dashboard 「主軸シェア 80% (1 人集中)」 alert chip (= bus factor 低い)
+ *   - Slack 通知 「<actor> が活動の N% を占有」
+ *   - AI prompt 「workload balanced か?」 判定 context
+ */
+export function computeActorConcentration(byActor: ReadonlyMap<string, number>): number | null {
+  if (byActor.size === 0) return null
+  let total = 0
+  let max = 0
+  for (const count of byActor.values()) {
+    total += count
+    if (count > max) max = count
+  }
+  if (total === 0) return null
+  return round2(max / total)
+}
+
+/**
+ * iter1007 ai-automation: actor concentration を chip 文言に整形。
+ *   'シェア 80% (1 人集中)'    (>= 0.7、bus factor 低い、注意)
+ *   'シェア 50%'                (0.4-0.7、normal)
+ *   'シェア 30% (均衡)'         (< 0.4、N 人均等寄り)
+ *   'シェア: 該当なし'           (null = 活動なし)
+ *
+ * 0.7 / 0.4 閾値は「1 人集中」 (= 1 人で 7 割以上) と「均衡」 (= 1 人 4 割未満、
+ * = 3 人以上に分散) の経験則。caller (chip / Slack / AI prompt) は本文字列を
+ * そのまま埋め込む。
+ */
+export function formatActorConcentrationJa(ratio: number | null): string {
+  if (ratio === null) return 'シェア: 該当なし'
+  const pct = rateToPct(ratio)
+  if (ratio >= 0.7) return `シェア ${pct}% (1 人集中)`
+  if (ratio < 0.4) return `シェア ${pct}% (均衡)`
+  return `シェア ${pct}%`
 }

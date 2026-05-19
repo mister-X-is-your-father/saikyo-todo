@@ -5,6 +5,8 @@ import {
   type AuditActivityEntry,
   type AuditCategoryCounts,
   classifyAuditActivityHint,
+  computeActorConcentration,
+  formatActorConcentrationJa,
   formatAuditActivityBrief,
   formatAuditActivityHintJa,
   formatAuditActivitySummary,
@@ -309,5 +311,71 @@ describe('formatTopActorJa', () => {
 
   it('top あり → 「主軸: <id> (<n> 操作)」', () => {
     expect(formatTopActorJa({ actorId: 'alice', count: 12 })).toBe('主軸: alice (12 操作)')
+  })
+})
+
+describe('computeActorConcentration (iter1007)', () => {
+  it('空 Map → null', () => {
+    expect(computeActorConcentration(new Map())).toBeNull()
+  })
+
+  it('1 actor のみ → 1.0 (100% 集中)', () => {
+    expect(computeActorConcentration(new Map([['alice', 10]]))).toBe(1)
+  })
+
+  it('均等分布 4 人 → 0.25 (= 1/4)', () => {
+    const m = new Map([
+      ['a', 5],
+      ['b', 5],
+      ['c', 5],
+      ['d', 5],
+    ])
+    expect(computeActorConcentration(m)).toBe(0.25)
+  })
+
+  it('1 人優位 (8/10) → 0.8', () => {
+    const m = new Map([
+      ['alice', 8],
+      ['bob', 1],
+      ['carol', 1],
+    ])
+    expect(computeActorConcentration(m)).toBe(0.8)
+  })
+
+  it('5/7 → 0.71 (round2 2 桁丸め)', () => {
+    const m = new Map([
+      ['alice', 5],
+      ['bob', 2],
+    ])
+    expect(computeActorConcentration(m)).toBe(0.71)
+  })
+
+  it('全 count 0 → null (= total=0 で 0 div 回避)', () => {
+    const m = new Map([
+      ['a', 0],
+      ['b', 0],
+    ])
+    expect(computeActorConcentration(m)).toBeNull()
+  })
+})
+
+describe('formatActorConcentrationJa (iter1007)', () => {
+  it('null → 「シェア: 該当なし」', () => {
+    expect(formatActorConcentrationJa(null)).toBe('シェア: 該当なし')
+  })
+
+  it('>= 0.7 → 「1 人集中」 hint 付き', () => {
+    expect(formatActorConcentrationJa(0.8)).toBe('シェア 80% (1 人集中)')
+    expect(formatActorConcentrationJa(0.7)).toBe('シェア 70% (1 人集中)')
+  })
+
+  it('0.4-0.69 → hint なし', () => {
+    expect(formatActorConcentrationJa(0.5)).toBe('シェア 50%')
+    expect(formatActorConcentrationJa(0.4)).toBe('シェア 40%')
+  })
+
+  it('< 0.4 → 「均衡」 hint 付き', () => {
+    expect(formatActorConcentrationJa(0.25)).toBe('シェア 25% (均衡)')
+    expect(formatActorConcentrationJa(0.39)).toBe('シェア 39% (均衡)')
   })
 })
