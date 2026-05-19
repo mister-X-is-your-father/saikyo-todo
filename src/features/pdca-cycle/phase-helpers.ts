@@ -139,3 +139,36 @@ export function formatPdcaCyclePhaseStatusJa(
   const tail = elapsed === null ? ' (timestamp 未記録)' : ` (${elapsed} 日)`
   return `${phase} — ${sevLabel}${tail}`
 }
+
+/**
+ * iter1011 basics: phase の「想定上限日数」 を返す (= 内部 PHASE_DAY_LIMIT の安全な exposure)。
+ *
+ * caller 用途:
+ *   - widget chip 「想定上限 14 日」 表示
+ *   - Slack 通知 「あと N 日で停滞警告」 計算 (= limit - elapsedDays)
+ *   - AI prompt 「phase の想定期間」 context
+ *
+ * 仕様: closed → null (= 完了は経過追跡しない、Infinity を露出させず null sentinel) /
+ * その他 → 整数日数 (plan=3 / do=14 / check=3 / act=2)。
+ */
+export function pdcaPhaseDayLimit(status: PdcaCycleStatus): number | null {
+  if (status === 'closed') return null
+  const limit = PHASE_DAY_LIMIT[status]
+  return Number.isFinite(limit) ? limit : null
+}
+
+/**
+ * iter1011 basics: phase が停滞中 (sev='stale' or 'overdue') か判定する pure predicate。
+ *
+ * 用途:
+ *   - dashboard 「停滞中 N 件」 filter
+ *   - Slack daily digest 「PDCA phase 停滞 cycle」 集約 chip
+ *   - AI prompt 「進行 nudging が必要な cycle」 抽出
+ *
+ * `pdcaPhaseSeverity` の 5 値中 'stale' / 'overdue' を「停滞」 判定。
+ * 'closed' / 'fresh' / 'on_track' は false。
+ */
+export function isPdcaPhaseStuck(cycle: PdcaPhaseTimestamps, now: Date = new Date()): boolean {
+  const sev = pdcaPhaseSeverity(cycle, now)
+  return sev === 'stale' || sev === 'overdue'
+}

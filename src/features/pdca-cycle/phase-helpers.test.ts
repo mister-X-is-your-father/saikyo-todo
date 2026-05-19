@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 
 import {
   formatPdcaCyclePhaseStatusJa,
+  isPdcaPhaseStuck,
   pdcaCyclePhaseLabelJa,
+  pdcaPhaseDayLimit,
   pdcaPhaseSeverity,
   pdcaPhaseSeverityLabelJa,
   type PdcaPhaseTimestamps,
@@ -125,5 +127,44 @@ describe('formatPdcaCyclePhaseStatusJa', () => {
     expect(formatPdcaCyclePhaseStatusJa({ status: 'plan' }, NOW)).toBe(
       '仮説立案 (Plan) — 順調 (timestamp 未記録)',
     )
+  })
+})
+
+describe('pdcaPhaseDayLimit (iter1011)', () => {
+  it('closed → null (= Infinity を露出させず null sentinel)', () => {
+    expect(pdcaPhaseDayLimit('closed')).toBeNull()
+  })
+
+  it('各 phase の整数日数', () => {
+    expect(pdcaPhaseDayLimit('plan')).toBe(3)
+    expect(pdcaPhaseDayLimit('do')).toBe(14)
+    expect(pdcaPhaseDayLimit('check')).toBe(3)
+    expect(pdcaPhaseDayLimit('act')).toBe(2)
+  })
+})
+
+describe('isPdcaPhaseStuck (iter1011)', () => {
+  it('on_track (経過 0-limit) → false', () => {
+    expect(isPdcaPhaseStuck({ status: 'do', doStartedAt: days(5) }, NOW)).toBe(false)
+  })
+
+  it('stale (経過 limit < x <= limit*2) → true', () => {
+    expect(isPdcaPhaseStuck({ status: 'do', doStartedAt: days(20) }, NOW)).toBe(true)
+  })
+
+  it('overdue (経過 > limit*2) → true', () => {
+    expect(isPdcaPhaseStuck({ status: 'plan', planStartedAt: days(10) }, NOW)).toBe(true)
+  })
+
+  it('fresh (経過 0 日) → false', () => {
+    expect(isPdcaPhaseStuck({ status: 'do', doStartedAt: NOW }, NOW)).toBe(false)
+  })
+
+  it('closed → false', () => {
+    expect(isPdcaPhaseStuck({ status: 'closed' }, NOW)).toBe(false)
+  })
+
+  it('timestamp 未記録 → false (= on_track fallback)', () => {
+    expect(isPdcaPhaseStuck({ status: 'plan' }, NOW)).toBe(false)
   })
 })
