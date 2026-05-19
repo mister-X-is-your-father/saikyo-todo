@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  computeMomentumRatio,
   computeWorkspaceMomentum,
+  formatMomentumRatioJa,
   formatWorkspaceMomentumCompactJa,
   formatWorkspaceMomentumJa,
   momentumChipClasses,
@@ -331,5 +333,53 @@ describe('workspaceMomentumToBriefSignal (iter795 — AgentBriefSignal compose)'
     const sig = workspaceMomentumToBriefSignal(m)
     expect(sig.tone).toBe('success')
     expect(sig.text).toContain('縮小')
+  })
+})
+
+describe('computeMomentumRatio (iter1019)', () => {
+  it('total=0 → null', () => {
+    expect(computeMomentumRatio({ intake: 0, done: 0, net: 0 })).toBeNull()
+  })
+
+  it('balanced (intake=done) → 0', () => {
+    expect(computeMomentumRatio({ intake: 5, done: 5, net: 0 })).toBe(0)
+  })
+
+  it('intake のみ → 1.0 (片寄り 100%)', () => {
+    expect(computeMomentumRatio({ intake: 5, done: 0, net: 5 })).toBe(1)
+  })
+
+  it('done のみ → 1.0 (net 負値、|net|/total)', () => {
+    expect(computeMomentumRatio({ intake: 0, done: 5, net: -5 })).toBe(1)
+  })
+
+  it('混在: 3/10 → 0.3', () => {
+    expect(computeMomentumRatio({ intake: 6.5, done: 3.5, net: 3 })).toBe(0.3)
+  })
+})
+
+describe('formatMomentumRatioJa (iter1019)', () => {
+  it('null → 「活動なし」', () => {
+    expect(formatMomentumRatioJa({ intake: 0, done: 0, net: 0, direction: 'idle' })).toBe(
+      '活動なし',
+    )
+  })
+
+  it('balanced → 「安定 (bias N%)」', () => {
+    expect(formatMomentumRatioJa({ intake: 5, done: 5, net: 0, direction: 'balanced' })).toBe(
+      '安定 (bias 0%)',
+    )
+  })
+
+  it('growing (net>0) → 「成長 bias N%」', () => {
+    expect(formatMomentumRatioJa({ intake: 7, done: 3, net: 4, direction: 'growing' })).toBe(
+      '成長 bias 40%',
+    )
+  })
+
+  it('shrinking (net<0) → 「縮小 bias N%」', () => {
+    expect(formatMomentumRatioJa({ intake: 3, done: 7, net: -4, direction: 'shrinking' })).toBe(
+      '縮小 bias 40%',
+    )
   })
 })

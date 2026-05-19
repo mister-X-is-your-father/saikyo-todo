@@ -29,6 +29,7 @@
  */
 
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
+import { round2 } from '@/lib/round-decimal'
 import { type ChipTone, type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
 import { type AgentBriefSignal } from '@/features/agent/brief-signal'
@@ -218,4 +219,50 @@ export function workspaceMomentumToBriefSignal(m: WorkspaceMomentum): AgentBrief
     text: formatWorkspaceMomentumCompactJa(m),
     tone: momentumTone(m.direction),
   }
+}
+
+/**
+ * iter1019 ai-automation: momentum の bias ratio (= |net| / total、0..1) を返す。
+ *
+ * iter944 computePlanSpeedupRatio / iter1002 computeReviewPassRatio / iter1007
+ * computeActorConcentration / iter1012 computeTickerProgressPct と並ぶ「単一 ratio metric」
+ * pattern の momentum 軸版。WorkspaceMomentum.direction の `balanced` 判定 threshold
+ * (= |net| / total < 0.2) を caller が再計算する手間を 1 helper に集約。
+ *
+ * 仕様:
+ *   - intake + done === 0 → null (= idle、計算対象なし)
+ *   - 通常 → |net| / total を round2 で 2 桁丸め
+ *   - 値域: 0.0 (= 完全 balanced) 〜 1.0 (= 片側だけ、intake のみ or done のみ)
+ *
+ * 用途:
+ *   - dashboard chip 「bias 35%」 で「どれくらい片寄ってるか」 即把握
+ *   - Slack 通知 「+25% 速い backlog 増」 trend
+ *   - AI prompt 「balanced or biased?」 数値根拠
+ */
+export function computeMomentumRatio(
+  m: Pick<WorkspaceMomentum, 'intake' | 'done' | 'net'>,
+): number | null {
+  const total = m.intake + m.done
+  if (total === 0) return null
+  return round2(Math.abs(m.net) / total)
+}
+
+/**
+ * iter1019 ai-automation: momentum bias ratio を chip 文言に整形。
+ *   '安定 (bias 0%)'          (ratio 0、= 完全 balanced)
+ *   '成長 bias 30%'           (net > 0、ratio > 0)
+ *   '縮小 bias 30%'           (net < 0、ratio > 0)
+ *   '活動なし'                 (ratio null)
+ *
+ * direction (growing/shrinking/balanced/idle) と整合した 1 行 chip。
+ */
+export function formatMomentumRatioJa(
+  m: Pick<WorkspaceMomentum, 'intake' | 'done' | 'net' | 'direction'>,
+): string {
+  const ratio = computeMomentumRatio(m)
+  if (ratio === null) return '活動なし'
+  const pct = Math.round(ratio * 100)
+  if (m.direction === 'balanced' || pct === 0) return `安定 (bias ${pct}%)`
+  if (m.net > 0) return `成長 bias ${pct}%`
+  return `縮小 bias ${pct}%`
 }
