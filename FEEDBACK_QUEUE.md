@@ -984,6 +984,49 @@ drag&drop 編集 / 案件サマリ AI 要約 等) は別 P0 entry として up �
 
 ### 🔥 次 iter で即実装 (P0 最優先、track 判定より優先) 🔥
 
+#### 🌟 新 P0 [優先度 0、最優先 0] (2026-05-19): **queue 全 19 件 mass-hoist — 全消化指示** 🌟
+
+ユーザ指示 (2026-05-19): 「今のキュー全部消化するまで回そう。今すぐ。」
+
+直近 24h で **queue 消化 = 0 件**、loop は track 判定 (refactor / format helper 等) で自走中。
+queue 普通 P0 は track 判定に負け続けて永遠に着手されない状態。本指示で全 19 件を hoist し、
+loop / in-session 両方の picking を **queue 由来 P0 のみ** に強制する。
+
+**消化順 (依存関係 + leverage 順、上から順次):**
+
+1. **WT-1 連絡待ち schema** (`items.waiting_for jsonb` + service)
+   詳細: 本 file「連絡待ちモード WT-1〜WT-8」 entry / ~/.claude/plans/saikyo-waiting-mode-plan.md
+2. **WT-2 連絡待ち view plugin** (依頼先別 grouping + 経過日数 chip)
+3. **AC-1 「AI に任せた」 1 click button** (本 file AI 分業 entry AC-1)
+4. **AC-2 「AI に review してもらう」** (同 AC-2)
+5. **API/MCP phase 1: api_keys schema + auth middleware** (本 file REST API/MCP entry)
+6. **TC-4 routine 露出** (`templates.kind='recurring'` を 「ルーティン」 tab で見せる、本 file methodology entry)
+7. **GT-1 GTD preset 導入** (`workspace_statuses` に 5 個 insert、本 file methodology entry)
+8. **GT-2 Context tag** (`tag_kind` 列追加、本 file methodology entry)
+9. **GT-4 Weekly Review** (cron + checklist view、本 file methodology entry)
+10. **broadcast 依頼** (`item_assignee_progress` table + 全員割当 / progress matrix、本 file broadcast entry)
+11. **task metadata 拡張** (input/output/goal/関係者/レビュー/添付、本 file task metadata entry)
+12. **Slack ワンポチでタスク化** (Slack app OAuth + Message Action、本 file Slack entry)
+13. **WT-3 external_contacts table**
+14. **WT-4 リマインド worker** (pg-boss cron 1h tick)
+15. **目標達成サポート + 繰り返しタスク** (rrule + AI 分解、本 file 目標達成 entry)
+16. **相談特化機能** (consultation_votes + format、本 file 相談 entry)
+17. **関連情報 simple アクセス** (item_related_resources + auto-suggest、本 file 関連情報 entry)
+18. **schedule public/private** (`item_schedules.visibility` 列、本 file 公開 private entry)
+19. **fluffy P0-4: AI 調査削除** (researcherService.run 撤去、本 file fluffy entry)
+
+**規約**:
+
+- 各 P0 を **1 commit (30-150 行 / typecheck+lint clean / unit test 1-2)** で消化、即 push
+- commit message 末尾に `(queue: <該当 entry 名>)` 含めて queue-overview.sh 検出可能に
+- 消化したら該当 entry を `[x]` チェック + 本 hoist リストの該当行を `~~取消~~` で削除
+- Slack 連動 (WT-5,6,7) は #12 Slack ワンポチ完了後に着手 (依存)
+- 全 19 件 done になったら本 mass-hoist entry を `[x]` チェック + 削除
+
+**期待 throughput**: 1.5-2 件/h × 並行 3 track = 4-6 件/h。**~5 時間で完走見込み** (~24h で全完了)。
+
+---
+
 #### 🌟 新 P0 [優先度 0、最優先 0] (2026-04-30): fluffy AI テキスト生成 機能 8 件 を 最強 widget 化 シリーズ
 
 ユーザ意図: 「fluffy じゃない、最強の機能にグレードアップする」「無理に最強版できないならウィジェット化だわ」
