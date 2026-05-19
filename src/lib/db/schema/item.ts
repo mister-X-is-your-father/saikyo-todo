@@ -135,6 +135,12 @@ export const tags = pgTable(
       .references(() => workspaces.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
     color: text('color').notNull().default('#64748b'),
+    /**
+     * iter (queue GT-2): tag の種別。`'normal'` (default、一般) / `'context'` (GTD の @home /
+     * @office / @phone 等)。GTD mode で context tag だけを filter 表示する軸として使う。
+     * 詳細: docs/methodology-modes-plan.md §1 G-3
+     */
+    kind: text('kind').notNull().default('normal'),
     ...timestamps,
   },
   (t) => [uniqueIndex('tags_workspace_name_uniq').on(t.workspaceId, t.name)],
