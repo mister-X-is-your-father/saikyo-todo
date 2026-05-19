@@ -48,9 +48,18 @@ export function TeamContextEditor({ workspaceId }: Props) {
   }
 
   return (
-    <Card data-testid="team-context-editor">
+    <Card
+      data-testid="team-context-editor"
+      role="region"
+      aria-labelledby="team-context-editor-heading"
+    >
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm" role="heading" aria-level={2}>
+        <CardTitle
+          id="team-context-editor-heading"
+          className="text-sm"
+          role="heading"
+          aria-level={2}
+        >
           チームコンテキスト (AI プロンプトに inject)
         </CardTitle>
       </CardHeader>

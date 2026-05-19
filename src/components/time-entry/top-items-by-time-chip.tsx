@@ -98,9 +98,18 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
     : 'bg-muted text-muted-foreground border-border'
 
   return (
-    <Card data-testid="top-items-by-time-chip">
+    <Card
+      data-testid="top-items-by-time-chip"
+      role="region"
+      aria-labelledby="top-items-by-time-heading"
+    >
       <CardHeader>
-        <CardTitle className="text-base" role="heading" aria-level={2}>
+        <CardTitle
+          id="top-items-by-time-heading"
+          className="text-base"
+          role="heading"
+          aria-level={2}
+        >
           <span aria-hidden="true">直近 {WINDOW_DAYS} 日 稼働ダッシュボード</span>
           <span className="sr-only">{`${summary.trendLine}。${summary.streakLine}。${peakLabel ? `${peakLabel}。` : ''}${summary.line}`}</span>
         </CardTitle>

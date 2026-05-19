@@ -82,9 +82,14 @@ export function TaskChuteView({ workspaceId, items }: Props) {
 
   if (ordered.length === 0) {
     return (
-      <Card>
+      <Card role="region" aria-labelledby="taskchute-empty-heading">
         <CardHeader>
-          <CardTitle className="flex items-center gap-1.5 text-base" role="heading" aria-level={2}>
+          <CardTitle
+            id="taskchute-empty-heading"
+            className="flex items-center gap-1.5 text-base"
+            role="heading"
+            aria-level={2}
+          >
             <Sparkles className="h-4 w-4" aria-hidden="true" />
             TaskChute (今日の 1 列 timeline)
           </CardTitle>

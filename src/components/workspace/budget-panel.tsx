@@ -97,9 +97,14 @@ export function BudgetPanel({ workspaceId }: Props) {
   }
 
   return (
-    <Card>
+    <Card role="region" aria-labelledby="budget-panel-heading">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base" role="heading" aria-level={2}>
+        <CardTitle
+          id="budget-panel-heading"
+          className="flex items-center gap-2 text-base"
+          role="heading"
+          aria-level={2}
+        >
           AI 月次コスト
           {s.exceeded && (
             <span className="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-700">
