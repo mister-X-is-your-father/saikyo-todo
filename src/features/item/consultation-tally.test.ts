@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   classifyConsultationStatus,
   type ConsultationOption,
+  consultationStatusChipTone,
   consultationStatusSeverity,
   type ConsultationVote,
   formatConsultationStatusJa,
@@ -161,5 +162,30 @@ describe('formatConsultationStatusJa (iter1028)', () => {
 
   it('decided → "決定済"', () => {
     expect(formatConsultationStatusJa('decided')).toBe('決定済')
+  })
+})
+
+describe('consultationStatusChipTone (iter1030)', () => {
+  it('decided → success (緑、判断完了、positive framing)', () => {
+    expect(consultationStatusChipTone('decided')).toBe('success')
+  })
+
+  it('open → info (青、受付中)', () => {
+    expect(consultationStatusChipTone('open')).toBe('info')
+  })
+
+  it('closing-soon → warn (黄、締切 24h 以内)', () => {
+    expect(consultationStatusChipTone('closing-soon')).toBe('warn')
+  })
+
+  it('overdue → danger (赤、判断漏れ)', () => {
+    expect(consultationStatusChipTone('overdue')).toBe('danger')
+  })
+
+  it('全 4 状態が網羅される (= 抜けない、漏れガード)', () => {
+    const all = ['decided', 'open', 'closing-soon', 'overdue'] as const
+    for (const s of all) {
+      expect(typeof consultationStatusChipTone(s)).toBe('string')
+    }
   })
 })
