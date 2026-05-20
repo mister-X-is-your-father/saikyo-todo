@@ -62,6 +62,59 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(s.velocity!.tone).toBe('idle')
   })
 
+  it('iter1026: backlogAging のみ (全 0 = 新鮮) → backlogAging signal、tone=success', () => {
+    const s = composeAnalyticsSignals({
+      backlogAging: { new: 0, recent: 0, stale: 0, ancient: 0, unknown: 0 },
+    })
+    expect(s.backlogAging).not.toBeNull()
+    expect(s.backlogAging!.tone).toBe('success')
+    expect(s.backlogAging!.text).toBe('新鮮')
+  })
+
+  it('iter1026: backlogAging ancient 5+ (danger) → tone=danger', () => {
+    const s = composeAnalyticsSignals({
+      backlogAging: { new: 0, recent: 0, stale: 0, ancient: 5, unknown: 0 },
+    })
+    expect(s.backlogAging!.tone).toBe('danger')
+    expect(s.backlogAging!.text).toBe('危険 古参 5 件')
+  })
+
+  it('iter1026: backlogAging stale 1-4 (info) → tone=info, 軽微 ラベル', () => {
+    const s = composeAnalyticsSignals({
+      backlogAging: { new: 0, recent: 0, stale: 2, ancient: 0, unknown: 0 },
+    })
+    expect(s.backlogAging!.tone).toBe('info')
+    expect(s.backlogAging!.text).toBe('軽微 停滞 2 件')
+  })
+
+  it('iter1026: 全 9 軸の表示順 — backlogAging が biasTrend の直後 (5 番手) に並ぶ', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 15, completed: 15, failed: 0 },
+    ])
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 }
+    const s = composeAnalyticsSignals({
+      reliability,
+      dueHitRate,
+      biasTrend: {
+        direction: 'improving',
+        priorFactor: 1.5,
+        recentFactor: 1.2,
+        distanceDelta: 0.3,
+      },
+      backlogAging: { new: 0, recent: 0, stale: 0, ancient: 5, unknown: 0 },
+    })
+    const arr = analyticsSignalsToArray(s)
+    // 順序: concerning (null) → costProjection (null) → dueHitRate → biasTrend →
+    // backlogAging → reliability → costTrend (null) → velocity (null) →
+    // weekly (null) → momentum (null) → dominantRole (= 唯一 PM)
+    expect(arr.length).toBe(5)
+    expect(arr[0]).toBe(s.dueHitRate)
+    expect(arr[1]).toBe(s.biasTrend)
+    expect(arr[2]).toBe(s.backlogAging)
+    expect(arr[3]).toBe(s.reliability)
+    expect(arr[4]).toBe(s.dominantRole)
+  })
+
   it('iter805: biasTrend のみ → biasTrend signal、tone=success (improving)', () => {
     const s = composeAnalyticsSignals({
       biasTrend: {
@@ -285,6 +338,7 @@ describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', (
       'dueHitRate',
       'velocity',
       'biasTrend',
+      'backlogAging',
     ] as const
     expect(Object.keys(empty).sort()).toEqual([...expectedKeys].sort())
     for (const k of expectedKeys) {

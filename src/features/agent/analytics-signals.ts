@@ -36,6 +36,7 @@ import {
   pickHighestSeverityTone,
 } from '@/lib/ui/chip-tone'
 
+import { type AgingKind, backlogAgingToBriefSignal } from '@/features/item/backlog-aging'
 import { type DueHitRateStats, dueHitRateToBriefSignal } from '@/features/item/due-hit-rate'
 import { type WorkspaceMomentum, workspaceMomentumToBriefSignal } from '@/features/item/momentum'
 import { type VelocitySummary, velocityToBriefSignal } from '@/features/item/velocity'
@@ -63,6 +64,12 @@ export interface AnalyticsSignalsInput {
   velocity?: VelocitySummary
   /** iter805 refactor: 8 軸目として bias-trend (見積精度の変化) も統合 */
   biasTrend?: BiasTrend
+  /**
+   * iter1026 basics: 9 軸目として backlog-aging (= ancient/stale counts、停滞度合い) も統合。
+   * 値は `countItemsByAge(items, today)` の出力 (= Record<AgingKind, number>)。
+   * caller は backlog item を事前 filter (= 完了/archive 除外) してから渡すこと。
+   */
+  backlogAging?: Readonly<Record<AgingKind, number>>
 }
 
 export interface AnalyticsSignals {
@@ -80,6 +87,8 @@ export interface AnalyticsSignals {
   velocity: AgentBriefSignal | null
   /** iter805 refactor: 見積精度の変化 chip (positive polarity, improving=success) */
   biasTrend: AgentBriefSignal | null
+  /** iter1026 basics: backlog 停滞度合い chip (positive polarity, fresh=success / ancient=danger) */
+  backlogAging: AgentBriefSignal | null
 }
 
 const EMPTY: AnalyticsSignals = {
@@ -93,6 +102,7 @@ const EMPTY: AnalyticsSignals = {
   dueHitRate: null,
   velocity: null,
   biasTrend: null,
+  backlogAging: null,
 }
 
 export function composeAnalyticsSignals(input: AnalyticsSignalsInput): AnalyticsSignals {
@@ -124,6 +134,9 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
   if (input.biasTrend) {
     out.biasTrend = biasTrendToBriefSignal(input.biasTrend)
   }
+  if (input.backlogAging) {
+    out.backlogAging = backlogAgingToBriefSignal(input.backlogAging)
+  }
   return out
 }
 
@@ -136,12 +149,13 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
  *  2. costProjection   (= 月末コスト予測、cost 軸の主)
  *  3. dueHitRate       (= 期限達成率、商品品質 SLA、cost と並ぶ severity 主)
  *  4. biasTrend        (= 見積精度の変化、品質系 trend、severity 主の補佐)
- *  5. reliability      (= 全体 信頼性 chip)
- *  6. costTrend        (= cost 月次トレンド)
- *  7. velocity         (= 完了ペース、weekly と並ぶ達成感系)
- *  8. weeklyCompletion (= 週次完了 trend、達成感 + やる気)
- *  9. momentum         (= backlog momentum)
- * 10. dominantRole     (= 主軸 role、informational、最後)
+ *  5. backlogAging     (= 停滞度合い、danger=古参累積、moment と並ぶ backlog 軸 severity 主)
+ *  6. reliability      (= 全体 信頼性 chip)
+ *  7. costTrend        (= cost 月次トレンド)
+ *  8. velocity         (= 完了ペース、weekly と並ぶ達成感系)
+ *  9. weeklyCompletion (= 週次完了 trend、達成感 + やる気)
+ * 10. momentum         (= backlog momentum)
+ * 11. dominantRole     (= 主軸 role、informational、最後)
  */
 export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
@@ -149,6 +163,7 @@ export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSi
     signals.costProjection,
     signals.dueHitRate,
     signals.biasTrend,
+    signals.backlogAging,
     signals.reliability,
     signals.costTrend,
     signals.velocity,
