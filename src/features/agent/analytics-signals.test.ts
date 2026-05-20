@@ -62,6 +62,31 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(s.velocity!.tone).toBe('idle')
   })
 
+  it('iter1043: consultationCounts のみ (空) → consultationCounts signal、tone=idle / "相談なし"', () => {
+    const s = composeAnalyticsSignals({
+      consultationCounts: { open: 0, 'closing-soon': 0, overdue: 0, decided: 0 },
+    })
+    expect(s.consultationCounts).not.toBeNull()
+    expect(s.consultationCounts!.tone).toBe('idle')
+    expect(s.consultationCounts!.text).toBe('相談なし')
+  })
+
+  it('iter1043: consultationCounts overdue > 0 → tone=danger', () => {
+    const s = composeAnalyticsSignals({
+      consultationCounts: { open: 2, 'closing-soon': 1, overdue: 3, decided: 5 },
+    })
+    expect(s.consultationCounts!.tone).toBe('danger')
+    expect(s.consultationCounts!.text).toBe('判断漏れ 3 件')
+  })
+
+  it('iter1043: consultationCounts decided only → tone=success', () => {
+    const s = composeAnalyticsSignals({
+      consultationCounts: { open: 0, 'closing-soon': 0, overdue: 0, decided: 4 },
+    })
+    expect(s.consultationCounts!.tone).toBe('success')
+    expect(s.consultationCounts!.text).toBe('決定済 4 件')
+  })
+
   it('iter1041: waitingSummary のみ (空) → waitingSummary signal、tone=idle / "連絡待ちなし"', () => {
     const s = composeAnalyticsSignals({
       waitingSummary: {
@@ -378,6 +403,7 @@ describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', (
       'biasTrend',
       'backlogAging',
       'waitingSummary',
+      'consultationCounts',
     ] as const
     expect(Object.keys(empty).sort()).toEqual([...expectedKeys].sort())
     for (const k of expectedKeys) {

@@ -37,6 +37,10 @@ import {
 } from '@/lib/ui/chip-tone'
 
 import { type AgingKind, backlogAgingToBriefSignal } from '@/features/item/backlog-aging'
+import {
+  type ConsultationCounts,
+  consultationCountsToBriefSignal,
+} from '@/features/item/consultation-tally'
 import { type DueHitRateStats, dueHitRateToBriefSignal } from '@/features/item/due-hit-rate'
 import { type WorkspaceMomentum, workspaceMomentumToBriefSignal } from '@/features/item/momentum'
 import { type VelocitySummary, velocityToBriefSignal } from '@/features/item/velocity'
@@ -77,6 +81,12 @@ export interface AnalyticsSignalsInput {
    * caller は waitingFor != null の item を事前抽出してから渡すこと。
    */
   waitingSummary?: WaitingSummary
+  /**
+   * iter1043 basics: 11 軸目として consultation-counts (= 相談 task 状態別件数、判断漏れ / 締切間近) も統合。
+   * 値は ConsultationCounts (= Readonly<Record<ConsultationStatus, number>>)。
+   * caller は consultation kind の item を事前 filter + status 集計してから渡すこと。
+   */
+  consultationCounts?: ConsultationCounts
 }
 
 export interface AnalyticsSignals {
@@ -98,6 +108,8 @@ export interface AnalyticsSignals {
   backlogAging: AgentBriefSignal | null
   /** iter1041 basics: 連絡待ち chip (= escalate=danger / リマインド=warn / 健全=success / 空=idle) */
   waitingSummary: AgentBriefSignal | null
+  /** iter1043 basics: 相談 chip (= 判断漏れ=danger / 締切間近=warn / 受付中=info / 決定済=success / 空=idle) */
+  consultationCounts: AgentBriefSignal | null
 }
 
 const EMPTY: AnalyticsSignals = {
@@ -113,6 +125,7 @@ const EMPTY: AnalyticsSignals = {
   biasTrend: null,
   backlogAging: null,
   waitingSummary: null,
+  consultationCounts: null,
 }
 
 export function composeAnalyticsSignals(input: AnalyticsSignalsInput): AnalyticsSignals {
@@ -150,6 +163,9 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
   if (input.waitingSummary) {
     out.waitingSummary = waitingSummaryToBriefSignal(input.waitingSummary)
   }
+  if (input.consultationCounts) {
+    out.consultationCounts = consultationCountsToBriefSignal(input.consultationCounts)
+  }
   return out
 }
 
@@ -158,18 +174,19 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
  * の `AgentBriefSignal[]` 配列に変換。caller は `.map(s => <Chip ... />)` で 1 行 render。
  *
  * 表示順:
- *  1. concerningRole   (= 弱点 role 警告、最優先)
- *  2. costProjection   (= 月末コスト予測、cost 軸の主)
- *  3. dueHitRate       (= 期限達成率、商品品質 SLA、cost と並ぶ severity 主)
- *  4. biasTrend        (= 見積精度の変化、品質系 trend、severity 主の補佐)
- *  5. backlogAging     (= 停滞度合い、danger=古参累積、moment と並ぶ backlog 軸 severity 主)
- *  6. waitingSummary   (= 連絡待ち、danger=escalate、外部依存 軸 severity 主)
- *  7. reliability      (= 全体 信頼性 chip)
- *  8. costTrend        (= cost 月次トレンド)
- *  9. velocity         (= 完了ペース、weekly と並ぶ達成感系)
- * 10. weeklyCompletion (= 週次完了 trend、達成感 + やる気)
- * 11. momentum         (= backlog momentum)
- * 12. dominantRole     (= 主軸 role、informational、最後)
+ *  1. concerningRole     (= 弱点 role 警告、最優先)
+ *  2. costProjection     (= 月末コスト予測、cost 軸の主)
+ *  3. dueHitRate         (= 期限達成率、商品品質 SLA、cost と並ぶ severity 主)
+ *  4. biasTrend          (= 見積精度の変化、品質系 trend、severity 主の補佐)
+ *  5. backlogAging       (= 停滞度合い、danger=古参累積、moment と並ぶ backlog 軸 severity 主)
+ *  6. waitingSummary     (= 連絡待ち、danger=escalate、外部依存 軸 severity 主)
+ *  7. consultationCounts (= 相談、danger=判断漏れ、合意 軸 severity 主)
+ *  8. reliability        (= 全体 信頼性 chip)
+ *  9. costTrend          (= cost 月次トレンド)
+ * 10. velocity           (= 完了ペース、weekly と並ぶ達成感系)
+ * 11. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
+ * 12. momentum           (= backlog momentum)
+ * 13. dominantRole       (= 主軸 role、informational、最後)
  */
 export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
@@ -179,6 +196,7 @@ export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSi
     signals.biasTrend,
     signals.backlogAging,
     signals.waitingSummary,
+    signals.consultationCounts,
     signals.reliability,
     signals.costTrend,
     signals.velocity,
