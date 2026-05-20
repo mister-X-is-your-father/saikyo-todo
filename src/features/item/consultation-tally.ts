@@ -10,6 +10,7 @@
  */
 
 import { MS_PER_DAY } from '@/lib/date/iso'
+import type { Severity } from '@/lib/widget/severity'
 
 export interface ConsultationOption {
   /** option 配列の index (0-based、表示順) */
@@ -113,4 +114,57 @@ export function classifyConsultationStatus(input: {
   if (diffMs < 0) return 'overdue'
   if (diffMs <= MS_PER_DAY) return 'closing-soon'
   return 'open'
+}
+
+/**
+ * iter1028 basics: ConsultationStatus → 共通 `Severity` ('ok'/'info'/'warn'/'danger'/'muted') bridge。
+ *
+ * 配色 token (SeverityChip tone bind 用):
+ *   - 'decided'      → 'ok'     (= 緑、判断完了、healthy)
+ *   - 'open'         → 'info'   (= 青、受付中、進行中)
+ *   - 'closing-soon' → 'warn'   (= 黄、締切 24h 以内、決断推奨)
+ *   - 'overdue'      → 'danger' (= 赤、判断漏れ、即対応)
+ *
+ * iter535 severity-bridges に並ぶ「domain status → 共通 Severity」 pattern の相談軸版。
+ * caller (= 相談 widget chip / 相談 list panel header / Slack 通知 tone) は本 bridge で
+ * SeverityChip の tone を 1 関数で決定可能 (= 配色実装の散在を防ぐ)。
+ *
+ * muted は使わない (= 全 4 状態が「相談として valid な存在」、未設定は ConsultationStatus
+ * 自体になり得ない、type で守る)。
+ */
+export function consultationStatusSeverity(status: ConsultationStatus): Severity {
+  switch (status) {
+    case 'decided':
+      return 'ok'
+    case 'open':
+      return 'info'
+    case 'closing-soon':
+      return 'warn'
+    case 'overdue':
+      return 'danger'
+  }
+}
+
+/**
+ * iter1028 basics: ConsultationStatus → 日本語短ラベル。
+ *
+ * 配色と合わせて chip text / aria-label / Slack 通知 で使う共通 vocabulary。
+ *
+ *   - 'open'         → '受付中'
+ *   - 'closing-soon' → '締切間近'
+ *   - 'overdue'      → '判断漏れ'
+ *   - 'decided'      → '決定済'
+ *
+ * iter546 `gtdBucketLabelJa` / iter537 `formatHandoffPhaseStatusJa` と並ぶ「domain status →
+ * 日本語短ラベル」 pattern の相談軸版。caller (= 相談 widget chip / list / Slack 通知) で再利用。
+ */
+const CONSULTATION_STATUS_LABEL_JA: Record<ConsultationStatus, string> = {
+  open: '受付中',
+  'closing-soon': '締切間近',
+  overdue: '判断漏れ',
+  decided: '決定済',
+}
+
+export function formatConsultationStatusJa(status: ConsultationStatus): string {
+  return CONSULTATION_STATUS_LABEL_JA[status]
 }

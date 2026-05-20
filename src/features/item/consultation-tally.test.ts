@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest'
 import {
   classifyConsultationStatus,
   type ConsultationOption,
+  consultationStatusSeverity,
   type ConsultationVote,
+  formatConsultationStatusJa,
   tallyConsultation,
 } from './consultation-tally'
 
@@ -123,5 +125,41 @@ describe('classifyConsultationStatus', () => {
         now: NOW,
       }),
     ).toBe('overdue')
+  })
+})
+
+describe('consultationStatusSeverity (iter1028)', () => {
+  it('decided → ok (緑、判断完了)', () => {
+    expect(consultationStatusSeverity('decided')).toBe('ok')
+  })
+
+  it('open → info (青、受付中)', () => {
+    expect(consultationStatusSeverity('open')).toBe('info')
+  })
+
+  it('closing-soon → warn (黄、締切間近)', () => {
+    expect(consultationStatusSeverity('closing-soon')).toBe('warn')
+  })
+
+  it('overdue → danger (赤、判断漏れ)', () => {
+    expect(consultationStatusSeverity('overdue')).toBe('danger')
+  })
+})
+
+describe('formatConsultationStatusJa (iter1028)', () => {
+  it('open → "受付中"', () => {
+    expect(formatConsultationStatusJa('open')).toBe('受付中')
+  })
+
+  it('closing-soon → "締切間近"', () => {
+    expect(formatConsultationStatusJa('closing-soon')).toBe('締切間近')
+  })
+
+  it('overdue → "判断漏れ"', () => {
+    expect(formatConsultationStatusJa('overdue')).toBe('判断漏れ')
+  })
+
+  it('decided → "決定済"', () => {
+    expect(formatConsultationStatusJa('decided')).toBe('決定済')
   })
 })
