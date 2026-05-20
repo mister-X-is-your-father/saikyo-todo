@@ -10,12 +10,45 @@
  * 副作用なし、依存は本 file が import する各 domain file のみ。pure helper + Vitest 単体 test で網羅。
  */
 import type { FourStateHint } from '@/lib/hint'
+import type { ChipTone } from '@/lib/ui/chip-tone'
 
 import type { ChecklistStatus } from '@/features/agent/structured-review'
 import type { PdcaPhaseSeverity } from '@/features/pdca-cycle/phase-helpers'
 import type { AssigneeLoadSeverity } from '@/features/sprint/risk-board'
 
 import type { Severity } from './severity'
+
+/**
+ * iter1039 refactor: 共通 `Severity` (5 値) → `ChipTone` (6 値) bridge。
+ *
+ * SeverityChip は Severity 5 値 vocab を直接 bind するが、AgentBriefSignal / dashboard
+ * chip-tone (= cost-chip 等) は ChipTone 6 値 vocab を要求するため、両 vocab 間の lossy
+ * bridge が必要。iter1025 `agingSeverityChipTone` / iter1030 `consultationStatusChipTone` /
+ * iter1033 `weeklyReviewDueChipTone` / iter1036 `gtdBucketChipTone` で各 domain が **同じ
+ * mapping** を inline で繰り返していた:
+ *
+ *   'ok'     → 'success' (= 緑、positive framing = 6 軸 (5) やる気)
+ *   'info'   → 'info'    (= 青、進行中)
+ *   'warn'   → 'warn'    (= 黄、注意)
+ *   'danger' → 'danger'  (= 赤、要対応)
+ *   'muted'  → 'idle'    (= 灰、attention 不要)
+ *
+ * 本 bridge を 1 source of truth とし、各 domain 固有 ChipTone helper (例: agingSeverityChipTone)
+ * は本関数 + 同 domain の Severity 計算結果 を組み合わせて簡潔化可能。直接 domain → ChipTone
+ * を 1 行で書く caller (= gtdBucketChipTone のような 'urgent' を使う特殊配色) は本 bridge を
+ * 使わず維持 (= 'urgent' は Severity vocab に無いため lossy 不可)。
+ */
+const SEVERITY_TO_CHIP_TONE: Record<Severity, ChipTone> = {
+  ok: 'success',
+  info: 'info',
+  warn: 'warn',
+  danger: 'danger',
+  muted: 'idle',
+}
+
+export function severityToChipTone(sev: Severity): ChipTone {
+  return SEVERITY_TO_CHIP_TONE[sev]
+}
 
 /**
  * AssigneeLoadSeverity (担当負荷 4 段) → Severity (5 段) bridge:

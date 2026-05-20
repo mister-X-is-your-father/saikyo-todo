@@ -175,32 +175,25 @@ export function formatConsultationStatusJa(status: ConsultationStatus): string {
 /**
  * iter1030 ai-automation: ConsultationStatus → 共通 `ChipTone` (6 値 vocab) bridge。
  *
- * 配色 token (dashboard chip / Slack 通知 tone / AgentBriefSignal で再利用):
- *   - 'decided'      → 'success' (= 緑、判断完了、healthy 強調 = 6 軸 (5) やる気 positive framing)
- *   - 'open'         → 'info'    (= 青、受付中、進行中)
- *   - 'closing-soon' → 'warn'    (= 黄、締切 24h 以内、決断推奨)
- *   - 'overdue'      → 'danger'  (= 赤、判断漏れ、即対応)
+ * iter1039 refactor: 内部 mapping を共通 `severityToChipTone` (lib/widget/severity-bridges) に
+ * 委譲 (`consultationStatusSeverity(status)` → `severityToChipTone(sev)` の 2 段)、inline
+ * Record duplicate を排除。
  *
- * iter1028 `consultationStatusSeverity` (= Severity 5 値 'ok/info/warn/danger/muted' bind) と
- * 対称な「ChipTone 6 値 'success/info/warn/danger/urgent/idle' bind」 版。
- * iter1025 `agingSeverityChipTone` と同 motivation の相談軸版 — `decided` を 'success' に lossy
- * 変換することで「判断完了 = 達成 = 緑」 を AI brief tone で positive framing (= severity の
- * 'ok' は SeverityChip 用、ChipTone の 'success' は AgentBriefSignal / dashboard chip-tone 用)。
+ * 配色 token:
+ *   'decided'      → 'success' (= 緑、判断完了、healthy 強調 = 6 軸 (5) やる気 positive framing)
+ *   'open'         → 'info'    (= 青、受付中、進行中)
+ *   'closing-soon' → 'warn'    (= 黄、締切 24h 以内、決断推奨)
+ *   'overdue'      → 'danger'  (= 赤、判断漏れ、即対応)
  *
  * 用途:
  *   - dashboard 相談 chip (SeverityChip ではなく ChipTone bind の chip 群、cost-chip 等と並ぶ)
  *   - Slack daily digest 「相談 status: <chip>」 tone bind
- *   - AgentBriefSignal の tone field 直 bind (= 後続 iter で *ToBriefSignal aggregate を追加可能)
+ *   - AgentBriefSignal の tone field 直 bind
  */
-const CONSULTATION_STATUS_TO_CHIP_TONE: Record<ConsultationStatus, ChipTone> = {
-  decided: 'success',
-  open: 'info',
-  'closing-soon': 'warn',
-  overdue: 'danger',
-}
+import { severityToChipTone } from '@/lib/widget/severity-bridges'
 
 export function consultationStatusChipTone(status: ConsultationStatus): ChipTone {
-  return CONSULTATION_STATUS_TO_CHIP_TONE[status]
+  return severityToChipTone(consultationStatusSeverity(status))
 }
 
 /**

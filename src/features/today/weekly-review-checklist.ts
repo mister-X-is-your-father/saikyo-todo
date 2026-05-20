@@ -170,29 +170,22 @@ export function formatWeeklyReviewDueJa(kind: WeeklyReviewDueKind): string {
 /**
  * iter1035 ai-automation: WeeklyReviewDueKind → 共通 `ChipTone` (6 値 vocab) bridge。
  *
- * 配色 token (dashboard chip / Slack 通知 tone / AgentBriefSignal で再利用):
- *   - 'recent'         → 'success' (= 緑、点検済、healthy 強調 = 6 軸 (5) やる気)
- *   - 'never-reviewed' → 'warn'    (= 黄、未着手、開始推奨)
- *   - 'overdue'        → 'danger'  (= 赤、1 週以上未 review、即対応)
+ * iter1039 refactor: 内部 mapping を共通 `severityToChipTone` (lib/widget/severity-bridges) に
+ * 委譲 (`weeklyReviewDueSeverity(kind)` → `severityToChipTone(sev)` の 2 段)、inline Record
+ * duplicate を排除。
  *
- * iter1033 `weeklyReviewDueSeverity` (= Severity 5 値 SeverityChip bind 用) と対称な「ChipTone
- * 6 値 'success/info/warn/danger/urgent/idle' bind」 版。iter1030 `consultationStatusChipTone`
- * と同 motivation の weekly-review 軸版 — 'recent' を 'success' に lossy 変換することで「点検済
- * = 達成 = 緑」 を AI brief tone で positive framing。
+ * 配色 token:
+ *   'recent'         → 'success' (= 緑、点検済、healthy 強調 = 6 軸 (5) やる気)
+ *   'never-reviewed' → 'warn'    (= 黄、未着手、開始推奨)
+ *   'overdue'        → 'danger'  (= 赤、1 週以上未 review、即対応)
  *
  * 用途:
- *   - dashboard GTD mode chip (= ChipTone bind の chip 群、cost-chip 等と並ぶ)
- *   - Slack daily digest 「Weekly Review: <chip>」 tone bind
- *   - AgentBriefSignal の tone field 直 bind
+ *   - dashboard GTD mode chip / Slack daily digest tone bind / AgentBriefSignal tone field 直 bind
  */
-const WEEKLY_REVIEW_DUE_TO_CHIP_TONE: Record<WeeklyReviewDueKind, ChipTone> = {
-  recent: 'success',
-  'never-reviewed': 'warn',
-  overdue: 'danger',
-}
+import { severityToChipTone } from '@/lib/widget/severity-bridges'
 
 export function weeklyReviewDueChipTone(kind: WeeklyReviewDueKind): ChipTone {
-  return WEEKLY_REVIEW_DUE_TO_CHIP_TONE[kind]
+  return severityToChipTone(weeklyReviewDueSeverity(kind))
 }
 
 /**

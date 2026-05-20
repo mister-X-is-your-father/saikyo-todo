@@ -12,6 +12,7 @@ import {
   improvementSeverityToSeverity,
   pdcaPhaseSeverityCountsToSeverityCounts,
   pdcaPhaseSeverityToSeverity,
+  severityToChipTone,
 } from './severity-bridges'
 
 describe('assigneeLoadSeverityToSeverity', () => {
@@ -339,5 +340,34 @@ describe('fourStateHintCountsToSeverityCounts', () => {
     const sevTotal =
       sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
     expect(sevTotal).toBe(total)
+  })
+})
+
+describe('severityToChipTone (iter1039)', () => {
+  it('ok → success (positive framing、緑)', () => {
+    expect(severityToChipTone('ok')).toBe('success')
+  })
+
+  it('info → info (青、進行中)', () => {
+    expect(severityToChipTone('info')).toBe('info')
+  })
+
+  it('warn → warn (黄、注意)', () => {
+    expect(severityToChipTone('warn')).toBe('warn')
+  })
+
+  it('danger → danger (赤、要対応)', () => {
+    expect(severityToChipTone('danger')).toBe('danger')
+  })
+
+  it('muted → idle (灰、attention 不要)', () => {
+    expect(severityToChipTone('muted')).toBe('idle')
+  })
+
+  it('全 5 値が網羅される', () => {
+    const all = ['ok', 'info', 'warn', 'danger', 'muted'] as const
+    for (const s of all) {
+      expect(typeof severityToChipTone(s)).toBe('string')
+    }
   })
 })

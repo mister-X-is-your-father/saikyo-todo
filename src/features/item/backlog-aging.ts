@@ -230,29 +230,20 @@ export function formatAgingSeverityCompactJa(counts: Readonly<Record<AgingKind, 
  * iter1025 ai-automation: `AgingSeverity` (= iter1018 4 段、ok/info/warn/danger) →
  * 共通 `ChipTone` ('success'/'info'/'warn'/'danger'/'idle'/'urgent') bridge。
  *
- * 配色 token:
+ * iter1039 refactor: 内部 mapping を共通 `severityToChipTone` (lib/widget/severity-bridges) に
+ * 委譲。AgingSeverity は Severity の subset (muted 不在) なので type cast 不要、bridge は
+ * 各 domain で同 mapping を inline 重複していた問題を解消。
+ *
+ * 配色 token (`severityToChipTone` と同じ):
  *   ok     → 'success' (= emerald、停滞なし、healthy 強調 = やる気)
  *   info   → 'info'    (= sky、軽微停滞、warning 弱)
  *   warn   → 'warn'    (= amber、注意、対応推奨)
  *   danger → 'danger'  (= rose、危険、escalate 必須)
- *
- * iter795 `monthlyCostTrendTone` (= 'success' / 'warn' / 'info' / 'idle' direction
- * bind) と同 motivation の backlog-aging 軸版。SeverityChip (`severity.ts`) と
- * 別系の `ChipTone` (= 6 値 vocab) bind が必要な caller (= AgentBriefSignal /
- * Slack daily digest tone / dashboard chip-tone alignment) で再利用される。
- *
- * 'ok' を 'success' に lossy 変換することで「停滞なし = 健全 = 緑」 を AI brief
- * tone で positive framing する (= 6 軸 (5) やる気 = healthy state を強調)。
  */
-const AGING_SEVERITY_TO_CHIP_TONE: Record<AgingSeverity, ChipTone> = {
-  ok: 'success',
-  info: 'info',
-  warn: 'warn',
-  danger: 'danger',
-}
+import { severityToChipTone } from '@/lib/widget/severity-bridges'
 
 export function agingSeverityChipTone(sev: AgingSeverity): ChipTone {
-  return AGING_SEVERITY_TO_CHIP_TONE[sev]
+  return severityToChipTone(sev)
 }
 
 /**
