@@ -40,6 +40,7 @@ import { type AgingKind, backlogAgingToBriefSignal } from '@/features/item/backl
 import { type DueHitRateStats, dueHitRateToBriefSignal } from '@/features/item/due-hit-rate'
 import { type WorkspaceMomentum, workspaceMomentumToBriefSignal } from '@/features/item/momentum'
 import { type VelocitySummary, velocityToBriefSignal } from '@/features/item/velocity'
+import { type WaitingSummary, waitingSummaryToBriefSignal } from '@/features/item/waiting-elapsed'
 import {
   type WeeklyCompletionInsight,
   weeklyCompletionInsightToBriefSignal,
@@ -70,6 +71,12 @@ export interface AnalyticsSignalsInput {
    * caller は backlog item を事前 filter (= 完了/archive 除外) してから渡すこと。
    */
   backlogAging?: Readonly<Record<AgingKind, number>>
+  /**
+   * iter1041 basics: 10 軸目として waiting-summary (= 連絡待ち item 集計、escalate / リマインド時期) も統合。
+   * 値は `summarizeWaitingItems(items, now)` の出力。
+   * caller は waitingFor != null の item を事前抽出してから渡すこと。
+   */
+  waitingSummary?: WaitingSummary
 }
 
 export interface AnalyticsSignals {
@@ -89,6 +96,8 @@ export interface AnalyticsSignals {
   biasTrend: AgentBriefSignal | null
   /** iter1026 basics: backlog 停滞度合い chip (positive polarity, fresh=success / ancient=danger) */
   backlogAging: AgentBriefSignal | null
+  /** iter1041 basics: 連絡待ち chip (= escalate=danger / リマインド=warn / 健全=success / 空=idle) */
+  waitingSummary: AgentBriefSignal | null
 }
 
 const EMPTY: AnalyticsSignals = {
@@ -103,6 +112,7 @@ const EMPTY: AnalyticsSignals = {
   velocity: null,
   biasTrend: null,
   backlogAging: null,
+  waitingSummary: null,
 }
 
 export function composeAnalyticsSignals(input: AnalyticsSignalsInput): AnalyticsSignals {
@@ -137,6 +147,9 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
   if (input.backlogAging) {
     out.backlogAging = backlogAgingToBriefSignal(input.backlogAging)
   }
+  if (input.waitingSummary) {
+    out.waitingSummary = waitingSummaryToBriefSignal(input.waitingSummary)
+  }
   return out
 }
 
@@ -150,12 +163,13 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
  *  3. dueHitRate       (= 期限達成率、商品品質 SLA、cost と並ぶ severity 主)
  *  4. biasTrend        (= 見積精度の変化、品質系 trend、severity 主の補佐)
  *  5. backlogAging     (= 停滞度合い、danger=古参累積、moment と並ぶ backlog 軸 severity 主)
- *  6. reliability      (= 全体 信頼性 chip)
- *  7. costTrend        (= cost 月次トレンド)
- *  8. velocity         (= 完了ペース、weekly と並ぶ達成感系)
- *  9. weeklyCompletion (= 週次完了 trend、達成感 + やる気)
- * 10. momentum         (= backlog momentum)
- * 11. dominantRole     (= 主軸 role、informational、最後)
+ *  6. waitingSummary   (= 連絡待ち、danger=escalate、外部依存 軸 severity 主)
+ *  7. reliability      (= 全体 信頼性 chip)
+ *  8. costTrend        (= cost 月次トレンド)
+ *  9. velocity         (= 完了ペース、weekly と並ぶ達成感系)
+ * 10. weeklyCompletion (= 週次完了 trend、達成感 + やる気)
+ * 11. momentum         (= backlog momentum)
+ * 12. dominantRole     (= 主軸 role、informational、最後)
  */
 export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
@@ -164,6 +178,7 @@ export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSi
     signals.dueHitRate,
     signals.biasTrend,
     signals.backlogAging,
+    signals.waitingSummary,
     signals.reliability,
     signals.costTrend,
     signals.velocity,

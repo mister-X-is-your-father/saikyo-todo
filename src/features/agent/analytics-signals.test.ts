@@ -62,6 +62,44 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(s.velocity!.tone).toBe('idle')
   })
 
+  it('iter1041: waitingSummary のみ (空) → waitingSummary signal、tone=idle / "連絡待ちなし"', () => {
+    const s = composeAnalyticsSignals({
+      waitingSummary: {
+        total: 0,
+        bySeverity: { ok: 0, warn: 0, danger: 0, muted: 0 },
+        oldestDays: null,
+        dueRemindCount: 0,
+      },
+    })
+    expect(s.waitingSummary).not.toBeNull()
+    expect(s.waitingSummary!.tone).toBe('idle')
+    expect(s.waitingSummary!.text).toBe('連絡待ちなし')
+  })
+
+  it('iter1041: waitingSummary danger > 0 → tone=danger', () => {
+    const s = composeAnalyticsSignals({
+      waitingSummary: {
+        total: 2,
+        bySeverity: { ok: 0, warn: 0, danger: 2, muted: 0 },
+        oldestDays: 10,
+        dueRemindCount: 0,
+      },
+    })
+    expect(s.waitingSummary!.tone).toBe('danger')
+  })
+
+  it('iter1041: waitingSummary 健全のみ → tone=success', () => {
+    const s = composeAnalyticsSignals({
+      waitingSummary: {
+        total: 1,
+        bySeverity: { ok: 1, warn: 0, danger: 0, muted: 0 },
+        oldestDays: 2,
+        dueRemindCount: 0,
+      },
+    })
+    expect(s.waitingSummary!.tone).toBe('success')
+  })
+
   it('iter1026: backlogAging のみ (全 0 = 新鮮) → backlogAging signal、tone=success', () => {
     const s = composeAnalyticsSignals({
       backlogAging: { new: 0, recent: 0, stale: 0, ancient: 0, unknown: 0 },
@@ -339,6 +377,7 @@ describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', (
       'velocity',
       'biasTrend',
       'backlogAging',
+      'waitingSummary',
     ] as const
     expect(Object.keys(empty).sort()).toEqual([...expectedKeys].sort())
     for (const k of expectedKeys) {
