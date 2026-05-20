@@ -16,6 +16,8 @@
  * AI 不使用、副作用無し、依存無し。pure helper + Vitest 単体 test で網羅。
  */
 
+import type { ChipTone } from '@/lib/ui/chip-tone'
+
 export type GtdBucket =
   | 'immediate'
   | 'next-action'
@@ -198,6 +200,46 @@ const BUCKET_SEVERITY: Record<GtdBucket, 'ok' | 'info' | 'warn' | 'danger' | 'mu
 
 export function gtdBucketSeverity(bucket: GtdBucket): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
   return BUCKET_SEVERITY[bucket]
+}
+
+/**
+ * iter1036 basics: GtdBucket → 共通 `ChipTone` (6 値 vocab) bridge。
+ *
+ * iter544 `gtdBucketSeverity` (= Severity 5 値 SeverityChip bind 用) と対称な「ChipTone 6 値
+ * vocab」 版。dashboard chip-tone / AgentBriefSignal / Slack 通知 tone は ChipTone (=
+ * 'danger'/'urgent'/'warn'/'info'/'idle'/'success') を要求するため、Severity の 'muted' を
+ * 'idle' に lossy 変換する bridge が必要。
+ *
+ * 配色 token:
+ *   'immediate'    → 'urgent' (= 即実行を 'warn' より強い tier に framing、2 分 rule 強調)
+ *   'next-action'  → 'info'   (= 進行中、優先順位ありの実行待ち)
+ *   'project'      → 'info'   (= 分解必要、複数 step だが進行中)
+ *   'waiting-for'  → 'warn'   (= 関係者待ち、リマインドが要るかも)
+ *   'reference'    → 'idle'   (= 参考、attention 不要 = muted 相当)
+ *   'someday'      → 'idle'   (= いつか、attention 不要)
+ *   'scheduled'    → 'info'   (= 予定済、期日まで放置 ok)
+ *   'trash'        → 'idle'   (= 削除候補、attention 不要)
+ *
+ * 'immediate' を 'urgent' に強化 (= gtdBucketSeverity では 'warn' 同 tier の waiting-for と
+ * 区別不能だった、ChipTone の 'urgent' は 'warn' より上の tier で 2 分 rule の即実行性を強調)。
+ *
+ * iter1030 `consultationStatusChipTone` / iter1035 `weeklyReviewDueChipTone` と並ぶ「domain
+ * status → ChipTone」 pattern の GTD bucket 軸版。caller (= GTD mode inbox dashboard chip /
+ * Slack daily digest / AgentBriefSignal) は本 bridge で chip tone 1 関数化。
+ */
+const BUCKET_CHIP_TONE: Record<GtdBucket, ChipTone> = {
+  immediate: 'urgent',
+  'next-action': 'info',
+  project: 'info',
+  'waiting-for': 'warn',
+  reference: 'idle',
+  someday: 'idle',
+  scheduled: 'info',
+  trash: 'idle',
+}
+
+export function gtdBucketChipTone(bucket: GtdBucket): ChipTone {
+  return BUCKET_CHIP_TONE[bucket]
 }
 
 /**

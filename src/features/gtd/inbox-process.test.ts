@@ -5,6 +5,7 @@ import {
   classifyInboxItem,
   formatInboxBucketsJa,
   formatInboxHealthHintJa,
+  gtdBucketChipTone,
   gtdBucketLabelJa,
   gtdBucketSeverity,
   type InboxItemFields,
@@ -203,6 +204,28 @@ describe('gtdBucketSeverity', () => {
     expect(gtdBucketSeverity('reference')).toBe('muted')
     expect(gtdBucketSeverity('someday')).toBe('muted')
     expect(gtdBucketSeverity('trash')).toBe('muted')
+  })
+})
+
+describe('gtdBucketChipTone (iter1036)', () => {
+  it('immediate → urgent (= 2 分 rule 強調、warn より強い tier)', () => {
+    expect(gtdBucketChipTone('immediate')).toBe('urgent')
+  })
+
+  it('waiting-for → warn (= 関係者待ち、リマインド推奨)', () => {
+    expect(gtdBucketChipTone('waiting-for')).toBe('warn')
+  })
+
+  it('進行軸 (next-action / project / scheduled) → info', () => {
+    expect(gtdBucketChipTone('next-action')).toBe('info')
+    expect(gtdBucketChipTone('project')).toBe('info')
+    expect(gtdBucketChipTone('scheduled')).toBe('info')
+  })
+
+  it('attention 不要 (reference / someday / trash) → idle (= muted 相当)', () => {
+    expect(gtdBucketChipTone('reference')).toBe('idle')
+    expect(gtdBucketChipTone('someday')).toBe('idle')
+    expect(gtdBucketChipTone('trash')).toBe('idle')
   })
 })
 
