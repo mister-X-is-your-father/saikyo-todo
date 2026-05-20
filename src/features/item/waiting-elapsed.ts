@@ -17,7 +17,11 @@
  * AI 不使用、副作用無し、依存無し。pure helper + Vitest 単体 test で網羅。
  */
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
+import type { ChipTone } from '@/lib/ui/chip-tone'
 import type { Severity } from '@/lib/widget/severity'
+import { severityToChipTone } from '@/lib/widget/severity-bridges'
+
+import type { AgentBriefSignal } from '@/features/agent/brief-signal'
 
 export interface WaitingItemFields {
   /** 連絡待ち化した時刻 (= 依頼を送った時刻、null なら未設定) */
@@ -58,6 +62,26 @@ export function waitingElapsedSeverity(days: number | null): Severity {
   if (days < 3) return 'ok'
   if (days < 7) return 'warn'
   return 'danger'
+}
+
+/**
+ * iter1040 ai-automation: 経過日数 → 共通 `ChipTone` (6 値) bridge。
+ *
+ * iter1039 `severityToChipTone` (= Severity 5 値 → ChipTone 6 値 lossy bridge) を経由する
+ * 2 段 helper: `waitingElapsedSeverity(days)` (= 'ok'/'warn'/'danger'/'muted') →
+ * `severityToChipTone(sev)` (= 'success'/'warn'/'danger'/'idle')。
+ *
+ * 配色 token:
+ *  - days null → 'idle'    (= 灰、不明)
+ *  - days < 3  → 'success' (= 緑、健全な待ち、positive framing)
+ *  - days < 7  → 'warn'    (= 黄、リマインド時期)
+ *  - days >= 7 → 'danger'  (= 赤、escalate 検討)
+ *
+ * iter1030/1033/1036 と並ぶ「domain → ChipTone」 pattern の waiting-elapsed 軸版。
+ * AgentBriefSignal / dashboard chip-tone bind 用。
+ */
+export function waitingElapsedChipTone(days: number | null): ChipTone {
+  return severityToChipTone(waitingElapsedSeverity(days))
 }
 
 /**
@@ -147,6 +171,42 @@ export function formatWaitingSummaryJa(summary: WaitingSummary): string {
   }
   if (parts.length === 0) return `連絡待ち ${summary.total} 件`
   return `連絡待ち ${summary.total} 件 (${parts.join('、')})`
+}
+
+/**
+ * iter1040 ai-automation: WaitingSummary → 共通 `ChipTone` (= 最 severe 軸の tone を採用)。
+ *
+ *   - total=0 → 'idle'    (= 連絡待ちなし)
+ *   - danger > 0 → 'danger' (= 7d+ escalate 候補あり)
+ *   - dueRemindCount > 0 → 'warn' (= リマインド推奨あり、escalate なし)
+ *   - 健全のみ → 'success' (= 待ち中だが健全、positive framing)
+ *
+ * `formatWaitingSummaryJa` と整合する tone 軸。AgentBriefSignal / dashboard chip-tone bind。
+ */
+export function waitingSummaryChipTone(summary: WaitingSummary): ChipTone {
+  if (summary.total === 0) return 'idle'
+  if (summary.bySeverity.danger > 0) return 'danger'
+  if (summary.dueRemindCount > 0) return 'warn'
+  return 'success'
+}
+
+/**
+ * iter1040 ai-automation: WaitingSummary → `AgentBriefSignal` (text + tone) compose helper。
+ *
+ * iter794-797 + iter1025/1031/1035/1038 `*ToBriefSignal` pattern (= 12 弾目) の waiting 軸版。
+ * text は iter486 `formatWaitingSummaryJa` を再利用、tone は本 iter `waitingSummaryChipTone`
+ * を再利用 (= chip 配色と signal tone が完全一致)。
+ *
+ * caller pattern:
+ *   const summary = summarizeWaitingItems(items, now)
+ *   const signal = waitingSummaryToBriefSignal(summary)
+ *   // → composeAnalyticsSignals 風に concat、または単独 chip render
+ */
+export function waitingSummaryToBriefSignal(summary: WaitingSummary): AgentBriefSignal {
+  return {
+    text: formatWaitingSummaryJa(summary),
+    tone: waitingSummaryChipTone(summary),
+  }
 }
 
 /**

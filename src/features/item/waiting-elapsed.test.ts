@@ -10,9 +10,12 @@ import {
   nextReminderInDays,
   pickOldestWaitingItem,
   summarizeWaitingItems,
+  waitingElapsedChipTone,
   waitingElapsedSeverity,
   type WaitingItemFields,
   type WaitingSummary,
+  waitingSummaryChipTone,
+  waitingSummaryToBriefSignal,
 } from './waiting-elapsed'
 
 const NOW = new Date('2026-04-30T12:00:00Z')
@@ -360,5 +363,75 @@ describe('formatWaitingHintJa', () => {
         summary({ total: 3, bySeverity: { ok: 0, warn: 0, danger: 3, muted: 0 } }),
       ),
     ).toBe('異常')
+  })
+})
+
+describe('waitingElapsedChipTone (iter1040)', () => {
+  it('days null → idle (灰、不明)', () => {
+    expect(waitingElapsedChipTone(null)).toBe('idle')
+  })
+
+  it('days < 3 → success (緑、健全、positive framing)', () => {
+    expect(waitingElapsedChipTone(0)).toBe('success')
+    expect(waitingElapsedChipTone(2)).toBe('success')
+  })
+
+  it('3 <= days < 7 → warn (黄、リマインド時期)', () => {
+    expect(waitingElapsedChipTone(3)).toBe('warn')
+    expect(waitingElapsedChipTone(6)).toBe('warn')
+  })
+
+  it('days >= 7 → danger (赤、escalate)', () => {
+    expect(waitingElapsedChipTone(7)).toBe('danger')
+    expect(waitingElapsedChipTone(14)).toBe('danger')
+  })
+})
+
+describe('waitingSummaryChipTone / waitingSummaryToBriefSignal (iter1040)', () => {
+  function summary(over: Partial<WaitingSummary>): WaitingSummary {
+    return {
+      total: 0,
+      bySeverity: { ok: 0, warn: 0, danger: 0, muted: 0 },
+      oldestDays: null,
+      dueRemindCount: 0,
+      ...over,
+    }
+  }
+
+  it('total=0 → idle / "連絡待ちなし"', () => {
+    const s = summary({})
+    expect(waitingSummaryChipTone(s)).toBe('idle')
+    expect(waitingSummaryToBriefSignal(s)).toEqual({
+      text: '連絡待ちなし',
+      tone: 'idle',
+    })
+  })
+
+  it('danger > 0 → danger (escalate)', () => {
+    const s = summary({
+      total: 2,
+      bySeverity: { ok: 0, warn: 0, danger: 2, muted: 0 },
+      oldestDays: 10,
+    })
+    expect(waitingSummaryChipTone(s)).toBe('danger')
+    expect(waitingSummaryToBriefSignal(s).tone).toBe('danger')
+  })
+
+  it('dueRemindCount > 0 only → warn (リマインド推奨)', () => {
+    const s = summary({
+      total: 3,
+      bySeverity: { ok: 3, warn: 0, danger: 0, muted: 0 },
+      dueRemindCount: 2,
+    })
+    expect(waitingSummaryChipTone(s)).toBe('warn')
+  })
+
+  it('健全のみ → success (positive framing)', () => {
+    const s = summary({
+      total: 1,
+      bySeverity: { ok: 1, warn: 0, danger: 0, muted: 0 },
+    })
+    expect(waitingSummaryChipTone(s)).toBe('success')
+    expect(waitingSummaryToBriefSignal(s).tone).toBe('success')
   })
 })
