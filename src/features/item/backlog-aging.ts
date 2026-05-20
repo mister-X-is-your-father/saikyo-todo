@@ -25,6 +25,9 @@
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { formatNonZeroCounts } from '@/lib/format-counts'
 import { makeHintLabelFormatter } from '@/lib/hint'
+import { type ChipTone } from '@/lib/ui/chip-tone'
+
+import { type AgentBriefSignal } from '@/features/agent/brief-signal'
 
 import { bucketByPriorityWith, formatPriorityBucketsLabeled, type PriorityKey } from './priority'
 
@@ -221,6 +224,58 @@ export function formatAgingSeverityCompactJa(counts: Readonly<Record<AgingKind, 
   return counts.ancient === 0
     ? `注意 停滞 ${stagnant} 件`
     : `注意 停滞 ${stagnant} 件 (古参 ${counts.ancient})`
+}
+
+/**
+ * iter1025 ai-automation: `AgingSeverity` (= iter1018 4 段、ok/info/warn/danger) →
+ * 共通 `ChipTone` ('success'/'info'/'warn'/'danger'/'idle'/'urgent') bridge。
+ *
+ * 配色 token:
+ *   ok     → 'success' (= emerald、停滞なし、healthy 強調 = やる気)
+ *   info   → 'info'    (= sky、軽微停滞、warning 弱)
+ *   warn   → 'warn'    (= amber、注意、対応推奨)
+ *   danger → 'danger'  (= rose、危険、escalate 必須)
+ *
+ * iter795 `monthlyCostTrendTone` (= 'success' / 'warn' / 'info' / 'idle' direction
+ * bind) と同 motivation の backlog-aging 軸版。SeverityChip (`severity.ts`) と
+ * 別系の `ChipTone` (= 6 値 vocab) bind が必要な caller (= AgentBriefSignal /
+ * Slack daily digest tone / dashboard chip-tone alignment) で再利用される。
+ *
+ * 'ok' を 'success' に lossy 変換することで「停滞なし = 健全 = 緑」 を AI brief
+ * tone で positive framing する (= 6 軸 (5) やる気 = healthy state を強調)。
+ */
+const AGING_SEVERITY_TO_CHIP_TONE: Record<AgingSeverity, ChipTone> = {
+  ok: 'success',
+  info: 'info',
+  warn: 'warn',
+  danger: 'danger',
+}
+
+export function agingSeverityChipTone(sev: AgingSeverity): ChipTone {
+  return AGING_SEVERITY_TO_CHIP_TONE[sev]
+}
+
+/**
+ * iter1025 ai-automation: backlog-aging counts を `AgentBriefSignal` 形式
+ * (text + tone) に変換する compose helper。
+ *
+ * iter794-797 `*ToBriefSignal` pattern (= cost-month-projection / cost-monthly-trend
+ * / momentum / weekly-completion / due-hit-rate / velocity / bias-trend に続く 8 弾目)
+ * の backlog-aging 軸版。caller (= AI 朝 brief / Slack daily digest / dashboard chip)
+ * は本 helper を `composeAnalyticsSignals` 配列に concat → `.map(s => <Chip ... />)`
+ * で 1 行 render 可能。
+ *
+ * text は `formatAgingSeverityCompactJa` (iter1023 compact 1 行)、tone は
+ * `agingSeverityChipTone` (= severity 4 段 → ChipTone 6 値 lossy bridge) を再利用
+ * (= chip 配色と signal tone が完全一致)。
+ */
+export function backlogAgingToBriefSignal(
+  counts: Readonly<Record<AgingKind, number>>,
+): AgentBriefSignal {
+  return {
+    text: formatAgingSeverityCompactJa(counts),
+    tone: agingSeverityChipTone(agingSeverity(counts)),
+  }
 }
 
 /**

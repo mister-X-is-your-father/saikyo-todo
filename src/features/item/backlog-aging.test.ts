@@ -4,6 +4,8 @@ import {
   type AgingKind,
   agingLabel,
   agingSeverity,
+  agingSeverityChipTone,
+  backlogAgingToBriefSignal,
   classifyBacklogAgingHint,
   countAgingItemsOlderThanWeek,
   countItemsByAge,
@@ -444,5 +446,78 @@ describe('formatAgingSeverityCompactJa (iter1023)', () => {
 
   it('unknown は表示に含めない (severity 判定対象外)', () => {
     expect(formatAgingSeverityCompactJa(c({ unknown: 100 }))).toBe('新鮮')
+  })
+})
+
+describe('agingSeverityChipTone (iter1025)', () => {
+  it('ok → success (healthy 緑強調)', () => {
+    expect(agingSeverityChipTone('ok')).toBe('success')
+  })
+
+  it('info → info (sky 弱警告)', () => {
+    expect(agingSeverityChipTone('info')).toBe('info')
+  })
+
+  it('warn → warn (amber 注意)', () => {
+    expect(agingSeverityChipTone('warn')).toBe('warn')
+  })
+
+  it('danger → danger (rose 危険)', () => {
+    expect(agingSeverityChipTone('danger')).toBe('danger')
+  })
+})
+
+describe('backlogAgingToBriefSignal (iter1025)', () => {
+  function c(over: Partial<Record<AgingKind, number>>): Record<AgingKind, number> {
+    return { new: 0, recent: 0, stale: 0, ancient: 0, unknown: 0, ...over }
+  }
+
+  it('全 0 → 新鮮 / success', () => {
+    expect(backlogAgingToBriefSignal(c({}))).toEqual({
+      text: '新鮮',
+      tone: 'success',
+    })
+  })
+
+  it('全 new/recent → 新鮮 / success (停滞なし)', () => {
+    expect(backlogAgingToBriefSignal(c({ new: 3, recent: 5 }))).toEqual({
+      text: '新鮮',
+      tone: 'success',
+    })
+  })
+
+  it('stale 1-4 (info) → "軽微 停滞 N 件" / info', () => {
+    expect(backlogAgingToBriefSignal(c({ stale: 2 }))).toEqual({
+      text: '軽微 停滞 2 件',
+      tone: 'info',
+    })
+  })
+
+  it('stale 5+ (warn, ancient なし) → "注意 停滞 N 件" / warn', () => {
+    expect(backlogAgingToBriefSignal(c({ stale: 5 }))).toEqual({
+      text: '注意 停滞 5 件',
+      tone: 'warn',
+    })
+  })
+
+  it('ancient 1-4 (warn) → "注意 停滞 N 件 (古参 M)" / warn', () => {
+    expect(backlogAgingToBriefSignal(c({ stale: 2, ancient: 3 }))).toEqual({
+      text: '注意 停滞 5 件 (古参 3)',
+      tone: 'warn',
+    })
+  })
+
+  it('ancient 5+ (danger) → "危険 古参 N 件" / danger', () => {
+    expect(backlogAgingToBriefSignal(c({ ancient: 5 }))).toEqual({
+      text: '危険 古参 5 件',
+      tone: 'danger',
+    })
+  })
+
+  it('unknown のみ → 新鮮 / success (severity 判定対象外)', () => {
+    expect(backlogAgingToBriefSignal(c({ unknown: 50 }))).toEqual({
+      text: '新鮮',
+      tone: 'success',
+    })
   })
 })
