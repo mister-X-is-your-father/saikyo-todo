@@ -70,7 +70,7 @@ export interface WeeklyInsightOptions {
   weekStartsOnMonday?: boolean
 }
 
-import { formatUtcISO, parseDateOrNull } from '@/lib/date/iso'
+import { formatUtcISO, MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { rateToPct } from '@/lib/format-rate'
 import { round1 } from '@/lib/round-decimal'
 
@@ -121,8 +121,8 @@ export function buildWeeklyInsight(
   const labels = wsOnMon ? DAY_LABELS_MON_FIRST : DAY_LABELS_SUN_FIRST
 
   const ws = weekStartUTC(now, wsOnMon)
-  const prevWs = new Date(ws.getTime() - 7 * 24 * 60 * 60 * 1000)
-  const nextWs = new Date(ws.getTime() + 7 * 24 * 60 * 60 * 1000)
+  const prevWs = new Date(ws.getTime() - 7 * MS_PER_DAY)
+  const nextWs = new Date(ws.getTime() + 7 * MS_PER_DAY)
 
   const byDayCurrent = new Array<number>(7).fill(0)
   const byDayPrev = new Array<number>(7).fill(0)

@@ -11,6 +11,8 @@
  * 詳細: docs/methodology-modes-plan.md §1 G-5 + FEEDBACK_QUEUE.md GT-4
  */
 
+import { MS_PER_DAY } from '@/lib/date/iso'
+
 import type { Item } from '@/features/item/schema'
 
 export interface WeeklyReviewItem {
@@ -110,6 +112,6 @@ export type WeeklyReviewDueKind =
 export function classifyWeeklyReviewDue(state: WeeklyReviewState): WeeklyReviewDueKind {
   if (!state.lastReviewAt) return 'never-reviewed'
   const diffMs = state.now.getTime() - state.lastReviewAt.getTime()
-  if (diffMs > 7 * 24 * 60 * 60 * 1000) return 'overdue'
+  if (diffMs > 7 * MS_PER_DAY) return 'overdue'
   return 'recent'
 }

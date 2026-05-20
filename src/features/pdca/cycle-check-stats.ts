@@ -26,7 +26,7 @@
  *
  * AI 不使用、副作用無し、依存無し。pure helper + Vitest 単体 test で網羅。
  */
-import { parseDateOrNull } from '@/lib/date/iso'
+import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { rateToPct } from '@/lib/format-rate'
 import { round1 } from '@/lib/round-decimal'
 
@@ -87,11 +87,11 @@ export function buildCycleCheckStats(
 ): CycleCheckStats {
   const cycleEnd = parseDateLike(options.cycleEndedAt) ?? new Date()
   const cycleStart =
-    parseDateLike(options.cycleStartedAt) ?? new Date(cycleEnd.getTime() - 7 * 24 * 60 * 60 * 1000)
+    parseDateLike(options.cycleStartedAt) ?? new Date(cycleEnd.getTime() - 7 * MS_PER_DAY)
 
   const cycleDurationDays = Math.max(
     1,
-    Math.round((cycleEnd.getTime() - cycleStart.getTime()) / (24 * 60 * 60 * 1000)) + 1,
+    Math.round((cycleEnd.getTime() - cycleStart.getTime()) / MS_PER_DAY) + 1,
   )
 
   let done = 0

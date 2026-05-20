@@ -8,6 +8,8 @@
  *
  * 詳細: ~/.claude/plans/saikyo-waiting-mode-plan.md §5.1
  */
+import { MS_PER_DAY } from '@/lib/date/iso'
+
 import type { Item } from './schema'
 import type { WaitingForState } from './schema'
 
@@ -39,7 +41,7 @@ export interface WaitingListBuckets {
 
 function daysBetween(a: Date, b: Date): number {
   const ms = b.getTime() - a.getTime()
-  return Math.floor(ms / (24 * 60 * 60 * 1000))
+  return Math.floor(ms / MS_PER_DAY)
 }
 
 /**
@@ -62,9 +64,9 @@ export function aggregateWaitingList(items: Item[], now: Date): WaitingListBucke
     const lastReminded = state.lastRemindedAt ? new Date(state.lastRemindedAt) : null
     const nextReminderAt =
       state.reminderCadenceDays && lastReminded
-        ? new Date(lastReminded.getTime() + state.reminderCadenceDays * 24 * 60 * 60 * 1000)
+        ? new Date(lastReminded.getTime() + state.reminderCadenceDays * MS_PER_DAY)
         : state.reminderCadenceDays
-          ? new Date(requestedAt.getTime() + state.reminderCadenceDays * 24 * 60 * 60 * 1000)
+          ? new Date(requestedAt.getTime() + state.reminderCadenceDays * MS_PER_DAY)
           : null
 
     const row: WaitingItemRow = { item, state, daysElapsed: days, nextReminderAt }

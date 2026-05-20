@@ -13,6 +13,8 @@
  * 詳細: docs/methodology-modes-plan.md §1 T-5 + FEEDBACK_QUEUE.md 目標達成 + 繰り返しタスク
  */
 
+import { MS_PER_DAY } from '@/lib/date/iso'
+
 export interface RecurrenceState {
   /** 最後に展開した時刻 (template_instantiations.created_at 最大値)。null = 未展開 */
   lastRunAt: Date | null
@@ -37,7 +39,8 @@ export interface RecurrenceDueResult {
   shouldInstantiate: boolean
 }
 
-const ONE_DAY_MS = 24 * 60 * 60 * 1000
+// iter1027 refactor: 旧 local `MS_PER_DAY = 24 * 60 * 60 * 1000` を `@/lib/date/iso#MS_PER_DAY`
+// に集約 (= iter1024 sweep の継続)。
 
 /**
  * recurring template の現状 + 今 から 「いま展開すべきか」 判定。
@@ -66,7 +69,7 @@ export function classifyRecurrenceDue(state: RecurrenceState, now: Date): Recurr
       shouldInstantiate: true,
     }
   }
-  if (diffMs <= ONE_DAY_MS) {
+  if (diffMs <= MS_PER_DAY) {
     return {
       kind: 'due-today',
       message: `${Math.floor(diffMs / 3600_000)} 時間後 展開予定`,
@@ -75,7 +78,7 @@ export function classifyRecurrenceDue(state: RecurrenceState, now: Date): Recurr
   }
   return {
     kind: 'upcoming',
-    message: `${Math.floor(diffMs / ONE_DAY_MS)} 日後 展開予定`,
+    message: `${Math.floor(diffMs / MS_PER_DAY)} 日後 展開予定`,
     shouldInstantiate: false,
   }
 }

@@ -2,6 +2,7 @@ import 'server-only'
 
 import { recordAudit } from '@/lib/audit'
 import { requireUser, requireWorkspaceMember } from '@/lib/auth/guard'
+import { MS_PER_DAY } from '@/lib/date/iso'
 import { withUserDb } from '@/lib/db/scoped-client'
 import { ConflictError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
@@ -34,7 +35,7 @@ const NOT_FOUND = 'Schedule が見つかりません'
  */
 export function dayBoundsUtc(date: string): { from: Date; to: Date } {
   const from = new Date(`${date}T00:00:00.000Z`)
-  const to = new Date(from.getTime() + 24 * 60 * 60 * 1000)
+  const to = new Date(from.getTime() + MS_PER_DAY)
   return { from, to }
 }
 

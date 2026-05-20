@@ -21,6 +21,8 @@
  * AI 不使用、副作用無し、依存無し。pure helper + Vitest 単体 test で網羅。
  */
 
+import { MS_PER_DAY } from '@/lib/date/iso'
+
 export interface RecoveryPlanItemFields {
   id: string
   title: string
@@ -67,7 +69,7 @@ function dayDiffISO(a: string, b: string): number {
   const ad = Date.parse(`${a}T00:00:00Z`)
   const bd = Date.parse(`${b}T00:00:00Z`)
   if (!Number.isFinite(ad) || !Number.isFinite(bd)) return Number.NaN
-  return Math.round((bd - ad) / (24 * 60 * 60 * 1000))
+  return Math.round((bd - ad) / MS_PER_DAY)
 }
 
 export function buildRecoveryPlan(

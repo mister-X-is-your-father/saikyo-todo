@@ -26,6 +26,8 @@
  *     を出すので scope が異なる (片方は sprint planning、片方は daily standup)。
  */
 
+import { MS_PER_DAY } from '@/lib/date/iso'
+
 export interface RiskBoardItemFields {
   id: string
   title: string
@@ -79,7 +81,7 @@ function dayDiffISO(a: string, b: string): number {
   const ad = Date.parse(`${a}T00:00:00Z`)
   const bd = Date.parse(`${b}T00:00:00Z`)
   if (!Number.isFinite(ad) || !Number.isFinite(bd)) return Number.NaN
-  return Math.round((bd - ad) / (24 * 60 * 60 * 1000))
+  return Math.round((bd - ad) / MS_PER_DAY)
 }
 
 function computeRiskScore<T extends RiskBoardItemFields>(

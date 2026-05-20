@@ -23,6 +23,7 @@
  *     (本 helper と orthogonal、retro widget は両方を使う)。
  *   - `groupItemsByStatus` も使えるが、本 helper は数値だけ返したいので独自集計。
  */
+import { MS_PER_DAY } from '@/lib/date/iso'
 import { rateToPct } from '@/lib/format-rate'
 
 import { normalizeStatus } from '@/features/item/status-visual'
@@ -136,11 +137,7 @@ export function buildSprintRetroSummary(
       // overdueDelivery: doneAt > dueDate → 遅れて完了
       const due = parseISODate(it.dueDate)
       const done = parseDoneAt(it.doneAt)
-      if (
-        due !== null &&
-        done !== null &&
-        done.getTime() > due.getTime() + 24 * 60 * 60 * 1000 - 1
-      ) {
+      if (due !== null && done !== null && done.getTime() > due.getTime() + MS_PER_DAY - 1) {
         overdueDelivery += 1
       }
     } else if (s === 'todo' || s === 'in_progress' || s === 'blocked') {

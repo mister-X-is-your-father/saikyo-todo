@@ -1,7 +1,7 @@
 import { createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 
-import { ISO_DATE_RE } from '@/lib/date/iso'
+import { ISO_DATE_RE, MS_PER_DAY } from '@/lib/date/iso'
 import { itemSchedules } from '@/lib/db/schema'
 
 export const ScheduleSelectSchema = createSelectSchema(itemSchedules)
@@ -32,7 +32,7 @@ export const CreateScheduleInputSchema = z
       })
     }
     const span = Date.parse(v.endAt) - Date.parse(v.startAt)
-    if (span > 24 * 60 * 60 * 1000) {
+    if (span > MS_PER_DAY) {
       ctx.addIssue({
         code: 'custom',
         path: ['endAt'],

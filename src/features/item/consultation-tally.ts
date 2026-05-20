@@ -9,6 +9,8 @@
  *   - 本 helper は **vote rows → tally summary** の純集計のみ (DB アクセスなし)
  */
 
+import { MS_PER_DAY } from '@/lib/date/iso'
+
 export interface ConsultationOption {
   /** option 配列の index (0-based、表示順) */
   index: number
@@ -109,6 +111,6 @@ export function classifyConsultationStatus(input: {
   if (!input.deadline) return 'open'
   const diffMs = input.deadline.getTime() - input.now.getTime()
   if (diffMs < 0) return 'overdue'
-  if (diffMs <= 24 * 60 * 60 * 1000) return 'closing-soon'
+  if (diffMs <= MS_PER_DAY) return 'closing-soon'
   return 'open'
 }
