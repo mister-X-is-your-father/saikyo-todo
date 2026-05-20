@@ -16,9 +16,8 @@ import type { ChipTone } from '@/lib/ui/chip-tone'
 import type { Severity } from '@/lib/widget/severity'
 
 import type { AgentBriefSignal } from '@/features/agent/brief-signal'
+import { isItemActive } from '@/features/item/active'
 import type { Item } from '@/features/item/schema'
-
-import { isItemActive } from './operation-board'
 
 export interface WeeklyReviewItem {
   /** GTD 5-step id */

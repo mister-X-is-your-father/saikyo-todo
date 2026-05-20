@@ -33,15 +33,12 @@ export interface OperationBoardSummary {
   today: string
 }
 
-/**
- * iter610 refactor: item の「active」 判定 (doneAt / archivedAt / deletedAt が
- * 全て null) を共通 helper として export。automation-part/parts/item.ts の
- * itemListTodayPart / itemListOverduePart からも参照される (= 「active item」
- * の semantics を 1 箇所に固定)。
- */
-export function isItemActive(it: Item): boolean {
-  return !it.doneAt && !it.archivedAt && !it.deletedAt
-}
+// iter1042 refactor: canonical 実装を `features/item/active.ts` に移転、本 file は re-export
+// で後方互換維持 (caller: automation-part/parts/item.ts / weekly-review-checklist.ts /
+// waiting-list-aggregate.ts 等)。
+import { isItemActive } from '@/features/item/active'
+
+export { isItemActive }
 
 function dayOffsetISO(today: string, offset: number): string {
   const d = new Date(`${today}T00:00:00Z`)

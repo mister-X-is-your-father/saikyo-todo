@@ -10,6 +10,7 @@
  */
 import { MS_PER_DAY } from '@/lib/date/iso'
 
+import { isItemActive } from './active'
 import type { Item } from './schema'
 import type { WaitingForState } from './schema'
 
@@ -56,7 +57,7 @@ export function aggregateWaitingList(items: Item[], now: Date): WaitingListBucke
 
   for (const item of items) {
     if (!item.waitingFor) continue
-    if (item.deletedAt || item.archivedAt || item.doneAt) continue
+    if (!isItemActive(item)) continue
     const state = item.waitingFor as unknown as WaitingForState
     const requestedAt = new Date(state.requestedAt)
     const days = Math.max(0, daysBetween(requestedAt, now))

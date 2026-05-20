@@ -22,9 +22,9 @@ import { z } from 'zod'
 
 import { ISO_DATE_RE } from '@/lib/date/iso'
 
+import { isItemActive } from '@/features/item/active'
 import { ItemSelectSchema } from '@/features/item/schema'
 import { itemService } from '@/features/item/service'
-import { isItemActive } from '@/features/today/operation-board'
 
 import { definePart, unwrapPartResult } from '../types'
 
