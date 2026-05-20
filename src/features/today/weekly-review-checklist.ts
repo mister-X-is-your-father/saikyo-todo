@@ -12,6 +12,7 @@
  */
 
 import { MS_PER_DAY } from '@/lib/date/iso'
+import type { Severity } from '@/lib/widget/severity'
 
 import type { Item } from '@/features/item/schema'
 
@@ -114,4 +115,50 @@ export function classifyWeeklyReviewDue(state: WeeklyReviewState): WeeklyReviewD
   const diffMs = state.now.getTime() - state.lastReviewAt.getTime()
   if (diffMs > 7 * MS_PER_DAY) return 'overdue'
   return 'recent'
+}
+
+/**
+ * iter1033 basics: WeeklyReviewDueKind → 共通 `Severity` ('ok'/'info'/'warn'/'danger'/'muted') bridge。
+ *
+ * 配色 token (SeverityChip tone bind 用):
+ *   - 'recent'         → 'ok'     (= 緑、7 日以内 review 済、healthy)
+ *   - 'never-reviewed' → 'warn'   (= 黄、未着手、開始推奨)
+ *   - 'overdue'        → 'danger' (= 赤、1 週以上未 review、即対応)
+ *
+ * iter1028 `consultationStatusSeverity` と並ぶ「domain status → 共通 Severity」 pattern の
+ * weekly-review 軸版。caller (= GTD mode panel chip / notification badge / Slack 通知 tone) は
+ * 本 bridge で SeverityChip の tone を 1 関数で決定可能。
+ *
+ * muted は使わない (= 3 値全てが「review status として valid な存在」)。
+ */
+export function weeklyReviewDueSeverity(kind: WeeklyReviewDueKind): Severity {
+  switch (kind) {
+    case 'recent':
+      return 'ok'
+    case 'never-reviewed':
+      return 'warn'
+    case 'overdue':
+      return 'danger'
+  }
+}
+
+/**
+ * iter1033 basics: WeeklyReviewDueKind → 日本語短ラベル。
+ *
+ *   - 'recent'         → '点検済'
+ *   - 'never-reviewed' → '未着手'
+ *   - 'overdue'        → '1 週以上経過'
+ *
+ * iter1028 `formatConsultationStatusJa` と並ぶ「domain status → 日本語短ラベル」 pattern の
+ * weekly-review 軸版。caller (= GTD panel header / notification text / Slack 通知 + AI prompt)
+ * で再利用される。
+ */
+const WEEKLY_REVIEW_DUE_LABEL_JA: Record<WeeklyReviewDueKind, string> = {
+  recent: '点検済',
+  'never-reviewed': '未着手',
+  overdue: '1 週以上経過',
+}
+
+export function formatWeeklyReviewDueJa(kind: WeeklyReviewDueKind): string {
+  return WEEKLY_REVIEW_DUE_LABEL_JA[kind]
 }

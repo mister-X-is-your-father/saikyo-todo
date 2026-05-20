@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest'
 
 import type { Item } from '@/features/item/schema'
 
-import { buildWeeklyReviewChecklist, classifyWeeklyReviewDue } from './weekly-review-checklist'
+import {
+  buildWeeklyReviewChecklist,
+  classifyWeeklyReviewDue,
+  formatWeeklyReviewDueJa,
+  weeklyReviewDueSeverity,
+} from './weekly-review-checklist'
 
 const TODAY = '2026-05-19'
 
@@ -158,5 +163,33 @@ describe('classifyWeeklyReviewDue', () => {
         now: NOW,
       }),
     ).toBe('recent')
+  })
+})
+
+describe('weeklyReviewDueSeverity (iter1033)', () => {
+  it('recent → ok (緑、点検済)', () => {
+    expect(weeklyReviewDueSeverity('recent')).toBe('ok')
+  })
+
+  it('never-reviewed → warn (黄、未着手)', () => {
+    expect(weeklyReviewDueSeverity('never-reviewed')).toBe('warn')
+  })
+
+  it('overdue → danger (赤、1 週以上経過)', () => {
+    expect(weeklyReviewDueSeverity('overdue')).toBe('danger')
+  })
+})
+
+describe('formatWeeklyReviewDueJa (iter1033)', () => {
+  it('recent → "点検済"', () => {
+    expect(formatWeeklyReviewDueJa('recent')).toBe('点検済')
+  })
+
+  it('never-reviewed → "未着手"', () => {
+    expect(formatWeeklyReviewDueJa('never-reviewed')).toBe('未着手')
+  })
+
+  it('overdue → "1 週以上経過"', () => {
+    expect(formatWeeklyReviewDueJa('overdue')).toBe('1 週以上経過')
   })
 })
