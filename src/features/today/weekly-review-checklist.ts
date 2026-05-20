@@ -12,8 +12,10 @@
  */
 
 import { MS_PER_DAY } from '@/lib/date/iso'
+import type { ChipTone } from '@/lib/ui/chip-tone'
 import type { Severity } from '@/lib/widget/severity'
 
+import type { AgentBriefSignal } from '@/features/agent/brief-signal'
 import type { Item } from '@/features/item/schema'
 
 import { isItemActive } from './operation-board'
@@ -163,4 +165,51 @@ const WEEKLY_REVIEW_DUE_LABEL_JA: Record<WeeklyReviewDueKind, string> = {
 
 export function formatWeeklyReviewDueJa(kind: WeeklyReviewDueKind): string {
   return WEEKLY_REVIEW_DUE_LABEL_JA[kind]
+}
+
+/**
+ * iter1035 ai-automation: WeeklyReviewDueKind → 共通 `ChipTone` (6 値 vocab) bridge。
+ *
+ * 配色 token (dashboard chip / Slack 通知 tone / AgentBriefSignal で再利用):
+ *   - 'recent'         → 'success' (= 緑、点検済、healthy 強調 = 6 軸 (5) やる気)
+ *   - 'never-reviewed' → 'warn'    (= 黄、未着手、開始推奨)
+ *   - 'overdue'        → 'danger'  (= 赤、1 週以上未 review、即対応)
+ *
+ * iter1033 `weeklyReviewDueSeverity` (= Severity 5 値 SeverityChip bind 用) と対称な「ChipTone
+ * 6 値 'success/info/warn/danger/urgent/idle' bind」 版。iter1030 `consultationStatusChipTone`
+ * と同 motivation の weekly-review 軸版 — 'recent' を 'success' に lossy 変換することで「点検済
+ * = 達成 = 緑」 を AI brief tone で positive framing。
+ *
+ * 用途:
+ *   - dashboard GTD mode chip (= ChipTone bind の chip 群、cost-chip 等と並ぶ)
+ *   - Slack daily digest 「Weekly Review: <chip>」 tone bind
+ *   - AgentBriefSignal の tone field 直 bind
+ */
+const WEEKLY_REVIEW_DUE_TO_CHIP_TONE: Record<WeeklyReviewDueKind, ChipTone> = {
+  recent: 'success',
+  'never-reviewed': 'warn',
+  overdue: 'danger',
+}
+
+export function weeklyReviewDueChipTone(kind: WeeklyReviewDueKind): ChipTone {
+  return WEEKLY_REVIEW_DUE_TO_CHIP_TONE[kind]
+}
+
+/**
+ * iter1035 ai-automation: WeeklyReviewDueKind → `AgentBriefSignal` (text + tone) compose helper。
+ *
+ * iter794-797 + iter1025 + iter1031 `*ToBriefSignal` pattern (= 9 + 1 axes 弾) の weekly-review
+ * 軸版で AI 朝 brief / Slack daily digest / dashboard chip area に 1 chip 渡せる。text は
+ * `formatWeeklyReviewDueJa` (= 短ラベル 1 行)、tone は `weeklyReviewDueChipTone` を再利用。
+ *
+ * caller pattern:
+ *   const kind = classifyWeeklyReviewDue({ lastReviewAt, now })
+ *   const signal = weeklyReviewDueToBriefSignal(kind)
+ *   // → composeAnalyticsSignals 風に concat、または単独 chip render
+ */
+export function weeklyReviewDueToBriefSignal(kind: WeeklyReviewDueKind): AgentBriefSignal {
+  return {
+    text: formatWeeklyReviewDueJa(kind),
+    tone: weeklyReviewDueChipTone(kind),
+  }
 }

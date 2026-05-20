@@ -6,7 +6,9 @@ import {
   buildWeeklyReviewChecklist,
   classifyWeeklyReviewDue,
   formatWeeklyReviewDueJa,
+  weeklyReviewDueChipTone,
   weeklyReviewDueSeverity,
+  weeklyReviewDueToBriefSignal,
 } from './weekly-review-checklist'
 
 const TODAY = '2026-05-19'
@@ -191,5 +193,42 @@ describe('formatWeeklyReviewDueJa (iter1033)', () => {
 
   it('overdue → "1 週以上経過"', () => {
     expect(formatWeeklyReviewDueJa('overdue')).toBe('1 週以上経過')
+  })
+})
+
+describe('weeklyReviewDueChipTone (iter1035)', () => {
+  it('recent → success (緑、点検済 positive framing)', () => {
+    expect(weeklyReviewDueChipTone('recent')).toBe('success')
+  })
+
+  it('never-reviewed → warn (黄、未着手)', () => {
+    expect(weeklyReviewDueChipTone('never-reviewed')).toBe('warn')
+  })
+
+  it('overdue → danger (赤、1 週以上未 review)', () => {
+    expect(weeklyReviewDueChipTone('overdue')).toBe('danger')
+  })
+})
+
+describe('weeklyReviewDueToBriefSignal (iter1035)', () => {
+  it('recent → "点検済" / success', () => {
+    expect(weeklyReviewDueToBriefSignal('recent')).toEqual({
+      text: '点検済',
+      tone: 'success',
+    })
+  })
+
+  it('never-reviewed → "未着手" / warn', () => {
+    expect(weeklyReviewDueToBriefSignal('never-reviewed')).toEqual({
+      text: '未着手',
+      tone: 'warn',
+    })
+  })
+
+  it('overdue → "1 週以上経過" / danger', () => {
+    expect(weeklyReviewDueToBriefSignal('overdue')).toEqual({
+      text: '1 週以上経過',
+      tone: 'danger',
+    })
   })
 })
