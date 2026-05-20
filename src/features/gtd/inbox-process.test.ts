@@ -8,6 +8,7 @@ import {
   gtdBucketChipTone,
   gtdBucketLabelJa,
   gtdBucketSeverity,
+  gtdBucketToBriefSignal,
   type InboxItemFields,
   summarizeInbox,
 } from './inbox-process'
@@ -226,6 +227,51 @@ describe('gtdBucketChipTone (iter1036)', () => {
     expect(gtdBucketChipTone('reference')).toBe('idle')
     expect(gtdBucketChipTone('someday')).toBe('idle')
     expect(gtdBucketChipTone('trash')).toBe('idle')
+  })
+})
+
+describe('gtdBucketToBriefSignal (iter1038)', () => {
+  it('immediate → "即実行" / urgent', () => {
+    expect(gtdBucketToBriefSignal('immediate')).toEqual({
+      text: '即実行',
+      tone: 'urgent',
+    })
+  })
+
+  it('next-action → "次の action" / info', () => {
+    expect(gtdBucketToBriefSignal('next-action')).toEqual({
+      text: '次の action',
+      tone: 'info',
+    })
+  })
+
+  it('waiting-for → ラベル / warn', () => {
+    const signal = gtdBucketToBriefSignal('waiting-for')
+    expect(signal.tone).toBe('warn')
+    expect(typeof signal.text).toBe('string')
+    expect(signal.text.length).toBeGreaterThan(0)
+  })
+
+  it('reference → ラベル / idle', () => {
+    expect(gtdBucketToBriefSignal('reference').tone).toBe('idle')
+  })
+
+  it('signal の tone は gtdBucketChipTone と整合', () => {
+    const all = [
+      'immediate',
+      'next-action',
+      'project',
+      'waiting-for',
+      'reference',
+      'someday',
+      'scheduled',
+      'trash',
+    ] as const
+    for (const b of all) {
+      const s = gtdBucketToBriefSignal(b)
+      expect(s.tone).toBe(gtdBucketChipTone(b))
+      expect(s.text).toBe(gtdBucketLabelJa(b))
+    }
   })
 })
 

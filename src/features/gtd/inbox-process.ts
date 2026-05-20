@@ -18,6 +18,8 @@
 
 import type { ChipTone } from '@/lib/ui/chip-tone'
 
+import type { AgentBriefSignal } from '@/features/agent/brief-signal'
+
 export type GtdBucket =
   | 'immediate'
   | 'next-action'
@@ -240,6 +242,31 @@ const BUCKET_CHIP_TONE: Record<GtdBucket, ChipTone> = {
 
 export function gtdBucketChipTone(bucket: GtdBucket): ChipTone {
   return BUCKET_CHIP_TONE[bucket]
+}
+
+/**
+ * iter1038 basics: GtdBucket → `AgentBriefSignal` (text + tone) compose helper。
+ *
+ * iter794-797 + iter1025/1031/1035 `*ToBriefSignal` pattern (= 10 + 1 axes 弾) の GTD bucket
+ * 軸版で AI 朝 brief / Slack daily digest / dashboard chip area に 1 chip 渡せる。text は
+ * `gtdBucketLabelJa` (= bucket Japanese label、'即実行' / '次の action' / 'project' / ...)、
+ * tone は iter1036 `gtdBucketChipTone` を再利用 (= chip 配色と signal tone が完全一致)。
+ *
+ * caller pattern:
+ *   const bucket = classifyInboxItem(item).bucket
+ *   const signal = gtdBucketToBriefSignal(bucket)
+ *   // → composeAnalyticsSignals 風に concat、または単独 chip render
+ *
+ * 用途:
+ *   - GTD inbox dashboard 「item N の bucket 提案」 chip (= bucket 1 個分の signal)
+ *   - Slack daily digest 「最重要 inbox item: bucket=`即実行`」 行
+ *   - 別軸 (summary) は formatInboxBucketsJa が担当 (= 全 bucket count 1 行)
+ */
+export function gtdBucketToBriefSignal(bucket: GtdBucket): AgentBriefSignal {
+  return {
+    text: gtdBucketLabelJa(bucket),
+    tone: gtdBucketChipTone(bucket),
+  }
 }
 
 /**
