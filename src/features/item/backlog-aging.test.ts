@@ -10,6 +10,7 @@ import {
   countItemsByAgeByPriority,
   formatAgingByPriorityJa,
   formatAgingCounts,
+  formatAgingSeverityCompactJa,
   formatBacklogAgingHintJa,
   getItemAge,
   groupItemsByAge,
@@ -403,5 +404,45 @@ describe('agingSeverity (iter1018)', () => {
 
   it('unknown は severity 判定に含めない', () => {
     expect(agingSeverity(c({ unknown: 100 }))).toBe('ok')
+  })
+})
+
+describe('formatAgingSeverityCompactJa (iter1023)', () => {
+  function c(over: Partial<Record<AgingKind, number>>): Record<AgingKind, number> {
+    return { new: 0, recent: 0, stale: 0, ancient: 0, unknown: 0, ...over }
+  }
+
+  it('全 0 → "新鮮"', () => {
+    expect(formatAgingSeverityCompactJa(c({}))).toBe('新鮮')
+  })
+
+  it('全 new/recent → "新鮮" (停滞なし)', () => {
+    expect(formatAgingSeverityCompactJa(c({ new: 3, recent: 5 }))).toBe('新鮮')
+  })
+
+  it('stale 1-4 (info) → "軽微 停滞 N 件"', () => {
+    expect(formatAgingSeverityCompactJa(c({ stale: 1 }))).toBe('軽微 停滞 1 件')
+    expect(formatAgingSeverityCompactJa(c({ stale: 4 }))).toBe('軽微 停滞 4 件')
+  })
+
+  it('stale >= 5 (warn, ancient なし) → "注意 停滞 N 件"', () => {
+    expect(formatAgingSeverityCompactJa(c({ stale: 5 }))).toBe('注意 停滞 5 件')
+    expect(formatAgingSeverityCompactJa(c({ stale: 8 }))).toBe('注意 停滞 8 件')
+  })
+
+  it('ancient 1-4 (warn) → "注意 停滞 N 件 (古参 M)"', () => {
+    expect(formatAgingSeverityCompactJa(c({ ancient: 1 }))).toBe('注意 停滞 1 件 (古参 1)')
+    expect(formatAgingSeverityCompactJa(c({ stale: 2, ancient: 3 }))).toBe(
+      '注意 停滞 5 件 (古参 3)',
+    )
+  })
+
+  it('ancient >= 5 (danger) → "危険 古参 N 件"', () => {
+    expect(formatAgingSeverityCompactJa(c({ ancient: 5 }))).toBe('危険 古参 5 件')
+    expect(formatAgingSeverityCompactJa(c({ stale: 3, ancient: 10 }))).toBe('危険 古参 10 件')
+  })
+
+  it('unknown は表示に含めない (severity 判定対象外)', () => {
+    expect(formatAgingSeverityCompactJa(c({ unknown: 100 }))).toBe('新鮮')
   })
 })

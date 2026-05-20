@@ -190,6 +190,40 @@ export function agingSeverity(counts: Readonly<Record<AgingKind, number>>): Agin
 }
 
 /**
+ * iter1023 basics: dashboard 小型 chip / Slack daily digest 用 compact 1 行 (severity 配色 + key counts)。
+ *
+ * iter1013 `formatCycleCheckCompactJa` と同 pattern (= severity 4 段ヘッダ word + 数値 1-2 個) の
+ * backlog-aging 軸版。`agingSeverity` (iter1018) で severity を計算し、severity 別に最小限の
+ * count breakdown を埋め込む (停滞 + 古参 = 7+ 日経過の中核 metric)。
+ *
+ * 出力例:
+ *  - ok       → '新鮮'                    (= 停滞 0 件)
+ *  - info     → '軽微 停滞 N 件'           (= stale 1-4、ancient なし)
+ *  - warn     → '注意 停滞 N 件 (古参 M)' (= ancient 1-4 or stale≥5)
+ *  - warn     → '注意 停滞 N 件'          (= stale≥5 のみで ancient=0 の場合)
+ *  - danger   → '危険 古参 N 件'           (= ancient 5+)
+ *
+ * `formatAgingCounts` は全 bucket count、`formatBacklogAgingHintJa` は 1 word hint、本 helper は
+ * **severity 配色と整合する compact 1 行** を返す (= SeverityChip text 直 bind)。
+ *
+ * 用途:
+ *  - dashboard backlog-aging chip (= SeverityChip + 同 helper の text)
+ *  - Slack daily digest 「backlog 状況: <compact>」 1 行
+ *  - AI prompt 「backlog ヘルス 1 行」 context
+ */
+export function formatAgingSeverityCompactJa(counts: Readonly<Record<AgingKind, number>>): string {
+  const sev = agingSeverity(counts)
+  if (sev === 'ok') return '新鮮'
+  if (sev === 'danger') return `危険 古参 ${counts.ancient} 件`
+  const stagnant = counts.stale + counts.ancient
+  if (sev === 'info') return `軽微 停滞 ${stagnant} 件`
+  // warn: ancient 0 の場合 (stale≥5 のみ) は古参表示を省略
+  return counts.ancient === 0
+    ? `注意 停滞 ${stagnant} 件`
+    : `注意 停滞 ${stagnant} 件 (古参 ${counts.ancient})`
+}
+
+/**
  * iter389 ai-automation: priority 別の `countItemsByAge` を計算する pure helper。
  *
  * iter344 due-hit-rate / iter362 dod-coverage / iter364 due-date-coverage /
