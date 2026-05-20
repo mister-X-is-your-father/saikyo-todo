@@ -2,10 +2,14 @@ import { describe, expect, it } from 'vitest'
 
 import {
   classifyConsultationStatus,
+  type ConsultationCounts,
+  consultationCountsChipTone,
+  consultationCountsToBriefSignal,
   type ConsultationOption,
   consultationStatusChipTone,
   consultationStatusSeverity,
   type ConsultationVote,
+  formatConsultationCountsCompactJa,
   formatConsultationStatusJa,
   tallyConsultation,
 } from './consultation-tally'
@@ -187,5 +191,63 @@ describe('consultationStatusChipTone (iter1030)', () => {
     for (const s of all) {
       expect(typeof consultationStatusChipTone(s)).toBe('string')
     }
+  })
+})
+
+describe('formatConsultationCountsCompactJa / consultationCountsChipTone / *ToBriefSignal (iter1031)', () => {
+  function c(over: Partial<ConsultationCounts>): ConsultationCounts {
+    return { open: 0, 'closing-soon': 0, overdue: 0, decided: 0, ...over }
+  }
+
+  it('all 0 → "相談なし" / idle', () => {
+    const counts = c({})
+    expect(formatConsultationCountsCompactJa(counts)).toBe('相談なし')
+    expect(consultationCountsChipTone(counts)).toBe('idle')
+    expect(consultationCountsToBriefSignal(counts)).toEqual({
+      text: '相談なし',
+      tone: 'idle',
+    })
+  })
+
+  it('decided only → "決定済 N 件" / success (positive framing)', () => {
+    const counts = c({ decided: 3 })
+    expect(formatConsultationCountsCompactJa(counts)).toBe('決定済 3 件')
+    expect(consultationCountsChipTone(counts)).toBe('success')
+    expect(consultationCountsToBriefSignal(counts)).toEqual({
+      text: '決定済 3 件',
+      tone: 'success',
+    })
+  })
+
+  it('open > 0 → "受付中 N 件" / info', () => {
+    const counts = c({ open: 2 })
+    expect(formatConsultationCountsCompactJa(counts)).toBe('受付中 2 件')
+    expect(consultationCountsChipTone(counts)).toBe('info')
+  })
+
+  it('closing-soon > 0 → warn が優先 (open 同時にあっても overdue が無いので warn)', () => {
+    const counts = c({ open: 5, 'closing-soon': 1 })
+    expect(formatConsultationCountsCompactJa(counts)).toBe('締切間近 1 件')
+    expect(consultationCountsChipTone(counts)).toBe('warn')
+  })
+
+  it('overdue > 0 → danger が最優先 (他軸全部あっても overdue が headline)', () => {
+    const counts = c({ open: 5, 'closing-soon': 3, overdue: 2, decided: 10 })
+    expect(formatConsultationCountsCompactJa(counts)).toBe('判断漏れ 2 件')
+    expect(consultationCountsChipTone(counts)).toBe('danger')
+  })
+
+  it('decided > 0 + open 0 → "決定済"、過去 success framing 保持', () => {
+    const counts = c({ decided: 10 })
+    expect(consultationCountsToBriefSignal(counts)).toEqual({
+      text: '決定済 10 件',
+      tone: 'success',
+    })
+  })
+
+  it('混合 decided + closing-soon → warn (severity 優先)', () => {
+    const counts = c({ decided: 3, 'closing-soon': 1 })
+    expect(consultationCountsChipTone(counts)).toBe('warn')
+    expect(formatConsultationCountsCompactJa(counts)).toBe('締切間近 1 件')
   })
 })

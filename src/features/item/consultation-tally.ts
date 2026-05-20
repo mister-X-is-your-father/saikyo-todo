@@ -13,6 +13,8 @@ import { MS_PER_DAY } from '@/lib/date/iso'
 import type { ChipTone } from '@/lib/ui/chip-tone'
 import type { Severity } from '@/lib/widget/severity'
 
+import type { AgentBriefSignal } from '@/features/agent/brief-signal'
+
 export interface ConsultationOption {
   /** option 配列の index (0-based、表示順) */
   index: number
@@ -199,4 +201,71 @@ const CONSULTATION_STATUS_TO_CHIP_TONE: Record<ConsultationStatus, ChipTone> = {
 
 export function consultationStatusChipTone(status: ConsultationStatus): ChipTone {
   return CONSULTATION_STATUS_TO_CHIP_TONE[status]
+}
+
+/**
+ * iter1031 basics: workspace 内 相談 status の集計から **headline 1 行** (chip 配色と整合) を返す
+ * compact format。
+ *
+ * 優先表示順 (severity 重み): overdue > closing-soon > open > decided。最も severe な軸を
+ * headline に採用し、残り軸は省略 (= 6 軸 (3) 認知低減 = 1 chip に「最重要 1 行」のみ)。
+ *
+ * 出力:
+ *   - all 0 → '相談なし'                              (= 該当 task なし、idle)
+ *   - overdue > 0 → '判断漏れ N 件'                  (danger 軸を最優先)
+ *   - closing-soon > 0 → '締切間近 N 件'             (warn)
+ *   - open > 0 → '受付中 N 件'                       (info)
+ *   - decided only > 0 → '決定済 N 件'               (success)
+ *
+ * iter1023 `formatAgingSeverityCompactJa` と同 pattern (= severity ヘッダ word + count 数値)
+ * の相談軸版。caller (= dashboard chip / Slack daily digest / AI prompt) は本 compact 1 行で
+ * 「相談 status の最重要 framing」 を取得可能。
+ */
+export type ConsultationCounts = Readonly<Record<ConsultationStatus, number>>
+
+export function formatConsultationCountsCompactJa(counts: ConsultationCounts): string {
+  if (counts.overdue > 0) return `判断漏れ ${counts.overdue} 件`
+  if (counts['closing-soon'] > 0) return `締切間近 ${counts['closing-soon']} 件`
+  if (counts.open > 0) return `受付中 ${counts.open} 件`
+  if (counts.decided > 0) return `決定済 ${counts.decided} 件`
+  return '相談なし'
+}
+
+/**
+ * iter1031 basics: ConsultationCounts → ChipTone (= 最 severe 軸の tone を採用)。
+ *
+ * `formatConsultationCountsCompactJa` と整合する tone 軸:
+ *   - overdue > 0 → 'danger'
+ *   - closing-soon > 0 → 'warn'
+ *   - open > 0 → 'info'
+ *   - decided only > 0 → 'success'
+ *   - all 0 → 'idle'
+ */
+export function consultationCountsChipTone(counts: ConsultationCounts): ChipTone {
+  if (counts.overdue > 0) return 'danger'
+  if (counts['closing-soon'] > 0) return 'warn'
+  if (counts.open > 0) return 'info'
+  if (counts.decided > 0) return 'success'
+  return 'idle'
+}
+
+/**
+ * iter1031 basics: consultation counts を `AgentBriefSignal` 形式 (text + tone) に変換する
+ * compose helper。
+ *
+ * iter794-797 + iter1025 `*ToBriefSignal` pattern (= 8 + 1 axes 弾) の相談軸版で AI 朝 brief /
+ * Slack daily digest / dashboard chip area に 1 chip 渡せる。text は `formatConsultationCountsCompactJa`
+ * (= headline 1 行)、tone は `consultationCountsChipTone` (= 最 severe 軸の tone) を再利用 (=
+ * chip 配色と signal tone が完全一致)。
+ *
+ * caller pattern:
+ *   const counts = items.reduce(...)  // status 別件数
+ *   const signal = consultationCountsToBriefSignal(counts)
+ *   // → composeAnalyticsSignals 風に concat、または単独 chip render
+ */
+export function consultationCountsToBriefSignal(counts: ConsultationCounts): AgentBriefSignal {
+  return {
+    text: formatConsultationCountsCompactJa(counts),
+    tone: consultationCountsChipTone(counts),
+  }
 }
