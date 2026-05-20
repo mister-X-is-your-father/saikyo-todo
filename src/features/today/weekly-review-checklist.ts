@@ -16,6 +16,8 @@ import type { Severity } from '@/lib/widget/severity'
 
 import type { Item } from '@/features/item/schema'
 
+import { isItemActive } from './operation-board'
+
 export interface WeeklyReviewItem {
   /** GTD 5-step id */
   step: 'collect' | 'process' | 'organize' | 'review' | 'engage'
@@ -34,9 +36,9 @@ export interface WeeklyReviewInput {
   today: string // ISO date 'YYYY-MM-DD'
 }
 
-function isActive(it: Item): boolean {
-  return !it.doneAt && !it.archivedAt && !it.deletedAt
-}
+// iter1034 refactor: 旧 local `isActive` (Item → boolean、!doneAt && !archivedAt && !deletedAt)
+// を `operation-board.ts#isItemActive` (= 同 directory の canonical 実装、iter / automation-part
+// からも参照される単一 source of truth) に集約。
 
 /**
  * items 集合から Weekly Review checklist を build。
@@ -46,7 +48,7 @@ export function buildWeeklyReviewChecklist({
   items,
   today,
 }: WeeklyReviewInput): WeeklyReviewItem[] {
-  const active = items.filter(isActive)
+  const active = items.filter(isItemActive)
   const inbox = active.filter((it) => it.status === 'todo' || it.status === 'gtd_next').length
   const waiting = active.filter(
     (it) => it.status === 'gtd_waiting' || it.waitingFor !== null,
