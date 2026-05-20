@@ -8,6 +8,8 @@
  *
  * AI 不使用、副作用無し、依存無し。pure helper + Vitest 単体 test で網羅。
  */
+import { MS_PER_DAY } from '@/lib/date/iso'
+
 import type { PdcaCycleStatus } from './schema'
 
 const PHASE_LABEL_JA: Record<PdcaCycleStatus, string> = {
@@ -46,7 +48,8 @@ export interface PdcaPhaseTimestamps {
   updatedAt?: Date | null
 }
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000
+// iter1024 refactor: 旧 local `MS_PER_DAY = 24 * 60 * 60 * 1000` (3 件目) を
+// `@/lib/date/iso#MS_PER_DAY` に集約 (= iter360 で確立した「1 source of truth」 sweep)。
 
 /**
  * 現在 phase に入ってからの経過日数 (整数、Math.floor)。timestamp 不明なら null。

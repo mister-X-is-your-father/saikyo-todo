@@ -16,7 +16,7 @@
  *
  * AI 不使用、副作用無し、依存無し。pure helper + Vitest 単体 test で網羅。
  */
-import { parseDateOrNull } from '@/lib/date/iso'
+import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import type { Severity } from '@/lib/widget/severity'
 
 export interface WaitingItemFields {
@@ -28,7 +28,8 @@ export interface WaitingItemFields {
   reminderCadenceDays?: number | null | undefined
 }
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000
+// iter1024 refactor: 旧 local `MS_PER_DAY = 24 * 60 * 60 * 1000` (2 件目) を
+// `@/lib/date/iso#MS_PER_DAY` に集約 (= iter360 で確立した「1 source of truth」 sweep)。
 
 // iter490 refactor: parseDate 系の重複を `lib/date/iso.ts#parseDateOrNull` に集約 (38 弾目)
 const parseDate = parseDateOrNull
