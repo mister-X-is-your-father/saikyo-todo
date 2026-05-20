@@ -16,6 +16,7 @@ import { toast } from 'sonner'
 
 import { todayUtcISO } from '@/lib/date/iso'
 import { isAppError } from '@/lib/errors'
+import { rateToPct } from '@/lib/format-rate'
 import { trendGlyph, trendToneClass } from '@/lib/ui/trend-tone'
 
 import {
@@ -63,7 +64,7 @@ export function BudgetPanel({ workspaceId }: Props) {
   if (status.isLoading || !status.data) return null
   const s = status.data
   const limitLabel = s.limit === null ? '無制限' : `$${s.limit.toFixed(2)}`
-  const ratioPct = s.limit !== null ? Math.min(100, Math.round(s.ratio * 100)) : 0
+  const ratioPct = s.limit !== null ? Math.min(100, rateToPct(s.ratio)) : 0
 
   function startEdit() {
     setDraftLimit(s.limit !== null ? String(s.limit) : '')
@@ -161,7 +162,7 @@ export function BudgetPanel({ workspaceId }: Props) {
           {s.limit !== null && (
             <div
               role="progressbar"
-              aria-label={`AI 月次コスト消費率 ${ratioPct}% (警告閾値 ${Math.round(s.warnThreshold * 100)}%)`}
+              aria-label={`AI 月次コスト消費率 ${ratioPct}% (警告閾値 ${rateToPct(s.warnThreshold)}%)`}
               aria-valuenow={ratioPct}
               aria-valuemin={0}
               aria-valuemax={100}
@@ -180,7 +181,7 @@ export function BudgetPanel({ workspaceId }: Props) {
               {/* 警告閾値ライン (視覚補助、SR には親 aria-label に含めて伝達) */}
               <div
                 className="bg-foreground/40 absolute top-0 h-full w-px"
-                style={{ left: `${Math.round(s.warnThreshold * 100)}%` }}
+                style={{ left: `${rateToPct(s.warnThreshold)}%` }}
                 aria-hidden="true"
               />
             </div>
@@ -190,7 +191,7 @@ export function BudgetPanel({ workspaceId }: Props) {
         {!editing ? (
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">
-              警告: {Math.round(s.warnThreshold * 100)}% で警告 (UI バー)
+              警告: {rateToPct(s.warnThreshold)}% で警告 (UI バー)
             </span>
             <Button
               size="sm"
@@ -267,7 +268,7 @@ export function BudgetPanel({ workspaceId }: Props) {
                     ? '警告閾値 (0..1、消費率がこの値を超えると UI バーを警告色に切替)'
                     : Number(draftWarn) < 0 || Number(draftWarn) > 1
                       ? `警告閾値 (有効範囲は 0-1、現在値「${draftWarn}」は範囲外)`
-                      : `警告閾値 (現在: ${Math.round(Number(draftWarn) * 100)}% — 消費率がこの値を超えると UI バーを警告色に切替)`
+                      : `警告閾値 (現在: ${rateToPct(Number(draftWarn))}% — 消費率がこの値を超えると UI バーを警告色に切替)`
                 }
                 aria-invalid={
                   (draftWarn !== '' && (Number(draftWarn) < 0 || Number(draftWarn) > 1)) ||

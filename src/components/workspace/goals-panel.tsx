@@ -22,6 +22,7 @@ import { toast } from 'sonner'
 
 import { isoDaysFromNow, todayISO } from '@/lib/date/iso'
 import { isAppError } from '@/lib/errors'
+import { rateToPct } from '@/lib/format-rate'
 
 import { useDecomposeGoal } from '@/features/agent/hooks'
 import { isInvalidDateRange } from '@/features/item/date-range'
@@ -325,7 +326,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
   const [open, setOpen] = useState(false)
   const status = goal.status as GoalStatus
   const progress = useGoalProgress(open ? goal.id : null)
-  const goalPct = progress.data ? Math.round(progress.data.pct * 100) : null
+  const goalPct = progress.data ? rateToPct(progress.data.pct) : null
   // iter301 basics: progress 取得済の時のみ health 計算 (open 時のみ取得される)
   const health = progress.data
     ? computeGoalHealth({
@@ -689,7 +690,7 @@ function KeyResultList({
         >
           {(list.data ?? []).map((kr) => {
             const p = krProgressMap.get(kr.id)
-            const pct = p ? Math.round(p.pct * 100) : 0
+            const pct = p ? rateToPct(p.pct) : 0
             return (
               <li key={kr.id} className="space-y-1 rounded border p-2">
                 <div className="flex items-start justify-between gap-2">

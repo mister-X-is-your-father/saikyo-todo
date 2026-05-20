@@ -29,6 +29,7 @@
  */
 
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
+import { rateToPct } from '@/lib/format-rate'
 import { round2 } from '@/lib/round-decimal'
 import { type ChipTone, type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
@@ -261,7 +262,7 @@ export function formatMomentumRatioJa(
 ): string {
   const ratio = computeMomentumRatio(m)
   if (ratio === null) return '活動なし'
-  const pct = Math.round(ratio * 100)
+  const pct = rateToPct(ratio)
   if (m.direction === 'balanced' || pct === 0) return `安定 (bias ${pct}%)`
   if (m.net > 0) return `成長 bias ${pct}%`
   return `縮小 bias ${pct}%`

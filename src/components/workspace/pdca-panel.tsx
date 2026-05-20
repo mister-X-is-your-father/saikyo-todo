@@ -10,6 +10,7 @@
 import { parseAsInteger, useQueryState } from 'nuqs'
 
 import { shiftIsoDate, todayUtcISO } from '@/lib/date/iso'
+import { rateToPct } from '@/lib/format-rate'
 
 import { usePdcaSummary } from '@/features/pdca/hooks'
 
@@ -115,7 +116,7 @@ export function PdcaPanel({ workspaceId }: Props) {
               className="flex h-2 w-full overflow-hidden rounded-full"
               role="img"
               aria-label={(() => {
-                const pct = (n: number) => Math.round((n / total) * 100)
+                const pct = (n: number) => rateToPct(n / total)
                 return `分布 (合計 ${total}): Plan ${counts.plan} (${pct(counts.plan)}%) / Do ${counts.do} (${pct(counts.do)}%) / Check ${counts.check} (${pct(counts.check)}%) / Act ${counts.act} (${pct(counts.act)}%)`
               })()}
               data-testid="pdca-distribution-bar"
@@ -228,7 +229,7 @@ function DailyBars({
         data-testid="pdca-daily-bars"
       >
         {data.map((d) => {
-          const h = Math.round((d.done / max) * 100)
+          const h = rateToPct(d.done / max)
           return (
             <div
               key={d.date}
