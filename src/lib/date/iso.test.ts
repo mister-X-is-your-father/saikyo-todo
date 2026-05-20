@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  dayDiffISO,
   dueDateEndOfDayMs,
   formatLocalISO,
   formatUtcISO,
@@ -313,6 +314,31 @@ describe('parseIsoDateAsLocalMidnight', () => {
     const a = parseIsoDateAsLocalMidnight('2026-04-29')!
     const b = toLocalMidnight(parseDateOrNull('2026-04-29'))!
     expect(a.getTime()).toBe(b.getTime())
+  })
+})
+
+describe('dayDiffISO (iter1029)', () => {
+  it('同日 → 0', () => {
+    expect(dayDiffISO('2026-04-29', '2026-04-29')).toBe(0)
+  })
+
+  it('a < b → 正 (b - a の日数)', () => {
+    expect(dayDiffISO('2026-04-22', '2026-04-29')).toBe(7)
+    expect(dayDiffISO('2026-04-29', '2026-05-06')).toBe(7)
+  })
+
+  it('a > b → 負', () => {
+    expect(dayDiffISO('2026-04-29', '2026-04-22')).toBe(-7)
+  })
+
+  it('月跨ぎ / 年跨ぎは UTC 計算で正常', () => {
+    expect(dayDiffISO('2026-01-31', '2026-02-01')).toBe(1)
+    expect(dayDiffISO('2025-12-31', '2026-01-01')).toBe(1)
+  })
+
+  it('不正 ISO → NaN', () => {
+    expect(dayDiffISO('not-a-date', '2026-04-29')).toBeNaN()
+    expect(dayDiffISO('2026-04-29', 'garbage')).toBeNaN()
   })
 })
 

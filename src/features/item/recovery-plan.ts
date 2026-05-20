@@ -21,7 +21,7 @@
  * AI 不使用、副作用無し、依存無し。pure helper + Vitest 単体 test で網羅。
  */
 
-import { MS_PER_DAY } from '@/lib/date/iso'
+import { dayDiffISO } from '@/lib/date/iso'
 
 export interface RecoveryPlanItemFields {
   id: string
@@ -65,12 +65,8 @@ export interface RecoveryPlanOptions {
   heavyAssignees?: readonly string[]
 }
 
-function dayDiffISO(a: string, b: string): number {
-  const ad = Date.parse(`${a}T00:00:00Z`)
-  const bd = Date.parse(`${b}T00:00:00Z`)
-  if (!Number.isFinite(ad) || !Number.isFinite(bd)) return Number.NaN
-  return Math.round((bd - ad) / MS_PER_DAY)
-}
+// iter1029 refactor: 旧 local `dayDiffISO` (= risk-board.ts と完全同一) を
+// `@/lib/date/iso#dayDiffISO` に集約。
 
 export function buildRecoveryPlan(
   item: RecoveryPlanItemFields,

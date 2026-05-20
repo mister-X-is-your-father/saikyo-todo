@@ -26,7 +26,7 @@
  *     を出すので scope が異なる (片方は sprint planning、片方は daily standup)。
  */
 
-import { MS_PER_DAY } from '@/lib/date/iso'
+import { dayDiffISO } from '@/lib/date/iso'
 
 export interface RiskBoardItemFields {
   id: string
@@ -76,13 +76,8 @@ export interface SprintRiskBoardOptions {
 
 const DEFAULT_TOP_N = 5
 
-function dayDiffISO(a: string, b: string): number {
-  // a, b ともに ISO YYYY-MM-DD. b - a (日)。同日 → 0、a が後 → 負。
-  const ad = Date.parse(`${a}T00:00:00Z`)
-  const bd = Date.parse(`${b}T00:00:00Z`)
-  if (!Number.isFinite(ad) || !Number.isFinite(bd)) return Number.NaN
-  return Math.round((bd - ad) / MS_PER_DAY)
-}
+// iter1029 refactor: 旧 local `dayDiffISO` (= recovery-plan.ts と完全同一) を
+// `@/lib/date/iso#dayDiffISO` に集約。
 
 function computeRiskScore<T extends RiskBoardItemFields>(
   it: T,

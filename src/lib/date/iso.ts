@@ -193,6 +193,25 @@ export function parseDateOrNull(input: Date | string | null | undefined): Date |
 }
 
 /**
+ * iter1029 refactor: ISO `YYYY-MM-DD` 同士の差分 (日)。`Math.round((b-a)/MS_PER_DAY)`、a が
+ * 後なら負、不正値で `NaN`。`sprint/risk-board.ts` (iter524) と `item/recovery-plan.ts`
+ * (iter528) で完全同一の private `dayDiffISO` が duplicate していたので集約。
+ *
+ * 仕様:
+ *  - a, b ともに `YYYY-MM-DD` (validated 前提)、内部で `${ymd}T00:00:00Z` → `Date.parse`
+ *  - 同日 → 0、a < b → 正、a > b → 負
+ *  - 不正 ISO (= `Date.parse` 失敗) → `Number.NaN` (caller の `if (Number.isFinite(...))` 防御任せ)
+ *
+ * `shiftIsoDate` と対称な「ISO 日付差」 helper、両方とも UTC 基準で TZ shift と無関係。
+ */
+export function dayDiffISO(a: string, b: string): number {
+  const ad = Date.parse(`${a}T00:00:00Z`)
+  const bd = Date.parse(`${b}T00:00:00Z`)
+  if (!Number.isFinite(ad) || !Number.isFinite(bd)) return Number.NaN
+  return Math.round((bd - ad) / MS_PER_DAY)
+}
+
+/**
  * iter330 refactor: ISO `YYYY-MM-DD` を UTC 基準で N 日 shift して `YYYY-MM-DD` に
  * 戻す pure helper。`weekly-time-trend.ts#shiftDays` と `daily-streak.ts#shiftDays` で
  * 同一実装が 2 callsite 重複していたので集約。caller は week 境界 (today-6, today-13)
