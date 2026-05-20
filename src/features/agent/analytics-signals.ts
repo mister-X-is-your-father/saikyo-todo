@@ -50,6 +50,10 @@ import {
   weeklyCompletionInsightToBriefSignal,
 } from '@/features/item/weekly-completion-insight'
 import { type BiasTrend, biasTrendToBriefSignal } from '@/features/time-entry/bias-trend'
+import {
+  type WeeklyReviewDueKind,
+  weeklyReviewDueToBriefSignal,
+} from '@/features/today/weekly-review-checklist'
 
 import { type AgentReliability, composeAgentBriefSignals } from './agent-reliability'
 import { type AgentBriefSignal } from './brief-signal'
@@ -87,6 +91,12 @@ export interface AnalyticsSignalsInput {
    * caller は consultation kind の item を事前 filter + status 集計してから渡すこと。
    */
   consultationCounts?: ConsultationCounts
+  /**
+   * iter1044 refactor: 12 軸目として weekly-review-due (= GTD Weekly Review 点検状態) も統合。
+   * 値は WeeklyReviewDueKind (`'recent' | 'never-reviewed' | 'overdue'`)。
+   * caller は `classifyWeeklyReviewDue({ lastReviewAt, now })` の出力を渡す。
+   */
+  weeklyReviewDue?: WeeklyReviewDueKind
 }
 
 export interface AnalyticsSignals {
@@ -110,6 +120,8 @@ export interface AnalyticsSignals {
   waitingSummary: AgentBriefSignal | null
   /** iter1043 basics: 相談 chip (= 判断漏れ=danger / 締切間近=warn / 受付中=info / 決定済=success / 空=idle) */
   consultationCounts: AgentBriefSignal | null
+  /** iter1044 refactor: GTD Weekly Review chip (= overdue=danger / never-reviewed=warn / recent=success) */
+  weeklyReviewDue: AgentBriefSignal | null
 }
 
 const EMPTY: AnalyticsSignals = {
@@ -126,6 +138,7 @@ const EMPTY: AnalyticsSignals = {
   backlogAging: null,
   waitingSummary: null,
   consultationCounts: null,
+  weeklyReviewDue: null,
 }
 
 export function composeAnalyticsSignals(input: AnalyticsSignalsInput): AnalyticsSignals {
@@ -166,6 +179,9 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
   if (input.consultationCounts) {
     out.consultationCounts = consultationCountsToBriefSignal(input.consultationCounts)
   }
+  if (input.weeklyReviewDue) {
+    out.weeklyReviewDue = weeklyReviewDueToBriefSignal(input.weeklyReviewDue)
+  }
   return out
 }
 
@@ -181,12 +197,13 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
  *  5. backlogAging       (= 停滞度合い、danger=古参累積、moment と並ぶ backlog 軸 severity 主)
  *  6. waitingSummary     (= 連絡待ち、danger=escalate、外部依存 軸 severity 主)
  *  7. consultationCounts (= 相談、danger=判断漏れ、合意 軸 severity 主)
- *  8. reliability        (= 全体 信頼性 chip)
- *  9. costTrend          (= cost 月次トレンド)
- * 10. velocity           (= 完了ペース、weekly と並ぶ達成感系)
- * 11. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
- * 12. momentum           (= backlog momentum)
- * 13. dominantRole       (= 主軸 role、informational、最後)
+ *  8. weeklyReviewDue    (= GTD Weekly Review、danger=overdue、習慣 軸 severity 主)
+ *  9. reliability        (= 全体 信頼性 chip)
+ * 10. costTrend          (= cost 月次トレンド)
+ * 11. velocity           (= 完了ペース、weekly と並ぶ達成感系)
+ * 12. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
+ * 13. momentum           (= backlog momentum)
+ * 14. dominantRole       (= 主軸 role、informational、最後)
  */
 export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
@@ -197,6 +214,7 @@ export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSi
     signals.backlogAging,
     signals.waitingSummary,
     signals.consultationCounts,
+    signals.weeklyReviewDue,
     signals.reliability,
     signals.costTrend,
     signals.velocity,

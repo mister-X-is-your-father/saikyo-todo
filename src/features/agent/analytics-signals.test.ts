@@ -62,6 +62,19 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(s.velocity!.tone).toBe('idle')
   })
 
+  it('iter1044: weeklyReviewDue overdue → tone=danger / "1 週以上経過"', () => {
+    const s = composeAnalyticsSignals({ weeklyReviewDue: 'overdue' })
+    expect(s.weeklyReviewDue).not.toBeNull()
+    expect(s.weeklyReviewDue!.tone).toBe('danger')
+    expect(s.weeklyReviewDue!.text).toBe('1 週以上経過')
+  })
+
+  it('iter1044: weeklyReviewDue recent → tone=success / "点検済"', () => {
+    const s = composeAnalyticsSignals({ weeklyReviewDue: 'recent' })
+    expect(s.weeklyReviewDue!.tone).toBe('success')
+    expect(s.weeklyReviewDue!.text).toBe('点検済')
+  })
+
   it('iter1043: consultationCounts のみ (空) → consultationCounts signal、tone=idle / "相談なし"', () => {
     const s = composeAnalyticsSignals({
       consultationCounts: { open: 0, 'closing-soon': 0, overdue: 0, decided: 0 },
@@ -404,6 +417,7 @@ describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', (
       'backlogAging',
       'waitingSummary',
       'consultationCounts',
+      'weeklyReviewDue',
     ] as const
     expect(Object.keys(empty).sort()).toEqual([...expectedKeys].sort())
     for (const k of expectedKeys) {
