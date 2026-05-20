@@ -23,7 +23,7 @@
  *     (本 helper と orthogonal、retro widget は両方を使う)。
  *   - `groupItemsByStatus` も使えるが、本 helper は数値だけ返したいので独自集計。
  */
-import { MS_PER_DAY } from '@/lib/date/iso'
+import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { rateToPct } from '@/lib/format-rate'
 
 import { normalizeStatus } from '@/features/item/status-visual'
@@ -86,19 +86,13 @@ export interface SprintRetroOptions {
   sprintEndISO?: string
 }
 
-/** doneAt を Date に変換、不正値は null。 */
-function parseDoneAt(d: Date | string | null | undefined): Date | null {
-  if (!d) return null
-  const v = d instanceof Date ? d : new Date(d)
-  return Number.isFinite(v.getTime()) ? v : null
-}
-
-/** ISO `YYYY-MM-DD` string を Date (UTC midnight) に変換、不正値は null。 */
-function parseISODate(d: string | null | undefined): Date | null {
-  if (!d) return null
-  const v = new Date(`${d}T00:00:00Z`)
-  return Number.isFinite(v.getTime()) ? v : null
-}
+// iter1032 refactor: 旧 local `parseDoneAt` / `parseISODate` を `@/lib/date/iso#parseDateOrNull`
+// に集約 (= iter490 で確立した 38 弾 sweep の 39 弾目)。`new Date('YYYY-MM-DD')` と
+// `new Date('YYYY-MM-DDT00:00:00Z')` は ES 仕様で同一 (= UTC midnight)、parseDateOrNull は
+// 両者を透過的に扱う + 不正 string は NaN check で null。本 file の private 2 関数は parseDateOrNull
+// の薄い alias で完全に置換可能 (= behavior preserving)。
+const parseDoneAt = parseDateOrNull
+const parseISODate = parseDateOrNull
 
 export function buildSprintRetroSummary(
   items: readonly SprintRetroItemFields[],
