@@ -204,10 +204,13 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                   aria-busy={accept.isPending || undefined}
                   onClick={() => void handleAcceptAll()}
                   data-testid="proposals-accept-all"
+                  // iter1046: visible "全て採用" / "全て却下" を aria-label の prefix に
+                  // 固定し WCAG 2.5.3 satisfy (旧 aria-label は "すべて採用" / "すべて却下"
+                  // で kana 不一致 = literal "全て採用" / "全て却下" substring 無し)。
                   aria-label={
                     accept.isPending
-                      ? `保留中の提案 ${list.length} 件を採用中…`
-                      : `保留中の提案 ${list.length} 件をすべて採用`
+                      ? `全て採用 — 保留中の提案 ${list.length} 件を採用中…`
+                      : `全て採用 — 保留中の提案 ${list.length} 件をすべて採用`
                   }
                 >
                   <span aria-hidden="true">全て採用</span>
@@ -223,8 +226,8 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                   data-testid="proposals-reject-all"
                   aria-label={
                     rejectAll.isPending
-                      ? `保留中の提案 ${list.length} 件を却下中…`
-                      : `保留中の提案 ${list.length} 件をすべて却下`
+                      ? `全て却下 — 保留中の提案 ${list.length} 件を却下中…`
+                      : `全て却下 — 保留中の提案 ${list.length} 件をすべて却下`
                   }
                 >
                   <span aria-hidden="true">全て却下</span>
@@ -242,10 +245,13 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               onClick={() => void handleRedecompose({ clearExisting: false })}
               data-testid="proposals-redecompose"
               title="既存の提案を残したまま追加で分解"
+              // iter1046: visible "追加分解" / "再分解" を aria-label の prefix に
+              // 固定し WCAG 2.5.3 satisfy (旧 aria-label は "追加で AI 分解" /
+              // "AI 分解を再実行" で literal substring 無し)。
               aria-label={
                 list.length > 0
-                  ? `既存の保留中 ${list.length} 件を残して追加で AI 分解`
-                  : 'AI 分解を再実行'
+                  ? `追加分解 — 既存の保留中 ${list.length} 件を残して追加で AI 分解`
+                  : '再分解 — AI 分解を再実行'
               }
             >
               <RotateCw className="h-3.5 w-3.5" aria-hidden="true" />
