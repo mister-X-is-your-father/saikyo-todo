@@ -219,8 +219,12 @@ export function TemplateItemsEditor({ templateId }: Props) {
               <span className="flex-1 truncate">{it.title}</span>
               {it.isMust ? <MustBadge /> : null}
               {it.dueOffsetDays != null ? (
+                // iter1066: role 無 span + aria-label を `role="img"` で
+                // authoritative 化 (iter1023/1049-1065 同 pattern、role=img
+                // sweep 19 弾目)。
                 <span
                   className="text-muted-foreground text-xs"
+                  role="img"
                   aria-label={`期日 offset +${it.dueOffsetDays} 日`}
                 >
                   <span aria-hidden="true">+{it.dueOffsetDays}日</span>
