@@ -5,6 +5,7 @@ import {
   classifyInboxItem,
   formatInboxBucketsJa,
   formatInboxHealthHintJa,
+  type GtdBucket,
   gtdBucketChipTone,
   gtdBucketLabelJa,
   gtdBucketSeverity,
@@ -12,6 +13,7 @@ import {
   inboxHealthToBriefSignal,
   type InboxItemFields,
   summarizeInbox,
+  totalBucketCounts,
 } from './inbox-process'
 
 function mk(over: Partial<InboxItemFields> & { id: string; title: string }): InboxItemFields {
@@ -411,5 +413,42 @@ describe('inboxHealthToBriefSignal (iter1046)', () => {
     const signal = inboxHealthToBriefSignal(summary)
     expect(signal.tone).toBe('warn')
     expect(signal.text).toBe('Inbox: 滞留気味')
+  })
+})
+
+describe('totalBucketCounts (iter1054)', () => {
+  it('全 bucket 0 → 0', () => {
+    const counts: Record<GtdBucket, number> = {
+      immediate: 0,
+      'next-action': 0,
+      project: 0,
+      'waiting-for': 0,
+      reference: 0,
+      someday: 0,
+      scheduled: 0,
+      trash: 0,
+    }
+    expect(totalBucketCounts(counts)).toBe(0)
+  })
+
+  it('複数 bucket に分散 → 全合計', () => {
+    const counts: Record<GtdBucket, number> = {
+      immediate: 1,
+      'next-action': 5,
+      project: 3,
+      'waiting-for': 2,
+      reference: 4,
+      someday: 0,
+      scheduled: 7,
+      trash: 1,
+    }
+    expect(totalBucketCounts(counts)).toBe(23)
+  })
+
+  it('summarizeInbox の counts と整合 (formatInboxBucketsJa / classifyInboxHealthHint と同 total)', () => {
+    const items: InboxItemFields[] = []
+    for (let i = 0; i < 5; i++) items.push(mk({ id: `n${i}`, title: `t${i}` }))
+    const summary = summarizeInbox(items)
+    expect(totalBucketCounts(summary.counts)).toBe(5)
   })
 })

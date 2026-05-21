@@ -326,13 +326,24 @@ export function summarizeInbox<T extends InboxItemFields>(
  * count=0 bucket は省略。bucket 表示順は count 降順 (= 多い bucket が先)、tie は
  * BUCKET_LABEL_JA 定義順 stable。
  */
+/**
+ * iter1054 refactor: `Record<GtdBucket, number>` の合計件数を計算する pure helper。
+ *
+ * 既存 `formatInboxBucketsJa` / `classifyInboxHealthHint` の 2 callsite で `(Object.keys(counts)
+ * as GtdBucket[]).reduce((s, k) => s + counts[k], 0)` の同 reduce が inline 重複していたので
+ * 1 source of truth に集約。caller は `totalBucketCounts(summary.counts)` で 1 行参照。
+ *
+ * 0 件 sentinel (= empty inbox) の判定 / health classify thresholds (100, 30) と同じ「total」
+ * 概念を 1 helper で共有。
+ */
+export function totalBucketCounts(counts: Readonly<Record<GtdBucket, number>>): number {
+  return (Object.keys(counts) as GtdBucket[]).reduce((s, k) => s + counts[k], 0)
+}
+
 export function formatInboxBucketsJa<T extends InboxItemFields>(
   summary: InboxBucketSummary<T>,
 ): string {
-  const total = (Object.keys(summary.counts) as GtdBucket[]).reduce(
-    (s, k) => s + summary.counts[k],
-    0,
-  )
+  const total = totalBucketCounts(summary.counts)
   if (total === 0) return 'Inbox 0 件 (空)'
   const order: GtdBucket[] = [
     'immediate',
@@ -369,10 +380,7 @@ export type InboxHealthHint = FourStateHint
 export function classifyInboxHealthHint<T extends InboxItemFields>(
   summary: InboxBucketSummary<T>,
 ): InboxHealthHint {
-  const total = (Object.keys(summary.counts) as GtdBucket[]).reduce(
-    (s, k) => s + summary.counts[k],
-    0,
-  )
+  const total = totalBucketCounts(summary.counts)
   if (total === 0) return 'idle'
   if (summary.counts['waiting-for'] >= 5 || total >= 100) return 'severe'
   if (total >= 30 || summary.counts.immediate >= 5) return 'moderate'
