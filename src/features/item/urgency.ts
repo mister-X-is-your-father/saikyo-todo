@@ -23,7 +23,9 @@
  * sort 用に `compareUrgency(a, b)` も提供 (高 → 低)。
  */
 import { formatNonZeroCounts } from '@/lib/format-counts'
-import { type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
+import { type ChipTone, type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
+
+import type { AgentBriefSignal } from '@/features/agent/brief-signal'
 
 import { type DueProximityKind, getDueProximity } from './due-proximity'
 import type { Item } from './schema'
@@ -373,6 +375,50 @@ export function urgencyTierCountsSeverity(
   if (counts.critical > 0) return 'severe'
   if (counts.high > 0) return 'warn'
   return 'idle'
+}
+
+/**
+ * iter1056 basics: UrgencyTierSeverity (3 値: 'severe' | 'warn' | 'idle') → 共通 `ChipTone` bridge。
+ *
+ *   - severe (= critical > 0)             → 'danger' (= 赤、強警告)
+ *   - warn   (= critical=0 + high > 0)    → 'warn'   (= 黄、警戒)
+ *   - idle   (= 上記以外、medium/low/none) → 'idle'   (= 灰、chip 非表示)
+ *
+ * iter1055 `severeMildIdleToChipTone` (severe|mild|idle vocab) と vocab 別 (本 vocab は
+ * severe|warn|idle で 'mild' 不在、urgency 軸固有)。`formatUrgencyTierCounts` と整合する
+ * tone 軸で AgentBriefSignal / dashboard chip-tone bind 用。
+ */
+export function urgencyTierCountsChipTone(counts: Record<UrgencyTier, number>): ChipTone {
+  const sev = urgencyTierCountsSeverity(counts)
+  if (sev === 'severe') return 'danger'
+  if (sev === 'warn') return 'warn'
+  return 'idle'
+}
+
+/**
+ * iter1056 basics: UrgencyTier counts → `AgentBriefSignal` (text + tone) compose helper。
+ *
+ * iter1025/1031/1035/1038/1040/1046/1047/1049/1052 等 `*ToBriefSignal` pattern (= 16 axes 弾) の
+ * 緊急度軸版。text は `formatUrgencyTierCounts(counts)` (= '緊急 3 / 高 5 / 中 2')、
+ * tone は本 iter `urgencyTierCountsChipTone` を再利用 (= chip 配色と signal tone が完全一致)。
+ *
+ * caller pattern:
+ *   const counts = countItemsByUrgencyTier(items, today)
+ *   const signal = urgencyTierCountsToBriefSignal(counts)
+ *   // → composeAnalyticsSignals 風に concat、または単独 chip render
+ *
+ * 用途:
+ *   - AI 朝 brief / Slack daily digest 「緊急 N / 高 M」 priority signal
+ *   - dashboard chip 「緊急対応」 tone 統一
+ *   - analytics-signals.ts の 17 軸目候補 (次 iter integration 想定)
+ */
+export function urgencyTierCountsToBriefSignal(
+  counts: Record<UrgencyTier, number>,
+): AgentBriefSignal {
+  return {
+    text: formatUrgencyTierCounts(counts),
+    tone: urgencyTierCountsChipTone(counts),
+  }
 }
 
 /**

@@ -15,7 +15,9 @@ import {
   type UrgencyTier,
   urgencyTier,
   urgencyTierChipClasses,
+  urgencyTierCountsChipTone,
   urgencyTierCountsSeverity,
+  urgencyTierCountsToBriefSignal,
   urgencyTierLabel,
   urgencyTierOf,
   urgencyTierTone,
@@ -627,5 +629,61 @@ describe('urgencyTierChipClasses (Tailwind 3 軸 class、iter481/482 と整合)'
   it('low → blue 薄、none → slate 薄 (計画範囲内 vs 対象外を区別)', () => {
     expect(urgencyTierChipClasses('low').textClass).toBe('text-blue-700')
     expect(urgencyTierChipClasses('none').textClass).toBe('text-slate-600')
+  })
+})
+
+describe('urgencyTierCountsChipTone (iter1056)', () => {
+  const empty: Record<UrgencyTier, number> = {
+    critical: 0,
+    high: 0,
+    medium: 0,
+    low: 0,
+    none: 0,
+  }
+
+  it('全 0 → idle tone', () => {
+    expect(urgencyTierCountsChipTone(empty)).toBe('idle')
+  })
+
+  it('medium/low/none のみ → idle tone (= chip 非表示 progressive disclosure)', () => {
+    expect(urgencyTierCountsChipTone({ ...empty, medium: 5, low: 3, none: 10 })).toBe('idle')
+  })
+
+  it('high > 0 + critical = 0 → warn tone', () => {
+    expect(urgencyTierCountsChipTone({ ...empty, high: 2 })).toBe('warn')
+  })
+
+  it('critical > 0 → danger tone (= 強警告)', () => {
+    expect(urgencyTierCountsChipTone({ ...empty, critical: 1 })).toBe('danger')
+    expect(urgencyTierCountsChipTone({ ...empty, critical: 3, high: 5 })).toBe('danger')
+  })
+})
+
+describe('urgencyTierCountsToBriefSignal (iter1056)', () => {
+  const empty: Record<UrgencyTier, number> = {
+    critical: 0,
+    high: 0,
+    medium: 0,
+    low: 0,
+    none: 0,
+  }
+
+  it('全 0 → idle tone + "0 件" sentinel', () => {
+    const signal = urgencyTierCountsToBriefSignal(empty)
+    expect(signal.tone).toBe('idle')
+    expect(signal.text).toBe('0 件')
+  })
+
+  it('critical 含む → danger tone + summary text', () => {
+    const signal = urgencyTierCountsToBriefSignal({ ...empty, critical: 2, high: 3 })
+    expect(signal.tone).toBe('danger')
+    expect(signal.text).toContain('緊急 2')
+    expect(signal.text).toContain('高 3')
+  })
+
+  it('high のみ (critical なし) → warn tone', () => {
+    const signal = urgencyTierCountsToBriefSignal({ ...empty, high: 1 })
+    expect(signal.tone).toBe('warn')
+    expect(signal.text).toContain('高 1')
   })
 })
