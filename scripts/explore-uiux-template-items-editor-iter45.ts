@@ -56,7 +56,8 @@ async function main() {
     await page.goto(`${BASE}/${workspaceId}/templates`, { waitUntil: 'networkidle' })
     await page.waitForTimeout(2000)
     // template-card がある場合、最初の card title button をクリックして展開
-    const card = page.locator('[data-testid="template-card"]').first()
+    // iter1021: template-card testid を template-card-${id} に変更したため prefix match。
+    const card = page.locator('[data-testid^="template-card-"]').first()
     if ((await card.count()) > 0) {
       await card.locator('button').first().click()
       await page.waitForTimeout(500)

@@ -94,7 +94,8 @@ async function main() {
     console.log(`[iter96] tmpl-desc maxlength=${descMaxLen}`)
 
     // 3. Template card expand button aria-expanded
-    const card = page.locator('[data-testid="template-card"]').first()
+    // iter1021: template-card testid を template-card-${id} に変更したため prefix match。
+    const card = page.locator('[data-testid^="template-card-"]').first()
     const expandBtn = card.locator('button').first()
     const ariaExpanded = await expandBtn.getAttribute('aria-expanded')
     const ariaControls = await expandBtn.getAttribute('aria-controls')

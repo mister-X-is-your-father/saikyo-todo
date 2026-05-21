@@ -262,7 +262,12 @@ export function TemplatesPanel({ workspaceId }: Props) {
           {list.data!.map((t) => (
             <li key={t.id}>
               <Card
-                data-testid="template-card"
+                // iter1021: 旧 `data-testid="template-card"` は全 template 共通の static
+                // testid で複数 template 並列時に locator が ambiguous になる divergence。
+                // 他 list-item Card (sprint-card-${id} / goal-card-${id} / wf-card-${id} /
+                // src-card-${id} = iter1007 sweep) と同じ `template-card-${id}` 規則に揃え、
+                // E2E / audit script からの安定 locate を可能化。
+                data-testid={`template-card-${t.id}`}
                 role="region"
                 aria-labelledby={`template-card-heading-${t.id}`}
               >
