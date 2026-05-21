@@ -6,8 +6,8 @@ import { Search } from 'lucide-react'
 
 import type { Item } from '@/features/item/schema'
 
+import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { MustBadge } from '@/components/workspace/must-badge'
 
 interface Props {
@@ -47,7 +47,11 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
       </h2>
       <div className="flex items-center gap-2">
         <Search className="text-muted-foreground h-4 w-4" aria-hidden="true" />
-        <Input
+        {/* iter1017: CLAUDE.md 規約「<input> を直接使わず IMEInput (日本語 Enter submit
+            対策)」 適用。schedule-item-picker は task title (日本語) 検索 input なので
+            IME 確定 Enter が Escape ハンドラと干渉する可能性を予防的に防ぐ (現状 Enter
+            handler 無いが、将来 enter-to-pick 等を足したときの IME hazard を排除)。 */}
+        <IMEInput
           autoFocus
           aria-label={
             q.length === 0
@@ -102,7 +106,8 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
             割込み / 休憩 として記録 (task に紐付けない)
           </label>
           <div className="flex gap-2">
-            <Input
+            {/* iter1017: 同上、CLAUDE.md 規約 IMEInput 採用 (日本語メモ入力)。 */}
+            <IMEInput
               id="schedule-picker-interrupt-note"
               placeholder="例: 急な電話 / 昼休み"
               value={interruptNote}
