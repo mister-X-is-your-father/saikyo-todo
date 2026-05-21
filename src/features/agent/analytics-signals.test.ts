@@ -92,6 +92,45 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(s.inboxBucketCounts!.text).toBe('Inbox: 要 process')
   })
 
+  it('iter1050: stuckWipEntries severe (= 7d+ stuck 含む) → tone=danger', () => {
+    const baseItem = {
+      id: 'a',
+      title: 'task A',
+      status: 'in_progress',
+      updatedAt: new Date(),
+      doneAt: null,
+      archivedAt: null,
+    }
+    const entries = [{ item: baseItem, stuckDays: 10 }]
+    const s = composeAnalyticsSignals({ stuckWipEntries: entries })
+    expect(s.stuckWip).not.toBeNull()
+    expect(s.stuckWip!.tone).toBe('danger')
+    expect(s.stuckWip!.text).toContain('進行中だが停滞: 1 件')
+    expect(s.stuckWip!.text).toContain('task A 10 日')
+  })
+
+  it('iter1050: stuckWipEntries mild (= 3-6d stuck のみ) → tone=warn', () => {
+    const baseItem = {
+      id: 'a',
+      title: 'task A',
+      status: 'in_progress',
+      updatedAt: new Date(),
+      doneAt: null,
+      archivedAt: null,
+    }
+    const entries = [{ item: baseItem, stuckDays: 4 }]
+    const s = composeAnalyticsSignals({ stuckWipEntries: entries })
+    expect(s.stuckWip!.tone).toBe('warn')
+  })
+
+  it('iter1050: stuckWipEntries 空 (= []) → falsy で signal は null のまま', () => {
+    const s = composeAnalyticsSignals({ stuckWipEntries: [] })
+    // [] is truthy in JS, so we DO compose, and get idle signal
+    expect(s.stuckWip).not.toBeNull()
+    expect(s.stuckWip!.tone).toBe('idle')
+    expect(s.stuckWip!.text).toBe('進行中だが停滞 0 件')
+  })
+
   it('iter1048: inboxBucketCounts mild (= 数件 actionable) → tone=success / "健全"', () => {
     const counts = {
       immediate: 0,
@@ -452,6 +491,7 @@ describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', (
       'consultationCounts',
       'weeklyReviewDue',
       'inboxBucketCounts',
+      'stuckWip',
     ] as const
     expect(Object.keys(empty).sort()).toEqual([...expectedKeys].sort())
     for (const k of expectedKeys) {

@@ -53,6 +53,11 @@ import {
   type WeeklyCompletionInsight,
   weeklyCompletionInsightToBriefSignal,
 } from '@/features/item/weekly-completion-insight'
+import {
+  type StuckWipEntry,
+  type StuckWipFields,
+  stuckWipToBriefSignal,
+} from '@/features/item/wip-stuck'
 import { type BiasTrend, biasTrendToBriefSignal } from '@/features/time-entry/bias-trend'
 import {
   type WeeklyReviewDueKind,
@@ -107,6 +112,12 @@ export interface AnalyticsSignalsInput {
    * caller は inbox item (= scheduledFor も dueDate も未設定) を事前 filter してから渡すこと。
    */
   inboxBucketCounts?: InboxBucketCounts
+  /**
+   * iter1050 refactor: 14 軸目として stuck WIP entries (= 進行中だが N 日 updatedAt 未動、再開 nudge 候補) も統合。
+   * 値は `selectStuckWipItems(items, {}, today)` の出力 (= StuckWipEntry<StuckWipFields>[])。
+   * caller は workspace 全 item から作成。空 array (= 停滞なし) 時は idle chip。
+   */
+  stuckWipEntries?: readonly StuckWipEntry<StuckWipFields>[]
 }
 
 export interface AnalyticsSignals {
@@ -134,6 +145,8 @@ export interface AnalyticsSignals {
   weeklyReviewDue: AgentBriefSignal | null
   /** iter1048 basics: Inbox bucket counts chip (= severe=danger / moderate=warn / mild=success / idle=idle) */
   inboxBucketCounts: AgentBriefSignal | null
+  /** iter1050 refactor: 停滞 WIP chip (= severe 7d+=danger / mild 1-6d=warn / idle=idle) */
+  stuckWip: AgentBriefSignal | null
 }
 
 const EMPTY: AnalyticsSignals = {
@@ -152,6 +165,7 @@ const EMPTY: AnalyticsSignals = {
   consultationCounts: null,
   weeklyReviewDue: null,
   inboxBucketCounts: null,
+  stuckWip: null,
 }
 
 export function composeAnalyticsSignals(input: AnalyticsSignalsInput): AnalyticsSignals {
@@ -198,6 +212,9 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
   if (input.inboxBucketCounts) {
     out.inboxBucketCounts = inboxBucketCountsToBriefSignal(input.inboxBucketCounts)
   }
+  if (input.stuckWipEntries) {
+    out.stuckWip = stuckWipToBriefSignal(input.stuckWipEntries)
+  }
   return out
 }
 
@@ -215,12 +232,13 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
  *  7. consultationCounts (= 相談、danger=判断漏れ、合意 軸 severity 主)
  *  8. weeklyReviewDue    (= GTD Weekly Review、danger=overdue、習慣 軸 severity 主)
  *  9. inboxBucketCounts  (= GTD Inbox 健全性、danger=要 process、GTD flow 軸 severity 主)
- * 10. reliability        (= 全体 信頼性 chip)
- * 11. costTrend          (= cost 月次トレンド)
- * 12. velocity           (= 完了ペース、weekly と並ぶ達成感系)
- * 13. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
- * 14. momentum           (= backlog momentum)
- * 15. dominantRole       (= 主軸 role、informational、最後)
+ * 10. stuckWip           (= 進行中だが停滞、danger=7d+ 停滞、再開 nudge 軸 severity 主)
+ * 11. reliability        (= 全体 信頼性 chip)
+ * 12. costTrend          (= cost 月次トレンド)
+ * 13. velocity           (= 完了ペース、weekly と並ぶ達成感系)
+ * 14. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
+ * 15. momentum           (= backlog momentum)
+ * 16. dominantRole       (= 主軸 role、informational、最後)
  */
 export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
@@ -233,6 +251,7 @@ export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSi
     signals.consultationCounts,
     signals.weeklyReviewDue,
     signals.inboxBucketCounts,
+    signals.stuckWip,
     signals.reliability,
     signals.costTrend,
     signals.velocity,
