@@ -22,6 +22,9 @@
 
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
+import type { ChipTone } from '@/lib/ui/chip-tone'
+
+import type { AgentBriefSignal } from '@/features/agent/brief-signal'
 
 import {
   bucketByPriorityWith,
@@ -121,6 +124,55 @@ export function stuckWipSeverity<T extends StuckWipFields>(
   if (entries.length === 0) return 'idle'
   if (entries.some((e) => e.stuckDays >= 7)) return 'severe'
   return 'mild'
+}
+
+/**
+ * iter1047 ai-automation: stuck WIP entries → 共通 `ChipTone` bridge。
+ *
+ *   - severe (= 7 日以上 stuck 含む) → 'danger' (= 赤、要対応)
+ *   - mild   (= 3-6 日 stuck のみ)    → 'warn'   (= 黄、注意)
+ *   - idle   (= 停滞 WIP なし)         → 'idle'   (= 灰、attention 不要)
+ *
+ * `stuckWipSeverity` の 3 値を ChipTone vocab に lossy bridge。`formatStuckWipSummaryJa`
+ * と整合する tone 軸で AgentBriefSignal / dashboard chip-tone bind 用。
+ *
+ * 既存 dashboard chip (dashboard-view.tsx の wipStuck panel) は inline severity 3 値 →
+ * Tailwind class を直接構築していたが、本 helper で ChipTone vocab に乗せれば
+ * agentBriefSignal pattern に統一可能。
+ */
+export function stuckWipChipTone<T extends StuckWipFields>(
+  entries: readonly StuckWipEntry<T>[],
+): ChipTone {
+  const sev = stuckWipSeverity(entries)
+  if (sev === 'severe') return 'danger'
+  if (sev === 'mild') return 'warn'
+  return 'idle'
+}
+
+/**
+ * iter1047 ai-automation: stuck WIP entries → `AgentBriefSignal` (text + tone) compose helper。
+ *
+ * iter1025/1031/1035/1038/1040/1046 `*ToBriefSignal` pattern (= 13 axes 弾) の停滞 WIP 軸版。
+ * text は `formatStuckWipSummaryJa(entries)` (limit=3、最長停滞 3 件 + 他 N 件) を再利用、
+ * tone は本 iter `stuckWipChipTone` を再利用 (= chip 配色と signal tone が完全一致)。
+ *
+ * caller pattern:
+ *   const entries = selectStuckWipItems(items, {}, today)
+ *   const signal = stuckWipToBriefSignal(entries)
+ *   // → composeAnalyticsSignals 風に concat、または単独 chip render
+ *
+ * 用途:
+ *   - AI 朝 brief / Slack daily digest 「進行中だが停滞: 3 件 (...)」 signal
+ *   - dashboard chip 「停滞 WIP 異常」 tone 統一 (既存 inline 配色から)
+ *   - analytics-signals.ts の 14 軸目候補 (次 iter integration 想定)
+ */
+export function stuckWipToBriefSignal<T extends StuckWipFields>(
+  entries: readonly StuckWipEntry<T>[],
+): AgentBriefSignal {
+  return {
+    text: formatStuckWipSummaryJa(entries),
+    tone: stuckWipChipTone(entries),
+  }
 }
 
 /** by-priority 集計の単 bucket 値: stuck WIP 件数 + 最長 stuck 日数 (count=0 → null)。 */

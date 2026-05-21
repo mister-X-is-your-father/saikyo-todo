@@ -11,8 +11,10 @@ import {
   formatStuckWipByPriorityJa,
   formatStuckWipSummaryJa,
   selectStuckWipItems,
+  stuckWipChipTone,
   type StuckWipFields,
   stuckWipSeverity,
+  stuckWipToBriefSignal,
 } from './wip-stuck'
 
 const TODAY = new Date(2026, 3, 29) // 2026-04-29
@@ -256,5 +258,51 @@ describe('formatStuckWipByPriorityJa', () => {
     const items = [mkP({ id: 'a', priority: 2, updatedAt: dt(5) })]
     const byP = computeStuckWipByPriority(items, {}, TODAY)
     expect(formatStuckWipByPriorityJa(byP)).toBe('P2 1 件 (最長 5日)')
+  })
+})
+
+describe('stuckWipChipTone (iter1047)', () => {
+  it('空 entries → idle tone', () => {
+    expect(stuckWipChipTone([])).toBe('idle')
+  })
+
+  it('mild (3-6 日 stuck のみ) → warn tone', () => {
+    const items = [mk({ id: 'a', updatedAt: dt(4) })]
+    const entries = selectStuckWipItems(items, {}, TODAY)
+    expect(stuckWipChipTone(entries)).toBe('warn')
+  })
+
+  it('severe (7 日以上 stuck 含む) → danger tone', () => {
+    const items = [mk({ id: 'a', updatedAt: dt(8) }), mk({ id: 'b', updatedAt: dt(4) })]
+    const entries = selectStuckWipItems(items, {}, TODAY)
+    expect(stuckWipChipTone(entries)).toBe('danger')
+  })
+})
+
+describe('stuckWipToBriefSignal (iter1047)', () => {
+  it('空 entries → idle tone + 0 件 sentinel', () => {
+    const signal = stuckWipToBriefSignal([])
+    expect(signal.tone).toBe('idle')
+    expect(signal.text).toBe('進行中だが停滞 0 件')
+  })
+
+  it('severe → danger tone + summary text', () => {
+    const items = [mk({ id: 'a', title: 'task A', updatedAt: dt(8) })]
+    const entries = selectStuckWipItems(items, {}, TODAY)
+    const signal = stuckWipToBriefSignal(entries)
+    expect(signal.tone).toBe('danger')
+    expect(signal.text).toContain('進行中だが停滞: 1 件')
+    expect(signal.text).toContain('task A 8 日')
+  })
+
+  it('mild → warn tone + summary text', () => {
+    const items = [
+      mk({ id: 'a', title: 'task A', updatedAt: dt(4) }),
+      mk({ id: 'b', title: 'task B', updatedAt: dt(5) }),
+    ]
+    const entries = selectStuckWipItems(items, {}, TODAY)
+    const signal = stuckWipToBriefSignal(entries)
+    expect(signal.tone).toBe('warn')
+    expect(signal.text).toContain('進行中だが停滞: 2 件')
   })
 })
