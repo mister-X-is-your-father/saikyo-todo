@@ -35,7 +35,16 @@ export function WorkspaceHeader({ title, role, subtitle, pageActions, utility }:
             <span aria-hidden="true">{role}</span>
           </Badge>
         </div>
-        <p className="text-muted-foreground mt-1 truncate text-xs">{subtitle}</p>
+        {/* iter1047: subtitle (= user email) は SR が raw email を読み上げるだけで
+            「これがログイン中アカウント」 という context が伝わらないため、aria-label で
+            semantic 補強。truncate で visible は短縮されることもあるが、aria-label の
+            full email は完全 SR 経路で届く。 */}
+        <p
+          className="text-muted-foreground mt-1 truncate text-xs"
+          aria-label={subtitle ? `ログイン中アカウント: ${subtitle}` : undefined}
+        >
+          {subtitle}
+        </p>
       </div>
       <div
         className="flex flex-wrap items-center gap-2"
