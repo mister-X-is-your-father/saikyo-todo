@@ -16,6 +16,9 @@
  */
 
 import { isValidIsoDate } from '@/lib/date/iso'
+import type { ChipTone } from '@/lib/ui/chip-tone'
+
+import type { AgentBriefSignal } from '@/features/agent/brief-signal'
 
 export interface MustHygieneFields {
   isMust: boolean | null | undefined
@@ -93,4 +96,51 @@ export function mustHygieneSeverity(stats: MustHygieneStats): MustHygieneSeverit
   if (stats.withoutDueDate === 0) return 'clean'
   if (stats.coverageRate < 0.5) return 'severe'
   return 'mild'
+}
+
+/**
+ * iter1058 basics: MustHygieneSeverity (4 値) → 共通 `ChipTone` bridge。
+ *
+ *   - severe (= 全 MUST 期限なし or coverage < 50%) → 'danger' (= 赤、重大な計画漏れ)
+ *   - mild   (= 半分以上 coverage 済、一部未設定)     → 'warn'   (= 黄、計画化推奨)
+ *   - clean  (= 全 MUST 期限付き、健全)               → 'success' (= 緑、positive framing)
+ *   - idle   (= MUST 自体無し)                       → 'idle'   (= 灰、attention 不要)
+ *
+ * iter1055 severeMildIdle / iter1056 urgencyTier と vocab 別 (本 vocab は 'clean' を含む
+ * 4 値で MUST hygiene 軸固有)。`formatMustHygieneJa` と整合する tone 軸で AgentBriefSignal /
+ * dashboard chip-tone bind 用。
+ */
+const MUST_HYGIENE_TO_CHIP_TONE: Record<MustHygieneSeverity, ChipTone> = {
+  severe: 'danger',
+  mild: 'warn',
+  clean: 'success',
+  idle: 'idle',
+}
+
+export function mustHygieneChipTone(stats: MustHygieneStats): ChipTone {
+  return MUST_HYGIENE_TO_CHIP_TONE[mustHygieneSeverity(stats)]
+}
+
+/**
+ * iter1058 basics: MustHygieneStats → `AgentBriefSignal` (text + tone) compose helper。
+ *
+ * iter1025/1031/1035/1038/1040/1046/1047/1049/1052/1056 等 `*ToBriefSignal` pattern (= 17 axes
+ * 弾) の MUST hygiene 軸版。text は `formatMustHygieneJa(stats)`、tone は本 iter
+ * `mustHygieneChipTone` を再利用 (= chip 配色と signal tone が完全一致)。
+ *
+ * caller pattern:
+ *   const stats = computeMustHygiene(items)
+ *   const signal = mustHygieneToBriefSignal(stats)
+ *   // → composeAnalyticsSignals 風に concat、または単独 chip render
+ *
+ * 用途:
+ *   - AI 朝 brief / Slack daily digest 「MUST: 5 件 (期限付 2 / 期限なし 3 — 計画化推奨)」 signal
+ *   - dashboard chip 「MUST hygiene」 tone 統一
+ *   - analytics-signals.ts の 18 軸目候補 (次 iter integration 想定)
+ */
+export function mustHygieneToBriefSignal(stats: MustHygieneStats): AgentBriefSignal {
+  return {
+    text: formatMustHygieneJa(stats),
+    tone: mustHygieneChipTone(stats),
+  }
 }

@@ -3,8 +3,10 @@ import { describe, expect, it } from 'vitest'
 import {
   computeMustHygiene,
   formatMustHygieneJa,
+  mustHygieneChipTone,
   type MustHygieneFields,
   mustHygieneSeverity,
+  mustHygieneToBriefSignal,
 } from './must-hygiene'
 
 describe('computeMustHygiene', () => {
@@ -145,5 +147,69 @@ describe('integration: items → compute → format', () => {
     const stats = computeMustHygiene(items)
     expect(formatMustHygieneJa(stats)).toBe('MUST: 2 件 (期限付 1 / 期限なし 1 — 計画化推奨)')
     expect(mustHygieneSeverity(stats)).toBe('mild')
+  })
+})
+
+describe('mustHygieneChipTone (iter1058)', () => {
+  it('total=0 (idle) → idle tone', () => {
+    const stats = computeMustHygiene([])
+    expect(mustHygieneChipTone(stats)).toBe('idle')
+  })
+
+  it('全 MUST 期限付き (clean) → success tone', () => {
+    const items: MustHygieneFields[] = [
+      { isMust: true, doneAt: null, archivedAt: null, dueDate: '2026-04-30' },
+      { isMust: true, doneAt: null, archivedAt: null, dueDate: '2026-05-01' },
+    ]
+    const stats = computeMustHygiene(items)
+    expect(mustHygieneChipTone(stats)).toBe('success')
+  })
+
+  it('coverage >= 50% (mild) → warn tone', () => {
+    const items: MustHygieneFields[] = [
+      { isMust: true, doneAt: null, archivedAt: null, dueDate: '2026-04-30' },
+      { isMust: true, doneAt: null, archivedAt: null, dueDate: null },
+    ]
+    const stats = computeMustHygiene(items)
+    expect(mustHygieneChipTone(stats)).toBe('warn')
+  })
+
+  it('coverage < 50% (severe) → danger tone', () => {
+    const items: MustHygieneFields[] = [
+      { isMust: true, doneAt: null, archivedAt: null, dueDate: '2026-04-30' },
+      { isMust: true, doneAt: null, archivedAt: null, dueDate: null },
+      { isMust: true, doneAt: null, archivedAt: null, dueDate: null },
+    ]
+    const stats = computeMustHygiene(items)
+    expect(mustHygieneChipTone(stats)).toBe('danger')
+  })
+})
+
+describe('mustHygieneToBriefSignal (iter1058)', () => {
+  it('total=0 → idle tone + 0 件 sentinel', () => {
+    const stats = computeMustHygiene([])
+    const signal = mustHygieneToBriefSignal(stats)
+    expect(signal.tone).toBe('idle')
+    expect(signal.text).toBe('MUST 0 件')
+  })
+
+  it('clean → success tone + 健全 message', () => {
+    const items: MustHygieneFields[] = [
+      { isMust: true, doneAt: null, archivedAt: null, dueDate: '2026-04-30' },
+    ]
+    const stats = computeMustHygiene(items)
+    const signal = mustHygieneToBriefSignal(stats)
+    expect(signal.tone).toBe('success')
+    expect(signal.text).toContain('MUST: 1 件')
+  })
+
+  it('severe → danger tone + 計画漏れ message', () => {
+    const items: MustHygieneFields[] = [
+      { isMust: true, doneAt: null, archivedAt: null, dueDate: null },
+      { isMust: true, doneAt: null, archivedAt: null, dueDate: null },
+    ]
+    const stats = computeMustHygiene(items)
+    const signal = mustHygieneToBriefSignal(stats)
+    expect(signal.tone).toBe('danger')
   })
 })
