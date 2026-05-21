@@ -839,7 +839,11 @@ function KeyResultList({
               step="any"
               enterKeyHint="next"
             />
-            <Input
+            {/* iter1018: 「単位」 field は日本語 (件 / 時間 etc) を入力する text input。
+                親 form に `onSubmit` (KR 追加) があり、IME 確定 Enter が誤って form
+                submit を発火する hazard あり → CLAUDE.md 規約「<input> を直接使わず
+                IMEInput」 に合わせて切替。iter1017 (schedule-item-picker) と同 pattern。 */}
+            <IMEInput
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
               placeholder="例: 件 / %"
