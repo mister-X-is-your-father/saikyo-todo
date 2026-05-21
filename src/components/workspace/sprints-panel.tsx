@@ -767,6 +767,12 @@ function SprintCard({
                   disabled={changing}
                   aria-busy={changing || undefined}
                   onClick={() => onStatusChange('planning')}
+                  // iter1020 mobile audit で発見: 他 sprint button (complete / cancel /
+                  // retro / premortem) には sprint-<verb>-${id} testid あるが「計画に
+                  // 戻す」だけ抜けていた divergence。E2E / mobile audit script からの
+                  // 安定 locate のために sprint-replan-${id} testid を付与 (verb は
+                  // status('planning') 遷移なので "replan")。
+                  data-testid={`sprint-replan-${sprint.id}`}
                   aria-label={
                     changing
                       ? `Sprint「${sprint.name}」のステータスを変更中…`
