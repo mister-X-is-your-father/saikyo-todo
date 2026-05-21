@@ -138,7 +138,10 @@ export function BulkActionBar({ workspaceId }: Props) {
 }
 
 /** 行ごとの選択 checkbox。itemTitle を受け取れば SR に「N番目を選択」ではなく
- * 「『〜』を一括操作対象に追加 / 解除」を読み上げて識別性を上げる。 */
+ * 「『〜』を一括操作対象に追加 / 解除」を読み上げて識別性を上げる。
+ * iter1031: mobile 320px で visible checkbox 13x13 は WCAG 2.5.5 違反。
+ * `::before` pseudo expansion (iter505 ItemCheckbox / iter507 activity-log と同 pattern)
+ * で透明な tap target を視覚 size を保ったまま 44x44 化。 */
 export function BulkCheckbox({ itemId, itemTitle }: { itemId: string; itemTitle?: string }) {
   const selected = useBulkSelectionStore((s) => s.selected)
   const toggle = useBulkSelectionStore((s) => s.toggle)
@@ -154,11 +157,13 @@ export function BulkCheckbox({ itemId, itemTitle }: { itemId: string; itemTitle?
       onChange={() => toggle(itemId)}
       onClick={(e) => e.stopPropagation()}
       data-testid={`bulk-select-${itemId}`}
+      className="relative before:absolute before:-inset-4 before:content-['']"
     />
   )
 }
 
-/** 全選択 / 全解除 checkbox。現ページ全行を対象に。 */
+/** 全選択 / 全解除 checkbox。現ページ全行を対象に。
+ * iter1031: 同 BulkCheckbox の tap target 拡張 pattern を header にも適用。 */
 export function BulkHeaderCheckbox({ rowIds }: { rowIds: string[] }) {
   const selected = useBulkSelectionStore((s) => s.selected)
   const setMany = useBulkSelectionStore((s) => s.setMany)
@@ -178,6 +183,7 @@ export function BulkHeaderCheckbox({ rowIds }: { rowIds: string[] }) {
         else clear()
       }}
       data-testid="bulk-select-all"
+      className="relative before:absolute before:-inset-4 before:content-['']"
     />
   )
 }
