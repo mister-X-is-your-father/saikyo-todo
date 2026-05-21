@@ -1442,7 +1442,14 @@ export function DashboardView({ workspaceId }: Props) {
                       }
                     >
                       {item.dueDate ? (
-                        <time dateTime={item.dueDate}>{item.dueDate}</time>
+                        // iter1010: 他 view (today / inbox / backlog / personal-period)
+                        // の `<time aria-label="期限 ${ISO}">` cross-view pattern を
+                        // dashboard MUST 一覧にも適用。raw ISO の visible text は維持、
+                        // SR には「期限」 semantic context を補強 (位置依存の意味
+                        // 推測を排除、red/amber 配色は SR で消失するため重要)。
+                        <time dateTime={item.dueDate} aria-label={`期限 ${item.dueDate}`}>
+                          {item.dueDate}
+                        </time>
                       ) : (
                         '期限なし'
                       )}
