@@ -124,7 +124,10 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
               className="min-h-11"
               onClick={() => onPick({ itemId: null, note: interruptNote || '割込み' })}
               data-testid="schedule-picker-interrupt-add"
-              aria-label={`割込み / 休憩として追加${interruptNote ? ` (メモ: ${interruptNote})` : ''}`}
+              // iter1071: 旧 aria-label "割込み / 休憩として追加" は visible
+              // "割込みとして追加" に対して "/ 休憩" が挿入され literal substring
+              // 不一致 → WCAG 2.5.3 違反。visible-prefix を先頭に固定。
+              aria-label={`割込みとして追加 — 割込み / 休憩として追加${interruptNote ? ` (メモ: ${interruptNote})` : ''}`}
             >
               <span aria-hidden="true">割込みとして追加</span>
             </Button>
