@@ -57,10 +57,13 @@ export function SprintSwimlaneDisclosure({
     >
       <summary
         className="text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex cursor-pointer items-center gap-1.5 rounded text-xs focus-visible:ring-2 focus-visible:outline-none"
+        // iter1042: visible "担当者ビュー (swim-lane Gantt)" を aria-label の prefix に
+        // 固定し WCAG 2.5.3 satisfy (旧 aria-label には "ビュー" が無く literal
+        // substring 不一致だった)。
         aria-label={
           open
-            ? `Sprint「${sprintName}」の担当者 swim-lane Gantt を閉じる`
-            : `Sprint「${sprintName}」の担当者 swim-lane Gantt を開く`
+            ? `担当者ビュー (swim-lane Gantt) を閉じる — Sprint「${sprintName}」の担当者 swim-lane Gantt を閉じる`
+            : `担当者ビュー (swim-lane Gantt) を開く — Sprint「${sprintName}」の担当者 swim-lane Gantt を開く`
         }
         data-testid={`sprint-swimlane-summary-${sprintId}`}
       >
