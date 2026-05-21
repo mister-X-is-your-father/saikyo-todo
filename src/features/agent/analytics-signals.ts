@@ -36,6 +36,10 @@ import {
   pickHighestSeverityTone,
 } from '@/lib/ui/chip-tone'
 
+import {
+  type InboxBucketCounts,
+  inboxBucketCountsToBriefSignal,
+} from '@/features/gtd/inbox-process'
 import { type AgingKind, backlogAgingToBriefSignal } from '@/features/item/backlog-aging'
 import {
   type ConsultationCounts,
@@ -97,6 +101,12 @@ export interface AnalyticsSignalsInput {
    * caller は `classifyWeeklyReviewDue({ lastReviewAt, now })` の出力を渡す。
    */
   weeklyReviewDue?: WeeklyReviewDueKind
+  /**
+   * iter1048 basics: 13 軸目として GTD Inbox bucket counts (= Inbox 健全性、process 滞留度合い) も統合。
+   * 値は `summarizeInbox(items).counts` の出力 (= Readonly<Record<GtdBucket, number>>)。
+   * caller は inbox item (= scheduledFor も dueDate も未設定) を事前 filter してから渡すこと。
+   */
+  inboxBucketCounts?: InboxBucketCounts
 }
 
 export interface AnalyticsSignals {
@@ -122,6 +132,8 @@ export interface AnalyticsSignals {
   consultationCounts: AgentBriefSignal | null
   /** iter1044 refactor: GTD Weekly Review chip (= overdue=danger / never-reviewed=warn / recent=success) */
   weeklyReviewDue: AgentBriefSignal | null
+  /** iter1048 basics: Inbox bucket counts chip (= severe=danger / moderate=warn / mild=success / idle=idle) */
+  inboxBucketCounts: AgentBriefSignal | null
 }
 
 const EMPTY: AnalyticsSignals = {
@@ -139,6 +151,7 @@ const EMPTY: AnalyticsSignals = {
   waitingSummary: null,
   consultationCounts: null,
   weeklyReviewDue: null,
+  inboxBucketCounts: null,
 }
 
 export function composeAnalyticsSignals(input: AnalyticsSignalsInput): AnalyticsSignals {
@@ -182,6 +195,9 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
   if (input.weeklyReviewDue) {
     out.weeklyReviewDue = weeklyReviewDueToBriefSignal(input.weeklyReviewDue)
   }
+  if (input.inboxBucketCounts) {
+    out.inboxBucketCounts = inboxBucketCountsToBriefSignal(input.inboxBucketCounts)
+  }
   return out
 }
 
@@ -198,12 +214,13 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
  *  6. waitingSummary     (= 連絡待ち、danger=escalate、外部依存 軸 severity 主)
  *  7. consultationCounts (= 相談、danger=判断漏れ、合意 軸 severity 主)
  *  8. weeklyReviewDue    (= GTD Weekly Review、danger=overdue、習慣 軸 severity 主)
- *  9. reliability        (= 全体 信頼性 chip)
- * 10. costTrend          (= cost 月次トレンド)
- * 11. velocity           (= 完了ペース、weekly と並ぶ達成感系)
- * 12. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
- * 13. momentum           (= backlog momentum)
- * 14. dominantRole       (= 主軸 role、informational、最後)
+ *  9. inboxBucketCounts  (= GTD Inbox 健全性、danger=要 process、GTD flow 軸 severity 主)
+ * 10. reliability        (= 全体 信頼性 chip)
+ * 11. costTrend          (= cost 月次トレンド)
+ * 12. velocity           (= 完了ペース、weekly と並ぶ達成感系)
+ * 13. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
+ * 14. momentum           (= backlog momentum)
+ * 15. dominantRole       (= 主軸 role、informational、最後)
  */
 export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
@@ -215,6 +232,7 @@ export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSi
     signals.waitingSummary,
     signals.consultationCounts,
     signals.weeklyReviewDue,
+    signals.inboxBucketCounts,
     signals.reliability,
     signals.costTrend,
     signals.velocity,

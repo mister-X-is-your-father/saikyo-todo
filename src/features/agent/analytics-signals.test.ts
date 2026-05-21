@@ -75,6 +75,39 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(s.weeklyReviewDue!.text).toBe('点検済')
   })
 
+  it('iter1048: inboxBucketCounts severe (= 100+ 件 or waiting-for >= 5) → tone=danger / "要 process"', () => {
+    const counts = {
+      immediate: 0,
+      'next-action': 0,
+      project: 0,
+      'waiting-for': 10,
+      reference: 0,
+      someday: 0,
+      scheduled: 0,
+      trash: 0,
+    }
+    const s = composeAnalyticsSignals({ inboxBucketCounts: counts })
+    expect(s.inboxBucketCounts).not.toBeNull()
+    expect(s.inboxBucketCounts!.tone).toBe('danger')
+    expect(s.inboxBucketCounts!.text).toBe('Inbox: 要 process')
+  })
+
+  it('iter1048: inboxBucketCounts mild (= 数件 actionable) → tone=success / "健全"', () => {
+    const counts = {
+      immediate: 0,
+      'next-action': 3,
+      project: 0,
+      'waiting-for': 0,
+      reference: 0,
+      someday: 0,
+      scheduled: 0,
+      trash: 0,
+    }
+    const s = composeAnalyticsSignals({ inboxBucketCounts: counts })
+    expect(s.inboxBucketCounts!.tone).toBe('success')
+    expect(s.inboxBucketCounts!.text).toBe('Inbox: 健全')
+  })
+
   it('iter1043: consultationCounts のみ (空) → consultationCounts signal、tone=idle / "相談なし"', () => {
     const s = composeAnalyticsSignals({
       consultationCounts: { open: 0, 'closing-soon': 0, overdue: 0, decided: 0 },
@@ -418,6 +451,7 @@ describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', (
       'waitingSummary',
       'consultationCounts',
       'weeklyReviewDue',
+      'inboxBucketCounts',
     ] as const
     expect(Object.keys(empty).sort()).toEqual([...expectedKeys].sort())
     for (const k of expectedKeys) {

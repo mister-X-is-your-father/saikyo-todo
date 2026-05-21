@@ -431,3 +431,31 @@ export function inboxHealthToBriefSignal<T extends InboxItemFields>(
     tone: severityToChipTone(severity),
   }
 }
+
+/**
+ * iter1048 basics: Inbox bucket counts → `AgentBriefSignal` の counts-only 版。
+ *
+ * `inboxHealthToBriefSignal` (iter1046) は `InboxBucketSummary<T>` (= items 込み) を取るが、
+ * `classifyInboxHealthHint` / `formatInboxHealthHintJa` は内部で `summary.counts` しか
+ * 使わない。analytics-signals.ts 統合 (= 13 軸目) で「items を持たず counts だけ」を
+ * 渡したいケース (= 既に summarizeInbox 済 + caller が counts 抽出済み) のために
+ * 軽量 wrapper を提供。
+ *
+ * caller pattern:
+ *   const summary = summarizeInbox(inboxItems)
+ *   const signal = inboxBucketCountsToBriefSignal(summary.counts)
+ *   // または直接 counts を構築して渡す (= dashboard chip props 引き渡し向け)
+ */
+export type InboxBucketCounts = Readonly<Record<GtdBucket, number>>
+
+export function inboxBucketCountsToBriefSignal(counts: InboxBucketCounts): AgentBriefSignal {
+  // classifyInboxHealthHint / formatInboxHealthHintJa は summary.counts のみ使う。
+  // 残 field (buckets / twoMinRuleSuggestions) は本 helper 内で参照されないため
+  // 空 placeholder で型整合させる。
+  const minimalSummary = {
+    counts,
+    buckets: {} as Record<GtdBucket, never[]>,
+    twoMinRuleSuggestions: [] as never[],
+  } satisfies InboxBucketSummary<InboxItemFields>
+  return inboxHealthToBriefSignal(minimalSummary)
+}
