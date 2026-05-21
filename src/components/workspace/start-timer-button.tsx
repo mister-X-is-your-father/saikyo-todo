@@ -100,8 +100,12 @@ export function StartTimerButton({ item, size = 'default' }: Props) {
 
   // iter310: size='sm' (Today / Backlog 行) で otherActive 時に 12 文字超 ("別 Item を停止して計測開始")
   // が並び、行幅を圧迫して折返し / レイアウト崩れの原因に。compact 時のみ短縮した
-  // visible label を出し、SR / hover には full hint を保つ (WCAG 2.5.3 ラベルと
-  // 名前の整合性: 短縮 visible label "切替して開始" は full aria-label の prefix)。
+  // visible label を出し、SR / hover には full hint を保つ。
+  // iter1034: WCAG 2.5.3「Label in Name」 = accessible name は visible text を含む必要あり。
+  // 旧 comment は「visible は aria-label の prefix」と主張していたが実際は不一致
+  // ("切替して開始" は "「X」のタイマーを停止して「Y」の計測を開始" の substring ではない)。
+  // 修正: aria-label を `${visibleLabel} — ${fullHint}` 形式で組立、視覚短縮ラベルを
+  // 必ず accessible name の prefix にし voice-control match を保証。
   const isCompact = size === 'sm'
   const visibleLabel = otherActive
     ? isCompact
@@ -111,6 +115,7 @@ export function StartTimerButton({ item, size = 'default' }: Props) {
   const fullHint = otherActive
     ? `「${activeItemTitle}」のタイマーを停止して「${item.title}」の計測を開始`
     : `「${item.title}」のタイマーを開始`
+  const accessibleLabel = `${visibleLabel} — ${fullHint}`
 
   return (
     <Button
@@ -120,7 +125,7 @@ export function StartTimerButton({ item, size = 'default' }: Props) {
       className="min-h-11"
       onClick={handleClick}
       data-testid={`start-timer-${item.id}`}
-      aria-label={fullHint}
+      aria-label={accessibleLabel}
       title={otherActive ? fullHint : undefined}
     >
       <Timer className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
