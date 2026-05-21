@@ -15,6 +15,8 @@
  * 範囲外 (HH>=24, MM>=60) は null。AM/PM は `12am=00:00` / `12pm=12:00` の慣習に従う。
  */
 
+import { pad2 } from '@/lib/date/iso'
+
 export interface ParsedTime {
   /** `HH:MM` 24h 表記 (常に 0 padding 済み) */
   time: string
@@ -52,7 +54,7 @@ export function parseTimeFromText(text: string): ParsedTime | null {
     const hh = Number(colon[2])
     const mm = Number(colon[3])
     if (hh < 24 && mm < 60) {
-      return { time: `${pad(hh)}:${pad(mm)}`, matched: colon[0] }
+      return { time: `${pad2(hh)}:${pad2(mm)}`, matched: colon[0] }
     }
   }
 
@@ -65,7 +67,7 @@ export function parseTimeFromText(text: string): ParsedTime | null {
     if (h12 >= 1 && h12 <= 12 && mm < 60) {
       // 12am = 00:00、12pm = 12:00 (US 慣習)
       const hh = h12 === 12 ? (isPm ? 12 : 0) : isPm ? h12 + 12 : h12
-      return { time: `${pad(hh)}:${pad(mm)}`, matched: ampm[0] }
+      return { time: `${pad2(hh)}:${pad2(mm)}`, matched: ampm[0] }
     }
   }
 
@@ -75,7 +77,7 @@ export function parseTimeFromText(text: string): ParsedTime | null {
     const hh = Number(timeJa[2])
     const mm = Number(timeJa[3] ?? '0')
     if (hh < 24 && mm < 60) {
-      return { time: `${pad(hh)}:${pad(mm)}`, matched: timeJa[0] }
+      return { time: `${pad2(hh)}:${pad2(mm)}`, matched: timeJa[0] }
     }
   }
 
@@ -96,8 +98,4 @@ export function parseTimeFromText(text: string): ParsedTime | null {
   }
 
   return null
-}
-
-function pad(n: number): string {
-  return String(n).padStart(2, '0')
 }

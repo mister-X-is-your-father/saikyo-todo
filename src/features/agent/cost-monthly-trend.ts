@@ -23,6 +23,7 @@
  * (`/^\d{4}-\d{2}$/` 不一致) は entry 除外、不正 today も entry 除外で idle 返す。
  */
 
+import { pad2 } from '@/lib/date/iso'
 import { rateToPct } from '@/lib/format-rate'
 import { type ChipTone, type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
 
@@ -73,7 +74,7 @@ function shiftMonth(iso: string, months: number): string {
   const t = Date.UTC(y!, m! - 1 + months, 1)
   const out = new Date(t)
   const yyyy = out.getUTCFullYear()
-  const mm = String(out.getUTCMonth() + 1).padStart(2, '0')
+  const mm = pad2(out.getUTCMonth() + 1)
   return `${yyyy}-${mm}`
 }
 

@@ -12,6 +12,8 @@
  * テスト: src/features/taskchute/sort-for-timeline.test.ts
  * 参照: docs/methodology-modes-plan.md §1 T-1 (1 列 linear timeline)
  */
+import { pad2 } from '@/lib/date/iso'
+
 import type { Item } from '@/features/item/schema'
 
 export interface TimelineItem {
@@ -68,8 +70,7 @@ export function sortForTimeline(items: Item[]): TimelineItem[] {
     return a.createdAt.getTime() - b.createdAt.getTime()
   })
 
-  const formatTime = (m: number): string =>
-    `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
+  const formatTime = (m: number): string => `${pad2(Math.floor(m / 60))}:${pad2(m % 60)}`
 
   const out: TimelineItem[] = []
   let idx = 0

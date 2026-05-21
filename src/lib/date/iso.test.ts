@@ -9,6 +9,7 @@ import {
   isoDaysFromNow,
   isValidIsoDate,
   MS_PER_DAY,
+  pad2,
   parseDateOrNull,
   parseIsoDateAsLocalMidnight,
   shiftIsoDate,
@@ -339,6 +340,27 @@ describe('dayDiffISO (iter1029)', () => {
   it('不正 ISO → NaN', () => {
     expect(dayDiffISO('not-a-date', '2026-04-29')).toBeNaN()
     expect(dayDiffISO('2026-04-29', 'garbage')).toBeNaN()
+  })
+})
+
+describe('pad2 (iter1045)', () => {
+  it('1 桁を 0 埋め (5 → "05")', () => {
+    expect(pad2(5)).toBe('05')
+    expect(pad2(0)).toBe('00')
+    expect(pad2(9)).toBe('09')
+  })
+
+  it('2 桁以上は そのまま (10 → "10" / 100 → "100")', () => {
+    expect(pad2(10)).toBe('10')
+    expect(pad2(59)).toBe('59')
+    expect(pad2(100)).toBe('100')
+  })
+
+  it('formatLocalISO / shiftIsoDate / addDaysISO の HH/MM padding 内部実装と整合', () => {
+    // formatLocalISO は pad2 を内部利用、月 1 / 日 1 は "01" になる
+    expect(formatLocalISO(new Date(2026, 0, 1))).toBe('2026-01-01')
+    // shiftIsoDate も pad2 経由で 2 桁 padding
+    expect(shiftIsoDate('2026-01-31', 1)).toBe('2026-02-01')
   })
 })
 

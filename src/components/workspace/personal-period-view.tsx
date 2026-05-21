@@ -15,6 +15,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { parseAsString, useQueryState } from 'nuqs'
 import { toast } from 'sonner'
 
+import { MS_PER_DAY, pad2 } from '@/lib/date/iso'
 import { isAppError } from '@/lib/errors'
 
 import { priorityClass, priorityLabel } from '@/features/item/priority'
@@ -40,10 +41,7 @@ interface Props {
 }
 
 // iter523 basics: PERIOD_LABEL は `periodLabelJa` (personal-period-goal/schema.ts) に集約。
-
-function pad(n: number): string {
-  return n < 10 ? `0${n}` : String(n)
-}
+// iter1045 refactor: local `pad` を `pad2` (lib/date/iso) に集約、`86400000` を `MS_PER_DAY` に置換。
 
 /** ISO week number (月曜始まり)。"2026-W18" 形式を返す。 */
 function isoWeekKey(d: Date): string {
@@ -52,16 +50,16 @@ function isoWeekKey(d: Date): string {
   const dayNum = t.getUTCDay() || 7 // Mon=1..Sun=7
   t.setUTCDate(t.getUTCDate() + 4 - dayNum)
   const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1))
-  const week = Math.ceil(((+t - +yearStart) / 86400000 + 1) / 7)
-  return `${t.getUTCFullYear()}-W${pad(week)}`
+  const week = Math.ceil(((+t - +yearStart) / MS_PER_DAY + 1) / 7)
+  return `${t.getUTCFullYear()}-W${pad2(week)}`
 }
 
 function periodKeyFor(period: Period, today: Date): string {
   if (period === 'day') {
-    return `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`
+    return `${today.getFullYear()}-${pad2(today.getMonth() + 1)}-${pad2(today.getDate())}`
   }
   if (period === 'month') {
-    return `${today.getFullYear()}-${pad(today.getMonth() + 1)}`
+    return `${today.getFullYear()}-${pad2(today.getMonth() + 1)}`
   }
   return isoWeekKey(today)
 }

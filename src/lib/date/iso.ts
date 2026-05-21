@@ -20,7 +20,22 @@
  * 固定 Date を渡せるようにしてある (sprint-date-helpers iter265b と同じ方針)。
  */
 
-function pad(n: number): string {
+/**
+ * iter1045 refactor: 数値を 2 桁 0 埋め文字列に変換する pure helper。
+ *
+ * 集約元 (10 callsite):
+ *   - lib/date/iso.ts (内部 `pad` 関数 + line 230/231 inline)
+ *   - features/sprint/sprint-date-helpers.ts (local `pad`)
+ *   - features/item/time-tokens.ts (local `pad`)
+ *   - features/agent/cost-monthly-trend.ts (inline `String(...).padStart(2,'0')`)
+ *   - features/taskchute/sort-for-timeline.ts (inline x 2)
+ *   - lib/stores/active-timer.ts (local arrow `pad`)
+ *   - components/workspace/personal-period-view.tsx (local `pad`)
+ *
+ * 動作: `pad2(5)` → `'05'` / `pad2(10)` → `'10'` / `pad2(0)` → `'00'`。
+ * 入力は整数前提 (caller が事前 validated)。負値 / NaN / 小数も String(n).padStart に委譲。
+ */
+export function pad2(n: number): string {
   return String(n).padStart(2, '0')
 }
 
@@ -42,7 +57,7 @@ export const MS_PER_DAY = 24 * 60 * 60 * 1000
  * (NaN time の不正 Date を渡すと `'NaN-NaN-NaN'` を返すが behavior 互換)。
  */
 export function formatLocalISO(d: Date): string {
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
 }
 
 /** ローカル時刻の Date を `YYYY-MM-DD` に。`now` 省略で現在 */
@@ -227,7 +242,7 @@ export function shiftIsoDate(iso: string, days: number): string {
   const t = Date.UTC(y!, m! - 1, d! + days)
   const out = new Date(t)
   const yyyy = out.getUTCFullYear()
-  const mm = String(out.getUTCMonth() + 1).padStart(2, '0')
-  const dd = String(out.getUTCDate()).padStart(2, '0')
+  const mm = pad2(out.getUTCMonth() + 1)
+  const dd = pad2(out.getUTCDate())
   return `${yyyy}-${mm}-${dd}`
 }

@@ -14,6 +14,8 @@
  */
 import { useMemo } from 'react'
 
+import { formatLocalISO } from '@/lib/date/iso'
+
 import { useItems } from '@/features/item/hooks'
 import type { Item } from '@/features/item/schema'
 import { biasTendencyLabelJa, computeEstimateBias } from '@/features/time-entry/bias'
@@ -75,7 +77,7 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
     const lookup = buildItemDescriptionLookup(itemsQ.data as Item[])
     const splitDate = new Date()
     splitDate.setDate(splitDate.getDate() - 14)
-    const splitISO = `${splitDate.getFullYear()}-${String(splitDate.getMonth() + 1).padStart(2, '0')}-${String(splitDate.getDate()).padStart(2, '0')}`
+    const splitISO = formatLocalISO(splitDate)
     const { recent, prior } = splitSamplesByDate(entriesQ.data, lookup, splitISO)
     const trend = computeBiasTrend(computeEstimateBias(recent), computeEstimateBias(prior))
     if (trend.direction === 'inconclusive') return null

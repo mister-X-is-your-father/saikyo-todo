@@ -22,6 +22,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+import { pad2 } from '@/lib/date/iso'
+
 export type TimerMode = 'stopwatch' | 'pomodoro'
 
 export interface ActiveTimerState {
@@ -157,8 +159,7 @@ export function formatElapsed(ms: number): string {
   const hh = Math.floor(total / 3600)
   const mm = Math.floor((total % 3600) / 60)
   const ss = total % 60
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return hh > 0 ? `${hh}:${pad(mm)}:${pad(ss)}` : `${pad(mm)}:${pad(ss)}`
+  return hh > 0 ? `${hh}:${pad2(mm)}:${pad2(ss)}` : `${pad2(mm)}:${pad2(ss)}`
 }
 
 /**

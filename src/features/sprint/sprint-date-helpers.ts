@@ -22,7 +22,7 @@
  * - 内部 `parseIsoDate` で範囲検査 (1000-9999 / 1-12 / 1-31) を一元化
  */
 
-import { MS_PER_DAY } from '@/lib/date/iso'
+import { MS_PER_DAY, pad2 } from '@/lib/date/iso'
 
 /** 曜日名 (日=0, 月=1, ..., 土=6)。UI の select / aria-label 共用 */
 export const DOW_JA = ['日', '月', '火', '水', '木', '金', '土'] as const
@@ -67,7 +67,7 @@ export function addDaysISO(iso: string, days: number): string {
   if (!parts) return iso
   const dt = new Date(Date.UTC(parts.y, parts.m - 1, parts.d))
   dt.setUTCDate(dt.getUTCDate() + days)
-  return `${dt.getUTCFullYear()}-${pad(dt.getUTCMonth() + 1)}-${pad(dt.getUTCDate())}`
+  return `${dt.getUTCFullYear()}-${pad2(dt.getUTCMonth() + 1)}-${pad2(dt.getUTCDate())}`
 }
 
 /** 端末ローカル TZ の今日 + days。`now` 省略で現在時刻 */
@@ -89,12 +89,8 @@ export function daysBetween(fromISO: string, toISO: string): number {
 
 // --- internal helpers ---
 
-function pad(n: number): string {
-  return String(n).padStart(2, '0')
-}
-
 function formatLocal(d: Date): string {
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
 }
 
 function parseIsoDate(iso: string): { y: number; m: number; d: number } | null {
