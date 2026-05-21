@@ -166,12 +166,16 @@ function ActivityRow({
           <span className="font-medium" aria-hidden="true">
             {label}
           </span>
+          {/* iter1049: 旧 outer span は role 無で aria-label の SR picked-up が不確実
+              (browser / SR で divergence)。`role="img"` で aria-label を
+              authoritative 化 (iter1023 TaskChute time slot と同 pattern)。 */}
           <span
             className={`rounded px-1.5 py-0.5 text-[10px] ${
               entry.actorType === 'agent'
                 ? 'bg-primary/10 text-primary'
                 : 'bg-muted text-muted-foreground'
             }`}
+            role="img"
             aria-label={entry.actorType === 'agent' ? '実行者: AI Agent' : '実行者: ユーザ'}
           >
             <span aria-hidden="true">{entry.actorType === 'agent' ? 'AI' : 'user'}</span>
