@@ -47,6 +47,7 @@ import {
 } from '@/features/item/consultation-tally'
 import { type DueHitRateStats, dueHitRateToBriefSignal } from '@/features/item/due-hit-rate'
 import { type WorkspaceMomentum, workspaceMomentumToBriefSignal } from '@/features/item/momentum'
+import { type MustHygieneStats, mustHygieneToBriefSignal } from '@/features/item/must-hygiene'
 import { type OverdueActiveStats, overdueActiveToBriefSignal } from '@/features/item/overdue-active'
 import { type SlipDaysStats, slipDaysToBriefSignal } from '@/features/item/slip-days'
 import { type UrgencyTier, urgencyTierCountsToBriefSignal } from '@/features/item/urgency'
@@ -139,6 +140,12 @@ export interface AnalyticsSignalsInput {
    * critical > 0 → danger / high > 0 → warn / それ以外 → idle (= chip 非表示 progressive disclosure)。
    */
   urgencyTierCounts?: Readonly<Record<UrgencyTier, number>>
+  /**
+   * iter1059 refactor: 18 軸目として MUST hygiene stats (= MUST item の dueDate hygiene 集計) も統合。
+   * 値は `computeMustHygiene(items)` の出力 (= MustHygieneStats)。
+   * severe (coverage < 50%) → danger / mild → warn / clean → success / idle → idle。
+   */
+  mustHygiene?: MustHygieneStats
 }
 
 export interface AnalyticsSignals {
@@ -174,6 +181,8 @@ export interface AnalyticsSignals {
   slipDays: AgentBriefSignal | null
   /** iter1057 ai-automation: 緊急度件数 chip (= critical>0=danger / high>0=warn / それ以外=idle) */
   urgencyTierCounts: AgentBriefSignal | null
+  /** iter1059 refactor: MUST hygiene chip (= severe=danger / mild=warn / clean=success / idle=idle) */
+  mustHygiene: AgentBriefSignal | null
 }
 
 const EMPTY: AnalyticsSignals = {
@@ -196,6 +205,7 @@ const EMPTY: AnalyticsSignals = {
   overdueActive: null,
   slipDays: null,
   urgencyTierCounts: null,
+  mustHygiene: null,
 }
 
 export function composeAnalyticsSignals(input: AnalyticsSignalsInput): AnalyticsSignals {
@@ -254,6 +264,9 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
   if (input.urgencyTierCounts) {
     out.urgencyTierCounts = urgencyTierCountsToBriefSignal(input.urgencyTierCounts)
   }
+  if (input.mustHygiene) {
+    out.mustHygiene = mustHygieneToBriefSignal(input.mustHygiene)
+  }
   return out
 }
 
@@ -275,12 +288,13 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
  * 11. overdueActive      (= 期限超過 active、danger=7d+ or 5+ 件、計画乖離 軸 severity 主)
  * 12. slipDays           (= 完了遅延 retrospective、danger=7d+、見積精度乖離 軸 severity 主)
  * 13. urgencyTierCounts  (= 緊急度件数、danger=critical 含む、最優先 actionable 軸 severity 主)
- * 14. reliability        (= 全体 信頼性 chip)
- * 15. costTrend          (= cost 月次トレンド)
- * 16. velocity           (= 完了ペース、weekly と並ぶ達成感系)
- * 17. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
- * 18. momentum           (= backlog momentum)
- * 19. dominantRole       (= 主軸 role、informational、最後)
+ * 14. mustHygiene        (= MUST hygiene、danger=coverage<50%、計画漏れ防止 軸 severity 主)
+ * 15. reliability        (= 全体 信頼性 chip)
+ * 16. costTrend          (= cost 月次トレンド)
+ * 17. velocity           (= 完了ペース、weekly と並ぶ達成感系)
+ * 18. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
+ * 19. momentum           (= backlog momentum)
+ * 20. dominantRole       (= 主軸 role、informational、最後)
  */
 export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
@@ -297,6 +311,7 @@ export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSi
     signals.overdueActive,
     signals.slipDays,
     signals.urgencyTierCounts,
+    signals.mustHygiene,
     signals.reliability,
     signals.costTrend,
     signals.velocity,

@@ -186,6 +186,32 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(s.urgencyTierCounts!.text).toBe('0 件')
   })
 
+  it('iter1059: mustHygiene severe (coverage < 50%) → tone=danger', () => {
+    const stats = {
+      total: 3,
+      withDueDate: 1,
+      withoutDueDate: 2,
+      coverageRate: 1 / 3,
+    }
+    const s = composeAnalyticsSignals({ mustHygiene: stats })
+    expect(s.mustHygiene).not.toBeNull()
+    expect(s.mustHygiene!.tone).toBe('danger')
+    expect(s.mustHygiene!.text).toContain('MUST: 3 件')
+  })
+
+  it('iter1059: mustHygiene clean → tone=success', () => {
+    const stats = { total: 2, withDueDate: 2, withoutDueDate: 0, coverageRate: 1 }
+    const s = composeAnalyticsSignals({ mustHygiene: stats })
+    expect(s.mustHygiene!.tone).toBe('success')
+  })
+
+  it('iter1059: mustHygiene idle (total=0) → tone=idle', () => {
+    const stats = { total: 0, withDueDate: 0, withoutDueDate: 0, coverageRate: null }
+    const s = composeAnalyticsSignals({ mustHygiene: stats })
+    expect(s.mustHygiene!.tone).toBe('idle')
+    expect(s.mustHygiene!.text).toBe('MUST 0 件')
+  })
+
   it('iter1053: slipDays count=0 → idle tone + 0 件 sentinel', () => {
     const s = composeAnalyticsSignals({
       slipDays: { count: 0, avgDays: null, medianDays: null, maxDays: null },
@@ -579,6 +605,7 @@ describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', (
       'overdueActive',
       'slipDays',
       'urgencyTierCounts',
+      'mustHygiene',
     ] as const
     expect(Object.keys(empty).sort()).toEqual([...expectedKeys].sort())
     for (const k of expectedKeys) {
