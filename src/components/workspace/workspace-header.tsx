@@ -27,9 +27,15 @@ export function WorkspaceHeader({ title, role, subtitle, pageActions, utility }:
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <h1 className="truncate text-2xl font-bold">{title}</h1>
+          {/* iter1051: shadcn Badge は `<span>` レンダリングで role 無し、aria-label の
+              SR picked-up が browser/SR で divergence。`role="img"` で authoritative 化
+              (iter1023 / 1049 / 1050 と同 pattern、shadcn Badge は ...props spread で
+              role prop 受け取り可)。inner role text は既に aria-hidden、SR は aria-label
+              "あなたの workspace role: ${role}" 単独経路に集約。 */}
           <Badge
             variant="secondary"
             className="shrink-0"
+            role="img"
             aria-label={`あなたの workspace role: ${role}`}
           >
             <span aria-hidden="true">{role}</span>
