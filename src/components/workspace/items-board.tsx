@@ -322,8 +322,14 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         >
           <span aria-hidden="true">月次</span>
         </Button>
+        {/* iter1027 mobile audit: 旧 `ml-4 flex items-center gap-2` は filter-must
+            (56px) + filter-status (122px) + filter-sprint (146px) + filter-count (12px) +
+            ml-4 (16px) + 3 gaps (24px) ≈ 376px が 320px viewport を超える overflow。
+            `flex-wrap` で 4 element が複数行に wrap (mobile 縦に並ぶ)、ml-4 は
+            ml-0 mt-2 sm:ml-4 sm:mt-0 で mobile は親 left に揃え新行配置、desktop は
+            元の inline layout 維持。 */}
         <div
-          className="ml-4 flex items-center gap-2 text-sm"
+          className="mt-2 ml-0 flex flex-wrap items-center gap-2 text-sm sm:mt-0 sm:ml-4"
           role="group"
           aria-label={`Item の絞り込み (MUST / ステータス / Sprint、現在 ${
             [
