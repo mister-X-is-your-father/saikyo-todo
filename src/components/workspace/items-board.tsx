@@ -357,6 +357,8 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
             onChange={(e) => setStatusFilter(e.target.value || null)}
             className="min-h-11 rounded border px-2 py-1 text-sm"
             data-testid="filter-status"
+            // iter1068: 未選択時 visible "全ステータス" が aria-label substring に
+            // 含まれず WCAG 2.5.3 (Label in Name) 違反。visible-prefix 修正。
             aria-label={
               statusFilter
                 ? `ステータスで絞り込み中 (現在: ${
@@ -368,7 +370,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
                           ? '完了'
                           : statusFilter
                   })。「全ステータス」で解除`
-                : 'ステータスで絞り込み (TODO / 進行中 / 完了)'
+                : '全ステータス — ステータスで絞り込み未設定 (TODO / 進行中 / 完了)'
             }
           >
             <option value="">全ステータス</option>
@@ -381,6 +383,8 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
             onChange={(e) => setSprintFilter(e.target.value || null)}
             className="min-h-11 rounded border px-2 py-1 text-sm"
             data-testid="filter-sprint"
+            // iter1068: 未選択時 visible "全 Sprint" が aria-label substring に
+            // 含まれず WCAG 2.5.3 (Label in Name) 違反。visible-prefix 修正。
             aria-label={
               sprintFilter
                 ? `Sprint で絞り込み中 (現在: ${
@@ -391,7 +395,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
                         : ((sprintsList.data ?? []).find((sp) => sp.id === sprintFilter)?.name ??
                           sprintFilter)
                   })。「全 Sprint」で解除`
-                : 'Sprint で絞り込み (稼働中 / 未割当 / 個別 sprint)'
+                : '全 Sprint — Sprint で絞り込み未設定 (稼働中 / 未割当 / 個別 sprint)'
             }
           >
             <option value="">全 Sprint</option>
