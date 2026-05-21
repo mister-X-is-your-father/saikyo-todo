@@ -48,6 +48,7 @@ import {
 import { type DueHitRateStats, dueHitRateToBriefSignal } from '@/features/item/due-hit-rate'
 import { type WorkspaceMomentum, workspaceMomentumToBriefSignal } from '@/features/item/momentum'
 import { type OverdueActiveStats, overdueActiveToBriefSignal } from '@/features/item/overdue-active'
+import { type SlipDaysStats, slipDaysToBriefSignal } from '@/features/item/slip-days'
 import { type VelocitySummary, velocityToBriefSignal } from '@/features/item/velocity'
 import { type WaitingSummary, waitingSummaryToBriefSignal } from '@/features/item/waiting-elapsed'
 import {
@@ -125,6 +126,12 @@ export interface AnalyticsSignalsInput {
    * 計画 vs 現実の最も深刻な乖離。caller は workspace 全 item から作成、空時は idle chip。
    */
   overdueActive?: OverdueActiveStats
+  /**
+   * iter1053 basics: 16 軸目として slip days stats (= doneAt > dueDate の retrospective 集計) も統合。
+   * 値は `computeSlipDays(items, { since })` の出力 (= SlipDaysStats)。
+   * count=0 → idle chip / mild → warn / severe (7d+) → danger。
+   */
+  slipDays?: SlipDaysStats
 }
 
 export interface AnalyticsSignals {
@@ -156,6 +163,8 @@ export interface AnalyticsSignals {
   stuckWip: AgentBriefSignal | null
   /** iter1051 basics: 期限超過 active chip (= severe 7d+ or 5+ 件=danger / mild=warn / idle=idle) */
   overdueActive: AgentBriefSignal | null
+  /** iter1053 basics: 完了遅延 retrospective chip (= severe 7d+=danger / mild=warn / count=0=idle) */
+  slipDays: AgentBriefSignal | null
 }
 
 const EMPTY: AnalyticsSignals = {
@@ -176,6 +185,7 @@ const EMPTY: AnalyticsSignals = {
   inboxBucketCounts: null,
   stuckWip: null,
   overdueActive: null,
+  slipDays: null,
 }
 
 export function composeAnalyticsSignals(input: AnalyticsSignalsInput): AnalyticsSignals {
@@ -228,6 +238,9 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
   if (input.overdueActive) {
     out.overdueActive = overdueActiveToBriefSignal(input.overdueActive)
   }
+  if (input.slipDays) {
+    out.slipDays = slipDaysToBriefSignal(input.slipDays)
+  }
   return out
 }
 
@@ -247,12 +260,13 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
  *  9. inboxBucketCounts  (= GTD Inbox 健全性、danger=要 process、GTD flow 軸 severity 主)
  * 10. stuckWip           (= 進行中だが停滞、danger=7d+ 停滞、再開 nudge 軸 severity 主)
  * 11. overdueActive      (= 期限超過 active、danger=7d+ or 5+ 件、計画乖離 軸 severity 主)
- * 12. reliability        (= 全体 信頼性 chip)
- * 13. costTrend          (= cost 月次トレンド)
- * 14. velocity           (= 完了ペース、weekly と並ぶ達成感系)
- * 15. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
- * 16. momentum           (= backlog momentum)
- * 17. dominantRole       (= 主軸 role、informational、最後)
+ * 12. slipDays           (= 完了遅延 retrospective、danger=7d+、見積精度乖離 軸 severity 主)
+ * 13. reliability        (= 全体 信頼性 chip)
+ * 14. costTrend          (= cost 月次トレンド)
+ * 15. velocity           (= 完了ペース、weekly と並ぶ達成感系)
+ * 16. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
+ * 17. momentum           (= backlog momentum)
+ * 18. dominantRole       (= 主軸 role、informational、最後)
  */
 export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
@@ -267,6 +281,7 @@ export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSi
     signals.inboxBucketCounts,
     signals.stuckWip,
     signals.overdueActive,
+    signals.slipDays,
     signals.reliability,
     signals.costTrend,
     signals.velocity,

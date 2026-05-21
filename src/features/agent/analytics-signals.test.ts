@@ -146,6 +146,32 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(s.overdueActive!.tone).toBe('warn')
   })
 
+  it('iter1053: slipDays severe (maxDays >= 7) → tone=danger', () => {
+    const s = composeAnalyticsSignals({
+      slipDays: { count: 3, avgDays: 5, medianDays: 4, maxDays: 14 },
+    })
+    expect(s.slipDays).not.toBeNull()
+    expect(s.slipDays!.tone).toBe('danger')
+    expect(s.slipDays!.text).toContain('遅延: 3 件')
+    expect(s.slipDays!.text).toContain('最大 14日')
+  })
+
+  it('iter1053: slipDays mild → tone=warn', () => {
+    const s = composeAnalyticsSignals({
+      slipDays: { count: 1, avgDays: 3, medianDays: 3, maxDays: 3 },
+    })
+    expect(s.slipDays!.tone).toBe('warn')
+    expect(s.slipDays!.text).toBe('遅延: 1 件 (3日)')
+  })
+
+  it('iter1053: slipDays count=0 → idle tone + 0 件 sentinel', () => {
+    const s = composeAnalyticsSignals({
+      slipDays: { count: 0, avgDays: null, medianDays: null, maxDays: null },
+    })
+    expect(s.slipDays!.tone).toBe('idle')
+    expect(s.slipDays!.text).toBe('遅延 0 件')
+  })
+
   it('iter1051: overdueActive 0 件 → falsy 判定で signal=null (total=0 でも object は truthy ※ Note)', () => {
     const stats = {
       total: 0,
@@ -529,6 +555,7 @@ describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', (
       'inboxBucketCounts',
       'stuckWip',
       'overdueActive',
+      'slipDays',
     ] as const
     expect(Object.keys(empty).sort()).toEqual([...expectedKeys].sort())
     for (const k of expectedKeys) {
