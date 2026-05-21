@@ -148,11 +148,15 @@ function PanelBody({ workspaceId }: Props) {
             data-load-today={today.loadStatus}
             data-load-week={week.loadStatus}
           >
-            <div className="font-medium" aria-label={`member: ${name}`}>
+            {/* iter1054: 3 chip 全てに `role="img"` 付与し aria-label authoritative 化
+                (iter1023/1049-1053 同 pattern、role 無 div + aria-label の SR
+                picked-up divergence を解消)。 */}
+            <div className="font-medium" role="img" aria-label={`member: ${name}`}>
               <span aria-hidden="true">{name}</span>
             </div>
             <div
               className={TONE_CLASS[today.loadStatus]}
+              role="img"
               aria-label={`今日: ${formatMemberCapacityLoadJa(today)}`}
             >
               <span className="text-muted-foreground mr-1" aria-hidden="true">
@@ -162,6 +166,7 @@ function PanelBody({ workspaceId }: Props) {
             </div>
             <div
               className={TONE_CLASS[week.loadStatus]}
+              role="img"
               aria-label={`今週: ${formatMemberCapacityLoadJa(week)}`}
             >
               <span className="text-muted-foreground mr-1" aria-hidden="true">
