@@ -535,7 +535,10 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                   onClick={() => setGraphText(appendNodePreset(graphText, preset))}
                   data-testid={`wf-node-preset-${preset.type}-${wf.id}`}
                   title={preset.title}
-                  aria-label={`graph に ${preset.title} の skeleton node を追加`}
+                  // iter1035: visible "+ ${type}" を aria-label の prefix に固定し
+                  // WCAG 2.5.3 Label in Name satisfy (voice control 「click + noop」 で
+                  // accessible name に literal "+ noop" substring 必要)。
+                  aria-label={`+ ${preset.type} — graph に ${preset.title} の skeleton node を追加`}
                 >
                   <span aria-hidden="true">+ {preset.type}</span>
                 </Button>
