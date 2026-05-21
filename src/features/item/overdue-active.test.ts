@@ -12,8 +12,10 @@ import {
   formatOverdueActiveByPriorityJa,
   formatOverdueActiveJa,
   formatOverdueActiveTitlesJa,
+  overdueActiveChipTone,
   type OverdueActiveFields,
   overdueActiveSeverity,
+  overdueActiveToBriefSignal,
   pickOverdueActiveItems,
 } from './overdue-active'
 
@@ -306,5 +308,58 @@ describe('formatOverdueActiveTitlesJa', () => {
     ]
     const entries = pickOverdueActiveItems(items, TODAY)
     expect(formatOverdueActiveTitlesJa(entries)).toBe('期限超過: A 14日 / B 10日 / C 5日')
+  })
+})
+
+describe('overdueActiveChipTone (iter1049)', () => {
+  it('0 件 → idle tone', () => {
+    const stats = computeOverdueActive([], TODAY)
+    expect(overdueActiveChipTone(stats)).toBe('idle')
+  })
+
+  it('mild (= 1-4 件 + 全て < 7d) → warn tone', () => {
+    const items = [mk({ dueDate: dueDateNDaysAgo(3) }), mk({ dueDate: dueDateNDaysAgo(1) })]
+    const stats = computeOverdueActive(items, TODAY)
+    expect(overdueActiveChipTone(stats)).toBe('warn')
+  })
+
+  it('severe (= 7d+ 超過 含む) → danger tone', () => {
+    const items = [mk({ dueDate: dueDateNDaysAgo(8) })]
+    const stats = computeOverdueActive(items, TODAY)
+    expect(overdueActiveChipTone(stats)).toBe('danger')
+  })
+
+  it('severe (= 5+ 件) → danger tone', () => {
+    const items = Array.from({ length: 5 }, (_, i) =>
+      mk({ dueDate: dueDateNDaysAgo(((i % 3) + 1) as number) }),
+    )
+    const stats = computeOverdueActive(items, TODAY)
+    expect(overdueActiveChipTone(stats)).toBe('danger')
+  })
+})
+
+describe('overdueActiveToBriefSignal (iter1049)', () => {
+  it('0 件 → idle tone + sentinel text', () => {
+    const stats = computeOverdueActive([], TODAY)
+    const signal = overdueActiveToBriefSignal(stats)
+    expect(signal.tone).toBe('idle')
+    expect(signal.text).toBe('期限超過 0 件')
+  })
+
+  it('severe (7d+) → danger tone + summary text 含む 期限超過 件数 + 最古', () => {
+    const items = [mk({ dueDate: dueDateNDaysAgo(10) }), mk({ dueDate: dueDateNDaysAgo(3) })]
+    const stats = computeOverdueActive(items, TODAY)
+    const signal = overdueActiveToBriefSignal(stats)
+    expect(signal.tone).toBe('danger')
+    expect(signal.text).toContain('期限超過 2 件')
+    expect(signal.text).toContain('最古 10 日')
+  })
+
+  it('mild → warn tone + summary text', () => {
+    const items = [mk({ dueDate: dueDateNDaysAgo(2) })]
+    const stats = computeOverdueActive(items, TODAY)
+    const signal = overdueActiveToBriefSignal(stats)
+    expect(signal.tone).toBe('warn')
+    expect(signal.text).toContain('期限超過 1 件')
   })
 })

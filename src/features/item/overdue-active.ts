@@ -27,6 +27,9 @@
 import { MS_PER_DAY, parseDateOrNull, parseIsoDateAsLocalMidnight } from '@/lib/date/iso'
 import { formatNonZeroCounts } from '@/lib/format-counts'
 import { formatTitleDaysListJa } from '@/lib/format-list'
+import type { ChipTone } from '@/lib/ui/chip-tone'
+
+import type { AgentBriefSignal } from '@/features/agent/brief-signal'
 
 import {
   bucketByPriorityWith,
@@ -151,6 +154,51 @@ export function overdueActiveSeverity(stats: OverdueActiveStats): OverdueActiveS
   if ((stats.oldestOverdueDays ?? 0) >= 7) return 'severe'
   if (stats.total >= 5) return 'severe'
   return 'mild'
+}
+
+/**
+ * iter1049 ai-automation: overdue active stats → 共通 `ChipTone` bridge。
+ *
+ *   - severe (= 7d+ 超過 含む or 5+ 件) → 'danger' (= 赤、要対応)
+ *   - mild   (= 0 < total < 5 + 全て < 7d) → 'warn'   (= 黄、注意)
+ *   - idle   (= 期限超過なし)             → 'idle'   (= 灰、attention 不要)
+ *
+ * iter1047 `stuckWipChipTone` と同パターン (= 'severe'|'mild'|'idle' → ChipTone)。
+ * `formatOverdueActiveJa` と整合する tone 軸で AgentBriefSignal / dashboard chip-tone bind 用。
+ *
+ * 既存 dashboard chip (dashboard-view.tsx の overdueActive panel) は inline severity →
+ * Tailwind class を直接構築していたが、本 helper で ChipTone vocab に乗せれば
+ * agentBriefSignal pattern に統一可能。
+ */
+export function overdueActiveChipTone(stats: OverdueActiveStats): ChipTone {
+  const sev = overdueActiveSeverity(stats)
+  if (sev === 'severe') return 'danger'
+  if (sev === 'mild') return 'warn'
+  return 'idle'
+}
+
+/**
+ * iter1049 ai-automation: overdue active stats → `AgentBriefSignal` (text + tone) compose helper。
+ *
+ * iter1025/1031/1035/1038/1040/1046/1047 等 `*ToBriefSignal` pattern (= 14 axes 弾) の overdue
+ * 軸版。text は iter367 `formatOverdueActiveJa` を再利用 (= '期限超過 5 件 (todo 3 / 進行中 2) — 最古 7 日')、
+ * tone は本 iter `overdueActiveChipTone` を再利用 (= chip 配色と signal tone が完全一致)。
+ *
+ * caller pattern:
+ *   const stats = computeOverdueActive(items, today)
+ *   const signal = overdueActiveToBriefSignal(stats)
+ *   // → composeAnalyticsSignals 風に concat、または単独 chip render
+ *
+ * 用途:
+ *   - AI 朝 brief / Slack daily digest 「期限超過 5 件 (...)」 signal
+ *   - dashboard chip 「期限超過 異常」 tone 統一 (既存 inline 配色から)
+ *   - analytics-signals.ts の 15 軸目候補 (次 iter integration 想定)
+ */
+export function overdueActiveToBriefSignal(stats: OverdueActiveStats): AgentBriefSignal {
+  return {
+    text: formatOverdueActiveJa(stats),
+    tone: overdueActiveChipTone(stats),
+  }
 }
 
 /** by-priority 集計の単 bucket 値: overdue active 件数 + 最古超過日数 (count=0 → null)。 */
