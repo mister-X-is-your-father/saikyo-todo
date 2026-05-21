@@ -462,9 +462,13 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                 </div>
               )}
             </div>
+            {/* iter1070: shadcn Badge は role 無 span で aria-label の SR
+                picked-up が divergence (iter1051 WorkspaceHeader / iter1069
+                sprint-status と同 pattern、role=img sweep 22 弾目)。 */}
             <Badge
               variant={STATUS_COLOR[status]}
               data-testid={`goal-status-${goal.id}`}
+              role="img"
               aria-label={`Goal「${goal.title}」のステータス: ${goalStatusLabelJa(status)}`}
             >
               <span aria-hidden="true">{goalStatusLabelJa(status)}</span>
