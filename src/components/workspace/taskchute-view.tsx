@@ -214,9 +214,12 @@ export function TaskChuteView({ workspaceId, items }: Props) {
                 const tickerRow = tickerByItemId.get(item.id)
                 if (!tickerRow?.eta) return null
                 return (
+                  // iter1052: role 無 span + aria-label の SR picked-up divergence を
+                  // `role="img"` で authoritative 化 (iter1023/1049/1050/1051 同 pattern)。
                   <span
                     className="text-muted-foreground inline-flex shrink-0 items-center gap-0.5 font-mono text-[10px] tabular-nums"
                     title={`予測完了 ${tickerRow.eta}`}
+                    role="img"
                     aria-label={`予測完了時刻 ${tickerRow.eta}`}
                     data-testid={`taskchute-eta-${item.id}`}
                   >
