@@ -330,8 +330,18 @@ function ItemEditDialogInner({
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
           {/* iter327: TabsList に aria-label を付与し landmark / SR ナビ可能に。
-              Activity は他 4 タブが日本語のため "アクティビティ" にローカライズ統一 (WCAG 3.1.2)。 */}
-          <TabsList className="w-full" aria-label="Item 編集タブ">
+              Activity は他 4 タブが日本語のため "アクティビティ" にローカライズ統一 (WCAG 3.1.2)。
+              iter1016: shadcn `<TabsList>` default は `h-8` (32px) + `flex-1` で 7 tab を
+              equalize するが、iPhone SE 320px viewport では tab 高さ 25px (WCAG 2.5.5
+              44x44 違反) + 「アクティビティ」 tab right=427px > dialog right=304px で
+              overflow して視認 / tap 不可だった。mobile-first `min-h-14`
+              (56px、shadcn inner 50px → tab 49px ≥ 44px) + `overflow-x-auto`
+              で 44x44 tap target 確保 + 右端外 tab に touch swipe scroll で到達可能化、
+              `sm:min-h-8` で sm 以上 (≥640px) は shadcn default 32px に戻し desktop UX 不変。 */}
+          <TabsList
+            className="min-h-14 w-full overflow-x-auto sm:min-h-8 sm:overflow-visible [&>button]:min-w-11 sm:[&>button]:min-w-0"
+            aria-label="Item 編集タブ"
+          >
             <TabsTrigger
               value="base"
               data-testid="tab-base"
