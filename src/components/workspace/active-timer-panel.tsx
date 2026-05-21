@@ -161,9 +161,13 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
 
   const inPip = pipWindow !== null
   // PiP 中は full-window 中央寄せ (320×140 想定)。in-page は右下 fixed 小型 panel。
+  // iter1024: mobile 320px viewport で panel 内容 width が 364px に膨らみ、
+  // `fixed right-4 bottom-4` の panel.left が -60px (viewport 左端を超える) になっていた。
+  // `max-w-[calc(100vw-2rem)]` で右 16px + 左 16px margin を引いた viewport 内に常時収め、
+  // mobile で panel が画面外に切れる事故を防ぐ。
   const containerClass = inPip
     ? 'bg-card flex h-full w-full items-center gap-2 px-3 py-2'
-    : 'bg-card fixed right-4 bottom-4 z-40 flex items-center gap-2 rounded-lg border px-3 py-2 shadow-lg'
+    : 'bg-card fixed right-4 bottom-4 z-40 flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-lg border px-3 py-2 shadow-lg'
 
   const body = (
     <div
@@ -231,11 +235,14 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
         role="group"
         aria-label={`タスクタイマーの操作 (現在: ${running ? '計測中' : '一時停止中'}、一時停止 / 再開 / Picture-in-Picture / 停止)`}
       >
+        {/* iter1024: icon-only buttons (Pause / Play / PictureInPicture2) は size="sm" +
+            `min-h-11` で高さ 44px は満たすが、幅は icon 12px + padding = 36px で
+            44x44 WCAG 2.5.5 違反だった。`min-w-11` (44px) で両軸 satisfy。 */}
         {running ? (
           <Button
             type="button"
             size="sm"
-            className="min-h-11"
+            className="min-h-11 min-w-11"
             variant="ghost"
             onClick={pause}
             aria-label="タイマーを一時停止"
@@ -247,7 +254,7 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
           <Button
             type="button"
             size="sm"
-            className="min-h-11"
+            className="min-h-11 min-w-11"
             variant="ghost"
             onClick={resume}
             aria-label="タイマーを再開"
@@ -259,7 +266,7 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
         <Button
           type="button"
           size="sm"
-          className="min-h-11"
+          className="min-h-11 min-w-11"
           variant="ghost"
           onClick={inPip ? closePip : () => void handleOpenPip()}
           disabled={!pipSupported || pipPending}
