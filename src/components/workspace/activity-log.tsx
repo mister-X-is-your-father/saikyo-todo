@@ -192,10 +192,13 @@ function ActivityRow({
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-controls={detailId}
+          // iter1041: visible "詳細を見る" / "詳細を閉じる" を aria-label の prefix に
+          // 固定し WCAG 2.5.3 satisfy (旧 aria-label は "差分 (before / after) を見る"
+          // で "詳細を見る" literal substring 不一致だった)。
           aria-label={
             open
-              ? `「${label}」の差分 (before / after) を閉じる`
-              : `「${label}」の差分 (before / after) を見る`
+              ? `詳細を閉じる — 「${label}」の差分 (before / after) を閉じる`
+              : `詳細を見る — 「${label}」の差分 (before / after) を見る`
           }
           data-testid={`activity-detail-toggle-${entry.id}`}
         >
