@@ -191,12 +191,15 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
             aria-busy={markAllRead.isPending || undefined}
             onClick={() => markAllRead.mutate()}
             data-testid="notification-mark-all-read"
+            // iter1043: visible "全て既読" を aria-label の prefix に固定し WCAG 2.5.3
+            // satisfy (旧 aria-label は "すべて既読にする" / "未読… 既読化中" で
+            // literal "全て既読" 連続 substring 無し、voice control match 不可)。
             aria-label={
               unreadCount === 0
-                ? '未読通知がないため既読化不要'
+                ? '全て既読 — 未読通知がないため既読化不要'
                 : markAllRead.isPending
-                  ? `未読 ${unreadCount} 件を既読化中…`
-                  : `未読 ${unreadCount} 件をすべて既読にする`
+                  ? `全て既読 — 未読 ${unreadCount} 件を既読化中…`
+                  : `全て既読 — 未読 ${unreadCount} 件をすべて既読にする`
             }
           >
             <CheckCheck className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
