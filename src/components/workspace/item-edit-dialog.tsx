@@ -305,7 +305,12 @@ function ItemEditDialogInner({
               // conflict banner row 内 layout を保持)
               className="focus-visible:ring-ring relative shrink-0 rounded border border-amber-600/50 px-2 py-1 text-[11px] font-medium before:absolute before:-inset-3 before:content-[''] hover:bg-amber-600/20 focus-visible:ring-2 focus-visible:outline-none"
               data-testid="item-edit-reload"
-              aria-label="自分の編集内容を破棄してサーバの最新値を読み込み直す"
+              // iter1073: visible "最新を読み込み" は aria-label
+              // "自分の編集内容を破棄してサーバの最新値を読み込み直す" に対し
+              // "最新値" / "読み込み直す" で characters 不一致 → WCAG 2.5.3
+              // (Label in Name) 違反。visible-prefix 先頭固定 (iter1068/1071/1072
+              // sweep の続編)。
+              aria-label="最新を読み込み — 自分の編集内容を破棄してサーバの最新値を読み込み直す"
               onClick={() => {
                 if (
                   !window.confirm(
