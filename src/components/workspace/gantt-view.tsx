@@ -440,9 +440,13 @@ export function GanttView({
           />
         )}
         {/* Today 縦線 (Phase 6.15 iter 10 — TeamGantt/GanttPRO の典型機能) */}
+        {/* iter1067: role 無 div + aria-label を `role="img"` で
+            authoritative 化 (iter1023/1049-1066 同 pattern、role=img sweep
+            20 弾目)。Gantt 上の today / baseline 視覚 marker。 */}
         {todayX !== null && (
           <div
             data-testid="gantt-today-line"
+            role="img"
             aria-label={`今日 (${format(new Date(), 'yyyy年M月d日 (eee)')}) の縦線`}
             className="pointer-events-none absolute z-20"
             style={{
@@ -643,6 +647,7 @@ export function GanttView({
                 {hasBaseline && (
                   <div
                     data-testid={`gantt-baseline-${item.id}`}
+                    role="img"
                     aria-label={`ベースライン ${item.baselineStartDate} → ${item.baselineEndDate}`}
                     className="pointer-events-none absolute"
                     style={{
