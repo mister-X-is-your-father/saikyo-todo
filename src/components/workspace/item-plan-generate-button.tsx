@@ -56,10 +56,13 @@ export function ItemPlanGenerateButton({ workspaceId, item, assignees }: Props) 
         void run()
       }}
       data-testid={`generate-plan-btn-${item.id}`}
+      // iter1037: visible "Plan を生成" / "Plan 生成中…" を aria-label の prefix に
+      // 固定し WCAG 2.5.3 Label in Name satisfy (旧 aria-label は "実行計画" と
+      // "Plan を生成" の synonym 化で literal substring 不一致だった)。
       aria-label={
         generate.isPending
-          ? `「${item.title}」の Plan を生成中…`
-          : `「${item.title}」の AI 担当が実行計画を comment に投下します`
+          ? `Plan 生成中… — 「${item.title}」の Plan を生成中`
+          : `Plan を生成 — 「${item.title}」の AI 担当が実行計画を comment に投下します`
       }
     >
       <BotIcon className="size-4" aria-hidden="true" />
