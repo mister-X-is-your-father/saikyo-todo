@@ -98,10 +98,13 @@ export function BulkActionBar({ workspaceId }: Props) {
           aria-busy={bulkStatus.isPending || undefined}
           onClick={() => void handleStatus(s.key)}
           data-testid={`bulk-status-${s.key}`}
+          // iter1045: visible "<label> に" を aria-label の prefix に固定し WCAG 2.5.3
+          // satisfy (旧 aria-label は "「<label>」に" で literal "<label> に" 連続
+          // substring 無し、bracket 挿入で voice control match 不可)。
           aria-label={
             bulkStatus.isPending
-              ? `選択 ${count} 件のステータスを変更中…`
-              : `選択 ${count} 件を「${s.label}」に変更`
+              ? `${s.label} に変更中… — 選択 ${count} 件のステータスを変更中`
+              : `${s.label} に変更 — 選択 ${count} 件を「${s.label}」に変更`
           }
         >
           <span aria-hidden="true">{s.label} に</span>
