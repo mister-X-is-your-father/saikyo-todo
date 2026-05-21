@@ -161,10 +161,13 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
             >
               通知
               {hint && (
+                // iter1050: role 無 span への aria-label は SR picked-up が不確実、
+                // iter1023/1049 と同 pattern で `role="img"` を付与し authoritative 化。
                 <span
                   className={`rounded border px-1.5 py-0 text-[10px] font-normal ${hint.chipClass}`}
                   data-testid="notification-bell-hint"
                   data-severity={hint.severity}
+                  role="img"
                   aria-label={`通知 健全性: ${hint.label}`}
                 >
                   <span aria-hidden="true">{hint.label}</span>
@@ -172,9 +175,11 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
               )}
             </h2>
             {unreadBreakdown ? (
+              // iter1050: 同 role=img 付与で SR aria-label authoritative 化
               <span
                 className="text-muted-foreground truncate text-[10px]"
                 data-testid="notification-bell-breakdown"
+                role="img"
                 aria-label={`未読内訳: ${unreadBreakdown}`}
                 title={unreadBreakdown}
               >
