@@ -557,10 +557,12 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
           onClick={() => void handleAccept()}
           data-testid={`proposal-${proposal.id}-accept`}
           title="採用 → 子タスクとして追加"
+          // iter1044: visible "✓ 採用" を aria-label の prefix に固定し WCAG 2.5.3
+          // satisfy (旧 aria-label は "を採用して..." で literal "✓ 採用" 連続 substring 無し)。
           aria-label={
             disabled
-              ? `「${proposal.title}」を採用処理中…`
-              : `「${proposal.title}」を採用して子タスクとして追加`
+              ? `✓ 採用 — 「${proposal.title}」を採用処理中…`
+              : `✓ 採用 — 「${proposal.title}」を採用して子タスクとして追加`
           }
         >
           <span aria-hidden="true">✓ 採用</span>
@@ -568,7 +570,9 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
         <Button
           size="sm"
           variant="ghost"
-          className="min-h-11 px-2"
+          // iter1044: icon-only X button は size="sm" + min-h-11 で高さ 44 OK だが
+          // 幅 36px < 44 で WCAG 2.5.5 違反 (iter1024/1028/1029 同 hazard)。min-w-11 で satisfy。
+          className="min-h-11 min-w-11 px-2"
           disabled={disabled}
           aria-busy={disabled || undefined}
           onClick={() => void handleReject()}
