@@ -199,7 +199,11 @@ export function BudgetPanel({ workspaceId }: Props) {
               variant="ghost"
               onClick={startEdit}
               data-testid="budget-edit-btn"
-              aria-label="AI 月次コスト上限と警告閾値の編集モードを開く"
+              // iter1077: visible "上限を変更" は aria-label "AI 月次コスト上限と
+              // 警告閾値の編集モードを開く" で "編集モードを開く" 等で literal
+              // substring 不一致 → WCAG 2.5.3 (Label in Name) 違反。visible-prefix
+              // を先頭固定 (iter1068/1071-1075 sweep)。
+              aria-label="上限を変更 — AI 月次コスト上限と警告閾値の編集モードを開く"
             >
               <span aria-hidden="true">上限を変更</span>
             </Button>
