@@ -296,7 +296,7 @@ export function GoalsPanel({ workspaceId }: Props) {
               type="button"
               className="text-primary hover:bg-muted focus-visible:ring-ring mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline focus-visible:ring-2 focus-visible:outline-none"
               data-testid="goals-empty-create"
-              aria-label="Goal 作成フォームの『Objective』入力欄にフォーカス"
+              aria-label="作成フォームへ — Goal 作成フォームの『Objective』入力欄にフォーカス"
               onClick={() => {
                 const el = document.getElementById('goal-title') as HTMLInputElement | null
                 el?.focus()
