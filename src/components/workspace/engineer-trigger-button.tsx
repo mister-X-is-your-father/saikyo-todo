@@ -90,10 +90,14 @@ export function EngineerTriggerButton({ item }: Props) {
         aria-busy={trigger.isPending || undefined}
         onClick={() => void handleClick()}
         data-testid="engineer-trigger-btn"
+        // iter1036: visible "🛠 Engineer に実装させる" (= "Engineer に実装させる" 部分が
+        // voice-control 用) を accessible name の prefix 固定で WCAG 2.5.3 satisfy。
+        // 旧 aria-label "Engineer Agent に「title」を実装させる" は "Engineer" と
+        // "に実装させる" 間に "Agent に「title」を" が入り literal substring 不一致。
         aria-label={
           trigger.isPending
-            ? `Engineer Agent に「${item.title}」を投入中…`
-            : `Engineer Agent に「${item.title}」を実装させる${autoPr ? ' (PR 自動起票)' : ''}`
+            ? `起動中… — Engineer Agent に「${item.title}」を投入中`
+            : `Engineer に実装させる — Engineer Agent に「${item.title}」を投入${autoPr ? ' (PR 自動起票)' : ''}`
         }
       >
         {trigger.isPending ? (
