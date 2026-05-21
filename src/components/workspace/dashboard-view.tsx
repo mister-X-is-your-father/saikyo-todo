@@ -857,18 +857,26 @@ export function DashboardView({ workspaceId }: Props) {
     <div className="space-y-6" data-testid="dashboard-view">
       {/* サマリ stats */}
       <div className="grid gap-4 sm:grid-cols-4">
-        <StatCard label="MUST 件数" value={s.items.length} tone="default" />
         <StatCard
+          testId="stat-card-must-count"
+          label="MUST 件数"
+          value={s.items.length}
+          tone="default"
+        />
+        <StatCard
+          testId="stat-card-wip"
           label="進行中 / WIP 上限"
           value={`${s.wipInProgress}/${s.wipLimit}`}
           tone={s.wipExceeded ? 'danger' : 'default'}
         />
         <StatCard
+          testId="stat-card-overdue"
           label="期限超過"
           value={s.overdueCount}
           tone={s.overdueCount > 0 ? 'danger' : 'default'}
         />
         <StatCard
+          testId="stat-card-due-soon"
           label="7日以内"
           value={s.dueSoonCount}
           tone={s.dueSoonCount > 0 ? 'warning' : 'default'}
@@ -1475,10 +1483,14 @@ function StatCard({
   label,
   value,
   tone,
+  testId,
 }: {
   label: string
   value: number | string
   tone: 'default' | 'warning' | 'danger'
+  /** iter1033: tone は重複 (例: default が 4 件中 3 件)、安定 locate のため
+   *  caller が unique testId を渡す。省略時は tone fallback (旧 behavior)。 */
+  testId?: string
 }) {
   const toneCls =
     tone === 'danger'
@@ -1495,7 +1507,7 @@ function StatCard({
       className={`rounded-lg border p-4 ${toneCls}`}
       role="group"
       aria-label={ariaLabel}
-      data-testid={`stat-card-${tone}`}
+      data-testid={testId ?? `stat-card-${tone}`}
     >
       <div className="text-muted-foreground text-xs" aria-hidden="true">
         {label}

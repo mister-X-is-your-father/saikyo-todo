@@ -68,7 +68,9 @@ async function main() {
     await page.waitForURL(`${BASE}/`, { timeout: 10_000 })
     await page.goto(`${BASE}/${workspaceId}?view=dashboard`, { waitUntil: 'networkidle' })
     await page.waitForTimeout(2000)
-    const danger = page.locator('[data-testid="stat-card-danger"]').first()
+    // iter1033: 旧 testid `stat-card-danger` は廃止、unique testid (stat-card-overdue 等)
+    // に変更。danger tone の cards を [aria-label*="要対応"] で検出。
+    const danger = page.locator('[role="group"][aria-label*="要対応"]').first()
     if ((await danger.count()) === 0) {
       findings.push({
         level: 'warning',
