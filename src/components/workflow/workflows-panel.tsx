@@ -914,9 +914,12 @@ function WorkflowNodeRunsList({ runId }: { runId: string }) {
 function RunStatusBadge({ status }: { status: string }) {
   const cls = runStatusBadgeClass(status)
   const label = runStatusLabel(status)
+  // iter1064: role 無 span + aria-label を `role="img"` で authoritative
+  // 化 (iter1023/1049-1063 同 pattern、role=img sweep 17 弾目)。
   return (
     <span
       className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${cls}`}
+      role="img"
       aria-label={`実行ステータス: ${label}`}
     >
       <span aria-hidden="true">{label}</span>
