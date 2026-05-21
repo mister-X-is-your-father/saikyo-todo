@@ -15,13 +15,20 @@ import { Button } from '@/components/ui/button'
 // iter921: aria-label "外部同期: ${jaLabel}" を持つ 3 Badge いずれも visible
 // "synced" / "failed" / "pending" が aria-hidden 無し → 内側 visible を
 // aria-hidden span で wrap、aria-label 単独 SR 経路に集約 (iter918-920 続編)。
+// iter1075: 上記で aria-hidden 化したが visible "synced"/"failed"/"pending"
+// (English) が aria-label の "完了"/"失敗"/"未実行" (Japanese) と
+// literal substring 不一致 → WCAG 2.5.3 (Label in Name) 違反。voice control
+// "click synced" matching 不可。visible English を aria-label の prefix に
+// 固定 (iter1068/1071-1074 sweep)。さらに shadcn Badge は role 無 span
+// で role=img 付与 (iter1051/1069/1070 と同 pattern、role=img sweep 23 弾目)。
 function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
   if (status === 'synced') {
     return (
       <Badge
         variant="outline"
         className="border-transparent bg-emerald-100 text-emerald-700"
-        aria-label="外部同期: 完了"
+        role="img"
+        aria-label="synced — 外部同期: 完了"
         data-testid="sync-badge"
       >
         <span aria-hidden="true">synced</span>
@@ -33,7 +40,8 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
       <Badge
         variant="outline"
         className="border-transparent bg-red-100 text-red-700"
-        aria-label="外部同期: 失敗"
+        role="img"
+        aria-label="failed — 外部同期: 失敗"
         data-testid="sync-badge"
       >
         <span aria-hidden="true">failed</span>
@@ -44,7 +52,8 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
     <Badge
       variant="outline"
       className="border-transparent bg-slate-100 text-slate-700"
-      aria-label="外部同期: 未実行"
+      role="img"
+      aria-label="pending — 外部同期: 未実行"
       data-testid="sync-badge"
     >
       <span aria-hidden="true">pending</span>
