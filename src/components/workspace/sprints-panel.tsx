@@ -819,10 +819,13 @@ function SprintCard({
                 onClick={onRunRetro}
                 data-testid={`sprint-retro-${sprint.id}`}
                 title="PM Agent が完了/未完 items を要約して Retro Doc を生成"
+                // iter1038: visible "振り返り生成" を aria-label の prefix に固定し
+                // WCAG 2.5.3 satisfy (旧 "振り返り Doc を生成" は "Doc を" 挿入で
+                // literal "振り返り生成" substring 不一致)。
                 aria-label={
                   retroPending
-                    ? `Sprint「${sprint.name}」の振り返りを生成中…`
-                    : `Sprint「${sprint.name}」の振り返り Doc を生成 (PM Agent が完了/未完 items を要約)`
+                    ? `振り返り生成中… — Sprint「${sprint.name}」の振り返りを生成中`
+                    : `振り返り生成 — Sprint「${sprint.name}」の振り返り Doc を生成 (PM Agent が完了/未完 items を要約)`
                 }
               >
                 <Sparkles className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
@@ -839,12 +842,15 @@ function SprintCard({
                 onClick={onRunPremortem}
                 data-testid={`sprint-premortem-${sprint.id}`}
                 title="PM Agent が想定リスクと早期警報を Pre-mortem Doc にまとめる"
+                // iter1038: visible "Pre-mortem 生成" / "Pre-mortem 再生成" を aria-label
+                // の prefix に固定し WCAG 2.5.3 satisfy (旧 "Pre-mortem を生成" は
+                // "を" 挿入で literal "Pre-mortem 生成" substring 不一致)。
                 aria-label={
                   premortemPending
-                    ? `Sprint「${sprint.name}」の Pre-mortem を生成中…`
+                    ? `Pre-mortem 生成中… — Sprint「${sprint.name}」の Pre-mortem を生成中`
                     : sprint.premortemGeneratedAt
-                      ? `Sprint「${sprint.name}」の Pre-mortem を再生成 (PM Agent が想定リスクと早期警報を Doc にまとめる)`
-                      : `Sprint「${sprint.name}」の Pre-mortem を生成 (PM Agent が想定リスクと早期警報を Doc にまとめる)`
+                      ? `Pre-mortem 再生成 — Sprint「${sprint.name}」の Pre-mortem を再生成 (PM Agent が想定リスクと早期警報を Doc にまとめる)`
+                      : `Pre-mortem 生成 — Sprint「${sprint.name}」の Pre-mortem を生成 (PM Agent が想定リスクと早期警報を Doc にまとめる)`
                 }
               >
                 <Sparkles className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
