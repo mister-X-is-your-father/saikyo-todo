@@ -361,3 +361,31 @@ export function buildFourStateHintChip<T>(
   const chipClass = severityChipClass(severity)
   return { label, severity, chipClass }
 }
+
+/**
+ * iter1055 refactor: `'severe' | 'mild' | 'idle'` 3 段 severity vocab → `ChipTone` bridge。
+ *
+ * iter1047 stuckWipChipTone / iter1049 overdueActiveChipTone で同 mapping (severe → 'danger' /
+ * mild → 'warn' / idle → 'idle') が inline 重複していたので 1 source of truth に集約。
+ * caller (= 既存 2 helper + 将来 'severe' | 'mild' | 'idle' を使う domain) は本 bridge を
+ * 1 行で参照。
+ *
+ *   'severe' → 'danger' (= 赤、要対応)
+ *   'mild'   → 'warn'   (= 黄、注意)
+ *   'idle'   → 'idle'   (= 灰、attention 不要)
+ *
+ * 本 vocab は `Severity` (5 値) と異なり 'severe'|'mild'|'idle' の 3 値で、count > 0 の severity
+ * 2 値 + empty/no-data の idle sentinel という item-domain 共通 pattern。`SlipSeverity` ('severe'|
+ * 'mild') は count=0 を別軸で扱うため適用外 (= caller 側で count===0 → 'idle' を先に分岐)。
+ */
+export type SevereMildIdle = 'severe' | 'mild' | 'idle'
+
+const SEVERE_MILD_IDLE_TO_CHIP_TONE: Record<SevereMildIdle, ChipTone> = {
+  severe: 'danger',
+  mild: 'warn',
+  idle: 'idle',
+}
+
+export function severeMildIdleToChipTone(sev: SevereMildIdle): ChipTone {
+  return SEVERE_MILD_IDLE_TO_CHIP_TONE[sev]
+}

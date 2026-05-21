@@ -28,6 +28,7 @@ import { MS_PER_DAY, parseDateOrNull, parseIsoDateAsLocalMidnight } from '@/lib/
 import { formatNonZeroCounts } from '@/lib/format-counts'
 import { formatTitleDaysListJa } from '@/lib/format-list'
 import type { ChipTone } from '@/lib/ui/chip-tone'
+import { severeMildIdleToChipTone } from '@/lib/widget/severity-bridges'
 
 import type { AgentBriefSignal } from '@/features/agent/brief-signal'
 
@@ -171,10 +172,8 @@ export function overdueActiveSeverity(stats: OverdueActiveStats): OverdueActiveS
  * agentBriefSignal pattern に統一可能。
  */
 export function overdueActiveChipTone(stats: OverdueActiveStats): ChipTone {
-  const sev = overdueActiveSeverity(stats)
-  if (sev === 'severe') return 'danger'
-  if (sev === 'mild') return 'warn'
-  return 'idle'
+  // iter1055 refactor: 'severe'|'mild'|'idle' → ChipTone mapping を共通 bridge に集約。
+  return severeMildIdleToChipTone(overdueActiveSeverity(stats))
 }
 
 /**

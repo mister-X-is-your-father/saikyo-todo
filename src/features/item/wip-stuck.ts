@@ -23,6 +23,7 @@
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 import type { ChipTone } from '@/lib/ui/chip-tone'
+import { severeMildIdleToChipTone } from '@/lib/widget/severity-bridges'
 
 import type { AgentBriefSignal } from '@/features/agent/brief-signal'
 
@@ -143,10 +144,8 @@ export function stuckWipSeverity<T extends StuckWipFields>(
 export function stuckWipChipTone<T extends StuckWipFields>(
   entries: readonly StuckWipEntry<T>[],
 ): ChipTone {
-  const sev = stuckWipSeverity(entries)
-  if (sev === 'severe') return 'danger'
-  if (sev === 'mild') return 'warn'
-  return 'idle'
+  // iter1055 refactor: 'severe'|'mild'|'idle' → ChipTone mapping を共通 bridge に集約。
+  return severeMildIdleToChipTone(stuckWipSeverity(entries))
 }
 
 /**

@@ -12,6 +12,7 @@ import {
   improvementSeverityToSeverity,
   pdcaPhaseSeverityCountsToSeverityCounts,
   pdcaPhaseSeverityToSeverity,
+  severeMildIdleToChipTone,
   severityToChipTone,
 } from './severity-bridges'
 
@@ -368,6 +369,27 @@ describe('severityToChipTone (iter1039)', () => {
     const all = ['ok', 'info', 'warn', 'danger', 'muted'] as const
     for (const s of all) {
       expect(typeof severityToChipTone(s)).toBe('string')
+    }
+  })
+})
+
+describe('severeMildIdleToChipTone (iter1055)', () => {
+  it('severe → danger', () => {
+    expect(severeMildIdleToChipTone('severe')).toBe('danger')
+  })
+
+  it('mild → warn', () => {
+    expect(severeMildIdleToChipTone('mild')).toBe('warn')
+  })
+
+  it('idle → idle', () => {
+    expect(severeMildIdleToChipTone('idle')).toBe('idle')
+  })
+
+  it('全 3 値が ChipTone vocab を返す', () => {
+    const all: Array<'severe' | 'mild' | 'idle'> = ['severe', 'mild', 'idle']
+    for (const s of all) {
+      expect(typeof severeMildIdleToChipTone(s)).toBe('string')
     }
   })
 })
