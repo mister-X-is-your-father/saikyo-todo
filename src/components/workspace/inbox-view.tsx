@@ -115,10 +115,14 @@ export function InboxView({
         <span className="text-muted-foreground" aria-hidden="true">
           {inbox.length} 件 — scheduledFor も期限も未設定
         </span>
+        {/* iter1058: role 無 span + aria-label を `role="img"` で
+            authoritative 化 (iter1023/1049-1057 同 pattern、role=img sweep
+            11 弾目)。 */}
         <span
           className={`ml-auto rounded-full border px-1.5 py-0.5 text-[11px] ${healthChip.chipClass}`}
           data-testid="inbox-health-hint"
           data-severity={healthChip.severity}
+          role="img"
           aria-label={`Inbox 健全性: ${healthChip.label}`}
         >
           <span aria-hidden="true">{healthChip.label}</span>
