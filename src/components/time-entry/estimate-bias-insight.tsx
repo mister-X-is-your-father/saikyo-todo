@@ -130,9 +130,13 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
           aria-level={2}
         >
           <span>見積精度 (直近)</span>
+          {/* iter1076: role 無 span + aria-label を `role="img"` で
+              authoritative 化 (iter1023/1049-1075 同 pattern、role=img sweep
+              24 弾目)。estimate-bias 傾向 chip。 */}
           <span
             className={`rounded border px-2 py-0.5 text-[11px] ${tone}`}
             data-testid="estimate-bias-tendency"
+            role="img"
             aria-label={`傾向: ${label}`}
           >
             <span aria-hidden="true">{label}</span>
