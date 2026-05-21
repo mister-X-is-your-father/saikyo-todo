@@ -165,8 +165,12 @@ function SubtaskTreeNode({
         <GripVertical className="h-4 w-4" aria-hidden="true" />
       </button>
       <ItemCheckbox item={item} workspaceId={workspaceId} />
+      {/* iter1061: role 無 span + aria-label を `role="img"` で
+          authoritative 化 (iter1023/1049-1060 同 pattern、role=img sweep
+          14 弾目)。subtask step 番号 chip。 */}
       <span
         className="bg-muted text-muted-foreground inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[11px] tabular-nums ring-1 ring-slate-200 ring-inset"
+        role="img"
         aria-label={`${index + 1} 番目 (深さ ${depth + 1})`}
         data-testid={`subtask-step-${item.id}`}
       >
