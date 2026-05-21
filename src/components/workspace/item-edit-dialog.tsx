@@ -55,6 +55,7 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
 
 import { ActivityLog } from './activity-log'
 import { AssigneePicker } from './assignee-picker'
@@ -516,17 +517,22 @@ function ItemEditDialogInner({
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="editDescription">説明</Label>
-              <IMEInput
+              {/* iter1015: 旧 <IMEInput> (1 行 input) に maxLength=10_000 を付けても
+                  改行入力不可で長文 Markdown を貼り付けると視覚的に 1 行に潰れて
+                  表示・編集不能になっていた。iter111 が decompose-proposals-panel
+                  で同 bug を `<Textarea rows=3>` に直した同 fix を ItemEditDialog
+                  にも展開。Textarea は form Enter submit 無 + IME 改行不要のため
+                  IMEInput 不要 (ItemEditDialog に form-level Enter handler なし)。 */}
+              <Textarea
                 id="editDescription"
-                className="h-11"
+                rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 maxLength={10_000}
                 autoComplete="off"
-                enterKeyHint="next"
                 aria-label={
                   description.length === 0
-                    ? '説明 (任意、最大 10000 文字、Markdown 可)'
+                    ? '説明 (任意、最大 10000 文字、Markdown 可、複数行入力可)'
                     : description.length > 9500
                       ? `説明 (現在 ${description.length} / 10000 文字、上限近接)`
                       : `説明 (現在 ${description.length} / 10000 文字)`

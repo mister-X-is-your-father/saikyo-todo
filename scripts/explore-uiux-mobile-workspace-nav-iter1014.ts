@@ -64,13 +64,10 @@ await runExplore({
         }),
       )
     console.log(`[nav-links] count=${navLinks.length}`)
-    let below44 = 0
-    let overflowed = 0
     const rows = new Map<number, string[]>()
     for (const link of navLinks) {
       console.log(`  - "${link.text}": ${link.w}x${link.h} top=${link.top} right=${link.right}`)
       if (link.h < 44 || link.w < 44) {
-        below44 += 1
         findings.push({
           level: 'warning',
           source: 'a11y',
@@ -78,7 +75,6 @@ await runExplore({
         })
       }
       if (link.right > viewW + 4) {
-        overflowed += 1
         findings.push({
           level: 'warning',
           source: 'observation',
