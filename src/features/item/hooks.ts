@@ -97,8 +97,15 @@ export function useUpdateItemStatus(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: UpdateStatusInput) => unwrap(await updateItemStatusAction(input)),
-    onMutate: async (input) => {
-      await qc.cancelQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    // iter1013: Kanban の cross-column DnD で `useReorderItem` (iter437 fix) と
+    // 同じ flicker 防止 pattern に揃える。`await qc.cancelQueries(...)` は
+    // microtask 境界を生み、setQueryData が次 tick まで遅延 → 「列を移した瞬間
+    // 元列に card が残って見える」 flicker の root cause になり得るため、
+    // `void` で fire-and-forget + 非 async onMutate に変更し setQueryData を
+    // synchronously 走らせる (2026-04-30 user 要望「並び順 / 列が一瞬戻る」
+    // root cause の同 pattern 防止)。
+    onMutate: (input) => {
+      void qc.cancelQueries({ queryKey: [...itemKeys.all, workspaceId] })
       const snapshots = qc.getQueriesData<Item[]>({ queryKey: [...itemKeys.all, workspaceId] })
       for (const [key, prev] of snapshots) {
         if (!prev) continue
@@ -128,8 +135,12 @@ export function useToggleCompleteItem(workspaceId: string) {
   return useMutation({
     mutationFn: async (input: { id: string; expectedVersion: number; complete: boolean }) =>
       unwrap(await toggleCompleteItemAction(input)),
-    onMutate: async (input) => {
-      await qc.cancelQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    // iter1013: useReorderItem (iter437 fix) と同じ flicker 防止 pattern に揃える。
+    // checkbox 即応性 (click 直後の strikethrough / fade) は user expectation が
+    // 高く、await の microtask 境界で次 tick まで遅延すると違和感が出るため、
+    // `void` で fire-and-forget + 非 async onMutate に変更。
+    onMutate: (input) => {
+      void qc.cancelQueries({ queryKey: [...itemKeys.all, workspaceId] })
       const snapshots = qc.getQueriesData<Item[]>({ queryKey: [...itemKeys.all, workspaceId] })
       const provisionalStatus = input.complete ? 'done' : 'todo'
       for (const [key, prev] of snapshots) {
