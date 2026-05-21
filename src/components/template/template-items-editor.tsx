@@ -211,7 +211,10 @@ export function TemplateItemsEditor({ templateId }: Props) {
             <li
               key={it.id}
               className="flex items-center gap-3 py-2"
-              data-testid="template-item-row"
+              // iter1022: 旧 static `data-testid="template-item-row"` は複数 item 並列時
+              // 同 testid で locator ambiguous になる divergence。`template-item-row-${it.id}`
+              // で unique 化 (iter1020/1021 同 sweep)。
+              data-testid={`template-item-row-${it.id}`}
             >
               <span className="flex-1 truncate">{it.title}</span>
               {it.isMust ? <MustBadge /> : null}

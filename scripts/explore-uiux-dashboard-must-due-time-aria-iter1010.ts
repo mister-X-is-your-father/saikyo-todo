@@ -43,11 +43,11 @@ await runExplore({
     if (ins.error) throw ins.error
 
     await page.goto(`http://localhost:3001/${ws}?view=dashboard`, { waitUntil: 'networkidle' })
-    await page.waitForSelector('[data-testid="must-item-row"]', { timeout: 10_000 })
+    await page.waitForSelector('[data-testid^="must-item-row-"]', { timeout: 10_000 })
 
     // (1) must-item-row 内の <time> 要素に aria-label="期限 <ISO>" 付与確認
     const timeAriaLabels = await page.evaluate(() => {
-      const rows = Array.from(document.querySelectorAll('[data-testid="must-item-row"]'))
+      const rows = Array.from(document.querySelectorAll('[data-testid^="must-item-row-"]'))
       return rows.map((row) => {
         const timeEl = row.querySelector('time')
         return {
@@ -89,7 +89,7 @@ await runExplore({
 
     // (2) parent span の status 語 (期日近) も維持 (regression)
     const rowDetails = await page.evaluate(() => {
-      const rows = Array.from(document.querySelectorAll('[data-testid="must-item-row"]'))
+      const rows = Array.from(document.querySelectorAll('[data-testid^="must-item-row-"]'))
       return rows.map((row) => row.textContent ?? '')
     })
     const containsStatusWord = rowDetails.some(

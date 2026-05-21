@@ -1410,7 +1410,10 @@ export function DashboardView({ workspaceId }: Props) {
                     key={item.id}
                     onClick={() => void setOpenItemId(item.id)}
                     className="hover:bg-muted/50 grid cursor-pointer grid-cols-[1fr_auto_auto_auto] items-center gap-4 rounded py-2"
-                    data-testid="must-item-row"
+                    // iter1022: 旧 static `data-testid="must-item-row"` は複数 MUST item
+                    // 並列時に locator が ambiguous になる divergence (iter1020 sprint /
+                    // iter1021 template と同 sweep)。`must-item-row-${item.id}` で unique 化。
+                    data-testid={`must-item-row-${item.id}`}
                   >
                     <div className="flex min-w-0 flex-col">
                       <button
