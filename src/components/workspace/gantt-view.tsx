@@ -321,11 +321,15 @@ export function GanttView({
             CPM 期間 <span className="text-foreground font-mono">{projectDurationDays}</span> 日
           </span>
         )}
+        {/* iter1055: Gantt summary の 3 chip (critical / baseline / slip) は role 無
+            span + aria-label の SR picked-up divergence。`role="img"` で authoritative 化
+            (iter1023/1049-1054 同 pattern、role=img sweep 8 弾目)。 */}
         {criticalCount > 0 && (
           <span
             data-testid="gantt-summary-critical"
             className="text-red-600 dark:text-red-400"
             title="critical path 上の item (= project 全体期間に直接影響、遅延すると全体遅延)"
+            role="img"
             aria-label={`critical path ${criticalCount} 件 (project 全体期間に直接影響、遅延すると全体遅延)`}
           >
             <span aria-hidden="true">
@@ -337,6 +341,7 @@ export function GanttView({
           <span
             data-testid="gantt-summary-baseline"
             title="baseline = 計画策定時に固定した開始/終了日 (実績との遅延差分計測の基準)"
+            role="img"
             aria-label={`baseline ${baselineCount} 件 (計画策定時に固定した開始/終了日、実績との遅延差分計測の基準)`}
           >
             <span aria-hidden="true">
@@ -349,6 +354,7 @@ export function GanttView({
             data-testid="gantt-summary-slip"
             className="text-amber-600 dark:text-amber-400"
             title={`baseline より遅れている item の合計遅延日数`}
+            role="img"
             aria-label={`遅延 ${slipItemCount} 件 (baseline より遅れている item)、計 ${totalSlipDays} 日`}
           >
             <span aria-hidden="true">
