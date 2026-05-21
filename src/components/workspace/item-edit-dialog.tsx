@@ -888,12 +888,15 @@ function ItemEditDialogInner({
                     `現在の baseline: ${formatFriendlyDate(item.baselineStartDate, new Date())} → ${formatFriendlyDate(item.baselineEndDate!, new Date())}`
                   : 'startDate / dueDate を当初計画として保存'
               }
+              // iter1039: visible "ベースライン記録" / "ベースライン更新" を aria-label
+              // の prefix に固定し WCAG 2.5.3 satisfy (旧 aria-label は「を現在の
+              // startDate / dueDate に」 等 挿入で literal substring 不一致)。
               aria-label={
                 setBaseline.isPending
-                  ? `「${item.title}」のベースラインを記録中…`
+                  ? `記録中… — 「${item.title}」のベースラインを記録中`
                   : item.baselineStartDate
-                    ? `「${item.title}」のベースラインを現在の startDate / dueDate に更新 (旧 baseline: ${item.baselineStartDate} → ${item.baselineEndDate})`
-                    : `「${item.title}」の startDate / dueDate を当初計画 (baseline) として保存`
+                    ? `ベースライン更新 — 「${item.title}」のベースラインを現在の startDate / dueDate に更新 (旧 baseline: ${item.baselineStartDate} → ${item.baselineEndDate})`
+                    : `ベースライン記録 — 「${item.title}」の startDate / dueDate を当初計画 (baseline) として保存`
               }
             >
               <span aria-hidden="true">
@@ -926,10 +929,13 @@ function ItemEditDialogInner({
               }}
               data-testid="item-edit-clear-baseline"
               title="baseline 列を NULL に戻す"
+              // iter1039: visible "baseline クリア" を aria-label の prefix に
+              // 固定し WCAG 2.5.3 satisfy (旧 aria-label は "ベースライン (...) をクリア"
+              // で literal "baseline クリア" substring 不一致)。
               aria-label={
                 clearBaseline.isPending
-                  ? `「${item.title}」のベースラインをクリア中…`
-                  : `「${item.title}」のベースライン (${item.baselineStartDate} → ${item.baselineEndDate}) をクリア`
+                  ? `クリア中… — 「${item.title}」のベースラインをクリア中`
+                  : `baseline クリア — 「${item.title}」のベースライン (${item.baselineStartDate} → ${item.baselineEndDate}) をクリア`
               }
             >
               <span aria-hidden="true">
