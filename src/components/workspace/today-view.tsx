@@ -197,7 +197,12 @@ export function TodayView({
                     <div
                       key={it.id}
                       onClick={() => void setOpenItemId(it.id)}
-                      className={`hover:bg-muted/50 flex cursor-pointer items-start gap-2 rounded p-1.5 ${isCursor ? 'ring-primary bg-muted ring-2' : ''}`}
+                      // iter1011 mobile audit: 320px viewport で title が 0 width に潰れる
+                      // (右側 chip 群 dueTime / dueDate / StatusBadge / StartTimer ≈ 200px
+                      // + MUST 56px が shrink-0 で領域専有 → middle.flex-1.min-w-0 は
+                      // 残り < 60px で truncate が 0px まで縮む)。`flex-wrap` を付与し
+                      // 右側 chip 群が次行に wrap 出来るようにする (desktop は元通り 1 行で収まる)。
+                      className={`hover:bg-muted/50 flex cursor-pointer flex-wrap items-start gap-2 rounded p-1.5 ${isCursor ? 'ring-primary bg-muted ring-2' : ''}`}
                       data-testid={`today-row-${it.id}`}
                       data-cursor={isCursor ? 'true' : undefined}
                       aria-current={isCursor ? 'true' : undefined}
