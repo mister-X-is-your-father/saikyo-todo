@@ -151,8 +151,11 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
       role="group"
       aria-label={`Sprint「${sprintName}」 担当者 swim-lane (lane ${rows.length} 件)`}
     >
+      {/* iter1053: role 無 div + aria-label の SR picked-up divergence を `role="img"`
+          で authoritative 化 (iter1023/1049/1050/1051/1052 同 pattern)。 */}
       <div
         className="text-muted-foreground text-[11px]"
+        role="img"
         aria-label={`Sprint 全体: ${populationLabel}`}
         data-testid="sprint-swimlane-population"
       >
@@ -172,10 +175,12 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
                     `${row.assigneeRef.actorType}:${row.assigneeRef.actorId.slice(0, 8)}…`)
                   : '未割当'}
               </span>
+              {/* iter1053: 同 pattern で lane chip にも role="img" 付与。 */}
               <span
                 className={
                   row.loadSummary.conflictPairCount > 0 ? 'text-amber-700' : 'text-muted-foreground'
                 }
+                role="img"
                 aria-label={`lane: ${row.loadSummaryJa} / ${row.conflictsJa}`}
               >
                 <span aria-hidden="true">{row.loadSummaryJa}</span>
