@@ -606,10 +606,14 @@ export function GanttView({
                 className="flex shrink-0 items-center gap-2 border-r px-3 text-sm"
                 style={{ width: LABEL_COL_PX }}
               >
-                {/* 行番号 (TeamGantt 風 — 全体把握しやすく) */}
+                {/* 行番号 (TeamGantt 風 — 全体把握しやすく)。
+                    iter1008: 親 div は role="row" + aria-rowindex を持ち SR には
+                    既に position 情報を提供済。visible 番号は装飾なので aria-hidden
+                    で SR の二重読み上げ ("1 / 2 / 3" を title 直前に毎行) を抑止。 */}
                 <span
                   className="text-muted-foreground inline-block w-5 shrink-0 text-right text-xs tabular-nums"
                   data-testid={`gantt-row-num-${idx + 1}`}
+                  aria-hidden="true"
                 >
                   {idx + 1}
                 </span>
