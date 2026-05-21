@@ -49,6 +49,7 @@ import { type DueHitRateStats, dueHitRateToBriefSignal } from '@/features/item/d
 import { type WorkspaceMomentum, workspaceMomentumToBriefSignal } from '@/features/item/momentum'
 import { type OverdueActiveStats, overdueActiveToBriefSignal } from '@/features/item/overdue-active'
 import { type SlipDaysStats, slipDaysToBriefSignal } from '@/features/item/slip-days'
+import { type UrgencyTier, urgencyTierCountsToBriefSignal } from '@/features/item/urgency'
 import { type VelocitySummary, velocityToBriefSignal } from '@/features/item/velocity'
 import { type WaitingSummary, waitingSummaryToBriefSignal } from '@/features/item/waiting-elapsed'
 import {
@@ -132,6 +133,12 @@ export interface AnalyticsSignalsInput {
    * count=0 → idle chip / mild → warn / severe (7d+) → danger。
    */
   slipDays?: SlipDaysStats
+  /**
+   * iter1057 ai-automation: 17 軸目として urgency tier counts (= critical/high/medium/low/none 件数) も統合。
+   * 値は `countItemsByUrgencyTier(items, today)` の出力 (= Record<UrgencyTier, number>)。
+   * critical > 0 → danger / high > 0 → warn / それ以外 → idle (= chip 非表示 progressive disclosure)。
+   */
+  urgencyTierCounts?: Readonly<Record<UrgencyTier, number>>
 }
 
 export interface AnalyticsSignals {
@@ -165,6 +172,8 @@ export interface AnalyticsSignals {
   overdueActive: AgentBriefSignal | null
   /** iter1053 basics: 完了遅延 retrospective chip (= severe 7d+=danger / mild=warn / count=0=idle) */
   slipDays: AgentBriefSignal | null
+  /** iter1057 ai-automation: 緊急度件数 chip (= critical>0=danger / high>0=warn / それ以外=idle) */
+  urgencyTierCounts: AgentBriefSignal | null
 }
 
 const EMPTY: AnalyticsSignals = {
@@ -186,6 +195,7 @@ const EMPTY: AnalyticsSignals = {
   stuckWip: null,
   overdueActive: null,
   slipDays: null,
+  urgencyTierCounts: null,
 }
 
 export function composeAnalyticsSignals(input: AnalyticsSignalsInput): AnalyticsSignals {
@@ -241,6 +251,9 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
   if (input.slipDays) {
     out.slipDays = slipDaysToBriefSignal(input.slipDays)
   }
+  if (input.urgencyTierCounts) {
+    out.urgencyTierCounts = urgencyTierCountsToBriefSignal(input.urgencyTierCounts)
+  }
   return out
 }
 
@@ -261,12 +274,13 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
  * 10. stuckWip           (= 進行中だが停滞、danger=7d+ 停滞、再開 nudge 軸 severity 主)
  * 11. overdueActive      (= 期限超過 active、danger=7d+ or 5+ 件、計画乖離 軸 severity 主)
  * 12. slipDays           (= 完了遅延 retrospective、danger=7d+、見積精度乖離 軸 severity 主)
- * 13. reliability        (= 全体 信頼性 chip)
- * 14. costTrend          (= cost 月次トレンド)
- * 15. velocity           (= 完了ペース、weekly と並ぶ達成感系)
- * 16. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
- * 17. momentum           (= backlog momentum)
- * 18. dominantRole       (= 主軸 role、informational、最後)
+ * 13. urgencyTierCounts  (= 緊急度件数、danger=critical 含む、最優先 actionable 軸 severity 主)
+ * 14. reliability        (= 全体 信頼性 chip)
+ * 15. costTrend          (= cost 月次トレンド)
+ * 16. velocity           (= 完了ペース、weekly と並ぶ達成感系)
+ * 17. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
+ * 18. momentum           (= backlog momentum)
+ * 19. dominantRole       (= 主軸 role、informational、最後)
  */
 export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
@@ -282,6 +296,7 @@ export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSi
     signals.stuckWip,
     signals.overdueActive,
     signals.slipDays,
+    signals.urgencyTierCounts,
     signals.reliability,
     signals.costTrend,
     signals.velocity,

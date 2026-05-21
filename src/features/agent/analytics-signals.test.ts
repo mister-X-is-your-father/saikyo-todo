@@ -164,6 +164,28 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(s.slipDays!.text).toBe('遅延: 1 件 (3日)')
   })
 
+  it('iter1057: urgencyTierCounts critical 含む → danger tone', () => {
+    const counts = { critical: 2, high: 3, medium: 0, low: 0, none: 0 }
+    const s = composeAnalyticsSignals({ urgencyTierCounts: counts })
+    expect(s.urgencyTierCounts).not.toBeNull()
+    expect(s.urgencyTierCounts!.tone).toBe('danger')
+    expect(s.urgencyTierCounts!.text).toContain('緊急 2')
+    expect(s.urgencyTierCounts!.text).toContain('高 3')
+  })
+
+  it('iter1057: urgencyTierCounts high のみ → warn tone', () => {
+    const counts = { critical: 0, high: 1, medium: 0, low: 0, none: 0 }
+    const s = composeAnalyticsSignals({ urgencyTierCounts: counts })
+    expect(s.urgencyTierCounts!.tone).toBe('warn')
+  })
+
+  it('iter1057: urgencyTierCounts 全 0 → idle tone + "0 件" sentinel', () => {
+    const counts = { critical: 0, high: 0, medium: 0, low: 0, none: 0 }
+    const s = composeAnalyticsSignals({ urgencyTierCounts: counts })
+    expect(s.urgencyTierCounts!.tone).toBe('idle')
+    expect(s.urgencyTierCounts!.text).toBe('0 件')
+  })
+
   it('iter1053: slipDays count=0 → idle tone + 0 件 sentinel', () => {
     const s = composeAnalyticsSignals({
       slipDays: { count: 0, avgDays: null, medianDays: null, maxDays: null },
@@ -556,6 +578,7 @@ describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', (
       'stuckWip',
       'overdueActive',
       'slipDays',
+      'urgencyTierCounts',
     ] as const
     expect(Object.keys(empty).sort()).toEqual([...expectedKeys].sort())
     for (const k of expectedKeys) {
