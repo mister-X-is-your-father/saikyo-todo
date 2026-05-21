@@ -163,17 +163,26 @@ export function TaskChuteView({ workspaceId, items }: Props) {
               className="hover:bg-accent/40 group flex items-center gap-2 py-2 transition"
               data-testid={`taskchute-row-${item.id}`}
             >
+              {/* iter1023: 旧 outer span は role 無で aria-label の SR 適用が不確実
+                  (browser / SR で picked-up が分かれる)。`role="img"` を付与し
+                  aria-label を authoritative 化 + 子要素を aria-hidden で SR 重複
+                  排除 (iter98 PDCA / iter417 priority chip と同 pattern)。
+                  「--:--」 visible (timeLabel 無の場合) は aria-hidden で SR が
+                  「ダッシュ ダッシュ コロン」 と読み上げる noise を抑止。 */}
               <span
                 className="text-muted-foreground inline-flex w-12 shrink-0 items-center gap-0.5 font-mono text-[11px] tabular-nums"
+                role="img"
                 aria-label={timeLabel ? `予定時刻 ${timeLabel}` : '時刻未指定'}
               >
                 {timeLabel ? (
                   <>
                     <Clock4 className="h-3 w-3" aria-hidden="true" />
-                    {timeLabel}
+                    <span aria-hidden="true">{timeLabel}</span>
                   </>
                 ) : (
-                  <span className="text-muted-foreground/50">--:--</span>
+                  <span className="text-muted-foreground/50" aria-hidden="true">
+                    --:--
+                  </span>
                 )}
               </span>
               <ItemCheckbox workspaceId={workspaceId} item={item} />
