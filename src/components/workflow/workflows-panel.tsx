@@ -397,7 +397,10 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
           </Button>
           <Button
             size="sm"
-            className="min-h-11"
+            // iter1028: icon-only Button は size="sm" + min-h-11 で高さ 44 OK だが
+            // 幅 36px < 44 で WCAG 2.5.5 違反 (iter1024 active-timer-pause/pip と
+            // 同 hazard)。min-w-11 で両軸 satisfy。
+            className="min-h-11 min-w-11"
             variant="ghost"
             onClick={() => void handleDelete()}
             disabled={del.isPending}
