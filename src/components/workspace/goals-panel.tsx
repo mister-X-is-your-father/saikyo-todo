@@ -387,10 +387,14 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
       <Card role="region" aria-labelledby={`goal-card-heading-${goal.id}`}>
         <CardHeader className="pb-2">
           <div className="flex items-start gap-2">
+            {/* iter1032: 旧 `p-1` (4px) + icon h-4 (16px) で visible 24x24 = WCAG 2.5.5 違反。
+                `::before` pseudo `inset-3` (12px outset) で 24+24=48x48 tap area に拡張。
+                visual size を保ったまま (kanban-edit / activity-detail-toggle / subtask
+                indent と同 pattern)。 */}
             <button
               type="button"
               onClick={() => setOpen((v) => !v)}
-              className="hover:bg-muted focus-visible:ring-ring mt-0.5 rounded p-1 focus-visible:ring-2 focus-visible:outline-none"
+              className="hover:bg-muted focus-visible:ring-ring relative mt-0.5 rounded p-1 before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
               aria-expanded={open}
               aria-controls={`goal-body-${goal.id}`}
               aria-label={`Goal「${goal.title}」の KR ${open ? '一覧を閉じる' : '一覧を開く'}`}
