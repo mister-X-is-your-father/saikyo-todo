@@ -123,6 +123,42 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(s.stuckWip!.tone).toBe('warn')
   })
 
+  it('iter1051: overdueActive severe (7d+) → tone=danger', () => {
+    const stats = {
+      total: 1,
+      byStatus: { todo: 1, in_progress: 0, blocked: 0, unknown: 0 },
+      oldestOverdueDays: 10,
+    }
+    const s = composeAnalyticsSignals({ overdueActive: stats })
+    expect(s.overdueActive).not.toBeNull()
+    expect(s.overdueActive!.tone).toBe('danger')
+    expect(s.overdueActive!.text).toContain('期限超過 1 件')
+    expect(s.overdueActive!.text).toContain('最古 10 日')
+  })
+
+  it('iter1051: overdueActive mild (1-4 件 + 全て < 7d) → tone=warn', () => {
+    const stats = {
+      total: 2,
+      byStatus: { todo: 2, in_progress: 0, blocked: 0, unknown: 0 },
+      oldestOverdueDays: 3,
+    }
+    const s = composeAnalyticsSignals({ overdueActive: stats })
+    expect(s.overdueActive!.tone).toBe('warn')
+  })
+
+  it('iter1051: overdueActive 0 件 → falsy 判定で signal=null (total=0 でも object は truthy ※ Note)', () => {
+    const stats = {
+      total: 0,
+      byStatus: { todo: 0, in_progress: 0, blocked: 0, unknown: 0 },
+      oldestOverdueDays: null,
+    }
+    const s = composeAnalyticsSignals({ overdueActive: stats })
+    // object は truthy なので signal は生成され、tone=idle になる
+    expect(s.overdueActive).not.toBeNull()
+    expect(s.overdueActive!.tone).toBe('idle')
+    expect(s.overdueActive!.text).toBe('期限超過 0 件')
+  })
+
   it('iter1050: stuckWipEntries 空 (= []) → falsy で signal は null のまま', () => {
     const s = composeAnalyticsSignals({ stuckWipEntries: [] })
     // [] is truthy in JS, so we DO compose, and get idle signal
@@ -492,6 +528,7 @@ describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', (
       'weeklyReviewDue',
       'inboxBucketCounts',
       'stuckWip',
+      'overdueActive',
     ] as const
     expect(Object.keys(empty).sort()).toEqual([...expectedKeys].sort())
     for (const k of expectedKeys) {
