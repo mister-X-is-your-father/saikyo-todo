@@ -825,10 +825,13 @@ function ItemEditDialogInner({
                 }
               }}
               data-testid="item-edit-unarchive"
+              // iter1074: visible "アーカイブ復元" は aria-label "アーカイブから復元"
+              // で "から" 挿入で literal substring 不一致 → WCAG 2.5.3 (Label in Name)
+              // 違反。visible-prefix 先頭固定 (iter1068/1071-1073 sweep の続編)。
               aria-label={
                 unarchive.isPending
-                  ? `「${item.title}」をアーカイブから復元中…`
-                  : `「${item.title}」をアーカイブから復元`
+                  ? `復元中… — 「${item.title}」をアーカイブから復元中`
+                  : `アーカイブ復元 — 「${item.title}」をアーカイブから復元`
               }
             >
               <span aria-hidden="true">{unarchive.isPending ? '復元中…' : 'アーカイブ復元'}</span>
