@@ -217,7 +217,10 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
           </Button>
           <Button
             size="sm"
-            className="min-h-11"
+            // iter1029: icon-only Button は `min-h-11` で高さ OK だが幅 36px <
+            // 44 で WCAG 2.5.5 違反 (iter1024/1028 同 hazard、icon-only standard
+            // pattern)。`min-w-11` で両軸 satisfy。
+            className="min-h-11 min-w-11"
             variant="ghost"
             onClick={() => void handleDelete()}
             disabled={del.isPending}
