@@ -387,9 +387,13 @@ function KanbanCard({
       )}
       <div className="mt-2 flex items-center justify-between gap-2">
         {childCount > 0 ? (
+          // iter1059: role 無 span + aria-label を `role="img"` で
+          // authoritative 化 (iter1023/1049-1058 同 pattern、role=img sweep
+          // 12 弾目)。Kanban card 内の子タスク count chip。
           <span
             className="text-muted-foreground bg-muted inline-flex items-center rounded-full px-2 py-0.5 text-[10px]"
             data-testid={`kanban-child-count-${item.id}`}
+            role="img"
             aria-label={`子タスク ${childCount} 件`}
           >
             <span aria-hidden="true">子 {childCount} 件</span>
