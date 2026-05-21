@@ -625,8 +625,12 @@ function SourceImportHistory({ sourceId }: { sourceId: string }) {
           >
             {formatImportTime(r)}
           </time>
+          {/* iter1065: role 無 span + aria-label を `role="img"` で
+              authoritative 化 (iter1023/1049-1064 同 pattern、role=img sweep
+              18 弾目)。Pull count chip。 */}
           <span
             className="text-muted-foreground ml-auto tabular-nums"
+            role="img"
             aria-label={`fetched ${r.fetchedCount} / created ${r.createdCount} / updated ${r.updatedCount}`}
           >
             <span aria-hidden="true">
@@ -652,9 +656,11 @@ function SourceImportHistory({ sourceId }: { sourceId: string }) {
 function ImportStatusBadge({ status }: { status: string }) {
   const label = importStatusLabel(status)
   const cls = importStatusBadgeClass(status)
+  // iter1065: 同 file 内 Pull status badge も役割同期で role=img 化。
   return (
     <span
       className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${cls}`}
+      role="img"
       aria-label={`Pull ステータス: ${label}`}
     >
       <span aria-hidden="true">{label}</span>
