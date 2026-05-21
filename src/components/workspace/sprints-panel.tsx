@@ -510,9 +510,13 @@ function SprintCard({
                 <time dateTime={sprint.endDate}>{formatDateJa(sprint.endDate)}</time>
               </p>
             </div>
+            {/* iter1069: shadcn Badge は role 無 span render で aria-label の SR
+                picked-up が divergence (iter1051 WorkspaceHeader role Badge と同 pattern)。
+                `role="img"` を prop spread で authoritative 化 (role=img sweep 21 弾目)。 */}
             <Badge
               variant={STATUS_COLOR[status]}
               data-testid={`sprint-status-${sprint.id}`}
+              role="img"
               aria-label={`Sprint「${sprint.name}」のステータス: ${sprintStatusLabelJa(status)}`}
             >
               <span aria-hidden="true">{sprintStatusLabelJa(status)}</span>
