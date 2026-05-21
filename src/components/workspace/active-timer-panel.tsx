@@ -185,9 +185,12 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
               estimate / calibrated chip は独立 aria-label を持つため visible のまま。 */}
           <span aria-hidden="true">タスク タイマー</span>
           {estimateMinutes ? (
+            // iter1056: role 無 span + aria-label を `role="img"` で authoritative 化
+            // (iter1023/1049-1055 同 pattern、隣の calibrated chip と同 role=img に揃え)。
             <span
               className="ml-1 rounded bg-cyan-100 px-1 text-[9px] text-cyan-700"
               data-testid="active-timer-estimate"
+              role="img"
               aria-label={`見積 ${estimateMinutes}分`}
             >
               <span aria-hidden="true">見積 {estimateMinutes}分</span>
