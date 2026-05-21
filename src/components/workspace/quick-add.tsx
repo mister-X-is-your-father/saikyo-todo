@@ -232,9 +232,13 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
             </span>
           ))}
           {preview.estimateMinutes && (
+            // iter1062: 隣の calibrated chip (iter441) が既 `role="img"` だったので
+            // consistency を揃え、見積 chip にも `role="img"` 付与 (role=img sweep 15 弾目、
+            // iter1023/1049-1061 同 pattern)。
             <span
               className="rounded bg-cyan-100 px-1.5 py-0.5 text-cyan-700"
               data-testid="quick-add-estimate"
+              role="img"
               aria-label={`見積 ${formatEstimate(preview.estimateMinutes)}`}
             >
               <span aria-hidden="true">🕐 {formatEstimate(preview.estimateMinutes)}</span>
