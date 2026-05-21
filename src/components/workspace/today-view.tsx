@@ -231,8 +231,12 @@ export function TodayView({
                       </div>
                       <div className="text-muted-foreground flex shrink-0 items-center gap-2 text-xs">
                         {it.dueTime && (
+                          // iter1057: role 無 span + aria-label を `role="img"` で
+                          // authoritative 化 (iter1023/1049-1056 同 pattern、role=img sweep
+                          // 10 弾目)。
                           <span
                             className="tabular-nums"
+                            role="img"
                             aria-label={`期限時刻 ${it.dueTime.slice(0, 5)}`}
                           >
                             <span aria-hidden="true">{it.dueTime.slice(0, 5)}</span>
@@ -243,7 +247,12 @@ export function TodayView({
                           // inner `<time dateTime>` が HTML5 semantic として SR / AT
                           // に伝える単一 source。iter435 / iter436 で title= 系 date
                           // 表示を統一。
-                          <span className="text-red-600" aria-label={`期限 ${it.dueDate}`}>
+                          // iter1057: 同 role="img" 付与で aria-label authoritative 化。
+                          <span
+                            className="text-red-600"
+                            role="img"
+                            aria-label={`期限 ${it.dueDate}`}
+                          >
                             <span aria-hidden="true">
                               期限{' '}
                               <time dateTime={it.dueDate}>
