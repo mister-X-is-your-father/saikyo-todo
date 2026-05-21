@@ -35,16 +35,13 @@ export function WorkspaceHeader({ title, role, subtitle, pageActions, utility }:
             <span aria-hidden="true">{role}</span>
           </Badge>
         </div>
-        {/* iter1047: subtitle (= user email) は SR が raw email を読み上げるだけで
-            「これがログイン中アカウント」 という context が伝わらないため、aria-label で
-            semantic 補強。truncate で visible は短縮されることもあるが、aria-label の
-            full email は完全 SR 経路で届く。 */}
-        <p
-          className="text-muted-foreground mt-1 truncate text-xs"
-          aria-label={subtitle ? `ログイン中アカウント: ${subtitle}` : undefined}
-        >
-          {subtitle}
-        </p>
+        {/* iter1048: iter1047 で `aria-label="ログイン中アカウント: ${subtitle}"` を付けたが、
+            Sprints / PDCA / Workflows / etc page で subtitle が `<context> · <email>` 形式の
+            場合に "ログイン中アカウント: 計画 → 稼働 → 完了 · email" の mis-label に
+            なる divergence (visible 内容と aria-label semantic 不一致)。subtitle 構造は
+            page 依存固定で「常に email」 ではないため固定 prefix 化が誤り。aria-label 撤回
+            で SR は visible text を直接読む元 behavior に restore。 */}
+        <p className="text-muted-foreground mt-1 truncate text-xs">{subtitle}</p>
       </div>
       <div
         className="flex flex-wrap items-center gap-2"
