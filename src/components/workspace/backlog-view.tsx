@@ -283,9 +283,13 @@ export function BacklogView({ workspaceId, items }: Props) {
   return (
     <>
       <div className="mb-2 flex items-center gap-2">
+        {/* iter1060: role 無 span + aria-label を `role="img"` で
+            authoritative 化 (iter1023/1049-1059 同 pattern、role=img sweep
+            13 弾目)。Backlog 見積サマリ chip。 */}
         <span
           className="bg-muted text-muted-foreground inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs"
           data-testid="backlog-estimate-summary"
+          role="img"
           aria-label={`Backlog 見積サマリ: ${estimateSummary}`}
         >
           <span aria-hidden="true">⏱</span>
