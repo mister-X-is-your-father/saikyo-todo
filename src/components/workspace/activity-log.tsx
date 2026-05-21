@@ -101,11 +101,17 @@ export function ActivityLog({ itemId }: { itemId: string }) {
             <ActivityIcon className="h-3 w-3" aria-hidden="true" />
             <span aria-hidden="true">{summary}</span>
           </div>
+          {/* iter1063: role 無 span + aria-label を `role="img"` で
+              authoritative 化 (iter1023/1049-1062 同 pattern、role=img sweep
+              16 弾目)。Activity log の hint + top-actor chip 2 件をまとめて
+              統一 (activity-log 内 実行者 chip は iter1049 で既 role=img、
+              これで activity-log 全 chip 揃った)。 */}
           {hint && (
             <span
               className={`rounded border px-2 py-0.5 text-[11px] font-medium ${hint.chipClass}`}
               data-testid="activity-log-hint"
               data-severity={hint.severity}
+              role="img"
               aria-label={`Activity 状態: ${hint.label}`}
             >
               <span aria-hidden="true">{hint.label}</span>
@@ -115,6 +121,7 @@ export function ActivityLog({ itemId }: { itemId: string }) {
             <span
               className="inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] text-emerald-700"
               data-testid="activity-log-top-actor"
+              role="img"
               aria-label={formatTopActorJa(topActor)}
               title={formatTopActorJa(topActor)}
             >
