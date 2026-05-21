@@ -9,6 +9,7 @@ import {
   gtdBucketLabelJa,
   gtdBucketSeverity,
   gtdBucketToBriefSignal,
+  inboxHealthToBriefSignal,
   type InboxItemFields,
   summarizeInbox,
 } from './inbox-process'
@@ -370,5 +371,45 @@ describe('formatInboxHealthHintJa', () => {
     for (let i = 0; i < 100; i++) items.push(mk({ id: `n${i}`, title: `t${i}` }))
     const sev = summarizeInbox(items)
     expect(formatInboxHealthHintJa(sev)).toBe('要 process')
+  })
+})
+
+describe('inboxHealthToBriefSignal (iter1046)', () => {
+  it('空 inbox → idle tone + "空 (process 済)" text', () => {
+    const empty = summarizeInbox([])
+    const signal = inboxHealthToBriefSignal(empty)
+    expect(signal.tone).toBe('idle')
+    expect(signal.text).toBe('Inbox: 空 (process 済)')
+  })
+
+  it('健全 (mild = 数件) → success tone + "健全" text', () => {
+    // 3 件 だけ active actionable (immediate 候補にならないよう estimateMin=null)
+    const items = [
+      mk({ id: '1', title: 'a', hasSubtasks: false }),
+      mk({ id: '2', title: 'b', hasSubtasks: false }),
+      mk({ id: '3', title: 'c', hasSubtasks: false }),
+    ]
+    const summary = summarizeInbox(items)
+    const signal = inboxHealthToBriefSignal(summary)
+    expect(signal.tone).toBe('success')
+    expect(signal.text).toBe('Inbox: 健全')
+  })
+
+  it('要 process (severe = 100+ 件) → danger tone + "要 process" text', () => {
+    const items: InboxItemFields[] = []
+    for (let i = 0; i < 100; i++) items.push(mk({ id: `n${i}`, title: `t${i}` }))
+    const summary = summarizeInbox(items)
+    const signal = inboxHealthToBriefSignal(summary)
+    expect(signal.tone).toBe('danger')
+    expect(signal.text).toBe('Inbox: 要 process')
+  })
+
+  it('滞留気味 (moderate = 30+ 件) → warn tone + "滞留気味" text', () => {
+    const items: InboxItemFields[] = []
+    for (let i = 0; i < 35; i++) items.push(mk({ id: `n${i}`, title: `t${i}` }))
+    const summary = summarizeInbox(items)
+    const signal = inboxHealthToBriefSignal(summary)
+    expect(signal.tone).toBe('warn')
+    expect(signal.text).toBe('Inbox: 滞留気味')
   })
 })

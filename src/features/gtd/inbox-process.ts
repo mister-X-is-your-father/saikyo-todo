@@ -391,3 +391,43 @@ export function formatInboxHealthHintJa<T extends InboxItemFields>(
 ): string {
   return INBOX_HEALTH_LABEL_JA[classifyInboxHealthHint(summary)]
 }
+
+/**
+ * iter1046 basics: Inbox 健全性を `AgentBriefSignal` 形式 (text + tone) に変換する
+ * compose helper。
+ *
+ * iter1025/1031/1035/1038/1040 等 `*ToBriefSignal` pattern (= 12+ axes 弾) の Inbox
+ * 軸版で AI 朝 brief / Slack daily digest / dashboard chip area に 1 chip 渡せる。
+ *
+ *   - text: `formatInboxHealthHintJa(summary)` (= '空 (process 済)' / '健全' / '滞留気味' / '要 process')
+ *   - tone: `classifyInboxHealthHint` → `fourStateHintToSeverity` → `severityToChipTone`
+ *           (iter495 + iter1039 の 2 bridge を経由、'mild' → 'ok' → 'success' で
+ *            healthy を positive framing)
+ *
+ *   'idle'     → 'idle'    (= 空、attention 不要)
+ *   'mild'     → 'success' (= 健全、positive)
+ *   'moderate' → 'warn'    (= 滞留気味)
+ *   'severe'   → 'danger'  (= 要 process)
+ *
+ * caller pattern:
+ *   const summary = summarizeInbox(inboxItems)
+ *   const signal = inboxHealthToBriefSignal(summary)
+ *   // → composeAnalyticsSignals 風に concat、または単独 chip render
+ *
+ * 用途:
+ *   - GTD mode dashboard 上部の「Inbox 健全性」 chip
+ *   - AI 朝 brief / Slack daily digest 「Inbox: 滞留気味」 signal
+ *   - analytics-signals.ts の 13 軸目候補 (次 iter integration 想定)
+ */
+import { fourStateHintToSeverity, severityToChipTone } from '@/lib/widget/severity-bridges'
+
+export function inboxHealthToBriefSignal<T extends InboxItemFields>(
+  summary: InboxBucketSummary<T>,
+): AgentBriefSignal {
+  const hint = classifyInboxHealthHint(summary)
+  const severity = fourStateHintToSeverity(hint)
+  return {
+    text: `Inbox: ${formatInboxHealthHintJa(summary)}`,
+    tone: severityToChipTone(severity),
+  }
+}
