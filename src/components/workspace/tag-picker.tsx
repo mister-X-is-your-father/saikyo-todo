@@ -82,9 +82,12 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
           disabled={disabled}
           data-testid="tag-picker-trigger"
           className="min-h-11 justify-start gap-2"
+          // iter1072: 未選択時 visible "タグなし" が aria-label "タグを選択
+          // (現在なし)" の literal substring 不一致 → WCAG 2.5.3 違反。
+          // visible-prefix を先頭に固定 (iter1068 / iter1071 と同 sweep)。
           aria-label={
             selectedLabels.length === 0
-              ? 'タグを選択 (現在なし)'
+              ? 'タグなし — タグを選択 (現在なし)'
               : `タグを選択 (現在 ${selectedLabels.length} 件: ${selectedLabels
                   .filter((t): t is NonNullable<typeof t> => Boolean(t))
                   .map((t) => t.name)
