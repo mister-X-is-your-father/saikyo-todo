@@ -8,7 +8,9 @@ import {
   formatSlipDaysTitlesJa,
   pickSlipDaysItems,
   type SlipDaysByPriorityFields,
+  slipDaysChipTone,
   type SlipDaysFields,
+  slipDaysToBriefSignal,
   slipSeverity,
 } from './slip-days'
 
@@ -152,6 +154,60 @@ describe('slipSeverity', () => {
 
   it('returns "mild" for empty (count=0 / maxDays=null)', () => {
     expect(slipSeverity({ count: 0, avgDays: null, medianDays: null, maxDays: null })).toBe('mild')
+  })
+})
+
+describe('slipDaysChipTone (iter1052)', () => {
+  it('count=0 → idle tone', () => {
+    expect(slipDaysChipTone({ count: 0, avgDays: null, medianDays: null, maxDays: null })).toBe(
+      'idle',
+    )
+  })
+
+  it('mild (maxDays < 7) → warn tone', () => {
+    expect(slipDaysChipTone({ count: 1, avgDays: 3, medianDays: 3, maxDays: 3 })).toBe('warn')
+    expect(slipDaysChipTone({ count: 5, avgDays: 4, medianDays: 4, maxDays: 6 })).toBe('warn')
+  })
+
+  it('severe (maxDays >= 7) → danger tone', () => {
+    expect(slipDaysChipTone({ count: 1, avgDays: 7, medianDays: 7, maxDays: 7 })).toBe('danger')
+    expect(slipDaysChipTone({ count: 3, avgDays: 10, medianDays: 8, maxDays: 14 })).toBe('danger')
+  })
+})
+
+describe('slipDaysToBriefSignal (iter1052)', () => {
+  it('count=0 → idle tone + sentinel text', () => {
+    const signal = slipDaysToBriefSignal({
+      count: 0,
+      avgDays: null,
+      medianDays: null,
+      maxDays: null,
+    })
+    expect(signal.tone).toBe('idle')
+    expect(signal.text).toBe('遅延 0 件')
+  })
+
+  it('severe → danger tone + multi-stat text', () => {
+    const signal = slipDaysToBriefSignal({
+      count: 3,
+      avgDays: 5,
+      medianDays: 4,
+      maxDays: 14,
+    })
+    expect(signal.tone).toBe('danger')
+    expect(signal.text).toContain('遅延: 3 件')
+    expect(signal.text).toContain('最大 14日')
+  })
+
+  it('mild → warn tone + 単一 short form', () => {
+    const signal = slipDaysToBriefSignal({
+      count: 1,
+      avgDays: 3,
+      medianDays: 3,
+      maxDays: 3,
+    })
+    expect(signal.tone).toBe('warn')
+    expect(signal.text).toBe('遅延: 1 件 (3日)')
   })
 })
 

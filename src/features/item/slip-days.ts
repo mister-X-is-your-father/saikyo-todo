@@ -22,6 +22,9 @@
 import { dueDateEndOfDayMs, MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { formatTitleDaysListJa } from '@/lib/format-list'
 import { round1 } from '@/lib/round-decimal'
+import type { ChipTone } from '@/lib/ui/chip-tone'
+
+import type { AgentBriefSignal } from '@/features/agent/brief-signal'
 
 import { bucketByPriorityWith, formatPriorityBucketsLabeled, type PriorityKey } from './priority'
 
@@ -116,6 +119,47 @@ export function formatSlipDaysJa(stats: SlipDaysStats): string {
     return `遅延: 1 件 (${stats.maxDays}日)`
   }
   return `遅延: ${stats.count} 件 (平均 ${stats.avgDays}日 / 中央値 ${stats.medianDays}日 / 最大 ${stats.maxDays}日)`
+}
+
+/**
+ * iter1052 ai-automation: SlipDaysStats → 共通 `ChipTone` bridge。
+ *
+ *   - count=0 (= 遅延 0 件)         → 'idle'   (= 灰、attention 不要)
+ *   - severe (= maxDays >= 7 日)    → 'danger' (= 赤、重度遅延)
+ *   - mild   (= 0 < maxDays < 7)    → 'warn'   (= 黄、中程度遅延)
+ *
+ * iter1047 stuckWip / iter1049 overdueActive と同 'severe'|'mild' bridge 構造 +
+ * count=0 chip 非表示の代わりに idle tone (= AnalyticsSignals 統合時に idle filter)。
+ * `formatSlipDaysJa` と整合する tone 軸で AgentBriefSignal / dashboard chip-tone bind 用。
+ */
+export function slipDaysChipTone(stats: SlipDaysStats): ChipTone {
+  if (stats.count === 0) return 'idle'
+  return slipSeverity(stats) === 'severe' ? 'danger' : 'warn'
+}
+
+/**
+ * iter1052 ai-automation: SlipDaysStats → `AgentBriefSignal` (text + tone) compose helper。
+ *
+ * iter1025/1031/1035/1038/1040/1046/1047/1049 等 `*ToBriefSignal` pattern (= 15 axes 弾) の
+ * 完了遅延軸版。text は iter347 `formatSlipDaysJa` を再利用 (= '遅延: 5 件 (平均 3.4日 /
+ * 中央値 2日 / 最大 12日)' / '遅延 0 件')、tone は本 iter `slipDaysChipTone` を再利用
+ * (= chip 配色と signal tone が完全一致)。
+ *
+ * caller pattern:
+ *   const stats = computeSlipDays(items, { since })
+ *   const signal = slipDaysToBriefSignal(stats)
+ *   // → composeAnalyticsSignals 風に concat、または単独 chip render
+ *
+ * 用途:
+ *   - AI 朝 brief / Slack daily digest 「遅延: 5 件 (...)」 retrospective signal
+ *   - dashboard chip 「完了遅延」 tone 統一
+ *   - analytics-signals.ts の 16 軸目候補 (次 iter integration 想定)
+ */
+export function slipDaysToBriefSignal(stats: SlipDaysStats): AgentBriefSignal {
+  return {
+    text: formatSlipDaysJa(stats),
+    tone: slipDaysChipTone(stats),
+  }
 }
 
 /**
