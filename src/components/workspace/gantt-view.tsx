@@ -467,7 +467,12 @@ export function GanttView({
           >
             Item
           </div>
-          <div style={{ width: timelineWidth }} className="flex">
+          {/* iter1009: timeline header の M/d 日付 ruler は sighted 用の視覚 subdivision
+              (親 grid の aria-colcount=2 は Item + Timeline の 2 列を宣言、日付は
+              Timeline 列の subdivision)。各 bar の aria-label に開始 / 終了日付が
+              既に含まれているため SR では装飾扱いに固定し、container ごと aria-hidden
+              で「5/21 5/22 5/23 …」の連続読み上げ noise を抑止する。 */}
+          <div style={{ width: timelineWidth }} className="flex" aria-hidden="true">
             {days.map((d, i) => {
               const dow = d.getDay() // 0=Sun / 6=Sat
               const isWeekend = dow === 0 || dow === 6
