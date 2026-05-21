@@ -65,8 +65,15 @@ export function BulkActionBar({ workspaceId }: Props) {
   }
 
   return (
+    // iter1025: mobile 320px viewport で bar 内容 width が 416px に膨らみ、
+    // `fixed left-1/2 -translate-x-1/2` の bar.left が -48px (viewport 左端を超える)、
+    // bar.right=368px > viewport 320px overflow になっていた (iter1024
+    // ActiveTimerPanel と同 hazard)。`max-w-[calc(100vw-2rem)]` で右 16px + 左 16px
+    // margin を引いた viewport 内に常時収め + 内部 `overflow-x-auto` で button 群が
+    // 横スクロール可 (touch swipe で 5 status + 削除 + 解除 全部にアクセス可能、
+    // 旧 1 行 layout を保ったまま viewport 制限を満たす)。desktop は max-w が大きく効かず元レイアウト維持。
     <div
-      className="bg-background fixed bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-lg border px-4 py-2 shadow-lg"
+      className="bg-background fixed bottom-4 left-1/2 z-40 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-2 overflow-x-auto rounded-lg border px-4 py-2 shadow-lg"
       data-testid="bulk-action-bar"
       role="region"
       aria-label={`一括操作 (${count} 件選択中)`}
