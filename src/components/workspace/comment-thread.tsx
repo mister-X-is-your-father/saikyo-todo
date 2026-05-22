@@ -253,7 +253,9 @@ function CommentItem({
               className="min-h-11"
               onClick={() => setEditing(false)}
               data-testid={`comment-edit-cancel-${comment.id}`}
-              aria-label="コメントの編集をキャンセル"
+              // iter1104: visible-prefix sweep (iter1093-1103) を comment-* button にも展開
+              // 旧 aria-label は visible 末尾持ちで voice control prefix-matching match 不可
+              aria-label="キャンセル — コメントの編集を破棄"
             >
               <span aria-hidden="true">キャンセル</span>
             </Button>
@@ -270,8 +272,8 @@ function CommentItem({
                 !body.trim()
                   ? 'コメントを保存するには本文を入力してください'
                   : update.isPending
-                    ? 'コメントの編集を保存中…'
-                    : 'コメントの編集を保存 (Cmd/Ctrl+Enter でも可)'
+                    ? '保存中… — コメントの編集を保存中'
+                    : '保存 — コメントの編集を保存 (Cmd/Ctrl+Enter でも可)'
               }
             >
               <span aria-hidden="true">保存</span>
@@ -297,7 +299,7 @@ function CommentItem({
                 disabled={softDelete.isPending}
                 aria-busy={softDelete.isPending || undefined}
                 data-testid={`comment-edit-${comment.id}`}
-                aria-label={`コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を編集`}
+                aria-label={`編集 — コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を編集`}
               >
                 <span aria-hidden="true">編集</span>
               </button>
@@ -310,8 +312,8 @@ function CommentItem({
                 data-testid={`comment-delete-${comment.id}`}
                 aria-label={
                   softDelete.isPending
-                    ? `コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を削除中…`
-                    : `コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を削除`
+                    ? `削除中… — コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を削除中`
+                    : `削除 — コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を削除`
                 }
               >
                 <span aria-hidden="true">削除</span>
