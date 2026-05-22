@@ -167,7 +167,11 @@ export function MockSubmitForm() {
             : '工数を送信 (mock-timesheet 入力フォーム)'
         }
       >
-        <span aria-hidden="true">{isPending ? '送信中...' : '送信'}</span>
+        {/* iter1081: visible は ASCII '...' だったが aria-label は U+2026 '…' を使っていて
+            literal substring 不一致 = WCAG 2.5.3 違反 + voice control「click 送信中…」 matching 不可。
+            iter1078 mock-login-form の同 pattern fix を mock-submit-form にも展開、
+            Unicode '…' に統一して codebase convention (login-form / signup-form / mock-login-form) と合わせる。 */}
+        <span aria-hidden="true">{isPending ? '送信中…' : '送信'}</span>
       </Button>
       {lastRef && (
         // iter444: 送信成功後の external_ref 表示を SR にも届ける。toast.success
