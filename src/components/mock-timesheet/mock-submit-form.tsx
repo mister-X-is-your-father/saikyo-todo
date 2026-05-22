@@ -65,11 +65,16 @@ export function MockSubmitForm() {
     >
       <div className="space-y-2">
         <Label htmlFor="tsDate">勤務日</Label>
+        {/* iter1084: zod schema (workDate: ISO_DATE_RE 必須) と form 表示の required signal
+            を一致させ、SR / browser assistive tech に「必須」を伝える。login-form / signup-form
+            と同 pattern (required + aria-required="true")。 */}
         <IMEInput
           id="tsDate"
           type="date"
           className="h-11"
           enterKeyHint="next"
+          required
+          aria-required="true"
           aria-invalid={form.formState.errors.workDate ? true : undefined}
           aria-describedby={form.formState.errors.workDate ? 'tsDate-error' : undefined}
           {...form.register('workDate')}
@@ -84,6 +89,8 @@ export function MockSubmitForm() {
         <Label htmlFor="tsCategory">カテゴリ</Label>
         <select
           id="tsCategory"
+          required
+          aria-required="true"
           aria-invalid={form.formState.errors.category ? true : undefined}
           aria-describedby={form.formState.errors.category ? 'tsCategory-error' : undefined}
           aria-label={`カテゴリ (現在: ${TIME_ENTRY_CATEGORIES.find((c) => c.key === form.watch('category'))?.label ?? form.watch('category')})`}
@@ -137,6 +144,8 @@ export function MockSubmitForm() {
           min="0.25"
           max="24"
           enterKeyHint="send"
+          required
+          aria-required="true"
           aria-invalid={form.formState.errors.hoursDecimal ? true : undefined}
           aria-describedby={
             form.formState.errors.hoursDecimal ? 'tsHours-hint tsHours-error' : 'tsHours-hint'
