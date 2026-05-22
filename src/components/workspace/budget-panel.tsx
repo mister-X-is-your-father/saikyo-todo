@@ -285,6 +285,10 @@ export function BudgetPanel({ workspaceId }: Props) {
               role="group"
               aria-label="AI 月次コスト上限編集の操作 (キャンセル / 保存)"
             >
+              {/* iter1102: budget-edit-cancel / budget-save-btn の旧 aria-label は visible
+                  "キャンセル" / "保存" / "保存中…" を末尾持ち、voice control prefix-matching
+                  「click 保存/キャンセル」 match 不可。iter1093-1101 sweep convention で
+                  visible 冒頭固定。 */}
               <Button
                 type="button"
                 size="sm"
@@ -293,7 +297,7 @@ export function BudgetPanel({ workspaceId }: Props) {
                 onClick={() => setEditing(false)}
                 disabled={update.isPending}
                 data-testid="budget-edit-cancel"
-                aria-label="AI 月次コスト上限の編集をキャンセル"
+                aria-label="キャンセル — AI 月次コスト上限の編集を破棄"
               >
                 <span aria-hidden="true">キャンセル</span>
               </Button>
@@ -306,8 +310,8 @@ export function BudgetPanel({ workspaceId }: Props) {
                 data-testid="budget-save-btn"
                 aria-label={
                   update.isPending
-                    ? 'AI 月次コスト上限を保存中…'
-                    : 'AI 月次コスト上限と警告閾値を保存'
+                    ? '保存中… — AI 月次コスト上限を保存中'
+                    : '保存 — AI 月次コスト上限と警告閾値を保存'
                 }
               >
                 <span aria-hidden="true">{update.isPending ? '保存中…' : '保存'}</span>
