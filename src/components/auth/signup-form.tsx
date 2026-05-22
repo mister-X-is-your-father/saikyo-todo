@@ -146,6 +146,9 @@ export function SignupForm() {
           </p>
         )}
       </div>
+      {/* iter1093: 既存 aria-label は visible label を末尾 () 内に持っていたため、
+          voice control「click サインアップ」 が prefix-matching engine で match 不可。
+          iter1034-1077 visible-prefix sweep の convention に合わせ visible を冒頭固定。 */}
       <Button
         type="submit"
         className="h-11 w-full"
@@ -154,8 +157,8 @@ export function SignupForm() {
         data-testid="signup-submit"
         aria-label={
           isPending
-            ? 'アカウント作成中… (サインアップ処理を実行中)'
-            : 'アカウントを作成 (サインアップ)'
+            ? '作成中… — アカウント作成中 (サインアップ処理を実行中)'
+            : 'サインアップ — アカウントを作成'
         }
       >
         <span aria-hidden="true">{isPending ? '作成中…' : 'サインアップ'}</span>
