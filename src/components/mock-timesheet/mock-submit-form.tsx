@@ -164,6 +164,10 @@ export function MockSubmitForm() {
           </p>
         )}
       </div>
+      {/* iter1094: 旧 default aria-label "工数を送信 (...)" は visible "送信" を "工数を**送信**"
+          位置 (= prefix では無く middle) に持ち、voice control prefix-matching で「click 送信」
+          match 不可。iter1093 signup-form / iter1034-1077 sweep の visible-prefix convention に
+          合わせ visible を冒頭固定。pending state ("送信中…") は既に prefix なので維持。 */}
       <Button
         id="tsSubmit"
         type="submit"
@@ -173,7 +177,7 @@ export function MockSubmitForm() {
         aria-label={
           isPending
             ? '送信中… (mock-timesheet 工数送信処理を実行中)'
-            : '工数を送信 (mock-timesheet 入力フォーム)'
+            : '送信 — 工数を送信 (mock-timesheet 入力フォーム)'
         }
       >
         {/* iter1081: visible は ASCII '...' だったが aria-label は U+2026 '…' を使っていて
