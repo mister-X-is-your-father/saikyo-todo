@@ -148,6 +148,9 @@ export function InstantiateForm({ workspaceId, template }: Props) {
           変数なし (そのまま展開)
         </p>
       )}
+      {/* iter1098: 旧 aria-label "Template「name」を即実行 (Instantiate)" / "...を展開中…" は
+          visible "即実行 (Instantiate)" / "展開中…" を末尾に持ち、voice control prefix-matching
+          で「click 即実行」 match 不可。iter1093-1097 sweep convention に合わせ visible 冒頭固定。 */}
       <Button
         type="submit"
         size="sm"
@@ -156,8 +159,8 @@ export function InstantiateForm({ workspaceId, template }: Props) {
         aria-busy={mut.isPending || undefined}
         aria-label={
           mut.isPending
-            ? `Template「${template.name}」を展開中…`
-            : `Template「${template.name}」を即実行 (Instantiate)`
+            ? `展開中… — Template「${template.name}」を即実行中`
+            : `即実行 (Instantiate) — Template「${template.name}」をワークパッケージとして展開`
         }
       >
         {/* iter1083: visible は ASCII '...' だったが aria-label は U+2026 '…' を使っていて
