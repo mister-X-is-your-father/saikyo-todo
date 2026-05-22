@@ -89,10 +89,12 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
           disabled={disabled}
           data-testid="assignee-picker-trigger"
           className="min-h-11 justify-start gap-2"
+          // iter1123: visible "未アサイン" / member names を aria-label 冒頭固定
+          // (iter1072 tag-picker pioneer + iter1093-1122 sweep convention)。
           aria-label={
             selectedLabels.length === 0
-              ? 'アサインを選択 (現在未アサイン)'
-              : `アサインを選択 (現在 ${selectedLabels.length} 件: ${selectedLabels.join(', ')})`
+              ? '未アサイン — アサインを選択 (現在未アサイン)'
+              : `${selectedLabels.join(', ')} — アサインを選択 (現在 ${selectedLabels.length} 件)`
           }
           aria-expanded={open}
           aria-haspopup="listbox"
