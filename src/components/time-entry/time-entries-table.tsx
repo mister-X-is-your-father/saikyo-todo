@@ -122,9 +122,13 @@ export function TimeEntriesTable({
               <td className="py-2">
                 <SyncBadge status={e.syncStatus} />
                 {e.syncError && (
+                  // iter1079 basics: role="img" 付与で SR aria-label authoritative 化
+                  // 26 弾目 (iter1023/1049-1078 sweep 続編)。sync-error の inline 表示
+                  // は role 無 div + aria-label のみで SR picked-up divergence。
                   <div
                     className="text-muted-foreground mt-1 max-w-[220px] truncate text-[10px]"
                     title={e.syncError}
+                    role="img"
                     aria-label={`同期エラー: ${e.syncError}`}
                     data-testid={`sync-error-${e.id}`}
                   >
