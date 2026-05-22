@@ -313,12 +313,14 @@ export function SprintsPanel({ workspaceId }: Props) {
                 aria-busy={createMut.isPending || undefined}
                 data-testid="sprint-create-btn"
                 aria-keyshortcuts="Meta+Enter Control+Enter"
+                // iter1111: visible "作成" / "作成中…" を aria-label 冒頭固定 (iter1093-1110 sweep)。
+                // empty-title path は disabled で voice click 不発、visible-prefix sweep 対象外。
                 aria-label={
                   !name.trim()
                     ? 'Sprint を作成するには名前を入力してください'
                     : createMut.isPending
-                      ? 'Sprint を作成中…'
-                      : 'Sprint を新規作成'
+                      ? '作成中… — Sprint を作成中'
+                      : '作成 — Sprint を新規作成'
                 }
               >
                 <span aria-hidden="true">{createMut.isPending ? '作成中…' : '作成'}</span>
