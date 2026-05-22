@@ -43,6 +43,7 @@ async function main() {
   const lines = src.split('\n')
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
+    if (!line) continue
     // コメント行は除外
     if (line.trim().startsWith('//') || line.trim().startsWith('*')) continue
     // 純 zod 呼び出し `.max(500)` (引数 1 個 = ja message 無し) を検出

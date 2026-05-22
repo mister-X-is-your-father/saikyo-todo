@@ -15,10 +15,15 @@ const TemplateKind = z.enum(['manual', 'recurring'])
  * cron syntax の厳密チェックはしない (pg_cron に任せる)。
  * recurring kind の時だけ scheduleCron が必須。
  */
+// iter1130: name.max(200) / item title.max(500) / description.max(2000) には ja message が無く
+// zod default 英語が露出。iter1086/1092/1126-1129 ja convention で全 max 制約に ja message 付与。
 export const CreateTemplateInputSchema = z
   .object({
     workspaceId: z.string().uuid(),
-    name: z.string().min(1, '名前を入力してください').max(200),
+    name: z
+      .string()
+      .min(1, 'Template 名を入力してください')
+      .max(200, 'Template 名は 200 文字以内で入力してください'),
     description: z.string().default(''),
     kind: TemplateKind.default('manual'),
     scheduleCron: z.string().nullish(),
@@ -42,7 +47,11 @@ export const UpdateTemplateInputSchema = z.object({
   expectedVersion: z.number().int().nonnegative(),
   patch: z
     .object({
-      name: z.string().min(1).max(200).optional(),
+      name: z
+        .string()
+        .min(1, 'Template 名を入力してください')
+        .max(200, 'Template 名は 200 文字以内で入力してください')
+        .optional(),
       description: z.string().optional(),
       kind: TemplateKind.optional(),
       scheduleCron: z.string().nullish(),
@@ -63,7 +72,10 @@ export type SoftDeleteTemplateInput = z.infer<typeof SoftDeleteTemplateInputSche
 export const AddTemplateItemInputSchema = z
   .object({
     templateId: z.string().uuid(),
-    title: z.string().min(1, 'タイトルを入力してください').max(500),
+    title: z
+      .string()
+      .min(1, 'タイトルを入力してください')
+      .max(500, 'タイトルは 500 文字以内で入力してください'),
     description: z.string().default(''),
     parentPath: z.string().default(''), // 空 = root
     statusInitial: z.string().default('todo'),
@@ -84,7 +96,11 @@ export const UpdateTemplateItemInputSchema = z.object({
   id: z.string().uuid(),
   patch: z
     .object({
-      title: z.string().min(1).max(500).optional(),
+      title: z
+        .string()
+        .min(1, 'タイトルを入力してください')
+        .max(500, 'タイトルは 500 文字以内で入力してください')
+        .optional(),
       description: z.string().optional(),
       parentPath: z.string().optional(),
       statusInitial: z.string().optional(),
@@ -115,8 +131,12 @@ export type RemoveTemplateItemInput = z.infer<typeof RemoveTemplateItemInputSche
  */
 export const CreateTemplateFromItemInputSchema = z.object({
   itemId: z.string().uuid(),
-  name: z.string().min(1).max(200).optional(),
-  description: z.string().max(2000).optional(),
+  name: z
+    .string()
+    .min(1, 'Template 名を入力してください')
+    .max(200, 'Template 名は 200 文字以内で入力してください')
+    .optional(),
+  description: z.string().max(2000, '説明は 2000 文字以内で入力してください').optional(),
 })
 export type CreateTemplateFromItemInput = z.infer<typeof CreateTemplateFromItemInputSchema>
 
