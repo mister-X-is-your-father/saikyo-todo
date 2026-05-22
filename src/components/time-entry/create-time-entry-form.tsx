@@ -170,7 +170,12 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           disabled={create.isPending}
           aria-busy={create.isPending || undefined}
           data-testid="create-time-entry-submit"
-          aria-label={create.isPending ? '稼働記録を作成中…' : '稼働記録を作成'}
+          // iter1113: visible "記録" を aria-label 冒頭固定 (iter1093-1112 sweep)。
+          // 旧 default "稼働記録を作成" は visible "記録" を "稼働**記録**" 中位置に持ち、
+          // voice control prefix-matching「click 記録」 match 不可。pending state visible "…"
+          // (1 char) は aria-label 末尾の "…" と substring 一致するが prefix では無いため、
+          // visible は短すぎて pure prefix 化が冗長 (記録中… のような visible は無い) — substring 維持。
+          aria-label={create.isPending ? '稼働記録を作成中…' : '記録 — 稼働記録を作成'}
           className="h-11 px-4"
         >
           {/* iter1090: visible は ASCII '...' (U+002E×3) で aria-label は U+2026 '…' を使い
