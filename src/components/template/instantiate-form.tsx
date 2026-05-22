@@ -160,7 +160,10 @@ export function InstantiateForm({ workspaceId, template }: Props) {
             : `Template「${template.name}」を即実行 (Instantiate)`
         }
       >
-        <span aria-hidden="true">{mut.isPending ? '展開中...' : '即実行 (Instantiate)'}</span>
+        {/* iter1083: visible は ASCII '...' だったが aria-label は U+2026 '…' を使っていて
+            literal substring 不一致 = WCAG 2.5.3 違反 + voice control「click 展開中…」 matching 不可。
+            iter1078b/1081b/1082 sweep の続き、Unicode '…' に統一して codebase convention と合わせる。 */}
+        <span aria-hidden="true">{mut.isPending ? '展開中…' : '即実行 (Instantiate)'}</span>
       </Button>
     </form>
   )
