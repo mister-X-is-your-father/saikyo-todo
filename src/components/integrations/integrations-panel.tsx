@@ -560,12 +560,15 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
               disabled={!name.trim() || create.isPending}
               aria-busy={create.isPending || undefined}
               data-testid="src-create-btn"
+              // iter1109: visible-prefix sweep (iter1093-1108) を src-create-btn にも展開。
+              // default/pending 旧 aria-label "External Source を新規作成" / "Source を作成中…" は
+              // visible "作成" / "作成中…" を末尾持ち。empty-title path は visible "作成" が prefix で維持。
               aria-label={
                 !name.trim()
                   ? 'Source を作成するには名前を入力してください'
                   : create.isPending
-                    ? 'Source を作成中…'
-                    : 'External Source を新規作成'
+                    ? '作成中… — Source を作成中'
+                    : '作成 — External Source を新規作成'
               }
             >
               <span aria-hidden="true">{create.isPending ? '作成中…' : '作成'}</span>
