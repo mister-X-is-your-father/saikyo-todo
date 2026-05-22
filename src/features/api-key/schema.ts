@@ -18,10 +18,18 @@ export type ApiKeyInsert = typeof apiKeys.$inferInsert
 export const ApiKeyScopeSchema = z.enum(['read', 'write', 'admin'])
 export type ApiKeyScope = z.infer<typeof ApiKeyScopeSchema>
 
+// iter1136: label.min(1).max(120) / scopes.min(1).max(3) には ja message 無く zod default
+// 英語が露出。iter1086/1092/1126-1135 ja convention で全 message ja 化。
 export const CreateApiKeyInputSchema = z.object({
   workspaceId: z.string().uuid(),
-  label: z.string().min(1).max(120),
-  scopes: z.array(ApiKeyScopeSchema).min(1).max(3),
+  label: z
+    .string()
+    .min(1, 'ラベルを入力してください')
+    .max(120, 'ラベルは 120 文字以内で入力してください'),
+  scopes: z
+    .array(ApiKeyScopeSchema)
+    .min(1, '権限スコープを 1 つ以上選択してください')
+    .max(3, '権限スコープは最大 3 つまでです'),
   expiresAt: z.string().datetime().nullish(),
 })
 export type CreateApiKeyInput = z.infer<typeof CreateApiKeyInputSchema>
