@@ -89,9 +89,17 @@ export function MockLoginForm() {
           required
           aria-required="true"
           aria-invalid={form.formState.errors.password ? true : undefined}
-          aria-describedby={form.formState.errors.password ? 'tsPassword-error' : undefined}
+          aria-describedby={
+            form.formState.errors.password ? 'tsPassword-hint tsPassword-error' : 'tsPassword-hint'
+          }
           {...form.register('password')}
         />
+        {/* iter1088: tsEmail-hint と pair で tsPassword-hint も提供 (iter735race-741race 確立の
+            form hint pattern)。mock-timesheet は demo / 開発者用なので seed credential を SR にも
+            届くよう aria-describedby に紐付け、視覚的フッターと SR が同じ「seed 参照」 mental model を共有。 */}
+        <p id="tsPassword-hint" className="text-muted-foreground text-xs">
+          mock-timesheet 用 password。例: password1234 (フォーム下の seed 参照)
+        </p>
         {form.formState.errors.password && (
           <p id="tsPassword-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.password.message}
