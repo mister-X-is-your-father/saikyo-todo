@@ -118,8 +118,14 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
         </div>
 
         {/* planned vs delivered */}
+        {/* iter1080 basics: role="img" 付与で SR aria-label authoritative 化
+            27 弾目 (iter1023/1049-1079 sweep 続編)。dl は definition-list semantic
+            だが 内 dt/dd を aria-hidden で隠して aria-label に集約形を入れる
+            atomic chip pattern。role 無のままだと SR が dl 構造を読もうとして
+            divergence、role="img" で 1 unit 化。 */}
         <dl
           className="grid grid-cols-3 gap-2 text-xs"
+          role="img"
           aria-label={`計画 vs 納品 (計画 ${planned} 件 / 納品 ${delivered} 件 / 差分 ${delta > 0 ? '+' : ''}${delta} 件)`}
         >
           <div aria-hidden="true">
