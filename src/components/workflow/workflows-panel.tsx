@@ -675,13 +675,15 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
           )}
         </div>
         <DialogFooter>
+          {/* iter1108: visible-prefix sweep (iter1093-1107) を workflow editor cancel/save にも展開。
+              旧 aria-label は visible "キャンセル" / "保存" / "保存中…" を末尾持ち、prefix-matching 不可。 */}
           <Button
             type="button"
             variant="ghost"
             className="min-h-11"
             onClick={() => onOpenChange(false)}
             data-testid={`wf-editor-cancel-${wf.id}`}
-            aria-label={`Workflow「${wf.name}」の編集をキャンセル`}
+            aria-label={`キャンセル — Workflow「${wf.name}」の編集を破棄`}
           >
             <span aria-hidden="true">キャンセル</span>
           </Button>
@@ -694,8 +696,8 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
             data-testid={`wf-editor-save-${wf.id}`}
             aria-label={
               saving
-                ? `Workflow「${wf.name}」の編集を保存中…`
-                : `Workflow「${wf.name}」の graph / trigger を保存`
+                ? `保存中… — Workflow「${wf.name}」の編集を保存中`
+                : `保存 — Workflow「${wf.name}」の graph / trigger を保存`
             }
           >
             <span aria-hidden="true">{saving ? '保存中…' : '保存'}</span>
