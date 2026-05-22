@@ -40,20 +40,39 @@ export const CustomRestConfigSchema = z.object({
   duePath: z.string().optional(),
 })
 
+// iter1135: name.max(200) / scheduleCron.min(1).max(100) には ja message が無く zod default
+// 英語が露出。refine "patch is empty" は完全英語。iter1086/1092/1126-1134 ja convention で
+// 全 message ja 化。
 export const CreateSourceInputSchema = z.discriminatedUnion('kind', [
   z.object({
     workspaceId: z.string().uuid(),
-    name: z.string().min(1).max(200),
+    name: z
+      .string()
+      .min(1, 'Source 名を入力してください')
+      .max(200, 'Source 名は 200 文字以内で入力してください'),
     kind: z.literal('yamory'),
     config: YamoryConfigSchema,
-    scheduleCron: z.string().min(1).max(100).nullable().default(null),
+    scheduleCron: z
+      .string()
+      .min(1, 'cron 式を入力してください')
+      .max(100, 'cron 式は 100 文字以内で入力してください')
+      .nullable()
+      .default(null),
   }),
   z.object({
     workspaceId: z.string().uuid(),
-    name: z.string().min(1).max(200),
+    name: z
+      .string()
+      .min(1, 'Source 名を入力してください')
+      .max(200, 'Source 名は 200 文字以内で入力してください'),
     kind: z.literal('custom-rest'),
     config: CustomRestConfigSchema,
-    scheduleCron: z.string().min(1).max(100).nullable().default(null),
+    scheduleCron: z
+      .string()
+      .min(1, 'cron 式を入力してください')
+      .max(100, 'cron 式は 100 文字以内で入力してください')
+      .nullable()
+      .default(null),
   }),
 ])
 export type CreateSourceInput = z.infer<typeof CreateSourceInputSchema>
@@ -63,11 +82,20 @@ export const UpdateSourceInputSchema = z.object({
   expectedVersion: z.number().int().nonnegative(),
   patch: z
     .object({
-      name: z.string().min(1).max(200).optional(),
+      name: z
+        .string()
+        .min(1, 'Source 名を入力してください')
+        .max(200, 'Source 名は 200 文字以内で入力してください')
+        .optional(),
       config: z.record(z.string(), z.unknown()).optional(),
       enabled: z.boolean().optional(),
-      scheduleCron: z.string().min(1).max(100).nullable().optional(),
+      scheduleCron: z
+        .string()
+        .min(1, 'cron 式を入力してください')
+        .max(100, 'cron 式は 100 文字以内で入力してください')
+        .nullable()
+        .optional(),
     })
-    .refine((p) => Object.keys(p).length > 0, { message: 'patch is empty' }),
+    .refine((p) => Object.keys(p).length > 0, { message: '更新する項目がありません' }),
 })
 export type UpdateSourceInput = z.infer<typeof UpdateSourceInputSchema>
