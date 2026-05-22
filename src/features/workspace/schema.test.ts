@@ -20,13 +20,11 @@ describe('CreateWorkspaceInputSchema', () => {
     expect(() => CreateWorkspaceInputSchema.parse({ ...baseValid, name: '' })).toThrow()
   })
 
-  it('name max 100 文字超過を reject', () => {
-    expect(() =>
-      CreateWorkspaceInputSchema.parse({ ...baseValid, name: 'x'.repeat(101) }),
-    ).toThrow()
+  it('name max 50 文字超過を reject (iter1092: form HTML maxLength={50} / hint "最大 50 文字" と整合)', () => {
+    expect(() => CreateWorkspaceInputSchema.parse({ ...baseValid, name: 'x'.repeat(51) })).toThrow()
     // 境界値 OK
     expect(() =>
-      CreateWorkspaceInputSchema.parse({ ...baseValid, name: 'x'.repeat(100) }),
+      CreateWorkspaceInputSchema.parse({ ...baseValid, name: 'x'.repeat(50) }),
     ).not.toThrow()
   })
 
