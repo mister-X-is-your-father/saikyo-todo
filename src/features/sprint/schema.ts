@@ -57,17 +57,26 @@ export function sprintStatusSeverity(
 
 const isoDate = z.string().regex(ISO_DATE_RE, 'YYYY-MM-DD 形式で')
 
+// iter1127: name.max(120) / goal.max(500) には ja message が無く zod default 英語が露出
+// (name.min(1) は ja message あり)。iter1086/1092/1126 同 convention で日本語化。
 export const CreateSprintInputSchema = z
   .object({
     workspaceId: z.string().uuid(),
-    name: z.string().min(1, '名前を入力').max(120),
-    goal: z.string().max(500).nullable().optional(),
+    name: z
+      .string()
+      .min(1, 'Sprint 名を入力してください')
+      .max(120, 'Sprint 名は 120 文字以内で入力してください'),
+    goal: z
+      .string()
+      .max(500, 'Sprint ゴールは 500 文字以内で入力してください')
+      .nullable()
+      .optional(),
     startDate: isoDate,
     endDate: isoDate,
     idempotencyKey: z.string().uuid(),
   })
   .refine((d) => d.startDate <= d.endDate, {
-    message: 'start_date は end_date 以前',
+    message: '開始日は終了日以前にしてください',
     path: ['endDate'],
   })
 export type CreateSprintInput = z.infer<typeof CreateSprintInputSchema>
@@ -75,10 +84,19 @@ export type CreateSprintInput = z.infer<typeof CreateSprintInputSchema>
 export const UpdateSprintInputSchema = z.object({
   id: z.string().uuid(),
   expectedVersion: z.number().int().nonnegative(),
+  // iter1127: Update 側も同 ja message 統一 (Create と内容揃え)。
   patch: z
     .object({
-      name: z.string().min(1).max(120).optional(),
-      goal: z.string().max(500).nullable().optional(),
+      name: z
+        .string()
+        .min(1, 'Sprint 名を入力してください')
+        .max(120, 'Sprint 名は 120 文字以内で入力してください')
+        .optional(),
+      goal: z
+        .string()
+        .max(500, 'Sprint ゴールは 500 文字以内で入力してください')
+        .nullable()
+        .optional(),
       startDate: isoDate.optional(),
       endDate: isoDate.optional(),
     })
@@ -86,7 +104,8 @@ export const UpdateSprintInputSchema = z.object({
       message: '更新項目がありません',
     })
     .refine((p) => !(p.startDate && p.endDate) || p.startDate <= p.endDate, {
-      message: 'start_date は end_date 以前',
+      // iter1127: ja message 統一 (Create 側と同表記)。
+      message: '開始日は終了日以前にしてください',
       path: ['endDate'],
     }),
 })
