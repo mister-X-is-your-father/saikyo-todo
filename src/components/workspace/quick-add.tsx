@@ -165,6 +165,8 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
           aria-busy={create.isPending || undefined}
           data-testid="quick-add-submit"
           aria-keyshortcuts="Enter"
+          // iter1114: visible "作成" を aria-label 冒頭固定 (iter1093-1113 sweep convention)。
+          // pending visible "…" は aria-label 末尾 "…" と substring 一致で維持。
           aria-label={
             !preview?.title
               ? 'タスクを作成するにはタイトルを入力してください (Enter でも可)'
@@ -172,7 +174,7 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
                 ? 'MUST タスクは編集ダイアログから DoD を入力して作成してください'
                 : create.isPending
                   ? `「${preview.title}」を作成中…`
-                  : `「${preview.title}」を作成 (Enter でも可)`
+                  : `作成 — 「${preview.title}」を作成 (Enter でも可)`
           }
         >
           {/* iter1090: visible は ASCII '...' (U+002E×3) で aria-label は U+2026 '…' を使い
