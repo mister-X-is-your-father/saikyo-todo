@@ -104,17 +104,26 @@ export type ReorderItemInput = z.infer<typeof ReorderItemInputSchema>
  * GTD Waiting For を時間軸 + 通知 channel で独立管理する jsonb state。
  * 詳細: ~/.claude/plans/saikyo-waiting-mode-plan.md §2.1
  */
+// iter1142: WaitingForState の max/min に ja message 付与 (iter1086/1092/1126-1141 sweep)。
 export const WaitingForStateSchema = z
   .object({
     kind: z.enum(['internal', 'external']),
     targetUserId: z.string().uuid().nullish(),
     targetContactId: z.string().uuid().nullish(),
-    targetLabel: z.string().min(1).max(200),
+    targetLabel: z
+      .string()
+      .min(1, '連絡先ラベルを入力してください')
+      .max(200, '連絡先ラベルは 200 文字以内で入力してください'),
     requestedAt: z.string().datetime(),
-    reminderCadenceDays: z.number().int().min(1).max(365).nullish(),
+    reminderCadenceDays: z
+      .number()
+      .int()
+      .min(1, 'リマインダー間隔は 1 日以上で指定してください')
+      .max(365, 'リマインダー間隔は 365 日以内で指定してください')
+      .nullish(),
     lastRemindedAt: z.string().datetime().nullish(),
-    slackChannelId: z.string().max(64).nullish(),
-    note: z.string().max(2000).nullish(),
+    slackChannelId: z.string().max(64, 'Slack channel ID は 64 文字以内').nullish(),
+    note: z.string().max(2000, 'メモは 2,000 文字以内で入力してください').nullish(),
   })
   .superRefine((v, ctx) => {
     if (v.kind === 'internal' && !v.targetUserId) {
