@@ -141,7 +141,8 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
           className="min-h-11"
           onClick={onCancel}
           data-testid="schedule-picker-cancel"
-          aria-label="task pick をキャンセル"
+          // iter1107: visible "キャンセル" を aria-label 冒頭固定 (iter1093-1106 sweep convention)。
+          aria-label="キャンセル — task pick を破棄"
         >
           <span aria-hidden="true">キャンセル</span>
         </Button>
