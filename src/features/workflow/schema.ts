@@ -33,19 +33,31 @@ export const NodeTypeSchema = z.enum([
 ])
 export type NodeType = z.infer<typeof NodeTypeSchema>
 
+// iter1141: WorkflowNode/Edge id/label / cron / webhook secret の max/min に ja message 付与
+// (iter1086/1092/1126-1140 sweep)。これらは JSON editor 経由で user に直接 error が出るため
+// 日本語化が必要 (旧 zod default 英語が露出していた)。
 export const WorkflowNodeSchema = z.object({
-  id: z.string().min(1).max(64),
+  id: z
+    .string()
+    .min(1, 'node id を入力してください')
+    .max(64, 'node id は 64 文字以内で入力してください'),
   type: NodeTypeSchema,
   /** node 表示用 (UI editor で表示する label) */
-  label: z.string().max(100).optional(),
+  label: z.string().max(100, 'node label は 100 文字以内で入力してください').optional(),
   /** node 種別ごとの設定。各 node の executor が型を絞る (現時点は緩く record) */
   config: z.record(z.string(), z.unknown()).default({}),
 })
 export type WorkflowNode = z.infer<typeof WorkflowNodeSchema>
 
 export const WorkflowEdgeSchema = z.object({
-  from: z.string().min(1).max(64),
-  to: z.string().min(1).max(64),
+  from: z
+    .string()
+    .min(1, 'edge from を入力してください')
+    .max(64, 'edge from は 64 文字以内で入力してください'),
+  to: z
+    .string()
+    .min(1, 'edge to を入力してください')
+    .max(64, 'edge to は 64 文字以内で入力してください'),
   /** branch node 用の条件式 (将来) */
   condition: z.string().optional(),
 })
@@ -62,7 +74,10 @@ export const WorkflowTriggerSchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('cron'),
     /** 5-field cron (workspace timezone で解釈) */
-    cron: z.string().min(1).max(100),
+    cron: z
+      .string()
+      .min(1, 'cron 式を入力してください')
+      .max(100, 'cron 式は 100 文字以内で入力してください'),
   }),
   z.object({
     kind: z.literal('item-event'),
@@ -73,7 +88,10 @@ export const WorkflowTriggerSchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('webhook'),
     /** secret パス。/api/workflows/webhook/<secret> で受け取る */
-    secret: z.string().min(8).max(128),
+    secret: z
+      .string()
+      .min(8, 'webhook secret は 8 文字以上で入力してください')
+      .max(128, 'webhook secret は 128 文字以内で入力してください'),
   }),
 ])
 export type WorkflowTrigger = z.infer<typeof WorkflowTriggerSchema>
