@@ -488,6 +488,8 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
             role="group"
             aria-label={`提案「${proposal.title}」の編集 form 操作 (キャンセル / 保存)`}
           >
+            {/* iter1106: visible-prefix sweep (iter1093-1105) を decompose-proposal edit
+                buttons にも展開。visible "キャンセル" / "保存" / "保存中…" を冒頭固定。 */}
             <Button
               type="button"
               size="sm"
@@ -496,7 +498,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               onClick={() => setEditing(false)}
               disabled={update.isPending}
               data-testid={`proposal-${proposal.id}-edit-cancel`}
-              aria-label={`「${proposal.title}」の編集をキャンセル`}
+              aria-label={`キャンセル — 提案「${proposal.title}」の編集を破棄`}
             >
               <span aria-hidden="true">キャンセル</span>
             </Button>
@@ -510,8 +512,8 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               aria-keyshortcuts="Meta+Enter Control+Enter"
               aria-label={
                 update.isPending
-                  ? `提案「${proposal.title}」の編集を保存中…`
-                  : `提案「${proposal.title}」の編集を保存 (Cmd/Ctrl+Enter でも可)`
+                  ? `保存中… — 提案「${proposal.title}」の編集を保存中`
+                  : `保存 — 提案「${proposal.title}」の編集を保存 (Cmd/Ctrl+Enter でも可)`
               }
             >
               <span aria-hidden="true">{update.isPending ? '保存中…' : '保存'}</span>
