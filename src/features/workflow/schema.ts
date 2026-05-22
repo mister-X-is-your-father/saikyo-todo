@@ -78,10 +78,15 @@ export const WorkflowTriggerSchema = z.discriminatedUnion('kind', [
 ])
 export type WorkflowTrigger = z.infer<typeof WorkflowTriggerSchema>
 
+// iter1131: name.max(200) / description.max(2000) / "patch is empty" には ja message が無く
+// zod default 英語が露出。iter1086/1092/1126-1130 ja convention で全 message 日本語化。
 export const CreateWorkflowInputSchema = z.object({
   workspaceId: z.string().uuid(),
-  name: z.string().min(1).max(200),
-  description: z.string().max(2000).default(''),
+  name: z
+    .string()
+    .min(1, 'Workflow 名を入力してください')
+    .max(200, 'Workflow 名は 200 文字以内で入力してください'),
+  description: z.string().max(2000, '説明は 2000 文字以内で入力してください').default(''),
   graph: WorkflowGraphSchema.default({ nodes: [], edges: [] }),
   trigger: WorkflowTriggerSchema.default({ kind: 'manual' }),
 })
@@ -92,12 +97,16 @@ export const UpdateWorkflowInputSchema = z.object({
   expectedVersion: z.number().int().nonnegative(),
   patch: z
     .object({
-      name: z.string().min(1).max(200).optional(),
-      description: z.string().max(2000).optional(),
+      name: z
+        .string()
+        .min(1, 'Workflow 名を入力してください')
+        .max(200, 'Workflow 名は 200 文字以内で入力してください')
+        .optional(),
+      description: z.string().max(2000, '説明は 2000 文字以内で入力してください').optional(),
       graph: WorkflowGraphSchema.optional(),
       trigger: WorkflowTriggerSchema.optional(),
       enabled: z.boolean().optional(),
     })
-    .refine((p) => Object.keys(p).length > 0, { message: 'patch is empty' }),
+    .refine((p) => Object.keys(p).length > 0, { message: '更新する項目がありません' }),
 })
 export type UpdateWorkflowInput = z.infer<typeof UpdateWorkflowInputSchema>
