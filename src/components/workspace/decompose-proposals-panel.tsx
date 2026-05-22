@@ -268,7 +268,8 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                 onClick={() => void handleRedecompose({ clearExisting: true })}
                 data-testid="proposals-redecompose-fresh"
                 title="既存提案を全て却下してから再分解"
-                aria-label={`保留中の ${list.length} 件を全て却下してから AI 分解をやり直し`}
+                // iter1122: visible "やり直し" を aria-label 冒頭固定 (iter1093-1121 sweep)。
+                aria-label={`やり直し — 保留中の ${list.length} 件を全て却下してから AI 分解をやり直し`}
               >
                 <span aria-hidden="true">やり直し</span>
               </Button>
