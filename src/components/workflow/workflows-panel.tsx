@@ -334,14 +334,17 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
                 ? 'node が無い workflow は実行不可'
                 : '手動で sync 実行 (各 node 10-60s timeout)'
             }
+            // iter1116: wf-trigger / wf-edit / wf-toggle / wf-runs-toggle の旧 aria-label は visible
+            // "実行"/"実行中…"/"編集"/"無効化"/"有効化"/"履歴" を末尾持ちで voice control prefix-matching
+            // match 不可。iter1093-1115 sweep convention に合わせ visible 冒頭固定。
             aria-label={
               !wf.enabled
                 ? `Workflow「${wf.name}」は無効化中のため実行不可`
                 : nodeCount === 0
                   ? `Workflow「${wf.name}」は node が無いため実行不可`
                   : trigger.isPending
-                    ? `Workflow「${wf.name}」を実行中…`
-                    : `Workflow「${wf.name}」を手動で sync 実行 (各 node 10-60s timeout)`
+                    ? `実行中… — Workflow「${wf.name}」を実行中`
+                    : `実行 — Workflow「${wf.name}」を手動で sync 実行 (各 node 10-60s timeout)`
             }
           >
             <Play className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
@@ -353,7 +356,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             variant="outline"
             onClick={() => setEditorOpen(true)}
             data-testid={`wf-edit-${wf.id}`}
-            aria-label={`Workflow「${wf.name}」の graph / trigger を編集`}
+            aria-label={`編集 — Workflow「${wf.name}」の graph / trigger を編集`}
           >
             <Pencil className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             <span aria-hidden="true">編集</span>
@@ -369,7 +372,9 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             aria-label={
               update.isPending
                 ? `Workflow「${wf.name}」の状態を更新中…`
-                : `Workflow「${wf.name}」を${wf.enabled ? '無効化' : '有効化'}`
+                : wf.enabled
+                  ? `無効化 — Workflow「${wf.name}」を無効化`
+                  : `有効化 — Workflow「${wf.name}」を有効化`
             }
           >
             <span aria-hidden="true">{wf.enabled ? '無効化' : '有効化'}</span>
@@ -383,8 +388,8 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             aria-controls={`wf-runs-${wf.id}`}
             aria-label={
               runsOpen
-                ? `Workflow「${wf.name}」の実行履歴 (直近 5 件) を閉じる`
-                : `Workflow「${wf.name}」の実行履歴 (直近 5 件) を表示`
+                ? `履歴 — Workflow「${wf.name}」の実行履歴 (直近 5 件) を閉じる`
+                : `履歴 — Workflow「${wf.name}」の実行履歴 (直近 5 件) を表示`
             }
             data-testid={`wf-runs-toggle-${wf.id}`}
           >
