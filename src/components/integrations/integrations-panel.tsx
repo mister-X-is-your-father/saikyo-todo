@@ -158,6 +158,9 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
           role="group"
           aria-label={`Source「${src.name}」の操作 (現在: ${src.enabled ? '有効' : '無効'}、pull / 編集 / 有効化切替 / 削除)`}
         >
+          {/* iter1115: src-pull / src-toggle / src-imports-toggle の旧 aria-label は visible
+              "Pull" / "Pull 中…" / "無効化"or"有効化" / "履歴" を末尾持ちで voice control
+              prefix-matching match 不可。iter1093-1114 sweep convention に合わせ visible 冒頭固定。 */}
           <Button
             size="sm"
             className="min-h-11"
@@ -171,8 +174,8 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
               !src.enabled
                 ? `Source「${src.name}」は無効化中のため Pull 不可`
                 : trigger.isPending
-                  ? `Source「${src.name}」を Pull 中…`
-                  : `Source「${src.name}」を手動 Pull (sync 実行、30s timeout)`
+                  ? `Pull 中… — Source「${src.name}」を Pull 中`
+                  : `Pull — Source「${src.name}」を手動 Pull (sync 実行、30s timeout)`
             }
           >
             <Play className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
@@ -189,7 +192,9 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             aria-label={
               update.isPending
                 ? `Source「${src.name}」の状態を更新中…`
-                : `Source「${src.name}」を${src.enabled ? '無効化' : '有効化'}`
+                : src.enabled
+                  ? `無効化 — Source「${src.name}」を無効化`
+                  : `有効化 — Source「${src.name}」を有効化`
             }
           >
             <span aria-hidden="true">{src.enabled ? '無効化' : '有効化'}</span>
@@ -203,8 +208,8 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             aria-controls={`src-imports-${src.id}`}
             aria-label={
               importsOpen
-                ? `Source「${src.name}」の Pull 履歴 (直近 5 件) を閉じる`
-                : `Source「${src.name}」の Pull 履歴 (直近 5 件) を表示`
+                ? `履歴 — Source「${src.name}」の Pull 履歴 (直近 5 件) を閉じる`
+                : `履歴 — Source「${src.name}」の Pull 履歴 (直近 5 件) を表示`
             }
             data-testid={`src-imports-toggle-${src.id}`}
           >
