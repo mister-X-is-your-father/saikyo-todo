@@ -9,17 +9,45 @@ export const MAX_LIMIT = 100
 
 export const SemanticSearchInputSchema = z.object({
   workspaceId: z.string().uuid(),
-  query: z.string().trim().min(1, '検索語を入力してください').max(500),
-  limit: z.number().int().positive().max(MAX_LIMIT).default(DEFAULT_LIMIT),
-  templateBoost: z.number().positive().max(5).default(DEFAULT_TEMPLATE_BOOST),
+  // iter1140: max(500) / max(MAX_LIMIT) / max(5) に ja message 付与 (iter1086/1092/1126-1139 sweep)
+  query: z
+    .string()
+    .trim()
+    .min(1, '検索語を入力してください')
+    .max(500, '検索語は 500 文字以内で入力してください'),
+  limit: z
+    .number()
+    .int()
+    .positive()
+    .max(MAX_LIMIT, `取得件数は ${MAX_LIMIT} 件以下で指定してください`)
+    .default(DEFAULT_LIMIT),
+  templateBoost: z
+    .number()
+    .positive()
+    .max(5, 'template ブースト倍率は 5.0 以下で指定してください')
+    .default(DEFAULT_TEMPLATE_BOOST),
 })
 export type SemanticSearchInput = z.infer<typeof SemanticSearchInputSchema>
 
 export const FullTextSearchInputSchema = z.object({
   workspaceId: z.string().uuid(),
-  query: z.string().trim().min(1, '検索語を入力してください').max(500),
-  limit: z.number().int().positive().max(MAX_LIMIT).default(DEFAULT_LIMIT),
-  templateBoost: z.number().positive().max(5).default(DEFAULT_TEMPLATE_BOOST),
+  // iter1140: max(500) / max(MAX_LIMIT) / max(5) に ja message 付与 (iter1086/1092/1126-1139 sweep)
+  query: z
+    .string()
+    .trim()
+    .min(1, '検索語を入力してください')
+    .max(500, '検索語は 500 文字以内で入力してください'),
+  limit: z
+    .number()
+    .int()
+    .positive()
+    .max(MAX_LIMIT, `取得件数は ${MAX_LIMIT} 件以下で指定してください`)
+    .default(DEFAULT_LIMIT),
+  templateBoost: z
+    .number()
+    .positive()
+    .max(5, 'template ブースト倍率は 5.0 以下で指定してください')
+    .default(DEFAULT_TEMPLATE_BOOST),
 })
 export type FullTextSearchInput = z.infer<typeof FullTextSearchInputSchema>
 

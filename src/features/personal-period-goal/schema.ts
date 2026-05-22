@@ -31,8 +31,12 @@ export const UpsertGoalInputSchema = z.object({
    * week: "2026-W18" (ISO 週)
    * month: "2026-04"
    */
-  periodKey: z.string().min(1).max(20),
-  text: z.string().max(2000),
+  periodKey: z
+    .string()
+    .min(1, '期間 key を入力してください')
+    .max(20, '期間 key は 20 文字以内で入力してください'),
+  // iter1140: max(2000) に ja message 付与 (iter1086/1092/1126-1139 sweep)
+  text: z.string().max(2000, 'ゴールは 2,000 文字以内で入力してください'),
   /** 楽観ロック: 既存 row が無ければ 0、ある場合は呼び出し側が読み取って渡す */
   expectedVersion: z.number().int().nonnegative(),
 })
@@ -41,6 +45,9 @@ export type UpsertGoalInput = z.infer<typeof UpsertGoalInputSchema>
 export const GetGoalInputSchema = z.object({
   workspaceId: z.string().uuid(),
   period: PeriodSchema,
-  periodKey: z.string().min(1).max(20),
+  periodKey: z
+    .string()
+    .min(1, '期間 key を入力してください')
+    .max(20, '期間 key は 20 文字以内で入力してください'),
 })
 export type GetGoalInput = z.infer<typeof GetGoalInputSchema>
