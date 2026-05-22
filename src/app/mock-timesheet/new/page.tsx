@@ -20,10 +20,17 @@ export default async function MockNewPage() {
     <main
       id="main-content"
       tabIndex={-1}
-      aria-label="Mock Timesheet 新規送信"
+      aria-labelledby="mock-new-heading"
       className="mx-auto max-w-xl space-y-6 p-6 focus-visible:outline-none"
     >
       <MockTopNav sessionId={sessionId} />
+      {/* iter1087: /mock-timesheet/entries は h2 "送信済み一覧 (N 件)" を持つ一方、
+          /new は h2 が無く heading hierarchy 不整合 + SR が「今このページで何ができるか」 を
+          visual heading として拾えなかった。entries 側と pair 化して h2 を追加、main の
+          aria-label を aria-labelledby に切替で「Mock Timesheet 新規送信」 を heading 集約。 */}
+      <h2 id="mock-new-heading" className="text-lg font-semibold">
+        新規送信
+      </h2>
       <MockSubmitForm />
     </main>
   )
