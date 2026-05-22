@@ -253,12 +253,13 @@ export function GoalsPanel({ workspaceId }: Props) {
                 aria-busy={createMut.isPending || undefined}
                 data-testid="goal-create-btn"
                 aria-keyshortcuts="Meta+Enter Control+Enter"
+                // iter1112: visible "作成" / "作成中…" を aria-label 冒頭固定 (iter1093-1111 sweep)。
                 aria-label={
                   !title.trim()
                     ? 'Goal を作成するにはタイトルを入力してください'
                     : createMut.isPending
-                      ? 'Goal を作成中…'
-                      : 'Goal を新規作成'
+                      ? '作成中… — Goal を作成中'
+                      : '作成 — Goal を新規作成'
                 }
               >
                 <span aria-hidden="true">{createMut.isPending ? '作成中…' : '作成'}</span>
