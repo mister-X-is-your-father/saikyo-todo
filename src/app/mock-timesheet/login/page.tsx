@@ -25,6 +25,9 @@ export default function MockLoginPage() {
           Playwright 自動入力のテスト対象 mock 外部システム。saikyo-todo とは独立。
         </p>
       </header>
+      {/* iter1089: /new (h2 新規送信) / /entries (h2 送信済み一覧) と heading hierarchy を揃える。
+          h1 "Mock Timesheet" は app 名、h2 でこのページの intent (ログイン) を明示。 */}
+      <h2 className="text-lg font-semibold">ログイン</h2>
       <MockLoginForm />
     </main>
   )
