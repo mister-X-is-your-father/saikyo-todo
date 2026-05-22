@@ -1012,7 +1012,10 @@ function ItemEditDialogInner({
                   : `「${item.title}」を保存 (Cmd/Ctrl+S でも可、楽観ロックで version が進む)`
             }
           >
-            <span aria-hidden="true">{update.isPending ? '保存中...' : '保存'}</span>
+            {/* iter1083: visible は ASCII '...' だったが aria-label は U+2026 '…' を使っていて
+                literal substring 不一致 = WCAG 2.5.3 違反 + voice control「click 保存中…」 matching 不可。
+                iter1078b/1081b/1082b の同 pattern fix を item-edit-dialog にも展開、Unicode '…' に統一。 */}
+            <span aria-hidden="true">{update.isPending ? '保存中…' : '保存'}</span>
           </Button>
         </DialogFooter>
       </DialogContent>
