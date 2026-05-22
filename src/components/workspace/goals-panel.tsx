@@ -876,12 +876,16 @@ function KeyResultList({
             disabled={!krTitle.trim() || create.isPending}
             aria-busy={create.isPending || undefined}
             data-testid={`kr-add-btn-${goalId}`}
+            // iter1121: visible "KR 追加" (KR = Key Result 略語) を aria-label 冒頭固定。
+            // 旧 aria-label "Key Result を..." は visible "KR 追加" を literal substring に含まず
+            // ("KR" 略語が "Key Result" full に展開された divergence) = WCAG 2.5.3 違反 + voice
+            // control「click KR 追加」 matching 失敗。iter1093-1120 sweep convention に合わせ修正。
             aria-label={
               !krTitle.trim()
                 ? 'Key Result を追加するにはタイトルを入力してください'
                 : create.isPending
-                  ? 'Key Result を追加中…'
-                  : 'Key Result をこの Goal に追加'
+                  ? 'KR 追加 — Key Result を追加中…'
+                  : 'KR 追加 — Key Result をこの Goal に追加'
             }
           >
             <Plus className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
