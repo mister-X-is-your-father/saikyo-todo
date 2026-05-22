@@ -119,7 +119,11 @@ export function CreateWorkspaceForm() {
         data-testid="create-workspace-submit"
         aria-label={isPending ? 'Workspace を作成中…' : 'Workspace を新規作成'}
       >
-        <span aria-hidden="true">{isPending ? '作成中...' : '作成'}</span>
+        {/* iter1082: visible は ASCII '...' だったが aria-label は U+2026 '…' を使っていて
+            literal substring 不一致 = WCAG 2.5.3 違反 + voice control「click 作成中…」 matching 不可。
+            iter1078b mock-login / iter1081b mock-submit の同 pattern fix を create-workspace-form
+            にも展開、Unicode '…' に統一して codebase convention と合わせる。 */}
+        <span aria-hidden="true">{isPending ? '作成中…' : '作成'}</span>
       </Button>
     </form>
   )
