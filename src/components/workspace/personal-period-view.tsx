@@ -185,12 +185,15 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
               onClick={() => void handleSave()}
               data-testid={`period-goal-save-${period}`}
               aria-keyshortcuts="Meta+Enter Control+Enter"
+              // iter1125: visible "ゴール保存" / "保存中…" を aria-label 冒頭固定 +
+              // WCAG 2.5.3 substring 修正 (旧 "ゴールを保存" は visible "ゴール保存" を
+              // 連続 substring に含まない、"を" 挿入で分断 = WCAG 違反)。
               aria-label={
                 !dirty
-                  ? `${periodLabelJa(period)}ゴールに変更がないため保存不要`
+                  ? `ゴール保存 — ${periodLabelJa(period)}ゴールに変更がないため保存不要`
                   : upsertGoal.isPending
-                    ? `${periodLabelJa(period)}ゴールを保存中…`
-                    : `${periodLabelJa(period)}ゴールを保存`
+                    ? `保存中… — ${periodLabelJa(period)}ゴールを保存中`
+                    : `ゴール保存 — ${periodLabelJa(period)}ゴールを保存`
               }
             >
               <span aria-hidden="true">{upsertGoal.isPending ? '保存中…' : 'ゴール保存'}</span>
