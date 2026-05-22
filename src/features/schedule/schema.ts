@@ -21,7 +21,8 @@ export const CreateScheduleInputSchema = z
     kind: ScheduleKindSchema,
     startAt: isoDateTime,
     endAt: isoDateTime,
-    note: z.string().max(2000).nullish(),
+    // iter1137: max(2000) に ja message 付与 (iter1086/1092/1126-1136 sweep)
+    note: z.string().max(2000, 'メモは 2,000 文字以内で入力してください').nullish(),
   })
   .superRefine((v, ctx) => {
     if (Date.parse(v.endAt) <= Date.parse(v.startAt)) {
@@ -75,7 +76,8 @@ export const UpdateScheduleInputSchema = z.object({
       itemId: z.string().uuid().nullish(),
       startAt: isoDateTime.optional(),
       endAt: isoDateTime.optional(),
-      note: z.string().max(2000).nullish(),
+      // iter1137: max(2000) に ja message 付与 (iter1086/1092/1126-1136 sweep)
+      note: z.string().max(2000, 'メモは 2,000 文字以内で入力してください').nullish(),
     })
     .refine((p) => Object.keys(p).length > 0, { message: '更新する項目がありません' }),
 })
@@ -91,7 +93,8 @@ export const StartTimerInputSchema = z.object({
   workspaceId: z.string().uuid(),
   itemId: z.string().uuid().nullable(),
   startAt: isoDateTime.optional(),
-  note: z.string().max(2000).nullish(),
+  // iter1137: max(2000) に ja message 付与 (他 schedule schema と統一)
+  note: z.string().max(2000, 'メモは 2,000 文字以内で入力してください').nullish(),
 })
 export type StartTimerInput = z.infer<typeof StartTimerInputSchema>
 
