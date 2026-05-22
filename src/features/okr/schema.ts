@@ -56,18 +56,28 @@ export type ProgressMode = z.infer<typeof ProgressModeSchema>
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD 形式で')
 
+// iter1128: title.max / description.max / KR title.max / unit.max には ja message が無く zod
+// default 英語が露出。refine "start_date は end_date 以前" は技術用語混在。iter1086/1092/1126/1127
+// convention で全 message 日本語化。
 export const CreateGoalInputSchema = z
   .object({
     workspaceId: z.string().uuid(),
-    title: z.string().min(1).max(200),
-    description: z.string().max(2000).nullable().optional(),
+    title: z
+      .string()
+      .min(1, 'Goal タイトルを入力してください')
+      .max(200, 'Goal タイトルは 200 文字以内で入力してください'),
+    description: z
+      .string()
+      .max(2000, 'Goal 説明は 2000 文字以内で入力してください')
+      .nullable()
+      .optional(),
     period: z.enum(['quarterly', 'annual', 'custom']).default('quarterly'),
     startDate: isoDate,
     endDate: isoDate,
     idempotencyKey: z.string().uuid(),
   })
   .refine((d) => d.startDate <= d.endDate, {
-    message: 'start_date は end_date 以前',
+    message: '開始日は終了日以前にしてください',
     path: ['endDate'],
   })
 export type CreateGoalInput = z.infer<typeof CreateGoalInputSchema>
@@ -77,8 +87,16 @@ export const UpdateGoalInputSchema = z.object({
   expectedVersion: z.number().int().nonnegative(),
   patch: z
     .object({
-      title: z.string().min(1).max(200).optional(),
-      description: z.string().max(2000).nullable().optional(),
+      title: z
+        .string()
+        .min(1, 'Goal タイトルを入力してください')
+        .max(200, 'Goal タイトルは 200 文字以内で入力してください')
+        .optional(),
+      description: z
+        .string()
+        .max(2000, 'Goal 説明は 2000 文字以内で入力してください')
+        .nullable()
+        .optional(),
       startDate: isoDate.optional(),
       endDate: isoDate.optional(),
       status: GoalStatusSchema.optional(),
@@ -89,11 +107,14 @@ export type UpdateGoalInput = z.infer<typeof UpdateGoalInputSchema>
 
 export const CreateKeyResultInputSchema = z.object({
   goalId: z.string().uuid(),
-  title: z.string().min(1).max(300),
+  title: z
+    .string()
+    .min(1, 'Key Result タイトルを入力してください')
+    .max(300, 'Key Result タイトルは 300 文字以内で入力してください'),
   progressMode: ProgressModeSchema.default('items'),
   targetValue: z.number().nullable().optional(),
   currentValue: z.number().nullable().optional(),
-  unit: z.string().max(20).nullable().optional(),
+  unit: z.string().max(20, '単位は 20 文字以内で入力してください').nullable().optional(),
   weight: z.number().int().min(1).max(10).default(1),
   position: z.number().int().min(0).default(0),
   idempotencyKey: z.string().uuid(),
@@ -105,11 +126,15 @@ export const UpdateKeyResultInputSchema = z.object({
   expectedVersion: z.number().int().nonnegative(),
   patch: z
     .object({
-      title: z.string().min(1).max(300).optional(),
+      title: z
+        .string()
+        .min(1, 'Key Result タイトルを入力してください')
+        .max(300, 'Key Result タイトルは 300 文字以内で入力してください')
+        .optional(),
       progressMode: ProgressModeSchema.optional(),
       targetValue: z.number().nullable().optional(),
       currentValue: z.number().nullable().optional(),
-      unit: z.string().max(20).nullable().optional(),
+      unit: z.string().max(20, '単位は 20 文字以内で入力してください').nullable().optional(),
       weight: z.number().int().min(1).max(10).optional(),
       position: z.number().int().min(0).optional(),
     })
