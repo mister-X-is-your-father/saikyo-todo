@@ -26,10 +26,13 @@ export default function SignupPage() {
         <span aria-hidden="true" className="text-muted-foreground">
           アカウントあり?
         </span>
+        {/* iter1096: 旧 aria-label "既にアカウントをお持ちの方はこちらでログイン" は
+            visible "ログイン" を末尾に持ち、voice control prefix-matching「click ログイン」
+            match 不可。iter1093-1095 sweep convention に合わせ visible 冒頭固定。 */}
         <Link
           href="/login"
           className="text-primary focus-visible:ring-ring relative z-10 inline-flex min-h-11 items-center rounded px-2 py-2 underline underline-offset-4 focus-visible:ring-2 focus-visible:outline-none"
-          aria-label="既にアカウントをお持ちの方はこちらでログイン"
+          aria-label="ログイン — 既にアカウントをお持ちの方はこちら"
         >
           <span aria-hidden="true">ログイン</span>
         </Link>
