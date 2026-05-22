@@ -685,7 +685,9 @@ function SprintCard({
                     setEditEnd(sprint.endDate)
                   }}
                   data-testid={`sprint-period-cancel-${sprint.id}`}
-                  aria-label={`Sprint「${sprint.name}」の期間編集をキャンセル`}
+                  // iter1103: visible-prefix sweep (iter1093-1102) を sprint-period-cancel/save にも展開
+                  // 旧 aria-label は visible "キャンセル"/"保存"/"保存中…" を末尾持ちで prefix-matching match 不可
+                  aria-label={`キャンセル — Sprint「${sprint.name}」の期間編集を破棄`}
                 >
                   <span aria-hidden="true">キャンセル</span>
                 </Button>
@@ -698,8 +700,8 @@ function SprintCard({
                   data-testid={`sprint-period-save-${sprint.id}`}
                   aria-label={
                     update.isPending
-                      ? `Sprint「${sprint.name}」の期間を保存中…`
-                      : `Sprint「${sprint.name}」の期間を保存`
+                      ? `保存中… — Sprint「${sprint.name}」の期間を保存中`
+                      : `保存 — Sprint「${sprint.name}」の期間を保存`
                   }
                 >
                   <span aria-hidden="true">{update.isPending ? '保存中…' : '保存'}</span>
@@ -1024,7 +1026,8 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                   setLength(cur.lengthDays)
                 }}
                 data-testid="sprint-defaults-cancel"
-                aria-label="Sprint デフォルトの編集をキャンセル"
+                // iter1103: visible-prefix sweep (iter1093-1102) を sprint-defaults-cancel/save にも展開
+                aria-label="キャンセル — Sprint デフォルトの編集を破棄"
               >
                 <span aria-hidden="true">キャンセル</span>
               </Button>
@@ -1037,8 +1040,8 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                 data-testid="sprint-defaults-save-btn"
                 aria-label={
                   upd.isPending
-                    ? 'Sprint デフォルトを保存中…'
-                    : 'Sprint デフォルト (基本曜日 / 期間) を保存'
+                    ? '保存中… — Sprint デフォルトを保存中'
+                    : '保存 — Sprint デフォルト (基本曜日 / 期間) を保存'
                 }
               >
                 <span aria-hidden="true">{upd.isPending ? '保存中…' : '保存'}</span>
