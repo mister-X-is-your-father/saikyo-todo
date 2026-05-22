@@ -160,8 +160,14 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
             {trendLine}
           </p>
         )}
+        {/* iter1082 basics: role="img" 付与で SR aria-label authoritative 化
+            29 弾目 (iter1023/1049-1081 sweep 続編、iter1080/1081 dl sweep の続き)。
+            estimate-bias-insight の `<dl>` (見積バイアス内訳: under/on/over) は
+            内 dt/dd を aria-hidden で隠して集約 aria-label を持つ atomic chip
+            pattern。role="img" で 1 unit 化。 */}
         <dl
           className="text-muted-foreground mt-2 grid grid-cols-3 gap-2 text-[11px]"
+          role="img"
           aria-label={`見積バイアス内訳 (見積内 ${report.underCount} 件 / ±10% 以内 ${report.onCount} 件 / 超過 ${report.overCount} 件)`}
         >
           <div aria-hidden="true">
