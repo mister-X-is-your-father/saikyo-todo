@@ -110,7 +110,10 @@ export function MockLoginForm() {
             : 'ログイン (mock-timesheet email + password で認証)'
         }
       >
-        <span aria-hidden="true">{isPending ? '認証中...' : 'ログイン'}</span>
+        {/* iter1078: visible は ASCII '...' だったが aria-label は U+2026 '…' を使っていて
+            literal substring 不一致 = WCAG 2.5.3 違反 + voice control「click 認証中…」 matching 不可。
+            login-form / signup-form の convention (Unicode '…') に合わせ統一。 */}
+        <span aria-hidden="true">{isPending ? '認証中…' : 'ログイン'}</span>
       </Button>
       <p className="text-muted-foreground text-xs">
         開発用: <code>ops@example.com</code> / <code>password1234</code>
