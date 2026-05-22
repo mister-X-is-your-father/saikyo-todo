@@ -10,16 +10,20 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
 export function Loading({
-  message = '読み込み中...',
+  message = '読み込み中…',
   className,
 }: {
   message?: string
   className?: string
 }) {
   // Phase 6.15 iter161: SR 用に role="status" + aria-live="polite" を付与。
-  // 表示瞬間に "読み込み中..." が読み上げられる (aria-busy はネスト的に親が
+  // 表示瞬間に "読み込み中…" が読み上げられる (aria-busy はネスト的に親が
   // 制御すべきなのでここでは付けない、status だけで十分)。spinner icon は
   // 装飾なので aria-hidden。
+  // iter1091: codebase convention 統一 (visible "..." ASCII → "…" U+2026)。
+  // role="status" 経路で visible テキストがそのまま SR テキストになるため WCAG 2.5.3
+  // divergence は無いが、他の form 系 (login-form / signup-form / mock-* / quick-add /
+  // create-time-entry-form) と ellipsis character を合わせて codebase consistency 確保。
   return (
     <div
       role="status"
