@@ -118,10 +118,12 @@ export function BulkActionBar({ workspaceId }: Props) {
         aria-busy={bulkDelete.isPending || undefined}
         onClick={() => void handleDelete()}
         data-testid="bulk-delete"
+        // iter1105: visible "削除" / "解除" を aria-label 冒頭固定 (iter1093-1104 sweep convention)。
+        // 旧 aria-label は visible 末尾持ちで voice control prefix-matching「click 削除/解除」 match 不可。
         aria-label={
           bulkDelete.isPending
-            ? `選択 ${count} 件を削除中… (soft delete: ゴミ箱で 30 日保持)`
-            : `選択 ${count} 件を削除 (soft delete: ゴミ箱で 30 日保持)`
+            ? `削除中… — 選択 ${count} 件を削除中 (soft delete: ゴミ箱で 30 日保持)`
+            : `削除 — 選択 ${count} 件を削除 (soft delete: ゴミ箱で 30 日保持)`
         }
       >
         <span aria-hidden="true">削除</span>
@@ -132,7 +134,7 @@ export function BulkActionBar({ workspaceId }: Props) {
         variant="ghost"
         onClick={() => clear()}
         data-testid="bulk-clear"
-        aria-label="選択を解除"
+        aria-label="解除 — 選択を全て解除"
       >
         <span aria-hidden="true">解除</span>
       </Button>
