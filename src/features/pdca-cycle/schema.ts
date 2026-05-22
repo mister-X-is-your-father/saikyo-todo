@@ -15,12 +15,18 @@ export type PdcaCycleStatus = z.infer<typeof PdcaCycleStatusSchema>
 export const PdcaCycleItemRoleSchema = z.enum(['do', 'reference'])
 export type PdcaCycleItemRole = z.infer<typeof PdcaCycleItemRoleSchema>
 
+// iter1126: zod default error は英語 (Too small / Too big / Invalid uuid 等) で日本語 UI
+// 利用者の認知負荷高。iter1086 mock-timesheet / iter1092 workspace schema と同 convention で
+// ユーザに直接見える validation message を全て日本語化。
 export const CreatePdcaCycleInputSchema = z.object({
   workspaceId: z.string().uuid(),
-  title: z.string().min(1).max(200),
-  hypothesis: z.string().max(4000).default(''),
-  targetMetric: z.string().max(200).default(''),
-  targetValue: z.string().max(200).default(''),
+  title: z
+    .string()
+    .min(1, 'タイトルを入力してください')
+    .max(200, 'タイトルは 200 文字以内で入力してください'),
+  hypothesis: z.string().max(4000, '仮説は 4000 文字以内で入力してください').default(''),
+  targetMetric: z.string().max(200, '指標は 200 文字以内で入力してください').default(''),
+  targetValue: z.string().max(200, '目標値は 200 文字以内で入力してください').default(''),
 })
 export type CreatePdcaCycleInput = z.infer<typeof CreatePdcaCycleInputSchema>
 
