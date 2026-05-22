@@ -111,13 +111,16 @@ export function CreateWorkspaceForm() {
           </p>
         )}
       </div>
+      {/* iter1097: 旧 aria-label "Workspace を新規作成" / "Workspace を作成中…" は visible
+          "作成" / "作成中…" を末尾に持ち、voice control prefix-matching で「click 作成」 match 不可。
+          iter1093-1096 sweep convention に合わせ visible 冒頭固定。 */}
       <Button
         type="submit"
         className="h-11 w-full"
         disabled={isPending}
         aria-busy={isPending || undefined}
         data-testid="create-workspace-submit"
-        aria-label={isPending ? 'Workspace を作成中…' : 'Workspace を新規作成'}
+        aria-label={isPending ? '作成中… — Workspace を作成中' : '作成 — Workspace を新規作成'}
       >
         {/* iter1082: visible は ASCII '...' だったが aria-label は U+2026 '…' を使っていて
             literal substring 不一致 = WCAG 2.5.3 違反 + voice control「click 作成中…」 matching 不可。
