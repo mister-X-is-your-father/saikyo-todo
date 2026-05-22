@@ -192,11 +192,16 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
                   <span className="min-w-0 flex-1 truncate" title={title}>
                     {title}
                   </span>
-                  <span className="font-mono tabular-nums" aria-label={`合計 ${label}`}>
+                  {/* iter1078 basics: role="img" 付与で SR aria-label authoritative 化
+                      25 弾目 (iter1023/1049-1077 sweep 続編)。top-items-by-time-chip 各
+                      row 末尾 2 chip (合計時間 / entryCount) は role 無 span + aria-label
+                      のみで SR picked-up divergence。両 span に role="img" 付与で統一。 */}
+                  <span className="font-mono tabular-nums" role="img" aria-label={`合計 ${label}`}>
                     <span aria-hidden="true">{label}</span>
                   </span>
                   <span
                     className="text-muted-foreground text-[10px] tabular-nums"
+                    role="img"
                     aria-label={`${row.entryCount} 件`}
                   >
                     <span aria-hidden="true">{row.entryCount} 件</span>
