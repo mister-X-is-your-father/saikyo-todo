@@ -175,7 +175,11 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
                   : `「${preview.title}」を作成 (Enter でも可)`
           }
         >
-          <span aria-hidden="true">{create.isPending ? '...' : '作成'}</span>
+          {/* iter1090: visible は ASCII '...' (U+002E×3) で aria-label は U+2026 '…' を使い
+              literal substring 不一致 = WCAG 2.5.3 違反 + voice control 不可。
+              iter1078b-1083 sweep の同 pattern を quick-add にも展開、U+2026 に統一。
+              (visible は "..." の 3 文字 → "…" の 1 文字へ、視覚上は 3 ドット表示で同等。) */}
+          <span aria-hidden="true">{create.isPending ? '…' : '作成'}</span>
         </Button>
       </div>
       {preview && preview.title && (

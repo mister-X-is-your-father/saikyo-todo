@@ -173,7 +173,10 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           aria-label={create.isPending ? '稼働記録を作成中…' : '稼働記録を作成'}
           className="h-11 px-4"
         >
-          <span aria-hidden="true">{create.isPending ? '...' : '記録'}</span>
+          {/* iter1090: visible は ASCII '...' (U+002E×3) で aria-label は U+2026 '…' を使い
+              literal substring 不一致 = WCAG 2.5.3 違反 + voice control 不可。
+              iter1078b-1083 / quick-add 同 sweep を create-time-entry-form にも展開、U+2026 に統一。 */}
+          <span aria-hidden="true">{create.isPending ? '…' : '記録'}</span>
         </Button>
       </div>
     </form>
