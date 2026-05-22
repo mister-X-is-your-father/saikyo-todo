@@ -99,8 +99,13 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
 
         {/* lead time */}
         {stats.leadTimeAvgHours !== null ? (
+          // iter1081 basics: role="img" 付与で SR aria-label authoritative 化
+          // 28 弾目 (iter1023/1049-1080 sweep 続編、iter1080 sprint-retro dl と同 dl 形態)。
+          // dl は definition-list semantic だが 内 dt/dd を aria-hidden で隠して
+          // 集約 aria-label を持つ atomic chip pattern。role="img" で 1 unit 化。
           <dl
             className="grid grid-cols-3 gap-2 text-xs"
+            role="img"
             aria-label={`Lead time 統計 (平均 ${stats.leadTimeAvgHours}h / 中央 ${stats.leadTimeMedianHours ?? '不明'}h / 期間 ${stats.cycleDurationDays}d)`}
           >
             <div aria-hidden="true">
@@ -122,9 +127,10 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
           </dl>
         ) : null}
 
-        {/* status 分布 */}
+        {/* status 分布 — iter1081 basics と同 pattern (role="img") */}
         <dl
           className="grid grid-cols-3 gap-2 text-xs"
+          role="img"
           aria-label={`ステータス分布 (完了 ${stats.done} 件 / 未完了 ${stats.inProgressOrTodo} 件 / cancelled ${stats.cancelled} 件)`}
         >
           <div aria-hidden="true">
