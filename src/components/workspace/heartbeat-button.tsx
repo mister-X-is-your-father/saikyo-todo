@@ -46,9 +46,13 @@ export function HeartbeatButton({ workspaceId }: Props) {
       onClick={() => void run()}
       data-testid="heartbeat-btn"
       title="MUST item を 7d / 3d / 1d / overdue 段階でスキャンして通知を作成"
+      // iter1100: pending state で visible "スキャン中…" が aria-label "Heartbeat スキャンを実行中…"
+      // の literal substring に含まれない (ン と 中 の間に "を実行" が挿入されて連続不一致) =
+      // WCAG 2.5.3 違反 + voice control「click スキャン中…」 matching 不可。
+      // iter1093-1099 sweep convention に合わせ visible 冒頭固定。
       aria-label={
         scan.isPending
-          ? 'Heartbeat スキャンを実行中…'
+          ? 'スキャン中… — Heartbeat MUST スキャン実行中'
           : 'Heartbeat: MUST item の期限スキャンを手動実行 (7d / 3d / 1d / overdue 段階で通知を作成)'
       }
     >
