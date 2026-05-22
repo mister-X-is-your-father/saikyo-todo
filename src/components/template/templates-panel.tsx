@@ -196,12 +196,15 @@ export function TemplatesPanel({ workspaceId }: Props) {
               disabled={createMut.isPending || !name.trim()}
               aria-busy={createMut.isPending || undefined}
               aria-keyshortcuts="Meta+Enter Control+Enter"
+              // iter1110: visible "作成" を aria-label 冒頭固定 (iter1093-1109 sweep convention)。
+              // 旧 default/pending は visible 末尾持ちで voice control prefix-matching match 不可。
+              // empty-title path は visible "作成" が "作成するには..." prefix で維持。
               aria-label={
                 !name.trim()
                   ? 'Template を作成するには名前を入力してください'
                   : createMut.isPending
-                    ? 'Template を作成中…'
-                    : 'Template を新規作成 (Cmd/Ctrl+Enter でも可)'
+                    ? '作成 — Template を作成中…'
+                    : '作成 — Template を新規作成 (Cmd/Ctrl+Enter でも可)'
               }
             >
               <span aria-hidden="true">作成</span>
