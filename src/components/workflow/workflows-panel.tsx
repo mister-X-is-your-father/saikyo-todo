@@ -165,12 +165,14 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                 aria-busy={create.isPending || undefined}
                 data-testid="wf-create-btn"
                 aria-keyshortcuts="Meta+Enter Control+Enter"
+                // iter1118: visible "作成" / "作成中…" を aria-label 冒頭固定 (iter1093-1117 sweep)。
+                // empty-title は維持。
                 aria-label={
                   !name.trim()
                     ? 'Workflow を作成するには名前を入力してください'
                     : create.isPending
-                      ? 'Workflow を作成中…'
-                      : 'Workflow を新規作成 (Cmd/Ctrl+Enter でも可)'
+                      ? '作成中… — Workflow を作成中'
+                      : '作成 — Workflow を新規作成 (Cmd/Ctrl+Enter でも可)'
                 }
               >
                 <span aria-hidden="true">{create.isPending ? '作成中…' : '作成'}</span>
