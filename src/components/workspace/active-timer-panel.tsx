@@ -294,6 +294,9 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
         >
           <PictureInPicture2 className="h-3.5 w-3.5" aria-hidden="true" />
         </Button>
+        {/* iter1101: visible "停止" が aria-label "タイマーを停止して..." の "タイマーを**停止**して"
+            位置 (= prefix で無く middle) に substring としてあり voice control prefix-matching で
+            「click 停止」 match 不可。iter1093-1100 sweep convention に合わせ visible 冒頭固定。 */}
         <Button
           type="button"
           size="sm"
@@ -304,8 +307,8 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
           aria-busy={create.isPending || undefined}
           aria-label={
             create.isPending
-              ? 'タイマーを停止して稼働記録を作成中…'
-              : 'タイマーを停止して稼働記録に保存'
+              ? '停止 — タイマーを停止して稼働記録を作成中…'
+              : '停止 — タイマーを停止して稼働記録に保存'
           }
           data-testid="active-timer-stop"
         >
