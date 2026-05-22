@@ -9,10 +9,15 @@ export type Item = z.infer<typeof ItemSelectSchema>
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 const ISO_TIME = /^\d{2}:\d{2}(:\d{2})?$/
 
+// iter1129: title.max(500) には ja message が無く zod default 英語が露出 (min(1) は ja message
+// あり)。iter1086/1092/1126-1128 ja convention で max 制約も日本語化。Update.patch も同統一。
 export const CreateItemInputSchema = z
   .object({
     workspaceId: z.string().uuid(),
-    title: z.string().min(1, 'タイトルを入力してください').max(500),
+    title: z
+      .string()
+      .min(1, 'タイトルを入力してください')
+      .max(500, 'タイトルは 500 文字以内で入力してください'),
     description: z.string().default(''),
     status: z.string().min(1).default('todo'),
     parentItemId: z.string().uuid().nullish(),
@@ -40,7 +45,11 @@ export const UpdateItemInputSchema = z.object({
   expectedVersion: z.number().int().nonnegative(),
   patch: z
     .object({
-      title: z.string().min(1).max(500).optional(),
+      title: z
+        .string()
+        .min(1, 'タイトルを入力してください')
+        .max(500, 'タイトルは 500 文字以内で入力してください')
+        .optional(),
       description: z.string().optional(),
       status: z.string().min(1).optional(),
       startDate: z.string().regex(ISO_DATE).nullish(),
