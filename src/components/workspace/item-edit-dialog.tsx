@@ -857,10 +857,14 @@ function ItemEditDialogInner({
                 }
               }}
               data-testid="item-edit-archive"
+              // iter1178: 旧 aria-label 2 path とも visible "アーカイブ" / "アーカイブ中…"
+              // を中位置 "「title」を **アーカイブ**" に持ち voice control prefix-matching
+              //「click アーカイブ / アーカイブ中…」 match 不可。iter1074 unarchive 同 pattern
+              // を archive 側にも展開、visible 冒頭固定 + em-dash 区切で descriptive 末尾。
               aria-label={
                 archive.isPending
-                  ? `「${item.title}」をアーカイブ中…`
-                  : `「${item.title}」をアーカイブ (後で復元可能)`
+                  ? `アーカイブ中… — 「${item.title}」をアーカイブ中…`
+                  : `アーカイブ — 「${item.title}」をアーカイブ (後で復元可能)`
               }
             >
               <span aria-hidden="true">{archive.isPending ? 'アーカイブ中…' : 'アーカイブ'}</span>
