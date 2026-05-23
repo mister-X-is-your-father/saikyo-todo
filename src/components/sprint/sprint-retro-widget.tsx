@@ -216,12 +216,15 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
                 />
               )}
               {rc.cancelledMid > 0 && (
+                // iter1188: 旧 ariaLabel `cancelled ${cancelledMid} 件` は visible "計画外し"
+                // を全く含まず WCAG 2.5.3 (Label in Name) 違反 + voice control「click 計画外し」
+                // match 不可。visible "計画外し" 冒頭固定 + descriptive 末尾保持。
                 <SeverityChip
                   severity="muted"
                   icon={<Ban className="h-3 w-3" aria-hidden="true" />}
                   label="計画外し"
                   delta={rc.cancelledMid}
-                  ariaLabel={`cancelled ${rc.cancelledMid} 件`}
+                  ariaLabel={`計画外し ${rc.cancelledMid} 件 (cancelled)`}
                   testId="retro-cause-cancelled"
                 />
               )}
