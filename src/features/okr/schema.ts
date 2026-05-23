@@ -59,6 +59,7 @@ const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD 形式で')
 // iter1128: title.max / description.max / KR title.max / unit.max には ja message が無く zod
 // default 英語が露出。refine "start_date は end_date 以前" は技術用語混在。iter1086/1092/1126/1127
 // convention で全 message 日本語化。
+// iter1146: KR weight.min(1).max(10) / position.min(0) (int 制約) の ja message 追加。
 export const CreateGoalInputSchema = z
   .object({
     workspaceId: z.string().uuid(),
@@ -115,8 +116,13 @@ export const CreateKeyResultInputSchema = z.object({
   targetValue: z.number().nullable().optional(),
   currentValue: z.number().nullable().optional(),
   unit: z.string().max(20, '単位は 20 文字以内で入力してください').nullable().optional(),
-  weight: z.number().int().min(1).max(10).default(1),
-  position: z.number().int().min(0).default(0),
+  weight: z
+    .number()
+    .int()
+    .min(1, 'weight は 1 以上で指定してください')
+    .max(10, 'weight は 10 以下で指定してください')
+    .default(1),
+  position: z.number().int().min(0, 'position は 0 以上で指定してください').default(0),
   idempotencyKey: z.string().uuid(),
 })
 export type CreateKeyResultInput = z.infer<typeof CreateKeyResultInputSchema>
@@ -135,8 +141,13 @@ export const UpdateKeyResultInputSchema = z.object({
       targetValue: z.number().nullable().optional(),
       currentValue: z.number().nullable().optional(),
       unit: z.string().max(20, '単位は 20 文字以内で入力してください').nullable().optional(),
-      weight: z.number().int().min(1).max(10).optional(),
-      position: z.number().int().min(0).optional(),
+      weight: z
+        .number()
+        .int()
+        .min(1, 'weight は 1 以上で指定してください')
+        .max(10, 'weight は 10 以下で指定してください')
+        .optional(),
+      position: z.number().int().min(0, 'position は 0 以上で指定してください').optional(),
     })
     .refine((p) => Object.keys(p).length > 0, { message: '更新項目がありません' }),
 })
