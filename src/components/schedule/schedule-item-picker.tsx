@@ -85,7 +85,11 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
                   type="button"
                   onClick={() => onPick({ itemId: it.id })}
                   className="hover:bg-accent focus-visible:ring-ring flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm focus-visible:ring-2 focus-visible:outline-none"
-                  aria-label={`item「${it.title}」を選択${it.isMust ? ' (MUST)' : ''}`}
+                  // iter1147: 旧 aria-label `item「title」を選択` は visible title を中位置
+                  // (位置 5 "item「**title**」") に持ち voice control prefix-matching
+                  //「click {title}」 match 不可。iter1093-1146 sweep convention に揃え
+                  // visible title 冒頭固定 + em-dash 区切で descriptive 残す。
+                  aria-label={`${it.title} — item を選択${it.isMust ? ' (MUST)' : ''}`}
                 >
                   <span className="truncate" aria-hidden="true">
                     {it.title}
