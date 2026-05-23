@@ -15,15 +15,17 @@ export const SemanticSearchInputSchema = z.object({
     .trim()
     .min(1, '検索語を入力してください')
     .max(500, '検索語は 500 文字以内で入力してください'),
+  // iter1162: limit / templateBoost の positive() に ja message 無く zod default 英語が露出
+  // (max は ja 化済)。「正の数で」 message を統一付与。
   limit: z
     .number()
     .int()
-    .positive()
+    .positive('取得件数は 1 以上で指定してください')
     .max(MAX_LIMIT, `取得件数は ${MAX_LIMIT} 件以下で指定してください`)
     .default(DEFAULT_LIMIT),
   templateBoost: z
     .number()
-    .positive()
+    .positive('template ブースト倍率は 0 より大きい値で指定してください')
     .max(5, 'template ブースト倍率は 5.0 以下で指定してください')
     .default(DEFAULT_TEMPLATE_BOOST),
 })
@@ -40,12 +42,12 @@ export const FullTextSearchInputSchema = z.object({
   limit: z
     .number()
     .int()
-    .positive()
+    .positive('取得件数は 1 以上で指定してください')
     .max(MAX_LIMIT, `取得件数は ${MAX_LIMIT} 件以下で指定してください`)
     .default(DEFAULT_LIMIT),
   templateBoost: z
     .number()
-    .positive()
+    .positive('template ブースト倍率は 0 より大きい値で指定してください')
     .max(5, 'template ブースト倍率は 5.0 以下で指定してください')
     .default(DEFAULT_TEMPLATE_BOOST),
 })
