@@ -167,7 +167,9 @@ export function MockSubmitForm() {
       {/* iter1094: 旧 default aria-label "工数を送信 (...)" は visible "送信" を "工数を**送信**"
           位置 (= prefix では無く middle) に持ち、voice control prefix-matching で「click 送信」
           match 不可。iter1093 signup-form / iter1034-1077 sweep の visible-prefix convention に
-          合わせ visible を冒頭固定。pending state ("送信中…") は既に prefix なので維持。 */}
+          合わせ visible を冒頭固定。
+          iter1181: pending path も em-dash convention (iter1143 login / iter1144 mock-login) に
+          揃えて divergence 解消。default は既に em-dash 形式、pending だけ paren で混在 style。 */}
       <Button
         id="tsSubmit"
         type="submit"
@@ -176,7 +178,7 @@ export function MockSubmitForm() {
         className="h-11 w-full"
         aria-label={
           isPending
-            ? '送信中… (mock-timesheet 工数送信処理を実行中)'
+            ? '送信中… — mock-timesheet 工数送信処理を実行中'
             : '送信 — 工数を送信 (mock-timesheet 入力フォーム)'
         }
       >
