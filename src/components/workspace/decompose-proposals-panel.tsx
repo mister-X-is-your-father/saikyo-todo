@@ -176,10 +176,14 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               onClick={() => void handleCancel()}
               data-testid="agent-cancel"
               title="実行中の Agent を中止"
+              // iter1166: 旧 aria-label 2 path とも visible "中止" を中位置 "Agent を
+              // **中止** ..." に持ち voice control prefix-matching「click 中止」
+              // match 不可。iter1093-1165 sweep convention に揃え visible "中止"
+              // 冒頭固定 + em-dash 区切で descriptive 末尾保持。
               aria-label={
                 cancel.isPending
-                  ? '実行中の Agent を中止中…'
-                  : '実行中の Agent を中止 (Researcher / 分解処理を停止)'
+                  ? '中止 — 実行中の Agent を中止中…'
+                  : '中止 — 実行中の Agent を中止 (Researcher / 分解処理を停止)'
               }
             >
               <X className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
