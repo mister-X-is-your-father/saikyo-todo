@@ -329,7 +329,11 @@ function KanbanCard({
               onEdit(item)
             }}
             data-testid={`kanban-title-${item.id}`}
-            aria-label={`「${item.title}」を編集`}
+            // iter1155: 旧 aria-label `「title」を編集` は visible "{title}" を位置 1
+            // (「」内) に持ち voice control prefix-matching「click {title}」 match 不可
+            // (substring 一致のみ)。iter1093-1154 sweep convention に揃え visible title
+            // 冒頭固定 + em-dash 区切で descriptive 末尾保持。
+            aria-label={`${item.title} — 編集`}
             className={
               'hover:text-primary focus-visible:ring-ring rounded text-left font-medium break-words hover:underline focus-visible:ring-2 focus-visible:outline-none ' +
               (item.doneAt ? 'text-muted-foreground line-through' : '')
@@ -353,7 +357,12 @@ function KanbanCard({
             // unicode 名 (U+270E LOWER RIGHT PENCIL) の冗長読み上げを抑制。
             // iter506: pseudo で tap target を 44x44 化 (visual ✎ icon size 維持)、
             // iter505 ItemCheckbox pattern と同 pseudo `::before` 拡張。
-            aria-label={`「${item.title}」を編集`}
+            // iter1155: visible は ✎ icon (aria-hidden) のみで WCAG 2.5.3 視覚 label
+            // 制約は無いが、 sibling title button (`kanban-title-`) と aria-label が
+            // 一致すると tab navigation 時 SR で重複読み上げ。 ✎ icon は "編集" 意図を
+            // 表すので "編集 —" prefix を冒頭に置いて voice control「click 編集」
+            // prefix-match satisfy + title button (`${title} — 編集`) と差別化。
+            aria-label={`編集 — 「${item.title}」を編集 (✎ アイコン)`}
             title={`「${item.title}」を編集`}
             className="text-muted-foreground hover:text-foreground focus-visible:ring-ring relative rounded px-1 text-xs before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
             data-testid={`kanban-edit-${item.id}`}
