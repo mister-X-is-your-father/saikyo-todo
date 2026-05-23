@@ -28,10 +28,12 @@ import { agentInvocationRepository, agentRepository } from './repository'
 import { type ResearcherRunOutput, researcherService } from './researcher-service'
 import type { Agent } from './schema'
 
+// iter1151: extraHint.max は ja message 無く zod default 英語が露出 (Action input schema)。
+// iter1086/1092/1126-1149 ja convention で日本語化 (3 Action 共通)。
 const DecomposeItemActionInputSchema = z.object({
   workspaceId: z.string().uuid(),
   itemId: z.string().uuid(),
-  extraHint: z.string().max(500).optional(),
+  extraHint: z.string().max(500, '追加 hint は 500 文字以内で入力してください').optional(),
   /** 省略時はサーバ側で randomUUID を生成。UI から制御したい時だけ渡す。 */
   idempotencyKey: z.string().uuid().optional(),
   /**
@@ -97,7 +99,7 @@ export async function decomposeItemViaClaudeAction(
 const DecomposeGoalActionInputSchema = z.object({
   workspaceId: z.string().uuid(),
   goalId: z.string().uuid(),
-  extraHint: z.string().max(2000).optional(),
+  extraHint: z.string().max(2000, '追加 hint は 2,000 文字以内で入力してください').optional(),
   idempotencyKey: z.string().optional(),
 })
 
@@ -243,7 +245,7 @@ const ListAgentsActionInputSchema = z.object({
 const GeneratePlanActionInputSchema = z.object({
   workspaceId: z.string().uuid(),
   itemId: z.string().uuid(),
-  extraHint: z.string().max(500).optional(),
+  extraHint: z.string().max(500, '追加 hint は 500 文字以内で入力してください').optional(),
   /** 省略時はサーバ側で randomUUID を生成。 */
   idempotencyKey: z.string().uuid().optional(),
 })

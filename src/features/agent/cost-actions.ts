@@ -30,12 +30,21 @@ export async function getBudgetStatusAction(workspaceId: string): Promise<Result
   })
 }
 
+// iter1151: monthlyCostLimitUsd.nonnegative + costWarnThresholdRatio.min(0).max(1) に
+// ja message 無く zod default 英語が露出。iter1086/1092/1126-1149 ja convention で日本語化。
 const UpdateMonthlyCostLimitInputSchema = z.object({
   workspaceId: z.string().uuid(),
   /** USD。null で無制限化 */
-  monthlyCostLimitUsd: z.number().nonnegative().nullable(),
+  monthlyCostLimitUsd: z
+    .number()
+    .nonnegative('月次コスト上限は 0 以上で指定してください')
+    .nullable(),
   /** 0..1。default は変更しない */
-  costWarnThresholdRatio: z.number().min(0).max(1).optional(),
+  costWarnThresholdRatio: z
+    .number()
+    .min(0, '警告閾値は 0 以上で指定してください')
+    .max(1, '警告閾値は 1 以下で指定してください')
+    .optional(),
 })
 
 /**

@@ -81,6 +81,22 @@ describe('decomposeItemAction', () => {
     expect(mockedGuard).not.toHaveBeenCalled()
     expect(mockedDecompose).not.toHaveBeenCalled()
   })
+
+  // iter1151: extraHint.max(500) に ja message 付与の回帰防止
+  it('extraHint 501 文字で VALIDATION + ja message が含まれる', async () => {
+    const r = await decomposeItemAction({
+      workspaceId: randomUUID(),
+      itemId: randomUUID(),
+      extraHint: 'x'.repeat(501),
+    })
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      expect(r.error.code).toBe('VALIDATION')
+      // ValidationError には parsed.error が details に入っているはず
+      const detailsJson = JSON.stringify(r.error)
+      expect(detailsJson).toContain('追加 hint は 500')
+    }
+  })
 })
 
 describe('researchItemAction', () => {
