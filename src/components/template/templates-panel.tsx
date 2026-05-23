@@ -198,10 +198,13 @@ export function TemplatesPanel({ workspaceId }: Props) {
               aria-keyshortcuts="Meta+Enter Control+Enter"
               // iter1110: visible "作成" を aria-label 冒頭固定 (iter1093-1109 sweep convention)。
               // 旧 default/pending は visible 末尾持ちで voice control prefix-matching match 不可。
-              // empty-title path は visible "作成" が "作成するには..." prefix で維持。
+              // iter1174: iter1110 では「empty-title path は visible '作成' が '作成するには...'
+              // prefix で維持」と判断したが、prefix は 'Template' で始まり visible "作成" は
+              // 中位置 "Template を **作成** するには…" の substring に過ぎず prefix-match 不可
+              // (iter1169-1173 と同 sweep 残漏 pattern)。3 path とも visible 冒頭固定で統一。
               aria-label={
                 !name.trim()
-                  ? 'Template を作成するには名前を入力してください'
+                  ? '作成 — Template を作成するには名前を入力してください'
                   : createMut.isPending
                     ? '作成 — Template を作成中…'
                     : '作成 — Template を新規作成 (Cmd/Ctrl+Enter でも可)'
