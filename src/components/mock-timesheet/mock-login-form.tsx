@@ -106,6 +106,9 @@ export function MockLoginForm() {
           </p>
         )}
       </div>
+      {/* iter1144: login-form (iter1143) / signup-form (iter1093) と em-dash 区切
+          visible-prefix convention を統一。旧 () 区切は prefix-match 自体は満たすが
+          sibling auth form 集合と style 揃えるべき。visible span は無変更。 */}
       <Button
         id="tsLoginSubmit"
         type="submit"
@@ -114,8 +117,8 @@ export function MockLoginForm() {
         aria-busy={isPending || undefined}
         aria-label={
           isPending
-            ? '認証中… (mock-timesheet 認証処理を実行中)'
-            : 'ログイン (mock-timesheet email + password で認証)'
+            ? '認証中… — mock-timesheet 認証処理を実行中'
+            : 'ログイン — mock-timesheet email + password で認証'
         }
       >
         {/* iter1078: visible は ASCII '...' だったが aria-label は U+2026 '…' を使っていて
