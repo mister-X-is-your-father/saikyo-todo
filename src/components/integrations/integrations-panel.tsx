@@ -573,10 +573,14 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
               data-testid="src-create-btn"
               // iter1109: visible-prefix sweep (iter1093-1108) を src-create-btn にも展開。
               // default/pending 旧 aria-label "External Source を新規作成" / "Source を作成中…" は
-              // visible "作成" / "作成中…" を末尾持ち。empty-title path は visible "作成" が prefix で維持。
+              // visible "作成" / "作成中…" を末尾持ち。
+              // iter1175: iter1109 で「empty-title path は visible '作成' が prefix で維持」と
+              // 判断したが、prefix は 'Source' で始まり visible "作成" は中位置 "Source を **作成**
+              // するには…" の substring に過ぎず prefix-match 不可 (iter1169-1174 と同 sweep
+              // 残漏 pattern)。3 path とも visible 冒頭固定で統一。
               aria-label={
                 !name.trim()
-                  ? 'Source を作成するには名前を入力してください'
+                  ? '作成 — Source を作成するには名前を入力してください'
                   : create.isPending
                     ? '作成中… — Source を作成中'
                     : '作成 — External Source を新規作成'
