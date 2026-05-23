@@ -600,12 +600,17 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     ? 'active な Goal のみ分解可能'
                     : 'AI が Goal + KR + チームコンテキストから 5〜10 件の Item を作成'
                 }
+                // iter1186: 旧 aria-label 3 path とも visible "AI 分解" / "AI 分解中…" を
+                // 中位置「Goal「**title**」を **AI 分解** ...」に持ち voice control
+                // prefix-matching「click AI 分解 / AI 分解中…」 match 不可。iter1159
+                // item-decompose-button / iter1160 item-research-button 同 sweep を
+                // goal-decompose にも展開、visible 冒頭固定 + em-dash 区切で descriptive 末尾。
                 aria-label={
                   status !== 'active'
-                    ? `Goal「${goal.title}」は active でないため AI 分解不可`
+                    ? `AI 分解 — Goal「${goal.title}」は active でないため AI 分解不可`
                     : decompose.isPending
-                      ? `Goal「${goal.title}」を AI 分解中…`
-                      : `Goal「${goal.title}」を AI 分解 (5〜10 件の Item を作成)`
+                      ? `AI 分解中… — Goal「${goal.title}」を AI 分解中…`
+                      : `AI 分解 — Goal「${goal.title}」を AI 分解 (5〜10 件の Item を作成)`
                 }
               >
                 <Sparkles className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
