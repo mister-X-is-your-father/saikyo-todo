@@ -50,10 +50,14 @@ export function AiHandoffPhaseChip({
 
   return (
     <div className="space-y-1" data-testid={testId ?? `ai-handoff-${phase}`}>
+      {/* iter1187: 旧 ariaLabel `AI hand-off: ${chipLabel}` は visible {chipLabel} を
+          中位置 "AI hand-off: **chipLabel**" に持ち voice control prefix-matching
+          「click {chipLabel}」 match 不可 (substring 一致のみ)。visible 冒頭固定 +
+          em-dash 区切で descriptive 末尾保持 (iter1093-1186 sweep convention)。 */}
       <SeverityChip
         severity={desc.severity}
         label={desc.chipLabel}
-        ariaLabel={`AI hand-off: ${desc.chipLabel}`}
+        ariaLabel={`${desc.chipLabel} — AI hand-off`}
         onClick={onClick}
         className={className}
         testId={`ai-handoff-chip-${phase}`}
