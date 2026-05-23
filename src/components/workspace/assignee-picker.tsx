@@ -138,10 +138,12 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
                       void toggle(ref)
                     }}
                     data-testid={`assignee-option-${m.userId}`}
+                    // iter1180: 旧 aria-label 2 path とも visible "{label}" を中位置
+                    //「「**{label}**」」に持ち voice control prefix-matching「click {label}」
+                    // match 不可。iter1123 trigger 同 pattern を user option にも展開、
+                    // visible 冒頭固定 + em-dash 区切で descriptive 末尾保持。
                     aria-label={
-                      checked
-                        ? `「${label}」をアサイン中 (クリックで解除)`
-                        : `「${label}」をアサインする`
+                      checked ? `${label} — アサイン中 (クリックで解除)` : `${label} — アサインする`
                     }
                   >
                     <CheckIcon
@@ -167,10 +169,14 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
                         void toggle(ref)
                       }}
                       data-testid={`assignee-option-agent-${a.role}`}
+                      // iter1180: 旧 aria-label 2 path とも visible "{label}" を中位置
+                      //「AI Agent「**{label}**」」に持ち voice control prefix-matching
+                      //「click {label}」 match 不可。visible 冒頭固定 + em-dash 区切で
+                      // descriptive 末尾保持 (AI Agent 文脈情報は末尾)。
                       aria-label={
                         checked
-                          ? `AI Agent「${label}」をアサイン中 (クリックで解除)`
-                          : `AI Agent「${label}」をアサインする`
+                          ? `${label} — AI Agent アサイン中 (クリックで解除)`
+                          : `${label} — AI Agent をアサイン`
                       }
                     >
                       <CheckIcon
