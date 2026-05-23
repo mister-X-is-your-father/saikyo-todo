@@ -223,7 +223,12 @@ export function TodayView({
                           }}
                           className="hover:text-primary focus-visible:ring-ring truncate rounded text-left font-medium hover:underline focus-visible:ring-2 focus-visible:outline-none"
                           data-testid={`today-title-${it.id}`}
-                          aria-label={`「${it.title}」を編集`}
+                          // iter1156: 旧 aria-label `「title」を編集` は visible "{title}"
+                          // を位置 1 (「」内) に持ち voice control prefix-matching
+                          //「click {title}」 match 不可 (substring 一致のみ)。
+                          // iter1093-1155 sweep convention (kanban-title iter1155 と同 pattern)
+                          // に揃え visible title 冒頭固定 + em-dash 区切で descriptive 末尾。
+                          aria-label={`${it.title} — 編集`}
                         >
                           <span aria-hidden="true">{it.title}</span>
                         </button>
