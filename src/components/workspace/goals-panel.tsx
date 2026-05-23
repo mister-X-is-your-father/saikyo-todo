@@ -820,13 +820,19 @@ function KeyResultList({
             className="min-h-11 rounded border px-2 py-1 text-xs"
             required
             aria-required="true"
-            aria-label={`KR 進捗算出モード (現在: ${
-              mode === 'items'
-                ? '子 Item 完了率で自動算出'
-                : mode === 'manual'
-                  ? '目標値 / 単位を手入力'
-                  : mode
-            })`}
+            // iter1196: 旧 aria-label `KR 進捗算出モード (現在: 子 Item 完了率...)` は
+            // visible (option text "items (子 Item 完了率)" / "manual (目標値 / 単位)") を
+            // 中位置に持ち voice control prefix-matching「click items / manual」 match 不可
+            // (src-kind iter1192 / dep-kind iter1195 同 sweep)。
+            aria-label={(() => {
+              const visible =
+                mode === 'items'
+                  ? 'items (子 Item 完了率で自動算出)'
+                  : mode === 'manual'
+                    ? 'manual (目標値 / 単位を手入力)'
+                    : mode
+              return `${visible} — KR 進捗算出モード (現在: ${visible})`
+            })()}
           >
             <option value="items">items (子 Item 完了率)</option>
             <option value="manual">manual (目標値 / 単位)</option>
