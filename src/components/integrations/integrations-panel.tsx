@@ -480,13 +480,19 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     className="min-h-11 w-full rounded-md border px-3 py-1 text-sm"
                     required
                     aria-required="true"
-                    aria-label={`HTTP メソッド (現在: ${
-                      method === 'GET'
-                        ? 'GET — 副作用なし、URL の query で読取り'
-                        : method === 'POST'
-                          ? 'POST — body 付き送信、subscribe / search 系の API に使う'
-                          : method
-                    })`}
+                    // iter1193: src-kind iter1192 と同 sweep — 旧 aria-label
+                    // `HTTP メソッド (現在: GET — ...)` は visible (option text "GET" / "POST")
+                    // を中位置 "(現在: ...)" 内に持ち voice control prefix-matching
+                    //「click GET / POST」 match 不可 (substring 一致のみ)。
+                    aria-label={(() => {
+                      const visible =
+                        method === 'GET'
+                          ? 'GET — 副作用なし、URL の query で読取り'
+                          : method === 'POST'
+                            ? 'POST — body 付き送信、subscribe / search 系の API に使う'
+                            : method
+                      return `${visible} — HTTP メソッド (現在: ${visible})`
+                    })()}
                   >
                     <option value="GET">GET</option>
                     <option value="POST">POST</option>
