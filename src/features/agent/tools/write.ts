@@ -26,16 +26,23 @@ import { itemRepository } from '@/features/item/repository'
 
 import type { AgentToolFactory } from './types'
 
+// iter1152: Agent tool 入力 schema (AgentCreateItem / AgentWriteComment / AgentCreateDoc /
+// AgentProposeChildItem) の string max/min に ja message 無く zod default 英語が露出。
+// Agent からの tool 呼び出し時 validation error も agent_invocations.error_message に
+// 記録され UI に出るため日本語化が必要。iter1086/1092/1126-1151 ja convention で日本語化。
 const AgentCreateItemSchema = z
   .object({
-    title: z.string().min(1).max(500),
-    description: z.string().max(5000).default(''),
-    status: z.string().min(1).default('todo'),
+    title: z
+      .string()
+      .min(1, 'タイトルを入力してください')
+      .max(500, 'タイトルは 500 文字以内で入力してください'),
+    description: z.string().max(5000, '説明は 5,000 文字以内で入力してください').default(''),
+    status: z.string().min(1, 'ステータスを指定してください').default('todo'),
     parentItemId: z.string().uuid().nullish(),
     startDate: z.string().regex(ISO_DATE_RE).nullish(),
     dueDate: z.string().regex(ISO_DATE_RE).nullish(),
     isMust: z.boolean().default(false),
-    dod: z.string().max(2000).nullish(),
+    dod: z.string().max(2000, 'DoD は 2,000 文字以内で入力してください').nullish(),
   })
   .superRefine((v, ctx) => {
     if (v.isMust && (!v.dod || v.dod.trim().length === 0)) {
@@ -48,12 +55,21 @@ const AgentCreateItemSchema = z
 
 const AgentWriteCommentSchema = z.object({
   itemId: z.string().uuid(),
-  body: z.string().min(1).max(5000),
+  body: z
+    .string()
+    .min(1, 'コメント本文を入力してください')
+    .max(5000, 'コメント本文は 5,000 文字以内で入力してください'),
 })
 
 const AgentCreateDocSchema = z.object({
-  title: z.string().min(1).max(500),
-  body: z.string().min(1).max(20000),
+  title: z
+    .string()
+    .min(1, 'タイトルを入力してください')
+    .max(500, 'タイトルは 500 文字以内で入力してください'),
+  body: z
+    .string()
+    .min(1, '本文を入力してください')
+    .max(20000, '本文は 20,000 文字以内で入力してください'),
 })
 
 function jsonError(message: string, details?: unknown): string {
@@ -67,10 +83,13 @@ function jsonOk(data: unknown): string {
 
 const AgentProposeChildItemSchema = z
   .object({
-    title: z.string().min(1).max(500),
-    description: z.string().max(5000).default(''),
+    title: z
+      .string()
+      .min(1, 'タイトルを入力してください')
+      .max(500, 'タイトルは 500 文字以内で入力してください'),
+    description: z.string().max(5000, '説明は 5,000 文字以内で入力してください').default(''),
     isMust: z.boolean().default(false),
-    dod: z.string().max(2000).nullish(),
+    dod: z.string().max(2000, 'DoD は 2,000 文字以内で入力してください').nullish(),
   })
   .superRefine((v, ctx) => {
     if (v.isMust && (!v.dod || v.dod.trim().length === 0)) {
