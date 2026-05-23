@@ -193,7 +193,10 @@ export function CalendarView({ workspaceId }: Props) {
             size="sm"
             className="min-h-11"
             onClick={() => setDate(startOfDay(new Date()))}
-            aria-label={`表示日を今日 (${format(new Date(), 'M月d日 (eee)')}) にリセット`}
+            // iter1146: 旧 aria-label `表示日を今日 (...) にリセット` は visible "今日" を
+            // 中位置に持ち voice control prefix-matching「click 今日」 match 不可。
+            // iter1093-1145 sweep convention に揃え visible 冒頭 + em-dash 区切で descriptive 残す。
+            aria-label={`今日 — 表示日を今日 (${format(new Date(), 'M月d日 (eee)')}) にリセット`}
             data-testid="calendar-today-btn"
           >
             <span aria-hidden="true">今日</span>
