@@ -24,9 +24,15 @@ import { notificationService } from '@/features/notification/service'
 
 import { definePart, unwrapPartResult } from '../types'
 
+// iter1159: limit.min(1).max(200) に ja message 無く zod default 英語が露出。
 const NotificationListInput = z.object({
   unreadOnly: z.boolean().optional(),
-  limit: z.number().int().min(1).max(200).optional(),
+  limit: z
+    .number()
+    .int()
+    .min(1, '取得件数は 1 以上で指定してください')
+    .max(200, '取得件数は 200 件以下で指定してください')
+    .optional(),
 })
 
 export const notificationListPart = definePart({

@@ -74,9 +74,14 @@ export const timeEntryCreatePart = definePart({
  * workspace TZ で算出)、limit は 1-500 (default 100、service schema 既定)。
  */
 const TimeEntryListInput = z.object({
-  from: z.string().regex(ISO_DATE_RE).optional(),
-  to: z.string().regex(ISO_DATE_RE).optional(),
-  limit: z.number().int().min(1).max(500).optional(),
+  from: z.string().regex(ISO_DATE_RE, 'YYYY-MM-DD 形式で入力してください').optional(),
+  to: z.string().regex(ISO_DATE_RE, 'YYYY-MM-DD 形式で入力してください').optional(),
+  limit: z
+    .number()
+    .int()
+    .min(1, '取得件数は 1 以上で指定してください')
+    .max(500, '取得件数は 500 件以下で指定してください')
+    .optional(),
 })
 
 export const timeEntryListPart = definePart({

@@ -169,7 +169,7 @@ export const itemListPart = definePart({
  * server で勝手に new Date() しない pattern。time-zone 漏洩予防)。
  */
 const ItemListTodayInput = z.object({
-  today: z.string().regex(ISO_DATE_RE),
+  today: z.string().regex(ISO_DATE_RE, 'YYYY-MM-DD 形式で入力してください'),
 })
 
 export const itemListTodayPart = definePart({
@@ -196,7 +196,7 @@ export const itemListTodayPart = definePart({
  * 「救済プラン」 等を立てる起点の substrate。古い超過順 (dueDate 昇順) で返す。
  */
 const ItemListOverdueInput = z.object({
-  today: z.string().regex(ISO_DATE_RE),
+  today: z.string().regex(ISO_DATE_RE, 'YYYY-MM-DD 形式で入力してください'),
 })
 
 export const itemListOverduePart = definePart({

@@ -52,4 +52,25 @@ describe('automation-part ja messages (iter1158)', () => {
     expect(src).toContain('計測分数は 1 以上で指定してください')
     expect(src).toContain('計測分数は 24 時間以内 (1440 分) で指定してください')
   })
+
+  // iter1159: list 系 + regex 部位の ja message 追加分
+  it('notification.ts に limit の ja message が含まれる', () => {
+    const src = readPart('notification.ts')
+    expect(src).toContain('取得件数は 1 以上で指定してください')
+    expect(src).toContain('取得件数は 200 件以下で指定してください')
+  })
+
+  it('time-entry.ts に TimeEntryList の from/to/limit ja message が含まれる', () => {
+    const src = readPart('time-entry.ts')
+    // YYYY-MM-DD message は Create + List 計 3 出現 (workDate + from + to)
+    const dateMsgCnt = src.split('YYYY-MM-DD 形式で入力してください').length - 1
+    expect(dateMsgCnt).toBeGreaterThanOrEqual(3)
+    expect(src).toContain('取得件数は 500 件以下で指定してください')
+  })
+
+  it('item.ts に today regex の ja message が 2 出現 (list_today + list_overdue)', () => {
+    const src = readPart('item.ts')
+    const dateMsgCnt = src.split('YYYY-MM-DD 形式で入力してください').length - 1
+    expect(dateMsgCnt).toBeGreaterThanOrEqual(2)
+  })
 })
