@@ -76,6 +76,42 @@ describe('StructuredReviewSchema', () => {
       }).success,
     ).toBe(false)
   })
+
+  // iter1147: ja message 付与の回帰防止
+  it('checklist 16 件 reject 時 ja message が出る', () => {
+    const checklist = Array.from({ length: 16 }, () => ({ point: 'p', status: 'ok' as const }))
+    const r = StructuredReviewSchema.safeParse({ checklist, overall_summary: 'x' })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('15 件以内'))).toBe(true)
+    }
+  })
+
+  it('overall_summary 空 reject 時 ja message が出る', () => {
+    const r = StructuredReviewSchema.safeParse({
+      checklist: [{ point: 'p', status: 'ok' }],
+      overall_summary: '',
+    })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('総合評価を入力'))).toBe(true)
+    }
+  })
+
+  it('improvement rationale 空 reject 時 ja message が出る', () => {
+    const r = StructuredReviewSchema.safeParse({
+      checklist: [{ point: 'p', status: 'ok' }],
+      improvements: [{ title: 't', rationale: '' }],
+      overall_summary: 'x',
+    })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('改善の理由'))).toBe(true)
+    }
+  })
 })
 
 describe('summarizeReview', () => {

@@ -25,21 +25,35 @@ import { round2 } from '@/lib/round-decimal'
 export const ChecklistStatusSchema = z.enum(['ok', 'warn', 'fail'])
 export type ChecklistStatus = z.infer<typeof ChecklistStatusSchema>
 
+// iter1147: structured-review 全 max/min に ja message 付与 (iter1086/1092/1126-1144 sweep)。
+// AI review parser の zod error が staging UI / Slack 通知 / test で日本語表示される。
 export const ChecklistItemSchema = z.object({
   /** review 観点 (1 行 短く、例: 「DoD「全 test 緑」 を満たすか」) */
-  point: z.string().trim().min(1).max(200),
+  point: z
+    .string()
+    .trim()
+    .min(1, 'review 観点を入力してください')
+    .max(200, 'review 観点は 200 文字以内で入力してください'),
   /** 'ok' (✅) / 'warn' (⚠) / 'fail' (❌) */
   status: ChecklistStatusSchema,
   /** 判定理由 (1 行、optional)、空文字許可 */
-  comment: z.string().trim().max(300).default(''),
+  comment: z.string().trim().max(300, '判定理由は 300 文字以内で入力してください').default(''),
 })
 export type ChecklistItem = z.infer<typeof ChecklistItemSchema>
 
 export const ImprovementSchema = z.object({
   /** 改善 action の短い title */
-  title: z.string().trim().min(1).max(200),
+  title: z
+    .string()
+    .trim()
+    .min(1, '改善タイトルを入力してください')
+    .max(200, '改善タイトルは 200 文字以内で入力してください'),
   /** なぜこの改善か (1-2 行) */
-  rationale: z.string().trim().min(1).max(400),
+  rationale: z
+    .string()
+    .trim()
+    .min(1, '改善の理由を入力してください')
+    .max(400, '改善の理由は 400 文字以内で入力してください'),
   /** 重要度 ('high'/'medium'/'low')、自由表記 NG */
   severity: z.enum(['high', 'medium', 'low']).default('medium'),
 })
@@ -47,11 +61,21 @@ export type Improvement = z.infer<typeof ImprovementSchema>
 
 export const StructuredReviewSchema = z.object({
   /** 3-7 checklist items、空 reject */
-  checklist: z.array(ChecklistItemSchema).min(1).max(15),
+  checklist: z
+    .array(ChecklistItemSchema)
+    .min(1, 'checklist は 1 件以上必要です')
+    .max(15, 'checklist は 15 件以内で指定してください'),
   /** 1-3 改善提案、無くても OK (= 完璧 review) */
-  improvements: z.array(ImprovementSchema).max(5).default([]),
+  improvements: z
+    .array(ImprovementSchema)
+    .max(5, '改善提案は 5 件以内で指定してください')
+    .default([]),
   /** 1 行 総合評価 (例: 「DoD は満たすが test カバレッジが浅い」) */
-  overall_summary: z.string().trim().min(1).max(400),
+  overall_summary: z
+    .string()
+    .trim()
+    .min(1, '総合評価を入力してください')
+    .max(400, '総合評価は 400 文字以内で入力してください'),
 })
 export type StructuredReview = z.infer<typeof StructuredReviewSchema>
 
