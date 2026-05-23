@@ -114,7 +114,13 @@ function buildColumns(
             (row.original.doneAt ? 'text-muted-foreground line-through' : '')
           }
           data-testid={`backlog-title-${row.original.id}`}
-          aria-label={`「${String(getValue())}」を編集`}
+          // iter1158: 旧 aria-label `「title」を編集` は visible "{title}" を位置 1
+          // (「」内) に持ち voice control prefix-matching「click {title}」 match 不可
+          // (substring 一致のみ)。iter1093-1157 sweep (kanban/today/period-title と
+          // 同 pattern) に揃え visible title 冒頭固定 + em-dash 区切で descriptive 末尾。
+          // sibling backlog-edit (iter1152 修正済) と差別化のため title 始まり (= 編集
+          // icon button は "編集 — ..." 始まり)。
+          aria-label={`${String(getValue())} — 編集`}
         >
           <span aria-hidden="true">{String(getValue())}</span>
         </button>
