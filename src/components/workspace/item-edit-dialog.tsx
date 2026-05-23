@@ -669,13 +669,18 @@ function ItemEditDialogInner({
                   aria-busy={assignKr.isPending || undefined}
                   className="min-h-11 w-full rounded border px-2 py-1.5 text-sm"
                   data-testid="edit-item-kr"
+                  // iter1185: edit-item-sprint iter1184 と同 sweep — 旧 active path は
+                  // visible (option text = {current.title} / "未割当") を中位置
+                  // 「Key Result「**title**」」「Key Result **未割当**」に持ち voice control
+                  // prefix-matching「click {title} / 未割当」 match 不可。pending も visible 不含。
                   aria-label={(() => {
                     const current = (krsList.data ?? []).find((k) => k.id === item.keyResultId)
+                    const visible = current?.title ?? '未割当'
                     return assignKr.isPending
-                      ? 'Key Result 割当を更新中…'
+                      ? `${visible} — Key Result 割当を更新中…`
                       : current
-                        ? `Key Result「${current.title}」(Goal「${current.goalTitle}」) に割当中 (変更で別 KR へ移動)`
-                        : 'Key Result 未割当 (選択で稼働中 Goal の KR に割当)'
+                        ? `${visible} — Key Result「${current.title}」(Goal「${current.goalTitle}」) に割当中 (変更で別 KR へ移動)`
+                        : '未割当 — Key Result 未割当 (選択で稼働中 Goal の KR に割当)'
                   })()}
                 >
                   <option value="">未割当</option>
