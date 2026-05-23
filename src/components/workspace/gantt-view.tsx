@@ -422,7 +422,12 @@ export function GanttView({
             // gantt-summary banner の sibling chip / checkbox と垂直 align も保持)
             className="text-foreground hover:bg-muted focus-visible:ring-ring relative rounded border px-2 py-0.5 text-xs before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
             title="今日の縦線まで横スクロール"
-            aria-label={`Gantt timeline を今日 (${format(new Date(), 'M月d日 (eee)')}) の縦線まで横スクロール`}
+            // iter1145: 旧 aria-label "Gantt timeline を今日 (...) の縦線まで横スクロール" は
+            // visible "今日へジャンプ" の "へジャンプ" 部が literal substring に含まれず
+            // WCAG 2.5.3 (Label in Name) 違反 + voice control「click 今日へジャンプ」 match 不可。
+            // visible を冒頭固定し em-dash 区切で残りを補足説明する convention
+            // (iter1093-1144 sweep) に揃える。
+            aria-label={`今日へジャンプ — Gantt timeline を今日 (${format(new Date(), 'M月d日 (eee)')}) の縦線まで横スクロール`}
           >
             <span aria-hidden="true">今日へジャンプ</span>
           </button>
