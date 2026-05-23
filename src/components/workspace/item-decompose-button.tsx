@@ -56,12 +56,17 @@ export function ItemDecomposeButton({ workspaceId, item }: Props) {
         void run()
       }}
       data-testid={`decompose-btn-${item.id}`}
+      // iter1159: 旧 aria-label 3 path とも visible "AI 分解" / "分解中…" を中位置
+      // ("ため **AI 分解** 不可" / "を **AI 分解中…**") に持ち voice control
+      // prefix-matching「click AI 分解 / 分解中…」 match 不可 (substring 一致のみ)。
+      // iter1093-1158 sweep convention に揃え visible 冒頭固定 + em-dash 区切で
+      // 残り descriptive 末尾保持。
       aria-label={
         item.status === 'done'
-          ? `「${item.title}」は完了済のため AI 分解不可`
+          ? `AI 分解 — 「${item.title}」は完了済のため AI 分解不可`
           : decompose.isPending
-            ? `「${item.title}」を AI 分解中…`
-            : `「${item.title}」を AI 分解 (子タスクを 3〜5 件作成)`
+            ? `分解中… — 「${item.title}」を AI 分解中…`
+            : `AI 分解 — 「${item.title}」を AI 分解 (子タスクを 3〜5 件作成)`
       }
     >
       <span aria-hidden="true">{decompose.isPending ? '分解中…' : 'AI 分解'}</span>
