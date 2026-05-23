@@ -883,9 +883,11 @@ function KeyResultList({
             // 旧 aria-label "Key Result を..." は visible "KR 追加" を literal substring に含まず
             // ("KR" 略語が "Key Result" full に展開された divergence) = WCAG 2.5.3 違反 + voice
             // control「click KR 追加」 matching 失敗。iter1093-1120 sweep convention に合わせ修正。
+            // iter1177: iter1121 sweep の not-trim path 漏れ — 旧 'Key Result を追加するには…'
+            // は visible "KR 追加" を全く含まず WCAG 2.5.3 違反継続 (iter1169-1176 と同 pattern)。
             aria-label={
               !krTitle.trim()
-                ? 'Key Result を追加するにはタイトルを入力してください'
+                ? 'KR 追加 — Key Result を追加するにはタイトルを入力してください'
                 : create.isPending
                   ? 'KR 追加 — Key Result を追加中…'
                   : 'KR 追加 — Key Result をこの Goal に追加'
