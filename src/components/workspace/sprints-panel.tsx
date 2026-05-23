@@ -959,7 +959,11 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
               className="min-h-11"
               onClick={() => setEditing(true)}
               data-testid="sprint-defaults-edit-btn"
-              aria-label={`Sprint デフォルト (現在: ${DOW_JA[cur.startDow]}曜開始 / ${cur.lengthDays} 日) の編集モードを開く`}
+              // iter1153: 旧 aria-label `Sprint デフォルト (...) の編集モードを開く` は
+              // visible "編集" を中位置 "の**編集**モードを開く" に持ち voice control
+              // prefix-matching「click 編集」 match 不可。iter1093-1152 sweep convention
+              // に揃え visible "編集" 冒頭固定 + em-dash 区切で descriptive 末尾保持。
+              aria-label={`編集 — Sprint デフォルト (現在: ${DOW_JA[cur.startDow]}曜開始 / ${cur.lengthDays} 日) の編集モードを開く`}
             >
               <span aria-hidden="true">編集</span>
             </Button>
