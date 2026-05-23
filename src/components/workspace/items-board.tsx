@@ -391,16 +391,21 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
             data-testid="filter-sprint"
             // iter1068: 未選択時 visible "全 Sprint" が aria-label substring に
             // 含まれず WCAG 2.5.3 (Label in Name) 違反。visible-prefix 修正。
+            // iter1183: filter-status iter1182 と同 sweep — active path も visible (= option
+            // text "稼働中の Sprint" / "未割当のみ" / sprint.name) を冒頭固定して voice
+            // control prefix-match satisfy。
             aria-label={
               sprintFilter
-                ? `Sprint で絞り込み中 (現在: ${
-                    sprintFilter === 'active'
-                      ? '稼働中の Sprint'
-                      : sprintFilter === 'none'
-                        ? '未割当のみ'
-                        : ((sprintsList.data ?? []).find((sp) => sp.id === sprintFilter)?.name ??
-                          sprintFilter)
-                  })。「全 Sprint」で解除`
+                ? (() => {
+                    const visible =
+                      sprintFilter === 'active'
+                        ? '稼働中の Sprint'
+                        : sprintFilter === 'none'
+                          ? '未割当のみ'
+                          : ((sprintsList.data ?? []).find((sp) => sp.id === sprintFilter)?.name ??
+                            sprintFilter)
+                    return `${visible} — Sprint で絞り込み中 (現在: ${visible})。「全 Sprint」で解除`
+                  })()
                 : '全 Sprint — Sprint で絞り込み未設定 (稼働中 / 未割当 / 個別 sprint)'
             }
           >
