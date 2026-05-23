@@ -162,10 +162,15 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
                   disabled={unarchive.isPending}
                   aria-busy={unarchive.isPending || undefined}
                   onClick={() => void handleRestore(item.id, item.version)}
+                  // iter1161: 旧 aria-label 2 path とも visible "復元" / "復元中…" を
+                  // 中位置 ("を **復元中…**" / "を **復元** (...) にアーカイブ") に持ち
+                  // voice control prefix-matching「click 復元 / 復元中…」 match 不可
+                  // (substring 一致のみ)。iter1093-1160 sweep convention に揃え
+                  // visible 冒頭固定 + em-dash 区切で descriptive 末尾保持。
                   aria-label={
                     unarchive.isPending
-                      ? `「${item.title}」を復元中…`
-                      : `「${item.title}」を復元 (${fmt(item.archivedAt)} にアーカイブ)`
+                      ? `復元中… — 「${item.title}」を復元中…`
+                      : `復元 — 「${item.title}」を復元 (${fmt(item.archivedAt)} にアーカイブ)`
                   }
                 >
                   <span aria-hidden="true">{unarchive.isPending ? '復元中…' : '復元'}</span>
