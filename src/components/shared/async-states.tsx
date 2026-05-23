@@ -102,7 +102,11 @@ export function ErrorState({
           size="sm"
           className="min-h-11"
           onClick={onRetry}
-          aria-label={`「${message}」をクリアして再試行`}
+          // iter1151: 旧 aria-label `「message」をクリアして再試行` は visible "再試行"
+          // を末尾に持ち voice control prefix-matching「click 再試行」 match 不可。
+          // iter1093-1150 sweep convention に揃え visible "再試行" 冒頭固定 +
+          // em-dash 区切で error message を descriptive 末尾保持。
+          aria-label={`再試行 — 「${message}」をクリアして再試行`}
         >
           <span aria-hidden="true">再試行</span>
         </Button>
