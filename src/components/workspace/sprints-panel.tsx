@@ -993,7 +993,14 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                 className="min-h-11 rounded-md border px-2 text-sm"
                 required
                 aria-required="true"
-                aria-label={`Sprint 基本曜日 (現在: ${DOW_JA[dow] ?? dow}曜開始)`}
+                // iter1194: 旧 aria-label `Sprint 基本曜日 (現在: ${DOW_JA[dow]}曜開始)` は
+                // visible (option text "{label}曜") を中位置に持ち voice control
+                // prefix-matching「click {曜}」 match 不可 (substring 一致のみ)。
+                // src-kind iter1192 / src-method iter1193 同 sweep を sprint-defaults-dow にも展開。
+                aria-label={(() => {
+                  const visible = `${DOW_JA[dow] ?? dow}曜`
+                  return `${visible} — Sprint 基本曜日 (現在: ${visible}開始)`
+                })()}
                 data-testid="sprint-defaults-dow"
               >
                 {DOW_JA.map((label, i) => (
