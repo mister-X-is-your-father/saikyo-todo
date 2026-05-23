@@ -167,11 +167,16 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
           aria-keyshortcuts="Enter"
           // iter1114: visible "作成" を aria-label 冒頭固定 (iter1093-1113 sweep convention)。
           // pending visible "…" は aria-label 末尾 "…" と substring 一致で維持。
+          // iter1170: iter1114 sweep の !preview.title / isMust 2 path 漏れ — 旧
+          // 'タスクを作成するには…' / 'MUST タスクは編集ダイアログから…' は visible "作成"
+          // を中位置 ("タスクを **作成** するには…" / "DoD を入力して **作成** してください")
+          // に持ち voice control prefix-matching「click 作成」 match 不可 (substring 一致のみ)。
+          // 両 path とも '作成 — ...' 形式に揃え、4 path 全てで visible 冒頭固定 (pending を除く)。
           aria-label={
             !preview?.title
-              ? 'タスクを作成するにはタイトルを入力してください (Enter でも可)'
+              ? '作成 — タスクを作成するにはタイトルを入力してください (Enter でも可)'
               : preview.isMust
-                ? 'MUST タスクは編集ダイアログから DoD を入力して作成してください'
+                ? '作成 — MUST タスクは編集ダイアログから DoD を入力して作成してください'
                 : create.isPending
                   ? `「${preview.title}」を作成中…`
                   : `作成 — 「${preview.title}」を作成 (Enter でも可)`
