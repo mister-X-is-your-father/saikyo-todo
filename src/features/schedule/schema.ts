@@ -107,7 +107,8 @@ export type StopTimerInput = z.infer<typeof StopTimerInputSchema>
 
 export const ListSchedulesByDateInputSchema = z.object({
   workspaceId: z.string().uuid(),
+  // iter1160 refactor: ISO_DATE_RE regex に ja message 統一
   /** ISO date "YYYY-MM-DD"。範囲は workspace TZ ベースでサーバ側が解釈 */
-  date: z.string().regex(ISO_DATE_RE),
+  date: z.string().regex(ISO_DATE_RE, 'YYYY-MM-DD 形式で入力してください'),
 })
 export type ListSchedulesByDateInput = z.infer<typeof ListSchedulesByDateInputSchema>

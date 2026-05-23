@@ -40,8 +40,9 @@ const AgentCreateItemSchema = z
     description: z.string().max(5000, '説明は 5,000 文字以内で入力してください').default(''),
     status: z.string().min(1, 'ステータスを指定してください').default('todo'),
     parentItemId: z.string().uuid().nullish(),
-    startDate: z.string().regex(ISO_DATE_RE).nullish(),
-    dueDate: z.string().regex(ISO_DATE_RE).nullish(),
+    // iter1160 refactor: ISO_DATE_RE regex に ja message 統一 (item/schema.ts と同 message)
+    startDate: z.string().regex(ISO_DATE_RE, 'YYYY-MM-DD 形式で入力してください').nullish(),
+    dueDate: z.string().regex(ISO_DATE_RE, 'YYYY-MM-DD 形式で入力してください').nullish(),
     isMust: z.boolean().default(false),
     dod: z.string().max(2000, 'DoD は 2,000 文字以内で入力してください').nullish(),
   })

@@ -29,9 +29,10 @@ export type CreateTimeEntryInput = z.infer<typeof CreateTimeEntryInputSchema>
 
 export const ListTimeEntriesInputSchema = z.object({
   workspaceId: z.string().uuid(),
+  // iter1160 refactor: ISO_DATE regex に ja message 統一 (item/schema.ts と同 message)
   /** ISO 日付 YYYY-MM-DD。指定時はこの日付 >= with_date */
-  from: z.string().regex(ISO_DATE).optional(),
-  to: z.string().regex(ISO_DATE).optional(),
+  from: z.string().regex(ISO_DATE, 'YYYY-MM-DD 形式で入力してください').optional(),
+  to: z.string().regex(ISO_DATE, 'YYYY-MM-DD 形式で入力してください').optional(),
   limit: z
     .number()
     .int()
