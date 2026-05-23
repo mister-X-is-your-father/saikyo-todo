@@ -370,15 +370,21 @@ export function GanttView({
             onChange={(e) => setZoom(e.target.value as typeof zoom)}
             className="min-h-11 rounded border bg-transparent px-1 py-0.5 text-xs"
             data-testid="gantt-zoom-select"
-            aria-label={`Gantt の 1 日あたりの幅 (現在: ${
-              zoom === 'compact'
-                ? '狭 24px/day'
-                : zoom === 'normal'
-                  ? '標準 40px/day'
-                  : zoom === 'wide'
-                    ? '広 64px/day'
-                    : zoom
-            })`}
+            // iter1190: filter-status iter1182 / filter-sprint iter1183 と同 sweep —
+            // 旧 aria-label `Gantt の 1 日あたりの幅 (現在: 狭 24px/day)` は visible
+            // (option text "狭 (24px/day)" 等) を中位置に持ち voice control
+            // prefix-matching「click 狭」 match 不可 (substring 一致のみ)。
+            aria-label={(() => {
+              const visible =
+                zoom === 'compact'
+                  ? '狭 24px/day'
+                  : zoom === 'normal'
+                    ? '標準 40px/day'
+                    : zoom === 'wide'
+                      ? '広 64px/day'
+                      : zoom
+              return `${visible} — Gantt の 1 日あたりの幅 (現在: ${visible})`
+            })()}
           >
             <option value="compact">狭 (24px/day)</option>
             <option value="normal">標準 (40px/day)</option>
