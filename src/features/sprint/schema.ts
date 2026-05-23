@@ -128,10 +128,21 @@ export type AssignItemToSprintInput = z.infer<typeof AssignItemToSprintInputSche
  * Phase 6.15 iter 110: Sprint workspace デフォルト編集入力。
  * - startDow: 0=日, 1=月, …, 6=土
  * - lengthDays: 1..90 (DB CHECK 制約と整合)
+ *
+ * iter1149: 旧 startDow.min(0).max(6) / lengthDays.min(1).max(90) には ja message
+ * 無く zod default 英語が露出。iter1086/1092/1126-1148 ja convention で日本語化。
  */
 export const UpdateSprintDefaultsInputSchema = z.object({
   workspaceId: z.string().uuid(),
-  startDow: z.number().int().min(0).max(6),
-  lengthDays: z.number().int().min(1).max(90),
+  startDow: z
+    .number()
+    .int()
+    .min(0, '曜日は 0 (日) 以上で指定してください')
+    .max(6, '曜日は 6 (土) 以下で指定してください'),
+  lengthDays: z
+    .number()
+    .int()
+    .min(1, 'Sprint 期間は 1 日以上で指定してください')
+    .max(90, 'Sprint 期間は 90 日以下で指定してください'),
 })
 export type UpdateSprintDefaultsInput = z.infer<typeof UpdateSprintDefaultsInputSchema>

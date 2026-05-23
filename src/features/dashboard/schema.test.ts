@@ -31,4 +31,14 @@ describe('GetBurndownInputSchema', () => {
   it('workspaceId が UUID でないと reject', () => {
     expect(() => GetBurndownInputSchema.parse({ workspaceId: 'bad' })).toThrow()
   })
+
+  // iter1149: days.max(90) に付与した ja message 回帰防止
+  it('days 91 reject 時 ja message が出る', () => {
+    const r = GetBurndownInputSchema.safeParse({ workspaceId: VALID_UUID, days: 91 })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('集計期間は 90 日'))).toBe(true)
+    }
+  })
 })
