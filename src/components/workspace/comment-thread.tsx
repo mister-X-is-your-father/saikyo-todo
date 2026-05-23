@@ -122,12 +122,17 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
             // iter356: aria-keyshortcuts で SR / voice control に shortcut を expose。
             // WCAG 2.1.4 (Character Key Shortcuts) ARIA 1.2 attribute、modifier 必須形式。
             aria-keyshortcuts="Meta+Enter Control+Enter"
+            // iter1168: 旧 aria-label の pending path "コメントを投稿中…" は visible
+            // "送信中…" を含まず WCAG 2.5.3 (Label in Name) 違反 (visible は "送信中…"
+            // で "投稿中…" は別語)。default / not-trim path も visible "投稿" 中位置で
+            // voice control prefix-matching「click 投稿」 match 不可。iter1093-1167 sweep
+            // convention に揃え visible 冒頭固定 + em-dash 区切で descriptive 末尾。
             aria-label={
               !body.trim()
-                ? 'コメントを投稿するには本文を入力してください'
+                ? '投稿 — コメントを投稿するには本文を入力してください'
                 : create.isPending
-                  ? 'コメントを投稿中…'
-                  : 'コメントを投稿 (Cmd/Ctrl+Enter でも可、@user で言及・通知)'
+                  ? '送信中… — コメントを投稿中…'
+                  : '投稿 — コメントを投稿 (Cmd/Ctrl+Enter でも可、@user で言及・通知)'
             }
           >
             <span aria-hidden="true">{create.isPending ? '送信中…' : '投稿'}</span>
