@@ -191,13 +191,19 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
             required
             aria-required="true"
             data-testid="dep-kind"
-            aria-label={`依存の種類 (現在: ${
-              pickKind === 'prerequisite'
-                ? '前提条件 (上流、これが完了しないと本 Item を着手できない)'
-                : pickKind === 'related'
-                  ? '関連 (緩い結び付き、進行ブロックではない)'
-                  : pickKind
-            })`}
+            // iter1195: 旧 aria-label `依存の種類 (現在: 前提条件 ...)` は visible
+            // (option text "前提条件 (上流)" / "関連") を中位置 "(現在: ...)" 内に持ち
+            // voice control prefix-matching「click 前提条件 / 関連」 match 不可
+            // (src-kind iter1192 / sprint-defaults-dow iter1194 同 sweep)。
+            aria-label={(() => {
+              const visible =
+                pickKind === 'prerequisite'
+                  ? '前提条件 (上流、これが完了しないと本 Item を着手できない)'
+                  : pickKind === 'related'
+                    ? '関連 (緩い結び付き、進行ブロックではない)'
+                    : pickKind
+              return `${visible} — 依存の種類 (現在: ${visible})`
+            })()}
           >
             <option value="prerequisite">前提条件 (上流)</option>
             <option value="related">関連</option>
