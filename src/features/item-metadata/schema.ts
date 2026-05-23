@@ -32,7 +32,8 @@ export const AddItemIoArtifactInputSchema = z
       .string()
       .min(1, 'ラベルを入力してください')
       .max(200, 'ラベルは 200 文字以内で入力してください'),
-    url: z.string().url().nullish(),
+    // iter1156: url() の zod default error は "Invalid url" 英語が露出。ja message 付与。
+    url: z.string().url('正しい URL を入力してください').nullish(),
     filePath: z.string().max(500, 'ファイルパスは 500 文字以内で入力してください').nullish(),
     mime: z.string().max(120, 'MIME 型は 120 文字以内で入力してください').nullish(),
     description: z.string().max(2000, '説明は 2,000 文字以内で入力してください').nullish(),

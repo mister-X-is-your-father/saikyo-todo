@@ -18,7 +18,7 @@ export const YamoryConfigSchema = z.object({
   token: z.string().min(1, 'Yamory API token を入力してください'),
   projectIds: z.array(z.string().min(1, 'projectId は空でない必要があります')).optional(),
   /** API base (default https://api.yamory.io)。社内 proxy / 検証環境向けに上書き可能 */
-  baseUrl: z.string().url().optional(),
+  baseUrl: z.string().url('正しい URL を入力してください').optional(),
   /** {projectId} 置換テンプレート (default /v3/{projectId}/vulnerabilities) */
   endpointTemplate: z
     .string()
@@ -35,7 +35,7 @@ export const YamoryConfigSchema = z.object({
 })
 
 export const CustomRestConfigSchema = z.object({
-  url: z.string().url(),
+  url: z.string().url('正しい URL を入力してください'),
   method: z.enum(['GET', 'POST']).default('GET'),
   headers: z.record(z.string(), z.string()).optional(),
   /** items を取り出す JSONPath (簡略: dot path)。例: "data.items" */

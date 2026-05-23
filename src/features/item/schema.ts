@@ -10,6 +10,10 @@ export type Item = z.infer<typeof ItemSelectSchema>
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 const ISO_TIME = /^\d{2}:\d{2}(:\d{2})?$/
+// iter1156: ISO_DATE / ISO_TIME regex に ja message 無く zod default 英語が露出。
+// 各 callsite で個別 message を渡す代わりに、共通 message 定数で統一。
+const ISO_DATE_MSG = 'YYYY-MM-DD 形式で入力してください'
+const ISO_TIME_MSG = 'HH:MM 形式で入力してください'
 
 // iter1129: title.max(500) には ja message が無く zod default 英語が露出 (min(1) は ja message
 // あり)。iter1086/1092/1126-1128 ja convention で max 制約も日本語化。Update.patch も同統一。
@@ -23,10 +27,10 @@ export const CreateItemInputSchema = z
     description: z.string().default(''),
     status: z.string().min(1).default('todo'),
     parentItemId: z.string().uuid().nullish(),
-    startDate: z.string().regex(ISO_DATE).nullish(),
-    dueDate: z.string().regex(ISO_DATE).nullish(),
-    dueTime: z.string().regex(ISO_TIME).nullish(),
-    scheduledFor: z.string().regex(ISO_DATE).nullish(),
+    startDate: z.string().regex(ISO_DATE, ISO_DATE_MSG).nullish(),
+    dueDate: z.string().regex(ISO_DATE, ISO_DATE_MSG).nullish(),
+    dueTime: z.string().regex(ISO_TIME, ISO_TIME_MSG).nullish(),
+    scheduledFor: z.string().regex(ISO_DATE, ISO_DATE_MSG).nullish(),
     priority: z.number().int().min(1).max(4).default(4),
     isMust: z.boolean().default(false),
     dod: z.string().nullish(),
@@ -57,10 +61,10 @@ export const UpdateItemInputSchema = z.object({
         .optional(),
       description: z.string().optional(),
       status: z.string().min(1).optional(),
-      startDate: z.string().regex(ISO_DATE).nullish(),
-      dueDate: z.string().regex(ISO_DATE).nullish(),
-      dueTime: z.string().regex(ISO_TIME).nullish(),
-      scheduledFor: z.string().regex(ISO_DATE).nullish(),
+      startDate: z.string().regex(ISO_DATE, ISO_DATE_MSG).nullish(),
+      dueDate: z.string().regex(ISO_DATE, ISO_DATE_MSG).nullish(),
+      dueTime: z.string().regex(ISO_TIME, ISO_TIME_MSG).nullish(),
+      scheduledFor: z.string().regex(ISO_DATE, ISO_DATE_MSG).nullish(),
       priority: z.number().int().min(1).max(4).optional(),
       isMust: z.boolean().optional(),
       dod: z.string().nullish(),

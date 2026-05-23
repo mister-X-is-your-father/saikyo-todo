@@ -66,6 +66,25 @@ describe('CreateItemInputSchema', () => {
     expect(() => CreateItemInputSchema.parse({ ...baseValid, dueTime: '9:00' })).toThrow() // 1 桁 hour NG (zero-pad 必須)
   })
 
+  // iter1156: regex(ISO_DATE) / regex(ISO_TIME) に ja message 付与の回帰防止
+  it('dueDate 不正形式 reject 時 ja message が出る', () => {
+    const r = CreateItemInputSchema.safeParse({ ...baseValid, dueDate: '2026/05/21' })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('YYYY-MM-DD 形式'))).toBe(true)
+    }
+  })
+
+  it('dueTime 不正形式 reject 時 ja message が出る', () => {
+    const r = CreateItemInputSchema.safeParse({ ...baseValid, dueTime: '9:30' })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('HH:MM 形式'))).toBe(true)
+    }
+  })
+
   it('priority 範囲外 (0 / 5) で reject', () => {
     expect(() => CreateItemInputSchema.parse({ ...baseValid, priority: 0 })).toThrow()
     expect(() => CreateItemInputSchema.parse({ ...baseValid, priority: 5 })).toThrow()
