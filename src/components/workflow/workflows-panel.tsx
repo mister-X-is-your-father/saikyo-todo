@@ -837,10 +837,14 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
                 e.stopPropagation()
                 void handleRerun(r)
               }}
+              // iter1167: 旧 aria-label 2 path とも visible "再" を中位置 "再実行中…" /
+              // "再実行" に持ち voice control prefix-matching「click 再」 match 不可
+              // (substring 一致のみ)。iter1093-1166 sweep convention に揃え visible
+              // "再" 冒頭固定 + em-dash 区切で descriptive 末尾保持。
               aria-label={
                 trigger.isPending
-                  ? `実行 ${r.id.slice(0, 8)} を再実行中…`
-                  : `実行 ${r.id.slice(0, 8)} を同じ input で再実行`
+                  ? `再 — 実行 ${r.id.slice(0, 8)} を再実行中…`
+                  : `再 — 実行 ${r.id.slice(0, 8)} を同じ input で再実行`
               }
               title={`同じ input で再実行 (${formatRunTime(r)})`}
               data-testid={`wf-run-rerun-${r.id}`}
