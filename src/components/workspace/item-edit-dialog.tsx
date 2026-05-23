@@ -612,13 +612,19 @@ function ItemEditDialogInner({
                   aria-busy={assignSprint.isPending || undefined}
                   className="min-h-11 w-full rounded border px-2 py-1.5 text-sm"
                   data-testid="edit-item-sprint"
+                  // iter1184: 旧 active path は visible (option text = {current.name} / "未割当") を
+                  // 中位置「Sprint「**name**」」「Sprint **未割当**」に持ち voice control
+                  // prefix-matching「click {name} / 未割当」 match 不可 (substring 一致のみ)。
+                  // pending path も visible (= current.name または "未割当") を含まず WCAG 2.5.3
+                  // Label in Name 違反継続。visible 冒頭固定 + em-dash 区切で descriptive 末尾。
                   aria-label={(() => {
                     const current = (sprintsList.data ?? []).find((s) => s.id === item.sprintId)
+                    const visible = current?.name ?? '未割当'
                     return assignSprint.isPending
-                      ? 'Sprint 割当を更新中…'
+                      ? `${visible} — Sprint 割当を更新中…`
                       : current
-                        ? `Sprint「${current.name}」に割当中 (変更で別 Sprint へ移動)`
-                        : 'Sprint 未割当 (選択で稼働中 / 計画中 Sprint に割当)'
+                        ? `${visible} — Sprint「${current.name}」に割当中 (変更で別 Sprint へ移動)`
+                        : '未割当 — Sprint 未割当 (選択で稼働中 / 計画中 Sprint に割当)'
                   })()}
                 >
                   <option value="">未割当</option>
