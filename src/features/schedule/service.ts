@@ -2,7 +2,7 @@ import 'server-only'
 
 import { recordAudit } from '@/lib/audit'
 import { requireUser, requireWorkspaceMember } from '@/lib/auth/guard'
-import { MS_PER_DAY } from '@/lib/date/iso'
+import { MS_PER_DAY, MS_PER_MINUTE } from '@/lib/date/iso'
 import { withUserDb } from '@/lib/db/scoped-client'
 import { ConflictError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
@@ -201,7 +201,8 @@ export const scheduleService = {
     const { workspaceId, itemId, note } = parsed.data
     const { user } = await requireWorkspaceMember(workspaceId, 'member')
     const start = parsed.data.startAt ? new Date(parsed.data.startAt) : new Date()
-    const placeholder = new Date(start.getTime() + 60 * 1000)
+    // iter1150 refactor: 旧 inline `60 * 1000` (timer placeholder 1 min) を `MS_PER_MINUTE` に集約
+    const placeholder = new Date(start.getTime() + MS_PER_MINUTE)
 
     return await withUserDb(user.id, async (tx) => {
       const created = await scheduleRepository.insert(tx, {

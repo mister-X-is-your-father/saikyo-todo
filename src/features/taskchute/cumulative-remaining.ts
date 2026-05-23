@@ -30,6 +30,7 @@
  *
  * 副作用なし、依存なし。pure helper + Vitest 単体 test で網羅。
  */
+import { MS_PER_MINUTE } from '@/lib/date/iso'
 import { rateToPct } from '@/lib/format-rate'
 
 import { isTerminalStatus } from '@/features/item/status-visual'
@@ -121,7 +122,8 @@ export function buildTaskChuteTicker<T extends TickerItemFields>(
       continue
     }
     consumed += est
-    const eta = new Date(now.getTime() + consumed * 60 * 1000)
+    // iter1150 refactor: 旧 inline `consumed * 60 * 1000` を `MS_PER_MINUTE` に集約
+    const eta = new Date(now.getTime() + consumed * MS_PER_MINUTE)
     rows.push({
       item: it,
       estimateMin: est,

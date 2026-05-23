@@ -13,7 +13,7 @@
  * 詳細: docs/methodology-modes-plan.md §1 T-5 + FEEDBACK_QUEUE.md 目標達成 + 繰り返しタスク
  */
 
-import { MS_PER_DAY } from '@/lib/date/iso'
+import { MS_PER_DAY, MS_PER_HOUR } from '@/lib/date/iso'
 
 export interface RecurrenceState {
   /** 最後に展開した時刻 (template_instantiations.created_at 最大値)。null = 未展開 */
@@ -65,14 +65,16 @@ export function classifyRecurrenceDue(state: RecurrenceState, now: Date): Recurr
   if (diffMs < 0) {
     return {
       kind: 'overdue',
-      message: `${Math.ceil(-diffMs / 3600_000)} 時間 経過、即展開対象`,
+      // iter1150 refactor: inline `3600_000` を `MS_PER_HOUR` に集約
+      message: `${Math.ceil(-diffMs / MS_PER_HOUR)} 時間 経過、即展開対象`,
       shouldInstantiate: true,
     }
   }
   if (diffMs <= MS_PER_DAY) {
     return {
       kind: 'due-today',
-      message: `${Math.floor(diffMs / 3600_000)} 時間後 展開予定`,
+      // iter1150 refactor: inline `3600_000` を `MS_PER_HOUR` に集約
+      message: `${Math.floor(diffMs / MS_PER_HOUR)} 時間後 展開予定`,
       shouldInstantiate: false,
     }
   }

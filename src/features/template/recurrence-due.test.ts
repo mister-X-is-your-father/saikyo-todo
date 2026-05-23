@@ -40,6 +40,27 @@ describe('classifyRecurrenceDue', () => {
     expect(r.message).toContain('時間後')
   })
 
+  // iter1150 refactor: MS_PER_HOUR 集約後も時間 message が正しく出る回帰防止
+  // NOW = 2026-05-19T12:00:00Z, nextRunAt = 2026-05-19T17:30:00Z → 差 5.5h → floor 5
+  it('due-today 時間数が MS_PER_HOUR 経由でも正しく floor される', () => {
+    const r = classifyRecurrenceDue(
+      { lastRunAt: null, nextRunAt: new Date('2026-05-19T17:30:00Z'), paused: false },
+      NOW,
+    )
+    expect(r.kind).toBe('due-today')
+    expect(r.message).toBe('5 時間後 展開予定')
+  })
+
+  // NOW = 2026-05-19T12:00:00Z, nextRunAt = 2026-05-19T06:30:00Z → -5.5h → ceil 6
+  it('overdue 時間数が MS_PER_HOUR 経由でも正しく ceil される', () => {
+    const r = classifyRecurrenceDue(
+      { lastRunAt: null, nextRunAt: new Date('2026-05-19T06:30:00Z'), paused: false },
+      NOW,
+    )
+    expect(r.kind).toBe('overdue')
+    expect(r.message).toBe('6 時間 経過、即展開対象')
+  })
+
   it('nextRunAt が 1 日超先 → upcoming', () => {
     const r = classifyRecurrenceDue(
       { lastRunAt: null, nextRunAt: new Date('2026-05-22T09:00:00Z'), paused: false },
