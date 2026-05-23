@@ -273,9 +273,13 @@ function CommentItem({
               aria-busy={update.isPending || undefined}
               data-testid={`comment-save-${comment.id}`}
               aria-keyshortcuts="Meta+Enter Control+Enter"
+              // iter1169: not-trim path で旧 aria-label "コメントを保存するには本文を
+              // 入力してください" は visible "保存" を中位置 "コメントを **保存** するには…"
+              // に持ち voice control prefix-matching「click 保存」 match 不可
+              // (pending / default は iter1104 で既に visible-prefix 化、not-trim 漏れ)。
               aria-label={
                 !body.trim()
-                  ? 'コメントを保存するには本文を入力してください'
+                  ? '保存 — コメントを保存するには本文を入力してください'
                   : update.isPending
                     ? '保存中… — コメントの編集を保存中'
                     : '保存 — コメントの編集を保存 (Cmd/Ctrl+Enter でも可)'
