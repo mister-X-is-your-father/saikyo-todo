@@ -359,17 +359,23 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
             data-testid="filter-status"
             // iter1068: 未選択時 visible "全ステータス" が aria-label substring に
             // 含まれず WCAG 2.5.3 (Label in Name) 違反。visible-prefix 修正。
+            // iter1182: active path も visible (= option text "TODO" / "進行中" / "完了") を
+            // 冒頭固定して voice control prefix-match satisfy (旧 active path は visible が
+            // "(現在: TODO)" 内に substring としてあるが prefix では無く "click TODO" で
+            // prefix-match 不可)。
             aria-label={
               statusFilter
-                ? `ステータスで絞り込み中 (現在: ${
-                    statusFilter === 'todo'
-                      ? 'TODO'
-                      : statusFilter === 'in_progress'
-                        ? '進行中'
-                        : statusFilter === 'done'
-                          ? '完了'
-                          : statusFilter
-                  })。「全ステータス」で解除`
+                ? (() => {
+                    const visible =
+                      statusFilter === 'todo'
+                        ? 'TODO'
+                        : statusFilter === 'in_progress'
+                          ? '進行中'
+                          : statusFilter === 'done'
+                            ? '完了'
+                            : statusFilter
+                    return `${visible} — ステータスで絞り込み中 (現在: ${visible})。「全ステータス」で解除`
+                  })()
                 : '全ステータス — ステータスで絞り込み未設定 (TODO / 進行中 / 完了)'
             }
           >
