@@ -141,10 +141,13 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
                       void toggle(t.id)
                     }}
                     data-testid={`tag-option-${t.id}`}
+                    // iter1179: 旧 aria-label 2 path とも visible "{t.name}" を中位置
+                    //「タグ「**{t.name}**」」に持ち voice control prefix-matching
+                    //「click {t.name}」 match 不可 (substring 一致のみ)。iter1124
+                    // trigger 同 pattern を CommandItem (option) にも展開、visible
+                    // 冒頭固定 + em-dash 区切で descriptive 末尾保持。
                     aria-label={
-                      checked
-                        ? `タグ「${t.name}」を付与中 (クリックで解除)`
-                        : `タグ「${t.name}」を付与する`
+                      checked ? `${t.name} — タグ付与中 (クリックで解除)` : `${t.name} — タグを付与`
                     }
                   >
                     <CheckIcon
