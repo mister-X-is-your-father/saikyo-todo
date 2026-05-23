@@ -114,6 +114,9 @@ export function LoginForm() {
           </p>
         )}
       </div>
+      {/* iter1143: signup-form (iter1093) と em-dash 区切 visible-prefix convention
+          を統一。旧 () 区切は prefix-match 自体は満たすが、iter1093-1124 sweep の
+          em-dash style と divergence していたため統一。visible span は無変更。 */}
       <Button
         type="submit"
         className="h-11 w-full"
@@ -121,7 +124,7 @@ export function LoginForm() {
         aria-busy={isPending || undefined}
         data-testid="login-submit"
         aria-label={
-          isPending ? 'ログイン中… (認証処理を実行中)' : 'ログイン (メール + パスワードで認証)'
+          isPending ? 'ログイン中… — 認証処理を実行中' : 'ログイン — メール + パスワードで認証'
         }
       >
         <span aria-hidden="true">{isPending ? 'ログイン中…' : 'ログイン'}</span>
