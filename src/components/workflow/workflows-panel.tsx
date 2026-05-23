@@ -167,9 +167,13 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                 aria-keyshortcuts="Meta+Enter Control+Enter"
                 // iter1118: visible "作成" / "作成中…" を aria-label 冒頭固定 (iter1093-1117 sweep)。
                 // empty-title は維持。
+                // iter1172: iter1118 sweep の not-trim path 漏れ — 旧 'Workflow を作成するには
+                // 名前を入力してください' は visible "作成" を中位置 "Workflow を **作成** するには…"
+                // に持ち voice control prefix-matching「click 作成」 match 不可
+                // (iter1169/1170/1171 と同 sweep 残漏 pattern)。
                 aria-label={
                   !name.trim()
-                    ? 'Workflow を作成するには名前を入力してください'
+                    ? '作成 — Workflow を作成するには名前を入力してください'
                     : create.isPending
                       ? '作成中… — Workflow を作成中'
                       : '作成 — Workflow を新規作成 (Cmd/Ctrl+Enter でも可)'
