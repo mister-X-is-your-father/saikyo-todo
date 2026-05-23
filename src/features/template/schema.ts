@@ -145,7 +145,8 @@ export const InstantiateTemplateInputSchema = z.object({
   templateId: z.string().uuid(),
   variables: z.record(z.string(), z.unknown()).default({}),
   /** recurring (pg_cron) からの呼び出しで多重展開防止。UNIQUE 制約違反で 2回目は ConflictError。 */
-  cronRunId: z.string().min(1).nullish(),
+  // iter1154: cronRunId.min(1) に ja message 無く zod default 英語が露出
+  cronRunId: z.string().min(1, 'cronRunId は空でない必要があります').nullish(),
   /** root item のタイトルを template.name 以外にしたい時 */
   rootTitleOverride: z.string().nullish(),
 })

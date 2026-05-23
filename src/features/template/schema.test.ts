@@ -176,4 +176,14 @@ describe('InstantiateTemplateInputSchema', () => {
       InstantiateTemplateInputSchema.parse({ templateId: VALID_UUID, cronRunId: '' }),
     ).toThrow()
   })
+
+  // iter1154: cronRunId.min(1) に ja message 付与の回帰防止
+  it('cronRunId 空文字 reject 時 ja message が出る', () => {
+    const r = InstantiateTemplateInputSchema.safeParse({ templateId: VALID_UUID, cronRunId: '' })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('cronRunId は空でない'))).toBe(true)
+    }
+  })
 })

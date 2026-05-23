@@ -42,6 +42,17 @@ describe('SignupInputSchema', () => {
     expect(() => SignupInputSchema.parse({ ...baseValid, password: '12345678' })).not.toThrow()
   })
 
+  // iter1154: ja message 文末 "入力してください" 統一の回帰防止
+  it('password 短文字 reject 時 ja message が "入力してください" で終わる', () => {
+    const r = SignupInputSchema.safeParse({ ...baseValid, password: 'short' })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('入力してください'))).toBe(true)
+      expect(msgs.some((m) => m.includes('8 文字以上'))).toBe(true)
+    }
+  })
+
   it('displayName が trim 後空文字だと reject', () => {
     expect(() => SignupInputSchema.parse({ ...baseValid, displayName: '' })).toThrow()
     expect(() => SignupInputSchema.parse({ ...baseValid, displayName: '   ' })).toThrow()

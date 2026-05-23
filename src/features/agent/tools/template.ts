@@ -14,10 +14,15 @@ import { templateService } from '@/features/template/service'
 
 import type { AgentToolFactory } from './types'
 
+// iter1154: rootTitleOverride.max(500) には ja message 無く zod default 英語が露出。
+// iter1086/1092/1126-1153 ja convention で日本語化 (write.ts 4 schema と pattern 揃え)。
 const InstantiateTemplateSchema = z.object({
   templateId: z.string().uuid(),
   variables: z.record(z.string(), z.unknown()).optional(),
-  rootTitleOverride: z.string().max(500).optional(),
+  rootTitleOverride: z
+    .string()
+    .max(500, '上書きタイトルは 500 文字以内で入力してください')
+    .optional(),
 })
 
 function jsonError(message: string, details?: unknown): string {
