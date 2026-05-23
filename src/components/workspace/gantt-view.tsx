@@ -413,8 +413,14 @@ export function GanttView({
             checked={hideDone}
             onChange={(e) => setHideDone(e.target.checked)}
             className="size-3.5 cursor-pointer accent-current"
+            // iter1199: 旧 checked path '完了済を隠している (クリックで表示)' は visible
+            // "完了済を隠す" を literal substring に含まず ("隠す" vs "隠して" の conjugation
+            // divergence) WCAG 2.5.3 (Label in Name) 違反。visible "完了済を隠す" を冒頭固定で
+            // satisfy。
             aria-label={
-              hideDone ? '完了済を隠している (クリックで表示)' : '完了済を隠す (現在は表示中)'
+              hideDone
+                ? '完了済を隠す — 現在は隠している (クリックで表示に戻す)'
+                : '完了済を隠す (現在は表示中)'
             }
           />
           <span aria-hidden="true">完了済を隠す</span>
