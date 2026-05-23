@@ -30,6 +30,8 @@ export const AppendMemoryInputSchema = z.object({
 })
 export type AppendMemoryInput = z.infer<typeof AppendMemoryInputSchema>
 
+// iter1143: InvocationPrompt + EnqueueInvocation の max/min に ja message 付与
+// (iter1086/1092/1126-1142 ja convention sweep)。messages.min は既に ja 済。
 /** Anthropic Messages API に渡す入力を zod で定義。jsonb 列に保存される。 */
 export const InvocationPromptSchema = z.object({
   system: z.string().optional(),
@@ -37,11 +39,16 @@ export const InvocationPromptSchema = z.object({
     .array(
       z.object({
         role: z.enum(['user', 'assistant']),
-        content: z.string().min(1),
+        content: z.string().min(1, 'メッセージ本文を入力してください'),
       }),
     )
     .min(1, 'messages は 1 件以上必要'),
-  maxTokens: z.number().int().positive().max(16_384).optional(),
+  maxTokens: z
+    .number()
+    .int()
+    .positive()
+    .max(16_384, '最大トークン数は 16,384 以下で指定してください')
+    .optional(),
 })
 export type InvocationPrompt = z.infer<typeof InvocationPromptSchema>
 
@@ -49,7 +56,7 @@ export const EnqueueInvocationInputSchema = z.object({
   workspaceId: z.string().uuid(),
   role: AgentRoleSchema,
   /** Anthropic のモデル ID (例: 'claude-haiku-4-5')。pricing.ts に登録済であること。 */
-  model: z.string().min(1),
+  model: z.string().min(1, 'Anthropic モデル ID を入力してください'),
   prompt: InvocationPromptSchema,
   /** 紐づく Item (分解対象など)。省略可。 */
   targetItemId: z.string().uuid().nullish(),

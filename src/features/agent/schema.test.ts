@@ -132,6 +132,30 @@ describe('InvocationPromptSchema', () => {
       }),
     ).not.toThrow()
   })
+
+  // iter1143: ja message 付与の回帰防止
+  it('maxTokens 超過時 ja message が出る', () => {
+    const r = InvocationPromptSchema.safeParse({
+      messages: [{ role: 'user', content: 'x' }],
+      maxTokens: 99999,
+    })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('16,384'))).toBe(true)
+    }
+  })
+
+  it('content 空文字 reject 時 ja message が出る', () => {
+    const r = InvocationPromptSchema.safeParse({
+      messages: [{ role: 'user', content: '' }],
+    })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('メッセージ本文を入力'))).toBe(true)
+    }
+  })
 })
 
 describe('EnqueueInvocationInputSchema', () => {
@@ -149,5 +173,15 @@ describe('EnqueueInvocationInputSchema', () => {
 
   it('model 空文字を reject', () => {
     expect(() => EnqueueInvocationInputSchema.parse({ ...baseValid, model: '' })).toThrow()
+  })
+
+  // iter1143: ja message 付与の回帰防止
+  it('model 空文字 reject 時 ja message が出る', () => {
+    const r = EnqueueInvocationInputSchema.safeParse({ ...baseValid, model: '' })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('Anthropic モデル ID'))).toBe(true)
+    }
   })
 })
