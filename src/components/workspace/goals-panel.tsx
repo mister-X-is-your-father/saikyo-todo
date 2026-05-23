@@ -254,9 +254,12 @@ export function GoalsPanel({ workspaceId }: Props) {
                 data-testid="goal-create-btn"
                 aria-keyshortcuts="Meta+Enter Control+Enter"
                 // iter1112: visible "作成" / "作成中…" を aria-label 冒頭固定 (iter1093-1111 sweep)。
+                // iter1171: iter1112 sweep の not-trim path 漏れ — 旧 'Goal を作成するには
+                // タイトルを入力してください' は visible "作成" を中位置 "Goal を **作成**
+                // するには…" に持ち voice control prefix-matching「click 作成」 match 不可。
                 aria-label={
                   !title.trim()
-                    ? 'Goal を作成するにはタイトルを入力してください'
+                    ? '作成 — Goal を作成するにはタイトルを入力してください'
                     : createMut.isPending
                       ? '作成中… — Goal を作成中'
                       : '作成 — Goal を新規作成'
