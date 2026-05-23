@@ -12,6 +12,7 @@ import { enqueueJob } from '@/lib/jobs/queue'
 import { err, ok, type Result } from '@/lib/result'
 import { mutateWithGuard } from '@/lib/service-mutate'
 
+import { violatesMustDodInvariant } from '@/features/item/must-dod'
 import { itemRepository } from '@/features/item/repository'
 
 import { buildTemplateBlueprintFromItemTree } from './build-from-items'
@@ -539,7 +540,9 @@ export const templateItemService = {
 
     return await withUserDb(user.id, async (tx) => {
       const merged = { ...ctx.ti, ...parsed.data.patch }
-      if (merged.isMust && (!merged.dod || merged.dod.trim() === '')) {
+      // iter1157 refactor: inline isMust/dod check を violatesMustDodInvariant helper に集約
+      // (iter1155 で schema 側 3 callsite は集約済、本 service callsite は最後の残り)
+      if (violatesMustDodInvariant(merged)) {
         return err(new ValidationError('MUST には DoD が必要です'))
       }
       const updated = await templateItemRepository.update(
