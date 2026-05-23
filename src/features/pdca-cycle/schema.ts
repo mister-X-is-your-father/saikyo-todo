@@ -18,6 +18,8 @@ export type PdcaCycleItemRole = z.infer<typeof PdcaCycleItemRoleSchema>
 // iter1126: zod default error は英語 (Too small / Too big / Invalid uuid 等) で日本語 UI
 // 利用者の認知負荷高。iter1086 mock-timesheet / iter1092 workspace schema と同 convention で
 // ユーザに直接見える validation message を全て日本語化。
+// iter1148: UpdatePdcaCycleInputSchema / ListPdcaCyclesInputSchema の max/min にも ja
+// message を付与 (Create 経路は iter1126 で済、Update / List の string max / limit max 漏れ)。
 export const CreatePdcaCycleInputSchema = z.object({
   workspaceId: z.string().uuid(),
   title: z
@@ -35,13 +37,17 @@ export const UpdatePdcaCycleInputSchema = z.object({
   expectedVersion: z.number().int().nonnegative(),
   patch: z
     .object({
-      title: z.string().min(1).max(200).optional(),
-      hypothesis: z.string().max(4000).optional(),
-      targetMetric: z.string().max(200).optional(),
-      targetValue: z.string().max(200).optional(),
-      actualValue: z.string().max(200).optional(),
-      checkFindings: z.string().max(8000).optional(),
-      actDecisions: z.string().max(8000).optional(),
+      title: z
+        .string()
+        .min(1, 'タイトルを入力してください')
+        .max(200, 'タイトルは 200 文字以内で入力してください')
+        .optional(),
+      hypothesis: z.string().max(4000, '仮説は 4000 文字以内で入力してください').optional(),
+      targetMetric: z.string().max(200, '指標は 200 文字以内で入力してください').optional(),
+      targetValue: z.string().max(200, '目標値は 200 文字以内で入力してください').optional(),
+      actualValue: z.string().max(200, '実測値は 200 文字以内で入力してください').optional(),
+      checkFindings: z.string().max(8000, '学びは 8000 文字以内で入力してください').optional(),
+      actDecisions: z.string().max(8000, '改善決定は 8000 文字以内で入力してください').optional(),
     })
     .refine((p) => Object.keys(p).length > 0, { message: 'patch は空でない必要があります' }),
 })
@@ -76,6 +82,11 @@ export const ListPdcaCyclesInputSchema = z.object({
   workspaceId: z.string().uuid(),
   status: PdcaCycleStatusSchema.optional(),
   ownerId: z.string().uuid().optional(),
-  limit: z.number().int().positive().max(200).default(50),
+  limit: z
+    .number()
+    .int()
+    .positive()
+    .max(200, '取得件数は 200 件以下で指定してください')
+    .default(50),
 })
 export type ListPdcaCyclesInput = z.infer<typeof ListPdcaCyclesInputSchema>

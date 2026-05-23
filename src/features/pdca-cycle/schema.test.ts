@@ -111,6 +111,46 @@ describe('UpdatePdcaCycleInputSchema', () => {
       }),
     ).toThrow()
   })
+
+  // iter1148: Update path に ja message が付与された回帰防止
+  it('checkFindings 8001 文字 reject 時 ja message が出る', () => {
+    const r = UpdatePdcaCycleInputSchema.safeParse({
+      id: VALID_UUID,
+      expectedVersion: 0,
+      patch: { checkFindings: 'x'.repeat(8001) },
+    })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('学びは 8000'))).toBe(true)
+    }
+  })
+
+  it('actDecisions 8001 文字 reject 時 ja message が出る', () => {
+    const r = UpdatePdcaCycleInputSchema.safeParse({
+      id: VALID_UUID,
+      expectedVersion: 0,
+      patch: { actDecisions: 'x'.repeat(8001) },
+    })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('改善決定は 8000'))).toBe(true)
+    }
+  })
+
+  it('actualValue 201 文字 reject 時 ja message が出る (Update path 新規 field)', () => {
+    const r = UpdatePdcaCycleInputSchema.safeParse({
+      id: VALID_UUID,
+      expectedVersion: 0,
+      patch: { actualValue: 'x'.repeat(201) },
+    })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('実測値は 200'))).toBe(true)
+    }
+  })
 })
 
 describe('AdvancePdcaCyclePhaseInputSchema', () => {
