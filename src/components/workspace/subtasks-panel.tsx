@@ -575,12 +575,16 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
             onClick={() => void handleBulkAdd()}
             data-testid="subtasks-bulk-add-btn"
             aria-keyshortcuts="Meta+Enter Control+Enter"
+            // iter1176: 旧 aria-label 3 path とも visible "追加中…" / "N 件追加" を
+            // 中位置〜末尾に持ち voice control prefix-matching「click 追加 / 追加中…」
+            // match 不可 (iter1093-1175 sweep convention が漏れていた)。
+            // visible 冒頭固定 + em-dash 区切で descriptive 末尾保持。
             aria-label={
               !bulkText.trim()
-                ? '子タスクを追加するには改行区切りで入力してください'
+                ? '追加 — 子タスクを追加するには改行区切りで入力してください'
                 : create.isPending
-                  ? `子タスク ${pendingTitleCount} 件を追加中…`
-                  : `子タスク ${pendingTitleCount} 件をまとめて追加`
+                  ? `追加中… — 子タスク ${pendingTitleCount} 件を追加中…`
+                  : `${pendingTitleCount} 件追加 — 子タスク ${pendingTitleCount} 件をまとめて追加`
             }
           >
             <span aria-hidden="true">
