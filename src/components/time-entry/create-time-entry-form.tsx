@@ -97,7 +97,14 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           className="min-h-11 rounded border px-2 text-sm"
           required
           aria-required="true"
-          aria-label={`カテゴリ (現在: ${TIME_ENTRY_CATEGORIES.find((c) => c.key === category)?.label ?? category})`}
+          // iter1191: 旧 aria-label `カテゴリ (現在: ${label})` は visible (option text =
+          // {label}) を中位置 "カテゴリ (現在: **label**)" に持ち voice control
+          // prefix-matching「click {label}」 match 不可 (substring 一致のみ)。
+          // filter-status iter1182 / filter-sprint iter1183 / gantt-zoom iter1190 同 sweep。
+          aria-label={(() => {
+            const visible = TIME_ENTRY_CATEGORIES.find((c) => c.key === category)?.label ?? category
+            return `${visible} — カテゴリ (現在: ${visible})`
+          })()}
         >
           {TIME_ENTRY_CATEGORIES.map((c) => (
             <option key={c.key} value={c.key}>
