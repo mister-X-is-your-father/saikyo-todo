@@ -1432,7 +1432,12 @@ export function DashboardView({ workspaceId }: Props) {
                         }}
                         className="hover:text-primary focus-visible:ring-ring truncate rounded text-left font-medium hover:underline focus-visible:ring-2 focus-visible:outline-none"
                         data-testid={`dashboard-must-title-${item.id}`}
-                        aria-label={`MUST「${item.title}」を編集`}
+                        // iter1149: 旧 aria-label `MUST「title」を編集` は visible title を
+                        // 中位置 (位置 6 "MUST「**title**」") に持ち voice control
+                        // prefix-matching「click {title}」 match 不可。iter1093-1148 sweep
+                        // convention に揃え visible title 冒頭固定 + em-dash 区切で
+                        // descriptive 末尾保持 (MUST tag は文脈情報として末尾)。
+                        aria-label={`${item.title} — MUST item を編集`}
                       >
                         <span aria-hidden="true">{item.title}</span>
                       </button>
