@@ -180,7 +180,11 @@ function buildColumns(
               onEdit(row.original)
             }}
             data-testid={`backlog-edit-${row.original.id}`}
-            aria-label={`「${row.original.title}」を編集`}
+            // iter1152: 旧 aria-label `「title」を編集` は visible "編集" を末尾
+            // "を**編集**" に持ち voice control prefix-matching「click 編集」
+            // match 不可。iter1093-1151 sweep convention に揃え visible "編集"
+            // 冒頭固定 + em-dash 区切で title を descriptive 末尾保持。
+            aria-label={`編集 — 「${row.original.title}」を編集`}
           >
             <span aria-hidden="true">編集</span>
           </Button>
