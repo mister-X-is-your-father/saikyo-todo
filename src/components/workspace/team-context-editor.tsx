@@ -111,12 +111,16 @@ export function TeamContextEditor({ workspaceId }: Props) {
             onClick={() => void handleSave()}
             data-testid="team-context-save-btn"
             aria-keyshortcuts="Meta+Enter Control+Enter"
+            // iter1162: 旧 aria-label 3 path とも visible "保存" / "保存中…" を
+            // 中位置 ("保存不要" / "を 保存中…" / "を 保存 (...)") に持ち voice
+            // control prefix-matching「click 保存 / 保存中…」 match 不可
+            // (substring 一致のみ)。iter1093-1161 sweep に揃え visible 冒頭固定。
             aria-label={
               !dirty
-                ? 'チームコンテキストに変更がないため保存不要'
+                ? '保存 — チームコンテキストに変更がないため保存不要'
                 : upd.isPending
-                  ? 'チームコンテキストを保存中…'
-                  : 'チームコンテキストを保存 (AI プロンプト末尾に inject)'
+                  ? '保存中… — チームコンテキストを保存中…'
+                  : '保存 — チームコンテキストを保存 (AI プロンプト末尾に inject)'
             }
           >
             <span aria-hidden="true">{upd.isPending ? '保存中…' : '保存'}</span>
