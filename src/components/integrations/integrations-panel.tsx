@@ -356,13 +356,19 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                 className="min-h-11 w-full rounded-md border px-3 py-1 text-sm"
                 required
                 aria-required="true"
-                aria-label={`Source 種別 (現在: ${
-                  kind === 'custom-rest'
-                    ? 'custom-rest — 汎用 REST API、URL / メソッド / items path を自由設定'
-                    : kind === 'yamory'
-                      ? 'yamory — 脆弱性管理 SaaS の専用コネクタ'
-                      : kind
-                })`}
+                // iter1192: 旧 aria-label `Source 種別 (現在: custom-rest — ...)` は visible
+                // (option text "custom-rest (汎用 REST)" / "yamory (脆弱性管理)") を中位置
+                // に持ち voice control prefix-matching「click custom-rest / yamory」 match 不可
+                // (filter-status iter1182 / gantt-zoom iter1190 / teCategory iter1191 同 sweep)。
+                aria-label={(() => {
+                  const visible =
+                    kind === 'custom-rest'
+                      ? 'custom-rest — 汎用 REST API、URL / メソッド / items path を自由設定'
+                      : kind === 'yamory'
+                        ? 'yamory — 脆弱性管理 SaaS の専用コネクタ'
+                        : kind
+                  return `${visible} — Source 種別 (現在: ${visible})`
+                })()}
               >
                 <option value="custom-rest">custom-rest (汎用 REST)</option>
                 <option value="yamory">yamory (脆弱性管理)</option>
