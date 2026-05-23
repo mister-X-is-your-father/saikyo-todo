@@ -85,7 +85,7 @@ export const ListPdcaCyclesInputSchema = z.object({
   limit: z
     .number()
     .int()
-    .positive()
+    .positive('取得件数は 1 以上で指定してください')
     .max(200, '取得件数は 200 件以下で指定してください')
     .default(50),
 })

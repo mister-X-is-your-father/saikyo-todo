@@ -34,6 +34,11 @@ export interface BurndownPoint {
 // iter1086/1092/1126-1148 ja convention で日本語化。
 export const GetBurndownInputSchema = z.object({
   workspaceId: z.string().uuid(),
-  days: z.number().int().positive().max(90, '集計期間は 90 日以下で指定してください').default(14),
+  days: z
+    .number()
+    .int()
+    .positive('集計期間は 1 日以上で指定してください')
+    .max(90, '集計期間は 90 日以下で指定してください')
+    .default(14),
 })
 export type GetBurndownInput = z.infer<typeof GetBurndownInputSchema>

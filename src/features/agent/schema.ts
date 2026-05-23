@@ -46,7 +46,7 @@ export const InvocationPromptSchema = z.object({
   maxTokens: z
     .number()
     .int()
-    .positive()
+    .positive('最大トークン数は 1 以上で指定してください')
     .max(16_384, '最大トークン数は 16,384 以下で指定してください')
     .optional(),
 })
