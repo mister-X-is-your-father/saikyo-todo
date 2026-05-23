@@ -25,7 +25,7 @@ export const CreateItemInputSchema = z
       .min(1, 'タイトルを入力してください')
       .max(500, 'タイトルは 500 文字以内で入力してください'),
     description: z.string().default(''),
-    status: z.string().min(1).default('todo'),
+    status: z.string().min(1, 'ステータスを指定してください').default('todo'),
     parentItemId: z.string().uuid().nullish(),
     startDate: z.string().regex(ISO_DATE, ISO_DATE_MSG).nullish(),
     dueDate: z.string().regex(ISO_DATE, ISO_DATE_MSG).nullish(),
@@ -60,7 +60,7 @@ export const UpdateItemInputSchema = z.object({
         .max(500, 'タイトルは 500 文字以内で入力してください')
         .optional(),
       description: z.string().optional(),
-      status: z.string().min(1).optional(),
+      status: z.string().min(1, 'ステータスを指定してください').optional(),
       startDate: z.string().regex(ISO_DATE, ISO_DATE_MSG).nullish(),
       dueDate: z.string().regex(ISO_DATE, ISO_DATE_MSG).nullish(),
       dueTime: z.string().regex(ISO_TIME, ISO_TIME_MSG).nullish(),
@@ -78,7 +78,7 @@ export type UpdateItemInput = z.infer<typeof UpdateItemInputSchema>
 export const UpdateStatusInputSchema = z.object({
   id: z.string().uuid(),
   expectedVersion: z.number().int().nonnegative(),
-  status: z.string().min(1),
+  status: z.string().min(1, 'ステータスを指定してください'),
   position: z.string().optional(), // fractional indexing 文字列
 })
 export type UpdateStatusInput = z.infer<typeof UpdateStatusInputSchema>
