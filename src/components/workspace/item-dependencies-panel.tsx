@@ -240,12 +240,16 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
             aria-busy={add.isPending || undefined}
             onClick={() => void handleAdd()}
             data-testid="dep-add-btn"
+            // iter1163: 旧 aria-label 3 path とも visible "追加" / "追加中…" を
+            // 中位置 ("依存を追加するには ..." / "依存を追加中…" / "依存先として追加")
+            // に持ち voice control prefix-matching「click 追加 / 追加中…」 match 不可
+            // (substring 一致のみ)。iter1093-1162 sweep に揃え visible 冒頭固定。
             aria-label={
               !pickId
-                ? '依存を追加するには対象 Item を選択してください'
+                ? '追加 — 依存を追加するには対象 Item を選択してください'
                 : add.isPending
-                  ? '依存を追加中…'
-                  : '選択した Item を依存先として追加'
+                  ? '追加中… — 依存を追加中…'
+                  : '追加 — 選択した Item を依存先として追加'
             }
           >
             <span aria-hidden="true">{add.isPending ? '追加中…' : '追加'}</span>
