@@ -3,6 +3,8 @@ import { z } from 'zod'
 
 import { items } from '@/lib/db/schema'
 
+import { violatesMustDodInvariant } from './must-dod'
+
 export const ItemSelectSchema = createSelectSchema(items)
 export type Item = z.infer<typeof ItemSelectSchema>
 
@@ -31,7 +33,10 @@ export const CreateItemInputSchema = z
     idempotencyKey: z.string().uuid(),
   })
   .superRefine((v, ctx) => {
-    if (v.isMust && (!v.dod || v.dod.trim().length === 0)) {
+    // iter1155 refactor: 旧 inline `isMust && (!dod || dod.trim().length === 0)` を
+    // `violatesMustDodInvariant` helper (item/must-dod.ts) に集約 (iter255 で抽出した helper を
+    // schema 側に逆 import)。
+    if (violatesMustDodInvariant(v)) {
       ctx.addIssue({ code: 'custom', path: ['dod'], message: 'MUST には DoD が必要です' })
     }
     if (v.startDate && v.dueDate && v.startDate > v.dueDate) {

@@ -30,7 +30,7 @@
  *
  * 副作用なし、依存なし。pure helper + Vitest 単体 test で網羅。
  */
-import { MS_PER_MINUTE } from '@/lib/date/iso'
+import { MS_PER_MINUTE, pad2 } from '@/lib/date/iso'
 import { rateToPct } from '@/lib/format-rate'
 
 import { isTerminalStatus } from '@/features/item/status-visual'
@@ -67,10 +67,8 @@ function isDone(it: TickerItemFields): boolean {
   return false
 }
 
-function pad2(n: number): string {
-  return n < 10 ? `0${n}` : String(n)
-}
-
+// iter1155 refactor: 旧 local `pad2` (4 行 self-defined) を `@/lib/date/iso#pad2` に
+// 集約 (sort-for-timeline.ts と同 source、iter360/1024/1145 sweep の延長線)。
 function formatHHMM(d: Date): string {
   return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`
 }

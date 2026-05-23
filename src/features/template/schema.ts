@@ -3,6 +3,8 @@ import { z } from 'zod'
 
 import { templateItems, templates } from '@/lib/db/schema'
 
+import { violatesMustDodInvariant } from '@/features/item/must-dod'
+
 export const TemplateSelectSchema = createSelectSchema(templates)
 export type Template = z.infer<typeof TemplateSelectSchema>
 
@@ -86,7 +88,8 @@ export const AddTemplateItemInputSchema = z
     agentRoleToInvoke: z.string().nullish(),
   })
   .superRefine((v, ctx) => {
-    if (v.isMust && (!v.dod || v.dod.trim() === '')) {
+    // iter1155 refactor: inline isMust/dod check を violatesMustDodInvariant helper に集約
+    if (violatesMustDodInvariant(v)) {
       ctx.addIssue({ code: 'custom', path: ['dod'], message: 'MUST には DoD が必要です' })
     }
   })

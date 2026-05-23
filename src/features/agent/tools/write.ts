@@ -22,6 +22,7 @@ import { enqueueJob } from '@/lib/jobs/queue'
 
 import { commentOnItemRepository } from '@/features/comment/repository'
 import { docRepository } from '@/features/doc/repository'
+import { violatesMustDodInvariant } from '@/features/item/must-dod'
 import { itemRepository } from '@/features/item/repository'
 
 import type { AgentToolFactory } from './types'
@@ -45,7 +46,8 @@ const AgentCreateItemSchema = z
     dod: z.string().max(2000, 'DoD は 2,000 文字以内で入力してください').nullish(),
   })
   .superRefine((v, ctx) => {
-    if (v.isMust && (!v.dod || v.dod.trim().length === 0)) {
+    // iter1155 refactor: inline isMust/dod check を violatesMustDodInvariant helper に集約
+    if (violatesMustDodInvariant(v)) {
       ctx.addIssue({ code: 'custom', path: ['dod'], message: 'MUST には DoD が必要です' })
     }
     if (v.startDate && v.dueDate && v.startDate > v.dueDate) {
@@ -92,7 +94,8 @@ const AgentProposeChildItemSchema = z
     dod: z.string().max(2000, 'DoD は 2,000 文字以内で入力してください').nullish(),
   })
   .superRefine((v, ctx) => {
-    if (v.isMust && (!v.dod || v.dod.trim().length === 0)) {
+    // iter1155 refactor: inline isMust/dod check を violatesMustDodInvariant helper に集約
+    if (violatesMustDodInvariant(v)) {
       ctx.addIssue({ code: 'custom', path: ['dod'], message: 'MUST には DoD が必要です' })
     }
   })
