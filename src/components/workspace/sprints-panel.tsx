@@ -314,10 +314,13 @@ export function SprintsPanel({ workspaceId }: Props) {
                 data-testid="sprint-create-btn"
                 aria-keyshortcuts="Meta+Enter Control+Enter"
                 // iter1111: visible "作成" / "作成中…" を aria-label 冒頭固定 (iter1093-1110 sweep)。
-                // empty-title path は disabled で voice click 不発、visible-prefix sweep 対象外。
+                // iter1173: iter1111 で「disabled で対象外」と判断していた not-trim path を改めて
+                // 取り込む — disabled button も SR は label を読み上げ、iOS Voice Control は
+                // disabled でも match attempt するため visible-prefix で統一すべき
+                // (iter1169-1172 と同 sweep 残漏 pattern)。
                 aria-label={
                   !name.trim()
-                    ? 'Sprint を作成するには名前を入力してください'
+                    ? '作成 — Sprint を作成するには名前を入力してください'
                     : createMut.isPending
                       ? '作成中… — Sprint を作成中'
                       : '作成 — Sprint を新規作成'
