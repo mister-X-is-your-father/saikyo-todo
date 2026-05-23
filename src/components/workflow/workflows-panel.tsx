@@ -339,11 +339,14 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             // iter1116: wf-trigger / wf-edit / wf-toggle / wf-runs-toggle の旧 aria-label は visible
             // "実行"/"実行中…"/"編集"/"無効化"/"有効化"/"履歴" を末尾持ちで voice control prefix-matching
             // match 不可。iter1093-1115 sweep convention に合わせ visible 冒頭固定。
+            // iter1165: wf-trigger の !wf.enabled / nodeCount===0 path は iter1116 で
+            // 漏れていた (visible "実行" を末尾 "実行不可" に持ち prefix-match 不可)。
+            // visible "実行" 冒頭固定 + em-dash 区切で descriptive 末尾保持。
             aria-label={
               !wf.enabled
-                ? `Workflow「${wf.name}」は無効化中のため実行不可`
+                ? `実行 — Workflow「${wf.name}」は無効化中のため実行不可`
                 : nodeCount === 0
-                  ? `Workflow「${wf.name}」は node が無いため実行不可`
+                  ? `実行 — Workflow「${wf.name}」は node が無いため実行不可`
                   : trigger.isPending
                     ? `実行中… — Workflow「${wf.name}」を実行中`
                     : `実行 — Workflow「${wf.name}」を手動で sync 実行 (各 node 10-60s timeout)`
@@ -371,9 +374,15 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             disabled={update.isPending}
             aria-busy={update.isPending || undefined}
             data-testid={`wf-toggle-${wf.id}`}
+            // iter1165: wf-toggle pending path は iter1116 で漏れ — 旧
+            // `Workflow「name」の状態を更新中…` は visible "無効化"/"有効化" を
+            // 含まず substring 一致すら不可 (WCAG 2.5.3 Label in Name 違反)。
+            // wf.enabled 別に visible 冒頭固定 + em-dash 区切で分岐。
             aria-label={
               update.isPending
-                ? `Workflow「${wf.name}」の状態を更新中…`
+                ? wf.enabled
+                  ? `無効化 — Workflow「${wf.name}」の状態を更新中…`
+                  : `有効化 — Workflow「${wf.name}」の状態を更新中…`
                 : wf.enabled
                   ? `無効化 — Workflow「${wf.name}」を無効化`
                   : `有効化 — Workflow「${wf.name}」を有効化`
