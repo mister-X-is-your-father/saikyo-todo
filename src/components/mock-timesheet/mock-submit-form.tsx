@@ -93,7 +93,15 @@ export function MockSubmitForm() {
           aria-required="true"
           aria-invalid={form.formState.errors.category ? true : undefined}
           aria-describedby={form.formState.errors.category ? 'tsCategory-error' : undefined}
-          aria-label={`カテゴリ (現在: ${TIME_ENTRY_CATEGORIES.find((c) => c.key === form.watch('category'))?.label ?? form.watch('category')})`}
+          // iter1198: teCategory iter1191 と同 sweep — 旧 aria-label
+          // `カテゴリ (現在: ${label})` は visible (option text = {c.label}) を中位置に持ち
+          // voice control prefix-matching「click {label}」 match 不可 (substring 一致のみ)。
+          aria-label={(() => {
+            const visible =
+              TIME_ENTRY_CATEGORIES.find((c) => c.key === form.watch('category'))?.label ??
+              form.watch('category')
+            return `${visible} — カテゴリ (現在: ${visible})`
+          })()}
           {...form.register('category')}
           className="min-h-11 w-full rounded border px-3 py-2 text-sm"
         >
