@@ -181,12 +181,16 @@ export function TemplateItemsEditor({ templateId }: Props) {
           className="min-h-11"
           disabled={addMut.isPending || !title.trim()}
           aria-busy={addMut.isPending || undefined}
+          // iter1154: 旧 aria-label 3 path とも visible "+ 追加" を冒頭に持たず
+          // ('子 Item を ...' 始まり) voice control prefix-matching「click + 追加 / 追加」
+          // match 不可 (substring 一致のみ)。iter1093-1153 sweep convention に揃え
+          // visible "+ 追加" 冒頭固定 + em-dash 区切で descriptive 末尾保持。
           aria-label={
             !title.trim()
-              ? '子 Item を追加するにはタイトルを入力してください'
+              ? '+ 追加 — 子 Item を追加するにはタイトルを入力してください'
               : addMut.isPending
-                ? '子 Item を追加中…'
-                : '子 Item を Template に追加'
+                ? '+ 追加 — 子 Item を追加中…'
+                : '+ 追加 — 子 Item を Template に追加'
           }
         >
           <span aria-hidden="true">+ 追加</span>
