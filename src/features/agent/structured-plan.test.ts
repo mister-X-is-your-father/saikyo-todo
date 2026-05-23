@@ -90,6 +90,39 @@ describe('StructuredPlanSchema', () => {
       }).success,
     ).toBe(false)
   })
+
+  // iter1144: 各 min/max に付与した ja message が parser error.issues に出る回帰防止
+  it('est_min 上限超過時 ja message (480) が出る', () => {
+    const r = StructuredPlanSchema.safeParse({
+      steps: [{ title: 's', est_min: 481 }],
+      dod_summary: 'x',
+    })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('480'))).toBe(true)
+    }
+  })
+  it('steps 31 件 reject 時 ja message が出る', () => {
+    const steps = Array.from({ length: 31 }, (_, i) => ({ title: `s${i}`, est_min: 1 }))
+    const r = StructuredPlanSchema.safeParse({ steps, dod_summary: 'x' })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('30 件以内'))).toBe(true)
+    }
+  })
+  it('dod_summary 空 reject 時 ja message が出る', () => {
+    const r = StructuredPlanSchema.safeParse({
+      steps: [{ title: 's', est_min: 5 }],
+      dod_summary: '',
+    })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('DoD サマリ'))).toBe(true)
+    }
+  })
 })
 
 describe('validateDependencies', () => {

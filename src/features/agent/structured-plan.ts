@@ -21,28 +21,51 @@ import { z } from 'zod'
 import { extractFirstJsonObject } from '@/lib/json/extract-first-object'
 import { round1 } from '@/lib/round-decimal'
 
+// iter1144: structured-plan 全 max/min に ja message 付与 (iter1086/1092/1126-1143 sweep)。
+// AI plan parser の zod error が staging UI / Slack 通知 / test で日本語表示される。
 export const StructuredPlanStepSchema = z.object({
   /** subtask の title (1-200 文字) */
-  title: z.string().trim().min(1).max(200),
+  title: z
+    .string()
+    .trim()
+    .min(1, 'step タイトルを入力してください')
+    .max(200, 'step タイトルは 200 文字以内で入力してください'),
   /** 見積分 (1 step = 1-480 min) */
-  est_min: z.number().int().min(1).max(480),
+  est_min: z
+    .number()
+    .int()
+    .min(1, '見積もり (分) は 1 以上で指定してください')
+    .max(480, '見積もり (分) は 480 (= 8時間) 以下で指定してください'),
   /** 完了基準 (= dod、1 行 短く)。空文字許可 (省略可) */
-  dod: z.string().trim().max(300).default(''),
+  dod: z.string().trim().max(300, 'DoD は 300 文字以内で入力してください').default(''),
   /**
    * 同 plan 内の他 step の title (= 依存先)。
    * caller が staging UI で title → 実 step id に解決する想定。
    */
-  dependencies: z.array(z.string().trim().min(1)).default([]),
+  dependencies: z
+    .array(z.string().trim().min(1, '依存先 step タイトルを入力してください'))
+    .default([]),
 })
 export type StructuredPlanStep = z.infer<typeof StructuredPlanStepSchema>
 
 export const StructuredPlanSchema = z.object({
   /** 1-30 step、空配列は実用上 plan 不成立として reject */
-  steps: z.array(StructuredPlanStepSchema).min(1).max(30),
+  steps: z
+    .array(StructuredPlanStepSchema)
+    .min(1, 'step は 1 件以上必要です')
+    .max(30, 'step は 30 件以内で指定してください'),
   /** total est_min の合計 (Pre-validation 段階では信頼しない、本 helper で再計算) */
-  total_est_min: z.number().int().min(0).optional(),
+  total_est_min: z
+    .number()
+    .int()
+    .min(0, '合計見積もり (分) は 0 以上で指定してください')
+    .optional(),
   /** 1 行 DoD サマリ */
-  dod_summary: z.string().trim().min(1).max(300),
+  dod_summary: z
+    .string()
+    .trim()
+    .min(1, 'DoD サマリを入力してください')
+    .max(300, 'DoD サマリは 300 文字以内で入力してください'),
 })
 export type StructuredPlan = z.infer<typeof StructuredPlanSchema>
 
