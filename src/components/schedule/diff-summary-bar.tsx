@@ -79,7 +79,11 @@ export function DiffSummaryBar({ schedules, itemTitleById, onSelect }: Props) {
             icon={ICON_BY_DIFF_SEVERITY[r.severity]}
             label={`${title}  ${fmtMin(r.plannedMinutes)} → ${fmtMin(r.actualMinutes)}`}
             delta={showDelta ? deltaLabel(r.deltaMinutes) : undefined}
-            ariaLabel={`${sevLabel}: ${title} 想定 ${fmtMin(r.plannedMinutes)} 実測 ${fmtMin(r.actualMinutes)}${deltaText}`}
+            // iter1189: 旧 ariaLabel `${sevLabel}: ${title} 想定 ...` は visible "{title}" を
+            // 中位置 "{sevLabel}: **{title}** ..." に持ち voice control prefix-matching
+            //「click {title}」 match 不可 (onClick あり時 button render なので visible-prefix 必要)。
+            // visible {title} 冒頭固定 + em-dash 区切で sevLabel を descriptive 末尾保持。
+            ariaLabel={`${title} — ${sevLabel}: 想定 ${fmtMin(r.plannedMinutes)} 実測 ${fmtMin(r.actualMinutes)}${deltaText}`}
             className="max-w-[260px]"
             onClick={onSelect ? () => onSelect(r.itemId) : undefined}
             testId={`diff-chip-${r.itemId ?? 'interrupt'}`}
