@@ -161,6 +161,10 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
           {/* iter1115: src-pull / src-toggle / src-imports-toggle の旧 aria-label は visible
               "Pull" / "Pull 中…" / "無効化"or"有効化" / "履歴" を末尾持ちで voice control
               prefix-matching match 不可。iter1093-1114 sweep convention に合わせ visible 冒頭固定。 */}
+          {/* iter1164: src-pull の !src.enabled path で visible "Pull" が
+              aria-label 末尾、src-toggle の pending path で visible "無効化"/"有効化"
+              が aria-label に含まれず — iter1115 sweep が 2 path 漏れていた。
+              visible 冒頭固定 + em-dash 区切で 残りを descriptive 末尾保持。 */}
           <Button
             size="sm"
             className="min-h-11"
@@ -172,7 +176,7 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             title="手動 pull (sync 実行、30s timeout)"
             aria-label={
               !src.enabled
-                ? `Source「${src.name}」は無効化中のため Pull 不可`
+                ? `Pull — Source「${src.name}」は無効化中のため Pull 不可`
                 : trigger.isPending
                   ? `Pull 中… — Source「${src.name}」を Pull 中`
                   : `Pull — Source「${src.name}」を手動 Pull (sync 実行、30s timeout)`
@@ -191,7 +195,9 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             data-testid={`src-toggle-${src.id}`}
             aria-label={
               update.isPending
-                ? `Source「${src.name}」の状態を更新中…`
+                ? src.enabled
+                  ? `無効化 — Source「${src.name}」の状態を更新中…`
+                  : `有効化 — Source「${src.name}」の状態を更新中…`
                 : src.enabled
                   ? `無効化 — Source「${src.name}」を無効化`
                   : `有効化 — Source「${src.name}」を有効化`
