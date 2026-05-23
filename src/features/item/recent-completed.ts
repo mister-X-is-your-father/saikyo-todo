@@ -15,7 +15,7 @@
  *   - limit option で上位 N 件のみ返す (default 制限なし)
  */
 
-import { parseDateOrNull } from '@/lib/date/iso'
+import { MS_PER_HOUR, MS_PER_MINUTE, parseDateOrNull } from '@/lib/date/iso'
 import { formatTopWithOverflow, titleOrUntitled } from '@/lib/format-list'
 
 import {
@@ -47,7 +47,8 @@ export interface ComputeRecentCompletedOptions {
   limit?: number
 }
 
-const HOUR_MS = 60 * 60 * 1000
+// iter1145 refactor: 旧 local `HOUR_MS = 60 * 60 * 1000` を `@/lib/date/iso#MS_PER_HOUR`
+// に集約 (= iter360/1024 MS_PER_DAY sweep の MS_PER_HOUR 拡張)。
 
 export function selectRecentCompleted<T extends RecentCompletedFields>(
   items: readonly T[],
@@ -58,7 +59,7 @@ export function selectRecentCompleted<T extends RecentCompletedFields>(
   if (windowHours <= 0) return []
   const nowParsed = parseDateOrNull(now)
   if (!nowParsed) return []
-  const cutoffMs = nowParsed.getTime() - windowHours * HOUR_MS
+  const cutoffMs = nowParsed.getTime() - windowHours * MS_PER_HOUR
 
   const matched: RecentCompletedEntry<T>[] = []
   for (const it of items) {
@@ -128,7 +129,8 @@ export interface RecentCompletedPriorityStats {
 
 export type RecentCompletedByPriority = Record<PriorityKey, RecentCompletedPriorityStats>
 
-const MINUTE_MS = 60 * 1000
+// iter1145 refactor: 旧 local `MINUTE_MS = 60 * 1000` を `@/lib/date/iso#MS_PER_MINUTE`
+// に集約 (= iter360/1024 MS_PER_DAY sweep の MS_PER_MINUTE 拡張)。
 
 export function computeRecentCompletedByPriority<T extends RecentCompletedFields>(
   entries: readonly RecentCompletedEntry<T>[],
@@ -143,7 +145,7 @@ export function computeRecentCompletedByPriority<T extends RecentCompletedFields
     const bucket = result[e.priority]
     bucket.count += 1
     const diffMs = Math.max(0, nowMs - e.doneAt.getTime())
-    const minutesAgo = Math.floor(diffMs / MINUTE_MS)
+    const minutesAgo = Math.floor(diffMs / MS_PER_MINUTE)
     if (bucket.latestMinutesAgo === null || minutesAgo < bucket.latestMinutesAgo) {
       bucket.latestMinutesAgo = minutesAgo
     }

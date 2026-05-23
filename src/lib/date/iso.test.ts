@@ -9,6 +9,8 @@ import {
   isoDaysFromNow,
   isValidIsoDate,
   MS_PER_DAY,
+  MS_PER_HOUR,
+  MS_PER_MINUTE,
   pad2,
   parseDateOrNull,
   parseIsoDateAsLocalMidnight,
@@ -374,5 +376,26 @@ describe('MS_PER_DAY', () => {
     const a = new Date(2026, 3, 29).getTime()
     const b = new Date(2026, 3, 22).getTime()
     expect(Math.round((a - b) / MS_PER_DAY)).toBe(7)
+  })
+})
+
+// iter1145 refactor: 1 時間 / 1 分 ms 定数を MS_PER_DAY と同じ集約 1 source に揃える
+describe('MS_PER_HOUR / MS_PER_MINUTE (iter1145)', () => {
+  it('MS_PER_HOUR = 60 × 60 × 1000 (1 hour in ms)', () => {
+    expect(MS_PER_HOUR).toBe(60 * 60 * 1000)
+    expect(MS_PER_HOUR).toBe(3_600_000)
+  })
+
+  it('MS_PER_MINUTE = 60 × 1000 (1 minute in ms)', () => {
+    expect(MS_PER_MINUTE).toBe(60 * 1000)
+    expect(MS_PER_MINUTE).toBe(60_000)
+  })
+
+  it('MS_PER_DAY との関係: 24 × MS_PER_HOUR === MS_PER_DAY', () => {
+    expect(24 * MS_PER_HOUR).toBe(MS_PER_DAY)
+  })
+
+  it('MS_PER_HOUR との関係: 60 × MS_PER_MINUTE === MS_PER_HOUR', () => {
+    expect(60 * MS_PER_MINUTE).toBe(MS_PER_HOUR)
   })
 })

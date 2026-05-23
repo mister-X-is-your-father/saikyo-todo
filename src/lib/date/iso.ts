@@ -44,8 +44,13 @@ export function pad2(n: number): string {
  * `MS_PER_DAY` / `DAY_MS` の同一定義 5 件 + inline `(24 * 60 * 60 * 1000)` 8 件
  * 計 13 callsite が散らばっていたので 1 source of truth に集約。caller は
  * `import { MS_PER_DAY } from '@/lib/date/iso'` で参照。
+ *
+ * iter1145 refactor: 同様に 1 時間 / 1 分も `MS_PER_HOUR` / `MS_PER_MINUTE` に集約
+ * (旧 local `HOUR_MS = 60 * 60 * 1000` / `MINUTE_MS = 60 * 1000` + inline 露出を統一)。
  */
 export const MS_PER_DAY = 24 * 60 * 60 * 1000
+export const MS_PER_HOUR = 60 * 60 * 1000
+export const MS_PER_MINUTE = 60 * 1000
 
 /**
  * iter340 refactor: ローカル TZ の Date を `YYYY-MM-DD` に整形。

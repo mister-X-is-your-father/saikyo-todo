@@ -26,7 +26,7 @@
  *
  * AI 不使用、副作用無し、依存無し。pure helper + Vitest 単体 test で網羅。
  */
-import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
+import { MS_PER_DAY, MS_PER_HOUR, parseDateOrNull } from '@/lib/date/iso'
 import { rateToPct } from '@/lib/format-rate'
 import { round1 } from '@/lib/round-decimal'
 
@@ -112,7 +112,8 @@ export function buildCycleCheckStats(
       const created = parseDateLike(it.createdAt)
       const doneAt = parseDateLike(it.doneAt ?? null)
       if (created && doneAt) {
-        const hours = (doneAt.getTime() - created.getTime()) / (60 * 60 * 1000)
+        // iter1145 refactor: 旧 inline `60 * 60 * 1000` を `MS_PER_HOUR` に集約
+        const hours = (doneAt.getTime() - created.getTime()) / MS_PER_HOUR
         if (hours >= 0) leadTimes.push(hours)
       }
       // 遅延完了: doneAt > dueDate
