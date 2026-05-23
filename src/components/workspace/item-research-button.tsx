@@ -46,12 +46,16 @@ export function ItemResearchButton({ workspaceId, item }: Props) {
         void run()
       }}
       data-testid={`research-btn-${item.id}`}
+      // iter1160: 旧 aria-label 3 path とも visible "AI 調査" / "調査中…" を中位置
+      // ("ため **AI 調査** 不可" / "を **AI 調査中…**") に持ち voice control
+      // prefix-matching「click AI 調査 / 調査中…」 match 不可 (substring 一致のみ)。
+      // iter1159 item-decompose-button と同 sweep。visible 冒頭固定 + em-dash 区切。
       aria-label={
         item.status === 'done'
-          ? `「${item.title}」は完了済のため AI 調査不可`
+          ? `AI 調査 — 「${item.title}」は完了済のため AI 調査不可`
           : research.isPending
-            ? `「${item.title}」を AI 調査中…`
-            : `「${item.title}」を AI 調査して Doc を作成`
+            ? `調査中… — 「${item.title}」を AI 調査中…`
+            : `AI 調査 — 「${item.title}」を AI 調査して Doc を作成`
       }
     >
       <span aria-hidden="true">{research.isPending ? '調査中…' : 'AI 調査'}</span>
