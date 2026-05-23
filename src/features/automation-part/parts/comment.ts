@@ -25,9 +25,14 @@ import { commentService } from '@/features/comment/service'
 
 import { definePart, unwrapPartResult } from '../types'
 
+// iter1158: body.min(1).max(10000) に ja message 無く zod default 英語が露出。
+// iter1086/1092/1126-1157 ja convention で日本語化。
 const CommentCreateOnItemInput = z.object({
   itemId: z.string().uuid(),
-  body: z.string().min(1).max(10_000),
+  body: z
+    .string()
+    .min(1, 'コメント本文を入力してください')
+    .max(10_000, 'コメント本文は 10,000 文字以内で入力してください'),
   idempotencyKey: z.string().uuid(),
 })
 

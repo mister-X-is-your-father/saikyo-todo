@@ -28,11 +28,23 @@ import { itemService } from '@/features/item/service'
 
 import { definePart, unwrapPartResult } from '../types'
 
+// iter1158: automation-part item.create / item.update input schema に ja message 無く
+// zod default 英語が露出。AI / workflow / MCP 経由 part 実行時の validation error が
+// agent_invocations.error_message に記録され UI に出るため日本語化が必要。
+// iter1086/1092/1126-1157 ja convention で日本語化。
 const ItemCreateInput = z.object({
-  title: z.string().min(1).max(500),
-  description: z.string().max(20000).optional(),
+  title: z
+    .string()
+    .min(1, 'タイトルを入力してください')
+    .max(500, 'タイトルは 500 文字以内で入力してください'),
+  description: z.string().max(20000, '説明は 20,000 文字以内で入力してください').optional(),
   status: z.string().optional(),
-  priority: z.number().int().min(1).max(4).optional(),
+  priority: z
+    .number()
+    .int()
+    .min(1, 'priority は 1 以上で指定してください')
+    .max(4, 'priority は 4 以下で指定してください')
+    .optional(),
   isMust: z.boolean().optional(),
   dueDate: z.string().optional(),
   parentId: z.string().uuid().optional(),
@@ -68,10 +80,19 @@ export const itemCreatePart = definePart({
  */
 const ItemUpdatePatchInput = z
   .object({
-    title: z.string().min(1).max(500).optional(),
+    title: z
+      .string()
+      .min(1, 'タイトルを入力してください')
+      .max(500, 'タイトルは 500 文字以内で入力してください')
+      .optional(),
     description: z.string().optional(),
-    status: z.string().min(1).optional(),
-    priority: z.number().int().min(1).max(4).optional(),
+    status: z.string().min(1, 'ステータスを指定してください').optional(),
+    priority: z
+      .number()
+      .int()
+      .min(1, 'priority は 1 以上で指定してください')
+      .max(4, 'priority は 4 以下で指定してください')
+      .optional(),
     isMust: z.boolean().optional(),
     dueDate: z.string().nullish(),
     scheduledFor: z.string().nullish(),
@@ -115,7 +136,7 @@ export const itemUpdatePart = definePart({
  * workspaceId は ctx 経由で固定。
  */
 const ItemListInput = z.object({
-  status: z.string().min(1).optional(),
+  status: z.string().min(1, 'ステータスを指定してください').optional(),
   isMust: z.boolean().optional(),
 })
 

@@ -35,7 +35,7 @@ const ScheduleCreateInput = z.object({
   kind: z.enum(['planned', 'actual']),
   startAt: isoDateTime,
   endAt: isoDateTime,
-  note: z.string().max(2000).nullish(),
+  note: z.string().max(2000, 'メモは 2,000 文字以内で入力してください').nullish(),
 })
 
 export const scheduleCreatePart = definePart({
@@ -65,7 +65,7 @@ const ScheduleStartTimerInput = z.object({
   itemId: z.string().uuid().nullable(),
   /** 開始時刻 (省略時 = サーバ now) */
   startAt: isoDateTime.optional(),
-  note: z.string().max(2000).nullish(),
+  note: z.string().max(2000, 'メモは 2,000 文字以内で入力してください').nullish(),
 })
 
 export const scheduleStartTimerPart = definePart({
@@ -132,7 +132,7 @@ const ScheduleUpdatePatchInput = z
     itemId: z.string().uuid().nullish(),
     startAt: isoDateTime.optional(),
     endAt: isoDateTime.optional(),
-    note: z.string().max(2000).nullish(),
+    note: z.string().max(2000, 'メモは 2,000 文字以内で入力してください').nullish(),
   })
   .refine((p) => Object.keys(p).length > 0, { message: '更新する項目がありません' })
 

@@ -24,8 +24,12 @@ import { docService } from '@/features/doc/service'
 
 import { definePart, unwrapPartResult } from '../types'
 
+// iter1158: title.min(1).max(500) に ja message 無く zod default 英語が露出。
 const DocCreateInput = z.object({
-  title: z.string().min(1).max(500),
+  title: z
+    .string()
+    .min(1, 'タイトルを入力してください')
+    .max(500, 'タイトルは 500 文字以内で入力してください'),
   body: z.string().optional(),
   sourceTemplateId: z.string().uuid().nullish(),
   idempotencyKey: z.string().uuid(),

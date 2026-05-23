@@ -27,16 +27,18 @@ import { timeEntryService } from '@/features/time-entry/service'
 
 import { definePart, unwrapPartResult } from '../types'
 
+// iter1158: description.max(2000) / durationMinutes.min/max に ja message 無く zod
+// default 英語が露出。iter1086/1092/1126-1157 ja convention で日本語化。
 const TimeEntryCreateInput = z.object({
   itemId: z.string().uuid().nullish(),
-  workDate: z.string().regex(ISO_DATE_RE),
+  workDate: z.string().regex(ISO_DATE_RE, 'YYYY-MM-DD 形式で入力してください'),
   category: TimeEntryCategorySchema,
-  description: z.string().max(2000).optional(),
+  description: z.string().max(2000, '説明は 2,000 文字以内で入力してください').optional(),
   durationMinutes: z
     .number()
     .int()
-    .min(1)
-    .max(24 * 60),
+    .min(1, '計測分数は 1 以上で指定してください')
+    .max(24 * 60, '計測分数は 24 時間以内 (1440 分) で指定してください'),
   idempotencyKey: z.string().uuid(),
 })
 
