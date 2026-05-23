@@ -724,7 +724,11 @@ function SprintCard({
                 onClick={() => setEditing(true)}
                 data-testid={`sprint-period-edit-btn-${sprint.id}`}
                 title="期間を編集"
-                aria-label={`Sprint「${sprint.name}」の期間を編集`}
+                // iter1150: 旧 aria-label `Sprint「name」の期間を編集` は visible "期間"
+                // を末尾近く "の**期間**を編集" 中位置に持ち voice control prefix-matching
+                //「click 期間」 match 不可。iter1093-1149 sweep convention に揃え
+                // visible "期間" 冒頭固定 + em-dash 区切で descriptive 末尾保持。
+                aria-label={`期間 — Sprint「${sprint.name}」の期間を編集`}
               >
                 <CalendarRange className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                 <span aria-hidden="true">期間</span>
