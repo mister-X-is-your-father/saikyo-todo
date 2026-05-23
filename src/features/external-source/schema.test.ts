@@ -42,6 +42,34 @@ describe('YamoryConfigSchema', () => {
       }),
     ).not.toThrow()
   })
+
+  // iter1153: config 内 string.min(1) に ja message 付与の回帰防止
+  it('token 空 reject 時 ja message が出る', () => {
+    const r = YamoryConfigSchema.safeParse({ token: '' })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('Yamory API token'))).toBe(true)
+    }
+  })
+
+  it('projectIds 内の空文字 reject 時 ja message が出る', () => {
+    const r = YamoryConfigSchema.safeParse({ token: 'ok', projectIds: ['p1', ''] })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('projectId は空でない'))).toBe(true)
+    }
+  })
+
+  it('endpointTemplate 空 reject 時 ja message が出る', () => {
+    const r = YamoryConfigSchema.safeParse({ token: 'ok', endpointTemplate: '' })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('エンドポイント template'))).toBe(true)
+    }
+  })
 })
 
 describe('CustomRestConfigSchema', () => {
@@ -68,6 +96,25 @@ describe('CustomRestConfigSchema', () => {
   it('idPath / titlePath 空文字を reject', () => {
     expect(() => CustomRestConfigSchema.parse({ ...baseValid, idPath: '' })).toThrow()
     expect(() => CustomRestConfigSchema.parse({ ...baseValid, titlePath: '' })).toThrow()
+  })
+
+  // iter1153: config 内 string.min(1) に ja message 付与の回帰防止
+  it('idPath 空 ja message が出る', () => {
+    const r = CustomRestConfigSchema.safeParse({ ...baseValid, idPath: '' })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('id パスを入力'))).toBe(true)
+    }
+  })
+
+  it('titlePath 空 ja message が出る', () => {
+    const r = CustomRestConfigSchema.safeParse({ ...baseValid, titlePath: '' })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs.some((m) => m.includes('title パスを入力'))).toBe(true)
+    }
   })
 })
 
