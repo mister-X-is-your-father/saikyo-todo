@@ -246,7 +246,12 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
                     }}
                     className="hover:text-primary focus-visible:ring-ring truncate rounded text-left text-sm font-medium hover:underline focus-visible:ring-2 focus-visible:outline-none"
                     data-testid={`period-title-${period}-${it.id}`}
-                    aria-label={`「${it.title}」を編集`}
+                    // iter1157: 旧 aria-label `「title」を編集` は visible "{it.title}"
+                    // を位置 1 (「」内) に持ち voice control prefix-matching
+                    //「click {it.title}」 match 不可 (substring 一致のみ)。
+                    // iter1093-1156 sweep (kanban/today-title と同 pattern) に揃え
+                    // visible title 冒頭固定 + em-dash 区切で descriptive 末尾。
+                    aria-label={`${it.title} — 編集`}
                   >
                     <span aria-hidden="true">{it.title}</span>
                   </button>
