@@ -767,10 +767,16 @@ function KeyResultList({
                       onClick={() => void handleDelete(kr.id, kr.title)}
                       disabled={remove.isPending}
                       aria-busy={remove.isPending || undefined}
+                      // iter1224: 旧 aria-label は visible 概念名 "削除" を末尾 "KR「title」
+                      // を **削除**" に持ち voice control prefix-matching「click 削除」
+                      // match 不可 (icon-only ✕、visible text 無、title attribute は tooltip
+                      // 専用)。template-card delete iter1218 と同 sweep を kr-delete にも
+                      // 展開。概念名 "削除" / "削除中…" を aria-label 冒頭固定 + em-dash
+                      // 区切で descriptive 末尾保持。
                       aria-label={
                         remove.isPending
-                          ? `KR「${kr.title}」を削除中…`
-                          : `KR「${kr.title}」を削除 (soft delete)`
+                          ? `削除中… — KR「${kr.title}」を削除中`
+                          : `削除 — KR「${kr.title}」を削除 (soft delete)`
                       }
                       title="KR を削除 (soft delete)"
                       data-testid={`kr-delete-${kr.id}`}
