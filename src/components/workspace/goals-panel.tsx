@@ -181,12 +181,16 @@ export function GoalsPanel({ workspaceId }: Props) {
                   aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   max={endDate || undefined}
                   enterKeyHint="next"
+                  // iter1208: 旧 aria-label `Goal 開始日 (...)` (全 3 path) は visible
+                  // Label "開始" を中位置 "Goal **開始**日 (...)" に持ち voice control
+                  // prefix-matching「click 開始」 match 不可 (substring 一致のみ)。
+                  // sprint-start iter1207 と同 sweep を goal-start にも展開。
                   aria-label={
                     startDate === ''
-                      ? 'Goal 開始日 (必須、終了日以前)'
+                      ? '開始 — Goal 開始日 (必須、終了日以前)'
                       : isInvalidDateRange(startDate, endDate)
-                        ? `Goal 開始日 (現在: ${startDate}、終了日 ${endDate} より後で不正)`
-                        : `Goal 開始日 (現在: ${startDate})`
+                        ? `開始 — Goal 開始日 (現在: ${startDate}、終了日 ${endDate} より後で不正)`
+                        : `開始 — Goal 開始日 (現在: ${startDate})`
                   }
                 />
               </div>
@@ -203,12 +207,16 @@ export function GoalsPanel({ workspaceId }: Props) {
                   aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   min={startDate || undefined}
                   enterKeyHint="next"
+                  // iter1208: 旧 aria-label `Goal 終了日 (...)` (全 3 path) は visible
+                  // Label "終了" を中位置 "Goal **終了**日 (...)" に持ち voice control
+                  // prefix-matching「click 終了」 match 不可 (substring 一致のみ)。
+                  // goal-start と同 sweep を goal-end にも展開。
                   aria-label={
                     endDate === ''
-                      ? 'Goal 終了日 (必須、開始日以降)'
+                      ? '終了 — Goal 終了日 (必須、開始日以降)'
                       : isInvalidDateRange(startDate, endDate)
-                        ? `Goal 終了日 (現在: ${endDate}、開始日 ${startDate} より前で不正)`
-                        : `Goal 終了日 (現在: ${endDate})`
+                        ? `終了 — Goal 終了日 (現在: ${endDate}、開始日 ${startDate} より前で不正)`
+                        : `終了 — Goal 終了日 (現在: ${endDate})`
                   }
                 />
               </div>
