@@ -164,7 +164,8 @@ export function KanbanView({ workspaceId, items }: Props) {
   if (!statuses) {
     return (
       <p className="text-muted-foreground text-sm" role="status" aria-live="polite">
-        列定義を読み込み中...
+        {/* iter1318: ASCII "..." → Unicode "…" で codebase ellipsis convention 統一 */}
+        列定義を読み込み中…
       </p>
     )
   }

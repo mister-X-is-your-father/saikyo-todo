@@ -104,7 +104,8 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-xs">集計中...</p>
+          {/* iter1318: ASCII "..." → Unicode "…" で codebase ellipsis convention 統一 */}
+          <p className="text-muted-foreground text-xs">集計中…</p>
         </CardContent>
       </Card>
     )
