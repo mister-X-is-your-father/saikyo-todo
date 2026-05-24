@@ -441,12 +441,18 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               rows={3}
               maxLength={10000}
               aria-keyshortcuts="Meta+Enter Control+Enter"
+              // iter1202: 旧 aria-label `提案 description (...)` (全 3 path) は visible
+              // Label "説明 (Cmd/Ctrl+Enter で保存)" を全く含まず WCAG 2.5.3 (Label in
+              // Name) 違反 + voice control「click 説明」 match 不可 (ja "説明" → en
+              // "description" の language divergence)。p-title iter1201 と同 sweep を
+              // p-desc Textarea にも展開。Textarea は htmlFor Label が visible なので
+              // Label text "説明" を冒頭固定 + em-dash 区切で descriptive 末尾保持。
               aria-label={
                 description.length === 0
-                  ? '提案 description (任意、最大 10000 文字、Markdown 可、Cmd/Ctrl+Enter で保存)'
+                  ? '説明 — 提案 description (任意、最大 10000 文字、Markdown 可、Cmd/Ctrl+Enter で保存)'
                   : description.length > 9500
-                    ? `提案 description (現在 ${description.length} / 10000 文字、上限近接、Cmd/Ctrl+Enter で保存)`
-                    : `提案 description (現在 ${description.length} / 10000 文字、Cmd/Ctrl+Enter で保存)`
+                    ? `説明 — 提案 description (現在 ${description.length} / 10000 文字、上限近接、Cmd/Ctrl+Enter で保存)`
+                    : `説明 — 提案 description (現在 ${description.length} / 10000 文字、Cmd/Ctrl+Enter で保存)`
               }
             />
           </div>
