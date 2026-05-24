@@ -1025,10 +1025,15 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                 className="min-h-11 w-20 text-sm"
                 required
                 aria-required="true"
+                // iter1200: 旧 aria-label `Sprint 期間 (日数、1-90、現在: N 日)` は
+                // visible Label "期間 (日)" を中位置 "Sprint **期間** (...)" に持ち
+                // voice control prefix-matching「click 期間」 match 不可 (substring 一致のみ)。
+                // sprint-defaults-dow iter1194 と同 sweep を sprint-defaults-length にも展開。
+                // Input は htmlFor Label が visible なので Label text "期間 (日)" を冒頭固定。
                 aria-label={
                   length < 1 || length > 90
-                    ? `Sprint 期間 (日数) の有効範囲は 1-90、現在値 ${length} は範囲外`
-                    : `Sprint 期間 (日数、1-90、現在: ${length} 日)`
+                    ? `期間 (日) — Sprint 期間 (日数) の有効範囲は 1-90、現在値 ${length} は範囲外`
+                    : `期間 (日) — Sprint 期間 (日数、1-90、現在: ${length} 日)`
                 }
                 aria-invalid={length < 1 || length > 90 || undefined}
                 inputMode="numeric"
