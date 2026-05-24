@@ -364,7 +364,12 @@ function KanbanCard({
             // prefix-match satisfy + title button (`${title} — 編集`) と差別化。
             aria-label={`編集 — 「${item.title}」を編集 (✎ アイコン)`}
             title={`「${item.title}」を編集`}
-            className="text-muted-foreground hover:text-foreground focus-visible:ring-ring relative rounded px-1 text-xs before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
+            // iter1306 (modeM hazard 続き、comment-thread iter1303 / operation-board iter1304 /
+            // activity-log iter1305 と同 fix): icon ✎ (text-xs, ~16px) + px-1 + `before:-inset-3`
+            // (12px) で 16+24=40px (片軸)、horizontally も 8(✎)+8(px-1)+24=40px で WCAG 2.5.5
+            // (44x44) 両軸未達。`inline-flex min-h-11 min-w-11 items-center justify-center` で
+            // 両軸 44 強制 + ✎ icon を center 配置で見た目バランス維持。
+            className="text-muted-foreground hover:text-foreground focus-visible:ring-ring relative inline-flex min-h-11 min-w-11 items-center justify-center rounded px-1 text-xs before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
             data-testid={`kanban-edit-${item.id}`}
           >
             <span aria-hidden="true">✎</span>
