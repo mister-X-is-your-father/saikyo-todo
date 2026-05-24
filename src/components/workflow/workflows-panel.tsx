@@ -113,14 +113,19 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                 maxLength={200}
                 autoComplete="off"
                 enterKeyHint="next"
+                // iter1203: 旧 aria-label `Workflow 名前 (...)` (全 4 path) は visible
+                // Label "名前" を中位置 "Workflow **名前** (...)" に持ち voice control
+                // prefix-matching「click 名前」 match 不可 (substring 一致のみ)。
+                // p-title iter1201 と同 sweep を wf-name にも展開。Input は htmlFor
+                // Label が visible なので Label text "名前" を冒頭固定 + em-dash 区切。
                 aria-label={
                   name.length === 0
-                    ? 'Workflow 名前 (必須、最大 200 文字、何を自動化するか分かる名前)'
+                    ? '名前 — Workflow 名前 (必須、最大 200 文字、何を自動化するか分かる名前)'
                     : name.trim() === ''
-                      ? `Workflow 名前 (現在 ${name.length} / 200 文字、空白のみは不正)`
+                      ? `名前 — Workflow 名前 (現在 ${name.length} / 200 文字、空白のみは不正)`
                       : name.length > 180
-                        ? `Workflow 名前 (現在 ${name.length} / 200 文字、上限近接)`
-                        : `Workflow 名前 (現在 ${name.length} / 200 文字)`
+                        ? `名前 — Workflow 名前 (現在 ${name.length} / 200 文字、上限近接)`
+                        : `名前 — Workflow 名前 (現在 ${name.length} / 200 文字)`
                 }
               />
             </div>
@@ -148,12 +153,17 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                 maxLength={2000}
                 placeholder="この workflow が何を自動化するか"
                 aria-keyshortcuts="Meta+Enter Control+Enter"
+                // iter1203: 旧 aria-label `Workflow の説明 (...)` (全 3 path) は visible
+                // Label "説明 (任意、Cmd/Ctrl+Enter で作成)" を中位置 "Workflow の **説明**
+                // (...)" に持ち voice control prefix-matching「click 説明」 match 不可
+                // (substring 一致のみ)。wf-name と同 sweep を wf-desc にも展開。Textarea
+                // は htmlFor Label が visible なので Label text "説明" を冒頭固定。
                 aria-label={
                   description.length === 0
-                    ? 'Workflow の説明 (任意、最大 2000 文字、Cmd/Ctrl+Enter で作成)'
+                    ? '説明 — Workflow の説明 (任意、最大 2000 文字、Cmd/Ctrl+Enter で作成)'
                     : description.length > 1900
-                      ? `Workflow の説明 (現在 ${description.length} / 2000 文字、上限近接、Cmd/Ctrl+Enter で作成)`
-                      : `Workflow の説明 (現在 ${description.length} / 2000 文字、Cmd/Ctrl+Enter で作成)`
+                      ? `説明 — Workflow の説明 (現在 ${description.length} / 2000 文字、上限近接、Cmd/Ctrl+Enter で作成)`
+                      : `説明 — Workflow の説明 (現在 ${description.length} / 2000 文字、Cmd/Ctrl+Enter で作成)`
                 }
               />
             </div>
