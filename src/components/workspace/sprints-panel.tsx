@@ -245,12 +245,17 @@ export function SprintsPanel({ workspaceId }: Props) {
                   aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   max={endDate || undefined}
                   enterKeyHint="next"
+                  // iter1207: 旧 aria-label `Sprint 開始日 (...)` (全 3 path) は visible
+                  // Label "開始" を中位置 "Sprint **開始**日 (...)" に持ち voice control
+                  // prefix-matching「click 開始」 match 不可 (substring 一致のみ)。
+                  // sprint-name iter1206 と同 sweep を sprint-start にも展開。Input は
+                  // htmlFor Label が visible なので Label text "開始" を冒頭固定 + em-dash。
                   aria-label={
                     startDate === ''
-                      ? 'Sprint 開始日 (必須、終了日以前)'
+                      ? '開始 — Sprint 開始日 (必須、終了日以前)'
                       : isInvalidDateRange(startDate, endDate)
-                        ? `Sprint 開始日 (現在: ${startDate}、終了日 ${endDate} より後で不正)`
-                        : `Sprint 開始日 (現在: ${startDate})`
+                        ? `開始 — Sprint 開始日 (現在: ${startDate}、終了日 ${endDate} より後で不正)`
+                        : `開始 — Sprint 開始日 (現在: ${startDate})`
                   }
                 />
               </div>
@@ -267,12 +272,17 @@ export function SprintsPanel({ workspaceId }: Props) {
                   aria-invalid={isInvalidDateRange(startDate, endDate) || undefined}
                   min={startDate || undefined}
                   enterKeyHint="next"
+                  // iter1207: 旧 aria-label `Sprint 終了日 (...)` (全 3 path) は visible
+                  // Label "終了" を中位置 "Sprint **終了**日 (...)" に持ち voice control
+                  // prefix-matching「click 終了」 match 不可 (substring 一致のみ)。
+                  // sprint-start と同 sweep を sprint-end にも展開。Input は htmlFor
+                  // Label が visible なので Label text "終了" を冒頭固定 + em-dash。
                   aria-label={
                     endDate === ''
-                      ? 'Sprint 終了日 (必須、開始日以降)'
+                      ? '終了 — Sprint 終了日 (必須、開始日以降)'
                       : isInvalidDateRange(startDate, endDate)
-                        ? `Sprint 終了日 (現在: ${endDate}、開始日 ${startDate} より前で不正)`
-                        : `Sprint 終了日 (現在: ${endDate})`
+                        ? `終了 — Sprint 終了日 (現在: ${endDate}、開始日 ${startDate} より前で不正)`
+                        : `終了 — Sprint 終了日 (現在: ${endDate})`
                   }
                 />
               </div>
@@ -644,12 +654,16 @@ function SprintCard({
                     onChange={(e) => setEditStart(e.target.value)}
                     required
                     aria-required="true"
+                    // iter1207: 旧 aria-label `Sprint 開始日 (...)` は create form と
+                    // 同じ visible-prefix 漏れ (Label visible "開始 (曜日)" を中位置に持つ)。
+                    // 同 file create form sprint-start と同 sweep を edit form にも展開、
+                    // visible "開始" 冒頭固定 + em-dash 区切。
                     aria-label={
                       editStart === ''
-                        ? 'Sprint 開始日 (必須、終了日以前)'
+                        ? '開始 — Sprint 開始日 (必須、終了日以前)'
                         : isInvalidDateRange(editStart, editEnd)
-                          ? `Sprint 開始日 (現在: ${editStart} (${dayOfWeekJa(editStart)})、終了日 ${editEnd} より後で不正)`
-                          : `Sprint 開始日 (現在: ${editStart} (${dayOfWeekJa(editStart)}))`
+                          ? `開始 — Sprint 開始日 (現在: ${editStart} (${dayOfWeekJa(editStart)})、終了日 ${editEnd} より後で不正)`
+                          : `開始 — Sprint 開始日 (現在: ${editStart} (${dayOfWeekJa(editStart)}))`
                     }
                     aria-invalid={isInvalidDateRange(editStart, editEnd) || undefined}
                     className="min-h-11 text-xs"
@@ -670,12 +684,16 @@ function SprintCard({
                     onChange={(e) => setEditEnd(e.target.value)}
                     required
                     aria-required="true"
+                    // iter1207: 旧 aria-label `Sprint 終了日 (...)` は create form と
+                    // 同じ visible-prefix 漏れ (Label visible "終了 (曜日)" を中位置に持つ)。
+                    // 同 file create form sprint-end と同 sweep を edit form にも展開、
+                    // visible "終了" 冒頭固定 + em-dash 区切。
                     aria-label={
                       editEnd === ''
-                        ? 'Sprint 終了日 (必須、開始日以降)'
+                        ? '終了 — Sprint 終了日 (必須、開始日以降)'
                         : isInvalidDateRange(editStart, editEnd)
-                          ? `Sprint 終了日 (現在: ${editEnd} (${dayOfWeekJa(editEnd)})、開始日 ${editStart} より前で不正)`
-                          : `Sprint 終了日 (現在: ${editEnd} (${dayOfWeekJa(editEnd)}))`
+                          ? `終了 — Sprint 終了日 (現在: ${editEnd} (${dayOfWeekJa(editEnd)})、開始日 ${editStart} より前で不正)`
+                          : `終了 — Sprint 終了日 (現在: ${editEnd} (${dayOfWeekJa(editEnd)}))`
                     }
                     aria-invalid={isInvalidDateRange(editStart, editEnd) || undefined}
                     className="min-h-11 text-xs"
