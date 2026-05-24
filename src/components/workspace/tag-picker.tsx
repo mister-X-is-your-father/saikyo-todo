@@ -172,6 +172,13 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
                     void handleCreate()
                   }}
                   data-testid="tag-create-new"
+                  // iter1225: 旧 CommandItem は aria-label 無、visible content `「query」を作成`
+                  // の accessible name は children text composition で voice control「click 作成」
+                  // が visible 末尾 "を **作成**" 内に substring としてあるが prefix では無く
+                  // match 不可。tag-picker option iter1179 と同 sweep を tag-create-new にも
+                  // 展開。visible "{query} を作成" を明示 aria-label に冒頭 visible {query}
+                  // 固定 + em-dash 区切で "を作成" descriptive 末尾保持。
+                  aria-label={`${query.trim() || '新規 tag'} — 「${query.trim()}」を新規 tag として作成`}
                 >
                   <PlusIcon className="mr-2 size-4" aria-hidden="true" />「{query.trim()}」を作成
                 </CommandItem>
