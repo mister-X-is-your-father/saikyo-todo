@@ -108,14 +108,19 @@ export function TemplatesPanel({ workspaceId }: Props) {
                   maxLength={200}
                   autoComplete="off"
                   enterKeyHint="next"
+                  // iter1205: 旧 aria-label `Template 名前 (...)` (全 4 path) は visible
+                  // Label "名前" を中位置 "Template **名前** (...)" に持ち voice control
+                  // prefix-matching「click 名前」 match 不可 (substring 一致のみ)。
+                  // src-name iter1204 と同 sweep を tmpl-name にも展開。Input は htmlFor
+                  // Label が visible なので Label text "名前" を冒頭固定 + em-dash 区切。
                   aria-label={
                     name.length === 0
-                      ? 'Template 名前 (必須、最大 200 文字、何を生成するかが分かる名前)'
+                      ? '名前 — Template 名前 (必須、最大 200 文字、何を生成するかが分かる名前)'
                       : name.trim() === ''
-                        ? `Template 名前 (現在 ${name.length} / 200 文字、空白のみは不正)`
+                        ? `名前 — Template 名前 (現在 ${name.length} / 200 文字、空白のみは不正)`
                         : name.length > 180
-                          ? `Template 名前 (現在 ${name.length} / 200 文字、上限近接)`
-                          : `Template 名前 (現在 ${name.length} / 200 文字)`
+                          ? `名前 — Template 名前 (現在 ${name.length} / 200 文字、上限近接)`
+                          : `名前 — Template 名前 (現在 ${name.length} / 200 文字)`
                   }
                 />
               </div>
@@ -169,10 +174,15 @@ export function TemplatesPanel({ workspaceId }: Props) {
                 rows={2}
                 placeholder="このテンプレートが何を生成するか"
                 aria-keyshortcuts="Meta+Enter Control+Enter"
+                // iter1205: 旧 aria-label `Template の説明 (...)` (全 2 path) は visible
+                // Label "説明 (Cmd/Ctrl+Enter で作成)" を中位置 "Template の **説明** (...)" に
+                // 持ち voice control prefix-matching「click 説明」 match 不可。tmpl-name
+                // と同 sweep を tmpl-desc にも展開。Textarea は htmlFor Label が visible
+                // なので Label text "説明" を冒頭固定 + em-dash 区切で descriptive 末尾保持。
                 aria-label={
                   description.length === 0
-                    ? 'Template の説明 (任意、このテンプレートが何を生成するか、Cmd/Ctrl+Enter で作成)'
-                    : `Template の説明 (現在 ${description.length} 文字、Cmd/Ctrl+Enter で作成)`
+                    ? '説明 — Template の説明 (任意、このテンプレートが何を生成するか、Cmd/Ctrl+Enter で作成)'
+                    : `説明 — Template の説明 (現在 ${description.length} 文字、Cmd/Ctrl+Enter で作成)`
                 }
               />
             </div>
