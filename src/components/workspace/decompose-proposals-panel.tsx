@@ -402,14 +402,19 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               minLength={1}
               maxLength={500}
               enterKeyHint="next"
+              // iter1201: 旧 aria-label `提案タイトル (...)` (全 4 path) は visible Label
+              // "タイトル" を中位置 "提案 **タイトル** (...)" に持ち voice control
+              // prefix-matching「click タイトル」 match 不可 (substring 一致のみ)。
+              // sprint-defaults-length iter1200 と同 sweep を p-title-${id} にも展開。
+              // Input は htmlFor Label が visible なので Label text "タイトル" を冒頭固定。
               aria-label={
                 title.length === 0
-                  ? '提案タイトル (必須、最大 500 文字)'
+                  ? 'タイトル — 提案タイトル (必須、最大 500 文字)'
                   : title.trim() === ''
-                    ? `提案タイトル (現在 ${title.length} / 500 文字、空白のみは不正)`
+                    ? `タイトル — 提案タイトル (現在 ${title.length} / 500 文字、空白のみは不正)`
                     : title.length > 480
-                      ? `提案タイトル (現在 ${title.length} / 500 文字、上限近接)`
-                      : `提案タイトル (現在 ${title.length} / 500 文字)`
+                      ? `タイトル — 提案タイトル (現在 ${title.length} / 500 文字、上限近接)`
+                      : `タイトル — 提案タイトル (現在 ${title.length} / 500 文字)`
               }
             />
           </div>
