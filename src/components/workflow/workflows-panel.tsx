@@ -436,8 +436,14 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             disabled={del.isPending}
             aria-busy={del.isPending || undefined}
             data-testid={`wf-delete-${wf.id}`}
+            // iter1215: 旧 aria-label は visible 概念名 "削除" を末尾 ("Workflow「name」を **削除**")
+            // に持ち voice control prefix-matching「click 削除」 match 不可 (icon-only Trash2
+            // で visible text 無、title attribute も無し)。src-delete と同 sweep を wf-delete
+            // にも展開。概念名 "削除" / "削除中…" を aria-label 冒頭固定 + em-dash 区切。
             aria-label={
-              del.isPending ? `Workflow「${wf.name}」を削除中…` : `Workflow「${wf.name}」を削除`
+              del.isPending
+                ? `削除中… — Workflow「${wf.name}」を削除中`
+                : `削除 — Workflow「${wf.name}」を削除`
             }
           >
             <Trash2 className="h-3.5 w-3.5 text-red-500" aria-hidden="true" />

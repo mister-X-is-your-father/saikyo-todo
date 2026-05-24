@@ -237,8 +237,14 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             disabled={del.isPending}
             aria-busy={del.isPending || undefined}
             data-testid={`src-delete-${src.id}`}
+            // iter1215: 旧 aria-label は visible 概念名 "削除" を末尾 ("Source「name」を **削除**")
+            // に持ち voice control prefix-matching「click 削除」 match 不可 (icon-only Trash2
+            // で visible text 無、title attribute も無し)。subtasks-indent iter1213 と同 sweep。
+            // 概念名 "削除" / "削除中…" を aria-label 冒頭固定 + em-dash 区切で descriptive 末尾保持。
             aria-label={
-              del.isPending ? `Source「${src.name}」を削除中…` : `Source「${src.name}」を削除`
+              del.isPending
+                ? `削除中… — Source「${src.name}」を削除中`
+                : `削除 — Source「${src.name}」を削除`
             }
           >
             <Trash2 className="h-3.5 w-3.5 text-red-500" aria-hidden="true" />
