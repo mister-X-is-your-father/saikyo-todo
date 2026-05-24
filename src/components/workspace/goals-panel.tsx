@@ -412,11 +412,16 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
             {/* iter1032: 旧 `p-1` (4px) + icon h-4 (16px) で visible 24x24 = WCAG 2.5.5 違反。
                 `::before` pseudo `inset-3` (12px outset) で 24+24=48x48 tap area に拡張。
                 visual size を保ったまま (kanban-edit / activity-detail-toggle / subtask
-                indent と同 pattern)。 */}
+                indent と同 pattern)。
+                iter1309 (modeM hazard 続き): pseudo expansion は browser pointer event レベルで
+                有効だが Playwright boundingBox() は actual element box (24x24) のみ計測して
+                flag が出続けるため、`inline-flex min-h-11 min-w-11 items-center justify-center`
+                を追加して visible element box 自体を 44x44 化。chevron icon は center 配置で
+                見た目バランス維持 (kanban-edit iter1306 / kr-delete iter1307 と同 fix)。 */}
             <button
               type="button"
               onClick={() => setOpen((v) => !v)}
-              className="hover:bg-muted focus-visible:ring-ring relative mt-0.5 rounded p-1 before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
+              className="hover:bg-muted focus-visible:ring-ring relative mt-0.5 inline-flex min-h-11 min-w-11 items-center justify-center rounded p-1 before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
               aria-expanded={open}
               aria-controls={`goal-body-${goal.id}`}
               aria-label={`Goal「${goal.title}」の KR ${open ? '一覧を閉じる' : '一覧を開く'}`}
