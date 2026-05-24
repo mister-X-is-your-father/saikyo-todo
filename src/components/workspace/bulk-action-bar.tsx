@@ -151,9 +151,16 @@ export function BulkCheckbox({ itemId, itemTitle }: { itemId: string; itemTitle?
   const selected = useBulkSelectionStore((s) => s.selected)
   const toggle = useBulkSelectionStore((s) => s.toggle)
   const checked = selected.has(itemId)
+  // iter1220: 旧 aria-label `「title」を一括操作の対象に追加 / から外す` は visible 概念名
+  // "一括操作対象" を中位置 "「title」を **一括操作** の..." に持ち voice control
+  // prefix-matching「click 一括操作」 match 不可 (icon-only checkbox、visible text 無、
+  // title attribute も無し)。item-checkbox iter1219 と同 sweep を BulkCheckbox にも展開。
+  // 概念名 "一括操作対象に追加" / "から外す" を aria-label 冒頭固定 + em-dash 区切で
+  // descriptive 末尾 (item title / "この行") 保持。
+  const action = checked ? '一括操作対象から外す' : '一括操作対象に追加'
   const label = itemTitle
-    ? `「${itemTitle}」を一括操作の${checked ? '対象から外す' : '対象に追加'}`
-    : `この行を一括操作の${checked ? '対象から外す' : '対象に追加'}`
+    ? `${action} — 「${itemTitle}」を${action}`
+    : `${action} — この行を${action}`
   return (
     <input
       type="checkbox"
@@ -177,10 +184,12 @@ export function BulkHeaderCheckbox({ rowIds }: { rowIds: string[] }) {
   return (
     <input
       type="checkbox"
+      // iter1220: BulkCheckbox 同 sweep — visible 概念名 "全選択" / "全解除" を冒頭固定で
+      // voice control prefix-matching「click 全選択 / 全解除」 match 可能化。
       aria-label={
         allSelected
-          ? `現ページ ${rowIds.length} 行をすべて選択中。クリックで全解除`
-          : `現ページ ${rowIds.length} 行をすべて一括操作の対象にする`
+          ? `全解除 — 現ページ ${rowIds.length} 行をすべて選択中、クリックで全解除`
+          : `全選択 — 現ページ ${rowIds.length} 行をすべて一括操作の対象にする`
       }
       checked={allSelected}
       onChange={(e) => {
