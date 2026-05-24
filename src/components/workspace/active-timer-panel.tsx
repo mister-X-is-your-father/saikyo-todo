@@ -248,7 +248,11 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
             className="min-h-11 min-w-11"
             variant="ghost"
             onClick={pause}
-            aria-label="タイマーを一時停止"
+            // iter1222: icon-only Pause button (visible text 無)。旧 aria-label "タイマーを
+            // 一時停止" は voice control「click 一時停止」 prefix-match 不可 ("タイマーを"
+            // が先頭)。BulkCheckbox iter1220 と同 sweep を active-timer pause / resume / pip
+            // にも展開、概念名を冒頭固定 + em-dash 区切で descriptive 末尾保持。
+            aria-label="一時停止 — タイマーを一時停止"
             data-testid="active-timer-pause"
           >
             <Pause className="h-3.5 w-3.5" aria-hidden="true" />
@@ -260,7 +264,9 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
             className="min-h-11 min-w-11"
             variant="ghost"
             onClick={resume}
-            aria-label="タイマーを再開"
+            // iter1222: pause button と同 sweep — visible text 無 icon-only で概念名 "再開"
+            // を冒頭固定。
+            aria-label="再開 — タイマーを再開"
             data-testid="active-timer-resume"
           >
             <Play className="h-3.5 w-3.5" aria-hidden="true" />
@@ -274,6 +280,11 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
           onClick={inPip ? closePip : () => void handleOpenPip()}
           disabled={!pipSupported || pipPending}
           aria-busy={pipPending || undefined}
+          // iter1222: pause / resume と同 sweep — visible text 無 icon-only PiP button。
+          // 4 path のうち default path だけ visible "常に手前表示で別 window 化 (...)" で
+          // 概念名 "Picture-in-Picture" が末尾 () 内に divergence、voice control
+          // 「click Picture-in-Picture」 prefix-match 不可。他 3 path は既に "Picture-in-Picture"
+          // 冒頭 OK だったため default のみ修正、4 path 全部冒頭 "Picture-in-Picture" 統一。
           aria-label={
             !pipSupported
               ? 'Picture-in-Picture は Chrome / Edge で利用可能'
@@ -281,7 +292,7 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
                 ? 'Picture-in-Picture を閉じてページに戻す'
                 : pipPending
                   ? 'Picture-in-Picture を開いています…'
-                  : '常に手前表示で別 window 化 (Picture-in-Picture)'
+                  : 'Picture-in-Picture — 常に手前表示で別 window 化'
           }
           title={
             !pipSupported
