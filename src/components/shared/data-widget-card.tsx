@@ -111,13 +111,17 @@ export function DataWidgetCard({
       </CardHeader>
       <CardContent className={cn(contentClassName)}>
         {loading ? (
+          // iter1317: ASCII "..." (U+002E×3) → Unicode "…" (U+2026) で codebase ellipsis
+          // convention 統一 (iter1091 sweep の続き、shared/async-states / form 系既統一)。
+          // role="status" 経路で WCAG 2.5.3 divergence は無いが SR 読み上げの一貫性 (3 dot vs
+          // 1 ellipsis character) を確保。
           <div
             role="status"
             aria-live="polite"
             className="text-muted-foreground flex items-center justify-center gap-2 py-6 text-sm"
           >
             <Loader2 className="h-4 w-4 motion-safe:animate-spin" aria-hidden="true" />
-            読み込み中...
+            読み込み中…
           </div>
         ) : errorMsg ? (
           <div
