@@ -146,12 +146,18 @@ export function TimeEntriesTable({
                     aria-busy={sync.isPending || undefined}
                     onClick={() => handleSync(e.id)}
                     data-testid={`time-entry-sync-${e.id}`}
+                    // iter1214: 旧 aria-label は visible "Sync" / "再Sync" / "Sync 中…" を中位置
+                    // ("「desc」(date) を **Sync 中…**" / "...を **{再?}Sync**") に持ち voice
+                    // control prefix-matching「click Sync / 再Sync / Sync 中…」 match 不可
+                    // (substring 一致のみ)。subtasks-indent iter1213 と同 sweep を time-entry-sync
+                    // にも展開。visible "Sync" 等を冒頭固定 + em-dash 区切で descriptive
+                    // ("「desc」(date) を Sync") 末尾保持。
                     aria-label={
                       sync.isPending
-                        ? `「${e.description || '(無題)'}」(${e.workDate}) を Sync 中…`
-                        : `「${e.description || '(無題)'}」(${e.workDate}) を${
-                            e.syncStatus === 'failed' ? '再' : ''
-                          }Sync`
+                        ? `Sync 中… — 「${e.description || '(無題)'}」(${e.workDate}) を Sync 中`
+                        : e.syncStatus === 'failed'
+                          ? `再Sync — 「${e.description || '(無題)'}」(${e.workDate}) を再 Sync`
+                          : `Sync — 「${e.description || '(無題)'}」(${e.workDate}) を Sync`
                     }
                   >
                     <span aria-hidden="true">{e.syncStatus === 'failed' ? '再Sync' : 'Sync'}</span>
