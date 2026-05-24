@@ -199,7 +199,12 @@ function ActivityRow({
         <button
           type="button"
           // iter507: pseudo で tap target を 44x44 化 (visual text-[11px] underline 維持)
-          className="text-muted-foreground focus-visible:ring-ring relative mt-1 rounded text-[11px] underline before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
+          // iter1305 (modeM hazard 続き、comment-thread iter1303 / operation-board iter1304 と同 fix):
+          // iter507 の pseudo `-inset-3` (12px) は visible h-5 (20px) 前提 (item-checkbox
+          // iter505 convention) で text-[11px] (line-height ~14px) には 14+24=38px < 44 で
+          // WCAG 2.5.5 未達。`min-h-11 inline-flex items-center` 追加で 44 tall 化、visible は
+          // vertically center で見た目バランス維持。
+          className="text-muted-foreground focus-visible:ring-ring relative mt-1 inline-flex min-h-11 items-center rounded text-[11px] underline before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-controls={detailId}
