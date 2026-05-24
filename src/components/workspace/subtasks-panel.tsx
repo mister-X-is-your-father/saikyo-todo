@@ -156,7 +156,11 @@ function SubtaskTreeNode({
       <button
         type="button"
         // iter508: pseudo で tap target を 44x44 化 (visual h-4 w-4 維持、drag 機能不変)
-        className="text-muted-foreground hover:text-foreground focus-visible:ring-ring relative -ml-1 cursor-grab touch-none rounded before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none active:cursor-grabbing"
+        // iter1308 (modeM hazard、comment-thread iter1303 / kanban-edit iter1306 /
+        // kr-delete iter1307 と同 fix): GripVertical h-4 w-4 (16x16) は `before:-inset-3` (12px)
+        // で 16+24=40 両軸、WCAG 2.5.5 (44x44) 未達。`inline-flex min-h-11 min-w-11 items-center
+        // justify-center` 追加で両軸 44 強制、icon は center 配置で見た目バランス維持。
+        className="text-muted-foreground hover:text-foreground focus-visible:ring-ring relative -ml-1 inline-flex min-h-11 min-w-11 cursor-grab touch-none items-center justify-center rounded before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none active:cursor-grabbing"
         aria-label={`「${item.title}」をドラッグで並び替え`}
         data-testid={`subtask-drag-${item.id}`}
         {...attributes}
@@ -199,7 +203,10 @@ function SubtaskTreeNode({
       <button
         type="button"
         // iter508: pseudo で tap target を 44x44 化 (visual h-3.5 w-3.5 維持、disabled 時は anchor 消す)
-        className="text-muted-foreground hover:text-foreground focus-visible:ring-ring relative rounded before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none disabled:opacity-30 disabled:before:hidden"
+        // iter1308 (modeM hazard 続き): icon h-3.5 w-3.5 (14x14) は `before:-inset-3` (12px) で
+        // 14+24=38 両軸、WCAG 2.5.5 未達。`inline-flex min-h-11 min-w-11 items-center justify-center`
+        // 追加で両軸 44 強制 (subtask-drag iter1308 と同 fix)。
+        className="text-muted-foreground hover:text-foreground focus-visible:ring-ring relative inline-flex min-h-11 min-w-11 items-center justify-center rounded before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none disabled:opacity-30 disabled:before:hidden"
         onClick={() => onOutdent(item)}
         disabled={!canOutdent || movePending}
         aria-busy={movePending || undefined}
@@ -224,7 +231,8 @@ function SubtaskTreeNode({
       <button
         type="button"
         // iter508: pseudo で tap target を 44x44 化 (visual h-3.5 w-3.5 維持、disabled 時は anchor 消す)
-        className="text-muted-foreground hover:text-foreground focus-visible:ring-ring relative rounded before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none disabled:opacity-30 disabled:before:hidden"
+        // iter1308 (modeM hazard 続き): subtask-outdent と同 fix。
+        className="text-muted-foreground hover:text-foreground focus-visible:ring-ring relative inline-flex min-h-11 min-w-11 items-center justify-center rounded before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none disabled:opacity-30 disabled:before:hidden"
         onClick={() => onIndent(item)}
         disabled={!canIndent || movePending}
         aria-busy={movePending || undefined}
