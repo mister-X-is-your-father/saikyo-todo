@@ -158,14 +158,20 @@ export function GoalsPanel({ workspaceId }: Props) {
                   maxLength={200}
                   autoComplete="off"
                   enterKeyHint="next"
+                  // iter1209: 旧 aria-label `Goal Objective (...)` (全 4 path) は visible
+                  // Label "Objective (なに / なぜ)" を中位置 "Goal **Objective** (...)" に
+                  // 持ち voice control prefix-matching「click Objective」 match 不可
+                  // (substring 一致のみ)。goal-start iter1208 と同 sweep を goal-title にも
+                  // 展開。Input は htmlFor Label が visible なので Label text "Objective"
+                  // を冒頭固定 + em-dash 区切で descriptive 末尾保持。
                   aria-label={
                     title.length === 0
-                      ? 'Goal Objective (必須、最大 200 文字、なに / なぜを 1 行で)'
+                      ? 'Objective — Goal Objective (必須、最大 200 文字、なに / なぜを 1 行で)'
                       : title.trim() === ''
-                        ? `Goal Objective (現在 ${title.length} / 200 文字、空白のみは不正)`
+                        ? `Objective — Goal Objective (現在 ${title.length} / 200 文字、空白のみは不正)`
                         : title.length > 180
-                          ? `Goal Objective (現在 ${title.length} / 200 文字、上限近接)`
-                          : `Goal Objective (現在 ${title.length} / 200 文字)`
+                          ? `Objective — Goal Objective (現在 ${title.length} / 200 文字、上限近接)`
+                          : `Objective — Goal Objective (現在 ${title.length} / 200 文字)`
                   }
                 />
               </div>
@@ -244,12 +250,16 @@ export function GoalsPanel({ workspaceId }: Props) {
                 }}
                 maxLength={2000}
                 aria-keyshortcuts="Meta+Enter Control+Enter"
+                // iter1209: 旧 aria-label `Goal の説明 (...)` (全 3 path) は visible Label
+                // "説明 (任意、Cmd/Ctrl+Enter で作成)" を中位置 "Goal の **説明** (...)" に
+                // 持ち voice control prefix-matching「click 説明」 match 不可。goal-title
+                // と同 sweep を goal-desc にも展開。
                 aria-label={
                   description.length === 0
-                    ? 'Goal の説明 (任意、最大 2000 文字、Objective の補足や背景、Cmd/Ctrl+Enter で作成)'
+                    ? '説明 — Goal の説明 (任意、最大 2000 文字、Objective の補足や背景、Cmd/Ctrl+Enter で作成)'
                     : description.length > 1900
-                      ? `Goal の説明 (現在 ${description.length} / 2000 文字、上限近接、Cmd/Ctrl+Enter で作成)`
-                      : `Goal の説明 (現在 ${description.length} / 2000 文字、Cmd/Ctrl+Enter で作成)`
+                      ? `説明 — Goal の説明 (現在 ${description.length} / 2000 文字、上限近接、Cmd/Ctrl+Enter で作成)`
+                      : `説明 — Goal の説明 (現在 ${description.length} / 2000 文字、Cmd/Ctrl+Enter で作成)`
                 }
               />
             </div>
