@@ -135,7 +135,12 @@ export function WorkspaceModeSelector({ workspaceId }: Props) {
                 type="button"
                 role="radio"
                 aria-checked={selected}
-                aria-label={`${opt.label}: ${opt.description}`}
+                // iter1226: 旧 aria-label `${opt.label}: ${opt.description}` は visible-prefix
+                // 満たすが ": " 区切で iter1093-1225 sweep の em-dash convention と divergence。
+                // 視覚 prefix は同じ ({opt.label}) で voice control prefix-matching は変わらないが、
+                // codebase 全体の aria-label 統一 (": " → " — ") で SR 読み上げ時の区切が
+                // 一貫し、認識コスト下がる。
+                aria-label={`${opt.label} — ${opt.description}`}
                 tabIndex={selected ? 0 : -1}
                 disabled={upd.isPending}
                 aria-busy={upd.isPending || undefined}
