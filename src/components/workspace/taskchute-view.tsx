@@ -186,11 +186,15 @@ export function TaskChuteView({ workspaceId, items }: Props) {
                 )}
               </span>
               <ItemCheckbox workspaceId={workspaceId} item={item} />
+              {/* iter1321: 旧 aria-label `${item.title} を編集` は visible "を編集" を末尾に
+                  持つ codebase legacy 形式。iter1226 workspace-mode-selector / iter1093-1225 sweep
+                  convention に揃え em-dash 区切で descriptive を明示分離 (`${title} — 編集`)。
+                  voice control prefix-match は不変だが SR / codebase consistency 向上。 */}
               <button
                 type="button"
                 onClick={() => void setOpenItemId(item.id)}
                 className="hover:text-primary focus-visible:ring-ring flex-1 truncate rounded text-left text-sm transition focus-visible:ring-2 focus-visible:outline-none"
-                aria-label={`${item.title} を編集`}
+                aria-label={`${item.title} — 編集`}
               >
                 <span aria-hidden="true">{item.title}</span>
               </button>
