@@ -350,6 +350,12 @@ function Section({
                 {ref.title}
               </span>
               {ref.doneAt && <span className="text-[10px] text-emerald-600">完了済み</span>}
+              {/* iter1301: 旧 aria-label `依存「title」を解除[中…]` は visible "解除" を
+                  末尾 "を**解除**" position に持ち voice control prefix-matching
+                  「click 解除」 match 不可 (substring 一致のみ)。backlog-edit iter1152 /
+                  sprint-defaults-edit iter1153 と同 sweep convention で visible "解除" 冒頭固定 +
+                  em-dash 区切で descriptive 末尾 (依存 title) 保持。visible span は behavior
+                  互換のため "解除" 固定 (pending state は aria-busy のみ)。 */}
               <Button
                 type="button"
                 variant="ghost"
@@ -360,7 +366,9 @@ function Section({
                 aria-busy={removing || undefined}
                 data-testid={`dep-remove-${ref.id}`}
                 aria-label={
-                  removing ? `依存「${ref.title}」を解除中…` : `依存「${ref.title}」を解除`
+                  removing
+                    ? `解除 — 依存「${ref.title}」を解除中…`
+                    : `解除 — 依存「${ref.title}」を解除`
                 }
                 title={`依存「${ref.title}」を解除`}
               >
