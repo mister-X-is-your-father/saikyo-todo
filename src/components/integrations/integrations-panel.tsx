@@ -388,14 +388,19 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                 maxLength={200}
                 autoComplete="off"
                 enterKeyHint="next"
+                // iter1204: 旧 aria-label `Source 名前 (...)` (全 4 path) は visible Label
+                // "名前" を中位置 "Source **名前** (...)" に持ち voice control
+                // prefix-matching「click 名前」 match 不可 (substring 一致のみ)。
+                // wf-name iter1203 と同 sweep を src-name にも展開。Input は htmlFor
+                // Label が visible なので Label text "名前" を冒頭固定 + em-dash 区切。
                 aria-label={
                   name.length === 0
-                    ? 'Source 名前 (必須、最大 200 文字、識別しやすい名前 — 例: Yamory チーム A)'
+                    ? '名前 — Source 名前 (必須、最大 200 文字、識別しやすい名前 — 例: Yamory チーム A)'
                     : name.trim() === ''
-                      ? `Source 名前 (現在 ${name.length} / 200 文字、空白のみは不正)`
+                      ? `名前 — Source 名前 (現在 ${name.length} / 200 文字、空白のみは不正)`
                       : name.length > 180
-                        ? `Source 名前 (現在 ${name.length} / 200 文字、上限近接)`
-                        : `Source 名前 (現在 ${name.length} / 200 文字)`
+                        ? `名前 — Source 名前 (現在 ${name.length} / 200 文字、上限近接)`
+                        : `名前 — Source 名前 (現在 ${name.length} / 200 文字)`
                 }
               />
             </div>
