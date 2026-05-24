@@ -205,12 +205,17 @@ function SubtaskTreeNode({
         aria-busy={movePending || undefined}
         data-testid={`subtask-outdent-${item.id}`}
         aria-keyshortcuts="Alt+ArrowLeft"
+        // iter1213: 旧 aria-label は visible に類似する "アウトデント" を中位置に持ち
+        // voice control prefix-matching「click アウトデント」 match 不可 (icon-only button
+        // で visible text 無、title attribute は tooltip 専用)。subtasks-bulk iter1211 と同
+        // sweep を outdent button にも展開。title attribute と同じ "アウトデント" を
+        // aria-label 冒頭固定 + em-dash 区切で descriptive 末尾保持。
         aria-label={
           !canOutdent
-            ? `「${item.title}」は root のためアウトデント不可`
+            ? `アウトデント — 「${item.title}」は root のためアウトデント不可`
             : movePending
-              ? `「${item.title}」を移動中…`
-              : `「${item.title}」を 1 段アウトデント (Alt+←)`
+              ? `アウトデント — 「${item.title}」を移動中…`
+              : `アウトデント — 「${item.title}」を 1 段アウトデント (Alt+←)`
         }
         title="アウトデント (Alt+←)"
       >
@@ -225,14 +230,18 @@ function SubtaskTreeNode({
         aria-busy={movePending || undefined}
         data-testid={`subtask-indent-${item.id}`}
         aria-keyshortcuts="Alt+ArrowRight"
+        // iter1213: outdent button と同 sweep — visible text 無 icon-only で title
+        // attribute "インデント (Alt+→)" は tooltip 専用、voice control prefix-matching
+        // 「click インデント」用に aria-label 冒頭に "インデント" 固定 + em-dash 区切で
+        // descriptive 末尾保持。
         aria-label={
           !canIndent
             ? depth + 1 >= MAX_TREE_DEPTH
-              ? `深さ ${MAX_TREE_DEPTH} を超えるためインデント不可`
-              : `「${item.title}」の前に sibling が無いためインデント不可`
+              ? `インデント — 深さ ${MAX_TREE_DEPTH} を超えるためインデント不可`
+              : `インデント — 「${item.title}」の前に sibling が無いためインデント不可`
             : movePending
-              ? `「${item.title}」を移動中…`
-              : `「${item.title}」を 1 段インデント (Alt+→)`
+              ? `インデント — 「${item.title}」を移動中…`
+              : `インデント — 「${item.title}」を 1 段インデント (Alt+→)`
         }
         title="インデント (Alt+→)"
       >
