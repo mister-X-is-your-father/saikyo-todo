@@ -325,10 +325,14 @@ export function TemplatesPanel({ workspaceId }: Props) {
                     onClick={() => handleDelete(t)}
                     disabled={deleteMut.isPending}
                     aria-busy={deleteMut.isPending || undefined}
+                    // iter1218: 旧 aria-label は visible 概念名 "削除" を末尾 "Template「name」
+                    // を **削除**" に持ち voice control prefix-matching「click 削除」 match
+                    // 不可 (icon-only Trash2、visible text 無、title attribute も無し)。
+                    // template-item delete iter1216 と同 sweep を template-card delete にも展開。
                     aria-label={
                       deleteMut.isPending
-                        ? `Template「${t.name}」を削除中…`
-                        : `Template「${t.name}」を削除`
+                        ? `削除中… — Template「${t.name}」を削除中`
+                        : `削除 — Template「${t.name}」を削除`
                     }
                   >
                     <Trash2 className="h-4 w-4 text-red-500" aria-hidden="true" />
