@@ -553,12 +553,19 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
           className="bg-background w-full rounded border px-2 py-1.5 font-mono text-sm"
           placeholder={'例:\n仕様書を読む\nスキーマ設計\nプロトタイプ実装'}
           aria-keyshortcuts="Meta+Enter Control+Enter"
+          // iter1211: 旧 aria-label `子タスクを改行区切りで bulk 追加 (...)` (全 3 path) は
+          // visible Label "改行区切りで bulk 追加 (Cmd/Ctrl+Enter で追加)" を中位置
+          // "子タスクを **改行区切りで bulk 追加** (...)" に持ち voice control prefix-matching
+          // 「click 改行区切り」 match 不可 (substring 一致のみ)。p-dod iter1210 と同 sweep を
+          // subtasks-bulk にも展開。Textarea は htmlFor Label が visible なので Label text
+          // "改行区切りで bulk 追加" を冒頭固定 + em-dash 区切で descriptive ("子タスクを
+          // ...") 末尾保持。
           aria-label={
             bulkText === ''
-              ? '子タスクを改行区切りで bulk 追加 (Cmd/Ctrl+Enter で追加)'
+              ? '改行区切りで bulk 追加 — 子タスクを改行区切りで bulk 追加 (Cmd/Ctrl+Enter で追加)'
               : pendingTitleCount === 0
-                ? '子タスクを改行区切りで bulk 追加 (現在 空行のみで追加対象なし)'
-                : `子タスクを改行区切りで bulk 追加 (現在 ${pendingTitleCount} 件、Cmd/Ctrl+Enter で追加)`
+                ? '改行区切りで bulk 追加 — 子タスクを改行区切りで bulk 追加 (現在 空行のみで追加対象なし)'
+                : `改行区切りで bulk 追加 — 子タスクを改行区切りで bulk 追加 (現在 ${pendingTitleCount} 件、Cmd/Ctrl+Enter で追加)`
           }
           data-testid="subtasks-bulk-input"
         />
