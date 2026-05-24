@@ -764,7 +764,13 @@ function KeyResultList({
                       title="KR を削除 (soft delete)"
                       data-testid={`kr-delete-${kr.id}`}
                       // iter506: pseudo で tap target を 44x44 化 (visual ✕ icon size 維持)
-                      className="text-muted-foreground hover:text-destructive focus-visible:ring-ring relative text-xs before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50 disabled:before:hidden"
+                      // iter1307 (modeM hazard 続き、comment-thread iter1303 / operation-board
+                      // iter1304 / activity-log iter1305 / kanban-edit iter1306 と同 fix): iter506 の
+                      // `before:-inset-3` (12px) は visible h-5 (20px) 前提だが ✕ icon (text-xs ~16px
+                      // 高さ、~8px 幅) には不足 — 16+24=40 vertical / 8+24=32 horizontal で両軸
+                      // WCAG 2.5.5 未達。`inline-flex min-h-11 min-w-11 items-center justify-center`
+                      // 追加で両軸 44 強制、✕ は center 配置で見た目バランス維持。
+                      className="text-muted-foreground hover:text-destructive focus-visible:ring-ring relative inline-flex min-h-11 min-w-11 items-center justify-center text-xs before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50 disabled:before:hidden"
                     >
                       <span aria-hidden="true">✕</span>
                     </button>
