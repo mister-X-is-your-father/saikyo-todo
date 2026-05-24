@@ -487,14 +487,19 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
                 minLength={1}
                 maxLength={2000}
                 enterKeyHint="send"
+                // iter1210: 旧 aria-label `提案 DoD (...)` (全 4 path) は visible Label
+                // "DoD" を中位置 "提案 **DoD** (...)" に持ち voice control prefix-matching
+                // 「click DoD」 match 不可 (substring 一致のみ)。p-title iter1201 / p-desc
+                // iter1202 と同 sweep を p-dod にも展開。Input は htmlFor Label が visible
+                // なので Label text "DoD" を冒頭固定 + em-dash 区切で descriptive 末尾保持。
                 aria-label={
                   dod.length === 0
-                    ? '提案 DoD (MUST 必須、最大 2000 文字、完了条件を具体記述)'
+                    ? 'DoD — 提案 DoD (MUST 必須、最大 2000 文字、完了条件を具体記述)'
                     : dod.trim() === ''
-                      ? `提案 DoD (現在 ${dod.length} / 2000 文字、空白のみは不正)`
+                      ? `DoD — 提案 DoD (現在 ${dod.length} / 2000 文字、空白のみは不正)`
                       : dod.length > 1900
-                        ? `提案 DoD (現在 ${dod.length} / 2000 文字、上限近接)`
-                        : `提案 DoD (現在 ${dod.length} / 2000 文字)`
+                        ? `DoD — 提案 DoD (現在 ${dod.length} / 2000 文字、上限近接)`
+                        : `DoD — 提案 DoD (現在 ${dod.length} / 2000 文字)`
                 }
               />
             </div>
