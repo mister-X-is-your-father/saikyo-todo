@@ -424,7 +424,13 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
               className="hover:bg-muted focus-visible:ring-ring relative mt-0.5 inline-flex min-h-11 min-w-11 items-center justify-center rounded p-1 before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
               aria-expanded={open}
               aria-controls={`goal-body-${goal.id}`}
-              aria-label={`Goal「${goal.title}」の KR ${open ? '一覧を閉じる' : '一覧を開く'}`}
+              // iter1223: 旧 aria-label `Goal「${title}」の KR ...` は visible title を中位置
+              // "Goal「**title**」の..." に持ち voice control prefix-matching「click {title}」
+              // match 不可 (icon-only Chevron、visible text 無、title の goal は siblings の
+              // CardTitle heading に存在)。template-card title iter1221 と同 sweep を
+              // goal-toggle にも展開。visible {title} を冒頭固定 + em-dash 区切で
+              // descriptive 末尾 (KR 一覧開閉 hint) 保持。
+              aria-label={`${goal.title} — Goal「${goal.title}」の KR ${open ? '一覧を閉じる' : '一覧を開く'}`}
               data-testid={`goal-toggle-${goal.id}`}
             >
               {open ? (
