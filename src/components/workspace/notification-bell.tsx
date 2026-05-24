@@ -235,13 +235,18 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                 const Icon = TYPE_ICON[visual.iconKey]
                 return (
                   <li key={n.id}>
+                    {/* iter1200: 旧 aria-label `${'未読/既読'}${visual.label}通知: ${body}` は
+                        visible body (= 唯一の visible text 内容) を末尾 position に持ち、voice control
+                        prefix-matching「click <body 先頭語>」 match 不可 (substring 一致のみ)。
+                        iter1093-1199 sweep convention (visible 冒頭 + em-dash 区切で descriptive) に
+                        合わせ body を冒頭固定し未読/既読 / type 種別を descriptive 末尾に移動。 */}
                     <button
                       type="button"
                       onClick={() => handleNotificationClick(n)}
                       className="hover:bg-muted/60 focus-visible:ring-ring flex w-full items-start gap-2 rounded px-3 py-2 text-left focus-visible:ring-2 focus-visible:outline-none"
                       data-testid="notification-item"
                       data-notification-type={n.type}
-                      aria-label={`${n.readAt ? '既読' : '未読'}${visual.label}通知: ${formatNotificationBody(n)}`}
+                      aria-label={`${formatNotificationBody(n)} — ${n.readAt ? '既読' : '未読'}${visual.label}通知`}
                     >
                       <span
                         className={`mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full ring-1 ring-inset ${visual.bgClass} ${visual.textClass} ${visual.ringClass}`}
