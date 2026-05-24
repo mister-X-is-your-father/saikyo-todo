@@ -133,11 +133,16 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
             >
               <td className="max-w-[300px] truncate px-3 py-2">
                 {item.isMust && <MustBadge className="mr-1" iconOnly />}
+                {/* iter1300: 旧 aria-label `「${item.title}」を開く (${date} にアーカイブ)` は
+                    visible {item.title} を `「」` 内 position 1 に持ち voice control prefix-matching
+                    「click <title 先頭語>」 match 不可 (substring 一致のみ)。personal-period-view
+                    iter1157 / backlog-title iter1158 の convention に揃え visible title 冒頭固定 +
+                    em-dash 区切で descriptive 末尾。 */}
                 <Link
                   href={`/${workspaceId}?item=${item.id}`}
                   className="text-primary focus-visible:ring-ring rounded hover:underline focus-visible:ring-2 focus-visible:outline-none"
                   data-testid={`archive-title-link-${item.id}`}
-                  aria-label={`「${item.title}」を開く (${fmt(item.archivedAt)} にアーカイブ)`}
+                  aria-label={`${item.title} — 開く (${fmt(item.archivedAt)} にアーカイブ済み)`}
                 >
                   <span aria-hidden="true">{item.title}</span>
                 </Link>
