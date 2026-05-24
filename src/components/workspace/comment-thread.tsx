@@ -298,9 +298,15 @@ function CommentItem({
               role="group"
               aria-label={`コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」の操作 (編集 / 削除、自分の投稿のみ)`}
             >
+              {/* iter1303 mobile audit (iPhone SE 320px): boundingBox 24x16 — 高さ 16px は
+                  `before:-inset-3` (12px) で expand しても 16+24=40 で WCAG 2.5.5 (44x44) 未達
+                  (item-checkbox iter505 convention は visible h-5 w-5=20px 前提で 20+24=44、
+                  text-xs 16px は 4px 不足)。`min-h-11 inline-flex items-center` で button 自体を
+                  44px tall 化、visible text は vertically center で見た目バランス保持。pseudo は
+                  hover 拡張 anchor として残置。 */}
               <button
                 type="button"
-                className="text-muted-foreground hover:text-foreground focus-visible:ring-ring relative rounded text-xs before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none disabled:before:hidden"
+                className="text-muted-foreground hover:text-foreground focus-visible:ring-ring relative inline-flex min-h-11 items-center rounded text-xs before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none disabled:before:hidden"
                 onClick={() => {
                   setBody(comment.body)
                   setEditing(true)
@@ -314,7 +320,7 @@ function CommentItem({
               </button>
               <button
                 type="button"
-                className="hover:text-destructive text-muted-foreground focus-visible:ring-ring relative rounded text-xs before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50 disabled:before:hidden"
+                className="hover:text-destructive text-muted-foreground focus-visible:ring-ring relative inline-flex min-h-11 items-center rounded text-xs before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50 disabled:before:hidden"
                 onClick={handleDelete}
                 disabled={softDelete.isPending}
                 aria-busy={softDelete.isPending || undefined}
