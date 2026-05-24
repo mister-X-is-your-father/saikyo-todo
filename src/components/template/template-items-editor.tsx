@@ -241,10 +241,14 @@ export function TemplateItemsEditor({ templateId }: Props) {
                 onClick={() => handleRemove(it.id, it.title)}
                 disabled={removeMut.isPending}
                 aria-busy={removeMut.isPending || undefined}
+                // iter1216: 旧 aria-label は visible 概念名 "削除" を末尾 "Template item「title」
+                // を **削除**" に持ち voice control prefix-matching「click 削除」 match 不可
+                // (icon-only Trash2、visible text 無、title attribute も無し)。
+                // src-delete / wf-delete iter1215 と同 sweep を template item delete にも展開。
                 aria-label={
                   removeMut.isPending
-                    ? `Template item「${it.title}」を削除中…`
-                    : `Template item「${it.title}」を削除`
+                    ? `削除中… — Template item「${it.title}」を削除中`
+                    : `削除 — Template item「${it.title}」を削除`
                 }
               >
                 <Trash2 className="h-4 w-4 text-red-500" aria-hidden="true" />
