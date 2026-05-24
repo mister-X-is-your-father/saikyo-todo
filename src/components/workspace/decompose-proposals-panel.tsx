@@ -611,8 +611,15 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
           onClick={() => void handleReject()}
           data-testid={`proposal-${proposal.id}-reject`}
           title="却下"
+          // iter1217: 旧 aria-label は visible 概念名 "却下" を末尾 "「title」を **却下**" に
+          // 持ち voice control prefix-matching「click 却下」 match 不可 (icon-only X、
+          // visible text 無、title attribute "却下" は tooltip 専用)。template-item delete
+          // iter1216 と同 sweep を proposal-reject にも展開。概念名 "却下" / "却下処理中…"
+          // を aria-label 冒頭固定 + em-dash 区切で descriptive 末尾保持。
           aria-label={
-            disabled ? `「${proposal.title}」を却下処理中…` : `「${proposal.title}」を却下`
+            disabled
+              ? `却下処理中… — 「${proposal.title}」を却下処理中`
+              : `却下 — 「${proposal.title}」を却下`
           }
         >
           <X className="h-3.5 w-3.5" aria-hidden="true" />
