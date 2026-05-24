@@ -217,14 +217,19 @@ export function SprintsPanel({ workspaceId }: Props) {
                   // iter344: app 固有 input なので browser auto-fill 候補は無関係 → off
                   autoComplete="off"
                   enterKeyHint="next"
+                  // iter1206: 旧 aria-label `Sprint 名前 (...)` (全 4 path) は visible Label
+                  // "名前" を中位置 "Sprint **名前** (...)" に持ち voice control prefix-matching
+                  // 「click 名前」 match 不可 (substring 一致のみ)。tmpl-name iter1205 と同 sweep
+                  // を sprint-name にも展開。Input は htmlFor Label が visible なので Label
+                  // text "名前" を冒頭固定 + em-dash 区切で descriptive 末尾保持。
                   aria-label={
                     name.length === 0
-                      ? 'Sprint 名前 (必須、最大 100 文字)'
+                      ? '名前 — Sprint 名前 (必須、最大 100 文字)'
                       : name.trim() === ''
-                        ? `Sprint 名前 (現在 ${name.length} / 100 文字、空白のみは不正)`
+                        ? `名前 — Sprint 名前 (現在 ${name.length} / 100 文字、空白のみは不正)`
                         : name.length > 90
-                          ? `Sprint 名前 (現在 ${name.length} / 100 文字、上限近接)`
-                          : `Sprint 名前 (現在 ${name.length} / 100 文字)`
+                          ? `名前 — Sprint 名前 (現在 ${name.length} / 100 文字、上限近接)`
+                          : `名前 — Sprint 名前 (現在 ${name.length} / 100 文字)`
                   }
                 />
               </div>
@@ -296,12 +301,17 @@ export function SprintsPanel({ workspaceId }: Props) {
                 rows={2}
                 maxLength={500}
                 aria-keyshortcuts="Meta+Enter Control+Enter"
+                // iter1206: 旧 aria-label `Sprint ゴール (...)` (全 3 path) は visible Label
+                // "ゴール (任意、Cmd/Ctrl+Enter で作成)" を中位置 "Sprint **ゴール** (...)" に
+                // 持ち voice control prefix-matching「click ゴール」 match 不可 (substring
+                // 一致のみ)。sprint-name と同 sweep を sprint-goal にも展開。Textarea は
+                // htmlFor Label が visible なので Label text "ゴール" を冒頭固定 + em-dash。
                 aria-label={
                   goal.length === 0
-                    ? 'Sprint ゴール (任意、最大 500 文字、この Sprint で達成したいこと、Cmd/Ctrl+Enter で作成)'
+                    ? 'ゴール — Sprint ゴール (任意、最大 500 文字、この Sprint で達成したいこと、Cmd/Ctrl+Enter で作成)'
                     : goal.length > 480
-                      ? `Sprint ゴール (現在 ${goal.length} / 500 文字、上限近接、Cmd/Ctrl+Enter で作成)`
-                      : `Sprint ゴール (現在 ${goal.length} / 500 文字、Cmd/Ctrl+Enter で作成)`
+                      ? `ゴール — Sprint ゴール (現在 ${goal.length} / 500 文字、上限近接、Cmd/Ctrl+Enter で作成)`
+                      : `ゴール — Sprint ゴール (現在 ${goal.length} / 500 文字、Cmd/Ctrl+Enter で作成)`
                 }
               />
             </div>
