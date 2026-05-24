@@ -65,10 +65,18 @@ export function ItemCheckbox({
       aria-busy={toggle.isPending || undefined}
       className={`relative inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors before:absolute before:-inset-3 before:rounded-full before:content-[''] disabled:before:hidden ${colorClass} ${className ?? ''}`}
       data-testid={`item-checkbox-${item.id}`}
+      // iter1219: 旧 aria-label は visible 概念名 "完了にする" / "未完了に戻す" / "切替中…"
+      // を末尾 ("「title」を **完了にする**" / "「title」の完了状態を **切替中…**") に持ち
+      // voice control prefix-matching「click 完了にする / 未完了に戻す / 切替中…」 match
+      // 不可 (icon-only checkbox、visible text 無、title attribute は tooltip 専用)。
+      // proposal-reject iter1217 と同 sweep を item-checkbox にも展開。概念名を冒頭固定
+      // + em-dash 区切で descriptive 末尾保持。
       aria-label={
         toggle.isPending
-          ? `「${item.title}」の完了状態を切替中…`
-          : `「${item.title}」を${isDone ? '未完了に戻す' : '完了にする'}`
+          ? `切替中… — 「${item.title}」の完了状態を切替中`
+          : isDone
+            ? `未完了に戻す — 「${item.title}」を未完了に戻す`
+            : `完了にする — 「${item.title}」を完了にする`
       }
       title={isDone ? '未完了に戻す' : '完了にする'}
     >
