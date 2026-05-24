@@ -990,10 +990,16 @@ function ItemEditDialogInner({
               }}
               data-testid="item-edit-save-as-template"
               title="この Item と全ての子孫 (subtask) を Template として保存 (再利用可)"
+              // iter1302: 旧 aria-label 2 path とも visible "Template として保存" / "保存中…"
+              // を中位置 ("「title」を **Template に保存中…**" / "「title」と全ての子孫 (subtask) を
+              // **Template として保存**") に持ち voice control prefix-matching
+              //「click Template として保存 / 保存中…」 match 不可 (substring 一致のみ)。
+              // iter1093-1207 sweep convention (visible 冒頭 + em-dash 区切で descriptive 末尾)
+              // に揃え visible 冒頭固定。
               aria-label={
                 createTemplateFromItem.isPending
-                  ? `「${item.title}」を Template に保存中…`
-                  : `「${item.title}」と全ての子孫 (subtask) を Template として保存 (再利用可)`
+                  ? `保存中… — 「${item.title}」を Template に保存中`
+                  : `Template として保存 — 「${item.title}」と全ての子孫 (subtask) を Template として保存 (再利用可)`
               }
             >
               <span aria-hidden="true">
