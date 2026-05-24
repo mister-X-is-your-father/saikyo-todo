@@ -300,7 +300,12 @@ export function TemplatesPanel({ workspaceId }: Props) {
                     onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
                     aria-expanded={expandedId === t.id}
                     aria-controls={`template-body-${t.id}`}
-                    aria-label={`Template「${t.name}」(${t.kind}${t.scheduleCron ? ` · ${t.scheduleCron}` : ''}) の詳細を${expandedId === t.id ? '閉じる' : '開く'}`}
+                    // iter1221: 旧 aria-label `Template「${name}」(...)` は visible {name}
+                    // (CardTitle heading) を中位置 "Template「**name**」(...)" に持ち voice
+                    // control prefix-matching「click {name}」 match 不可 (substring 一致のみ)。
+                    // template-card delete iter1218 と同 sweep を template-card title button
+                    // にも展開。visible {name} を冒頭固定 + em-dash 区切で descriptive 末尾保持。
+                    aria-label={`${t.name} — Template「${t.name}」(${t.kind}${t.scheduleCron ? ` · ${t.scheduleCron}` : ''}) の詳細を${expandedId === t.id ? '閉じる' : '開く'}`}
                   >
                     <CardTitle
                       id={`template-card-heading-${t.id}`}
