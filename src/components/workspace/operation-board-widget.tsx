@@ -291,7 +291,11 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
             <button
               type="button"
               // iter514: pseudo で tap target を 44x44 化 (visual text-xs 維持)
-              className="hover:text-foreground text-muted-foreground focus-visible:ring-ring relative flex items-center gap-1 rounded text-xs before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
+              // iter1304 (mobile audit): iter514 の pseudo `-inset-3` (12px) は visible h-5
+              // (20px) 前提 (item-checkbox iter505 convention) で、text-xs (16px) には 4px 不足
+              // (16+24=40 < 44)。`min-h-11` 追加で button 自体を 44 tall 化、visible は
+              // vertically center で見た目バランス維持 (comment-thread iter1303 と同 fix)。
+              className="hover:text-foreground text-muted-foreground focus-visible:ring-ring relative flex min-h-11 items-center gap-1 rounded text-xs before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
               onClick={() => setShowDoneYesterday((v) => !v)}
               aria-expanded={showDoneYesterday}
               aria-controls="operation-board-done-yesterday-list"
