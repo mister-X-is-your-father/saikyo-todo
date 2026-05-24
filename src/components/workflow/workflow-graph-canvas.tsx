@@ -87,12 +87,16 @@ export function WorkflowGraphCanvas({ graph, className, testId }: Props) {
 
   // 空 graph は EmptyState 相当 (ReactFlow は描画するが viewport が空になる)
   if (graph.nodes.length === 0) {
+    // iter1316: 旧 aria-label "Workflow graph は空です" は visible "node が無いため graph は
+    // 表示できません。下の JSON で node を追加してください。" と完全 divergence (SR は短い
+    // aria-label のみ読み visible 詳細メッセージが伝わらない、role="status" + aria-live="polite"
+    // 自動 announce 経路でも短文しか聞こえず)。aria-label を撤回し inner text を accessible name
+    // とすることで SR と visible が同じ「empty state + 次 action」を共有。
     return (
       <div
         className={`bg-muted/30 text-muted-foreground flex items-center justify-center rounded border border-dashed p-6 text-xs ${className ?? 'h-64'}`}
         data-testid={testId}
         role="status"
-        aria-label="Workflow graph は空です"
       >
         node が無いため graph は表示できません。下の JSON で node を追加してください。
       </div>
