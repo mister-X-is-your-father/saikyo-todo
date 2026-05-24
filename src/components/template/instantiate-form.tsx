@@ -95,9 +95,14 @@ export function InstantiateForm({ workspaceId, template }: Props) {
           onChange={(e) => setOverride(e.target.value)}
           maxLength={500}
           enterKeyHint="next"
+          // iter1212: 旧 aria-label empty-path `Template「${name}」展開時の root Item タイトル (...)` は
+          // visible Label "root Item タイトル (任意)" を中位置 "Template「name」展開時の **root
+          // Item タイトル** (...)" に持ち voice control prefix-matching「click root Item タイトル」
+          // match 不可 (substring 一致のみ)。subtasks-bulk iter1211 と同 sweep。他 2 path は
+          // 既に visible 冒頭で OK だったので empty-path のみ visible 冒頭固定 + em-dash 区切。
           aria-label={
             override.length === 0
-              ? `Template「${template.name}」展開時の root Item タイトル (任意、最大 500 文字、省略時は「${template.name}」)`
+              ? `root Item タイトル — Template「${template.name}」展開時の root Item タイトル (任意、最大 500 文字、省略時は「${template.name}」)`
               : override.length > 480
                 ? `root Item タイトル (現在 ${override.length} / 500 文字、上限近接)`
                 : `root Item タイトル (現在 ${override.length} / 500 文字)`
@@ -122,15 +127,20 @@ export function InstantiateForm({ workspaceId, template }: Props) {
                 aria-invalid={
                   ((values[v] ?? '').length > 0 && (values[v] ?? '').trim() === '') || undefined
                 }
+                // iter1212: 旧 aria-label `Mustache 変数「${v}」 (...)` (全 4 path) は visible
+                // Label "変数: {v}" を中位置 "**Mustache** 変数「${v}」 (...)" に持ち voice control
+                // prefix-matching「click 変数」 match 不可 (substring 一致のみ)。override-${id}
+                // と同 sweep を var-${id}-${v} にも展開。Input は htmlFor Label が visible なので
+                // Label text "変数: {v}" を冒頭固定 + em-dash 区切で descriptive 末尾保持。
                 aria-label={(() => {
                   const val = values[v] ?? ''
                   if (val.length === 0)
-                    return `Mustache 変数「${v}」 の値 (必須、最大 500 文字、template の {{${v}}} に展開時 substitute される)`
+                    return `変数: ${v} — Mustache 変数「${v}」 の値 (必須、最大 500 文字、template の {{${v}}} に展開時 substitute される)`
                   if (val.trim() === '')
-                    return `Mustache 変数「${v}」 (現在 ${val.length} / 500 文字、空白のみは不正)`
+                    return `変数: ${v} — Mustache 変数「${v}」 (現在 ${val.length} / 500 文字、空白のみは不正)`
                   if (val.length > 480)
-                    return `Mustache 変数「${v}」 (現在 ${val.length} / 500 文字、上限近接)`
-                  return `Mustache 変数「${v}」 (現在 ${val.length} / 500 文字)`
+                    return `変数: ${v} — Mustache 変数「${v}」 (現在 ${val.length} / 500 文字、上限近接)`
+                  return `変数: ${v} — Mustache 変数「${v}」 (現在 ${val.length} / 500 文字)`
                 })()}
                 maxLength={500}
                 enterKeyHint="next"
