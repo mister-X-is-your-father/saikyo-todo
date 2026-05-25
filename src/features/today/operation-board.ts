@@ -172,11 +172,14 @@ export function buildOperationBoard(items: Item[], today: string): OperationBoar
  * iter521 buildOperationBoard の summary を「最初に伝える 1 行」 に圧縮する高 level helper。
  * mustToday / overdue / recommended の 3 軸を順に並べ、0 件軸は省略 (= 視覚 noise 削減)。
  *
+ * iter1325 polish: 推奨に「なぜ推奨か」 reason ラベル (iter964 pickRecommendedReason) を併記。
+ * reason と estimate は同一括弧内に `, ` 連結 (= 読み手が「title + なぜ + どれくらい」 を一目で把握)。
+ *
  * 出力例:
- *   - '今日 MUST 3 / overdue 2 / 推奨: 「タスクX」 (見積 30 分)'  (全 3 軸あり + 推奨に estimate)
- *   - '今日 MUST 3 / 推奨: 「タスクX」'                          (overdue 0、estimate なし)
- *   - 'overdue 5 件'                                              (MUST 0、推奨 0)
- *   - '全て片付き済 (今日の MUST / overdue / 推奨なし)'           (全 0)
+ *   - '今日 MUST 3 / overdue 2 / 推奨: 「タスクX」 (今日の MUST, 見積 30 分)'  (全 3 軸 + reason + estimate)
+ *   - '今日 MUST 3 / 推奨: 「タスクX」 (今日の MUST)'                        (overdue 0、estimate なし)
+ *   - 'overdue 5 / 推奨: 「タスクY」 (期限超過)'                            (MUST 0)
+ *   - '全て片付き済 (今日の MUST / overdue / 推奨なし)'                     (全 0)
  *
  * formatSprintRiskBoardAlertJa (iter962) と並ぶ「最初に伝える 1 行」 pattern。
  */
@@ -185,9 +188,13 @@ export function formatOperationBoardHeadlineJa(summary: OperationBoardSummary): 
   if (summary.mustToday.count > 0) parts.push(`今日 MUST ${summary.mustToday.count}`)
   if (summary.overdue.total > 0) parts.push(`overdue ${summary.overdue.total}`)
   if (summary.recommended !== null) {
+    const reason = pickRecommendedReason(summary.recommended, summary.today)
     const est = extractEstimateMinutes(summary.recommended.description)
-    const estPart = est !== undefined ? ` (見積 ${est} 分)` : ''
-    parts.push(`推奨: 「${summary.recommended.title}」${estPart}`)
+    const detail: string[] = []
+    if (reason !== null) detail.push(formatRecommendedReasonJa(reason))
+    if (est !== undefined) detail.push(`見積 ${est} 分`)
+    const detailPart = detail.length > 0 ? ` (${detail.join(', ')})` : ''
+    parts.push(`推奨: 「${summary.recommended.title}」${detailPart}`)
   }
   if (parts.length === 0) return '全て片付き済 (今日の MUST / overdue / 推奨なし)'
   return parts.join(' / ')

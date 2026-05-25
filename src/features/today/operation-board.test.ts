@@ -303,6 +303,24 @@ describe('formatOperationBoardHeadlineJa (iter963)', () => {
     expect(line).toContain('推奨:')
     expect(line).not.toContain('見積')
   })
+
+  it('iter1325: 推奨 reason + estimate を 1 括弧に併記', () => {
+    const items: Item[] = [
+      mk({ id: 'm1', isMust: true, scheduledFor: TODAY, description: '見積: 30分' }),
+    ]
+    const r = buildOperationBoard(items, TODAY)
+    expect(formatOperationBoardHeadlineJa(r)).toContain(
+      '推奨: 「item m1」 (今日の MUST, 見積 30 分)',
+    )
+  })
+
+  it('iter1325: estimate なしでも reason だけは併記する (overdue → 期限超過)', () => {
+    const items: Item[] = [mk({ id: 'o1', dueDate: '2026-04-20', description: '' })]
+    const r = buildOperationBoard(items, TODAY)
+    const line = formatOperationBoardHeadlineJa(r)
+    expect(line).toContain('推奨: 「item o1」 (期限超過)')
+    expect(line).not.toContain('見積')
+  })
 })
 
 describe('pickRecommendedReason / formatRecommendedReasonJa (iter964)', () => {
