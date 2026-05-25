@@ -510,7 +510,7 @@ export function GanttView({
                   data-weekend={isWeekend ? 'true' : 'false'}
                   className={
                     'shrink-0 border-r px-1 text-center text-xs ' +
-                    (isWeekend ? 'text-muted-foreground bg-muted/40' : 'text-muted-foreground')
+                    (isWeekend ? 'text-foreground bg-muted/40' : 'text-foreground')
                   }
                 >
                   {format(d, 'M/d')}
