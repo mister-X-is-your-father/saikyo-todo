@@ -39,7 +39,11 @@ import {
   forecastSeverity,
   formatTodayForecastJa,
 } from '@/features/today/forecast'
-import { buildOperationBoard } from '@/features/today/operation-board'
+import {
+  buildOperationBoard,
+  formatRecommendedReasonJa,
+  pickRecommendedReason,
+} from '@/features/today/operation-board'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -74,6 +78,13 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
     [board.todayScheduled.items],
   )
   const forecast = useMemo(() => buildTodayForecast(forecastInput), [forecastInput])
+
+  // iter1326 (queue fluffy-1 完結 wire-up): iter964 の pickRecommendedReason を widget に bind。
+  // 「推奨第 1 タスク」 の横に「なぜ推奨か」 (MUST 期限超過 / 期限超過 / 今日の MUST / 今日 推奨) を
+  // chip で出し、color で緊急度を伝える (= 軸 1 可視化 + 軸 4 漏れ防止、見て即わかる)。
+  const recommendedReason = board.recommended
+    ? pickRecommendedReason(board.recommended, today)
+    : null
 
   // 全セクションが空なら widget そのものを描画しない (Today 未利用 user に noise を出さない)
   const hasAnything =
@@ -226,6 +237,22 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
             tone="amber"
           >
             <ItemRow item={board.recommended} onClick={openItem} highlight />
+            {recommendedReason ? (
+              <span
+                className={`ml-5 inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-medium ${
+                  recommendedReason === 'overdue-must' || recommendedReason === 'overdue'
+                    ? 'bg-rose-100 text-rose-700'
+                    : recommendedReason === 'must-today'
+                      ? 'bg-amber-100 text-amber-700'
+                      : 'bg-sky-100 text-sky-700'
+                }`}
+                data-testid="operation-board-recommended-reason"
+                data-reason={recommendedReason}
+              >
+                {/* visible chip。SR は ItemRow の "推奨: " prefix で既に推奨と分かるため理由のみ補足 */}
+                {formatRecommendedReasonJa(recommendedReason)}
+              </span>
+            ) : null}
           </Section>
         ) : null}
 
