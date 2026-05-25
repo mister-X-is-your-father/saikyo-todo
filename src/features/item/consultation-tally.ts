@@ -98,6 +98,30 @@ export function tallyConsultation(
 }
 
 /**
+ * iter1336 basics: 最多得票で並んでいる option index を **全部** 返す (index 昇順)。
+ *
+ * `topIndex` は tie 時に最初の 1 つだけ返すため、UI が「案A が最多」と誤認する余地がある。
+ * 本 helper は同数 1 位を漏れなく返すので caller は:
+ *   - `length === 0` → まだ投票なし
+ *   - `length === 1` → 明確な単独 1 位 (= topIndex と一致)
+ *   - `length >= 2` → 拮抗 (= 勝者未確定、決定に注意喚起)
+ * を判定できる。`isLeading` (voteCount>0 && ===maxCount) を素直に拾うだけの薄い helper。
+ */
+export function consultationLeadingIndices(summary: ConsultationTallySummary): number[] {
+  return summary.rows.filter((r) => r.isLeading).map((r) => r.index)
+}
+
+/**
+ * iter1336 basics: 最多得票が 2 案以上で並んでいる (= 拮抗、勝者未確定) か。
+ *
+ * 投票 0 / 単独 1 位 は false。consultation view で「拮抗中」 chip を出して
+ * requester に決定を促す判定に使う (= 漏れ防止: 同数で決まらず放置される相談を可視化)。
+ */
+export function isConsultationContested(summary: ConsultationTallySummary): boolean {
+  return consultationLeadingIndices(summary).length >= 2
+}
+
+/**
  * 相談 status 判定:
  *   - 'open': 締切未到来 + decided 未済
  *   - 'closing-soon': 締切 ≤ 24h

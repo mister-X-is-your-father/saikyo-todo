@@ -5,12 +5,14 @@ import {
   type ConsultationCounts,
   consultationCountsChipTone,
   consultationCountsToBriefSignal,
+  consultationLeadingIndices,
   type ConsultationOption,
   consultationStatusChipTone,
   consultationStatusSeverity,
   type ConsultationVote,
   formatConsultationCountsCompactJa,
   formatConsultationStatusJa,
+  isConsultationContested,
   tallyConsultation,
 } from './consultation-tally'
 
@@ -82,6 +84,47 @@ describe('tallyConsultation', () => {
     expect(r.rows[0]?.ratio).toBe(0.5)
     expect(r.rows[1]?.ratio).toBe(0.25)
     expect(r.rows[2]?.ratio).toBe(0.25)
+  })
+})
+
+describe('consultationLeadingIndices / isConsultationContested (iter1336)', () => {
+  it('投票なし → [] / contested=false', () => {
+    const r = tallyConsultation(options, [])
+    expect(consultationLeadingIndices(r)).toEqual([])
+    expect(isConsultationContested(r)).toBe(false)
+  })
+
+  it('単独 1 位 → [topIndex] / contested=false', () => {
+    const votes: ConsultationVote[] = [
+      { optionIndex: 0, userId: 'a', votedAt: T1 },
+      { optionIndex: 0, userId: 'b', votedAt: T1 },
+      { optionIndex: 1, userId: 'c', votedAt: T1 },
+    ]
+    const r = tallyConsultation(options, votes)
+    expect(consultationLeadingIndices(r)).toEqual([0])
+    expect(isConsultationContested(r)).toBe(false)
+  })
+
+  it('2 案 tie → 両 index / contested=true (= topIndex では拾えない拮抗を検知)', () => {
+    const votes: ConsultationVote[] = [
+      { optionIndex: 0, userId: 'a', votedAt: T1 },
+      { optionIndex: 1, userId: 'b', votedAt: T1 },
+    ]
+    const r = tallyConsultation(options, votes)
+    expect(consultationLeadingIndices(r)).toEqual([0, 1])
+    expect(isConsultationContested(r)).toBe(true)
+    expect(r.topIndex).toBe(0) // topIndex は最初の 1 つだけ (= 拮抗を隠す)
+  })
+
+  it('3 案全部 tie → 全 index / contested=true', () => {
+    const votes: ConsultationVote[] = [
+      { optionIndex: 0, userId: 'a', votedAt: T1 },
+      { optionIndex: 1, userId: 'b', votedAt: T1 },
+      { optionIndex: 2, userId: 'c', votedAt: T1 },
+    ]
+    const r = tallyConsultation(options, votes)
+    expect(consultationLeadingIndices(r)).toEqual([0, 1, 2])
+    expect(isConsultationContested(r)).toBe(true)
   })
 })
 
