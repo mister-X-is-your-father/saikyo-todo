@@ -185,6 +185,30 @@ export function groupGoalsByHealth<T extends GoalLike>(
   return groups
 }
 
+/**
+ * iter1346 ai-automation: 最も予定から遅れている (gapPct 最小 = 最も負) goal を 1 件返す。
+ *
+ * idle (期間外) / achieved (達成済) は「今 注力すべき対象ではない」 ため除外し、
+ * on-track / at-risk / behind の中で gapPct が最小 (= 進捗が想定を最も下回る) goal を選ぶ。
+ * dashboard / AI brief の「最も注力すべき目標」 highlight に使う (= 目標達成サポート)。
+ *
+ * 対象 goal が無ければ null。tie は配列順で最初を採用 (strict `<` 比較、stable)。
+ */
+export function pickMostBehindGoal<T extends GoalLike>(
+  goals: readonly T[],
+  today?: string,
+): { goal: T; health: GoalHealth } | null {
+  let worst: { goal: T; health: GoalHealth } | null = null
+  for (const g of goals) {
+    const health = computeGoalHealth({ ...g, today })
+    if (health.tier === 'idle' || health.tier === 'achieved') continue
+    if (worst === null || health.gapPct < worst.health.gapPct) {
+      worst = { goal: g, health }
+    }
+  }
+  return worst
+}
+
 /** goals を tier 別件数に圧縮 (件数だけ欲しい AI prompt 用)。 */
 export function countGoalsByHealth(
   goals: readonly GoalLike[],

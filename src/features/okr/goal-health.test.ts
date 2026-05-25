@@ -15,6 +15,7 @@ import {
   goalHealthTierSeverity,
   goalHealthToBriefSignal,
   groupGoalsByHealth,
+  pickMostBehindGoal,
 } from './goal-health'
 
 // 30 日 Goal: 2026-04-01 ~ 2026-04-30 (totalDays=30)
@@ -397,5 +398,33 @@ describe('goalHealthToBriefSignal (iter1345)', () => {
     expect(goalHealthToBriefSignal(onTrack).tone).toBe('info')
     expect(goalHealthToBriefSignal(atRisk).tone).toBe('warn')
     expect(goalHealthToBriefSignal(idle).tone).toBe('idle')
+  })
+})
+
+describe('pickMostBehindGoal (iter1346)', () => {
+  it('on-track/at-risk/behind の中で最も gap が小さい (遅れてる) goal を返す', () => {
+    const onTrack = { id: 'on', pct: 0.5, startDate: START, endDate: END }
+    const atRisk = { id: 'at', pct: 0.25, startDate: START, endDate: END }
+    const behind = { id: 'be', pct: 0.1, startDate: START, endDate: END }
+    const picked = pickMostBehindGoal([onTrack, atRisk, behind], TODAY_DAY15)
+    expect(picked?.goal).toBe(behind)
+    expect(picked?.health.tier).toBe('behind')
+  })
+
+  it('idle / achieved は対象外 (注力すべきでない)', () => {
+    const achieved = { id: 'ac', pct: 1.0, startDate: START, endDate: END }
+    const idle = { id: 'id', pct: 0, startDate: START, endDate: END } // 期間前
+    const picked = pickMostBehindGoal([achieved, idle], TODAY_BEFORE)
+    expect(picked).toBeNull()
+  })
+
+  it('対象 goal が 1 件も無ければ null', () => {
+    expect(pickMostBehindGoal([], TODAY_DAY15)).toBeNull()
+  })
+
+  it('tie は配列順で最初を採用', () => {
+    const a = { id: 'a', pct: 0.25, startDate: START, endDate: END }
+    const b = { id: 'b', pct: 0.25, startDate: START, endDate: END }
+    expect(pickMostBehindGoal([a, b], TODAY_DAY15)?.goal).toBe(a)
   })
 })
