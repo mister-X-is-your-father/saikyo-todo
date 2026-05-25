@@ -45,7 +45,7 @@ const TENDENCY_TONE: Record<ReturnType<typeof computeEstimateBias>['tendency'], 
   underestimating: 'bg-amber-50 text-amber-700 border-amber-200',
   overestimating: 'bg-sky-50 text-sky-700 border-sky-200',
   mixed: 'bg-violet-50 text-violet-700 border-violet-200',
-  unknown: 'bg-muted text-muted-foreground border-border',
+  unknown: 'bg-muted text-foreground border-border',
 }
 
 export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
