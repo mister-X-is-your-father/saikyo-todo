@@ -139,9 +139,18 @@ export function TodayView({
           // 両方を満たす予定 (scheduledFor) 設定の手順をクイック追加例で示す。
           description={
             <span>
-              QuickAdd で <code className="bg-muted rounded px-1 text-[11px]">明日 資料準備</code> /{' '}
-              <code className="bg-muted rounded px-1 text-[11px]">tomorrow 9am review</code> /{' '}
-              <code className="bg-muted rounded px-1 text-[11px]">3/15 リリース</code>{' '}
+              QuickAdd で{' '}
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">
+                明日 資料準備
+              </code>{' '}
+              /{' '}
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">
+                tomorrow 9am review
+              </code>{' '}
+              /{' '}
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">
+                3/15 リリース
+              </code>{' '}
               のように日付を含めるとここに表示されます
             </span>
           }
