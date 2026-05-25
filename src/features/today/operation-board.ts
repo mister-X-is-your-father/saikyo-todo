@@ -15,7 +15,7 @@
  *
  * 副作用なし、依存は Item type のみ。Vitest 単体 test で網羅。
  */
-import { shiftIsoDate } from '@/lib/date/iso'
+import { formatUtcISO, shiftIsoDate } from '@/lib/date/iso'
 import type { ChipTone } from '@/lib/ui/chip-tone'
 
 import type { AgentBriefSignal } from '@/features/agent/brief-signal'
@@ -90,7 +90,7 @@ export function buildOperationBoard(items: Item[], today: string): OperationBoar
     .filter((it) => {
       if (!it.doneAt) return false
       const d = it.doneAt instanceof Date ? it.doneAt : new Date(it.doneAt)
-      return d.toISOString().slice(0, 10) === yesterday
+      return formatUtcISO(d) === yesterday
     })
     .sort((a, b) => {
       const ad = a.doneAt instanceof Date ? a.doneAt : new Date(a.doneAt!)
