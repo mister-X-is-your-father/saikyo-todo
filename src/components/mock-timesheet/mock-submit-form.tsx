@@ -6,6 +6,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 
+import { todayUtcISO } from '@/lib/date/iso'
+
 import { mockSubmitAction } from '@/features/mock-timesheet/actions'
 import {
   type MockTimesheetSubmitInput,
@@ -17,10 +19,6 @@ import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 
-function todayISO(): string {
-  return new Date().toISOString().slice(0, 10)
-}
-
 export function MockSubmitForm() {
   const [isPending, startTransition] = useTransition()
   const [lastRef, setLastRef] = useState<string | null>(null)
@@ -28,7 +26,7 @@ export function MockSubmitForm() {
     resolver: zodResolver(MockTimesheetSubmitInputSchema),
     mode: 'onTouched',
     defaultValues: {
-      workDate: todayISO(),
+      workDate: todayUtcISO(),
       category: 'dev',
       description: '',
       hoursDecimal: 1,
