@@ -55,7 +55,7 @@ export type ChipTone3 = 'good' | 'neutral' | 'warn'
 
 const TONE3_CLASS: Record<ChipTone3, string> = {
   good: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  neutral: 'border-border bg-muted text-muted-foreground',
+  neutral: 'border-border bg-muted text-foreground',
   warn: 'border-amber-200 bg-amber-50 text-amber-700',
 }
 
