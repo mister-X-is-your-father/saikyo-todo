@@ -15,6 +15,9 @@
  *
  * 副作用なし、依存は Item type のみ。Vitest 単体 test で網羅。
  */
+import type { ChipTone } from '@/lib/ui/chip-tone'
+
+import type { AgentBriefSignal } from '@/features/agent/brief-signal'
 import { extractEstimateMinutes } from '@/features/item/estimate'
 import type { Item } from '@/features/item/schema'
 
@@ -242,6 +245,31 @@ const RECOMMENDED_REASON_LABEL_JA: Record<RecommendedReason, string> = {
 export function formatRecommendedReasonJa(reason: RecommendedReason | null): string {
   if (reason === null) return '推奨なし'
   return RECOMMENDED_REASON_LABEL_JA[reason]
+}
+
+/**
+ * iter1327 ai-automation: 作戦盤 summary を `AgentBriefSignal` (text + tone) に変換。
+ *
+ * fluffy 撲滅原則の中核 — AI 朝 brief / Slack daily digest / dashboard chip は
+ * `composeAnalyticsSignals` の 18 軸と同じ `{ text, tone }` 共通 vocab で構築される。
+ * 本 helper は「今日やるべきことの 1 行」 を **deterministic** に 1 signal 化し、
+ * AI 文章生成 (旧 PM Stand-up) を置き換える substrate に乗せる (各 `*ToBriefSignal` と同列)。
+ *
+ * tone は attention rank (chip-tone.ts) に整合:
+ *   - overdue あり        → 'danger'  (落ちてる、最警戒)
+ *   - else MUST today あり → 'urgent'  (今日絶対やる、行動喚起)
+ *   - else 推奨あり        → 'info'    (今日の推奨タスクあり、計画範囲内)
+ *   - else (全て片付き済)  → 'success' (やる気: 「片付いた」 positive)
+ *
+ * text は formatOperationBoardHeadlineJa (iter963 + iter1325 reason 併記) を再利用。
+ */
+export function operationBoardToBriefSignal(summary: OperationBoardSummary): AgentBriefSignal {
+  let tone: ChipTone
+  if (summary.overdue.total > 0) tone = 'danger'
+  else if (summary.mustToday.count > 0) tone = 'urgent'
+  else if (summary.recommended !== null) tone = 'info'
+  else tone = 'success'
+  return { text: formatOperationBoardHeadlineJa(summary), tone }
 }
 
 // 内部 helper を test しやすくするため named export

@@ -10,6 +10,7 @@ import {
   formatOperationBoardHeadlineJa,
   formatRecommendedReasonJa,
   isItemActive,
+  operationBoardToBriefSignal,
   pickRecommendedReason,
 } from './operation-board'
 
@@ -366,5 +367,34 @@ describe('pickRecommendedReason / formatRecommendedReasonJa (iter964)', () => {
       isMust: true,
     })
     expect(pickRecommendedReason(item, TODAY)).toBe('overdue-must')
+  })
+})
+
+describe('operationBoardToBriefSignal (iter1327)', () => {
+  it('overdue あり → danger tone', () => {
+    const r = buildOperationBoard([mk({ id: 'o1', dueDate: '2026-04-20' })], TODAY)
+    const sig = operationBoardToBriefSignal(r)
+    expect(sig.tone).toBe('danger')
+    expect(sig.text).toContain('overdue 1')
+  })
+
+  it('overdue なし + MUST today あり → urgent tone', () => {
+    const r = buildOperationBoard([mk({ id: 'm1', isMust: true, scheduledFor: TODAY })], TODAY)
+    const sig = operationBoardToBriefSignal(r)
+    expect(sig.tone).toBe('urgent')
+    expect(sig.text).toContain('今日 MUST 1')
+  })
+
+  it('overdue / MUST なし + 推奨あり (今日の非 MUST scheduled) → info tone', () => {
+    const r = buildOperationBoard([mk({ id: 't1', scheduledFor: TODAY })], TODAY)
+    const sig = operationBoardToBriefSignal(r)
+    expect(sig.tone).toBe('info')
+    expect(sig.text).toContain('推奨:')
+  })
+
+  it('全て 0 → success tone + 「全て片付き済」 sentinel', () => {
+    const sig = operationBoardToBriefSignal(buildOperationBoard([], TODAY))
+    expect(sig.tone).toBe('success')
+    expect(sig.text).toBe('全て片付き済 (今日の MUST / overdue / 推奨なし)')
   })
 })
