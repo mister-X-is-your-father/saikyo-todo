@@ -239,7 +239,20 @@ function KanbanColumn({
       aria-labelledby={headingId}
     >
       <div className="mb-3 flex shrink-0 items-center justify-between">
-        <h3 id={headingId} className="text-sm font-semibold" style={{ color }}>
+        {/* iter1354: 旧 style={{ color }} は status 色 (slate-400 / blue-500 /
+            green-500 等 accent 色) を heading text 色に直接適用し、白 card 上で
+            2.27〜3.67:1 と WCAG 1.4.3 (4.5:1) を割っていた。status 色は装飾 dot
+            (非テキストなので contrast 規定外、status は label text が伝える) に移し、
+            heading text は text-foreground で可読性確保。 */}
+        <h3
+          id={headingId}
+          className="text-foreground flex items-center gap-1.5 text-sm font-semibold"
+        >
+          <span
+            className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+            style={{ backgroundColor: color }}
+            aria-hidden="true"
+          />
           {label}
           <span className="sr-only">{` ${items.length} 件`}</span>
         </h3>
