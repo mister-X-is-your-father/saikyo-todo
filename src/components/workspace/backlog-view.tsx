@@ -70,7 +70,7 @@ function buildColumns(
   return [
     {
       id: 'drag',
-      header: '',
+      header: () => <span className="sr-only">並び替え</span>,
       size: 28,
       enableSorting: false,
       cell: () => <DragHandle />,
@@ -86,7 +86,7 @@ function buildColumns(
     },
     {
       id: 'checkbox',
-      header: '',
+      header: () => <span className="sr-only">完了切替</span>,
       size: 40,
       enableSorting: false,
       cell: ({ row }) => <ItemCheckbox item={row.original} workspaceId={workspaceId} />,
