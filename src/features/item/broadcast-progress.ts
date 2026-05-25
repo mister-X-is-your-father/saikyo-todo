@@ -80,6 +80,18 @@ export function summarizeBroadcastProgress(
 }
 
 /**
+ * iter1337 basics: まだ done していない assignee の ref 一覧 (= 催促対象)。
+ *
+ * `summarizeBroadcastProgress` の rows から done=false のものを抽出 (assignee 表示順を保つ)。
+ * broadcast task の「まだやってない人」 を 1 関数で取り、UI のリマインド button /
+ * 「未: alice, bob」 表示に使う (= 漏れ防止: 全員完了まで誰が残ってるか能動可視)。
+ * fullyDone (全員完了) / total=0 なら空配列。
+ */
+export function pendingBroadcastAssignees(summary: BroadcastProgressSummary): AssigneeRef[] {
+  return summary.rows.filter((r) => !r.done).map((r) => r.ref)
+}
+
+/**
  * broadcast task かどうかの判定 (= assignee が 2 名以上、または task が 'broadcast' marker を持つ)。
  * 後日 marker 経路 (`items.custom_fields.broadcast=true`) を追加する想定で、本 helper は assignee
  * count で gate するシンプル版。

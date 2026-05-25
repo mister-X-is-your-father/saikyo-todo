@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { isBroadcastCandidate, summarizeBroadcastProgress } from './broadcast-progress'
+import {
+  isBroadcastCandidate,
+  pendingBroadcastAssignees,
+  summarizeBroadcastProgress,
+} from './broadcast-progress'
 import type { AssigneeRef } from './repository'
 
 const alice: AssigneeRef = { actorType: 'user', actorId: 'alice' }
@@ -92,6 +96,36 @@ describe('summarizeBroadcastProgress', () => {
       [{ actorType: 'user', actorId: 'alice', doneAt: null }],
     )
     expect(r.rows[0]?.done).toBe(false)
+  })
+})
+
+describe('pendingBroadcastAssignees (iter1337)', () => {
+  it('一部 done → 未完了 ref のみ (表示順保持)', () => {
+    const r = summarizeBroadcastProgress(
+      [alice, bob, carol],
+      [{ actorType: 'user', actorId: 'bob', doneAt: T1 }],
+    )
+    expect(pendingBroadcastAssignees(r)).toEqual([alice, carol])
+  })
+
+  it('全員 done → 空配列', () => {
+    const r = summarizeBroadcastProgress(
+      [alice, bob],
+      [
+        { actorType: 'user', actorId: 'alice', doneAt: T1 },
+        { actorType: 'user', actorId: 'bob', doneAt: T2 },
+      ],
+    )
+    expect(pendingBroadcastAssignees(r)).toEqual([])
+  })
+
+  it('全員未完了 → 全 ref', () => {
+    const r = summarizeBroadcastProgress([alice, ai], [])
+    expect(pendingBroadcastAssignees(r)).toEqual([alice, ai])
+  })
+
+  it('total 0 → 空配列', () => {
+    expect(pendingBroadcastAssignees(summarizeBroadcastProgress([], []))).toEqual([])
   })
 })
 
