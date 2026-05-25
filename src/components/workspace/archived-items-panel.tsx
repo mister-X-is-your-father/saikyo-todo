@@ -87,10 +87,10 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
           description={
             <span>
               ItemEditDialog の{' '}
-              <code className="bg-muted rounded px-1 text-[11px]">アーカイブ</code> button から
-              実行すると、ここに移動します。 削除と違い、いつでも{' '}
-              <code className="bg-muted rounded px-1 text-[11px]">復元</code> button で
-              戻せます。完了済タスクの履歴 / 過去の参考資料を「捨てずに片付ける」場所として
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">アーカイブ</code>{' '}
+              button から 実行すると、ここに移動します。 削除と違い、いつでも{' '}
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">復元</code> button
+              で 戻せます。完了済タスクの履歴 / 過去の参考資料を「捨てずに片付ける」場所として
               活用してください。
             </span>
           }
