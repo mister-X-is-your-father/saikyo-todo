@@ -19,8 +19,12 @@
  *   - quickWins: estimate≤30min の item top 5 (sort: priority → MUST → estimate 短い順)
  *   - focusBlocks: estimate≥90min の item (sort: priority → MUST、推奨 1-2 件)
  *
- * AI 不使用、副作用無し、依存無し。
+ * AI 不使用、副作用無し。
  */
+
+import type { ChipTone } from '@/lib/ui/chip-tone'
+
+import type { AgentBriefSignal } from '@/features/agent/brief-signal'
 
 export interface ForecastItemFields {
   id: string
@@ -220,6 +224,32 @@ export function formatTodayForecastJa<T extends ForecastItemFields>(
   const unknown =
     summary.estimateUnknownCount > 0 ? `、${summary.estimateUnknownCount} 件 見積なし` : ''
   return `${label} (合計 ${totalH}h / 残 ${remH}h${overH}${unknown})`
+}
+
+/**
+ * iter1330 ai-automation: 今日の完了予測を `AgentBriefSignal` (text + tone) に変換。
+ *
+ * operation-board (= 何をやるか) と分業し、本 signal は「今日の総量が残時間に収まるか」を
+ * 1 chip で出す。analytics-signals 19 軸 / 各 `*ToBriefSignal` と同じ共通 vocab に乗せ、
+ * AI 朝 brief / Slack daily digest / dashboard chip が deterministic に「今日終わるか」を表示。
+ *
+ * tone (ForecastSeverity → ChipTone):
+ *   - 'ok'     → 'success' (余裕、今日終わる)
+ *   - 'info'   → 'info'    (30 分以内のはみ出し)
+ *   - 'warn'   → 'warn'    (2 時間以内のはみ出し)
+ *   - 'danger' → 'danger'  (2 時間超過、明らかに過剰)
+ * ただし totalEstimateMin=0 (= 予測対象なし) は 'idle' (= 「余裕」 と誤認させない)。
+ *
+ * text は formatTodayForecastJa (iter532) を再利用。
+ */
+export function todayForecastToBriefSignal<T extends ForecastItemFields>(
+  summary: ForecastSummary<T>,
+): AgentBriefSignal {
+  const text = formatTodayForecastJa(summary)
+  if (summary.totalEstimateMin === 0) return { text, tone: 'idle' }
+  const sev = forecastSeverity(summary)
+  const tone: ChipTone = sev === 'ok' ? 'success' : sev
+  return { text, tone }
 }
 
 // 内部 helper を test しやすく named export

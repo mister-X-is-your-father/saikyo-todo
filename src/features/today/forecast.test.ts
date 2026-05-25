@@ -9,6 +9,7 @@ import {
   formatTodayForecastJa,
   minutesUntilEndOfDay,
   parseHHMM,
+  todayForecastToBriefSignal,
 } from './forecast'
 
 function mk(over: Partial<ForecastItemFields> & { id: string }): ForecastItemFields {
@@ -191,6 +192,38 @@ describe('forecastSeverity', () => {
     const r = buildTodayForecast(items, NOW)
     expect(r.overflowMin).toBe(160)
     expect(forecastSeverity(r)).toBe('danger')
+  })
+})
+
+describe('todayForecastToBriefSignal (iter1330)', () => {
+  it('余裕 (canFinishToday) → success tone', () => {
+    const r = buildTodayForecast([mk({ id: 'a', estimateMin: 60 })], NOW)
+    const sig = todayForecastToBriefSignal(r)
+    expect(sig.tone).toBe('success')
+    expect(sig.text).toContain('余裕')
+  })
+
+  it('2 時間超過 → danger tone', () => {
+    const r = buildTodayForecast([mk({ id: 'a', estimateMin: 700 })], NOW)
+    const sig = todayForecastToBriefSignal(r)
+    expect(sig.tone).toBe('danger')
+    expect(sig.text).toContain('明らかに過剰')
+  })
+
+  it('overflow 30-120 → warn tone', () => {
+    const items = Array.from({ length: 20 }, (_, i) => mk({ id: `i${i}`, estimateMin: 30 }))
+    const sig = todayForecastToBriefSignal(buildTodayForecast(items, NOW))
+    expect(sig.tone).toBe('warn')
+  })
+
+  it('totalEstimateMin=0 (予測対象なし) → idle tone (= 余裕 と誤認させない)', () => {
+    const sig = todayForecastToBriefSignal(buildTodayForecast([], NOW))
+    expect(sig.tone).toBe('idle')
+  })
+
+  it('見積なし item のみ → idle tone (total 0)', () => {
+    const r = buildTodayForecast([mk({ id: 'a', estimateMin: null })], NOW)
+    expect(todayForecastToBriefSignal(r).tone).toBe('idle')
   })
 })
 
