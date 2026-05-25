@@ -167,7 +167,13 @@ export function WorkspaceModeSelector({ workspaceId }: Props) {
                   </span>
                 </div>
                 <span
-                  className="text-muted-foreground text-[11px] leading-tight"
+                  className={cn(
+                    'text-[11px] leading-tight',
+                    // 選択カードは bg-primary/5 の tint 上で muted-foreground が
+                    // 4.5:1 を割る (WCAG 1.4.3)。選択時は label と同様 emphasis を
+                    // 兼ねて foreground/80 に上げ contrast 担保 (iter1331)。
+                    selected ? 'text-foreground/80' : 'text-muted-foreground',
+                  )}
                   aria-hidden="true"
                 >
                   {opt.description}
