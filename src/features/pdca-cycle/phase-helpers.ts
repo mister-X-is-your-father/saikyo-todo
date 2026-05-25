@@ -25,6 +25,35 @@ export function pdcaCyclePhaseLabelJa(status: PdcaCycleStatus): string {
 }
 
 /**
+ * iter1341 refactor: PDCA phase 進行ルール (= 許可される遷移先)。
+ *
+ *   plan → do | check (D を skip して直接 C は許可、ただし D→C 逆行は禁止)
+ *   do → check / check → act / act → closed / closed → (なし)
+ *   逆方向は全て禁止。
+ *
+ * 経緯: 以前は service.ts (server-only) 内に inline 定義され unit test できず、UI からも
+ * 参照不能だった。pure helper に切り出して (1) Vitest 単体 test 可能 / (2) UI が
+ * 「次 phase へ」 button の表示・活性を `allowedNextPdcaPhases` で gate 可能にする。
+ */
+const ALLOWED_PHASE_TRANSITIONS: Record<PdcaCycleStatus, readonly PdcaCycleStatus[]> = {
+  plan: ['do', 'check'],
+  do: ['check'],
+  check: ['act'],
+  act: ['closed'],
+  closed: [],
+}
+
+/** 現 phase から進める次 phase の一覧 (closed は空配列)。UI の「次 phase へ」 button 生成用。 */
+export function allowedNextPdcaPhases(status: PdcaCycleStatus): PdcaCycleStatus[] {
+  return [...ALLOWED_PHASE_TRANSITIONS[status]]
+}
+
+/** from → to の phase 遷移が許可されているか (= service の advancePhase guard と同一規則)。 */
+export function isAllowedPdcaPhaseTransition(from: PdcaCycleStatus, to: PdcaCycleStatus): boolean {
+  return ALLOWED_PHASE_TRANSITIONS[from].includes(to)
+}
+
+/**
  * phase ごとの「想定上限日数」 (= これを超えたら stale 警告)。
  * Plan / Check / Act は短時間で終えるべき (= 思考の停滞を避ける)、Do は長め。
  */

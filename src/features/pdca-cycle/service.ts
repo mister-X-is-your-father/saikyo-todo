@@ -18,6 +18,7 @@ import { withUserDb } from '@/lib/db/scoped-client'
 import { ConflictError, NotFoundError, ValidationError } from '@/lib/errors'
 import { err, ok, type Result } from '@/lib/result'
 
+import { isAllowedPdcaPhaseTransition } from './phase-helpers'
 import { pdcaCycleRepository } from './repository'
 import {
   AdvancePdcaCyclePhaseInputSchema,
@@ -30,14 +31,6 @@ import {
   UnlinkItemFromCycleInputSchema,
   UpdatePdcaCycleInputSchema,
 } from './schema'
-
-const ALLOWED_TRANSITIONS: Record<PdcaCycleStatus, PdcaCycleStatus[]> = {
-  plan: ['do', 'check'],
-  do: ['check'],
-  check: ['act'],
-  act: ['closed'],
-  closed: [],
-}
 
 function phaseTimestampsFor(
   current: PdcaCycle,
@@ -160,8 +153,7 @@ export const pdcaCycleService = {
       if (!before) return err(new NotFoundError('PDCA cycle が見つかりません'))
       await requireWorkspaceMember(before.workspaceId, 'member')
 
-      const allowed = ALLOWED_TRANSITIONS[before.status]
-      if (!allowed.includes(data.to)) {
+      if (!isAllowedPdcaPhaseTransition(before.status, data.to)) {
         return err(new ValidationError(`${before.status} → ${data.to} は許可されていません`))
       }
 

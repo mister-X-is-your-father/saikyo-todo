@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  allowedNextPdcaPhases,
   formatPdcaCyclePhaseStatusJa,
+  isAllowedPdcaPhaseTransition,
   isPdcaPhaseStuck,
   pdcaCyclePhaseLabelJa,
   pdcaPhaseDayLimit,
@@ -166,5 +168,34 @@ describe('isPdcaPhaseStuck (iter1011)', () => {
 
   it('timestamp 未記録 → false (= on_track fallback)', () => {
     expect(isPdcaPhaseStuck({ status: 'plan' }, NOW)).toBe(false)
+  })
+})
+
+describe('allowedNextPdcaPhases / isAllowedPdcaPhaseTransition (iter1341)', () => {
+  it('各 phase の許可遷移先', () => {
+    expect(allowedNextPdcaPhases('plan')).toEqual(['do', 'check'])
+    expect(allowedNextPdcaPhases('do')).toEqual(['check'])
+    expect(allowedNextPdcaPhases('check')).toEqual(['act'])
+    expect(allowedNextPdcaPhases('act')).toEqual(['closed'])
+    expect(allowedNextPdcaPhases('closed')).toEqual([])
+  })
+
+  it('plan は do skip で check に直行できる', () => {
+    expect(isAllowedPdcaPhaseTransition('plan', 'check')).toBe(true)
+    expect(isAllowedPdcaPhaseTransition('plan', 'do')).toBe(true)
+  })
+
+  it('逆行 / skip 過ぎ は禁止', () => {
+    expect(isAllowedPdcaPhaseTransition('do', 'plan')).toBe(false)
+    expect(isAllowedPdcaPhaseTransition('check', 'do')).toBe(false)
+    expect(isAllowedPdcaPhaseTransition('plan', 'act')).toBe(false)
+    expect(isAllowedPdcaPhaseTransition('closed', 'plan')).toBe(false)
+    expect(isAllowedPdcaPhaseTransition('act', 'act')).toBe(false)
+  })
+
+  it('allowedNextPdcaPhases は呼び元が破壊できない (新配列を返す)', () => {
+    const a = allowedNextPdcaPhases('plan')
+    a.push('act')
+    expect(allowedNextPdcaPhases('plan')).toEqual(['do', 'check'])
   })
 })
