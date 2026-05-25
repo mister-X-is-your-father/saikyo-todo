@@ -365,11 +365,17 @@ export function SprintsPanel({ workspaceId }: Props) {
           // Today (iter273) / Inbox (iter276) / Workflows (iter281) と同パターン。
           description={
             <span>
-              短期 (典型は <code className="bg-muted rounded px-1 text-[11px]">1-2 週間</code>) の
-              スコープ単位で進捗を測る箱です。 ゴール例:{' '}
-              <code className="bg-muted rounded px-1 text-[11px]">α リリース準備</code> /{' '}
-              <code className="bg-muted rounded px-1 text-[11px]">第 3 四半期 OKR</code>。 完了時に
-              Retro Doc / 開始前に Pre-mortem を生成できます。
+              短期 (典型は{' '}
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">1-2 週間</code>)
+              の スコープ単位で進捗を測る箱です。 ゴール例:{' '}
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">
+                α リリース準備
+              </code>{' '}
+              /{' '}
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">
+                第 3 四半期 OKR
+              </code>
+              。 完了時に Retro Doc / 開始前に Pre-mortem を生成できます。
             </span>
           }
           action={
