@@ -406,7 +406,7 @@ function KanbanCard({
           // authoritative 化 (iter1023/1049-1058 同 pattern、role=img sweep
           // 12 弾目)。Kanban card 内の子タスク count chip。
           <span
-            className="text-muted-foreground bg-muted inline-flex items-center rounded-full px-2 py-0.5 text-[10px]"
+            className="text-foreground bg-muted inline-flex items-center rounded-full px-2 py-0.5 text-[10px]"
             data-testid={`kanban-child-count-${item.id}`}
             role="img"
             aria-label={`子タスク ${childCount} 件`}
