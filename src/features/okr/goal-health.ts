@@ -112,6 +112,30 @@ export function goalHealthTierLabel(tier: GoalHealthTier): string {
   return TIER_LABEL[tier]
 }
 
+/**
+ * iter1344 ai-automation: 1 件の GoalHealth を 1 行 ja-JP summary に整形 (goal card subtitle /
+ * AI prompt / Slack 通知用)。tier label + 進捗 % vs 想定 % + 符号付き gap pt を併記し、
+ * 「想定に対して進んでるか遅れてるか」 を一目で伝える (= 軸 1 可視化)。
+ *
+ * 出力例:
+ *   - '順調 (進捗 50% / 想定 50%、+0pt)'
+ *   - 'やや遅れ (進捗 25% / 想定 50%、-25pt)'
+ *   - '達成 (進捗 120%)'          (= achieved は想定比較を省略)
+ *   - '期間外'                    (= idle、開始前 / 終了後)
+ *
+ * pct は GoalHealth に直接含まれないが `elapsedPct + gapPct` で復元できる
+ * (gapPct = pct - elapsedPct の定義より)。% / pt は整数丸め。
+ */
+export function formatGoalHealthJa(health: GoalHealth): string {
+  if (health.tier === 'idle') return health.label
+  const pctPct = Math.round((health.elapsedPct + health.gapPct) * 100)
+  if (health.tier === 'achieved') return `${health.label} (進捗 ${pctPct}%)`
+  const elapsed = Math.round(health.elapsedPct * 100)
+  const gap = Math.round(health.gapPct * 100)
+  const gapStr = gap >= 0 ? `+${gap}pt` : `${gap}pt`
+  return `${health.label} (進捗 ${pctPct}% / 想定 ${elapsed}%、${gapStr})`
+}
+
 /** group/count/format で受け取る Goal の最小構造 */
 export type GoalLike = Pick<GoalHealthInput, 'pct' | 'startDate' | 'endDate'>
 

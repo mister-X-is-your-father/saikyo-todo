@@ -8,6 +8,7 @@ import {
   computeGoalHealth,
   countGoalsByHealth,
   formatGoalHealthCounts,
+  formatGoalHealthJa,
   type GoalHealthTier,
   goalHealthTierCountsToSeverityCounts,
   goalHealthTierLabel,
@@ -335,5 +336,27 @@ describe('goalHealthTierCountsToSeverityCounts', () => {
     expect(r.warn).toBe(1)
     expect(r.danger).toBe(1)
     expect(r.muted).toBe(1)
+  })
+})
+
+describe('formatGoalHealthJa (iter1344)', () => {
+  it('on-track: 進捗 = 想定 → +0pt', () => {
+    const h = computeGoalHealth({ pct: 0.5, startDate: START, endDate: END, today: TODAY_DAY15 })
+    expect(formatGoalHealthJa(h)).toBe('順調 (進捗 50% / 想定 50%、+0pt)')
+  })
+
+  it('at-risk: 進捗 < 想定 → 負 gap', () => {
+    const h = computeGoalHealth({ pct: 0.25, startDate: START, endDate: END, today: TODAY_DAY15 })
+    expect(formatGoalHealthJa(h)).toBe('やや遅れ (進捗 25% / 想定 50%、-25pt)')
+  })
+
+  it('achieved: 想定比較を省略 (進捗 % のみ)', () => {
+    const h = computeGoalHealth({ pct: 1.2, startDate: START, endDate: END, today: TODAY_DAY15 })
+    expect(formatGoalHealthJa(h)).toBe('達成 (進捗 120%)')
+  })
+
+  it('idle: 期間外 sentinel のみ', () => {
+    const h = computeGoalHealth({ pct: 0.5, startDate: START, endDate: END, today: TODAY_BEFORE })
+    expect(formatGoalHealthJa(h)).toBe('期間外')
   })
 })
