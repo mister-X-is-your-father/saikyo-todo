@@ -174,7 +174,7 @@ export function WeeklyInsightWidget({ items, now }: Props) {
                 {insight.weekDelta.percent}%)
               </span>
             )}
-            <span className="text-muted-foreground ml-1">vs 前週</span>
+            <span className="text-foreground/80 ml-1">vs 前週</span>
           </div>
         </div>
 
