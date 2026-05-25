@@ -143,8 +143,9 @@ function buildColumns(
         const v = getValue() as string | null
         if (!v) return '—'
         return (
-          <time dateTime={v} aria-label={`期限 ${v}`}>
+          <time dateTime={v}>
             <span aria-hidden="true">{formatFriendlyDate(v, today)}</span>
+            <span className="sr-only">{`期限 ${v}`}</span>
           </time>
         )
       },
@@ -160,8 +161,9 @@ function buildColumns(
         const iso = d.toISOString()
         const display = iso.slice(0, 19).replace('T', ' ')
         return (
-          <time dateTime={iso} aria-label={`最終更新 ${display}`}>
+          <time dateTime={iso}>
             <span aria-hidden="true">{display}</span>
+            <span className="sr-only">{`最終更新 ${display}`}</span>
           </time>
         )
       },
