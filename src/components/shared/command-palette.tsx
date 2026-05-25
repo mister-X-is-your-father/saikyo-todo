@@ -27,7 +27,6 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from '@/components/ui/command'
 import { MustBadge } from '@/components/workspace/must-badge'
 import { StatusBadge } from '@/components/workspace/status-badge'
@@ -148,24 +147,26 @@ export function CommandPalette({ commands, items, onSelectItem }: CommandPalette
         ) : (
           <>
             <CommandEmpty>該当するコマンドがありません</CommandEmpty>
-            {Object.entries(groups).map(([group, list], idx) => (
-              <div key={group}>
-                {idx > 0 && <CommandSeparator />}
-                <CommandGroup heading={group}>
-                  {list.map((c) => (
-                    <CommandItem
-                      key={c.id}
-                      value={[c.label, ...(c.keywords ?? [])].join(' ')}
-                      onSelect={async () => {
-                        handleOpenChange(false)
-                        await c.run()
-                      }}
-                    >
-                      {c.label}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </div>
+            {/* iter1349: 旧構造は group 間に <CommandSeparator/> (role=separator) を
+                listbox (command-list) 直下に置き、listbox が許す子 (option/group) 以外の
+                separator を含む aria-required-children 違反 (critical)。CommandGroup の
+                heading + 余白で視覚区切は保てるため separator を撤去し、CommandGroup を
+                listbox 直下子に。 */}
+            {Object.entries(groups).map(([group, list]) => (
+              <CommandGroup key={group} heading={group}>
+                {list.map((c) => (
+                  <CommandItem
+                    key={c.id}
+                    value={[c.label, ...(c.keywords ?? [])].join(' ')}
+                    onSelect={async () => {
+                      handleOpenChange(false)
+                      await c.run()
+                    }}
+                  >
+                    {c.label}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
             ))}
           </>
         )}
