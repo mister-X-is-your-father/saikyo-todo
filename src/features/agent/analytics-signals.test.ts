@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest'
 import { computeWorkspaceMomentum, type MomentumFields } from '@/features/item/momentum'
 import { computeVelocity, type VelocityFields } from '@/features/item/velocity'
 import { buildWeeklyCompletionInsight } from '@/features/item/weekly-completion-insight'
+import { buildTodayForecast } from '@/features/today/forecast'
 import type { OperationBoardSummary } from '@/features/today/operation-board'
 
 import { computeAgentReliability } from './agent-reliability'
@@ -621,6 +622,52 @@ describe('operationBoard 軸 (iter1328 — 19 軸目統合)', () => {
   })
 })
 
+describe('forecast 軸 (iter1331 — 20 軸目統合)', () => {
+  const NOW = new Date(2026, 3, 30, 9, 0) // 09:00 local, 残 540 分 (end 18:00)
+
+  it('余裕 (total < 残時間) → success tone', () => {
+    const forecast = buildTodayForecast(
+      [{ id: 'a', title: 'a', estimateMin: 60, isMust: false, priority: 4 }],
+      NOW,
+    )
+    const s = composeAnalyticsSignals({ forecast })
+    expect(s.forecast).not.toBeNull()
+    expect(s.forecast!.tone).toBe('success')
+  })
+
+  it('2h 超過 → danger tone', () => {
+    const forecast = buildTodayForecast(
+      [{ id: 'a', title: 'a', estimateMin: 700, isMust: false, priority: 4 }],
+      NOW,
+    )
+    const s = composeAnalyticsSignals({ forecast })
+    expect(s.forecast!.tone).toBe('danger')
+  })
+
+  it('未渡し → null', () => {
+    expect(composeAnalyticsSignals({}).forecast).toBeNull()
+  })
+
+  it('analyticsSignalsToArray で operationBoard の直後に並ぶ', () => {
+    const forecast = buildTodayForecast(
+      [{ id: 'a', title: 'a', estimateMin: 700, isMust: false, priority: 4 }],
+      NOW,
+    )
+    const board: OperationBoardSummary = {
+      doneYesterday: { items: [], count: 0 },
+      mustToday: { items: [], count: 0 },
+      overdue: { top3: [], total: 1 },
+      todayScheduled: { items: [], count: 0 },
+      recommended: null,
+      today: '2026-04-30',
+    }
+    const s = composeAnalyticsSignals({ operationBoard: board, forecast })
+    const arr = analyticsSignalsToArray(s)
+    expect(arr[0]).toBe(s.operationBoard)
+    expect(arr[1]).toBe(s.forecast)
+  })
+})
+
 describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', () => {
   it('EMPTY (= 全 signal null) は AnalyticsSignals 全 field を必ず初期化 (= 新軸追加時の漏れ検知)', () => {
     const empty = composeAnalyticsSignals({})
@@ -647,6 +694,7 @@ describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', (
       'urgencyTierCounts',
       'mustHygiene',
       'operationBoard',
+      'forecast',
     ] as const
     expect(Object.keys(empty).sort()).toEqual([...expectedKeys].sort())
     for (const k of expectedKeys) {

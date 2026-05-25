@@ -64,6 +64,11 @@ import {
 } from '@/features/item/wip-stuck'
 import { type BiasTrend, biasTrendToBriefSignal } from '@/features/time-entry/bias-trend'
 import {
+  type ForecastItemFields,
+  type ForecastSummary,
+  todayForecastToBriefSignal,
+} from '@/features/today/forecast'
+import {
   type OperationBoardSummary,
   operationBoardToBriefSignal,
 } from '@/features/today/operation-board'
@@ -156,6 +161,13 @@ export interface AnalyticsSignalsInput {
    * overdue→danger / MUST today→urgent / 推奨あり→info / 全片付き→success。daily brief の「今日やるべきこと」headline。
    */
   operationBoard?: OperationBoardSummary
+  /**
+   * iter1331 ai-automation: 20 軸目として今日の完了予測 summary (= 総量 vs 残時間) も統合。
+   * 値は `buildTodayForecast(items, now)` の出力 (= ForecastSummary)。
+   * canFinishToday→success / 30 分以内はみ出し→info / 2h 以内→warn / 2h 超→danger / 対象なし→idle。
+   * operationBoard (何をやるか) と分業し、本軸は「今日終わるか」。
+   */
+  forecast?: ForecastSummary<ForecastItemFields>
 }
 
 export interface AnalyticsSignals {
@@ -195,6 +207,8 @@ export interface AnalyticsSignals {
   mustHygiene: AgentBriefSignal | null
   /** iter1328 ai-automation: 今日の作戦盤 chip (= overdue=danger / MUST today=urgent / 推奨=info / 全片付き=success) */
   operationBoard: AgentBriefSignal | null
+  /** iter1331 ai-automation: 今日の完了予測 chip (= 余裕=success / はみ出し=info|warn / 超過=danger / 対象なし=idle) */
+  forecast: AgentBriefSignal | null
 }
 
 const EMPTY: AnalyticsSignals = {
@@ -219,6 +233,7 @@ const EMPTY: AnalyticsSignals = {
   urgencyTierCounts: null,
   mustHygiene: null,
   operationBoard: null,
+  forecast: null,
 }
 
 export function composeAnalyticsSignals(input: AnalyticsSignalsInput): AnalyticsSignals {
@@ -283,6 +298,9 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
   if (input.operationBoard) {
     out.operationBoard = operationBoardToBriefSignal(input.operationBoard)
   }
+  if (input.forecast) {
+    out.forecast = todayForecastToBriefSignal(input.forecast)
+  }
   return out
 }
 
@@ -292,30 +310,32 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
  *
  * 表示順:
  *  1. operationBoard     (= 今日やるべきこと roll-up、daily brief headline、最優先 actionable)
- *  2. concerningRole     (= 弱点 role 警告)
- *  3. costProjection     (= 月末コスト予測、cost 軸の主)
- *  4. dueHitRate         (= 期限達成率、商品品質 SLA、cost と並ぶ severity 主)
- *  5. biasTrend          (= 見積精度の変化、品質系 trend、severity 主の補佐)
- *  6. backlogAging       (= 停滞度合い、danger=古参累積、moment と並ぶ backlog 軸 severity 主)
- *  7. waitingSummary     (= 連絡待ち、danger=escalate、外部依存 軸 severity 主)
- *  8. consultationCounts (= 相談、danger=判断漏れ、合意 軸 severity 主)
- *  9. weeklyReviewDue    (= GTD Weekly Review、danger=overdue、習慣 軸 severity 主)
- * 10. inboxBucketCounts  (= GTD Inbox 健全性、danger=要 process、GTD flow 軸 severity 主)
- * 11. stuckWip           (= 進行中だが停滞、danger=7d+ 停滞、再開 nudge 軸 severity 主)
- * 12. overdueActive      (= 期限超過 active、danger=7d+ or 5+ 件、計画乖離 軸 severity 主)
- * 13. slipDays           (= 完了遅延 retrospective、danger=7d+、見積精度乖離 軸 severity 主)
- * 14. urgencyTierCounts  (= 緊急度件数、danger=critical 含む、最優先 actionable 軸 severity 主)
- * 15. mustHygiene        (= MUST hygiene、danger=coverage<50%、計画漏れ防止 軸 severity 主)
- * 16. reliability        (= 全体 信頼性 chip)
- * 17. costTrend          (= cost 月次トレンド)
- * 18. velocity           (= 完了ペース、weekly と並ぶ達成感系)
- * 19. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
- * 20. momentum           (= backlog momentum)
- * 21. dominantRole       (= 主軸 role、informational、最後)
+ *  2. forecast           (= 今日終わるか予測、operationBoard と対の actionable、time-budget 軸)
+ *  3. concerningRole     (= 弱点 role 警告)
+ *  4. costProjection     (= 月末コスト予測、cost 軸の主)
+ *  5. dueHitRate         (= 期限達成率、商品品質 SLA、cost と並ぶ severity 主)
+ *  6. biasTrend          (= 見積精度の変化、品質系 trend、severity 主の補佐)
+ *  7. backlogAging       (= 停滞度合い、danger=古参累積、moment と並ぶ backlog 軸 severity 主)
+ *  8. waitingSummary     (= 連絡待ち、danger=escalate、外部依存 軸 severity 主)
+ *  9. consultationCounts (= 相談、danger=判断漏れ、合意 軸 severity 主)
+ * 10. weeklyReviewDue    (= GTD Weekly Review、danger=overdue、習慣 軸 severity 主)
+ * 11. inboxBucketCounts  (= GTD Inbox 健全性、danger=要 process、GTD flow 軸 severity 主)
+ * 12. stuckWip           (= 進行中だが停滞、danger=7d+ 停滞、再開 nudge 軸 severity 主)
+ * 13. overdueActive      (= 期限超過 active、danger=7d+ or 5+ 件、計画乖離 軸 severity 主)
+ * 14. slipDays           (= 完了遅延 retrospective、danger=7d+、見積精度乖離 軸 severity 主)
+ * 15. urgencyTierCounts  (= 緊急度件数、danger=critical 含む、最優先 actionable 軸 severity 主)
+ * 16. mustHygiene        (= MUST hygiene、danger=coverage<50%、計画漏れ防止 軸 severity 主)
+ * 17. reliability        (= 全体 信頼性 chip)
+ * 18. costTrend          (= cost 月次トレンド)
+ * 19. velocity           (= 完了ペース、weekly と並ぶ達成感系)
+ * 20. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
+ * 21. momentum           (= backlog momentum)
+ * 22. dominantRole       (= 主軸 role、informational、最後)
  */
 export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
     signals.operationBoard,
+    signals.forecast,
     signals.concerningRole,
     signals.costProjection,
     signals.dueHitRate,
