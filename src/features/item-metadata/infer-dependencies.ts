@@ -105,3 +105,46 @@ export function findUnsatisfiedInputs(
   }
   return [...byTo.entries()].map(([itemId, blockingItems]) => ({ itemId, blockingItems }))
 }
+
+export interface UnblockingLeverage {
+  /** 完了すると下流 input を満たす upstream item */
+  fromItemId: string
+  /** この item を完了したら input が満たされる下流 item 数 (distinct toItemId) */
+  unblocksCount: number
+  /** 下流 item と対応 label (label 重複あり) */
+  downstream: { toItemId: string; label: string }[]
+}
+
+/**
+ * iter1339 ai-automation: 「どの未完了 item を先に終わらせると最も多くの下流を動かせるか」 を
+ * leverage 順に並べる pure 関数 (= 段取り力 / 効率化 の prioritization signal)。
+ *
+ * I/O 推論 dep のうち **from も to も未完了** のものを from 別に集計し、`unblocksCount`
+ * (= distinct な下流 item 数) 降順 + tie は fromItemId 昇順 (決定論) で並べる。caller は
+ * 先頭 item を「次にこれを終わらせると N 件動き出す」 と提示できる。
+ *
+ *   - from が done → leverage 0 (既に block 解消済、結果に含めない)
+ *   - to が done → その下流は既に進行/完了、leverage に数えない
+ *   - 同 from→to が複数 label → downstream に複数行、unblocksCount は distinct to で 1
+ */
+export function rankUnblockingLeverage(
+  artifacts: readonly IoArtifactLike[],
+  itemDoneStatuses: readonly ItemDoneStatus[],
+): UnblockingLeverage[] {
+  const deps = inferDependenciesFromIo(artifacts)
+  const doneMap = new Map(itemDoneStatuses.map((s) => [s.itemId, s.done]))
+  const byFrom = new Map<string, { toItemId: string; label: string }[]>()
+  for (const d of deps) {
+    if (doneMap.get(d.fromItemId)) continue
+    if (doneMap.get(d.toItemId)) continue
+    if (!byFrom.has(d.fromItemId)) byFrom.set(d.fromItemId, [])
+    byFrom.get(d.fromItemId)!.push({ toItemId: d.toItemId, label: d.label })
+  }
+  return [...byFrom.entries()]
+    .map(([fromItemId, downstream]) => ({
+      fromItemId,
+      unblocksCount: new Set(downstream.map((d) => d.toItemId)).size,
+      downstream,
+    }))
+    .sort((a, b) => b.unblocksCount - a.unblocksCount || a.fromItemId.localeCompare(b.fromItemId))
+}

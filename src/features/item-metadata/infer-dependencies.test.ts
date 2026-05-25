@@ -4,6 +4,7 @@ import {
   findUnsatisfiedInputs,
   inferDependenciesFromIo,
   type IoArtifactLike,
+  rankUnblockingLeverage,
 } from './infer-dependencies'
 
 describe('inferDependenciesFromIo', () => {
@@ -122,5 +123,45 @@ describe('findUnsatisfiedInputs', () => {
         [{ itemId: 'a', done: false }],
       ),
     ).toEqual([])
+  })
+})
+
+describe('rankUnblockingLeverage (iter1339)', () => {
+  // a の output が b, c, d の input を満たす (a 1 件で 3 件 unblock)
+  const artifacts: IoArtifactLike[] = [
+    { itemId: 'a', kind: 'output', label: 'spec' },
+    { itemId: 'b', kind: 'input', label: 'spec' },
+    { itemId: 'c', kind: 'input', label: 'spec' },
+    { itemId: 'd', kind: 'input', label: 'spec' },
+    { itemId: 'e', kind: 'output', label: 'design' },
+    { itemId: 'b', kind: 'input', label: 'design' }, // b は e にも依存
+  ]
+
+  it('leverage 降順: a(3) → e(1)', () => {
+    const r = rankUnblockingLeverage(artifacts, [])
+    expect(r.map((x) => [x.fromItemId, x.unblocksCount])).toEqual([
+      ['a', 3],
+      ['e', 1],
+    ])
+  })
+
+  it('from が done → leverage から除外', () => {
+    const r = rankUnblockingLeverage(artifacts, [{ itemId: 'a', done: true }])
+    expect(r.map((x) => x.fromItemId)).toEqual(['e'])
+  })
+
+  it('to が done → その下流は数えない (a の unblocksCount が減る)', () => {
+    const r = rankUnblockingLeverage(artifacts, [
+      { itemId: 'b', done: true },
+      { itemId: 'c', done: true },
+    ])
+    // a は d だけ unblock (b,c done) → 1、e は b done なので 0 件 → 除外
+    expect(r).toEqual([
+      { fromItemId: 'a', unblocksCount: 1, downstream: [{ toItemId: 'd', label: 'spec' }] },
+    ])
+  })
+
+  it('依存無し → 空配列', () => {
+    expect(rankUnblockingLeverage([], [])).toEqual([])
   })
 })
