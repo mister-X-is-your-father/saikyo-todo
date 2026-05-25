@@ -91,7 +91,7 @@ export function ActivityLog({ itemId }: { itemId: string }) {
       {summary ? (
         <div className="flex flex-wrap items-center gap-2">
           <div
-            className="bg-muted/40 text-muted-foreground inline-flex items-center gap-1.5 rounded border px-2 py-1 text-[11px]"
+            className="bg-muted/40 text-foreground/80 inline-flex items-center gap-1.5 rounded border px-2 py-1 text-[11px]"
             role="status"
             aria-live="polite"
             aria-label={summary}

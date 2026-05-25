@@ -94,7 +94,7 @@ export function WorkflowGraphCanvas({ graph, className, testId }: Props) {
     // とすることで SR と visible が同じ「empty state + 次 action」を共有。
     return (
       <div
-        className={`bg-muted/30 text-muted-foreground flex items-center justify-center rounded border border-dashed p-6 text-xs ${className ?? 'h-64'}`}
+        className={`bg-muted/30 text-foreground/80 flex items-center justify-center rounded border border-dashed p-6 text-xs ${className ?? 'h-64'}`}
         data-testid={testId}
         role="status"
       >
