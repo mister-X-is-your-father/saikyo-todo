@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 
 import { toast } from 'sonner'
 
+import { todayUtcISO } from '@/lib/date/iso'
 import { isAppError } from '@/lib/errors'
 
 import { TIME_ENTRY_CATEGORIES, type TimeEntryCategoryKey } from '@/features/time-entry/categories'
@@ -13,12 +14,8 @@ import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 
-function todayISO(): string {
-  return new Date().toISOString().slice(0, 10)
-}
-
 export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
-  const [workDate, setWorkDate] = useState(todayISO())
+  const [workDate, setWorkDate] = useState(todayUtcISO())
   const [category, setCategory] = useState<TimeEntryCategoryKey>('dev')
   const [description, setDescription] = useState('')
   const [durationMinutes, setDurationMinutes] = useState<number>(30)
@@ -74,10 +71,10 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           onChange={(e) => setWorkDate(e.target.value)}
           required
           aria-required="true"
-          max={new Date().toISOString().slice(0, 10)}
+          max={todayUtcISO()}
           enterKeyHint="next"
           aria-label={(() => {
-            const today = new Date().toISOString().slice(0, 10)
+            const today = todayUtcISO()
             if (workDate === '') return '日付 (必須、今日まで指定可、未来日付は不正)'
             if (workDate > today)
               return `日付 (現在: ${workDate}、今日 ${today} より後の未来日付で不正)`
