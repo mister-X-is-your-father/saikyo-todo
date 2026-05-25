@@ -247,18 +247,20 @@ export function TemplatesPanel({ workspaceId }: Props) {
               <p>
                 繰り返し発生する作業を <code>1 click で展開</code>{' '}
                 できる「即実行ワークパッケージ」。 例:{' '}
-                <code className="rounded bg-zinc-100 px-1 py-0.5 text-[11px]">
+                <code className="bg-muted text-foreground rounded px-1 py-0.5 text-[11px]">
                   毎週月曜 朝 9 時 / 週次レビュー
                 </code>{' '}
                 /{' '}
-                <code className="rounded bg-zinc-100 px-1 py-0.5 text-[11px]">
+                <code className="bg-muted text-foreground rounded px-1 py-0.5 text-[11px]">
                   オンボーディング (PR 用 / Doc 設定 / 1on1 予約 …)
                 </code>
                 。
               </p>
               <p className="mt-1.5">
                 展開時に Items を一括生成、recurring (cron) で自動実行も可。Mustache 変数 (
-                <code className="rounded bg-zinc-100 px-1 py-0.5 text-[11px]">{'{{date}}'}</code>{' '}
+                <code className="bg-muted text-foreground rounded px-1 py-0.5 text-[11px]">
+                  {'{{date}}'}
+                </code>{' '}
                 等) も使えます。
               </p>
             </>
