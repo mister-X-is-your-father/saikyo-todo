@@ -4,7 +4,6 @@ import type { Item } from '@/features/item/schema'
 
 import {
   buildOperationBoard,
-  dayOffsetISO,
   dueTimeMinutes,
   eisenhowerScore,
   formatOperationBoardHeadlineJa,
@@ -51,15 +50,6 @@ function mk(over: Partial<Item> & { id: string }): Item {
     ...over,
   } as Item
 }
-
-describe('dayOffsetISO', () => {
-  it('+1 / -1 / 0 が UTC 日付で動く', () => {
-    expect(dayOffsetISO(TODAY, 0)).toBe('2026-04-30')
-    expect(dayOffsetISO(TODAY, 1)).toBe('2026-05-01')
-    expect(dayOffsetISO(TODAY, -1)).toBe('2026-04-29')
-    expect(dayOffsetISO('2026-12-31', 1)).toBe('2027-01-01')
-  })
-})
 
 describe('dueTimeMinutes', () => {
   it('時刻 / null / 不正値', () => {

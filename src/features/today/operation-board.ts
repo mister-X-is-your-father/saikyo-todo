@@ -15,6 +15,7 @@
  *
  * 副作用なし、依存は Item type のみ。Vitest 単体 test で網羅。
  */
+import { shiftIsoDate } from '@/lib/date/iso'
 import type { ChipTone } from '@/lib/ui/chip-tone'
 
 import type { AgentBriefSignal } from '@/features/agent/brief-signal'
@@ -43,12 +44,6 @@ import { isItemActive } from '@/features/item/active'
 
 export { isItemActive }
 
-function dayOffsetISO(today: string, offset: number): string {
-  const d = new Date(`${today}T00:00:00Z`)
-  d.setUTCDate(d.getUTCDate() + offset)
-  return d.toISOString().slice(0, 10)
-}
-
 function dueTimeMinutes(dueTime: string | null | undefined): number {
   if (!dueTime) return 24 * 60 // 時刻無しは末尾
   const m = /^(\d{1,2}):(\d{1,2})/.exec(dueTime)
@@ -74,8 +69,8 @@ function eisenhowerScore(it: Item, today: string): number {
   if (it.dueDate) {
     if (it.dueDate < today) urgency = 15
     else if (it.dueDate === today) urgency = 10
-    else if (it.dueDate === dayOffsetISO(today, 1)) urgency = 6
-    else if (it.dueDate <= dayOffsetISO(today, 7)) urgency = 2
+    else if (it.dueDate === shiftIsoDate(today, 1)) urgency = 6
+    else if (it.dueDate <= shiftIsoDate(today, 7)) urgency = 2
   }
   if (it.scheduledFor === today) urgency = Math.max(urgency, 10)
 
@@ -88,7 +83,7 @@ function eisenhowerScore(it: Item, today: string): number {
 }
 
 export function buildOperationBoard(items: Item[], today: string): OperationBoardSummary {
-  const yesterday = dayOffsetISO(today, -1)
+  const yesterday = shiftIsoDate(today, -1)
 
   // ----- 昨日 done -----
   const doneYesterdayItems = items
@@ -273,4 +268,4 @@ export function operationBoardToBriefSignal(summary: OperationBoardSummary): Age
 }
 
 // 内部 helper を test しやすくするため named export
-export { dayOffsetISO, dueTimeMinutes, eisenhowerScore }
+export { dueTimeMinutes, eisenhowerScore }
