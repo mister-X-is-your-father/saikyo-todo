@@ -267,9 +267,9 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
                     <time
                       className="text-muted-foreground shrink-0 text-xs tabular-nums"
                       dateTime={it.dueDate}
-                      aria-label={`期限 ${it.dueDate}`}
                     >
-                      <span aria-hidden="true">{it.dueDate}</span>
+                      <span className="sr-only">期限 </span>
+                      {it.dueDate}
                     </time>
                   )}
                 </li>
