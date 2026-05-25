@@ -95,7 +95,7 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
   const streakActive = summary.streak.currentStreak > 0
   const streakClass = streakActive
     ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-    : 'bg-muted text-muted-foreground border-border'
+    : 'bg-muted text-foreground border-border'
 
   return (
     <Card
@@ -184,7 +184,7 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
                   data-testid={`top-items-by-time-row-${idx + 1}`}
                 >
                   <span
-                    className="bg-muted text-muted-foreground inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-medium"
+                    className="bg-muted text-foreground inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-medium"
                     aria-hidden="true"
                   >
                     {idx + 1}
