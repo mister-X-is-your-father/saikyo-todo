@@ -303,14 +303,17 @@ export function GoalsPanel({ workspaceId }: Props) {
           // Workflows (iter281) / Sprints (iter283) と同パターンで 5 view 目。
           description={
             <span>
-              中期 (典型は <code className="bg-muted rounded px-1 text-[11px]">3 ヶ月</code>)
+              中期 (典型は{' '}
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">3 ヶ月</code>)
               の到達目標 (Objective) と、それを測る数値 (Key Result) を 1〜5 件紐付ける 箱です。 例:{' '}
-              <code className="bg-muted rounded px-1 text-[11px]">
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">
                 2026 Q2 システム速度を体感半分に
               </code>{' '}
               / Key Result は{' '}
-              <code className="bg-muted rounded px-1 text-[11px]">P95 レイテンシ 200ms 以下</code>。
-              KR は items 連動 (linked items の done 比) でも手動 (current/target) でも測れます。
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">
+                P95 レイテンシ 200ms 以下
+              </code>
+              。 KR は items 連動 (linked items の done 比) でも手動 (current/target) でも測れます。
             </span>
           }
           action={
