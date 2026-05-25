@@ -180,7 +180,7 @@ function ActivityRow({
             className={`rounded px-1.5 py-0.5 text-[10px] ${
               entry.actorType === 'agent'
                 ? 'bg-primary/10 text-primary'
-                : 'bg-muted text-muted-foreground'
+                : 'bg-muted text-foreground'
             }`}
             role="img"
             aria-label={entry.actorType === 'agent' ? '実行者: AI Agent' : '実行者: ユーザ'}
