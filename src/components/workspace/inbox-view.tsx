@@ -67,10 +67,13 @@ export function InboxView({
         description={
           <span>
             QuickAdd で日付を入れずに{' '}
-            <code className="bg-muted rounded px-1 text-[11px]">あとで読む論文</code> のように
-            書くとここに溜まります。仕分けは Item を開いて{' '}
-            <code className="bg-muted rounded px-1 text-[11px]">明日</code> や{' '}
-            <code className="bg-muted rounded px-1 text-[11px]">+3d</code> を後付けで。
+            <code className="bg-muted text-foreground rounded px-1 text-[11px]">
+              あとで読む論文
+            </code>{' '}
+            のように 書くとここに溜まります。仕分けは Item を開いて{' '}
+            <code className="bg-muted text-foreground rounded px-1 text-[11px]">明日</code> や{' '}
+            <code className="bg-muted text-foreground rounded px-1 text-[11px]">+3d</code>{' '}
+            を後付けで。
           </span>
         }
         action={
