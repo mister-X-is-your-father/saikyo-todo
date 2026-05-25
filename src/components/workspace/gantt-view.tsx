@@ -288,10 +288,14 @@ export function GanttView({
       ref={scrollRef}
       data-testid="gantt-view"
       className="overflow-auto rounded-lg border"
-      role="grid"
+      // iter1356: 旧 role="grid" は内部に role=group (summary) / role=img (legend) /
+      // role=row→role=button (bar) を持ち、grid が要求する row→gridcell 構造に
+      // 適合せず critical aria-required-children を 2 件出していた (malformed grid は
+      // 無 grid より SR に有害)。gridcell を持たない以上 grid semantics は成立しないため、
+      // label 付き role="group" (必須子なし) に降格。各 bar は role="button" + aria-label で
+      // 個別に accessible なので情報損失は無し。
+      role="group"
       aria-label={`Gantt チャート (Item ${withDates.length} 件 × 期間 ${totalSpanDays} 日)`}
-      aria-rowcount={withDates.length + 1 /* +1 = header row */}
-      aria-colcount={2 /* item column + timeline column */}
     >
       {/* Project summary banner (Phase 6.15 iter 46 — TeamGantt/GanttPRO 風) */}
       <div
@@ -628,8 +632,6 @@ export function GanttView({
             <div
               key={item.id}
               data-testid={`gantt-row-${item.id}`}
-              role="row"
-              aria-rowindex={idx + 2 /* +1 (1-based) +1 (header is row 1) */}
               onClick={() => void setOpenItemId(item.id)}
               className="hover:bg-muted/50 flex cursor-pointer border-b"
               style={{ height: ROW_PX }}
