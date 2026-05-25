@@ -92,6 +92,31 @@ describe('dedupeRelatedResources', () => {
     expect(r[0]?.pinned).toBe(true)
   })
 
+  it('iter1338: non-pinned 同士の重複は score 高い方を残す (順不同)', () => {
+    expect(
+      dedupeRelatedResources([
+        mk({ resourceId: 'd1', kind: 'doc', pinned: false, score: 0.4 }),
+        mk({ resourceId: 'd1', kind: 'doc', pinned: false, score: 0.9 }),
+      ])[0]?.score,
+    ).toBe(0.9)
+    // 逆順でも高 score が残る
+    expect(
+      dedupeRelatedResources([
+        mk({ resourceId: 'd1', kind: 'doc', pinned: false, score: 0.9 }),
+        mk({ resourceId: 'd1', kind: 'doc', pinned: false, score: 0.4 }),
+      ])[0]?.score,
+    ).toBe(0.9)
+  })
+
+  it('iter1338: pinned は score が低くても non-pinned 高 score に勝つ', () => {
+    const r = dedupeRelatedResources([
+      mk({ resourceId: 'd1', kind: 'doc', pinned: false, score: 0.99 }),
+      mk({ resourceId: 'd1', kind: 'doc', pinned: true, score: 0.01 }),
+    ])
+    expect(r).toHaveLength(1)
+    expect(r[0]?.pinned).toBe(true)
+  })
+
   it('kind が違えば dedup されない', () => {
     const rows = [
       mk({ resourceId: 'x', kind: 'doc', pinned: false, score: 0.9 }),

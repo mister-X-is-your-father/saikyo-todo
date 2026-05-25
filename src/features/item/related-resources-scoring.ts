@@ -68,15 +68,34 @@ export function organizeRelatedResources(
 }
 
 /**
- * (kind, resourceId) で重複 row を dedup (pinned 優先で 1 件残す)。
+ * 重複 row の優先順位 (candidate が existing を置き換えるか):
+ *   1. pinned > non-pinned (= 手動 pin は常に優先、score 無視)
+ *   2. 両方 pinned → 既存を残す (= pinned は手動順を維持)
+ *   3. 両方 non-pinned → score 高い方を残す (= より関連性の高い suggest を採用)
+ */
+function shouldReplaceRelated(
+  candidate: RelatedResourceRow,
+  existing: RelatedResourceRow,
+): boolean {
+  if (candidate.pinned !== existing.pinned) return candidate.pinned
+  if (candidate.pinned) return false
+  return candidate.score > existing.score
+}
+
+/**
+ * (kind, resourceId) で重複 row を dedup。
  * 同 doc が手動 pin + auto-suggest の両方に出てきた時 1 件にまとめる。
+ *
+ * iter1338 fix: 旧実装は non-pinned 同士の重複で **最初の 1 件** を score 無視で残していた
+ * (= 同 doc が 2 回 suggest された時 低 score 側が残る可能性)。`shouldReplaceRelated` で
+ * pinned 優先 + non-pinned 同士は **score 高い方** を残すよう修正 (= より関連性の高い候補)。
  */
 export function dedupeRelatedResources(rows: readonly RelatedResourceRow[]): RelatedResourceRow[] {
   const map = new Map<string, RelatedResourceRow>()
   for (const r of rows) {
     const key = `${r.kind}:${r.resourceId}`
     const existing = map.get(key)
-    if (!existing || (r.pinned && !existing.pinned)) {
+    if (!existing || shouldReplaceRelated(r, existing)) {
       map.set(key, r)
     }
   }
