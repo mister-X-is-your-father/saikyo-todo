@@ -100,7 +100,7 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
         <CardTitle className="flex items-center gap-2 text-base" role="heading" aria-level={2}>
           <Target className="text-primary h-4 w-4" aria-hidden="true" />
           今日の作戦盤
-          <span className="text-muted-foreground text-xs font-normal">{today}</span>
+          <span className="text-foreground/80 text-xs font-normal">{today}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
@@ -356,7 +356,7 @@ function Section({
         {icon}
         <span>{label}</span>
         {typeof count === 'number' ? (
-          <span className="text-muted-foreground font-normal tabular-nums">({count})</span>
+          <span className="text-foreground/80 font-normal tabular-nums">({count})</span>
         ) : null}
       </h3>
       <div className="pl-5">{children}</div>
@@ -427,7 +427,7 @@ function ItemRow({
       aria-label={ariaLabel}
     >
       {showTime && item.dueTime ? (
-        <span className="text-muted-foreground text-xs tabular-nums" aria-hidden="true">
+        <span className="text-foreground/80 text-xs tabular-nums" aria-hidden="true">
           {item.dueTime.slice(0, 5)}
         </span>
       ) : null}
@@ -435,10 +435,7 @@ function ItemRow({
         {item.title}
       </span>
       {item.dueDate ? (
-        <span
-          className="text-muted-foreground ml-auto pl-2 text-xs tabular-nums"
-          aria-hidden="true"
-        >
+        <span className="text-foreground/80 ml-auto pl-2 text-xs tabular-nums" aria-hidden="true">
           {item.dueDate}
         </span>
       ) : null}
