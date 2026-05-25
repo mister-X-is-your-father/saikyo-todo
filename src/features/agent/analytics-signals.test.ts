@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest'
 import { computeWorkspaceMomentum, type MomentumFields } from '@/features/item/momentum'
 import { computeVelocity, type VelocityFields } from '@/features/item/velocity'
 import { buildWeeklyCompletionInsight } from '@/features/item/weekly-completion-insight'
+import { computeGoalHealth } from '@/features/okr/goal-health'
 import { buildTodayForecast } from '@/features/today/forecast'
 import type { OperationBoardSummary } from '@/features/today/operation-board'
 
@@ -727,6 +728,25 @@ describe('formatTopAnalyticsSignalsLineJa (iter1342)', () => {
   })
 })
 
+describe('goalHealth 軸 (iter1347 — 21 軸目統合)', () => {
+  it('behind goal health → danger tone', () => {
+    const health = computeGoalHealth({
+      pct: 0.1,
+      startDate: '2026-04-01',
+      endDate: '2026-04-30',
+      today: '2026-04-15',
+    })
+    const s = composeAnalyticsSignals({ mostBehindGoalHealth: health })
+    expect(s.goalHealth).not.toBeNull()
+    expect(s.goalHealth!.tone).toBe('danger')
+    expect(s.goalHealth!.text).toContain('遅延')
+  })
+
+  it('未渡し → null', () => {
+    expect(composeAnalyticsSignals({}).goalHealth).toBeNull()
+  })
+})
+
 describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', () => {
   it('EMPTY (= 全 signal null) は AnalyticsSignals 全 field を必ず初期化 (= 新軸追加時の漏れ検知)', () => {
     const empty = composeAnalyticsSignals({})
@@ -754,6 +774,7 @@ describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', (
       'mustHygiene',
       'operationBoard',
       'forecast',
+      'goalHealth',
     ] as const
     expect(Object.keys(empty).sort()).toEqual([...expectedKeys].sort())
     for (const k of expectedKeys) {

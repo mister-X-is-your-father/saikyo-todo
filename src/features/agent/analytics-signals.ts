@@ -63,6 +63,7 @@ import {
   type StuckWipFields,
   stuckWipToBriefSignal,
 } from '@/features/item/wip-stuck'
+import { type GoalHealth, goalHealthToBriefSignal } from '@/features/okr/goal-health'
 import { type BiasTrend, biasTrendToBriefSignal } from '@/features/time-entry/bias-trend'
 import {
   type ForecastItemFields,
@@ -169,6 +170,12 @@ export interface AnalyticsSignalsInput {
    * operationBoard (何をやるか) と分業し、本軸は「今日終わるか」。
    */
   forecast?: ForecastSummary<ForecastItemFields>
+  /**
+   * iter1347 ai-automation: 21 軸目として「最も遅れている目標」 の GoalHealth も統合。
+   * 値は `pickMostBehindGoal(goals, today)?.health` (= on-track/at-risk/behind の最遅延 1 件、無し→未渡し)。
+   * behind→danger / at-risk→warn / on-track→info。workspace の「今 注力すべき目標」 を daily brief に。
+   */
+  mostBehindGoalHealth?: GoalHealth
 }
 
 export interface AnalyticsSignals {
@@ -210,6 +217,8 @@ export interface AnalyticsSignals {
   operationBoard: AgentBriefSignal | null
   /** iter1331 ai-automation: 今日の完了予測 chip (= 余裕=success / はみ出し=info|warn / 超過=danger / 対象なし=idle) */
   forecast: AgentBriefSignal | null
+  /** iter1347 ai-automation: 最も遅れている目標 chip (= behind=danger / at-risk=warn / on-track=info) */
+  goalHealth: AgentBriefSignal | null
 }
 
 const EMPTY: AnalyticsSignals = {
@@ -235,6 +244,7 @@ const EMPTY: AnalyticsSignals = {
   mustHygiene: null,
   operationBoard: null,
   forecast: null,
+  goalHealth: null,
 }
 
 export function composeAnalyticsSignals(input: AnalyticsSignalsInput): AnalyticsSignals {
@@ -302,6 +312,9 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
   if (input.forecast) {
     out.forecast = todayForecastToBriefSignal(input.forecast)
   }
+  if (input.mostBehindGoalHealth) {
+    out.goalHealth = goalHealthToBriefSignal(input.mostBehindGoalHealth)
+  }
   return out
 }
 
@@ -326,12 +339,13 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
  * 14. slipDays           (= 完了遅延 retrospective、danger=7d+、見積精度乖離 軸 severity 主)
  * 15. urgencyTierCounts  (= 緊急度件数、danger=critical 含む、最優先 actionable 軸 severity 主)
  * 16. mustHygiene        (= MUST hygiene、danger=coverage<50%、計画漏れ防止 軸 severity 主)
- * 17. reliability        (= 全体 信頼性 chip)
- * 18. costTrend          (= cost 月次トレンド)
- * 19. velocity           (= 完了ペース、weekly と並ぶ達成感系)
- * 20. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
- * 21. momentum           (= backlog momentum)
- * 22. dominantRole       (= 主軸 role、informational、最後)
+ * 17. goalHealth         (= 最遅延 目標、danger=behind、目標達成 軸 severity 主)
+ * 18. reliability        (= 全体 信頼性 chip)
+ * 19. costTrend          (= cost 月次トレンド)
+ * 20. velocity           (= 完了ペース、weekly と並ぶ達成感系)
+ * 21. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
+ * 22. momentum           (= backlog momentum)
+ * 23. dominantRole       (= 主軸 role、informational、最後)
  */
 export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
@@ -351,6 +365,7 @@ export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSi
     signals.slipDays,
     signals.urgencyTierCounts,
     signals.mustHygiene,
+    signals.goalHealth,
     signals.reliability,
     signals.costTrend,
     signals.velocity,
