@@ -483,14 +483,19 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           description={
             <span>
               チームで共有する 1 件の作業単位 (Item) です。 QuickAdd で{' '}
-              <code className="bg-muted rounded px-1 text-[11px]">明日 9時 資料準備 #design</code> /{' '}
-              <code className="bg-muted rounded px-1 text-[11px]">+3d レビュー @taro</code>{' '}
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">
+                明日 9時 資料準備 #design
+              </code>{' '}
+              /{' '}
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">
+                +3d レビュー @taro
+              </code>{' '}
               のように日付・タグ・担当者を 1 行で書けます。 作成後は{' '}
-              <code className="bg-muted rounded px-1 text-[11px]">Kanban</code> /{' '}
-              <code className="bg-muted rounded px-1 text-[11px]">Backlog</code> /{' '}
-              <code className="bg-muted rounded px-1 text-[11px]">Gantt</code> /{' '}
-              <code className="bg-muted rounded px-1 text-[11px]">Today</code> で view
-              を切り替えられます。
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">Kanban</code> /{' '}
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">Backlog</code> /{' '}
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">Gantt</code> /{' '}
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">Today</code> で
+              view を切り替えられます。
             </span>
           }
           action={
