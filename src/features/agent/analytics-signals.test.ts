@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest'
 import { computeWorkspaceMomentum, type MomentumFields } from '@/features/item/momentum'
 import { computeVelocity, type VelocityFields } from '@/features/item/velocity'
 import { buildWeeklyCompletionInsight } from '@/features/item/weekly-completion-insight'
+import type { OperationBoardSummary } from '@/features/today/operation-board'
 
 import { computeAgentReliability } from './agent-reliability'
 import {
@@ -581,6 +582,45 @@ describe('analyticsSignalsToArray (順序 + null 除去)', () => {
   })
 })
 
+describe('operationBoard 軸 (iter1328 — 19 軸目統合)', () => {
+  function board(over: Partial<OperationBoardSummary>): OperationBoardSummary {
+    return {
+      doneYesterday: { items: [], count: 0 },
+      mustToday: { items: [], count: 0 },
+      overdue: { top3: [], total: 0 },
+      todayScheduled: { items: [], count: 0 },
+      recommended: null,
+      today: '2026-04-30',
+      ...over,
+    }
+  }
+
+  it('overdue あり → operationBoard signal が danger tone で出る', () => {
+    const s = composeAnalyticsSignals({
+      operationBoard: board({ overdue: { top3: [], total: 3 } }),
+    })
+    expect(s.operationBoard).not.toBeNull()
+    expect(s.operationBoard!.tone).toBe('danger')
+    expect(s.operationBoard!.text).toContain('overdue 3')
+  })
+
+  it('全片付き → success tone', () => {
+    const s = composeAnalyticsSignals({ operationBoard: board({}) })
+    expect(s.operationBoard!.tone).toBe('success')
+  })
+
+  it('未渡し → null', () => {
+    expect(composeAnalyticsSignals({}).operationBoard).toBeNull()
+  })
+
+  it('analyticsSignalsToArray で operationBoard は先頭に並ぶ (daily headline 最優先)', () => {
+    const s = composeAnalyticsSignals({
+      operationBoard: board({ overdue: { top3: [], total: 1 } }),
+    })
+    expect(analyticsSignalsToArray(s)[0]).toBe(s.operationBoard)
+  })
+})
+
 describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', () => {
   it('EMPTY (= 全 signal null) は AnalyticsSignals 全 field を必ず初期化 (= 新軸追加時の漏れ検知)', () => {
     const empty = composeAnalyticsSignals({})
@@ -606,6 +646,7 @@ describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', (
       'slipDays',
       'urgencyTierCounts',
       'mustHygiene',
+      'operationBoard',
     ] as const
     expect(Object.keys(empty).sort()).toEqual([...expectedKeys].sort())
     for (const k of expectedKeys) {

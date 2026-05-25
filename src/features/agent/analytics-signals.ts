@@ -64,6 +64,10 @@ import {
 } from '@/features/item/wip-stuck'
 import { type BiasTrend, biasTrendToBriefSignal } from '@/features/time-entry/bias-trend'
 import {
+  type OperationBoardSummary,
+  operationBoardToBriefSignal,
+} from '@/features/today/operation-board'
+import {
   type WeeklyReviewDueKind,
   weeklyReviewDueToBriefSignal,
 } from '@/features/today/weekly-review-checklist'
@@ -146,6 +150,12 @@ export interface AnalyticsSignalsInput {
    * severe (coverage < 50%) → danger / mild → warn / clean → success / idle → idle。
    */
   mustHygiene?: MustHygieneStats
+  /**
+   * iter1328 ai-automation: 19 軸目として今日の作戦盤 summary (= overdue / MUST today / 推奨 roll-up) も統合。
+   * 値は `buildOperationBoard(items, today)` の出力 (= OperationBoardSummary)。
+   * overdue→danger / MUST today→urgent / 推奨あり→info / 全片付き→success。daily brief の「今日やるべきこと」headline。
+   */
+  operationBoard?: OperationBoardSummary
 }
 
 export interface AnalyticsSignals {
@@ -183,6 +193,8 @@ export interface AnalyticsSignals {
   urgencyTierCounts: AgentBriefSignal | null
   /** iter1059 refactor: MUST hygiene chip (= severe=danger / mild=warn / clean=success / idle=idle) */
   mustHygiene: AgentBriefSignal | null
+  /** iter1328 ai-automation: 今日の作戦盤 chip (= overdue=danger / MUST today=urgent / 推奨=info / 全片付き=success) */
+  operationBoard: AgentBriefSignal | null
 }
 
 const EMPTY: AnalyticsSignals = {
@@ -206,6 +218,7 @@ const EMPTY: AnalyticsSignals = {
   slipDays: null,
   urgencyTierCounts: null,
   mustHygiene: null,
+  operationBoard: null,
 }
 
 export function composeAnalyticsSignals(input: AnalyticsSignalsInput): AnalyticsSignals {
@@ -267,6 +280,9 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
   if (input.mustHygiene) {
     out.mustHygiene = mustHygieneToBriefSignal(input.mustHygiene)
   }
+  if (input.operationBoard) {
+    out.operationBoard = operationBoardToBriefSignal(input.operationBoard)
+  }
   return out
 }
 
@@ -275,29 +291,31 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
  * の `AgentBriefSignal[]` 配列に変換。caller は `.map(s => <Chip ... />)` で 1 行 render。
  *
  * 表示順:
- *  1. concerningRole     (= 弱点 role 警告、最優先)
- *  2. costProjection     (= 月末コスト予測、cost 軸の主)
- *  3. dueHitRate         (= 期限達成率、商品品質 SLA、cost と並ぶ severity 主)
- *  4. biasTrend          (= 見積精度の変化、品質系 trend、severity 主の補佐)
- *  5. backlogAging       (= 停滞度合い、danger=古参累積、moment と並ぶ backlog 軸 severity 主)
- *  6. waitingSummary     (= 連絡待ち、danger=escalate、外部依存 軸 severity 主)
- *  7. consultationCounts (= 相談、danger=判断漏れ、合意 軸 severity 主)
- *  8. weeklyReviewDue    (= GTD Weekly Review、danger=overdue、習慣 軸 severity 主)
- *  9. inboxBucketCounts  (= GTD Inbox 健全性、danger=要 process、GTD flow 軸 severity 主)
- * 10. stuckWip           (= 進行中だが停滞、danger=7d+ 停滞、再開 nudge 軸 severity 主)
- * 11. overdueActive      (= 期限超過 active、danger=7d+ or 5+ 件、計画乖離 軸 severity 主)
- * 12. slipDays           (= 完了遅延 retrospective、danger=7d+、見積精度乖離 軸 severity 主)
- * 13. urgencyTierCounts  (= 緊急度件数、danger=critical 含む、最優先 actionable 軸 severity 主)
- * 14. mustHygiene        (= MUST hygiene、danger=coverage<50%、計画漏れ防止 軸 severity 主)
- * 15. reliability        (= 全体 信頼性 chip)
- * 16. costTrend          (= cost 月次トレンド)
- * 17. velocity           (= 完了ペース、weekly と並ぶ達成感系)
- * 18. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
- * 19. momentum           (= backlog momentum)
- * 20. dominantRole       (= 主軸 role、informational、最後)
+ *  1. operationBoard     (= 今日やるべきこと roll-up、daily brief headline、最優先 actionable)
+ *  2. concerningRole     (= 弱点 role 警告)
+ *  3. costProjection     (= 月末コスト予測、cost 軸の主)
+ *  4. dueHitRate         (= 期限達成率、商品品質 SLA、cost と並ぶ severity 主)
+ *  5. biasTrend          (= 見積精度の変化、品質系 trend、severity 主の補佐)
+ *  6. backlogAging       (= 停滞度合い、danger=古参累積、moment と並ぶ backlog 軸 severity 主)
+ *  7. waitingSummary     (= 連絡待ち、danger=escalate、外部依存 軸 severity 主)
+ *  8. consultationCounts (= 相談、danger=判断漏れ、合意 軸 severity 主)
+ *  9. weeklyReviewDue    (= GTD Weekly Review、danger=overdue、習慣 軸 severity 主)
+ * 10. inboxBucketCounts  (= GTD Inbox 健全性、danger=要 process、GTD flow 軸 severity 主)
+ * 11. stuckWip           (= 進行中だが停滞、danger=7d+ 停滞、再開 nudge 軸 severity 主)
+ * 12. overdueActive      (= 期限超過 active、danger=7d+ or 5+ 件、計画乖離 軸 severity 主)
+ * 13. slipDays           (= 完了遅延 retrospective、danger=7d+、見積精度乖離 軸 severity 主)
+ * 14. urgencyTierCounts  (= 緊急度件数、danger=critical 含む、最優先 actionable 軸 severity 主)
+ * 15. mustHygiene        (= MUST hygiene、danger=coverage<50%、計画漏れ防止 軸 severity 主)
+ * 16. reliability        (= 全体 信頼性 chip)
+ * 17. costTrend          (= cost 月次トレンド)
+ * 18. velocity           (= 完了ペース、weekly と並ぶ達成感系)
+ * 19. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
+ * 20. momentum           (= backlog momentum)
+ * 21. dominantRole       (= 主軸 role、informational、最後)
  */
 export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
+    signals.operationBoard,
     signals.concerningRole,
     signals.costProjection,
     signals.dueHitRate,
