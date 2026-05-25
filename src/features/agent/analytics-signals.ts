@@ -79,7 +79,7 @@ import {
 } from '@/features/today/weekly-review-checklist'
 
 import { type AgentReliability, composeAgentBriefSignals } from './agent-reliability'
-import { type AgentBriefSignal } from './brief-signal'
+import { type AgentBriefSignal, formatBriefSignalsLineJa } from './brief-signal'
 import { type CostMonthProjection, costMonthProjectionToBriefSignal } from './cost-month-projection'
 import { type MonthlyCostTrend, monthlyCostTrendToBriefSignal } from './cost-monthly-trend'
 
@@ -377,9 +377,8 @@ export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSi
  * tone は plain text では落とす (= 視覚 chip 経路でのみ使用)。
  */
 export function formatAnalyticsSignalsLineJa(signals: AnalyticsSignals): string {
-  const arr = analyticsSignalsToArray(signals)
-  if (arr.length === 0) return '記録なし'
-  return arr.map((s) => s.text).join(' / ')
+  // iter1333 refactor: join logic を brief-signal.ts の共通 formatBriefSignalsLineJa に委譲
+  return formatBriefSignalsLineJa(analyticsSignalsToArray(signals))
 }
 
 /**

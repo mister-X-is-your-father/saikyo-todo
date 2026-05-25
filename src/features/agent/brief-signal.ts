@@ -31,3 +31,22 @@ export interface AgentBriefSignal {
   text: string
   tone: ChipTone
 }
+
+/**
+ * iter1333 ai-automation: AgentBriefSignal[] を `text` の ` / ` 連結 1 行に整形。
+ *
+ * AI 朝 brief prompt / Slack daily digest の plain text channel で「signal text を
+ * 区切りで並べる」 idiom を共通 vocab の home に集約。analytics-signals の
+ * `formatAnalyticsSignalsLineJa` (全 signal) も `pickTopSeveritySignals` の top-N も
+ * 本 helper 1 つで line 化できる (= 重複していた `.map(s => s.text).join(' / ')` を集約)。
+ *
+ *  - 空配列 → emptyText (default '記録なし')
+ *  - tone は plain text では落とす (= 視覚 chip 経路でのみ使う)
+ */
+export function formatBriefSignalsLineJa(
+  signals: readonly AgentBriefSignal[],
+  emptyText = '記録なし',
+): string {
+  if (signals.length === 0) return emptyText
+  return signals.map((s) => s.text).join(' / ')
+}
