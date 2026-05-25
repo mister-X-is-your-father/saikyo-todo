@@ -217,10 +217,18 @@ export function WorkflowsPanel({ workspaceId }: Props) {
           description={
             <span>
               用途例:{' '}
-              <code className="bg-muted rounded px-1 text-[11px]">item 作成 → Slack 通知</code> /{' '}
-              <code className="bg-muted rounded px-1 text-[11px]">朝の brief 生成</code> /{' '}
-              <code className="bg-muted rounded px-1 text-[11px]">毎日 reminder</code>。 まず空
-              graph で作成し、後から graph editor で node / edge を追加します。
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">
+                item 作成 → Slack 通知
+              </code>{' '}
+              /{' '}
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">
+                朝の brief 生成
+              </code>{' '}
+              /{' '}
+              <code className="bg-muted text-foreground rounded px-1 text-[11px]">
+                毎日 reminder
+              </code>
+              。 まず空 graph で作成し、後から graph editor で node / edge を追加します。
             </span>
           }
           action={
@@ -778,7 +786,8 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
     // の 2 経路を示す。失敗 / 成功 / 各 node の duration が下に並ぶことも示唆。
     return (
       <p className="text-muted-foreground text-xs" role="status" aria-live="polite">
-        まだ実行履歴がありません。 上の <code className="bg-muted rounded px-1">▶ 実行</code> button
+        まだ実行履歴がありません。 上の{' '}
+        <code className="bg-muted text-foreground rounded px-1">▶ 実行</code> button
         で手動起動、または schedule (cron) を設定すると自動起動。 各 run の状態 (queued / running /
         succeeded / failed) と node 別 duration がここに並びます。
       </p>
