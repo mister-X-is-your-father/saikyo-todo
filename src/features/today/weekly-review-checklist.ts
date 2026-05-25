@@ -99,6 +99,31 @@ export function buildWeeklyReviewChecklist({
   ]
 }
 
+export interface WeeklyReviewAttention {
+  /** 自動 count > 0 の step 数 (= 点検すべき step の数、手動 collect は除外) */
+  stepsNeedingAttention: number
+  /** 全 step の自動 count 合計 (= 点検すべき item 総数) */
+  totalCount: number
+}
+
+/**
+ * iter1340 basics: Weekly Review checklist の roll-up。
+ *
+ * `buildWeeklyReviewChecklist` の 5 step を集計し、panel header / 通知 badge 用に
+ * 「要点検 N step / 合計 M 件」 を 1 オブジェクトで返す。手動 step ('collect'、count=0
+ * 固定で常に needsAttention) は集計から除外し、**自動検出 count > 0 の step だけ** を
+ * 数える (= 「実際に点検すべき項目がある step / 件数」 を素直に表す)。
+ *
+ * 用途: Weekly Review panel の header「12 件 要点検」、Sunday cron の通知本文、dashboard chip。
+ */
+export function summarizeWeeklyReviewChecklist(input: WeeklyReviewInput): WeeklyReviewAttention {
+  const withCount = buildWeeklyReviewChecklist(input).filter((s) => s.count > 0)
+  return {
+    stepsNeedingAttention: withCount.length,
+    totalCount: withCount.reduce((sum, s) => sum + s.count, 0),
+  }
+}
+
 /**
  * Weekly Review が「未着手」 か「進行中」 か判定 (= 通知タイミング決定用)。
  * 毎日曜 9:00 cron が呼んで「先週末 review してない」 → notification 発行。

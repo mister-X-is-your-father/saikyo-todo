@@ -6,6 +6,7 @@ import {
   buildWeeklyReviewChecklist,
   classifyWeeklyReviewDue,
   formatWeeklyReviewDueJa,
+  summarizeWeeklyReviewChecklist,
   weeklyReviewDueChipTone,
   weeklyReviewDueSeverity,
   weeklyReviewDueToBriefSignal,
@@ -130,6 +131,27 @@ describe('buildWeeklyReviewChecklist', () => {
       today: TODAY,
     })
     expect(r.find((s) => s.step === 'process')?.count).toBe(0)
+  })
+})
+
+describe('summarizeWeeklyReviewChecklist (iter1340)', () => {
+  it('空 → 0 step / 0 件 (手動 collect は集計外)', () => {
+    expect(summarizeWeeklyReviewChecklist({ items: [], today: TODAY })).toEqual({
+      stepsNeedingAttention: 0,
+      totalCount: 0,
+    })
+  })
+
+  it('process 2 + engage 1 → 2 step / 合計 3 件', () => {
+    const r = summarizeWeeklyReviewChecklist({
+      items: [
+        mk({ id: '1', status: 'todo', dueDate: '2026-05-25' }),
+        mk({ id: '2', status: 'todo', dueDate: '2026-05-25' }),
+        mk({ id: 's', status: 'gtd_someday', scheduledFor: '2026-05-20' }),
+      ],
+      today: TODAY,
+    })
+    expect(r).toEqual({ stepsNeedingAttention: 2, totalCount: 3 })
   })
 })
 
