@@ -654,7 +654,7 @@ export function GanttView({
                 <span className="truncate">{item.title}</span>
                 {item.isMust && (
                   <span
-                    className="ml-1 shrink-0 text-xs text-red-500"
+                    className="ml-1 shrink-0 text-xs text-red-600"
                     role="img"
                     aria-label="MUST タスク"
                   >
