@@ -1515,7 +1515,7 @@ function StatCard({
       aria-label={ariaLabel}
       data-testid={testId ?? `stat-card-${tone}`}
     >
-      <div className="text-muted-foreground text-xs" aria-hidden="true">
+      <div className="text-foreground/80 text-xs" aria-hidden="true">
         {label}
       </div>
       <div className="mt-1 text-2xl font-semibold" aria-hidden="true">
