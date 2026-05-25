@@ -17,6 +17,7 @@ import {
   countAnalyticsSignalsByTone,
   formatAnalyticsSignalsLineJa,
   formatAnalyticsSignalsToneSummaryJa,
+  formatTopAnalyticsSignalsLineJa,
   pickHighestSeveritySignal,
   pickTopSeveritySignals,
 } from './analytics-signals'
@@ -695,6 +696,34 @@ describe('pickTopSeveritySignals (iter1332)', () => {
 
   it('全 null → 空配列', () => {
     expect(pickTopSeveritySignals(composeAnalyticsSignals({}), 5)).toEqual([])
+  })
+})
+
+describe('formatTopAnalyticsSignalsLineJa (iter1342)', () => {
+  function mixed() {
+    return composeAnalyticsSignals({
+      urgencyTierCounts: { critical: 1, high: 0, medium: 0, low: 0, none: 0 }, // danger
+      slipDays: { count: 1, avgDays: 3, medianDays: 3, maxDays: 3 }, // warn
+      weeklyReviewDue: 'recent', // success
+    })
+  }
+
+  it('空 → 記録なし', () => {
+    expect(formatTopAnalyticsSignalsLineJa(composeAnalyticsSignals({}), 3)).toBe('記録なし')
+  })
+
+  it('limit 0 → 記録なし', () => {
+    expect(formatTopAnalyticsSignalsLineJa(mixed(), 0)).toBe('記録なし')
+  })
+
+  it('limit 1 → 最も危ない 1 件のみ (danger 先頭、区切りなし)', () => {
+    const top1 = formatTopAnalyticsSignalsLineJa(mixed(), 1)
+    expect(top1).not.toContain(' / ')
+    expect(top1).toContain('緊急 1')
+  })
+
+  it('limit 2 → 上位 2 件を / 連結', () => {
+    expect(formatTopAnalyticsSignalsLineJa(mixed(), 2).split(' / ')).toHaveLength(2)
   })
 })
 

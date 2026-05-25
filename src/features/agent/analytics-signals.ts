@@ -382,6 +382,20 @@ export function formatAnalyticsSignalsLineJa(signals: AnalyticsSignals): string 
 }
 
 /**
+ * iter1342 ai-automation: 最も危ない上位 limit 件だけを 1 行 plain text に整形 (brief headline)。
+ *
+ * 軸数が 20 (iter1331) まで増え、`formatAnalyticsSignalsLineJa` (全件) は AI 朝 brief /
+ * Slack daily digest の冒頭で長すぎ noise になる (認知負荷 軸 3)。本 helper は
+ * `pickTopSeveritySignals` (iter1332) + `formatBriefSignalsLineJa` (iter1333) を合成し、
+ * attention rank 上位 limit 件だけの compact 1 行を返す (= 「まず見るべき N 件」)。
+ *
+ * 0 件 → '記録なし' (formatBriefSignalsLineJa の空 sentinel)。limit<=0 → '記録なし'。
+ */
+export function formatTopAnalyticsSignalsLineJa(signals: AnalyticsSignals, limit: number): string {
+  return formatBriefSignalsLineJa(pickTopSeveritySignals(signals, limit))
+}
+
+/**
  * iter954 ai-automation: AnalyticsSignals の non-null signal を ChipTone 別に件数集計。
  *
  * 用途: AI 朝 brief / Slack daily digest の冒頭 headline で「全 chip の tone 分布」を
