@@ -18,6 +18,7 @@ import {
   formatAnalyticsSignalsLineJa,
   formatAnalyticsSignalsToneSummaryJa,
   pickHighestSeveritySignal,
+  pickTopSeveritySignals,
 } from './analytics-signals'
 import { computeCostMonthProjection } from './cost-month-projection'
 import { computeMonthlyCostTrend, type CostMonthEntry } from './cost-monthly-trend'
@@ -665,6 +666,35 @@ describe('forecast 軸 (iter1331 — 20 軸目統合)', () => {
     const arr = analyticsSignalsToArray(s)
     expect(arr[0]).toBe(s.operationBoard)
     expect(arr[1]).toBe(s.forecast)
+  })
+})
+
+describe('pickTopSeveritySignals (iter1332)', () => {
+  function mixed() {
+    return composeAnalyticsSignals({
+      urgencyTierCounts: { critical: 1, high: 0, medium: 0, low: 0, none: 0 }, // danger
+      slipDays: { count: 1, avgDays: 3, medianDays: 3, maxDays: 3 }, // warn
+      weeklyReviewDue: 'recent', // success
+    })
+  }
+
+  it('limit<=0 → 空配列', () => {
+    expect(pickTopSeveritySignals(mixed(), 0)).toEqual([])
+    expect(pickTopSeveritySignals(mixed(), -3)).toEqual([])
+  })
+
+  it('attention rank 降順 (danger → warn → success)', () => {
+    const top = pickTopSeveritySignals(mixed(), 10)
+    expect(top.map((s) => s.tone)).toEqual(['danger', 'warn', 'success'])
+  })
+
+  it('limit で上位のみ抽出', () => {
+    const top2 = pickTopSeveritySignals(mixed(), 2)
+    expect(top2.map((s) => s.tone)).toEqual(['danger', 'warn'])
+  })
+
+  it('全 null → 空配列', () => {
+    expect(pickTopSeveritySignals(composeAnalyticsSignals({}), 5)).toEqual([])
   })
 })
 

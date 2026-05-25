@@ -31,6 +31,7 @@
 
 import {
   type ChipTone,
+  compareChipTones,
   countItemsByTone,
   formatToneCountsJa,
   pickHighestSeverityTone,
@@ -450,4 +451,33 @@ export function pickHighestSeveritySignal(signals: AnalyticsSignals): AgentBrief
   const topTone = pickHighestSeverityTone(arr.map((s) => s.tone))
   // topTone は arr が非空なら必ず非 null だが防御で fallback、find は array 順 (stable max)
   return arr.find((s) => s.tone === topTone) ?? null
+}
+
+/**
+ * iter1332 ai-automation: AnalyticsSignals から **attention rank が高い順** に上位 limit 件を抽出。
+ *
+ * 経緯: 軸数が 20 まで増えた (iter1331) ため、AI 朝 brief / Slack daily digest / dashboard
+ * で全 chip を出すと noise になる (= 認知負荷 軸 3 を悪化)。本 helper で「最も危ない N 件」だけ
+ * 出して残りは折りたたむ progressive disclosure を可能にする。`pickHighestSeveritySignal`
+ * (top 1) の top-N 一般化。
+ *
+ * 仕様:
+ *   - non-null signal を `analyticsSignalsToArray` で順序整列 + null 除去
+ *   - `compareChipTones` (= attention rank 降順) で sort、**同 rank は表示順を保つ** (Array.sort は
+ *     ES2019+ で stable、analyticsSignalsToArray の severity/重要度順が tie-break として残る)
+ *   - 上位 limit 件を返す。limit <= 0 → []、limit >= 件数 → 全件 (rank 順 sort 済)
+ *
+ * 既存 helper との関係:
+ *   - `pickHighestSeveritySignal`: top 1 (= 1 chip alert / badge tone)
+ *   - 本 helper: top N (= brief の「重要ハイライト N 件」 + 残りは別表示)
+ *   - `analyticsSignalsToArray`: 全件 (= 順序整列のみ、severity sort なし)
+ */
+export function pickTopSeveritySignals(
+  signals: AnalyticsSignals,
+  limit: number,
+): AgentBriefSignal[] {
+  if (limit <= 0) return []
+  const arr = analyticsSignalsToArray(signals)
+  const sorted = [...arr].sort((a, b) => compareChipTones(a.tone, b.tone))
+  return sorted.slice(0, limit)
 }
