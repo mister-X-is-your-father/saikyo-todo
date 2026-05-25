@@ -135,7 +135,7 @@ export function SprintRiskBoardWidget<T extends RiskBoardItemFields>({
                         {entry.reasons.map((reason, i) => (
                           <li
                             key={`${entry.item.id}-${i}`}
-                            className="text-muted-foreground rounded bg-slate-100 px-1.5 py-0.5 text-[10px]"
+                            className="bg-muted text-foreground rounded px-1.5 py-0.5 text-[10px]"
                           >
                             {reason}
                           </li>
