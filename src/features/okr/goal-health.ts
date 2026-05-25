@@ -27,7 +27,9 @@
  */
 
 import { formatNonZeroCounts } from '@/lib/format-counts'
+import type { ChipTone } from '@/lib/ui/chip-tone'
 
+import type { AgentBriefSignal } from '@/features/agent/brief-signal'
 import { daysBetween, todayISO } from '@/features/sprint/sprint-date-helpers'
 
 export type GoalHealthTier = 'achieved' | 'on-track' | 'at-risk' | 'behind' | 'idle'
@@ -134,6 +136,26 @@ export function formatGoalHealthJa(health: GoalHealth): string {
   const gap = Math.round(health.gapPct * 100)
   const gapStr = gap >= 0 ? `+${gap}pt` : `${gap}pt`
   return `${health.label} (進捗 ${pctPct}% / 想定 ${elapsed}%、${gapStr})`
+}
+
+const TIER_CHIP_TONE: Record<GoalHealthTier, ChipTone> = {
+  achieved: 'success',
+  'on-track': 'info',
+  'at-risk': 'warn',
+  behind: 'danger',
+  idle: 'idle',
+}
+
+/**
+ * iter1345 ai-automation: 1 件の GoalHealth を共通 `AgentBriefSignal` (`{ text, tone }`) に変換。
+ *
+ * analytics-signals / 各 `*ToBriefSignal` と同じ vocab に goal 健全性を乗せ、AI 朝 brief /
+ * Slack 通知 / dashboard chip が「目標 X は遅延 (進捗 25% / 想定 50%、-25pt)」 を 1 chip で
+ * 出せる。tone は tier 整合 (achieved→success / on-track→info / at-risk→warn / behind→danger /
+ * idle→idle)、text は formatGoalHealthJa (iter1344) 再利用。
+ */
+export function goalHealthToBriefSignal(health: GoalHealth): AgentBriefSignal {
+  return { text: formatGoalHealthJa(health), tone: TIER_CHIP_TONE[health.tier] }
 }
 
 /** group/count/format で受け取る Goal の最小構造 */

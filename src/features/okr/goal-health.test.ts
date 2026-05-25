@@ -13,6 +13,7 @@ import {
   goalHealthTierCountsToSeverityCounts,
   goalHealthTierLabel,
   goalHealthTierSeverity,
+  goalHealthToBriefSignal,
   groupGoalsByHealth,
 } from './goal-health'
 
@@ -358,5 +359,43 @@ describe('formatGoalHealthJa (iter1344)', () => {
   it('idle: 期間外 sentinel のみ', () => {
     const h = computeGoalHealth({ pct: 0.5, startDate: START, endDate: END, today: TODAY_BEFORE })
     expect(formatGoalHealthJa(h)).toBe('期間外')
+  })
+})
+
+describe('goalHealthToBriefSignal (iter1345)', () => {
+  it('behind → danger tone + 1 行 text', () => {
+    const h = computeGoalHealth({ pct: 0.1, startDate: START, endDate: END, today: TODAY_DAY15 })
+    const sig = goalHealthToBriefSignal(h)
+    expect(sig.tone).toBe('danger')
+    expect(sig.text).toContain('遅延')
+  })
+
+  it('achieved → success tone', () => {
+    const h = computeGoalHealth({ pct: 1.0, startDate: START, endDate: END, today: TODAY_DAY15 })
+    expect(goalHealthToBriefSignal(h).tone).toBe('success')
+  })
+
+  it('on-track → info / at-risk → warn / idle → idle', () => {
+    const onTrack = computeGoalHealth({
+      pct: 0.5,
+      startDate: START,
+      endDate: END,
+      today: TODAY_DAY15,
+    })
+    const atRisk = computeGoalHealth({
+      pct: 0.25,
+      startDate: START,
+      endDate: END,
+      today: TODAY_DAY15,
+    })
+    const idle = computeGoalHealth({
+      pct: 0.5,
+      startDate: START,
+      endDate: END,
+      today: TODAY_BEFORE,
+    })
+    expect(goalHealthToBriefSignal(onTrack).tone).toBe('info')
+    expect(goalHealthToBriefSignal(atRisk).tone).toBe('warn')
+    expect(goalHealthToBriefSignal(idle).tone).toBe('idle')
   })
 })
