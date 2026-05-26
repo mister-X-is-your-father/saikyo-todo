@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  findDanglingInputs,
   findUnsatisfiedInputs,
   inferDependenciesFromIo,
   type IoArtifactLike,
@@ -122,5 +123,41 @@ describe('findUnsatisfiedInputs', () => {
         [{ itemId: 'a', done: false }],
       ),
     ).toEqual([])
+  })
+})
+
+describe('findDanglingInputs (iter1371)', () => {
+  it('output が存在する input は dangling でない', () => {
+    const r = findDanglingInputs([
+      { itemId: 'a', kind: 'output', label: '設計書' },
+      { itemId: 'b', kind: 'input', label: '設計書' },
+    ])
+    expect(r).toEqual([])
+  })
+
+  it('どの output にも一致しない input を返す (= 入手経路なし)', () => {
+    const r = findDanglingInputs([
+      { itemId: 'a', kind: 'output', label: '設計書' },
+      { itemId: 'b', kind: 'input', label: '設計書' },
+      { itemId: 'b', kind: 'input', label: '予算承認' }, // 誰も output しない
+    ])
+    expect(r).toEqual([{ itemId: 'b', label: '予算承認' }])
+  })
+
+  it('label 正規化 (trim + lower-case) で output と照合', () => {
+    const r = findDanglingInputs([
+      { itemId: 'a', kind: 'output', label: '  API Spec ' },
+      { itemId: 'b', kind: 'input', label: 'api spec' },
+    ])
+    expect(r).toEqual([])
+  })
+
+  it('空 / whitespace label は無視、同 item の重複 input は 1 件に集約', () => {
+    const r = findDanglingInputs([
+      { itemId: 'b', kind: 'input', label: '   ' },
+      { itemId: 'b', kind: 'input', label: '予算' },
+      { itemId: 'b', kind: 'input', label: '予算' },
+    ])
+    expect(r).toEqual([{ itemId: 'b', label: '予算' }])
   })
 })

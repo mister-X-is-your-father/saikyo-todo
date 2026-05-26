@@ -105,3 +105,45 @@ export function findUnsatisfiedInputs(
   }
   return [...byTo.entries()].map(([itemId, blockingItems]) => ({ itemId, blockingItems }))
 }
+
+/**
+ * iter1371 (queue: タスク metadata 拡張 — I/O 依存推論): どの output にも一致しない input
+ * (= 入手経路が存在しない前提) を返す pure helper。
+ *
+ * `findUnsatisfiedInputs` は「output 提供元 item がまだ done でない」 (= 待てば解消) を見るが、
+ * 本 helper は「そもそも その input を output する item が 1 つも無い」 を検出する。
+ * これは段取りの穴 (= 必要なものを誰も作らない) を能動的に警告する signal:
+ * 「この task は X を入力に要するが、X を成果物にする task が存在しない」。
+ *
+ * 仕様:
+ *  - output label (正規化: trim + lower-case) 集合を作り、その集合に無い input を抽出
+ *  - 空 / whitespace-only label は無視
+ *  - 同一 (itemId, 正規化 label) の重複 input は 1 件に集約
+ *  - 出力 label は 元の表記 (正規化前) を保持 (UI 表示用)、元の出現順を維持
+ */
+export interface DanglingInput {
+  itemId: string
+  label: string
+}
+
+export function findDanglingInputs(artifacts: readonly IoArtifactLike[]): DanglingInput[] {
+  const outputLabels = new Set<string>()
+  for (const a of artifacts) {
+    if (a.kind !== 'output') continue
+    const key = normalizeLabel(a.label)
+    if (key) outputLabels.add(key)
+  }
+
+  const seen = new Set<string>()
+  const result: DanglingInput[] = []
+  for (const a of artifacts) {
+    if (a.kind !== 'input') continue
+    const key = normalizeLabel(a.label)
+    if (!key || outputLabels.has(key)) continue
+    const dedupKey = `${a.itemId}|${key}`
+    if (seen.has(dedupKey)) continue
+    seen.add(dedupKey)
+    result.push({ itemId: a.itemId, label: a.label })
+  }
+  return result
+}
