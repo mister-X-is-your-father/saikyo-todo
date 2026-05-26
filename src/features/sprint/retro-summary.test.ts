@@ -4,6 +4,7 @@ import {
   buildSprintRetroSummary,
   completionRateSeverity,
   completionRateSeverityLabelJa,
+  formatSprintRetroRootCausesJa,
   formatSprintRetroSummaryJa,
   retroCompletionSeverityCountsToSeverityCounts,
   type SprintRetroItemFields,
@@ -235,6 +236,39 @@ describe('formatSprintRetroSummaryJa', () => {
     for (let i = 0; i < 5; i++) prev.push(mk({ status: 'todo' }))
     const summary = buildSprintRetroSummary(items, { prevItems: prev })
     expect(formatSprintRetroSummaryJa(summary)).toContain('改善 +20pt')
+  })
+})
+
+describe('formatSprintRetroRootCausesJa (iter1368)', () => {
+  it('4 軸全 0 → 「落ち item なし」', () => {
+    const summary = buildSprintRetroSummary([mk({ status: 'done' })])
+    expect(formatSprintRetroRootCausesJa(summary)).toBe('落ち item なし')
+  })
+
+  it('複数軸 → 固定軸順 (遅れ納品 → 期限内未完 → 中止 → blocked 残)、0 軸省略', () => {
+    const SPRINT_END = '2026-04-30'
+    const items: SprintRetroItemFields[] = [
+      // overdueDelivery: done だが doneAt > dueDate
+      mk({ status: 'done', dueDate: '2026-04-20', doneAt: '2026-04-25T00:00:00Z' }),
+      mk({ status: 'done', dueDate: '2026-04-20', doneAt: '2026-04-26T00:00:00Z' }),
+      // incompleteOnTime: 未完了で dueDate <= sprint 終了
+      mk({ status: 'todo', dueDate: '2026-04-28' }),
+      // blockedAtClose: blocked 残 (+ dueDate なしで incompleteOnTime には数えない)
+      mk({ status: 'blocked' }),
+    ]
+    const summary = buildSprintRetroSummary(items, { sprintEndISO: SPRINT_END })
+    // cancelled 0 は省略される
+    expect(formatSprintRetroRootCausesJa(summary)).toBe(
+      '落ち主因: 遅れ納品 2 / 期限内未完 1 / blocked 残 1',
+    )
+  })
+
+  it('cancelled のみ → 「落ち主因: 中止 N」', () => {
+    const summary = buildSprintRetroSummary([
+      mk({ status: 'cancelled' }),
+      mk({ status: 'cancelled' }),
+    ])
+    expect(formatSprintRetroRootCausesJa(summary)).toBe('落ち主因: 中止 2')
   })
 })
 

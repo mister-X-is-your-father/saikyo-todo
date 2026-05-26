@@ -243,3 +243,27 @@ export function formatSprintRetroSummaryJa(summary: SprintRetroSummary): string 
         }${cmp.completionDelta}pt`
   return `完了率 ${summary.completionRate}% (${sevLabel}) — 計画 ${planned} 件 / 納品 ${delivered} 件${trendPart}`
 }
+
+/**
+ * iter1368 ai-automation (queue: fluffy-3 retro→widget): rootCauses (落ち item 自動分類
+ * 4 軸) を AI prompt / Slack / chip aria-label 用に 1 行整形する pure helper。
+ *
+ * `formatSprintRetroSummaryJa` は完了率 / 計画-納品 / trend を担当するが rootCauses を
+ * 出さない (= widget は 4 chip で見せるが、prompt / Slack の 1 行経路には主因が乗らない)。
+ * 本 helper は 0 件軸を省略しつつ固定軸順 (重大度順: 遅れ納品 → 期限内未完 → 中止 →
+ * blocked 残) で列挙し「落ち主因」 を 1 行で添えられるようにする。
+ *
+ * 出力例:
+ *   - '落ち主因: 遅れ納品 2 / 期限内未完 3 / blocked 残 1'  (cancelled 0 は省略)
+ *   - '落ち item なし'                                       (4 軸全 0)
+ */
+export function formatSprintRetroRootCausesJa(summary: SprintRetroSummary): string {
+  const rc = summary.rootCauses
+  const parts: string[] = []
+  if (rc.overdueDelivery > 0) parts.push(`遅れ納品 ${rc.overdueDelivery}`)
+  if (rc.incompleteOnTime > 0) parts.push(`期限内未完 ${rc.incompleteOnTime}`)
+  if (rc.cancelledMid > 0) parts.push(`中止 ${rc.cancelledMid}`)
+  if (rc.blockedAtClose > 0) parts.push(`blocked 残 ${rc.blockedAtClose}`)
+  if (parts.length === 0) return '落ち item なし'
+  return `落ち主因: ${parts.join(' / ')}`
+}
