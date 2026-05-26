@@ -174,7 +174,10 @@ export function WeeklyInsightWidget({ items, now }: Props) {
                 {insight.weekDelta.percent}%)
               </span>
             )}
-            <span className="text-foreground/80 ml-1">vs 前週</span>
+            {/* iter1382: text-foreground/80 (theme-aware) は delta chip の light 固定 tone
+                bg (bg-blue-50/red-50) 上で dark 時に明色化し white-on-light 1.03 になる
+                (WCAG 1.4.3)。chip 自身の tone text 色を継承させ両モードで pass。 */}
+            <span className="ml-1">vs 前週</span>
           </div>
         </div>
 
