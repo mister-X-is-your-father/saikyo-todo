@@ -89,6 +89,7 @@ export type { AnthropicToolDefinition } from './anthropic-bridge'
 export {
   buildAnthropicToolDefinitions,
   partIdToToolName,
+  resolvePartIdFromToolName,
   toolNameToPartIdCandidate,
 } from './anthropic-bridge'
 export type { McpToolDefinition } from './mcp-bridge'

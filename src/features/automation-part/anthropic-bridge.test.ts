@@ -85,6 +85,25 @@ describe('resolvePartIdFromToolName (iter1376)', () => {
     registerPart(itemCreate)
     expect(resolvePartIdFromToolName('nope_nope')).toBeUndefined()
   })
+
+  it('第 1 segment にも underscore を含む id を解決 (item_dependency.list_for_item 等)', () => {
+    _resetRegistryForTesting()
+    const multiUnderscore = definePart({
+      id: 'item_dependency.list_for_item',
+      label: '依存一覧',
+      description: '依存一覧',
+      category: 'item' as const,
+      sideEffect: 'read' as const,
+      input: z.object({ itemId: z.string() }),
+      output: z.array(z.object({ id: z.string() })),
+      run: async () => [],
+    })
+    registerPart(multiUnderscore)
+    // 単純逆変換だと 'item.dependency.list.for.item' (誤)、registry 解決は正しい
+    expect(resolvePartIdFromToolName('item_dependency_list_for_item')).toBe(
+      'item_dependency.list_for_item',
+    )
+  })
 })
 
 describe('buildAnthropicToolDefinitions', () => {
