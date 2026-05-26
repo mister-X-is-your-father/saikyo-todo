@@ -1,12 +1,15 @@
 /**
  * iter (queue Slack ワンポチ substrate): Slack 受信 webhook の signature verification pure 関数。
  *
- * Slack は X-Slack-Signature ヘッダで HMAC-SHA256 (signing_secret, `v0:${ts}:${rawBody}`)
- * を base64 で送ってくる。受信時に再計算 + timing-safe 比較で改竄検出。
+ * Slack は X-Slack-Signature ヘッダで `v0=` + HMAC-SHA256 (signing_secret,
+ * `v0:${ts}:${rawBody}`) の **16 進 (hex) digest** を送ってくる (base64 ではない —
+ * parseSignatureHeader の `[a-f0-9]{64}` regex と整合)。受信時に再計算 + timing-safe
+ * 比較で改竄検出。
  *
  * 設計: 暗号 primitive (hmac) は Node crypto に任せる、本 file は **buildSignatureBaseString
- * + parseSignatureHeader + isReplayAttack** の pure 部分だけ。実 hmac は別 wrapper
- * で呼ぶ想定 (server-only)。
+ * + parseSignatureHeader + isReplayAttack** の pure 部分だけ。実 hmac wrapper (server-only)
+ * は `createHmac('sha256', secret).update(base).digest('hex')` で hex 出力すること
+ * (base64 にすると parseSignatureHeader を通らず常に不一致になる)。
  *
  * 詳細: FEEDBACK_QUEUE.md Slack ワンポチ entry / https://api.slack.com/authentication/verifying-requests-from-slack
  */
