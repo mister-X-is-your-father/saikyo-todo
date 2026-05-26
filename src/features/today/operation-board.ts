@@ -17,7 +17,11 @@
  */
 import { extractEstimateMinutes } from '@/features/item/estimate'
 import type { Item } from '@/features/item/schema'
-import { type BlockingChain, pickBlockingChains } from '@/features/item-dependency/blocked-items'
+import {
+  type BlockingChain,
+  formatBlockingChainsJa,
+  pickBlockingChains,
+} from '@/features/item-dependency/blocked-items'
 
 export interface OperationBoardSummary {
   /** 昨日 done になった item (件数 = items.length) */
@@ -193,8 +197,11 @@ export function buildOperationBoard(
  *   - '今日 MUST 3 / overdue 2 / 推奨: 「タスクX」 (見積 30 分)'  (全 3 軸あり + 推奨に estimate)
  *   - '今日 MUST 3 / 推奨: 「タスクX」'                          (overdue 0、estimate なし)
  *   - 'overdue 5 件'                                              (MUST 0、推奨 0)
+ *   - '今日 MUST 1 / ブロック: A は B 待ち'                       (blockingChains あり)
  *   - '全て片付き済 (今日の MUST / overdue / 推奨なし)'           (全 0)
  *
+ * iter1367: blockingChains を末尾軸として追加 (= 依存待ちで止まっている item を朝 brief で
+ * 漏らさない)。代表 1 件 + overflow を formatBlockingChainsJa(limit=1) で圧縮。
  * formatSprintRiskBoardAlertJa (iter962) と並ぶ「最初に伝える 1 行」 pattern。
  */
 export function formatOperationBoardHeadlineJa(summary: OperationBoardSummary): string {
@@ -205,6 +212,9 @@ export function formatOperationBoardHeadlineJa(summary: OperationBoardSummary): 
     const est = extractEstimateMinutes(summary.recommended.description)
     const estPart = est !== undefined ? ` (見積 ${est} 分)` : ''
     parts.push(`推奨: 「${summary.recommended.title}」${estPart}`)
+  }
+  if (summary.blockingChains.length > 0) {
+    parts.push(`ブロック: ${formatBlockingChainsJa(summary.blockingChains, 1)}`)
   }
   if (parts.length === 0) return '全て片付き済 (今日の MUST / overdue / 推奨なし)'
   return parts.join(' / ')

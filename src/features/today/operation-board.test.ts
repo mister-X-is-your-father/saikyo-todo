@@ -304,6 +304,24 @@ describe('formatOperationBoardHeadlineJa (iter963)', () => {
     expect(line).toContain('推奨:')
     expect(line).not.toContain('見積')
   })
+
+  it('blockingChains あり → 末尾に「ブロック: Y は Z 待ち」 軸を連結 (iter1367)', () => {
+    const items: Item[] = [
+      mk({ id: 'm1', isMust: true, scheduledFor: TODAY }),
+      mk({ id: 'z', title: '設計レビュー' }),
+      mk({ id: 'y', title: 'リリース準備' }),
+    ]
+    const r = buildOperationBoard(items, TODAY, [{ fromItemId: 'z', toItemId: 'y' }])
+    const line = formatOperationBoardHeadlineJa(r)
+    expect(line).toContain('今日 MUST 1')
+    expect(line).toContain('ブロック: リリース準備 は 設計レビュー 待ち')
+  })
+
+  it('blockingChains なし → 「ブロック:」 軸は出ない', () => {
+    const items: Item[] = [mk({ id: 'm1', isMust: true, scheduledFor: TODAY })]
+    const line = formatOperationBoardHeadlineJa(buildOperationBoard(items, TODAY))
+    expect(line).not.toContain('ブロック')
+  })
 })
 
 describe('buildOperationBoard — blockingChains (iter1366)', () => {
