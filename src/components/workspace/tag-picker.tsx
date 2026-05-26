@@ -100,7 +100,9 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
         >
           <TagIcon className="size-4" aria-hidden="true" />
           {selectedLabels.length === 0 ? (
-            <span className="text-muted-foreground" aria-hidden="true">
+            // iter1370: iter1369 AssigneePicker と同型。outline button bg (#f5f5f5) 上で
+            // text-muted-foreground は 4.5:1 未満 (WCAG 1.4.3)。text-foreground/80 で pass。
+            <span className="text-foreground/80" aria-hidden="true">
               タグなし
             </span>
           ) : (
