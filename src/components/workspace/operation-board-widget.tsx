@@ -159,8 +159,14 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
             data-testid="operation-board-forecast-tactics"
           >
             {forecast.quickWins.length > 0 && (
-              <div className="space-y-0.5 rounded bg-emerald-50/60 p-1.5">
-                <h3 className="font-medium text-emerald-800" id="op-board-quickwins-heading">
+              <div className="space-y-0.5 rounded bg-emerald-50/60 p-1.5 dark:bg-emerald-950/50">
+                {/* iter1390: bg-emerald-50/60 は opacity tint で dark 時に暗緑になり、
+                    emerald-800 見出し / 内側 muted・title text が全て <4.5 (WCAG 1.4.3)。
+                    dark: 変種 bg + 見出し dark:text-emerald-300 で解消 (muted/title は theme-aware)。 */}
+                <h3
+                  className="font-medium text-emerald-800 dark:text-emerald-300"
+                  id="op-board-quickwins-heading"
+                >
                   <span aria-hidden="true">⚡ </span>Quick wins ({forecast.quickWins.length})
                 </h3>
                 <ul className="space-y-0.5" aria-labelledby="op-board-quickwins-heading">
@@ -188,8 +194,12 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
               </div>
             )}
             {forecast.focusBlocks.length > 0 && (
-              <div className="space-y-0.5 rounded bg-sky-50/60 p-1.5">
-                <h3 className="font-medium text-sky-800" id="op-board-focus-heading">
+              <div className="space-y-0.5 rounded bg-sky-50/60 p-1.5 dark:bg-sky-950/50">
+                {/* iter1390: 同上 (sky tint)。 */}
+                <h3
+                  className="font-medium text-sky-800 dark:text-sky-300"
+                  id="op-board-focus-heading"
+                >
                   <span aria-hidden="true">🎯 </span>集中ブロック ({forecast.focusBlocks.length})
                 </h3>
                 <ul className="space-y-0.5" aria-labelledby="op-board-focus-heading">
