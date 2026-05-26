@@ -338,3 +338,21 @@ export function formatWorstDayJa(worst: { day: string; current: number } | null)
   if (worst.current === 0) return `今週 サボり: ${worst.day} 0 件`
   return `今週 弱点: ${worst.day} ${worst.current} 件`
 }
+
+/**
+ * iter1384 basics: `WeeklyInsightSummary.weekDelta` を「先週比」 1 行に整形。
+ * weekly-insight widget header / Slack daily digest の「先週との比較」 表示用。
+ * formatBestDayJa / formatWorstDayJa と並ぶ weekly-insight chip 文言 helper。
+ *
+ *   '先週比 +2 件 (+17%)'   (増加)
+ *   '先週比 -3 件 (-25%)'   (減少)
+ *   '先週比 ±0 件'          (増減なし、count=0)
+ *   '先週比 +5 件 (新規)'   (prev=0 から増加、percent=null)
+ */
+export function formatWeekDeltaJa(delta: { count: number; percent: number | null }): string {
+  if (delta.count === 0) return '先週比 ±0 件'
+  const countPart = `${delta.count > 0 ? '+' : ''}${delta.count} 件`
+  if (delta.percent === null) return `先週比 ${countPart} (新規)`
+  const pctPart = `${delta.percent > 0 ? '+' : ''}${delta.percent}%`
+  return `先週比 ${countPart} (${pctPart})`
+}

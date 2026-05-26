@@ -6,6 +6,7 @@ import {
   dateToISODate,
   dayIndexFromDate,
   formatBestDayJa,
+  formatWeekDeltaJa,
   formatWeeklyInsightHintJa,
   formatWorstDayJa,
   pickBestDayInWeek,
@@ -368,5 +369,21 @@ describe('formatWorstDayJa', () => {
 
   it('1+ 件 → 「今週 弱点: <day> <n> 件」', () => {
     expect(formatWorstDayJa({ day: 'Mon', current: 2 })).toBe('今週 弱点: Mon 2 件')
+  })
+})
+
+describe('formatWeekDeltaJa (iter1384)', () => {
+  it('増加 → +N 件 (+P%)', () => {
+    expect(formatWeekDeltaJa({ count: 2, percent: 17 })).toBe('先週比 +2 件 (+17%)')
+  })
+  it('減少 → -N 件 (-P%)', () => {
+    expect(formatWeekDeltaJa({ count: -3, percent: -25 })).toBe('先週比 -3 件 (-25%)')
+  })
+  it('増減なし (count=0) → ±0 件', () => {
+    expect(formatWeekDeltaJa({ count: 0, percent: 0 })).toBe('先週比 ±0 件')
+    expect(formatWeekDeltaJa({ count: 0, percent: null })).toBe('先週比 ±0 件')
+  })
+  it('prev=0 から増加 (percent=null) → 新規', () => {
+    expect(formatWeekDeltaJa({ count: 5, percent: null })).toBe('先週比 +5 件 (新規)')
   })
 })
