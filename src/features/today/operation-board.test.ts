@@ -167,6 +167,7 @@ describe('buildOperationBoard', () => {
     expect(r.overdue.total).toBe(0)
     expect(r.todayScheduled.count).toBe(0)
     expect(r.recommended).toBeNull()
+    expect(r.blockingChains).toEqual([])
     expect(r.today).toBe(TODAY)
   })
 
@@ -302,6 +303,39 @@ describe('formatOperationBoardHeadlineJa (iter963)', () => {
     const line = formatOperationBoardHeadlineJa(r)
     expect(line).toContain('推奨:')
     expect(line).not.toContain('見積')
+  })
+})
+
+describe('buildOperationBoard — blockingChains (iter1366)', () => {
+  it('blocksEdges 未指定 → blockingChains は空 (後方互換)', () => {
+    const r = buildOperationBoard([mk({ id: 'a' }), mk({ id: 'b' })], TODAY)
+    expect(r.blockingChains).toEqual([])
+  })
+
+  it('blocks edge を渡すと「Y は Z 待ち」 chain を返す', () => {
+    const items: Item[] = [
+      mk({ id: 'z', title: '設計レビュー' }),
+      mk({ id: 'y', title: 'リリース準備' }),
+    ]
+    const r = buildOperationBoard(items, TODAY, [{ fromItemId: 'z', toItemId: 'y' }])
+    expect(r.blockingChains).toEqual([
+      {
+        blockedId: 'y',
+        blockedTitle: 'リリース準備',
+        openBlockerTitles: ['設計レビュー'],
+        openBlockerCount: 1,
+        priority: 4,
+      },
+    ])
+  })
+
+  it('完了済 blocker は chain に出さない', () => {
+    const items: Item[] = [
+      mk({ id: 'z', doneAt: new Date('2026-04-29T00:00:00Z') }),
+      mk({ id: 'y' }),
+    ]
+    const r = buildOperationBoard(items, TODAY, [{ fromItemId: 'z', toItemId: 'y' }])
+    expect(r.blockingChains).toEqual([])
   })
 })
 

@@ -17,6 +17,7 @@
  */
 import { extractEstimateMinutes } from '@/features/item/estimate'
 import type { Item } from '@/features/item/schema'
+import { type BlockingChain, pickBlockingChains } from '@/features/item-dependency/blocked-items'
 
 export interface OperationBoardSummary {
   /** 昨日 done になった item (件数 = items.length) */
@@ -29,8 +30,19 @@ export interface OperationBoardSummary {
   todayScheduled: { items: Item[]; count: number }
   /** 推奨第 1 タスク (= Eisenhower 風 score 最高、null = 候補無し) */
   recommended: Item | null
+  /**
+   * 依存ブロック連鎖 (「item Y は item Z 待ち」)。openBlockerCount desc 順。
+   * blocksEdges 未指定時は空配列 (= 依存情報なしの呼び出しと後方互換)。
+   */
+  blockingChains: BlockingChain[]
   /** 集計時の today YYYY-MM-DD (debug / cache key 用) */
   today: string
+}
+
+/** buildOperationBoard が受ける `blocks` 依存 edge (fromItem が toItem を blocking)。 */
+export interface OperationBoardBlockEdge {
+  fromItemId: string
+  toItemId: string
 }
 
 // iter1042 refactor: canonical 実装を `features/item/active.ts` に移転、本 file は re-export
@@ -84,7 +96,11 @@ function eisenhowerScore(it: Item, today: string): number {
   return urgency + importance + shortBonus
 }
 
-export function buildOperationBoard(items: Item[], today: string): OperationBoardSummary {
+export function buildOperationBoard(
+  items: Item[],
+  today: string,
+  blocksEdges: readonly OperationBoardBlockEdge[] = [],
+): OperationBoardSummary {
   const yesterday = dayOffsetISO(today, -1)
 
   // ----- 昨日 done -----
@@ -162,6 +178,7 @@ export function buildOperationBoard(items: Item[], today: string): OperationBoar
     overdue: { top3: overdueItems.slice(0, 3), total: overdueItems.length },
     todayScheduled: { items: todayScheduledItems, count: todayScheduledItems.length },
     recommended,
+    blockingChains: pickBlockingChains(items, blocksEdges),
     today,
   }
 }
