@@ -127,7 +127,9 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                   <span className="font-medium tabular-nums" aria-hidden="true">
                     {Math.floor(forecast.totalEstimateMin / 60)}h{forecast.totalEstimateMin % 60}m
                   </span>
-                  <span className="text-[11px] opacity-80" aria-hidden="true">
+                  {/* iter1391: opacity-80 が chip の sevCls text 色 (emerald-700 等) を
+                      ~3.55:1 に落とす (WCAG 1.4.3)。size で hierarchy は保てるので opacity を外す。 */}
+                  <span className="text-[11px]" aria-hidden="true">
                     の見積 / 残
                   </span>
                   <span className="font-medium tabular-nums" aria-hidden="true">
@@ -143,7 +145,7 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                     // iter918: parent role="status" aria-label "今日完了予測 ${...} 件 見積なし)"
                     // 既同梱、内側 visible のみ aria-hidden 抜けで二重読み上げ → 兄弟 4 span
                     // (Timer / 合計 / の見積 残 / 残値 / 余裕|超過) と同 pattern に揃え。
-                    <span className="text-[10px] opacity-70" aria-hidden="true">
+                    <span className="text-[10px]" aria-hidden="true">
                       (見積無 {forecast.estimateUnknownCount})
                     </span>
                   ) : null}
