@@ -654,7 +654,9 @@ export function GanttView({
                 <span className="truncate">{item.title}</span>
                 {item.isMust && (
                   <span
-                    className="ml-1 shrink-0 text-xs text-red-600"
+                    // iter1383: text-red-600 (#e7000b) は dark gantt bg 上で 4.15:1 (<4.5)。
+                    // dark:text-red-400 で dark でも pass (light は 600 維持)。
+                    className="ml-1 shrink-0 text-xs text-red-600 dark:text-red-400"
                     role="img"
                     aria-label="MUST タスク"
                   >
