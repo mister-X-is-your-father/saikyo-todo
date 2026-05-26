@@ -82,13 +82,16 @@ export function ItemSummaryPanel({ workspaceId, item }: Props) {
           : ''
       }`}
     >
+      {/* iter1375: 3 stat box の tint (slate/amber/emerald-50) は light 固定色で dark に
+          追従せず、dark では theme-aware な text-muted-foreground (明色) が light bg に乗り
+          2.46:1 になっていた (WCAG 1.4.3)。各 tint に dark: 変種を付与して解消。 */}
       <div
         className={`rounded-md border px-3 py-2 ring-1 ${
           progress?.isComplete
-            ? 'border-emerald-200 bg-emerald-50 ring-emerald-200'
+            ? 'border-emerald-200 bg-emerald-50 ring-emerald-200 dark:border-emerald-800 dark:bg-emerald-950 dark:ring-emerald-800'
             : (progress?.blocked ?? 0) > 0
-              ? 'border-amber-200 bg-amber-50 ring-amber-200'
-              : 'border-slate-200 bg-slate-50 ring-slate-200'
+              ? 'border-amber-200 bg-amber-50 ring-amber-200 dark:border-amber-800 dark:bg-amber-950 dark:ring-amber-800'
+              : 'border-slate-200 bg-slate-50 ring-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:ring-slate-700'
         }`}
         role="status"
         aria-label={
@@ -110,8 +113,8 @@ export function ItemSummaryPanel({ workspaceId, item }: Props) {
       <div
         className={`rounded-md border px-3 py-2 ring-1 ${
           readiness?.isBlocked
-            ? 'border-amber-200 bg-amber-50 ring-amber-200'
-            : 'border-slate-200 bg-slate-50 ring-slate-200'
+            ? 'border-amber-200 bg-amber-50 ring-amber-200 dark:border-amber-800 dark:bg-amber-950 dark:ring-amber-800'
+            : 'border-slate-200 bg-slate-50 ring-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:ring-slate-700'
         }`}
         role="status"
         aria-label={
@@ -129,7 +132,7 @@ export function ItemSummaryPanel({ workspaceId, item }: Props) {
       </div>
 
       <div
-        className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 ring-1 ring-slate-200"
+        className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 ring-1 ring-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:ring-slate-700"
         role="status"
         aria-label={formatLatestActivityJa(latestActivity, now, formatRelativeTime)}
         data-testid="item-summary-latest-activity"
