@@ -30,6 +30,7 @@
  *
  * 副作用なし、依存なし。pure helper + Vitest 単体 test で網羅。
  */
+import { pad2 } from '@/lib/date/iso'
 import { rateToPct } from '@/lib/format-rate'
 
 import { isTerminalStatus } from '@/features/item/status-visual'
@@ -66,10 +67,9 @@ function isDone(it: TickerItemFields): boolean {
   return false
 }
 
-function pad2(n: number): string {
-  return n < 10 ? `0${n}` : String(n)
-}
-
+// iter1373 refactor: 旧 local `pad2` を `@/lib/date/iso#pad2` に集約 (= iter1045 の
+// pad2 sweep で取り残されていた最後の 1 件)。HH:MM domain (0-59) では padStart 版と
+// 完全に behavior 一致。
 function formatHHMM(d: Date): string {
   return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`
 }
