@@ -468,7 +468,8 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
                   : 'MUST が OFF: 通常タスク (クリックで ON、DoD 必須化)'
               }
             />
-            <span className="font-medium text-red-700" aria-hidden="true">
+            {/* iter1371: item-edit-dialog と同型。dark card bg で text-red-700 は <4.5。 */}
+            <span className="font-medium text-red-700 dark:text-red-400" aria-hidden="true">
               MUST
             </span>
           </label>

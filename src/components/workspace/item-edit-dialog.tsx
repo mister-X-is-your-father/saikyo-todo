@@ -741,7 +741,9 @@ function ItemEditDialogInner({
                     : 'MUST が OFF: 通常タスク (クリックで ON、DoD 必須化)'
                 }
               />
-              <span className="font-medium text-red-700" aria-hidden="true">
+              {/* iter1371: text-red-700 (#b91c1c) は dark card bg 上で <4.5 (WCAG 1.4.3)。
+                  dark:text-red-400 で dark でも pass (light は赤 700 維持)。 */}
+              <span className="font-medium text-red-700 dark:text-red-400" aria-hidden="true">
                 MUST
               </span>
               <span className="text-muted-foreground text-xs" aria-hidden="true">
