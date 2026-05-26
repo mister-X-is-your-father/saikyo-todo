@@ -462,7 +462,20 @@ export function useSetItemAssignees(workspaceId: string, itemId: string) {
   return useMutation({
     mutationFn: async (assignees: AssigneeRef[]) =>
       unwrap(await setItemAssigneesAction({ itemId, assignees })),
-    onSuccess: () => {
+    // iter1403: iter1402 (tag) と同型。onSuccess-invalidate のみで assignee option の checkmark /
+    // trigger chip 反映に server round-trip 待ち (~1s lag)。AssigneePicker の value は bare
+    // AssigneeRef[] で名前は members/agents から別途解決するため、mutation input をそのまま
+    // 楽観 setQueryData できる (名前欠落なし)。iter437/1013 pattern を展開。
+    onMutate: (assignees) => {
+      void qc.cancelQueries({ queryKey: itemRelationKeys.assignees(itemId) })
+      const prev = qc.getQueryData<AssigneeRef[]>(itemRelationKeys.assignees(itemId))
+      qc.setQueryData<AssigneeRef[]>(itemRelationKeys.assignees(itemId), assignees)
+      return { prev }
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev !== undefined) qc.setQueryData(itemRelationKeys.assignees(itemId), ctx.prev)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: itemRelationKeys.assignees(itemId) })
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
     },
