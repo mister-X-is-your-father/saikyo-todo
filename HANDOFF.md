@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1401 探索のみ mode-F] Kanban view の item-checkbox complete 切替 flicker 無し確認: data-checked を 0/50/100/200/500ms snapshot → before=false 全 frame true (逆戻り無し)。useToggleCompleteItem onMutate (iter1013) holding。iter1323 (Backlog) / iter1396 (reorder) に続く Kanban の mode-F guard。経路 B: `scripts/explore-uiux-flicker-kanban-complete-iter1401.ts`。
 - ✅ [playwright-iter1400 探索のみ] dark /pdca を item (status 別 4 件) 投入で render → 0 violation。PDCA 分布バー (graphical aria-hidden) + カウント/ラベル (theme-aware) は dark 対応済。iter1374 の item 無 scan を実描画版で補完。経路 B: `scripts/explore-uiux-axe-pdca-populated-dark-iter1400.ts`。
 - ✅ [playwright-iter1399 探索のみ] dark mock-timesheet (login/new) を scan → 0 violation。別系統サブアプリも theme-aware class 主体で dark 対応済。主要 surface (view/dialog/combobox/modal/widget/sub-app) の light+dark 網羅完了。経路 B: `scripts/explore-uiux-axe-mock-timesheet-dark-iter1399.ts`。
 - ✅ [playwright-iter1398 探索のみ] dark NotificationBell popover を 3 type 通知 (heartbeat overdue / mention / sync-failure) 投入で render → axe scan 0 violation。type icon chip / unread dot / hint chip / breakdown / timestamp の dark contrast clean。iter1366 (light) の dark 版 guard。経路 B: `scripts/explore-uiux-axe-notification-bell-dark-iter1398.ts`。
