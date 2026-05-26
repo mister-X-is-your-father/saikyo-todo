@@ -101,7 +101,9 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
         >
           <UserIcon className="size-4" aria-hidden="true" />
           {selectedLabels.length === 0 ? (
-            <span className="text-muted-foreground" aria-hidden="true">
+            // iter1369: outline button bg (#f5f5f5) 上で text-muted-foreground は 4.34:1
+            // (<4.5、WCAG 1.4.3)。text-foreground/80 で placeholder の淡さを保ちつつ pass。
+            <span className="text-foreground/80" aria-hidden="true">
               未アサイン
             </span>
           ) : (
