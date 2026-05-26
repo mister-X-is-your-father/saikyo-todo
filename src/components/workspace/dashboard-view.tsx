@@ -1450,10 +1450,12 @@ export function DashboardView({ workspaceId }: Props) {
                     <StatusBadge status={item.status} />
                     <span
                       className={
+                        // iter1386: red-600/amber-600 は dark bg 上で <4.5 (WCAG 1.4.3、期限超過/期日近の
+                        // 日付表示)。dark:{red,amber}-400 を併記 (light は 600 維持)。
                         overdue
-                          ? 'text-xs font-semibold text-red-600'
+                          ? 'text-xs font-semibold text-red-600 dark:text-red-400'
                           : soon
-                            ? 'text-xs font-semibold text-amber-600'
+                            ? 'text-xs font-semibold text-amber-600 dark:text-amber-400'
                             : 'text-muted-foreground text-xs'
                       }
                     >
