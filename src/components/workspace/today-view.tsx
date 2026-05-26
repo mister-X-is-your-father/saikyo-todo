@@ -192,7 +192,7 @@ export function TodayView({
               <CardHeader className="pb-2">
                 <CardTitle
                   id={headingId}
-                  className={`text-base ${g.label === '期限超過' ? 'text-red-600' : ''}`}
+                  className={`text-base ${g.label === '期限超過' ? 'text-red-600 dark:text-red-400' : ''}`}
                   role="heading"
                   aria-level={2}
                 >
@@ -263,7 +263,7 @@ export function TodayView({
                           // 表示を統一。
                           // iter1057: 同 role="img" 付与で aria-label authoritative 化。
                           <span
-                            className="text-red-600"
+                            className="text-red-600 dark:text-red-400"
                             role="img"
                             aria-label={`期限 ${it.dueDate}`}
                           >
