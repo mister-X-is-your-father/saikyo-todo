@@ -232,3 +232,100 @@ export const formatBlockedItemsHintJa = makeHintLabelFormatter(
   classifyBlockedItemsHint,
   HINT_LABEL_JA,
 )
+
+/**
+ * iter1365 ai-automation (queue: fluffy-1 今日の作戦盤 — Blocking dependencies chain):
+ * blocked Item を「どの未完了 blocker を待っているか」まで名前付きで返す pure helper。
+ *
+ * 既存 `pickWorkspaceBlockedItems` は「Y は N 件待ち」(件数のみ) を出すが、
+ * fluffy P0-1「今日の作戦盤」 spec が要求する **「item Y は item Z 待ち」 chain**
+ * (= 具体的にどの前提 Item で止まっているか) は名前を持たない。本 helper は
+ * 未完了 blocker の title を明示して「見て即わかる」 chain 表示の substrate を提供する。
+ *
+ * 仕様 (pickWorkspaceBlockedItems と同じ除外規則を踏襲):
+ *  - `deletedAt != null` の Item / 自分が `doneAt != null` の Item は対象外
+ *  - blocker が `deletedAt != null` または `doneAt != null` なら open に数えない
+ *  - open blocker 0 件 (= 全前提完了) は結果に含めない
+ *  - `openBlockerTitles` は完了していない blocker の title を ja 昇順で stable に並べる
+ *  - 並びは `openBlockerCount desc` → blocked title 昇順 (ja)
+ */
+export interface BlockingChain {
+  blockedId: string
+  blockedTitle: string
+  /** 未完了 blocker の title (ja 昇順、length === openBlockerCount) */
+  openBlockerTitles: string[]
+  openBlockerCount: number
+  priority: PriorityKey
+}
+
+export function pickBlockingChains<I extends ItemFields>(
+  items: readonly I[],
+  blocksEdges: readonly BlockEdge[],
+): BlockingChain[] {
+  const itemMap = new Map<string, I>()
+  for (const it of items) {
+    if (it.deletedAt != null) continue
+    itemMap.set(it.id, it)
+  }
+
+  const openBlockersByTarget = new Map<string, string[]>()
+  const seen = new Set<string>()
+  for (const edge of blocksEdges) {
+    const target = itemMap.get(edge.toItemId)
+    if (!target || target.doneAt != null) continue
+    const blocker = itemMap.get(edge.fromItemId)
+    if (!blocker || blocker.doneAt != null) continue
+    const dedupeKey = `${edge.toItemId} ${edge.fromItemId}`
+    if (seen.has(dedupeKey)) continue
+    seen.add(dedupeKey)
+    const list = openBlockersByTarget.get(edge.toItemId) ?? []
+    list.push(titleOrUntitled(blocker.title))
+    openBlockersByTarget.set(edge.toItemId, list)
+  }
+
+  const result: BlockingChain[] = []
+  for (const [toId, titles] of openBlockersByTarget) {
+    if (titles.length === 0) continue
+    const target = itemMap.get(toId)
+    if (!target) continue
+    result.push({
+      blockedId: toId,
+      blockedTitle: target.title,
+      openBlockerTitles: titles.sort((a, b) => a.localeCompare(b, 'ja')),
+      openBlockerCount: titles.length,
+      priority: normalizePriority(target.priority),
+    })
+  }
+  result.sort((a, b) => {
+    if (a.openBlockerCount !== b.openBlockerCount) {
+      return b.openBlockerCount - a.openBlockerCount
+    }
+    return a.blockedTitle.localeCompare(b.blockedTitle, 'ja')
+  })
+  return result
+}
+
+/**
+ * 「今日の作戦盤」 / AI 朝 brief 用の 1 行 chain summary:
+ *
+ *   - 0 件 → `'ブロック連鎖なし'`
+ *   - 1 件待ち → `'リリース準備 は 設計レビュー 待ち'`
+ *   - 複数待ち → `'リリース準備 は 設計レビュー 他 2 件 待ち'` (先頭 blocker を代表名に)
+ *   - limit 超過は formatTopWithOverflow で `' / 他 K 件'` を append (default limit=3)
+ */
+export function formatBlockingChainsJa(
+  chains: readonly BlockingChain[],
+  limit: number = 3,
+): string {
+  if (chains.length === 0) return 'ブロック連鎖なし'
+  return formatTopWithOverflow(
+    chains,
+    (c) => {
+      const head = titleOrUntitled(c.openBlockerTitles[0])
+      const extra = c.openBlockerCount - 1
+      const blockerPart = extra > 0 ? `${head} 他 ${extra} 件` : head
+      return `${titleOrUntitled(c.blockedTitle)} は ${blockerPart} 待ち`
+    },
+    limit,
+  )
+}

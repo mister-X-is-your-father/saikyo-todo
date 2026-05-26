@@ -6,6 +6,8 @@ import {
   formatBlockedItemsBriefJa,
   formatBlockedItemsByPriorityJa,
   formatBlockedItemsHintJa,
+  formatBlockingChainsJa,
+  pickBlockingChains,
   pickWorkspaceBlockedItems,
   type WorkspaceBlockedItem,
 } from './blocked-items'
@@ -258,5 +260,122 @@ describe('classifyBlockedItemsHint / formatBlockedItemsHintJa (iter439)', () => 
   it('max ≥ 5 → severe (count 1 でも)', () => {
     expect(classifyBlockedItemsHint([blocked('a', 5)])).toBe('severe')
     expect(classifyBlockedItemsHint([blocked('a', 10)])).toBe('severe')
+  })
+})
+
+describe('pickBlockingChains', () => {
+  it('items / edges 空 → 空配列', () => {
+    expect(pickBlockingChains([], [])).toEqual([])
+  })
+
+  it('open blocker 1 件 → blocker title を名前付きで返す', () => {
+    const r = pickBlockingChains(
+      [item('z', { title: '設計レビュー' }), item('y', { title: 'リリース準備' })],
+      [{ fromItemId: 'z', toItemId: 'y' }],
+    )
+    expect(r).toEqual([
+      {
+        blockedId: 'y',
+        blockedTitle: 'リリース準備',
+        openBlockerTitles: ['設計レビュー'],
+        openBlockerCount: 1,
+        priority: 4,
+      },
+    ])
+  })
+
+  it('完了済 blocker は open に数えない (= chain から除外)', () => {
+    const r = pickBlockingChains(
+      [item('z', { doneAt: NOW }), item('y')],
+      [{ fromItemId: 'z', toItemId: 'y' }],
+    )
+    expect(r).toEqual([])
+  })
+
+  it('自分が done / deleted の target は対象外', () => {
+    const r = pickBlockingChains(
+      [item('z'), item('done', { doneAt: NOW }), item('del', { deletedAt: NOW })],
+      [
+        { fromItemId: 'z', toItemId: 'done' },
+        { fromItemId: 'z', toItemId: 'del' },
+      ],
+    )
+    expect(r).toEqual([])
+  })
+
+  it('複数 open blocker は title ja 昇順で並ぶ、openBlockerCount desc で stable sort', () => {
+    const r = pickBlockingChains(
+      [
+        item('a', { title: 'あ' }),
+        item('b', { title: 'い' }),
+        item('y1', { title: 'リリース準備' }),
+        item('y2', { title: 'レポート' }),
+      ],
+      [
+        { fromItemId: 'b', toItemId: 'y1' },
+        { fromItemId: 'a', toItemId: 'y1' },
+        { fromItemId: 'a', toItemId: 'y2' },
+      ],
+    )
+    expect(r.map((c) => c.blockedId)).toEqual(['y1', 'y2'])
+    expect(r[0]!.openBlockerTitles).toEqual(['あ', 'い'])
+    expect(r[0]!.openBlockerCount).toBe(2)
+  })
+
+  it('重複 edge は二重加算しない', () => {
+    const r = pickBlockingChains(
+      [item('z'), item('y')],
+      [
+        { fromItemId: 'z', toItemId: 'y' },
+        { fromItemId: 'z', toItemId: 'y' },
+      ],
+    )
+    expect(r[0]!.openBlockerCount).toBe(1)
+  })
+})
+
+describe('formatBlockingChainsJa', () => {
+  it('0 件 → ブロック連鎖なし', () => {
+    expect(formatBlockingChainsJa([])).toBe('ブロック連鎖なし')
+  })
+
+  it('1 件待ち → 「Y は Z 待ち」', () => {
+    const chains = pickBlockingChains(
+      [item('z', { title: '設計レビュー' }), item('y', { title: 'リリース準備' })],
+      [{ fromItemId: 'z', toItemId: 'y' }],
+    )
+    expect(formatBlockingChainsJa(chains)).toBe('リリース準備 は 設計レビュー 待ち')
+  })
+
+  it('複数待ち → 先頭 blocker + 他 N 件', () => {
+    const chains = pickBlockingChains(
+      [
+        item('a', { title: 'あ' }),
+        item('b', { title: 'い' }),
+        item('y', { title: 'リリース準備' }),
+      ],
+      [
+        { fromItemId: 'a', toItemId: 'y' },
+        { fromItemId: 'b', toItemId: 'y' },
+      ],
+    )
+    expect(formatBlockingChainsJa(chains)).toBe('リリース準備 は あ 他 1 件 待ち')
+  })
+
+  it('limit 超過は 他 K 件 tail を付ける', () => {
+    const items = [
+      item('z'),
+      item('y1', { title: 'A' }),
+      item('y2', { title: 'B' }),
+      item('y3', { title: 'C' }),
+      item('y4', { title: 'D' }),
+    ]
+    const edges = [
+      { fromItemId: 'z', toItemId: 'y1' },
+      { fromItemId: 'z', toItemId: 'y2' },
+      { fromItemId: 'z', toItemId: 'y3' },
+      { fromItemId: 'z', toItemId: 'y4' },
+    ]
+    expect(formatBlockingChainsJa(pickBlockingChains(items, edges), 3)).toContain('他 1 件')
   })
 })
