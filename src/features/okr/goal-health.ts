@@ -112,6 +112,43 @@ export function goalHealthTierLabel(tier: GoalHealthTier): string {
   return TIER_LABEL[tier]
 }
 
+/**
+ * iter1375 ai-automation (queue: 目標達成サポート): 目標達成に必要な「残り 1 日あたり進捗率」を返す。
+ *
+ * `computeGoalHealth` が「今どれだけ遅れ/先行しているか (gapPct, backward)」 を出すのに対し、
+ * 本 helper は「ここから挽回するには 1 日あたり何 % 進めればよいか」 を forward-looking に出す
+ * (= 段取り支援、目標達成サポートの核)。
+ *
+ *  - pct >= 1               → 0 (達成済、追加不要)
+ *  - today > endDate        → null (期限切れ、これ以上は達成不能)
+ *  - それ以外               → (1 - pct) / 残日数。残窓 = max(today, startDate)..endDate (両端含む)。
+ *                             開始前は全期間で均等配分、残日数 ≤ 0 は null。
+ *
+ * 戻り値は 0..1 の「1 日あたり進捗率」。caller は ×100 で「1 日 X%」 表示。
+ */
+export function requiredDailyPaceToGoal(input: GoalHealthInput): number | null {
+  const today = input.today ?? todayISO()
+  const pct = Number.isFinite(input.pct) ? Math.max(0, input.pct) : 0
+  if (pct >= 1) return 0
+  if (today > input.endDate) return null
+  const from = today < input.startDate ? input.startDate : today
+  const remainingDays = daysBetween(from, input.endDate) + 1 // 両端含む
+  if (remainingDays <= 0) return null
+  return (1 - pct) / remainingDays
+}
+
+/**
+ * `requiredDailyPaceToGoal` の 1 行整形。null=期限切れ / 0=達成済 / 微小=「1% 未満」。
+ *   '残り 1 日あたり 5% 必要' / '達成済 (追加不要)' / '期限切れ (達成不能)' / '残り 1 日あたり 1% 未満'
+ */
+export function formatRequiredDailyPaceJa(pace: number | null): string {
+  if (pace === null) return '期限切れ (達成不能)'
+  if (pace <= 0) return '達成済 (追加不要)'
+  const pct = Math.round(pace * 100)
+  if (pct < 1) return '残り 1 日あたり 1% 未満'
+  return `残り 1 日あたり ${pct}% 必要`
+}
+
 /** group/count/format で受け取る Goal の最小構造 */
 export type GoalLike = Pick<GoalHealthInput, 'pct' | 'startDate' | 'endDate'>
 

@@ -8,11 +8,13 @@ import {
   computeGoalHealth,
   countGoalsByHealth,
   formatGoalHealthCounts,
+  formatRequiredDailyPaceJa,
   type GoalHealthTier,
   goalHealthTierCountsToSeverityCounts,
   goalHealthTierLabel,
   goalHealthTierSeverity,
   groupGoalsByHealth,
+  requiredDailyPaceToGoal,
 } from './goal-health'
 
 // 30 日 Goal: 2026-04-01 ~ 2026-04-30 (totalDays=30)
@@ -335,5 +337,55 @@ describe('goalHealthTierCountsToSeverityCounts', () => {
     expect(r.warn).toBe(1)
     expect(r.danger).toBe(1)
     expect(r.muted).toBe(1)
+  })
+})
+
+describe('requiredDailyPaceToGoal / formatRequiredDailyPaceJa (iter1375)', () => {
+  it('達成済 (pct>=1) → 0 / 「達成済」', () => {
+    expect(
+      requiredDailyPaceToGoal({ pct: 1.0, startDate: START, endDate: END, today: TODAY_DAY15 }),
+    ).toBe(0)
+    expect(formatRequiredDailyPaceJa(0)).toBe('達成済 (追加不要)')
+  })
+
+  it('期限切れ (today > endDate) → null / 「期限切れ」', () => {
+    expect(
+      requiredDailyPaceToGoal({ pct: 0.5, startDate: START, endDate: END, today: TODAY_AFTER }),
+    ).toBeNull()
+    expect(formatRequiredDailyPaceJa(null)).toBe('期限切れ (達成不能)')
+  })
+
+  it('期間中: (1-pct)/残日数 (両端含む)', () => {
+    // day15..end(04-30) = 残 16 日、pct 0.5 → 0.5/16 = 0.03125
+    const pace = requiredDailyPaceToGoal({
+      pct: 0.5,
+      startDate: START,
+      endDate: END,
+      today: TODAY_DAY15,
+    })
+    expect(pace).toBeCloseTo(0.03125, 5)
+    expect(formatRequiredDailyPaceJa(pace)).toBe('残り 1 日あたり 3% 必要')
+  })
+
+  it('開始前は全期間で配分 (from=startDate)', () => {
+    // 全 30 日、pct 0 → 1/30 ≈ 0.0333
+    const pace = requiredDailyPaceToGoal({
+      pct: 0,
+      startDate: START,
+      endDate: END,
+      today: TODAY_BEFORE,
+    })
+    expect(pace).toBeCloseTo(1 / 30, 5)
+  })
+
+  it('微小な必要 pace → 「1% 未満」', () => {
+    // pct 0.99、残 16 日 → 0.01/16 ≈ 0.000625 → round 0%
+    const pace = requiredDailyPaceToGoal({
+      pct: 0.99,
+      startDate: START,
+      endDate: END,
+      today: TODAY_DAY15,
+    })
+    expect(formatRequiredDailyPaceJa(pace)).toBe('残り 1 日あたり 1% 未満')
   })
 })
