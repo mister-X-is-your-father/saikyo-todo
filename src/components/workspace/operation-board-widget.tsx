@@ -344,8 +344,14 @@ function Section({
   tone?: 'red' | 'amber'
   children: React.ReactNode
 }) {
+  // iter1384: text-red-700 / text-amber-700 は dark bg 上で <4.5 (WCAG 1.4.3、推奨/期限超過
+  // section 見出し)。dark:text-{red,amber}-400 を併記 (light は 700 維持、dark で pass)。
   const labelTone =
-    tone === 'red' ? 'text-red-700' : tone === 'amber' ? 'text-amber-700' : 'text-foreground'
+    tone === 'red'
+      ? 'text-red-700 dark:text-red-400'
+      : tone === 'amber'
+        ? 'text-amber-700 dark:text-amber-400'
+        : 'text-foreground'
   // SR の heading shortcut で 4 sub-section (推奨/期限超過/MUST/予定/昨日 done)
   // に直行可能。visual サイズ text-xs / font-medium 維持。iter427 / iter428 /
   // iter430 / iter431 / iter432 と同 pattern (widget heading semantic 統一 6 件目)。
@@ -410,7 +416,8 @@ function ItemRow({
 }) {
   const cls =
     (highlight ? 'font-semibold ' : '') +
-    (tone === 'red' ? 'text-red-700 ' : '') +
+    // iter1384: 期限超過 row の title text-red-700 は dark bg 上で <4.5 (WCAG 1.4.3)。dark:red-400 併記。
+    (tone === 'red' ? 'text-red-700 dark:text-red-400 ' : '') +
     (muted ? 'text-muted-foreground line-through ' : '')
   // visible text と同じ情報を SR にも届ける (色のみで意味伝達 = WCAG 1.4.1 違反を避け、
   // 時刻 / 期限 / 状態 prefix を 1 行 aria-label に集約)
