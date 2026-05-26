@@ -178,7 +178,10 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
               {/* iter1053: 同 pattern で lane chip にも role="img" 付与。 */}
               <span
                 className={
-                  row.loadSummary.conflictPairCount > 0 ? 'text-amber-700' : 'text-muted-foreground'
+                  // iter1394: 固定暗色 amber-700 は dark card bg 上で <4.5 (WCAG 1.4.3)。dark:amber-400 併記。
+                  row.loadSummary.conflictPairCount > 0
+                    ? 'text-amber-700 dark:text-amber-400'
+                    : 'text-muted-foreground'
                 }
                 role="img"
                 aria-label={`lane: ${row.loadSummaryJa} / ${row.conflictsJa}`}

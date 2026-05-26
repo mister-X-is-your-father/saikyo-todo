@@ -303,7 +303,11 @@ function SubtaskTreeNode({
             </SortableContext>
           )}
           {overDepth && (
-            <p className="ml-4 text-[10px] text-amber-700" role="status" aria-live="polite">
+            <p
+              className="ml-4 text-[10px] text-amber-700 dark:text-amber-400"
+              role="status"
+              aria-live="polite"
+            >
               <span aria-hidden="true">⚠ </span>深さ {MAX_TREE_DEPTH} を超える子タスクは省略 (
               {grandchildren.length} 件)
             </p>
