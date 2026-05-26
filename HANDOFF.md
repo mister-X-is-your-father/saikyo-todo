@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1402 1/1] item タグ付与に楽観 update 追加 (応答性): useSetItemTags が onSuccess-invalidate のみで tag toggle の checkmark/chip 反映に server round-trip 待ち (**実測 ~995ms lag**)。iter437/1013 で status/reorder には onMutate 入れたが tag は取り残し。→ 非 async onMutate + void cancelQueries で同 frame setQueryData + onError rollback + onSettled invalidate。**実測 995ms→107ms**。経路 B: `scripts/explore-uiux-flicker-tag-toggle-iter1402.ts`。**新 vein**: 他の invalidate-only mutation (assignee/dependency/schedule 変更等) も同様の lag 可能性 → 次 iter で onMutate 有無を点検。
 - ✅ [playwright-iter1401 探索のみ mode-F] Kanban view の item-checkbox complete 切替 flicker 無し確認: data-checked を 0/50/100/200/500ms snapshot → before=false 全 frame true (逆戻り無し)。useToggleCompleteItem onMutate (iter1013) holding。iter1323 (Backlog) / iter1396 (reorder) に続く Kanban の mode-F guard。経路 B: `scripts/explore-uiux-flicker-kanban-complete-iter1401.ts`。
 - ✅ [playwright-iter1400 探索のみ] dark /pdca を item (status 別 4 件) 投入で render → 0 violation。PDCA 分布バー (graphical aria-hidden) + カウント/ラベル (theme-aware) は dark 対応済。iter1374 の item 無 scan を実描画版で補完。経路 B: `scripts/explore-uiux-axe-pdca-populated-dark-iter1400.ts`。
 - ✅ [playwright-iter1399 探索のみ] dark mock-timesheet (login/new) を scan → 0 violation。別系統サブアプリも theme-aware class 主体で dark 対応済。主要 surface (view/dialog/combobox/modal/widget/sub-app) の light+dark 網羅完了。経路 B: `scripts/explore-uiux-axe-mock-timesheet-dark-iter1399.ts`。
