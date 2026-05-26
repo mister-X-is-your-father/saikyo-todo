@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { isBroadcastCandidate, summarizeBroadcastProgress } from './broadcast-progress'
+import {
+  isBroadcastCandidate,
+  pickBroadcastLaggards,
+  summarizeBroadcastProgress,
+} from './broadcast-progress'
 import type { AssigneeRef } from './repository'
 
 const alice: AssigneeRef = { actorType: 'user', actorId: 'alice' }
@@ -104,5 +108,32 @@ describe('isBroadcastCandidate', () => {
   it('1 人以下 → false', () => {
     expect(isBroadcastCandidate([alice])).toBe(false)
     expect(isBroadcastCandidate([])).toBe(false)
+  })
+})
+
+describe('pickBroadcastLaggards (iter1369)', () => {
+  it('未対応者だけを元順序で返す', () => {
+    const summary = summarizeBroadcastProgress(
+      [alice, bob, carol],
+      [{ actorType: 'user', actorId: 'bob', doneAt: T1 }],
+    )
+    expect(pickBroadcastLaggards(summary)).toEqual([alice, carol])
+  })
+
+  it('全員完了 (fullyDone) → 空配列', () => {
+    const summary = summarizeBroadcastProgress(
+      [alice, bob],
+      [
+        { actorType: 'user', actorId: 'alice', doneAt: T1 },
+        { actorType: 'user', actorId: 'bob', doneAt: T2 },
+      ],
+    )
+    expect(summary.fullyDone).toBe(true)
+    expect(pickBroadcastLaggards(summary)).toEqual([])
+  })
+
+  it('全員未着手 → 全 assignee', () => {
+    const summary = summarizeBroadcastProgress([alice, bob, ai], [])
+    expect(pickBroadcastLaggards(summary)).toEqual([alice, bob, ai])
   })
 })

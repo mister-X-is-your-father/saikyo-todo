@@ -87,3 +87,17 @@ export function summarizeBroadcastProgress(
 export function isBroadcastCandidate(assignees: readonly AssigneeRef[]): boolean {
   return assignees.length >= 2
 }
+
+/**
+ * iter1369 (queue: 全員 broadcast 依頼): まだ done になっていない assignee (= 未対応者) を返す。
+ *
+ * broadcast P0 の本丸は「誰がやった / やってないが一目で分かる」 (作業漏れ防止)。
+ * summarizeBroadcastProgress は件数 (N/M) を出すが「誰が残っているか」 の primitive が無かった。
+ * 本 helper は rows の元順序を保ったまま done=false の ref だけ抽出し、UI の laggard 強調 /
+ * リマインド nudge / brief「未: A, B」 の base にする (ref → 表示名解決は呼び出し側が担当)。
+ *
+ * fullyDone (全員完了) なら空配列、未着手だらけなら全 assignee が返る。
+ */
+export function pickBroadcastLaggards(summary: BroadcastProgressSummary): AssigneeRef[] {
+  return summary.rows.filter((r) => !r.done).map((r) => r.ref)
+}
