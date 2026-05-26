@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   classifyNotificationActivityHint,
+  countActionableNotifications,
   formatDominantNotificationTypeJa,
   formatNotificationActivityHintJa,
   formatNotificationActivitySummary,
@@ -287,5 +288,43 @@ describe('formatDominantNotificationTypeJa (iter1009)', () => {
     expect(out).toContain('通知の主軸: ')
     expect(out).toContain('(3 件)')
     expect(out).toBe(`通知の主軸: ${notificationTypeLabel('sync-failure')} (3 件)`)
+  })
+})
+
+describe('countActionableNotifications (iter1385)', () => {
+  it('mention + invite + sync-failure を合算 (heartbeat / unknown 除外)', () => {
+    expect(
+      countActionableNotifications({
+        heartbeat: 10,
+        mention: 2,
+        invite: 1,
+        'sync-failure': 3,
+        unknown: 5,
+      }),
+    ).toBe(6)
+  })
+
+  it('heartbeat / unknown のみ → 0 (応答不要)', () => {
+    expect(
+      countActionableNotifications({
+        heartbeat: 7,
+        mention: 0,
+        invite: 0,
+        'sync-failure': 0,
+        unknown: 4,
+      }),
+    ).toBe(0)
+  })
+
+  it('全 0 → 0', () => {
+    expect(
+      countActionableNotifications({
+        heartbeat: 0,
+        mention: 0,
+        invite: 0,
+        'sync-failure': 0,
+        unknown: 0,
+      }),
+    ).toBe(0)
   })
 })

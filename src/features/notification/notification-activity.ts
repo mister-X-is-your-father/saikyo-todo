@@ -178,3 +178,20 @@ export function formatDominantNotificationTypeJa(
   if (picked === null) return '通知の主軸: なし'
   return `通知の主軸: ${notificationTypeLabel(picked.type)} (${picked.count} 件)`
 }
+
+/**
+ * iter1385 ai-automation: 「ユーザの応答/対応が要る」 通知だけを合算する (= 対人 + エラー系)。
+ *
+ * notification-bell / dashboard で「放置すると困る通知」 を heartbeat (= 自分の MUST nudge、
+ * 通知自体への返信は不要) と区別して優先表示するための pure 集計。
+ *
+ * actionable = mention (誰かが @言及 → 応答) + invite (招待 → 受諾/辞退) +
+ *              sync-failure (同期失敗 → 復旧対応)。
+ * heartbeat (= MUST リマインダー、対応先は item 側) / unknown は除外。
+ *
+ * `formatNotificationActivitySummary` が全 type の内訳を出すのに対し、本 helper は
+ * 「いま何件が自分の action 待ちか」 の 1 数値を返す (= 作業漏れ防止の優先 badge)。
+ */
+export function countActionableNotifications(counts: Readonly<NotificationCountByType>): number {
+  return counts.mention + counts.invite + counts['sync-failure']
+}
