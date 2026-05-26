@@ -135,4 +135,20 @@
     @apply font-sans;
     overflow-x: clip;
   }
+  /*
+   * Phase 6.15 iter1365: prefers-reduced-motion 対応 (WCAG 2.3.3 Animation from Interactions)。
+   * tw-animate-css / dialog の scale-fade / accordion 等の transition と animate-spin 系 keyframe を
+   * OS の「視差効果を減らす」設定時に実質無効化する。前庭障害ユーザの不快/めまいを防ぐ標準 reset。
+   * (@layer base 内に置かないと Tailwind v4 / Lightning CSS が universal selector 宣言を drop する)
+   */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
