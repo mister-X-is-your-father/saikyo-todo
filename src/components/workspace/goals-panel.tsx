@@ -471,7 +471,9 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                         tier === 'behind'
                           ? 'text-destructive'
                           : tier === 'achieved'
-                            ? 'text-emerald-700'
+                            ? // iter1392: 固定暗色 emerald-700 は dark card bg 上で <4.5 (WCAG 1.4.3)。
+                              // dark:emerald-400 併記 (behind は theme-aware text-destructive で既に OK)。
+                              'text-emerald-700 dark:text-emerald-400'
                             : ''
                       }`}
                     >

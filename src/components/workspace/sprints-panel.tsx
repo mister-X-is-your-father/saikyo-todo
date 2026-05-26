@@ -573,7 +573,8 @@ function SprintCard({
                       tone === 'behind'
                         ? 'text-destructive'
                         : tone === 'done'
-                          ? 'text-emerald-700'
+                          ? // iter1392: 固定暗色 emerald-700 は dark card bg 上で <4.5。dark:emerald-400 併記。
+                            'text-emerald-700 dark:text-emerald-400'
                           : ''
                     }`}
                   >
