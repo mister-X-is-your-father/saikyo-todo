@@ -242,3 +242,40 @@ export function countItemsByEffortBucket(
 export function formatEffortBucketCounts(counts: Record<EffortBucket, number>): string {
   return formatNonZeroCounts(counts, EFFORT_ORDER, EFFORT_LABEL)
 }
+
+/**
+ * iter1386 ai-automation: 見積ありの effort bucket のうち最多を返す (= backlog の主な粒度)。
+ *
+ * pickDominantNotificationType (notification) / pickTopActor (audit) と並ぶ「単一 最重 抽出」
+ * pattern の effort 軸版。dashboard chip 「主な粒度: 30m-2h (12 件)」 で「今の backlog は
+ * どのサイズのタスクが多いか」 を 0.5 秒で示す。
+ *
+ * 仕様:
+ *   - `unknown` (見積なし) は effort レベルではないので **除外** (count があっても主軸にしない)
+ *   - 見積あり全 0 (= unknown のみ or 空) → null
+ *   - tie は EFFORT_ORDER 宣言順 (quick > medium > large > xlarge)
+ */
+export function pickDominantEffortBucket(
+  counts: Record<EffortBucket, number>,
+): { bucket: Exclude<EffortBucket, 'unknown'>; count: number } | null {
+  let best: { bucket: Exclude<EffortBucket, 'unknown'>; count: number } | null = null
+  for (const b of EFFORT_ORDER) {
+    if (b === 'unknown') continue
+    const c = counts[b]
+    if (c > 0 && (best === null || c > best.count)) {
+      best = { bucket: b, count: c }
+    }
+  }
+  return best
+}
+
+/**
+ * pickDominantEffortBucket の出力を chip 文言に整形。
+ *   '主な粒度: 30m-2h (12 件)' / '主な粒度: 見積あり task なし' (null)
+ */
+export function formatDominantEffortBucketJa(
+  picked: { bucket: Exclude<EffortBucket, 'unknown'>; count: number } | null,
+): string {
+  if (picked === null) return '主な粒度: 見積あり task なし'
+  return `主な粒度: ${EFFORT_LABEL[picked.bucket]} (${picked.count} 件)`
+}

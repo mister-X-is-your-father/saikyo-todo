@@ -3,11 +3,13 @@ import { describe, expect, it } from 'vitest'
 import {
   countItemsByEffortBucket,
   extractEstimateMinutes,
+  formatDominantEffortBucketJa,
   formatEffortBucketCounts,
   formatEstimate,
   formatItemEstimateSummary,
   groupItemsByEffortBucket,
   parseEstimateFromText,
+  pickDominantEffortBucket,
   summarizeItemEstimates,
 } from './estimate'
 
@@ -282,5 +284,42 @@ describe('formatEffortBucketCounts', () => {
         unknown: 0,
       }),
     ).toBe('0 件')
+  })
+})
+
+describe('pickDominantEffortBucket / formatDominantEffortBucketJa (iter1386)', () => {
+  it('見積あり最多 bucket を返す (unknown は除外)', () => {
+    const picked = pickDominantEffortBucket({
+      quick: 2,
+      medium: 5,
+      large: 1,
+      xlarge: 0,
+      unknown: 99, // 除外される
+    })
+    expect(picked).toEqual({ bucket: 'medium', count: 5 })
+    expect(formatDominantEffortBucketJa(picked)).toBe('主な粒度: 30m-2h (5 件)')
+  })
+
+  it('見積あり全 0 (unknown のみ) → null', () => {
+    const picked = pickDominantEffortBucket({
+      quick: 0,
+      medium: 0,
+      large: 0,
+      xlarge: 0,
+      unknown: 7,
+    })
+    expect(picked).toBeNull()
+    expect(formatDominantEffortBucketJa(null)).toBe('主な粒度: 見積あり task なし')
+  })
+
+  it('tie は EFFORT_ORDER 宣言順 (quick 優先)', () => {
+    const picked = pickDominantEffortBucket({
+      quick: 3,
+      medium: 3,
+      large: 0,
+      xlarge: 0,
+      unknown: 0,
+    })
+    expect(picked?.bucket).toBe('quick')
   })
 })
