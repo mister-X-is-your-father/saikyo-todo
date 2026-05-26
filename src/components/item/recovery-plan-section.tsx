@@ -54,15 +54,19 @@ export function RecoveryPlanSection({ item, heavyAssignees = [], today, classNam
   if (!plan.isApplicable || plan.actions.length === 0) return null
 
   return (
+    // iter1376: 旧実装は container bg-rose-50/40 / heading text-rose-900 / action card
+    // bg-white が全て light 固定色で dark に追従せず、dark では theme-aware text (foreground/
+    // muted) が light bg に乗り white-on-white (1.04) 等の重度 contrast 割れ (WCAG 1.4.3 ×5)。
+    // 各々に dark: 変種 / theme token を付与。
     <div
-      className={`space-y-2 rounded-lg border border-rose-200 bg-rose-50/40 p-3 ${className ?? ''}`}
+      className={`space-y-2 rounded-lg border border-rose-200 bg-rose-50/40 p-3 dark:border-rose-900/50 dark:bg-rose-950/30 ${className ?? ''}`}
       role="region"
       aria-labelledby="recovery-plan-heading"
       data-testid="recovery-plan-section"
     >
       <h3
         id="recovery-plan-heading"
-        className="flex items-center gap-1.5 text-sm font-semibold text-rose-900"
+        className="flex items-center gap-1.5 text-sm font-semibold text-rose-900 dark:text-rose-200"
       >
         <LifeBuoy className="h-4 w-4" aria-hidden="true" />
         MUST 救済プラン
@@ -76,7 +80,7 @@ export function RecoveryPlanSection({ item, heavyAssignees = [], today, classNam
           return (
             <li
               key={`${action.kind}-${action.rank}`}
-              className="space-y-1 rounded border bg-white p-2 text-xs"
+              className="bg-card space-y-1 rounded border p-2 text-xs"
               data-testid={`recovery-action-${action.kind}`}
             >
               <div className="flex items-center gap-2">
