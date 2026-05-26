@@ -136,13 +136,21 @@ export function TaskChuteView({ workspaceId, items }: Props) {
             <span className="text-muted-foreground" aria-hidden="true">
               / 完了
             </span>
-            <span className="font-medium text-emerald-700 tabular-nums" aria-hidden="true">
+            <span
+              className="font-medium text-emerald-700 tabular-nums dark:text-emerald-400"
+              aria-hidden="true"
+            >
               {Math.floor(ticker.doneEstimateMin / 60)}h{ticker.doneEstimateMin % 60}m
             </span>
             <span className="text-muted-foreground" aria-hidden="true">
               / 残
             </span>
-            <span className="font-medium text-amber-700 tabular-nums" aria-hidden="true">
+            {/* iter1389: emerald-700/amber-700 は ticker bar の bg-muted/40 (dark で暗色) 上で
+                dark 時 <4.5 (WCAG 1.4.3、完了/残 estimate)。dark:{emerald,amber}-400 を併記。 */}
+            <span
+              className="font-medium text-amber-700 tabular-nums dark:text-amber-400"
+              aria-hidden="true"
+            >
               {Math.floor(ticker.remainingEstimateMin / 60)}h{ticker.remainingEstimateMin % 60}m
             </span>
             {ticker.estimateUnknownCount > 0 ? (
