@@ -11,6 +11,7 @@ import {
   type ConsultationVote,
   formatConsultationCountsCompactJa,
   formatConsultationStatusJa,
+  pickConsultationNonVoters,
   tallyConsultation,
 } from './consultation-tally'
 
@@ -82,6 +83,26 @@ describe('tallyConsultation', () => {
     expect(r.rows[0]?.ratio).toBe(0.5)
     expect(r.rows[1]?.ratio).toBe(0.25)
     expect(r.rows[2]?.ratio).toBe(0.25)
+  })
+})
+
+describe('pickConsultationNonVoters (iter1370)', () => {
+  it('未投票の関係者を元順序で返す', () => {
+    const votes: ConsultationVote[] = [{ optionIndex: 0, userId: 'bob', votedAt: T1 }]
+    expect(pickConsultationNonVoters(['alice', 'bob', 'carol'], votes)).toEqual(['alice', 'carol'])
+  })
+
+  it('全員投票済 → 空配列 (重複投票 user も投票済扱い)', () => {
+    const votes: ConsultationVote[] = [
+      { optionIndex: 0, userId: 'alice', votedAt: T1 },
+      { optionIndex: 1, userId: 'alice', votedAt: T2 },
+      { optionIndex: 0, userId: 'bob', votedAt: T1 },
+    ]
+    expect(pickConsultationNonVoters(['alice', 'bob'], votes)).toEqual([])
+  })
+
+  it('投票ゼロ → 全関係者、stakeholder 重複は first-occurrence で一意化', () => {
+    expect(pickConsultationNonVoters(['alice', 'bob', 'alice'], [])).toEqual(['alice', 'bob'])
   })
 })
 

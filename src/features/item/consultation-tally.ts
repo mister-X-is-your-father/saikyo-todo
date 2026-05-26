@@ -98,6 +98,32 @@ export function tallyConsultation(
 }
 
 /**
+ * iter1370 (queue: 相談特化): まだ投票していない関係者 (stakeholder) の userId を返す。
+ *
+ * 相談 P0 は「関係者に通知 + voting + 決定記録」。tallyConsultation は投票分布を出すが
+ * 「誰がまだ意見していないか」 は stakeholder list が無いと出せなかった (votes だけでは
+ * 投票した人しか分からない)。本 helper は stakeholder の元順序を保ったまま、投票済
+ * (votes に userId が 1 度でも現れる) を除外し、未投票者を返す。requester の催促 /
+ * brief「未投票: A, B」 / 締切前 nudge の base になる (id→表示名は呼び出し側)。
+ *
+ * stakeholderIds に重複があっても結果は first-occurrence で一意化する (= 名簿の堅牢性)。
+ */
+export function pickConsultationNonVoters(
+  stakeholderIds: readonly string[],
+  votes: readonly ConsultationVote[],
+): string[] {
+  const voted = new Set(votes.map((v) => v.userId))
+  const seen = new Set<string>()
+  const result: string[] = []
+  for (const id of stakeholderIds) {
+    if (voted.has(id) || seen.has(id)) continue
+    seen.add(id)
+    result.push(id)
+  }
+  return result
+}
+
+/**
  * 相談 status 判定:
  *   - 'open': 締切未到来 + decided 未済
  *   - 'closing-soon': 締切 ≤ 24h
