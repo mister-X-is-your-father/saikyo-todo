@@ -191,7 +191,9 @@ export function SprintRiskBoardWidget<T extends RiskBoardItemFields>({
                     <td className="py-1 text-right tabular-nums">{load.itemCount}</td>
                     <td className="py-1 text-right tabular-nums">
                       {load.mustCount > 0 ? (
-                        <span className="font-semibold text-rose-700">{load.mustCount}</span>
+                        <span className="font-semibold text-rose-700 dark:text-rose-400">
+                          {load.mustCount}
+                        </span>
                       ) : (
                         <span className="text-muted-foreground">0</span>
                       )}

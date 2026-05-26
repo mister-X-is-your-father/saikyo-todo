@@ -139,7 +139,8 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
           <div aria-hidden="true">
             <dt className="text-muted-foreground">差分</dt>
             <dd
-              className={`text-base font-semibold tabular-nums ${delta < 0 ? 'text-rose-700' : delta > 0 ? 'text-emerald-700' : ''}`}
+              // iter1393: 固定暗色 rose-700/emerald-700 は dark card bg 上で <4.5 (WCAG 1.4.3)。dark 変種併記。
+              className={`text-base font-semibold tabular-nums ${delta < 0 ? 'text-rose-700 dark:text-rose-400' : delta > 0 ? 'text-emerald-700 dark:text-emerald-400' : ''}`}
             >
               {delta > 0 ? '+' : ''}
               {delta}
