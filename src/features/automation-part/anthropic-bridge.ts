@@ -17,7 +17,7 @@
  *     新 part 追加時に Anthropic Tool 配列が自動拡張する
  *   - filter は listParts と同じ shape (workflow / agent / MCP の scope key で絞込み可能)
  */
-import { buildPartManifest } from './registry'
+import { buildPartManifest, listParts } from './registry'
 import type { PartCategory, PartSideEffect } from './types'
 
 /**
@@ -46,6 +46,26 @@ export function partIdToToolName(partId: string): string {
  */
 export function toolNameToPartIdCandidate(toolName: string): string {
   return toolName.replaceAll('_', '.')
+}
+
+/**
+ * iter1376: tool name から registry 上の **正しい** partId を解決する (round-trip 安全版)。
+ *
+ * `toolNameToPartIdCandidate` の単純 '_'→'.' 全置換は、partId 自体に '_' を含む id
+ * (例 'item.list_today' / 'comment.create_on_item' / 'schedule.start_timer') を誤変換する
+ * ('schedule.start_timer' → tool 'schedule_start_timer' → 候補 'schedule.start.timer' ✗)。
+ * Claude / MCP の tool_use block name から part を逆引きする時、この候補をそのまま
+ * `getPart` に渡すと underscore 入り part が常に miss する。
+ *
+ * 本 resolver は登録済 part を `partIdToToolName()` で前向き写像し、tool name と完全一致
+ * する partId を返す (= '_' を含む id でも正しく解決)。未登録 / 不一致は undefined。
+ * registry に依存するため、bootstrapAutomationParts() 後に呼ぶこと。
+ */
+export function resolvePartIdFromToolName(toolName: string): string | undefined {
+  for (const part of listParts()) {
+    if (partIdToToolName(part.id) === toolName) return part.id
+  }
+  return undefined
 }
 
 /**

@@ -9,6 +9,7 @@ import { z } from 'zod'
 import {
   buildAnthropicToolDefinitions,
   partIdToToolName,
+  resolvePartIdFromToolName,
   toolNameToPartIdCandidate,
 } from './anthropic-bridge'
 import { _resetRegistryForTesting, registerPart } from './registry'
@@ -61,6 +62,28 @@ describe('partIdToToolName / toolNameToPartIdCandidate', () => {
     // schedule.start_timer → schedule_start_timer → schedule.start.timer (誤)
     // → registry 側で実 id 存在確認が必要、本 helper は候補生成のみ責任
     expect(toolNameToPartIdCandidate('schedule_start_timer')).toBe('schedule.start.timer')
+  })
+})
+
+describe('resolvePartIdFromToolName (iter1376)', () => {
+  it('dot 単純 id を解決', () => {
+    _resetRegistryForTesting()
+    registerPart(itemCreate)
+    expect(resolvePartIdFromToolName('item_create')).toBe('item.create')
+  })
+
+  it('underscore 含む id を正しく解決 (候補逆変換が壊れるケース)', () => {
+    _resetRegistryForTesting()
+    registerPart(scheduleStart)
+    // toolNameToPartIdCandidate では 'schedule.start.timer' (誤) になるが registry 解決は正しい
+    expect(toolNameToPartIdCandidate('schedule_start_timer')).toBe('schedule.start.timer')
+    expect(resolvePartIdFromToolName('schedule_start_timer')).toBe('schedule.start_timer')
+  })
+
+  it('未登録 tool name → undefined', () => {
+    _resetRegistryForTesting()
+    registerPart(itemCreate)
+    expect(resolvePartIdFromToolName('nope_nope')).toBeUndefined()
   })
 })
 
