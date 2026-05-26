@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   classifyNotificationActivityHint,
   countActionableNotifications,
+  formatActionableNotificationsJa,
   formatDominantNotificationTypeJa,
   formatNotificationActivityHintJa,
   formatNotificationActivitySummary,
@@ -326,5 +327,31 @@ describe('countActionableNotifications (iter1385)', () => {
         unknown: 0,
       }),
     ).toBe(0)
+  })
+})
+
+describe('formatActionableNotificationsJa (iter1387)', () => {
+  it('1+ 件 → 「要対応 N 件」', () => {
+    expect(
+      formatActionableNotificationsJa({
+        heartbeat: 9,
+        mention: 2,
+        invite: 1,
+        'sync-failure': 0,
+        unknown: 3,
+      }),
+    ).toBe('要対応 3 件')
+  })
+
+  it('0 件 (heartbeat/unknown のみ) → 「要対応なし」', () => {
+    expect(
+      formatActionableNotificationsJa({
+        heartbeat: 5,
+        mention: 0,
+        invite: 0,
+        'sync-failure': 0,
+        unknown: 2,
+      }),
+    ).toBe('要対応なし')
   })
 })

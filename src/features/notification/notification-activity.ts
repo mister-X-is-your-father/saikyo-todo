@@ -195,3 +195,13 @@ export function formatDominantNotificationTypeJa(
 export function countActionableNotifications(counts: Readonly<NotificationCountByType>): number {
   return counts.mention + counts.invite + counts['sync-failure']
 }
+
+/**
+ * iter1387 ai-automation: countActionableNotifications を notification-bell badge /
+ * aria-label 用の 1 行に整形。`'要対応 3 件'` / 0 件 → `'要対応なし'`。
+ * count→format pairing (formatNotificationActivitySummary 等と同 convention)。
+ */
+export function formatActionableNotificationsJa(counts: Readonly<NotificationCountByType>): string {
+  const n = countActionableNotifications(counts)
+  return n === 0 ? '要対応なし' : `要対応 ${n} 件`
+}
