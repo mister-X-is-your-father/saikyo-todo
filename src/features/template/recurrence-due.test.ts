@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { classifyRecurrenceDue, pickInstantiationCandidates } from './recurrence-due'
+import {
+  classifyRecurrenceDue,
+  formatRecurrenceDueSummaryJa,
+  pickInstantiationCandidates,
+  summarizeRecurrenceDue,
+} from './recurrence-due'
 
 const NOW = new Date('2026-05-19T12:00:00Z')
 
@@ -111,5 +116,53 @@ describe('pickInstantiationCandidates', () => {
         NOW,
       ),
     ).toEqual([])
+  })
+})
+
+describe('summarizeRecurrenceDue / formatRecurrenceDueSummaryJa (iter1383)', () => {
+  const T = (over: { nextRunAt: Date | null; paused?: boolean }, id: string) => ({
+    id,
+    state: { lastRunAt: null, nextRunAt: over.nextRunAt, paused: over.paused ?? false },
+  })
+
+  it('kind 別件数を集計', () => {
+    const counts = summarizeRecurrenceDue(
+      [
+        T({ nextRunAt: new Date('2026-05-19T09:00:00Z') }, 'overdue1'),
+        T({ nextRunAt: new Date('2026-05-19T20:00:00Z') }, 'today1'),
+        T({ nextRunAt: new Date('2026-05-25T09:00:00Z') }, 'upcoming1'),
+        T({ nextRunAt: new Date('2026-05-01T09:00:00Z'), paused: true }, 'paused1'),
+        T({ nextRunAt: null }, 'never1'),
+      ],
+      NOW,
+    )
+    expect(counts).toEqual({
+      overdue: 1,
+      'due-today': 1,
+      upcoming: 1,
+      paused: 1,
+      'never-run': 1,
+    })
+    expect(formatRecurrenceDueSummaryJa(counts)).toBe(
+      '展開待ち 1 / 本日 1 / 予定 1 / 停止 1 / 要確認 1',
+    )
+  })
+
+  it('0 件 kind は format で省略、actionable 順', () => {
+    const counts = summarizeRecurrenceDue(
+      [
+        T({ nextRunAt: new Date('2026-05-19T09:00:00Z') }, 'o1'),
+        T({ nextRunAt: new Date('2026-05-19T08:00:00Z') }, 'o2'),
+        T({ nextRunAt: new Date('2026-05-25T09:00:00Z') }, 'u1'),
+      ],
+      NOW,
+    )
+    expect(formatRecurrenceDueSummaryJa(counts)).toBe('展開待ち 2 / 予定 1')
+  })
+
+  it('空 → 「繰り返し template なし」', () => {
+    expect(formatRecurrenceDueSummaryJa(summarizeRecurrenceDue([], NOW))).toBe(
+      '繰り返し template なし',
+    )
   })
 })

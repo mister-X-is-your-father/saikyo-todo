@@ -98,3 +98,55 @@ export function pickInstantiationCandidates<T extends RecurringTemplateLike>(
 ): T[] {
   return templates.filter((t) => classifyRecurrenceDue(t.state, now).shouldInstantiate)
 }
+
+/**
+ * iter1383 (queue: 目標達成 + 繰り返しタスク / TC-4 routine 露出): recurring template 群を
+ * kind 別件数に集約 + routine panel header 用の 1 行 summary。
+ *
+ * classifyRecurrenceDue は 1 件単位の判定だが、本 helper は routine 一覧 panel の
+ * header (「展開待ち 3 / 本日 2 / 予定 5 / 停止 1 / 要確認 0」) を 1 関数で出す。
+ * 0 件 kind は format で省略、全 0 は「繰り返し template なし」。
+ */
+export type RecurrenceDueCounts = Record<RecurrenceDueKind, number>
+
+export function summarizeRecurrenceDue<T extends RecurringTemplateLike>(
+  templates: readonly T[],
+  now: Date,
+): RecurrenceDueCounts {
+  const counts: RecurrenceDueCounts = {
+    overdue: 0,
+    'due-today': 0,
+    upcoming: 0,
+    paused: 0,
+    'never-run': 0,
+  }
+  for (const t of templates) {
+    counts[classifyRecurrenceDue(t.state, now).kind] += 1
+  }
+  return counts
+}
+
+const RECURRENCE_KIND_LABEL_JA: Record<RecurrenceDueKind, string> = {
+  overdue: '展開待ち',
+  'due-today': '本日',
+  upcoming: '予定',
+  paused: '停止',
+  'never-run': '要確認',
+}
+
+// 表示順: actionable な順 (展開待ち → 本日 → 予定 → 停止 → 要確認)
+const RECURRENCE_KIND_ORDER: readonly RecurrenceDueKind[] = [
+  'overdue',
+  'due-today',
+  'upcoming',
+  'paused',
+  'never-run',
+]
+
+export function formatRecurrenceDueSummaryJa(counts: RecurrenceDueCounts): string {
+  const parts = RECURRENCE_KIND_ORDER.filter((k) => counts[k] > 0).map(
+    (k) => `${RECURRENCE_KIND_LABEL_JA[k]} ${counts[k]}`,
+  )
+  if (parts.length === 0) return '繰り返し template なし'
+  return parts.join(' / ')
+}
