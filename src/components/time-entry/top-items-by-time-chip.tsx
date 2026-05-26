@@ -144,7 +144,11 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
         </div>
         {peakLabel && fullWeekdayAria ? (
           <div
-            className="text-muted-foreground border-border mb-3 inline-flex items-center gap-1.5 rounded border bg-amber-50 px-2 py-1 text-[11px] text-amber-800"
+            // iter1397: 旧 className に text-muted-foreground と text-amber-800 が混在し、
+            // muted-foreground (theme-aware) が勝って dark で明色化 → light 固定 bg-amber-50 上で
+            // 2.49:1 (WCAG 1.4.3)。余計な text-muted-foreground を除去し、bg/text/border に dark 変種を
+            // 付与して両モード amber chip として pass させる。
+            className="border-border mb-3 inline-flex items-center gap-1.5 rounded border bg-amber-50 px-2 py-1 text-[11px] text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200"
             data-testid="weekday-time-distribution-chip"
             data-peak={summary.peak?.key}
             role="status"
