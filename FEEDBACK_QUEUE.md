@@ -1016,7 +1016,23 @@ loop / in-session 両方の picking を **queue 由来 P0 のみ** に強制す�
 
 **Phase 2 (残、UI / service / worker / migration 配線が必要、loop 消化対象):**
 
-18. **fluffy P0-4: AI 調査削除** (researcherService.run 撤去、本 file fluffy entry)
+18. **fluffy P0-4: AI 調査削除** (researcherService.run 撤去、本 file fluffy entry) — cloud env では service test (実 Supabase 要) を回せず削除の回帰確認不能のため未着手。UI-capable / DB-capable session に委譲推奨。
+
+**Phase 1.5 追加 substrate (2026-05-26 in-session、iter1365-1377、13 commit、全 unit test green):**
+
+各 P0 feature の pure-helper 層に「未対応者抽出 / pace 判定 / chain 命名 / round-trip 安全化」 を追加投入 (各 30-150 行 + Vitest)。Phase 2 配線時の足場として再消費可能:
+
+- `pickBlockingChains` / `formatBlockingChainsJa` (item-dependency) — fluffy-1 作戦盤の「Y は Z 待ち」 chain。`buildOperationBoard` summary + headline に統合済 (iter1365-1367)
+- `formatSprintRetroRootCausesJa` (sprint) — fluffy-3 retro 落ち主因 1 行 (iter1368)
+- `pickBroadcastLaggards` (broadcast) / `pickConsultationNonVoters` (相談) — 未対応者/未投票者抽出 (iter1369-1370)
+- `findDanglingInputs` (task metadata I/O) — 入手経路なし input 検出 (iter1371)
+- `organizeRelatedResources.hiddenCount` (関連情報) — 関連度低の省略件数 (iter1372)
+- `classifyPdcaPace` (PDCA AI-4) — Do 中 anomaly 早期検知 完了% vs 経過% (iter1374)
+- `requiredDailyPaceToGoal` (OKR) — 目標達成に必要な 1 日あたり進捗率 (iter1375)
+- `resolvePartIdFromToolName` (automation-part AP-5) — **correctness fix**: tool name → partId の round-trip 安全 resolver (underscore 入り id 対応)、index.ts export 済 (iter1376-1377)
+- refactor: taskchute local pad2 → lib/date/iso#pad2 集約 (iter1373)
+
+→ これらは UI/service 配線 (Phase 2) で「widget render / service 呼び / brief 文字列」 にそのまま bind 可能。
 
 **Phase 1 集約 leverage:**
 
