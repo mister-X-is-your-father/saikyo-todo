@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  contextTagKey,
   inferTagKindFromName,
   normalizeTagKind,
   pickContextTags,
@@ -93,5 +94,24 @@ describe('normalizeTagKind', () => {
   it('prefix 無し + kind=normal は不変', () => {
     const tag = { id: '1', name: 'urgent', kind: 'normal' as const }
     expect(normalizeTagKind(tag)).toBe(tag)
+  })
+})
+
+describe('contextTagKey (iter1382)', () => {
+  it('大小・全半角・trim ゆれを吸収して同一 key に', () => {
+    expect(contextTagKey('@Home')).toBe('home')
+    expect(contextTagKey('@home ')).toBe('home')
+    expect(contextTagKey('＠HOME')).toBe('home')
+    expect(contextTagKey('@Home')).toBe(contextTagKey('@home'))
+  })
+
+  it('prefix 無し通常 tag も trim+lower のみで安全に key 化', () => {
+    expect(contextTagKey('Backend')).toBe('backend')
+    expect(contextTagKey('  Backend  ')).toBe('backend')
+  })
+
+  it('空 / prefix のみ → 空文字', () => {
+    expect(contextTagKey('')).toBe('')
+    expect(contextTagKey('@')).toBe('')
   })
 })

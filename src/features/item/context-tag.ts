@@ -56,6 +56,20 @@ export function pickContextTags<T extends TagLike>(tags: readonly T[]): T[] {
 }
 
 /**
+ * iter1382 (queue: GT-2 GTD context tag): context tag を grouping / filtering 用の
+ * canonical key に正規化する。`@`/`＠` prefix 除去 + trim + lower-case。
+ *
+ * GTD の Engage step で「@home の task」 を集約する時、ユーザ入力の大小ゆれ
+ * (`@Home` / `@home` / `＠HOME` / `@home `) が別 bucket に割れるのを防ぐ。
+ *   contextTagKey('@Home') === contextTagKey('@home ') === contextTagKey('＠HOME') === 'home'
+ *
+ * context でない通常 tag に対しても安全 (prefix 無しは strip せず trim+lower のみ)。
+ */
+export function contextTagKey(name: string): string {
+  return stripContextPrefix(name).trim().toLowerCase()
+}
+
+/**
  * tag を context tag 化する正規化:
  * - 既に kind='context' なら何もしない
  * - name が `@`-prefix なら kind を 'context' に推定
