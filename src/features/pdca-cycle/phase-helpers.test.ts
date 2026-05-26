@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  classifyPdcaPace,
   formatPdcaCyclePhaseStatusJa,
+  formatPdcaPaceJa,
   isPdcaPhaseStuck,
   pdcaCyclePhaseLabelJa,
   pdcaPhaseDayLimit,
@@ -166,5 +168,52 @@ describe('isPdcaPhaseStuck (iter1011)', () => {
 
   it('timestamp 未記録 → false (= on_track fallback)', () => {
     expect(isPdcaPhaseStuck({ status: 'plan' }, NOW)).toBe(false)
+  })
+})
+
+describe('classifyPdcaPace / formatPdcaPaceJa (iter1374)', () => {
+  it('item / 期間 なし → no-data', () => {
+    expect(
+      classifyPdcaPace({ completedItems: 0, totalItems: 0, elapsedDays: 5, plannedDays: 10 }),
+    ).toBe('no-data')
+    expect(
+      classifyPdcaPace({ completedItems: 1, totalItems: 2, elapsedDays: 5, plannedDays: 0 }),
+    ).toBe('no-data')
+    expect(formatPdcaPaceJa('no-data')).toBe('pace 判定不能 (item / 期間 なし)')
+  })
+
+  it('予定日数超過 + 未完了 → at-risk', () => {
+    expect(
+      classifyPdcaPace({ completedItems: 3, totalItems: 5, elapsedDays: 12, plannedDays: 10 }),
+    ).toBe('at-risk')
+    expect(formatPdcaPaceJa('at-risk')).toBe('期限超過 + 未完了 (危険)')
+  })
+
+  it('完了が時間進捗を 0.1 以上上回る → ahead', () => {
+    // completion 0.8 vs timeProgress 0.5 → gap 0.3
+    expect(
+      classifyPdcaPace({ completedItems: 4, totalItems: 5, elapsedDays: 5, plannedDays: 10 }),
+    ).toBe('ahead')
+  })
+
+  it('完了が時間進捗を 0.2 以上下回る → behind', () => {
+    // completion 0.2 vs timeProgress 0.7 → gap -0.5
+    expect(
+      classifyPdcaPace({ completedItems: 1, totalItems: 5, elapsedDays: 7, plannedDays: 10 }),
+    ).toBe('behind')
+    expect(formatPdcaPaceJa('behind')).toBe('遅れ気味 (要注意)')
+  })
+
+  it('概ね計画通り → on-track', () => {
+    // completion 0.5 vs timeProgress 0.5 → gap 0
+    expect(
+      classifyPdcaPace({ completedItems: 5, totalItems: 10, elapsedDays: 5, plannedDays: 10 }),
+    ).toBe('on-track')
+  })
+
+  it('全完了 + 期限内 → ahead (完了 1.0 > timeProgress)', () => {
+    expect(
+      classifyPdcaPace({ completedItems: 5, totalItems: 5, elapsedDays: 3, plannedDays: 10 }),
+    ).toBe('ahead')
   })
 })

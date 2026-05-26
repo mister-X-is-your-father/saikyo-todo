@@ -175,3 +175,54 @@ export function isPdcaPhaseStuck(cycle: PdcaPhaseTimestamps, now: Date = new Dat
   const sev = pdcaPhaseSeverity(cycle, now)
   return sev === 'stale' || sev === 'overdue'
 }
+
+/**
+ * iter1374 ai-automation (queue: PDCA AI-4 Do 中 anomaly 早期検知): cycle の進捗 pace を
+ * 「紐付け item の完了 %」 vs 「Do phase の経過時間 %」 で純 algorithm 判定する。
+ *
+ * PDCA cycle entry の AI-4 が要求する「Do 中 anomaly 早期検知 (AI 不要、純 algorithm)」 の
+ * substrate。完了が時間進捗より大きく遅れていれば behind / 予定日数超過 + 未完了なら at-risk。
+ *
+ * 判定 (completion = completed/total、timeProgress = elapsed/planned):
+ *  - 'no-data'  → totalItems ≤ 0 or plannedDays ≤ 0 (判定不能)
+ *  - 'at-risk'  → 予定日数超過 (timeProgress > 1) かつ 未完了 (completion < 1)
+ *  - 'ahead'    → completion が時間進捗を 0.1 以上上回る (前倒し)
+ *  - 'behind'   → completion が時間進捗を 0.2 以上下回る (要注意 anomaly)
+ *  - 'on-track' → それ以外 (概ね計画通り)
+ *
+ * 完了 % は 0..1、time % は経過/予定 (> 1 も許容)。比較は min(timeProgress, 1) で行い、
+ * 超過分は at-risk 判定で別途吸収する。
+ */
+export type PdcaPace = 'no-data' | 'ahead' | 'on-track' | 'behind' | 'at-risk'
+
+export interface PdcaPaceInput {
+  completedItems: number
+  totalItems: number
+  elapsedDays: number
+  /** Do phase の予定日数 (pdcaPhaseDayLimit('do') 等) */
+  plannedDays: number
+}
+
+export function classifyPdcaPace(input: PdcaPaceInput): PdcaPace {
+  const { completedItems, totalItems, elapsedDays, plannedDays } = input
+  if (totalItems <= 0 || plannedDays <= 0) return 'no-data'
+  const completion = Math.min(1, Math.max(0, completedItems / totalItems))
+  const timeProgress = Math.max(0, elapsedDays / plannedDays)
+  if (timeProgress > 1 && completion < 1) return 'at-risk'
+  const gap = completion - Math.min(timeProgress, 1)
+  if (gap >= 0.1) return 'ahead'
+  if (gap <= -0.2) return 'behind'
+  return 'on-track'
+}
+
+const PDCA_PACE_LABEL_JA: Record<PdcaPace, string> = {
+  'no-data': 'pace 判定不能 (item / 期間 なし)',
+  ahead: '前倒し',
+  'on-track': '計画通り',
+  behind: '遅れ気味 (要注意)',
+  'at-risk': '期限超過 + 未完了 (危険)',
+}
+
+export function formatPdcaPaceJa(pace: PdcaPace): string {
+  return PDCA_PACE_LABEL_JA[pace]
+}
