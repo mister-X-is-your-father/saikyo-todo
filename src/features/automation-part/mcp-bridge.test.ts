@@ -65,6 +65,27 @@ describe('buildMcpToolDefinitions', () => {
     expect(mcp.map((t) => t.description)).toEqual(ant.map((t) => t.description))
   })
 
+  it('inputSchema (MCP) は input_schema (Anthropic) と内容一致 — field 名のみ差 (iter1379)', () => {
+    _resetRegistryForTesting()
+    registerPart(itemCreate)
+    registerPart(itemList)
+    const mcp = buildMcpToolDefinitions()
+    const ant = buildAnthropicToolDefinitions()
+    // 両 bridge は同じ m.inputJsonSchema を field 名だけ変えて出すので内容は deep-equal
+    expect(mcp.map((t) => t.inputSchema)).toEqual(ant.map((t) => t.input_schema))
+  })
+
+  it('filter (sideEffect/category) parity — 同 filter で同じ name 集合 (iter1379)', () => {
+    _resetRegistryForTesting()
+    registerPart(itemCreate) // write
+    registerPart(itemList) // read
+    for (const filter of [{ sideEffect: 'read' as const }, { category: 'item' as const }]) {
+      expect(buildMcpToolDefinitions(filter).map((t) => t.name)).toEqual(
+        buildAnthropicToolDefinitions(filter).map((t) => t.name),
+      )
+    }
+  })
+
   it('label === description なら 1 個だけ (重複回避)', () => {
     _resetRegistryForTesting()
     registerPart(itemList)
