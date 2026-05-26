@@ -761,6 +761,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 ## 9. UI/UX バグログ (Playwright 探索 — Phase 6.15 loop)
 
+> **[playwright fire 2026-05-26 サマリ iter1365-1403]** dark-mode a11y を中心に 22 fix を push: reduced-motion グローバル reset (WCAG 2.3.3) / 通知受信時刻の SR 伝達 (1.3.1) / light contrast (ItemEditDialog AI box・assignee/tag placeholder) / **dark severity-color 12 件** (WeeklyInsight・gantt MUST・operation-board[推奨/期限超過/quickwins/focus/summary]・today 期限超過・dashboard 期限日付・taskchute ticker・OKR 達成完了%・sprint retro/risk・swimlane・subtask・time-entries 曜日peak・summary tab・recovery-plan・MUST ラベル) / **応答性 2 件** (tag・assignee 付与に楽観 update、~1s→~0.1s)。回帰 guard script 多数。**重大発見**: multi-item seed が is_must/description NOT NULL で silent fail → iter1365/1373 の view scan は空 view を見ていた (iter1382 で is_must 明示して実 populated 再 scan)。残 deferred: kanban dnd-kit / cmdk aria-required-children / React Flow nested-interactive / sonner toast richColors / dependency 楽観 update (joined data 複雑)。
+
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
 - ✅ [playwright-iter1403 1/1] item アサイン付与に楽観 update (応答性): useSetItemAssignees も iter1402 tag と同型の onSuccess-invalidate のみ ~1s lag。AssigneePicker value は bare AssigneeRef[] (名前は members/agents 別解決) で mutation input そのまま楽観 setQueryData 可。→ iter437/1013/1402 pattern 展開、実測 ~141ms。経路 B: `scripts/explore-uiux-flicker-assignee-toggle-iter1403.ts`。⏳ **deferred**: item-dependency add/remove (useAddItemDependency/useRemoveItemDependency) も invalidate-only だが、deps query は joined item ref を含む richer data で楽観 object 捏造が必要 → glitch リスクで複雑、別途検討。schedule は既に onMutate 済。
