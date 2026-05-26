@@ -481,7 +481,19 @@ export function useSetItemTags(workspaceId: string, itemId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (tagIds: string[]) => unwrap(await setItemTagsAction({ itemId, tagIds })),
-    onSuccess: () => {
+    // iter1402: 旧実装は onSuccess-invalidate のみで、tag option の checkmark / trigger chip が
+    // 反映されるまで server round-trip 待ち (実測 ~1s の lag)。iter437/1013 の onMutate 楽観
+    // update pattern を tag 付与にも展開 (非 async + void cancelQueries で同 frame に setQueryData)。
+    onMutate: (tagIds) => {
+      void qc.cancelQueries({ queryKey: itemRelationKeys.tagIds(itemId) })
+      const prev = qc.getQueryData<string[]>(itemRelationKeys.tagIds(itemId))
+      qc.setQueryData<string[]>(itemRelationKeys.tagIds(itemId), tagIds)
+      return { prev }
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev !== undefined) qc.setQueryData(itemRelationKeys.tagIds(itemId), ctx.prev)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: itemRelationKeys.tagIds(itemId) })
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
     },
