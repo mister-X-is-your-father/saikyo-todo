@@ -30,6 +30,11 @@ export interface RelatedResourcesView {
   pinned: RelatedResourceRow[]
   suggested: RelatedResourceRow[]
   total: number
+  /**
+   * iter1372: threshold 未満 or limit 超過で表示から除外された非 pinned 候補数。
+   * UI の「他 N 件 (関連度低)」 expander / 「もっと見る」 affordance 用。0 なら隠れ候補なし。
+   */
+  hiddenCount: number
   /** kind 別の件数 (UI tab badge 用) */
   byKind: Record<ResourceKind, number>
 }
@@ -46,6 +51,7 @@ export function organizeRelatedResources(
   const limit = options?.suggestedLimit ?? 10
 
   const pinned = rows.filter((r) => r.pinned)
+  const nonPinnedCount = rows.length - pinned.length
   const suggested = rows
     .filter((r) => !r.pinned && r.score >= threshold)
     .sort((a, b) => b.score - a.score)
@@ -63,6 +69,7 @@ export function organizeRelatedResources(
     pinned,
     suggested,
     total: pinned.length + suggested.length,
+    hiddenCount: nonPinnedCount - suggested.length,
     byKind,
   }
 }

@@ -54,6 +54,26 @@ describe('organizeRelatedResources', () => {
     expect(r.suggested).toHaveLength(5)
   })
 
+  it('hiddenCount: threshold 未満 + limit 超過の非 pinned を数える (iter1372)', () => {
+    const rows: RelatedResourceRow[] = [
+      mk({ resourceId: 'pin', pinned: true, score: 0.1 }),
+      mk({ resourceId: 'low1', score: 0.2 }), // threshold 未満
+      mk({ resourceId: 'low2', score: 0.1 }), // threshold 未満
+      mk({ resourceId: 'hi1', score: 0.9 }),
+      mk({ resourceId: 'hi2', score: 0.8 }),
+      mk({ resourceId: 'hi3', score: 0.7 }),
+    ]
+    const r = organizeRelatedResources(rows, { suggestedLimit: 2 })
+    // 非 pinned 5 件中、表示は score 上位 2 件 → 残り 3 件 (低 score 2 + limit 溢れ 1) が hidden
+    expect(r.suggested).toHaveLength(2)
+    expect(r.hiddenCount).toBe(3)
+  })
+
+  it('hiddenCount: 全て表示されるなら 0', () => {
+    const r = organizeRelatedResources([mk({ resourceId: 'a', score: 0.9 })])
+    expect(r.hiddenCount).toBe(0)
+  })
+
   it('byKind 別カウント', () => {
     const rows = [
       mk({ resourceId: 'a', kind: 'doc', score: 0.8 }),
