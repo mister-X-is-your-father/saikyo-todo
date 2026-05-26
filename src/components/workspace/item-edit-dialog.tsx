@@ -449,7 +449,9 @@ function ItemEditDialogInner({
                 <div className="text-sm font-semibold" role="heading" aria-level={3}>
                   <span aria-hidden="true">🧠 </span>AI で分解
                 </div>
-                <p className="text-muted-foreground text-xs">
+                {/* iter1367: bg-primary/5 (#f3f3f3) 上で text-muted-foreground は 4.27:1 (<4.5)。
+                    text-foreground/80 で faint tint 上でも WCAG 1.4.3 pass。 */}
+                <p className="text-foreground/80 text-xs">
                   Researcher がこの Item を具体的な子タスクに分解します (数秒〜30s)。
                 </p>
               </div>

@@ -62,7 +62,9 @@ export function AiHandoffPhaseChip({
         className={className}
         testId={`ai-handoff-chip-${phase}`}
       />
-      {showDescription ? <p className="text-muted-foreground text-xs">{desc.description}</p> : null}
+      {/* iter1367: showDescription は ItemEditDialog の bg-primary/5 (#f3f3f3) 上で render され、
+          text-muted-foreground は 4.27:1 (<4.5)。text-foreground/80 で faint tint 上でも pass。 */}
+      {showDescription ? <p className="text-foreground/80 text-xs">{desc.description}</p> : null}
     </div>
   )
 }
