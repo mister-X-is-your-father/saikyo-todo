@@ -763,6 +763,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1386 1/1] Dashboard MUST 一覧の期限日付 dark contrast: overdue=`text-red-600` (3.75) / soon=`text-amber-600` の日付表示が dark で <4.5。→ `dark:{red,amber}-400` 併記。**これで populated dark の全 6 view (today/inbox/kanban/backlog/gantt/dashboard) が contrast 0** (残 kanban nested-interactive は dnd-kit library deferred)。経路 B: iter1382 script。
 - ✅ [playwright-iter1385 1/1] Today view 期限超過の red 表示 dark contrast: 「期限超過」group 見出し + overdue item の期限日付 `<time>` の `text-red-600` (#e7000b) が dark で 3.75:1。→ 2 箇所に `dark:text-red-400`。これで **dark today view は 0 violation**。経路 B: iter1382 script。残: dashboard `<time>` red-600 のみ。
 - ✅ [playwright-iter1384 1/1] オペレーションボード (Today view) の severity 色 dark contrast: Section 見出し tone (`text-amber-700` 3.63 / `text-red-700`) + 期限超過 item row title (`text-red-700` 2.84) が dark で <4.5 (×8+)。→ labelTone と ItemRow cls に `dark:{amber,red}-400` 併記。icon は非テキスト 3:1 で対象外。経路 B: iter1382 script。残: today-view 期限超過 Card 見出し / dashboard `<time>` の red-600 #e7000b 3.75。
 - ✅ [playwright-iter1383 1/1] Gantt MUST ラベル dark contrast: 行ラベル列の MUST バッジ inline `text-red-600` (#e7000b) が dark gantt bg 上で 4.15:1 (<4.5)。iter1382 の正しい populated scan で発見。→ `dark:text-red-400` 併記。経路 B: iter1382 script で gantt 0 violation 確認。残: dashboard time red 3.75 / today amber 3.63。
