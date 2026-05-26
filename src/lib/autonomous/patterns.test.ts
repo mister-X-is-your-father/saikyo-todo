@@ -172,6 +172,21 @@ describe('isActionableCodeTodo', () => {
     expect(isActionableCodeTodo('<option value="todo">TODO</option>')).toBe(false)
   })
 
+  it('rejects status-name example buried in doc comment (marker 非隣接の "TODO (未着手)")', () => {
+    // status-badge.tsx:53 / status-visual.ts:19 で誤検出していた実パターン:
+    // 「status 名 "TODO" + 注釈 "(未着手)"」 の例示であって `// TODO: ...` ではない。
+    // 旧実装は marker が行内に在れば true としていたが、marker 直後でないので除外。
+    expect(
+      isActionableCodeTodo(
+        ' * - role=img + aria-label でフル文言 (例: "ステータス: TODO (未着手)") を SR に',
+      ),
+    ).toBe(false)
+    expect(isActionableCodeTodo('/** tooltip 用ラベル (例: "TODO (未着手)") */')).toBe(false)
+    // marker 直後の real な TODO( / TODO: は引き続き actionable
+    expect(isActionableCodeTodo('// TODO(alice): marker 直後なので actionable')).toBe(true)
+    expect(isActionableCodeTodo('foo() // HACK: trailing も marker 直後')).toBe(true)
+  })
+
   it('rejects JSDoc prose without suffix', () => {
     // `* 1 行 TODO クイック追加。` のような説明文は actionable ではない
     expect(isActionableCodeTodo(' * 1 行 TODO クイック追加。')).toBe(false)

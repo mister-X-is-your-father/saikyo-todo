@@ -124,17 +124,19 @@ export function parseCodeTodos(grepOutput: string): number {
  * 内部 helper (export しないが test から呼べると testability が上がるので export)。
  */
 export function isActionableCodeTodo(line: string): boolean {
-  // アクション接尾を要求: `TODO:` / `TODO(` / `FIXME:` / `FIXME(` / `HACK:` / `HACK(` / `あとで:`
-  const KEYWORD_WITH_SUFFIX = /(\b(?:TODO|FIXME|HACK)\b|あとで)\s*[:(]/
-  const km = line.match(KEYWORD_WITH_SUFFIX)
-  if (!km) return false
-  const idx = line.indexOf(km[0])
-  const before = line.slice(0, idx)
-  // (a) 単行コメント / ブロックコメント開始 / HTML / shell の prefix が
-  //     キーワードより前に存在する
-  if (/(\/\/|\/\*|<!--|#)/.test(before)) return true
-  // (b) JSDoc 継続行: 行頭が空白 + `*` + 空白 — `before` がそのパターンで始まる
-  if (/^\s*\*\s/.test(before)) return true
+  // actionable = **コメント marker の直後** (空白のみ挟んで) に keyword + 接尾 (`:` or `(`) が来る。
+  // 接尾を要求: `TODO:` / `TODO(` / `FIXME:` / `FIXME(` / `HACK:` / `HACK(` / `あとで:`。
+  //
+  // 「marker の直後」 を要件にすることで、marker から離れた散文・引用符内の例示
+  //   `* - aria-label でフル文言 (例: "ステータス: TODO (未着手)")`  (status-badge.tsx)
+  //   `/** ... ラベル (例: "TODO (未着手)") */`                      (status-visual.ts)
+  // を弾く (旧実装は marker が行内のどこかに在れば true としていたため誤検出していた)。
+  const KW = '(?:TODO|FIXME|HACK|あとで)'
+  const SUFFIX = '\\s*[:(]'
+  // (a) 単行 // / ブロック /* / HTML <!-- / shell # の marker 直後
+  if (new RegExp(`(?://|/\\*|<!--|#)\\s*${KW}${SUFFIX}`).test(line)) return true
+  // (b) JSDoc 継続行: 行頭(空白) + `*` + 空白 の直後
+  if (new RegExp(`^\\s*\\*\\s+${KW}${SUFFIX}`).test(line)) return true
   return false
 }
 

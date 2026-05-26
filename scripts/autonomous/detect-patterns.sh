@@ -47,11 +47,13 @@ fi
 #    旧実装は `(TODO|FIXME|あとで|hack)` を素朴 grep していたため製品名 `最強TODO` /
 #    enum `'todo'` / 説明文 `TODO サービス` が大量に false positive 化していた
 #    (iter254 で 18/18 中 17 件が偽陽性)。
-#    src/lib/autonomous/patterns.ts::isActionableCodeTodo と同義: コメント文脈
-#    (`//` / `/*` / JSDoc `* `) + actionable 接尾 (`:` か `(`) を要求。
+#    src/lib/autonomous/patterns.ts::isActionableCodeTodo と同義: **コメント marker の
+#    直後** (空白のみ挟んで) に keyword + actionable 接尾 (`:` か `(`) を要求する。
+#    marker から離れた散文・引用符内の例示 (`* ... "ステータス: TODO (未着手)")` 等、
+#    status-badge.tsx / status-visual.ts) は marker 非隣接なので拾わない。
 #    `src/lib/autonomous/` は本検出器自身のソース + テスト fixture が住む場所
-#    なので exclude する (それ以外で TODO が出たら本物の actionable コメント)。
-TODO_COUNT=$({ git grep -nE '(//|/\*|^[[:space:]]*\*[[:space:]]).*\b(TODO|FIXME|HACK)\b[[:space:]]*[:(]|(//|/\*|^[[:space:]]*\*[[:space:]]).*あとで[[:space:]]*[:(]' \
+#    なので exclude する (それ以外で marker 直後に TODO が出たら本物の actionable コメント)。
+TODO_COUNT=$({ git grep -nE '(//|/\*|<!--|#)[[:space:]]*(TODO|FIXME|HACK|あとで)[[:space:]]*[:(]|^[[:space:]]*\*[[:space:]]+(TODO|FIXME|HACK|あとで)[[:space:]]*[:(]' \
   -- 'src/**/*.ts' 'src/**/*.tsx' ':(exclude)src/lib/autonomous/' 2>/dev/null || true; } | wc -l | tr -d ' ')
 echo "2. Actionable TODO/FIXME/HACK in code comments: $TODO_COUNT"
 
