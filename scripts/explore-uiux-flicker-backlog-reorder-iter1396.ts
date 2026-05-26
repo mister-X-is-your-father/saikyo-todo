@@ -66,7 +66,7 @@ void runExplore({
     await page.mouse.up()
 
     // 直後から interval で order snapshot
-    const snaps: string[][] = []
+    const snaps: (string | null)[][] = []
     for (const ms of [0, 50, 100, 200, 500]) {
       if (ms > 0) await page.waitForTimeout(ms)
       snaps.push(await order())
