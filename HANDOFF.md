@@ -765,6 +765,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [iter1414 ai-automation 1/1] automation-part AP-6「API scope → part sideEffect 権限判定」pure helper `automation-part/part-scope.ts` を新規追加 (queue: AP-6 substrate)。mcp-bridge が明示的に「AP-6 後続に委ねる」と保留していた scope-key 絞込の橋。sideEffect (read/write/external) → 必要 ApiScope にマップし token-format の階層 (read⊆write⊆admin) で gate、`filterManifestForScopes` で公開絞込。AI 不使用、+9 unit test。
 - ✅ [iter1413 polish 1/1] mock-timesheet カテゴリ aria-label の `form.watch('category')` を `useWatch` に置換し React Compiler の memoization skip warning を解消 (lint warning 2→1)。watch() は関数を返す API で Compiler が component 全体を skip するため、値を返す useWatch hook に。aria-label 挙動不変・typecheck clean。残 lint warning は backlog `useReactTable` で TanStack 本質 (修正不可)。
 - ✅ [iter1412 pdca 1/1] PDCA P-7「closed cycle learning 横断検索」pure helper `cycle-learning-search.ts` を新規追加 (queue: PDCA P-7 substrate)。仮説/実測/学び/改善決定を全フィールド横断、token AND マッチ + title weight3 + score 降順安定 sort、空 query は全件。組織知 history view の検索コア。AI 不使用、+8 unit test。
 - ✅ [iter1411 ai-automation 1/1] AI 分業 AC-6「AI 出力 quality feedback (1-5)」集計 pure helper `agent/ai-feedback-summary.ts` を新規追加 (queue: AI 分業 AC-6 substrate)。rating 列 → 平均/分布/好評率/不評件数、範囲外・非整数・NaN 除外。`aiFeedbackTone` (good/ok/poor/idle) で prompt 劣化の早期監視。AI 不使用、+11 unit test。
