@@ -12,7 +12,7 @@
  * `明日` 等、status icon を追加。FEEDBACK_QUEUE「もっとグラフィカル / 意味の
  * あるデザイン」候補の続編。
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import Fuse from 'fuse.js'
 
@@ -48,6 +48,13 @@ export interface CommandPaletteProps {
 export function CommandPalette({ commands, items, onSelectItem }: CommandPaletteProps) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
+  // iter1414: CommandDialog は ui/command.tsx 内 (編集禁止) で onCloseAutoFocus を持たず、
+  // 閉じた後 focus が <body> に落ちる (WCAG 2.4.3、iter1411-1413 と同根)。consumer 側で
+  // open 時の opener を捕捉し、**dismiss 時のみ** 復帰させる (command/item 選択時は run() 側の
+  // focus を尊重するため復帰しない)。
+  const openerRef = useRef<HTMLElement | null>(null)
+  const closedBySelectRef = useRef(false)
+  const prevOpenRef = useRef(false)
 
   // iter263 と同パターン: dueDate を formatFriendlyDate で表示する基準日。
   // 各 render で再計算 (cost 無視できる程度、深夜跨ぎでも正しい今日に追従)。
@@ -58,12 +65,35 @@ export function CommandPalette({ commands, items, onSelectItem }: CommandPalette
     const onKey = (e: KeyboardEvent) => {
       if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
-        setOpen((v) => !v)
+        const a = document.activeElement
+        const opener = a instanceof HTMLElement && a !== document.body ? a : null
+        setOpen((v) => {
+          if (!v) openerRef.current = opener // 開く時だけ opener を記録
+          return !v
+        })
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
+
+  // iter1414: dismiss (Escape / overlay / Ctrl+K toggle) で閉じた直後、Radix が triggerRef=null を
+  // focus して <body> に落とした後に opener へ戻す (rAF で onCloseAutoFocus の後に実行)。
+  // command/item 選択での close は closedBySelectRef=true でスキップ (run() の focus を尊重)。
+  useEffect(() => {
+    if (prevOpenRef.current && !open) {
+      if (!closedBySelectRef.current) {
+        const opener = openerRef.current
+        if (opener && opener.isConnected) {
+          requestAnimationFrame(() => {
+            if (opener.isConnected) opener.focus()
+          })
+        }
+      }
+      closedBySelectRef.current = false
+    }
+    prevOpenRef.current = open
+  }, [open])
 
   const handleOpenChange = (v: boolean) => {
     setOpen(v)
@@ -114,6 +144,7 @@ export function CommandPalette({ commands, items, onSelectItem }: CommandPalette
                   key={item.id}
                   value={`${item.title} ${item.id}`}
                   onSelect={() => {
+                    closedBySelectRef.current = true
                     handleOpenChange(false)
                     onSelectItem?.(item)
                   }}
@@ -159,6 +190,7 @@ export function CommandPalette({ commands, items, onSelectItem }: CommandPalette
                     key={c.id}
                     value={[c.label, ...(c.keywords ?? [])].join(' ')}
                     onSelect={async () => {
+                      closedBySelectRef.current = true
                       handleOpenChange(false)
                       await c.run()
                     }}
