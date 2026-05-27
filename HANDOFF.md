@@ -765,6 +765,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [iter1416 base 1/1] team capacity「移管提案 (overload → 余裕 member)」pure helper `workspace/capacity-rebalance.ts` を新規追加 (queue: 余裕時間 scope C substrate)。既存 computeTeamCapacityLoads の member×load から overload 超過分を free/comfortable donor の slack へ greedy 配分 (超過多い順×slack多い順、slack 逐次減算、tight/overloaded は donor 除外)。実移管は service、本 helper は提案のみ。+8 unit test。
 - ✅ [iter1415 base 1/1] recurring template「5-field cron → 日本語サマリ」pure helper `template/describe-cron.ts` を新規追加 (queue: 目標達成+繰り返し substrate)。`0 9 * * 1-5`→「平日 9:00」/ `0 9 * * 1,3,5`→「毎週月・水・金 9:00」/ `0 9 1 * *`→「毎月1日 9:00」。複雑系は誤訳せず「カスタム (expr)」 fallback、0と7=日曜 normalize。繰り返しタブ/routine 一覧の可読化用、+13 unit test。
 - ✅ [iter1414 ai-automation 1/1] automation-part AP-6「API scope → part sideEffect 権限判定」pure helper `automation-part/part-scope.ts` を新規追加 (queue: AP-6 substrate)。mcp-bridge が明示的に「AP-6 後続に委ねる」と保留していた scope-key 絞込の橋。sideEffect (read/write/external) → 必要 ApiScope にマップし token-format の階層 (read⊆write⊆admin) で gate、`filterManifestForScopes` で公開絞込。AI 不使用、+9 unit test。
 - ✅ [iter1413 polish 1/1] mock-timesheet カテゴリ aria-label の `form.watch('category')` を `useWatch` に置換し React Compiler の memoization skip warning を解消 (lint warning 2→1)。watch() は関数を返す API で Compiler が component 全体を skip するため、値を返す useWatch hook に。aria-label 挙動不変・typecheck clean。残 lint warning は backlog `useReactTable` で TanStack 本質 (修正不可)。
