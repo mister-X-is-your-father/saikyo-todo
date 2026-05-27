@@ -87,3 +87,24 @@ export function summarizeBroadcastProgress(
 export function isBroadcastCandidate(assignees: readonly AssigneeRef[]): boolean {
   return assignees.length >= 2
 }
+
+/**
+ * iter1422 (queue 全員 broadcast substrate / 漏れ防止): まだ done していない assignee 行を抽出。
+ * 「未完了: 誰々」 chip / リマインド送信対象に使う (= 全員依頼の取りこぼし防止)。
+ */
+export function pendingBroadcastRows(summary: BroadcastProgressSummary): BroadcastProgressRow[] {
+  return summary.rows.filter((r) => !r.done)
+}
+
+/**
+ * iter1422: 全員依頼の進捗を 1 行 ja に整形。
+ *   '全員完了 (5/5)'                  (fullyDone)
+ *   '全員依頼 3/5 完了 — 残り 2 名'     (進行中)
+ *   '対象なし'                         (total 0)
+ */
+export function formatBroadcastReminderJa(summary: BroadcastProgressSummary): string {
+  if (summary.total === 0) return '対象なし'
+  if (summary.fullyDone) return `全員完了 (${summary.doneCount}/${summary.total})`
+  const pending = summary.total - summary.doneCount
+  return `全員依頼 ${summary.doneCount}/${summary.total} 完了 — 残り ${pending} 名`
+}

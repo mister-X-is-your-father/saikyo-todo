@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { isBroadcastCandidate, summarizeBroadcastProgress } from './broadcast-progress'
+import {
+  formatBroadcastReminderJa,
+  isBroadcastCandidate,
+  pendingBroadcastRows,
+  summarizeBroadcastProgress,
+} from './broadcast-progress'
 import type { AssigneeRef } from './repository'
 
 const alice: AssigneeRef = { actorType: 'user', actorId: 'alice' }
@@ -104,5 +109,50 @@ describe('isBroadcastCandidate', () => {
   it('1 人以下 → false', () => {
     expect(isBroadcastCandidate([alice])).toBe(false)
     expect(isBroadcastCandidate([])).toBe(false)
+  })
+})
+
+describe('pendingBroadcastRows', () => {
+  it('未 done の行だけ抽出', () => {
+    const summary = summarizeBroadcastProgress(
+      [alice, bob, carol],
+      [{ actorType: 'user', actorId: 'alice', doneAt: T1 }],
+    )
+    const pending = pendingBroadcastRows(summary)
+    expect(pending.map((r) => r.ref.actorId).sort()).toEqual(['bob', 'carol'])
+    expect(pending.every((r) => !r.done)).toBe(true)
+  })
+  it('全員完了 → 空', () => {
+    const summary = summarizeBroadcastProgress(
+      [alice, bob],
+      [
+        { actorType: 'user', actorId: 'alice', doneAt: T1 },
+        { actorType: 'user', actorId: 'bob', doneAt: T2 },
+      ],
+    )
+    expect(pendingBroadcastRows(summary)).toEqual([])
+  })
+})
+
+describe('formatBroadcastReminderJa', () => {
+  it('対象なし', () => {
+    expect(formatBroadcastReminderJa(summarizeBroadcastProgress([], []))).toBe('対象なし')
+  })
+  it('進行中 → 残り N 名', () => {
+    const summary = summarizeBroadcastProgress(
+      [alice, bob, carol],
+      [{ actorType: 'user', actorId: 'alice', doneAt: T1 }],
+    )
+    expect(formatBroadcastReminderJa(summary)).toBe('全員依頼 1/3 完了 — 残り 2 名')
+  })
+  it('全員完了', () => {
+    const summary = summarizeBroadcastProgress(
+      [alice, bob],
+      [
+        { actorType: 'user', actorId: 'alice', doneAt: T1 },
+        { actorType: 'user', actorId: 'bob', doneAt: T2 },
+      ],
+    )
+    expect(formatBroadcastReminderJa(summary)).toBe('全員完了 (2/2)')
   })
 })
