@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
@@ -34,6 +34,12 @@ export function MockSubmitForm() {
       hoursDecimal: 1,
     },
   })
+
+  // iter1413: aria-label 内の `form.watch('category')` を `useWatch` に置換。
+  // watch() は React Compiler が memoize 不能 (関数を返す API) として component 全体の
+  // memoization を skip するため lint warning が出ていた。useWatch は値を返す hook で
+  // reactive subscribe + Compiler 安全。
+  const category = useWatch({ control: form.control, name: 'category' })
 
   function onSubmit(values: MockTimesheetSubmitInput) {
     startTransition(async () => {
@@ -97,9 +103,7 @@ export function MockSubmitForm() {
           // `カテゴリ (現在: ${label})` は visible (option text = {c.label}) を中位置に持ち
           // voice control prefix-matching「click {label}」 match 不可 (substring 一致のみ)。
           aria-label={(() => {
-            const visible =
-              TIME_ENTRY_CATEGORIES.find((c) => c.key === form.watch('category'))?.label ??
-              form.watch('category')
+            const visible = TIME_ENTRY_CATEGORIES.find((c) => c.key === category)?.label ?? category
             return `${visible} — カテゴリ (現在: ${visible})`
           })()}
           {...form.register('category')}
