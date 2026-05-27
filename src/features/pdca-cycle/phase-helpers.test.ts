@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  canAdvanceCyclePhase,
+  type CyclePhaseFields,
   formatPdcaCyclePhaseStatusJa,
   isPdcaPhaseStuck,
+  nextCyclePhase,
+  PDCA_PHASE_ORDER,
   pdcaCyclePhaseLabelJa,
   pdcaPhaseDayLimit,
   pdcaPhaseSeverity,
@@ -166,5 +170,67 @@ describe('isPdcaPhaseStuck (iter1011)', () => {
 
   it('timestamp 未記録 → false (= on_track fallback)', () => {
     expect(isPdcaPhaseStuck({ status: 'plan' }, NOW)).toBe(false)
+  })
+})
+
+describe('nextCyclePhase', () => {
+  it('plan→do→check→act→closed', () => {
+    expect(nextCyclePhase('plan')).toBe('do')
+    expect(nextCyclePhase('do')).toBe('check')
+    expect(nextCyclePhase('check')).toBe('act')
+    expect(nextCyclePhase('act')).toBe('closed')
+  })
+  it('closed は終端 → null', () => {
+    expect(nextCyclePhase('closed')).toBeNull()
+  })
+  it('PDCA_PHASE_ORDER は 5 段階', () => {
+    expect([...PDCA_PHASE_ORDER]).toEqual(['plan', 'do', 'check', 'act', 'closed'])
+  })
+})
+
+describe('canAdvanceCyclePhase', () => {
+  function mk(
+    over: Partial<CyclePhaseFields> & { status: CyclePhaseFields['status'] },
+  ): CyclePhaseFields {
+    return { hypothesis: '', actualValue: '', checkFindings: '', actDecisions: '', ...over }
+  }
+
+  it('plan: hypothesis 空 → 不可 (missing 仮説)', () => {
+    const r = canAdvanceCyclePhase(mk({ status: 'plan' }))
+    expect(r.ok).toBe(false)
+    expect(r.nextPhase).toBe('do')
+    expect(r.missing).toContain('仮説 (hypothesis)')
+  })
+  it('plan: hypothesis 有り → 可', () => {
+    expect(canAdvanceCyclePhase(mk({ status: 'plan', hypothesis: '昼会で完了率↑' })).ok).toBe(true)
+  })
+  it('plan: 空白のみ hypothesis は blank 扱い', () => {
+    expect(canAdvanceCyclePhase(mk({ status: 'plan', hypothesis: '  ' })).ok).toBe(false)
+  })
+  it('do: 追加必須なし → 常に可', () => {
+    const r = canAdvanceCyclePhase(mk({ status: 'do' }))
+    expect(r.ok).toBe(true)
+    expect(r.nextPhase).toBe('check')
+  })
+  it('check: actualValue / checkFindings 両空 → 不可', () => {
+    expect(canAdvanceCyclePhase(mk({ status: 'check' })).ok).toBe(false)
+  })
+  it('check: actualValue だけでも可 / checkFindings だけでも可', () => {
+    expect(canAdvanceCyclePhase(mk({ status: 'check', actualValue: '16 件' })).ok).toBe(true)
+    expect(canAdvanceCyclePhase(mk({ status: 'check', checkFindings: 'レビュー待ち' })).ok).toBe(
+      true,
+    )
+  })
+  it('act: actDecisions 空 → 不可 / 有り → 可 (next=closed)', () => {
+    expect(canAdvanceCyclePhase(mk({ status: 'act' })).ok).toBe(false)
+    const r = canAdvanceCyclePhase(mk({ status: 'act', actDecisions: 'SLA 短縮' }))
+    expect(r.ok).toBe(true)
+    expect(r.nextPhase).toBe('closed')
+  })
+  it('closed: 終端 → 不可 / nextPhase null', () => {
+    const r = canAdvanceCyclePhase(mk({ status: 'closed' }))
+    expect(r.ok).toBe(false)
+    expect(r.nextPhase).toBeNull()
+    expect(r.missing).toEqual([])
   })
 })

@@ -175,3 +175,68 @@ export function isPdcaPhaseStuck(cycle: PdcaPhaseTimestamps, now: Date = new Dat
   const sev = pdcaPhaseSeverity(cycle, now)
   return sev === 'stale' || sev === 'overdue'
 }
+
+/**
+ * iter1420 (queue PDCA P-3 substrate): phase 進行ガード。
+ *
+ * AdvancePdcaCyclePhaseInputSchema (service) は `to` status を受けるが、空の Plan のまま
+ * Do に進む等の「型崩れ」 を防ぐため、各 phase の最低限入力を満たすか検証する pure 関数。
+ * service.advancePhase が本関数で gate → ok なら status 更新 + 打刻 + audit。
+ *
+ * 必須条件 (思考の型を強制 = 設計哲学「思考力」):
+ *   - plan → do:    hypothesis (仮説) が必須
+ *   - do → check:   追加必須なし (実行は外で起きる)
+ *   - check → act:  actualValue か checkFindings のどちらか (= 検証結果) が必須
+ *   - act → closed: actDecisions (改善決定) が必須
+ *   - closed:       終端、advance 不可
+ */
+export const PDCA_PHASE_ORDER: readonly PdcaCycleStatus[] = ['plan', 'do', 'check', 'act', 'closed']
+
+export function nextCyclePhase(status: PdcaCycleStatus): PdcaCycleStatus | null {
+  const idx = PDCA_PHASE_ORDER.indexOf(status)
+  if (idx < 0 || idx >= PDCA_PHASE_ORDER.length - 1) return null
+  return PDCA_PHASE_ORDER[idx + 1] ?? null
+}
+
+export interface CyclePhaseFields {
+  status: PdcaCycleStatus
+  hypothesis?: string | null
+  actualValue?: string | null
+  checkFindings?: string | null
+  actDecisions?: string | null
+}
+
+export interface AdvanceCyclePhaseCheck {
+  ok: boolean
+  nextPhase: PdcaCycleStatus | null
+  /** 不足している必須入力の日本語ラベル (ok=true なら空) */
+  missing: string[]
+}
+
+function isBlank(s: string | null | undefined): boolean {
+  return (s ?? '').trim() === ''
+}
+
+export function canAdvanceCyclePhase(cycle: CyclePhaseFields): AdvanceCyclePhaseCheck {
+  const next = nextCyclePhase(cycle.status)
+  if (next === null) return { ok: false, nextPhase: null, missing: [] }
+
+  const missing: string[] = []
+  switch (cycle.status) {
+    case 'plan':
+      if (isBlank(cycle.hypothesis)) missing.push('仮説 (hypothesis)')
+      break
+    case 'check':
+      if (isBlank(cycle.actualValue) && isBlank(cycle.checkFindings)) {
+        missing.push('実測値 または 学び (actualValue / checkFindings)')
+      }
+      break
+    case 'act':
+      if (isBlank(cycle.actDecisions)) missing.push('改善決定 (actDecisions)')
+      break
+    default:
+      break
+  }
+
+  return { ok: missing.length === 0, nextPhase: next, missing }
+}
