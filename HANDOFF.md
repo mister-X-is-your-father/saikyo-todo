@@ -765,6 +765,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1421 探索のみ] workspace 外 surface `/` (Workspace 一覧 + 作成 form) を light + dark で axe scan → **両 theme violations=0**。これまで全 sweep が workspace 内だったため home を補完。login の form は iter 過去の探索で labeled 確認済。経路 B: `scripts/explore-uiux-axe-home-auth-iter1421.ts`。
 - ✅ [playwright-iter1420 探索のみ mode-A11y] prefers-reduced-motion: reduce を emulate し globals.css iter1365 の universal reset を behavioral 検査 → dialog の animation/transition-duration とも **0.01ms** (reset 実効)。CSS コメントが警告する「Lightning CSS が universal selector を drop すると黙って不発」への回帰 guard。findings 0。経路 B: `scripts/explore-uiux-reduced-motion-guard-iter1420.ts`。
 - ✅ [playwright-iter1419 探索のみ] header overlay 3 種 (通知設定 dialog / NotificationBell popover / コマンドパレット cmdk) を **light** で axe scan → **全 violations=0**。iter1408 (dark) の light 版補完。これで主要 surface (main view / sub-page / review view / dialog tab / overlay / goals-sprints) を **light + dark 両 theme で網羅**。(※ notif seed が `body` 列名違いで bell は空状態 scan、populated bell は iter1366 light / iter1398 dark 済)。経路 B: `scripts/explore-uiux-axe-overlays-light-iter1419.ts`。
 - ✅ [playwright-iter1418 探索のみ] ItemEditDialog 全 6 tab を **light** で axe scan (MUST + 期限超過 item)。**全 tab violations=0**。iter1405 (dark) の light 版補完。iter1416/1417 で light の取り残しがあったが dialog 内は light も clean。経路 B: `scripts/explore-uiux-axe-dialog-tabs-light-iter1418.ts`。
