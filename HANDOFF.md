@@ -765,6 +765,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [iter1424 base 1/1] 「goal action items 達成度」pure helper `okr/goal-action-progress.ts` を新規追加 (queue: 目標達成サポート substrate)。goal_action_items の done/total + 重み付き達成率を算出し goal-health.ts (時間軸 health、pct 所与) の pct 入力を導く層。不正 weight は 1 正規化、重み付き時のみ format で明示。dashboard 目標達成度 chart 用。+8 unit test。
 - ✅ [iter1423 base 1/1] 「レビュー依頼 status 集約」pure helper `item/review-request-status.ts` を新規追加 (queue: タスク metadata 拡張 substrate)。人による review request (pending/approved/changes_requested) を集約し hasOpen / allApproved 判定 + tone (changes_requested 優先 danger) + 1 行 format。ai-review-request (AC-2 AI checklist) とは別軸の人間レビュー lifecycle。+11 unit test。
 - ✅ [iter1422 base 1/1] broadcast「未完了メンバー抽出 + リマインド文」helper を `item/broadcast-progress.ts` に追加 (queue: 全員 broadcast substrate)。pendingBroadcastRows (未 done 行) + formatBroadcastReminderJa (全員完了/残りN名/対象なし)。既存 summarizeBroadcastProgress を補完し「誰がまだやってないか」抽出で取りこぼし防止。計 15 test pass。
 - ✅ [iter1421 base 1/1] 相談特化「決定記録 markdown builder」pure helper `item/consultation-decision.ts` を新規追加 (queue: 相談特化 substrate)。consultation-tally (投票集計) を補完し、確定した選択肢/理由/決定者/日付を description 追記用 markdown に整形 (理由/決定者は任意省略、既存本文は空行挟み連結)。「なぜそう決めたか」を記録に残す。+8 unit test。
