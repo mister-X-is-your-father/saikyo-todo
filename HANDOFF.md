@@ -765,6 +765,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [iter1418 base 1/1] Gantt DnD scope C「依存連動 transitive shift」pure core `gantt/dependency-shift.ts` を新規追加 (queue: Gantt DnD 期間編集 scope C substrate)。computeTransitiveSuccessors (fromId→toId BFS closure、cycle-safe/dedup/diamond) + planDependencyShift (closure 各 item の start/due を deltaDays shift、null 保持/0 no-op/月境界)。bar-drag.ts (scope A/B 単一 bar) に対し Shift+drag「前提後続まるまる shift」の計算基盤。+12 unit test。
 - ✅ [iter1417 base 1/1] 「案件着地リスク score」pure helper `item/case-risk.ts` を新規追加 (queue: 案件着地 panel scope B substrate)。scope A (ItemSummaryPanel) は着地済、本 iter は scope B の risk chip。subtask 集約 (期限超過率40+blocked率30+停滞度30、14日満点) を 0-100 score + low/medium/high tier + 寄与順 reasons に。sprint risk-board とは別軸 (1 案件粒度)。+10 unit test。
 - ✅ [iter1416 base 1/1] team capacity「移管提案 (overload → 余裕 member)」pure helper `workspace/capacity-rebalance.ts` を新規追加 (queue: 余裕時間 scope C substrate)。既存 computeTeamCapacityLoads の member×load から overload 超過分を free/comfortable donor の slack へ greedy 配分 (超過多い順×slack多い順、slack 逐次減算、tight/overloaded は donor 除外)。実移管は service、本 helper は提案のみ。+8 unit test。
 - ✅ [iter1415 base 1/1] recurring template「5-field cron → 日本語サマリ」pure helper `template/describe-cron.ts` を新規追加 (queue: 目標達成+繰り返し substrate)。`0 9 * * 1-5`→「平日 9:00」/ `0 9 * * 1,3,5`→「毎週月・水・金 9:00」/ `0 9 1 * *`→「毎月1日 9:00」。複雑系は誤訳せず「カスタム (expr)」 fallback、0と7=日曜 normalize。繰り返しタブ/routine 一覧の可読化用、+13 unit test。
