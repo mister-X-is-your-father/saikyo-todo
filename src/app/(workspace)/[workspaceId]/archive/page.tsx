@@ -64,6 +64,10 @@ export default async function ArchivePage({ params }: PageProps) {
           </>
         }
       />
+      {/* iter1406: archive page は h1 (WorkspaceHeader) の直下に panel の EmptyState h3 が
+          来て heading-order skip (axe moderate / WCAG 1.3.1)。list region に sr-only h2 を
+          挿し h1→h2→h3 の階層を整える (視覚は subtitle と重複するため非表示)。 */}
+      <h2 className="sr-only">アーカイブ済 Item 一覧</h2>
       <ArchivedItemsPanel workspaceId={workspaceId} />
     </main>
   )
