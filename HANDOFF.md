@@ -765,6 +765,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1405 探索のみ] ItemEditDialog を開き全 6 tab (base / summary / subtasks / dependencies / comments / activity) を順に dark で axe scan → **全 tab violations=0**。dialog は iter1404 view sweep 非対象の大型 surface だが contrast / structure / nested-interactive とも clean。各 tab panel の dark 対応 (iter1388 comments/activity 等) holding。経路 B: `scripts/explore-uiux-axe-item-edit-dialog-tabs-dark-iter1405.ts`。
 - ✅ [playwright-iter1404 1/1] Inbox view: item card 行が `role="button"` (全行 click で編集 open) なのに子に interactive な ItemCheckbox を持ち **nested-interactive (WCAG 4.1.2 / axe serious)** 違反。iter429 は title `<button>`→`<span>` 降格のみで checkbox を取り残していた。→ checkbox を `role="button"` の外 (sibling) に出し、wrapper を非 interactive flex 行に。編集 open の role="button" は内側 flex-1 div に限定 (全幅 click 感 / hover / keyboard 保持、checkbox 独立 toggle)。MCP で行 click→dialog open / checkbox click→toggle のみ を確認、修正後 axe inbox violations=0。経路 B (codify): `scripts/explore-uiux-axe-sweep-views-dark-iter1404.ts` (main view 群 dark 横断 axe sweep)。
   - ⏳ **deferred (本 fire 探索で確認、未修正)**:
     - **Kanban dnd-kit nested-interactive ×4**: sortable card (`role=button` + `aria-roledescription=sortable`) が内部に複数 interactive を持つ。HANDOFF 既知 deferred の再確認 (dnd-kit 構造変更を要し loop 範囲外)。
