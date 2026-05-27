@@ -177,43 +177,47 @@ export function InboxView({
         </div>
       )}
       {inbox.map((it) => (
+        // iter1404: ItemCheckbox は interactive なので role="button" 行の子に置くと
+        // nested-interactive (WCAG 4.1.2) になる (iter429 は title <button>→<span> 降格
+        // のみで checkbox を取り残し)。checkbox を click 領域の外 (sibling) に出し、編集
+        // ダイアログ open の role="button" は内側 flex-1 div に限定。行 hover/全幅 click 感は
+        // wrapper flex + 内側 flex-1 で保持、checkbox は独立 toggle。
         <div
           key={it.id}
-          role="button"
-          tabIndex={0}
-          onClick={() => void setOpenItemId(it.id)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault()
-              void setOpenItemId(it.id)
-            }
-          }}
-          aria-label={`${it.title} を編集ダイアログで開く`}
-          className="hover:bg-muted/50 focus-visible:ring-ring flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 focus-visible:ring-2 focus-visible:outline-none"
+          className="hover:bg-muted/50 flex items-center gap-2 rounded px-2 py-1.5"
           data-testid={`inbox-row-${it.id}`}
         >
           <ItemCheckbox item={it} workspaceId={workspaceId} />
-          <span
-            className={`inline-block h-2 w-2 shrink-0 rounded-full ${priorityClass(it.priority)}`}
-            title={`p${it.priority ?? 4}`}
-            role="img"
-            aria-label={priorityLabel(it.priority)}
-          />
-          {/* iter429: 旧 inner <button> は outer div の role="button" と
-              button-in-button 違反 (WAI-ARIA: 非 interactive 化された要素を
-              除き focusable child を持てない) のため <span> に降格。
-              outer div が単一 interactive element + 全行 click + keyboard
-              (Enter/Space) accessible。 */}
-          <span
-            className="truncate text-left font-medium"
-            data-testid={`inbox-title-${it.id}`}
-            aria-hidden="true"
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => void setOpenItemId(it.id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                void setOpenItemId(it.id)
+              }
+            }}
+            aria-label={`${it.title} を編集ダイアログで開く`}
+            className="focus-visible:ring-ring flex flex-1 cursor-pointer items-center gap-2 rounded focus-visible:ring-2 focus-visible:outline-none"
           >
-            {it.title}
-          </span>
-          {it.isMust && <MustBadge data-testid={`inbox-must-${it.id}`} />}
-          <div className="ml-auto shrink-0">
-            <StatusBadge status={it.status} />
+            <span
+              className={`inline-block h-2 w-2 shrink-0 rounded-full ${priorityClass(it.priority)}`}
+              title={`p${it.priority ?? 4}`}
+              role="img"
+              aria-label={priorityLabel(it.priority)}
+            />
+            <span
+              className="truncate text-left font-medium"
+              data-testid={`inbox-title-${it.id}`}
+              aria-hidden="true"
+            >
+              {it.title}
+            </span>
+            {it.isMust && <MustBadge data-testid={`inbox-must-${it.id}`} />}
+            <div className="ml-auto shrink-0">
+              <StatusBadge status={it.status} />
+            </div>
           </div>
         </div>
       ))}
