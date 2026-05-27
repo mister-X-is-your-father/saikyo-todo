@@ -765,6 +765,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [iter1411 ai-automation 1/1] AI 分業 AC-6「AI 出力 quality feedback (1-5)」集計 pure helper `agent/ai-feedback-summary.ts` を新規追加 (queue: AI 分業 AC-6 substrate)。rating 列 → 平均/分布/好評率/不評件数、範囲外・非整数・NaN 除外。`aiFeedbackTone` (good/ok/poor/idle) で prompt 劣化の早期監視。AI 不使用、+11 unit test。
 - ✅ [iter1410 pdca 1/1] PDCA「phase 進行ガード」pure helper `cycle-phase.ts` (nextPhase + canAdvancePhase) を新規追加 (queue: PDCA P-3 substrate)。plan→do→check→act→closed の遷移 + 各 phase の最低限入力 (plan=仮説 / check=実測 or 学び / act=改善決定) を検証し、空欄スキップの型崩れを防止。service.advancePhase の検証コアに直消費可。AI 不使用、+14 unit test。
 - ✅ [iter1409 ai-automation 1/1] AI 分業 AC-4「人↔AI hand-off 履歴」pure helper `buildHandoffTimeline` を新規 `agent/handoff-timeline.ts` に追加 (queue: AI 分業 AC-4 substrate)。audit/comment events を時刻昇順で連続同 actor を 1 ターンに畳み、受け渡し回数 / 各操作数 / 今の手番 (lastActorType) を集計。AC-1 handoff-phase.ts (1 item の state machine) とは別軸の履歴可視化用。AI 不使用、+8 unit test。
 - ✅ [iter1408 pdca 1/1] PDCA「Plan 生成補助」structured schema `StructuredPlanSuggestionSchema` ({hypothesis, target_metric_candidates[1-5], suggested_items[0-10]}) + 寛容 parser を新規 `structured-plan-suggestion.ts` に追加 (queue: PDCA AI-1 substrate)。metric は候補 list で選ばせ文章生成を排除。これで **PDCA AI structured trio (AI-1 Plan / AI-2 Check / AI-3 Act) が完成**、3 phase とも generateObject 風 helper の output 契約が揃った。AI 不使用、+11 unit test。残 PDCA: P-2/P-3/P-4/P-7 の UI + service 配線 (要 supabase / migration、cloud env 外で着手)。
