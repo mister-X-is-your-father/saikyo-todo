@@ -765,6 +765,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [iter1423 base 1/1] 「レビュー依頼 status 集約」pure helper `item/review-request-status.ts` を新規追加 (queue: タスク metadata 拡張 substrate)。人による review request (pending/approved/changes_requested) を集約し hasOpen / allApproved 判定 + tone (changes_requested 優先 danger) + 1 行 format。ai-review-request (AC-2 AI checklist) とは別軸の人間レビュー lifecycle。+11 unit test。
 - ✅ [iter1422 base 1/1] broadcast「未完了メンバー抽出 + リマインド文」helper を `item/broadcast-progress.ts` に追加 (queue: 全員 broadcast substrate)。pendingBroadcastRows (未 done 行) + formatBroadcastReminderJa (全員完了/残りN名/対象なし)。既存 summarizeBroadcastProgress を補完し「誰がまだやってないか」抽出で取りこぼし防止。計 15 test pass。
 - ✅ [iter1421 base 1/1] 相談特化「決定記録 markdown builder」pure helper `item/consultation-decision.ts` を新規追加 (queue: 相談特化 substrate)。consultation-tally (投票集計) を補完し、確定した選択肢/理由/決定者/日付を description 追記用 markdown に整形 (理由/決定者は任意省略、既存本文は空行挟み連結)。「なぜそう決めたか」を記録に残す。+8 unit test。
 - ✅ [iter1420 pdca 1/1] iter1410 で `pdca/cycle-phase.ts` に作った phase 進行ガードを、cycle entity 正規 dir の `pdca-cycle/phase-helpers.ts` に統合 (nextCyclePhase / canAdvanceCyclePhase / PDCA_PHASE_ORDER)。理由: `phaseLabelJa`「Plan (計画)」が既存 `pdcaCyclePhaseLabelJa`「仮説立案 (Plan)」と概念重複かつ文字列不一致だった → schema の PdcaCycleStatus + 既存 label に統一し重複 cycle-phase.ts を削除。phase-helpers.test.ts 計 39 pass。**運用反省**: `git add` に既 rm 済 pathspec を混ぜると fatal で他の add も巻き添えになり、削除のみ入った broken commit (bf05f9d) を push → 直後 9cf5e1d で guard 本体を補完。git rm 済ファイルは add 対象に含めない。
