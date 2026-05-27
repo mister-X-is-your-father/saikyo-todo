@@ -117,6 +117,11 @@ function ItemEditDialogInner({
   // iter504: handleSave validation 失敗 path で focus shift する用 (iter499-503 続編)
   const dodRef = useRef<HTMLInputElement>(null)
   const dueDateRef = useRef<HTMLInputElement>(null)
+  // iter1411: この dialog は URL (`?item=`) 駆動で開くため Radix の DialogTrigger が無く、
+  // modal Content の onCloseAutoFocus default (triggerRef.focus()) が null を focus して
+  // 閉じた後 focus が <body> に落ちる (WCAG 2.4.3 Focus Order 違反)。open 時に opener を
+  // 捕捉し、close 時に手動で focus を戻す。
+  const openerRef = useRef<HTMLElement | null>(null)
 
   // Phase 6.15 iter 238: 楽観ロック Conflict UX 改善 (Linear / Asana 風 banner)。
   // dialog open 時の version を state で保持し、Realtime で item.version が server 側
@@ -271,7 +276,26 @@ function ItemEditDialogInner({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl" data-testid="item-edit-dialog">
+      <DialogContent
+        className="sm:max-w-2xl"
+        data-testid="item-edit-dialog"
+        // iter1411: open 直前に focus を持っていた element (= opener) を捕捉。
+        // FocusScope が dialog 内へ focus を移す前に発火するので activeElement は opener。
+        onOpenAutoFocus={() => {
+          const active = document.activeElement
+          openerRef.current =
+            active instanceof HTMLElement && active !== document.body ? active : null
+        }}
+        // iter1411: close 時、Radix default の triggerRef.focus() (null) を抑止し opener へ復帰。
+        // opener が再 render で外れていれば default に委ねる。
+        onCloseAutoFocus={(e) => {
+          const opener = openerRef.current
+          if (opener && opener.isConnected) {
+            e.preventDefault()
+            opener.focus()
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <span className="truncate">{item.title}</span>
