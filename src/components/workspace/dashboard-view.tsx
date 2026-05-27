@@ -1451,11 +1451,13 @@ export function DashboardView({ workspaceId }: Props) {
                     <span
                       className={
                         // iter1386: red-600/amber-600 は dark bg 上で <4.5 (WCAG 1.4.3、期限超過/期日近の
-                        // 日付表示)。dark:{red,amber}-400 を併記 (light は 600 維持)。
+                        // 日付表示)。dark:{red,amber}-400 を併記。
+                        // iter1417: light の amber-600 (#e17100) は white 上 3.19:1 で AA 未達 (text-xs
+                        // = normal text、4.5:1 必要)。amber-700 に下げて light コントラストを満たす。
                         overdue
                           ? 'text-xs font-semibold text-red-600 dark:text-red-400'
                           : soon
-                            ? 'text-xs font-semibold text-amber-600 dark:text-amber-400'
+                            ? 'text-xs font-semibold text-amber-700 dark:text-amber-400'
                             : 'text-muted-foreground text-xs'
                       }
                     >
