@@ -8,7 +8,7 @@
  *
  * graph 編集 UI (React Flow ベース DAG editor) は次 iter。今は graph は API 経由で更新する。
  */
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import { ChevronDown, ChevronRight, Pencil, Play, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -494,6 +494,9 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
   const [triggerText, setTriggerText] = useState(() => JSON.stringify(wf.trigger, null, 2))
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  // iter1413: controlled dialog (DialogTrigger 無し) で閉じた後 focus が <body> に落ちる
+  // (WCAG 2.4.3、iter1411/1412 と同根)。opener を捕捉し close 時に復帰させる。
+  const openerRef = useRef<HTMLElement | null>(null)
 
   // iter (queue: workflow graphical 段階 A): 視覚プレビュー用に graphText を best-effort で
   // parse。失敗 (編集中の不正 JSON) なら直前の有効な graph を表示し続ける (= viewer は
@@ -543,7 +546,22 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl" data-testid={`wf-editor-dialog-${wf.id}`}>
+      <DialogContent
+        className="sm:max-w-2xl"
+        data-testid={`wf-editor-dialog-${wf.id}`}
+        onOpenAutoFocus={() => {
+          const active = document.activeElement
+          openerRef.current =
+            active instanceof HTMLElement && active !== document.body ? active : null
+        }}
+        onCloseAutoFocus={(e) => {
+          const opener = openerRef.current
+          if (opener && opener.isConnected) {
+            e.preventDefault()
+            opener.focus()
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Workflow 編集 — {wf.name}</DialogTitle>
           <DialogDescription>
