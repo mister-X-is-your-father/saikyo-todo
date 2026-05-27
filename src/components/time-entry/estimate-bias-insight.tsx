@@ -162,34 +162,34 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
           </p>
         )}
         {/* iter1082 basics: role="img" 付与で SR aria-label authoritative 化
-            29 弾目 (iter1023/1049-1081 sweep 続編、iter1080/1081 dl sweep の続き)。
-            estimate-bias-insight の `<dl>` (見積バイアス内訳: under/on/over) は
-            内 dt/dd を aria-hidden で隠して集約 aria-label を持つ atomic chip
-            pattern。role="img" で 1 unit 化。 */}
-        <dl
+            (内 cell を aria-hidden で隠して集約 aria-label を持つ atomic chip pattern)。
+            iter1417: 旧 `<dl role="img">` は aria-allowed-role 違反 (dl は role=img を
+            許さない、axe minor)。要素を `<div>` に変更し dt/dd も div 化 (中身は
+            aria-hidden で純視覚、dl semantic は AT に出ないため div で等価)。grid 表示は維持。 */}
+        <div
           className="text-muted-foreground mt-2 grid grid-cols-3 gap-2 text-[11px]"
           role="img"
           aria-label={`見積バイアス内訳 (見積内 ${report.underCount} 件 / ±10% 以内 ${report.onCount} 件 / 超過 ${report.overCount} 件)`}
         >
           <div aria-hidden="true">
-            <dt>見積内 (under)</dt>
-            <dd className="text-foreground tabular-nums" data-testid="estimate-bias-under">
+            <div>見積内 (under)</div>
+            <div className="text-foreground tabular-nums" data-testid="estimate-bias-under">
               {report.underCount}
-            </dd>
+            </div>
           </div>
           <div aria-hidden="true">
-            <dt>±10%以内 (on)</dt>
-            <dd className="text-foreground tabular-nums" data-testid="estimate-bias-on">
+            <div>±10%以内 (on)</div>
+            <div className="text-foreground tabular-nums" data-testid="estimate-bias-on">
               {report.onCount}
-            </dd>
+            </div>
           </div>
           <div aria-hidden="true">
-            <dt>超過 (over)</dt>
-            <dd className="text-foreground tabular-nums" data-testid="estimate-bias-over">
+            <div>超過 (over)</div>
+            <div className="text-foreground tabular-nums" data-testid="estimate-bias-over">
               {report.overCount}
-            </dd>
+            </div>
           </div>
-        </dl>
+        </div>
         {report.calibrationFactor !== null && (
           <div className="mt-3 space-y-1.5" data-testid="estimate-bias-calibration">
             <p className="text-muted-foreground text-[11px]">
