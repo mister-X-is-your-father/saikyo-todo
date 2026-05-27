@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   buildCycleCheckStats,
+  buildCyclePaceSignal,
   type CycleCheckItemFields,
   cycleCheckSeverity,
   type CycleCheckStats,
@@ -353,5 +354,134 @@ describe('formatCycleCheckCompactJa (iter1013)', () => {
     expect(formatCycleCheckCompactJa(mkStats({ total: 10, done: 1, completionRate: 10 }))).toBe(
       '危険 10% (1/10)',
     )
+  })
+})
+
+describe('buildCyclePaceSignal', () => {
+  function mkStats(over: Partial<CycleCheckStats>): CycleCheckStats {
+    return {
+      total: 5,
+      done: 0,
+      cancelled: 0,
+      inProgressOrTodo: 0,
+      completionRate: 0,
+      leadTimeAvgHours: null,
+      leadTimeMedianHours: null,
+      lateCompletionCount: 0,
+      inFlightOverdueCount: 0,
+      cycleDurationDays: 7,
+      ...over,
+    }
+  }
+
+  const START = '2026-04-25T00:00:00Z'
+  const END = '2026-04-30T00:00:00Z' // 5 日窓
+  const MID = '2026-04-27T12:00:00Z' // 経過 50%
+
+  it('空 cycle (total=0) → idle', () => {
+    const s = buildCyclePaceSignal(mkStats({ total: 0 }), {
+      startedAt: START,
+      endsAt: END,
+      now: MID,
+    })
+    expect(s.status).toBe('idle')
+    expect(s.tone).toBe('info')
+    expect(s.text).toBe('空 cycle — 進捗未計測')
+  })
+
+  it('期間未設定 (start/end 欠落) → idle', () => {
+    const s = buildCyclePaceSignal(mkStats({ total: 5, completionRate: 40 }), { now: MID })
+    expect(s.status).toBe('idle')
+    expect(s.text).toBe('期間未設定 — ペース計測不可')
+  })
+
+  it('end <= start (不正窓) → idle', () => {
+    const s = buildCyclePaceSignal(mkStats({ total: 5, completionRate: 40 }), {
+      startedAt: END,
+      endsAt: START,
+      now: MID,
+    })
+    expect(s.status).toBe('idle')
+  })
+
+  it('前倒し: 経過 50% / 完了 80% → ahead / ok', () => {
+    const s = buildCyclePaceSignal(mkStats({ total: 5, done: 4, completionRate: 80 }), {
+      startedAt: START,
+      endsAt: END,
+      now: MID,
+    })
+    expect(s.status).toBe('ahead')
+    expect(s.tone).toBe('ok')
+    expect(s.elapsedPct).toBe(50)
+    expect(s.paceGap).toBe(30)
+    expect(s.text).toBe('前倒し (完了 80% / 経過 50%)')
+  })
+
+  it('オンペース: 経過 50% / 完了 50% → on-pace / info', () => {
+    const s = buildCyclePaceSignal(mkStats({ total: 4, done: 2, completionRate: 50 }), {
+      startedAt: START,
+      endsAt: END,
+      now: MID,
+    })
+    expect(s.status).toBe('on-pace')
+    expect(s.tone).toBe('info')
+    expect(s.paceGap).toBe(0)
+    expect(s.text).toBe('オンペース (完了 50% / 経過 50%)')
+  })
+
+  it('やや遅れ: 経過 50% / 完了 30% (gap -20) → behind / warn', () => {
+    const s = buildCyclePaceSignal(mkStats({ total: 10, done: 3, completionRate: 30 }), {
+      startedAt: START,
+      endsAt: END,
+      now: MID,
+    })
+    expect(s.status).toBe('behind')
+    expect(s.tone).toBe('warn')
+    expect(s.paceGap).toBe(-20)
+    expect(s.text).toBe('やや遅れ (完了 30% / 経過 50%)')
+  })
+
+  it('遅れ: 経過 50% / 完了 5% (gap -45) → at-risk / danger', () => {
+    const s = buildCyclePaceSignal(mkStats({ total: 20, done: 1, completionRate: 5 }), {
+      startedAt: START,
+      endsAt: END,
+      now: MID,
+    })
+    expect(s.status).toBe('at-risk')
+    expect(s.tone).toBe('danger')
+    expect(s.text).toBe('遅れ (完了 5% / 経過 50%)')
+  })
+
+  it('期間超過で未完 → at-risk / danger (経過 100% 超表示)', () => {
+    const s = buildCyclePaceSignal(mkStats({ total: 5, done: 2, completionRate: 40 }), {
+      startedAt: START,
+      endsAt: END,
+      now: '2026-05-02T00:00:00Z', // 7 日経過 / 5 日窓 = 140%
+    })
+    expect(s.status).toBe('at-risk')
+    expect(s.tone).toBe('danger')
+    expect(s.elapsedPct).toBe(140)
+    expect(s.text).toBe('期間超過・未完 (完了 40% / 経過 140%)')
+  })
+
+  it('完了率 100% は期間超過でも ok (完了済 最優先)', () => {
+    const s = buildCyclePaceSignal(mkStats({ total: 5, done: 5, completionRate: 100 }), {
+      startedAt: START,
+      endsAt: END,
+      now: '2026-05-02T00:00:00Z',
+    })
+    expect(s.status).toBe('ahead')
+    expect(s.tone).toBe('ok')
+    expect(s.text).toBe('完了済 (100%)')
+  })
+
+  it('開始前 (now < start) → 経過 0% / 完了 0% は on-pace', () => {
+    const s = buildCyclePaceSignal(mkStats({ total: 5, completionRate: 0 }), {
+      startedAt: START,
+      endsAt: END,
+      now: '2026-04-24T00:00:00Z',
+    })
+    expect(s.elapsedPct).toBe(0)
+    expect(s.status).toBe('on-pace')
   })
 })

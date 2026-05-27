@@ -218,5 +218,119 @@ export function formatCycleCheckCompactJa(stats: CycleCheckStats): string {
   return `${headLabel[sev]} ${stats.completionRate}% (${stats.done}/${stats.total})`
 }
 
+/**
+ * iter1404 (queue PDCA AI-4 substrate): Do phase の「ペース異常 早期検知」 pure helper。
+ *
+ * 設計目的 (FEEDBACK_QUEUE.md 「PDCA mode 抜本再設計」 AI-4):
+ *   - Do 中に「完了 %」 と「経過時間 %」 を比べ、遅れ気味なら 1 行 anomaly として通知する。
+ *     AI 不要・純 algorithm (= fluffy 撲滅原則、widget 直表示)。
+ *   - cycleCheckSeverity (= 完了率の絶対値) は「今いくつ終わったか」 を見るが、本 helper は
+ *     「期間に対して 速いか遅いか (相対ペース)」 を見る。50% 完了でも経過 90% なら危険、
+ *     経過 20% なら大幅前倒し。
+ *
+ * 入力:
+ *   - stats: buildCycleCheckStats の出力 (completionRate / total を使用)
+ *   - startedAt / endsAt: Do phase の開始 〜 期限 (ISO or Date)
+ *   - now: 評価時刻 (default 現在、test 用に注入可能)
+ *
+ * 出力 (CyclePaceSignal):
+ *   - elapsedPct: 経過率 % (0..N、100 超で期間超過、Math.round 整数)
+ *   - paceGap: completionRate - 経過率 (正=前倒し / 負=遅れ、round1)
+ *   - status / tone: ペース判定 + SeverityChip tone (cycleCheckSeverity と同 vocab)
+ *   - text: 1 行 ja ('やや遅れ (完了 30% / 経過 50%)')
+ *
+ * 副作用無し、AI 不使用。pure helper + Vitest 単体で網羅。
+ */
+export interface CyclePaceSignal {
+  /** 経過率 % (0..N、100 超で期間超過) — Math.round 整数 */
+  elapsedPct: number
+  /** completionRate - 経過率。正=前倒し / 負=遅れ (round1) */
+  paceGap: number
+  status: 'idle' | 'ahead' | 'on-pace' | 'behind' | 'at-risk'
+  tone: 'ok' | 'info' | 'warn' | 'danger'
+  /** 1 行 ja */
+  text: string
+}
+
+export interface CyclePaceOptions {
+  /** Do phase 開始 (ISO or Date) */
+  startedAt?: Date | string | null
+  /** Do phase 期限 / 終了予定 (ISO or Date) */
+  endsAt?: Date | string | null
+  /** 評価時刻 (default 現在)、test 用 */
+  now?: Date | string | null
+}
+
+export function buildCyclePaceSignal(
+  stats: CycleCheckStats,
+  options: CyclePaceOptions = {},
+): CyclePaceSignal {
+  const start = parseDateLike(options.startedAt ?? null)
+  const end = parseDateLike(options.endsAt ?? null)
+  const now = parseDateLike(options.now ?? null) ?? new Date()
+
+  // 空 cycle / 期間未設定 → ペース計測不可
+  if (stats.total === 0 || !start || !end || end.getTime() <= start.getTime()) {
+    return {
+      elapsedPct: 0,
+      paceGap: 0,
+      status: 'idle',
+      tone: 'info',
+      text: stats.total === 0 ? '空 cycle — 進捗未計測' : '期間未設定 — ペース計測不可',
+    }
+  }
+
+  // 経過率: now < start は 0、now > end は 100 超 (= 期間超過)
+  const rawElapsed = ((now.getTime() - start.getTime()) / (end.getTime() - start.getTime())) * 100
+  const elapsed = Math.max(0, rawElapsed)
+  const elapsedPct = Math.round(elapsed)
+  const paceGap = round1(stats.completionRate - elapsed)
+
+  // 完了済 (期間に関わらず最優先で ok)
+  if (stats.completionRate >= 100) {
+    return { elapsedPct, paceGap, status: 'ahead', tone: 'ok', text: '完了済 (100%)' }
+  }
+
+  // 期間超過で未完 → 無条件 at-risk
+  if (elapsed >= 100) {
+    return {
+      elapsedPct,
+      paceGap,
+      status: 'at-risk',
+      tone: 'danger',
+      text: `期間超過・未完 (完了 ${stats.completionRate}% / 経過 ${elapsedPct}%)`,
+    }
+  }
+
+  let status: CyclePaceSignal['status']
+  let tone: CyclePaceSignal['tone']
+  let label: string
+  if (paceGap >= 5) {
+    status = 'ahead'
+    tone = 'ok'
+    label = '前倒し'
+  } else if (paceGap >= -15) {
+    status = 'on-pace'
+    tone = 'info'
+    label = 'オンペース'
+  } else if (paceGap >= -30) {
+    status = 'behind'
+    tone = 'warn'
+    label = 'やや遅れ'
+  } else {
+    status = 'at-risk'
+    tone = 'danger'
+    label = '遅れ'
+  }
+
+  return {
+    elapsedPct,
+    paceGap,
+    status,
+    tone,
+    text: `${label} (完了 ${stats.completionRate}% / 経過 ${elapsedPct}%)`,
+  }
+}
+
 // 内部 helper を test しやすく named export
 export { median, parseDateLike }
