@@ -765,6 +765,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [iter1426 base 1/1] 「Slack user ↔ member email auto-link 候補」pure helper `slack/user-link-match.ts` を新規追加 (queue: Slack ワンポチ substrate)。Slack user email と member email を突合し slack_user_links 初期構築の自動リンク候補を算出 (大小無視+trim、両者 email 必須、先勝ち dedup)。「初回は email match で auto link」を実装。+7 unit test。
 - ✅ [iter1425 base 1/1] 「Slack message → item 下書き変換」pure helper `slack/message-to-item.ts` を新規追加 (queue: Slack ワンポチ substrate)。Message Action で item 化する際、本文を title (最初の非空行 80字 truncate) + description (markdown 引用 + permalink + #channel/投稿者) に整形。「message link を description に自動引用」を実装、signature-verify/dispatcher とは別軸。+7 unit test。
 - ✅ [iter1424 base 1/1] 「goal action items 達成度」pure helper `okr/goal-action-progress.ts` を新規追加 (queue: 目標達成サポート substrate)。goal_action_items の done/total + 重み付き達成率を算出し goal-health.ts (時間軸 health、pct 所与) の pct 入力を導く層。不正 weight は 1 正規化、重み付き時のみ format で明示。dashboard 目標達成度 chart 用。+8 unit test。
 - ✅ [iter1423 base 1/1] 「レビュー依頼 status 集約」pure helper `item/review-request-status.ts` を新規追加 (queue: タスク metadata 拡張 substrate)。人による review request (pending/approved/changes_requested) を集約し hasOpen / allApproved 判定 + tone (changes_requested 優先 danger) + 1 行 format。ai-review-request (AC-2 AI checklist) とは別軸の人間レビュー lifecycle。+11 unit test。
