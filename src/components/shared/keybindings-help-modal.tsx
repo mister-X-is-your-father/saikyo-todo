@@ -7,7 +7,7 @@
  * - input / textarea / contentEditable にフォーカスがある時は無視 (GlobalShortcuts と同じガード)
  * - 親から `open` / `onOpenChange` を渡せるので Command Palette からも制御できる
  */
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 import { type Keybinding, KEYBINDINGS } from '@/lib/keybindings'
 
@@ -25,6 +25,10 @@ interface Props {
 }
 
 export function KeybindingsHelpModal({ open, onOpenChange }: Props) {
+  // iter1412: `?` / Command Palette から open する controlled dialog で Radix DialogTrigger が
+  // 無いため、閉じた後 focus が <body> に落ちる (WCAG 2.4.3)。opener を捕捉し close 時に復帰
+  // (iter1411 ItemEditDialog と同 pattern)。
+  const openerRef = useRef<HTMLElement | null>(null)
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.isComposing) return
@@ -48,6 +52,18 @@ export function KeybindingsHelpModal({ open, onOpenChange }: Props) {
         className="sm:max-w-lg"
         data-testid="keybindings-help-modal"
         aria-label="キーボードショートカット一覧"
+        onOpenAutoFocus={() => {
+          const active = document.activeElement
+          openerRef.current =
+            active instanceof HTMLElement && active !== document.body ? active : null
+        }}
+        onCloseAutoFocus={(e) => {
+          const opener = openerRef.current
+          if (opener && opener.isConnected) {
+            e.preventDefault()
+            opener.focus()
+          }
+        }}
       >
         <DialogHeader>
           <DialogTitle>キーボードショートカット</DialogTitle>
