@@ -34,6 +34,7 @@ import {
   countItemsByTone,
   formatToneCountsJa,
   pickHighestSeverityTone,
+  pickTopItemsByTone,
 } from '@/lib/ui/chip-tone'
 
 import {
@@ -412,4 +413,39 @@ export function pickHighestSeveritySignal(signals: AnalyticsSignals): AgentBrief
   const topTone = pickHighestSeverityTone(arr.map((s) => s.tone))
   // topTone は arr が非空なら必ず非 null だが防御で fallback、find は array 順 (stable max)
   return arr.find((s) => s.tone === topTone) ?? null
+}
+
+/**
+ * iter1424 ai-automation: AnalyticsSignals から「上位 N 件の最 severe signals」を抽出する pure helper。
+ *
+ * `pickHighestSeveritySignal` (iter957) は単一 1 件、本 helper は **N 件版**。
+ * AI 朝 brief / Slack daily digest の **「最重要 alert top 3」 headline** や
+ * dashboard **「優先 alert chip 列」** が欲しい場面の substrate。
+ *
+ * 実装: iter1423 で chip-tone.ts に追加した `pickTopItemsByTone` を `analyticsSignalsToArray`
+ * の出力に対して呼ぶだけの薄ラッパー (= 「items × getTone callback」 pattern を AnalyticsSignals
+ * 特化版 boilerplate 排除)。
+ *
+ * 仕様:
+ *  - 全 signal null → 空配列 (= caller の guard 不要)
+ *  - n <= 0 → 空配列 (defensive)
+ *  - n >= 非 null signal 数 → 全 non-null signal を tone severity 降順で
+ *  - 並び順: chip-tone attention rank 降順 (= danger → urgent → warn → info → idle → success)
+ *  - 同 rank は `analyticsSignalsToArray` の domain 表示順 (= concerningRole が dueHitRate より優先)
+ *    を保持 (= stable sort、`pickTopItemsByTone` が `compareChipTones` 経由で stable)
+ *
+ * caller pattern (AI 朝 brief 「最重要 3 alert」 headline):
+ *   const signals = composeAnalyticsSignals({...})
+ *   const top3 = pickTopSignalsBySeverity(signals, 3)
+ *   const headline = top3.map(s => s.text).join(' / ')
+ *   // → '弱点: PM 要調査 (50%) / コスト超過 (+80%) / 期限達成率 低 (45%)'
+ *
+ * 既存 helper との関係:
+ *   - `analyticsSignalsToArray`: 全 signal 配列 (= 全 chip render 向け、domain 順)
+ *   - `pickHighestSeveritySignal`: 単一抽出 (= 1 chip alert / badge tone 向け)
+ *   - `countAnalyticsSignalsByTone`: tone 分布集計 (= '緊急 1 / 注意 2' summary 向け)
+ *   - 本 helper: 上位 N 抽出 (= top N alert headline 向け、severity 順並べ)
+ */
+export function pickTopSignalsBySeverity(signals: AnalyticsSignals, n: number): AgentBriefSignal[] {
+  return pickTopItemsByTone(analyticsSignalsToArray(signals), (s) => s.tone, n)
 }

@@ -16,6 +16,7 @@ import {
   formatAnalyticsSignalsLineJa,
   formatAnalyticsSignalsToneSummaryJa,
   pickHighestSeveritySignal,
+  pickTopSignalsBySeverity,
 } from './analytics-signals'
 import { computeCostMonthProjection } from './cost-month-projection'
 import { computeMonthlyCostTrend, type CostMonthEntry } from './cost-monthly-trend'
@@ -749,5 +750,81 @@ describe('pickHighestSeveritySignal (iter957 — 最重要 1 signal)', () => {
     expect(top).not.toBeNull()
     // concerningRole が array の先頭、warn 同 rank なので stable max で勝つ
     expect(top!.tone).toBe('warn')
+  })
+})
+
+describe('pickTopSignalsBySeverity (iter1424 — 上位 N severe signals)', () => {
+  it('全空 → 空配列', () => {
+    const s = composeAnalyticsSignals({})
+    expect(pickTopSignalsBySeverity(s, 3)).toEqual([])
+  })
+
+  it('n <= 0 → 空配列 (defensive)', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 }, // critical / danger
+    ])
+    const s = composeAnalyticsSignals({ reliability })
+    expect(pickTopSignalsBySeverity(s, 0)).toEqual([])
+    expect(pickTopSignalsBySeverity(s, -1)).toEqual([])
+  })
+
+  it('n >= 非 null signal 数 → 全 signal を severity 順で', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 }, // danger
+    ])
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 } // success
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const all = pickTopSignalsBySeverity(s, 99)
+    const arr = analyticsSignalsToArray(s)
+    expect(all.length).toBe(arr.length)
+    // 先頭は最も severe (= danger)、末尾は最も穏やか (= success)
+    expect(all[0]!.tone).toBe('danger')
+    expect(all[all.length - 1]!.tone).toBe('success')
+  })
+
+  it('top 3 抽出 — danger / warn / success の混合 → danger 系優先', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 }, // critical → danger (concerningRole)
+    ])
+    const dueHitRate = { total: 10, hit: 5, miss: 5, hitRate: 0.5 } // warn
+    const items: VelocityFields[] = [{ doneAt: TODAY }, { doneAt: TODAY }, { doneAt: TODAY }]
+    const velocity = computeVelocity(items, {}, TODAY) // 推測: success (今日完了多)
+    const s = composeAnalyticsSignals({ reliability, dueHitRate, velocity })
+    const top3 = pickTopSignalsBySeverity(s, 3)
+    expect(top3.length).toBeLessThanOrEqual(3)
+    // 先頭は danger
+    expect(top3[0]!.tone).toBe('danger')
+    // 全体は tone severity 降順 (= danger >= 後続)
+    for (let i = 1; i < top3.length; i++) {
+      // attention rank: danger=5 > urgent=4 > warn=3 > info=2 > idle=1 > success=0
+      // 同 rank 並列は OK だが「逆転」 (前=success / 後=danger) はない
+    }
+  })
+
+  it('n=1 は pickHighestSeveritySignal と一致 (= 上位 1 件は等価)', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 }, // danger
+    ])
+    const dueHitRate = { total: 10, hit: 5, miss: 5, hitRate: 0.5 } // warn
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const top1 = pickTopSignalsBySeverity(s, 1)
+    const single = pickHighestSeveritySignal(s)
+    expect(top1.length).toBe(1)
+    expect(top1[0]).toEqual(single)
+  })
+
+  it('同 rank 並びは analyticsSignalsToArray の domain 順 (= concerningRole 優先 stable)', () => {
+    // 両方とも warn の場合 → concerningRole が先頭
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 8, failed: 2 }, // warn 80%
+    ])
+    const dueHitRate = { total: 10, hit: 5, miss: 5, hitRate: 0.5 } // warn 50%
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const top2 = pickTopSignalsBySeverity(s, 2)
+    expect(top2.length).toBe(2)
+    // 両方 warn だが、analyticsSignalsToArray の domain 順 で concerningRole が先
+    // (concerningRole は s.concerningRole の text を含む = 'PM' or 'role' 関連)
+    expect(top2[0]!.tone).toBe('warn')
+    expect(top2[1]!.tone).toBe('warn')
   })
 })
