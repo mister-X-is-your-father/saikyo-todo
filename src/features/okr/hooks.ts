@@ -78,7 +78,35 @@ export function useCreateGoal(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: CreateGoalInput) => unwrap(await createGoalAction(input)),
-    onSuccess: () => invalidateGoalScope(qc, workspaceId),
+    // iter1479 (mode-F、Add 系): /goals で Goal 作成後 ~200-500ms 待ちで Goal card が
+    // 現れない flicker (useCreateTag iter1478 と同 root cause、Goal 版)。
+    onMutate: (input: CreateGoalInput) => {
+      void qc.cancelQueries({ queryKey: okrKeys.goals(workspaceId) })
+      const snapshot = qc.getQueryData<Array<{ id: string }>>(okrKeys.goals(workspaceId))
+      if (snapshot) {
+        const tempEntry = {
+          id: `temp-${crypto.randomUUID()}`,
+          workspaceId: input.workspaceId,
+          title: input.title,
+          description: input.description ?? null,
+          period: input.period ?? 'quarterly',
+          startDate: input.startDate,
+          endDate: input.endDate,
+          status: 'planning' as const,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          version: 0,
+          deletedAt: null,
+          createdBy: '',
+        }
+        qc.setQueryData(okrKeys.goals(workspaceId), [...snapshot, tempEntry])
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(okrKeys.goals(workspaceId), ctx.snapshot)
+    },
+    onSettled: () => invalidateGoalScope(qc, workspaceId),
   })
 }
 
@@ -114,7 +142,35 @@ export function useCreateKeyResult(goalId: string, workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: CreateKeyResultInput) => unwrap(await createKeyResultAction(input)),
-    onSuccess: () => {
+    // iter1479 (mode-F、Add 系): KR 追加 button click 後 ~200-500ms 待ちで KR row が
+    // 現れない flicker (useCreateGoal と同 root cause、KR 版)。
+    onMutate: (input: CreateKeyResultInput) => {
+      void qc.cancelQueries({ queryKey: okrKeys.krs(goalId) })
+      const snapshot = qc.getQueryData<Array<{ id: string }>>(okrKeys.krs(goalId))
+      if (snapshot) {
+        const tempEntry = {
+          id: `temp-${crypto.randomUUID()}`,
+          goalId: input.goalId,
+          title: input.title,
+          progressMode: input.progressMode ?? 'items',
+          targetValue: input.targetValue ?? null,
+          currentValue: input.currentValue ?? null,
+          unit: input.unit ?? null,
+          weight: input.weight ?? 1,
+          position: input.position ?? 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          version: 0,
+          deletedAt: null,
+        }
+        qc.setQueryData(okrKeys.krs(goalId), [...snapshot, tempEntry])
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(okrKeys.krs(goalId), ctx.snapshot)
+    },
+    onSettled: () => {
       invalidateKrScope(qc, goalId)
       invalidateGoalScope(qc, workspaceId)
     },
