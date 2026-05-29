@@ -44,7 +44,39 @@ export function useCreateSchedule(workspaceId: string, date: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: CreateScheduleInput) => unwrap(await createScheduleAction(input)),
-    onSuccess: () => {
+    // iter1477 (mode-F、Add 系): Schedule (timeline/calendar の予定 block) 作成後
+    // ~200-500ms 待ちで block が現れない flicker (useAddItemArtifact iter1475 と
+    // 同 root cause、Schedule 版)。temp id ('temp-' + uuid) で仮 block append、
+    // server canonical fetch (onSettled invalidate) で正規 id に上書き。
+    onMutate: (input: CreateScheduleInput) => {
+      void qc.cancelQueries({ queryKey: scheduleKeys.byDate(workspaceId, date) })
+      const snapshot = qc.getQueryData<Schedule[]>(scheduleKeys.byDate(workspaceId, date))
+      if (snapshot) {
+        const tempEntry: Schedule = {
+          id: `temp-${crypto.randomUUID()}`,
+          workspaceId: input.workspaceId,
+          itemId: input.itemId ?? null,
+          kind: input.kind,
+          startAt: new Date(input.startAt),
+          endAt: new Date(input.endAt),
+          note: input.note ?? null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          version: 0,
+          deletedAt: null,
+          createdBy: '',
+        }
+        qc.setQueryData<Schedule[]>(scheduleKeys.byDate(workspaceId, date), [
+          ...snapshot,
+          tempEntry,
+        ])
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(scheduleKeys.byDate(workspaceId, date), ctx.snapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: scheduleKeys.byDate(workspaceId, date) })
     },
   })
