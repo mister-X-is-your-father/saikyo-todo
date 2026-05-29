@@ -44,8 +44,27 @@ export function useUpdateWorkflow(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: UpdateWorkflowInput) => unwrap(await updateWorkflowAction(input)),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: workflowKeys.list(workspaceId) })
+    // iter1451 (mode-F): Workflow 編集 form 保存後 / 「有効化」 toggle 後 ~200-500ms
+    // 待ちで visible name / description / enabled state が更新前のまま見える flicker
+    // (useUpdateGoal iter1450 / useUpdateProposal iter1449 と同 root cause、Workflow 版)。
+    onMutate: (input: UpdateWorkflowInput) => {
+      void qc.cancelQueries({ queryKey: workflowKeys.list(workspaceId) })
+      const snapshot = qc.getQueryData<Array<{ id: string } & Record<string, unknown>>>(
+        workflowKeys.list(workspaceId),
+      )
+      if (snapshot) {
+        qc.setQueryData(
+          workflowKeys.list(workspaceId),
+          snapshot.map((w) => (w.id === input.id ? { ...w, ...input.patch } : w)),
+        )
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(workflowKeys.list(workspaceId), ctx.snapshot)
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: workflowKeys.list(workspaceId) })
     },
   })
 }
