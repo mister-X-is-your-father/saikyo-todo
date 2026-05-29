@@ -51,6 +51,47 @@ export function severityToChipTone(sev: Severity): ChipTone {
 }
 
 /**
+ * iter1430 refactor: 各 domain `Record<K, number>` (= domain severity 別件数) を
+ * `Record<Severity, number>` に集約する **汎用 helper**。
+ *
+ * iter533-548 系で同 pattern (= empty Record 初期化 + for-loop + ?? 0 + toSeverity 委譲)
+ * を 11+ 関数 (`checklistStatusCountsToSeverityCounts` /
+ * `improvementSeverityCountsToSeverityCounts` / `assigneeLoadSeverityCountsToSeverityCounts` /
+ * `pdcaPhaseSeverityCountsToSeverityCounts` / `fourStateHintCountsToSeverityCounts` + 他 file
+ * の 6 件) が完全に同じ boilerplate を持っていたのを 1 関数に集約。
+ *
+ * 仕様:
+ *  - 5 Severity bucket (ok / info / warn / danger / muted) を 0 で初期化
+ *  - `Object.keys(counts)` で domain key を全列挙、`toSeverity(k)` で Severity bucket に振り分け、
+ *    `counts[k] ?? 0` を累積
+ *  - 同 Severity に lossy 縮約された domain key (例: pdca の 'on_track' と 'fresh' が両方 'info'
+ *    に集約) は単純加算 (= 同 bucket への合算が semantics)
+ *  - 入力 counts を mutate しない、新 Record を返す (immutable)
+ *
+ * caller pattern (= 各 `*CountsToSeverityCounts` の薄ラッパー):
+ *   return aggregateCountsBySeverity(counts, checklistStatusToSeverity)
+ *
+ * 注: 本 helper は severity-bridges.ts 内の 5 関数の boilerplate を排除する用 (= 11+ 関数の
+ * 一括 refactor は本 iter scope 外、別 iter で外部 file も追従)。
+ */
+export function aggregateCountsBySeverity<K extends string>(
+  counts: Readonly<Record<K, number>>,
+  toSeverity: (k: K) => Severity,
+): Record<Severity, number> {
+  const out: Record<Severity, number> = {
+    ok: 0,
+    info: 0,
+    warn: 0,
+    danger: 0,
+    muted: 0,
+  }
+  for (const k of Object.keys(counts) as K[]) {
+    out[toSeverity(k)] += counts[k] ?? 0
+  }
+  return out
+}
+
+/**
  * AssigneeLoadSeverity (担当負荷 4 段) → Severity (5 段) bridge:
  *   - 'overloaded' (累積 score >= 100) → 'danger'
  *   - 'busy'       (>= 50)             → 'warn'
@@ -153,19 +194,7 @@ export function checklistStatusToSeverity(status: ChecklistStatus): Severity {
 export function checklistStatusCountsToSeverityCounts(
   counts: Record<ChecklistStatus, number>,
 ): Record<Severity, number> {
-  const out: Record<Severity, number> = {
-    ok: 0,
-    info: 0,
-    warn: 0,
-    danger: 0,
-    muted: 0,
-  }
-  const all: ChecklistStatus[] = ['ok', 'warn', 'fail']
-  for (const k of all) {
-    const sev = checklistStatusToSeverity(k)
-    out[sev] += counts[k] ?? 0
-  }
-  return out
+  return aggregateCountsBySeverity(counts, checklistStatusToSeverity)
 }
 
 /**
@@ -185,19 +214,7 @@ export function checklistStatusCountsToSeverityCounts(
 export function improvementSeverityCountsToSeverityCounts(
   counts: Record<'high' | 'medium' | 'low', number>,
 ): Record<Severity, number> {
-  const out: Record<Severity, number> = {
-    ok: 0,
-    info: 0,
-    warn: 0,
-    danger: 0,
-    muted: 0,
-  }
-  const all: Array<'high' | 'medium' | 'low'> = ['high', 'medium', 'low']
-  for (const k of all) {
-    const sev = improvementSeverityToSeverity(k)
-    out[sev] += counts[k] ?? 0
-  }
-  return out
+  return aggregateCountsBySeverity(counts, improvementSeverityToSeverity)
 }
 
 /**
@@ -217,19 +234,7 @@ export function improvementSeverityCountsToSeverityCounts(
 export function assigneeLoadSeverityCountsToSeverityCounts(
   counts: Record<AssigneeLoadSeverity, number>,
 ): Record<Severity, number> {
-  const out: Record<Severity, number> = {
-    ok: 0,
-    info: 0,
-    warn: 0,
-    danger: 0,
-    muted: 0,
-  }
-  const all: AssigneeLoadSeverity[] = ['overloaded', 'busy', 'normal', 'light']
-  for (const k of all) {
-    const sev = assigneeLoadSeverityToSeverity(k)
-    out[sev] += counts[k] ?? 0
-  }
-  return out
+  return aggregateCountsBySeverity(counts, assigneeLoadSeverityToSeverity)
 }
 
 /**
@@ -250,19 +255,7 @@ export function assigneeLoadSeverityCountsToSeverityCounts(
 export function pdcaPhaseSeverityCountsToSeverityCounts(
   counts: Record<PdcaPhaseSeverity, number>,
 ): Record<Severity, number> {
-  const out: Record<Severity, number> = {
-    ok: 0,
-    info: 0,
-    warn: 0,
-    danger: 0,
-    muted: 0,
-  }
-  const all: PdcaPhaseSeverity[] = ['overdue', 'stale', 'on_track', 'fresh', 'closed']
-  for (const k of all) {
-    const sev = pdcaPhaseSeverityToSeverity(k)
-    out[sev] += counts[k] ?? 0
-  }
-  return out
+  return aggregateCountsBySeverity(counts, pdcaPhaseSeverityToSeverity)
 }
 
 /**
@@ -287,19 +280,7 @@ export function pdcaPhaseSeverityCountsToSeverityCounts(
 export function fourStateHintCountsToSeverityCounts(
   counts: Record<FourStateHint, number>,
 ): Record<Severity, number> {
-  const out: Record<Severity, number> = {
-    ok: 0,
-    info: 0,
-    warn: 0,
-    danger: 0,
-    muted: 0,
-  }
-  const all: FourStateHint[] = ['idle', 'mild', 'moderate', 'severe']
-  for (const k of all) {
-    const sev = fourStateHintToSeverity(k)
-    out[sev] += counts[k] ?? 0
-  }
-  return out
+  return aggregateCountsBySeverity(counts, fourStateHintToSeverity)
 }
 
 /**

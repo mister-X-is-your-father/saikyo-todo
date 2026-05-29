@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
+import type { Severity } from './severity'
 import {
+  aggregateCountsBySeverity,
   assigneeLoadSeverityCountsToSeverityCounts,
   assigneeLoadSeverityToSeverity,
   buildFourStateHintChip,
@@ -391,5 +393,55 @@ describe('severeMildIdleToChipTone (iter1055)', () => {
     for (const s of all) {
       expect(typeof severeMildIdleToChipTone(s)).toBe('string')
     }
+  })
+})
+
+describe('aggregateCountsBySeverity (iter1430 — 汎用 domain → severity counts bridge)', () => {
+  it('空 counts → 全 Severity bucket 0', () => {
+    const out = aggregateCountsBySeverity<string>({}, () => 'ok')
+    expect(out).toEqual({ ok: 0, info: 0, warn: 0, danger: 0, muted: 0 })
+  })
+
+  it('単一 key → 該当 bucket に集約', () => {
+    const counts = { a: 5 }
+    const out = aggregateCountsBySeverity<'a'>(counts, () => 'danger')
+    expect(out).toEqual({ ok: 0, info: 0, warn: 0, danger: 5, muted: 0 })
+  })
+
+  it('複数 key + 同 Severity に縮約 → 加算', () => {
+    // 'a' / 'b' とも 'info' に縮約 (= pdca 'on_track' + 'fresh' → 'info' と同 pattern)
+    const counts = { a: 3, b: 7 }
+    const out = aggregateCountsBySeverity<'a' | 'b'>(counts, () => 'info')
+    expect(out.info).toBe(10)
+  })
+
+  it('既存 checklistStatusCountsToSeverityCounts と同一結果 (= refactor 後 semantics 不変)', () => {
+    const counts = { ok: 2, warn: 3, fail: 5 }
+    const viaGeneric = aggregateCountsBySeverity(counts, checklistStatusToSeverity)
+    const viaSpecific = checklistStatusCountsToSeverityCounts(counts)
+    expect(viaGeneric).toEqual(viaSpecific)
+  })
+
+  it('既存 fourStateHintCountsToSeverityCounts と同一結果', () => {
+    const counts = { idle: 1, mild: 2, moderate: 3, severe: 4 }
+    const viaGeneric = aggregateCountsBySeverity(counts, fourStateHintToSeverity)
+    const viaSpecific = fourStateHintCountsToSeverityCounts(counts)
+    expect(viaGeneric).toEqual(viaSpecific)
+  })
+
+  it('既存 pdcaPhaseSeverityCountsToSeverityCounts と同一結果 (= lossy on_track+fresh → info 合算)', () => {
+    const counts = { overdue: 1, stale: 2, on_track: 3, fresh: 4, closed: 5 }
+    const viaGeneric = aggregateCountsBySeverity(counts, pdcaPhaseSeverityToSeverity)
+    const viaSpecific = pdcaPhaseSeverityCountsToSeverityCounts(counts)
+    expect(viaGeneric).toEqual(viaSpecific)
+    // 'on_track' (3) + 'fresh' (4) = 'info' bucket に 7
+    expect(viaGeneric.info).toBe(7)
+  })
+
+  it('入力 counts を mutate しない (immutable)', () => {
+    const counts = { a: 1, b: 2 }
+    const original = { ...counts }
+    aggregateCountsBySeverity<'a' | 'b'>(counts, (k) => (k === 'a' ? 'danger' : ('ok' as Severity)))
+    expect(counts).toEqual(original)
   })
 })
