@@ -34,8 +34,35 @@ export function useCreateWorkflow(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: CreateWorkflowInput) => unwrap(await createWorkflowAction(input)),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: workflowKeys.list(workspaceId) })
+    // iter1481 (mode-F、Add 系): /workflows で Workflow 作成後 ~200-500ms 待ちで card が
+    // 現れない flicker (useCreateSprint iter1480 と同 root cause、Workflow 版)。
+    onMutate: (input: CreateWorkflowInput) => {
+      void qc.cancelQueries({ queryKey: workflowKeys.list(workspaceId) })
+      const snapshot = qc.getQueryData<Array<{ id: string }>>(workflowKeys.list(workspaceId))
+      if (snapshot) {
+        const tempEntry = {
+          id: `temp-${crypto.randomUUID()}`,
+          workspaceId: input.workspaceId,
+          name: input.name,
+          description: input.description ?? '',
+          graph: input.graph ?? { nodes: [], edges: [] },
+          trigger: input.trigger ?? { kind: 'manual' },
+          enabled: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          version: 0,
+          deletedAt: null,
+          createdBy: '',
+        }
+        qc.setQueryData(workflowKeys.list(workspaceId), [...snapshot, tempEntry])
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(workflowKeys.list(workspaceId), ctx.snapshot)
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: workflowKeys.list(workspaceId) })
     },
   })
 }
