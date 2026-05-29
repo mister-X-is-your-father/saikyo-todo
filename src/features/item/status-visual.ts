@@ -36,7 +36,7 @@ const UNKNOWN_CONFIG: StatusVisualConfig = {
   label: '不明',
   shortLabel: '不明',
   bgClass: 'bg-zinc-100',
-  textClass: 'text-zinc-500',
+  textClass: 'text-zinc-700',
   ringClass: 'ring-zinc-200',
   iconKey: 'unknown',
 }
@@ -70,7 +70,7 @@ const STATUS_MAP: Record<string, StatusVisualConfig> = {
     label: 'キャンセル',
     shortLabel: 'キャンセル',
     bgClass: 'bg-zinc-100',
-    textClass: 'text-zinc-500 line-through',
+    textClass: 'text-zinc-700 line-through',
     ringClass: 'ring-zinc-300',
     iconKey: 'cancel',
   },
