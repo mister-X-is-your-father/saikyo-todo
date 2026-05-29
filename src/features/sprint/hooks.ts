@@ -106,7 +106,29 @@ export function useChangeSprintStatus(workspaceId: string) {
   return useMutation({
     mutationFn: async (input: ChangeSprintStatusInput) =>
       unwrap(await changeSprintStatusAction(input)),
-    onSuccess: () => invalidateSprintScope(qc, workspaceId),
+    // iter1440 (mode-F): planning↔active↔completed の status button 切替時に
+    // ~200-500ms 待つと「変えたのに反映されない」 認知が出る (useReorderItem
+    // iter437 / useToggleCompleteItem iter1013 / useToggleTag iter1402 /
+    // useArchiveItem iter1437 と同 root cause)。fire-and-forget cancelQueries +
+    // sync setQueryData で sprint.status を即反映。
+    onMutate: (input) => {
+      void qc.cancelQueries({ queryKey: sprintKeys.list(workspaceId) })
+      void qc.cancelQueries({ queryKey: sprintKeys.active(workspaceId) })
+      const snapshots = qc.getQueriesData({ queryKey: sprintKeys.all })
+      for (const [key, prev] of snapshots) {
+        if (!Array.isArray(prev)) continue
+        qc.setQueryData(
+          key,
+          prev.map((s: { id: string }) => (s.id === input.id ? { ...s, status: input.status } : s)),
+        )
+      }
+      return { snapshots }
+    },
+    onError: (_e, _input, ctx) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.snapshots) qc.setQueryData(key as readonly unknown[], prev)
+    },
+    onSettled: () => invalidateSprintScope(qc, workspaceId),
   })
 }
 
