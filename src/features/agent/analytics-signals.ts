@@ -515,3 +515,52 @@ export function filterSignalsByMinTone(
   const minRank = chipToneAttentionRank(minTone)
   return analyticsSignalsToArray(signals).filter((s) => chipToneAttentionRank(s.tone) >= minRank)
 }
+
+/**
+ * iter1428 basics: AnalyticsSignals を ChipTone 別の signal 配列に分配する pure helper。
+ *
+ * `countAnalyticsSignalsByTone` (iter954) は **件数のみ** だが、本 helper は **signal 自身**
+ * を tone 別に分配する。caller は tone 別の chip row を 1 行ずつ render できる:
+ *
+ *   const grouped = groupSignalsByTone(signals)
+ *   grouped.danger.map(s => <Chip text={s.text} tone="danger" />)
+ *   grouped.warn.map(s => <Chip text={s.text} tone="warn" />)
+ *   ...
+ *
+ * 仕様:
+ *  - 6 tone (danger / urgent / warn / info / idle / success) すべての key を持つ Record
+ *  - 該当 signal 無し tone は空配列 (= caller の undefined check 不要、`grouped.danger.length === 0`
+ *    で chip row 非表示判断可能)
+ *  - 各 array 内の並び順は `analyticsSignalsToArray` の domain 表示順 を保持 (= concerningRole
+ *    が先頭、stable)
+ *  - 全 null → 6 key すべて空配列
+ *
+ * 用途:
+ *  - dashboard 「重要度別 chip 行」 layout (= 危ない行 / 注意行 / 達成行 を縦に並べる)
+ *  - AI 朝 brief 「重要度別 grouping」 出力 (= caller が tone 別に prefix label を付与)
+ *  - Slack daily digest 「concerning / positive panel 分離」 (= grouped.danger を critical
+ *    section、grouped.success を good section に振り分け)
+ *
+ * 既存 helper との関係:
+ *  - `countAnalyticsSignalsByTone`: tone 別件数 (= 集計のみ、signal は捨てる)
+ *  - `analyticsSignalsToArray`: 全 signal 1 配列 (= tone 区別なし)
+ *  - `pickTopSignalsBySeverity`: severity 順 N 件 (= tone は混在)
+ *  - `filterSignalsByMinTone`: 閾値以上の signal (= 1 軸 filter)
+ *  - 本 helper: tone 別 **分配** (= 6 軸 grouping、UI 縦配置 / Slack section 分離 向け)
+ */
+export function groupSignalsByTone(
+  signals: AnalyticsSignals,
+): Record<ChipTone, AgentBriefSignal[]> {
+  const grouped: Record<ChipTone, AgentBriefSignal[]> = {
+    danger: [],
+    urgent: [],
+    warn: [],
+    info: [],
+    idle: [],
+    success: [],
+  }
+  for (const s of analyticsSignalsToArray(signals)) {
+    grouped[s.tone].push(s)
+  }
+  return grouped
+}

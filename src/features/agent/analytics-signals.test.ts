@@ -17,6 +17,7 @@ import {
   formatAnalyticsSignalsLineJa,
   formatAnalyticsSignalsToneSummaryJa,
   formatTopSignalsLineJa,
+  groupSignalsByTone,
   pickHighestSeveritySignal,
   pickTopSignalsBySeverity,
 } from './analytics-signals'
@@ -943,5 +944,81 @@ describe('filterSignalsByMinTone (iter1427 — 閾値以上の signal を凝集�
     const velocity = computeVelocity(items, {}, TODAY)
     const s = composeAnalyticsSignals({ velocity })
     expect(filterSignalsByMinTone(s, 'warn')).toEqual([])
+  })
+})
+
+describe('groupSignalsByTone (iter1428 — tone 別 signal 分配)', () => {
+  it('全空 → 6 tone すべて空配列', () => {
+    const s = composeAnalyticsSignals({})
+    const grouped = groupSignalsByTone(s)
+    expect(grouped.danger).toEqual([])
+    expect(grouped.urgent).toEqual([])
+    expect(grouped.warn).toEqual([])
+    expect(grouped.info).toEqual([])
+    expect(grouped.idle).toEqual([])
+    expect(grouped.success).toEqual([])
+  })
+
+  it('混合 signal → 各 tone bucket に正しく分配', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 }, // danger
+    ])
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 } // success
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const grouped = groupSignalsByTone(s)
+    // danger / success が少なくとも 1 件ずつ
+    expect(grouped.danger.length).toBeGreaterThan(0)
+    expect(grouped.success.length).toBeGreaterThan(0)
+    // 集計合計は analyticsSignalsToArray.length と一致
+    const total =
+      grouped.danger.length +
+      grouped.urgent.length +
+      grouped.warn.length +
+      grouped.info.length +
+      grouped.idle.length +
+      grouped.success.length
+    expect(total).toBe(analyticsSignalsToArray(s).length)
+  })
+
+  it('各 array は analyticsSignalsToArray の domain 表示順を保持 (stable)', () => {
+    // 両方とも warn の場合: concerningRole が array の先頭、dueHitRate がその後
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 8, failed: 2 }, // warn 80%
+    ])
+    const dueHitRate = { total: 10, hit: 5, miss: 5, hitRate: 0.5 } // warn 50%
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const grouped = groupSignalsByTone(s)
+    expect(grouped.warn.length).toBeGreaterThanOrEqual(2)
+    // analyticsSignalsToArray の warn 順抽出と一致
+    const arrWarn = analyticsSignalsToArray(s).filter((sig) => sig.tone === 'warn')
+    expect(grouped.warn).toEqual(arrWarn)
+  })
+
+  it('該当 signal 無し tone は空配列 (caller の undefined check 不要)', () => {
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 } // success のみ
+    const s = composeAnalyticsSignals({ dueHitRate })
+    const grouped = groupSignalsByTone(s)
+    expect(grouped.success.length).toBeGreaterThan(0)
+    // success 以外は空
+    expect(grouped.danger).toEqual([])
+    expect(grouped.warn).toEqual([])
+    // 空 array は length 0 で undefined ではない
+    expect(grouped.warn.length).toBe(0)
+  })
+
+  it('集計 counts と整合 (= countAnalyticsSignalsByTone の各 tone 件数と一致)', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 },
+    ])
+    const dueHitRate = { total: 10, hit: 5, miss: 5, hitRate: 0.5 }
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const grouped = groupSignalsByTone(s)
+    const counts = countAnalyticsSignalsByTone(s)
+    expect(grouped.danger.length).toBe(counts.danger)
+    expect(grouped.urgent.length).toBe(counts.urgent)
+    expect(grouped.warn.length).toBe(counts.warn)
+    expect(grouped.info.length).toBe(counts.info)
+    expect(grouped.idle.length).toBe(counts.idle)
+    expect(grouped.success.length).toBe(counts.success)
   })
 })
