@@ -257,6 +257,7 @@ export function SprintsPanel({ workspaceId }: Props) {
                         ? `開始 — Sprint 開始日 (現在: ${startDate}、終了日 ${endDate} より後で不正)`
                         : `開始 — Sprint 開始日 (現在: ${startDate})`
                   }
+                  className="min-h-11"
                 />
               </div>
               <div className="space-y-1">
@@ -284,6 +285,7 @@ export function SprintsPanel({ workspaceId }: Props) {
                         ? `終了 — Sprint 終了日 (現在: ${endDate}、開始日 ${startDate} より前で不正)`
                         : `終了 — Sprint 終了日 (現在: ${endDate})`
                   }
+                  className="min-h-11"
                 />
               </div>
             </div>
