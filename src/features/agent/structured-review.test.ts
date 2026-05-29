@@ -10,7 +10,9 @@ import {
   formatTopImprovementJa,
   formatWorstChecklistFindingJa,
   parseStructuredReview,
+  pickTopChecklistFindings,
   pickTopImprovement,
+  pickTopImprovements,
   pickWorstChecklistFinding,
   type ReviewSummary,
   statusGlyph,
@@ -465,5 +467,118 @@ describe('formatReviewVerdictHintJa', () => {
       '多数注意 (pass)',
     )
     expect(formatReviewVerdictHintJa({ byStatus: { ok: 0, warn: 0, fail: 1 } })).toBe('不合格')
+  })
+})
+
+describe('pickTopChecklistFindings (iter1432 — 上位 N severe findings)', () => {
+  it('n <= 0 → 空配列 (defensive)', () => {
+    const review = {
+      checklist: [{ status: 'fail' as const, point: 'A', comment: '' }],
+    }
+    expect(pickTopChecklistFindings(review, 0)).toEqual([])
+    expect(pickTopChecklistFindings(review, -1)).toEqual([])
+  })
+
+  it('空 checklist → 空配列', () => {
+    expect(pickTopChecklistFindings({ checklist: [] }, 3)).toEqual([])
+  })
+
+  it('混合 → severity 降順 (fail → warn → ok)', () => {
+    const review = {
+      checklist: [
+        { status: 'ok' as const, point: 'O1', comment: '' },
+        { status: 'fail' as const, point: 'F1', comment: '' },
+        { status: 'warn' as const, point: 'W1', comment: '' },
+        { status: 'fail' as const, point: 'F2', comment: '' },
+      ],
+    }
+    const top3 = pickTopChecklistFindings(review, 3)
+    expect(top3.map((c) => c.point)).toEqual(['F1', 'F2', 'W1'])
+  })
+
+  it('同 severity 内は入力順保持 (stable)', () => {
+    const review = {
+      checklist: [
+        { status: 'warn' as const, point: 'W1', comment: '' },
+        { status: 'fail' as const, point: 'F1', comment: '' },
+        { status: 'warn' as const, point: 'W2', comment: '' },
+        { status: 'fail' as const, point: 'F2', comment: '' },
+      ],
+    }
+    const top = pickTopChecklistFindings(review, 4)
+    // fail → F1, F2 (元順) / warn → W1, W2 (元順)
+    expect(top.map((c) => c.point)).toEqual(['F1', 'F2', 'W1', 'W2'])
+  })
+
+  it('n=1 は pickWorstChecklistFinding と等価 (= 最重要 1 件)', () => {
+    const review = {
+      checklist: [
+        { status: 'warn' as const, point: 'W1', comment: '' },
+        { status: 'fail' as const, point: 'F1', comment: '' },
+      ],
+    }
+    const top1 = pickTopChecklistFindings(review, 1)
+    const worst = pickWorstChecklistFinding(review)
+    expect(top1.length).toBe(1)
+    expect(top1[0]).toEqual(worst)
+  })
+
+  it('入力 review.checklist を mutate しない', () => {
+    const checklist = [
+      { status: 'ok' as const, point: 'O', comment: '' },
+      { status: 'fail' as const, point: 'F', comment: '' },
+    ]
+    const original = [...checklist]
+    pickTopChecklistFindings({ checklist }, 2)
+    expect(checklist).toEqual(original)
+  })
+})
+
+describe('pickTopImprovements (iter1432 — 上位 N severe improvements)', () => {
+  it('n <= 0 → 空配列', () => {
+    const review = {
+      improvements: [{ title: 'A', rationale: 'a', severity: 'high' as const }],
+    }
+    expect(pickTopImprovements(review, 0)).toEqual([])
+  })
+
+  it('空 improvements → 空配列', () => {
+    expect(pickTopImprovements({ improvements: [] }, 3)).toEqual([])
+  })
+
+  it('混合 → severity 降順 (high → medium → low)', () => {
+    const review = {
+      improvements: [
+        { title: 'L1', rationale: 'l1', severity: 'low' as const },
+        { title: 'H1', rationale: 'h1', severity: 'high' as const },
+        { title: 'M1', rationale: 'm1', severity: 'medium' as const },
+        { title: 'H2', rationale: 'h2', severity: 'high' as const },
+      ],
+    }
+    const top3 = pickTopImprovements(review, 3)
+    expect(top3.map((i) => i.title)).toEqual(['H1', 'H2', 'M1'])
+  })
+
+  it('n=1 は pickTopImprovement と等価', () => {
+    const review = {
+      improvements: [
+        { title: 'M1', rationale: 'm', severity: 'medium' as const },
+        { title: 'H1', rationale: 'h', severity: 'high' as const },
+      ],
+    }
+    const top1 = pickTopImprovements(review, 1)
+    const single = pickTopImprovement(review)
+    expect(top1.length).toBe(1)
+    expect(top1[0]).toEqual(single)
+  })
+
+  it('入力 improvements を mutate しない', () => {
+    const improvements = [
+      { title: 'L', rationale: 'l', severity: 'low' as const },
+      { title: 'H', rationale: 'h', severity: 'high' as const },
+    ]
+    const original = [...improvements]
+    pickTopImprovements({ improvements }, 2)
+    expect(improvements).toEqual(original)
   })
 })

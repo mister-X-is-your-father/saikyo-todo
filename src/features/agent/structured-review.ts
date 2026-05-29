@@ -176,6 +176,74 @@ export function pickTopImprovement(
   return null
 }
 
+const CHECKLIST_STATUS_RANK: Record<ChecklistStatus, number> = {
+  fail: 2,
+  warn: 1,
+  ok: 0,
+}
+
+const IMPROVEMENT_SEVERITY_RANK: Record<Improvement['severity'], number> = {
+  high: 2,
+  medium: 1,
+  low: 0,
+}
+
+/**
+ * iter1432 ai-automation: review.checklist から「上位 N severe findings」 を抽出する pure helper。
+ *
+ * `pickWorstChecklistFinding` (iter484) は単一抽出、本 helper は **N 件抽出**。
+ * AI 朝 brief / Slack daily digest 「review 上位 3 findings」 headline / dashboard
+ * 「優先対応 findings 列」 panel の substrate。
+ *
+ * 仕様:
+ *  - 並び順: severity 降順 (fail → warn → ok)、同 severity は入力順保持 (stable)
+ *  - n <= 0 → 空配列 (defensive)
+ *  - n >= 全件 → 全 checklist を severity 順で
+ *  - 入力 review を mutate しない (= 新配列を返す)
+ *
+ * caller pattern (Slack notification headline):
+ *   const top3 = pickTopChecklistFindings(review, 3)
+ *   const line = top3.map(f => statusGlyph(f.status).glyph + ' ' + f.point).join(' / ')
+ *
+ * 既存 helper との関係:
+ *  - `pickWorstChecklistFinding`: 単一最重要 (= 1 件 alert / badge tone 向け)
+ *  - 本 helper: 上位 N (= top N findings headline 向け)
+ *  - `summarizeReview`: byStatus count (= 集計のみ)
+ */
+export function pickTopChecklistFindings(
+  review: Pick<StructuredReview, 'checklist'>,
+  n: number,
+): ChecklistItem[] {
+  if (n <= 0) return []
+  return [...review.checklist]
+    .sort((a, b) => CHECKLIST_STATUS_RANK[b.status] - CHECKLIST_STATUS_RANK[a.status])
+    .slice(0, n)
+}
+
+/**
+ * iter1432 ai-automation: review.improvements から「上位 N severe improvements」 を抽出。
+ *
+ * `pickTopImprovement` (iter484) は単一抽出、本 helper は **N 件抽出**。
+ * 並び順: severity 降順 (high → medium → low)、同 severity は入力順保持 (stable)。
+ *
+ * caller pattern (AI 朝 brief 「優先改善 3 件」 headline):
+ *   const top3 = pickTopImprovements(review, 3)
+ *   const line = top3.map(i => `${i.severity}: ${i.title}`).join(' / ')
+ *
+ * 既存 helper との関係:
+ *  - `pickTopImprovement`: 単一最重要 (= 1 件 alert 向け)
+ *  - 本 helper: 上位 N (= top N improvements headline 向け)
+ */
+export function pickTopImprovements(
+  review: Pick<StructuredReview, 'improvements'>,
+  n: number,
+): Improvement[] {
+  if (n <= 0) return []
+  return [...review.improvements]
+    .sort((a, b) => IMPROVEMENT_SEVERITY_RANK[b.severity] - IMPROVEMENT_SEVERITY_RANK[a.severity])
+    .slice(0, n)
+}
+
 /**
  * iter484 ai-automation: pickWorstChecklistFinding の出力を chip 文言に整形。
  *   null → 'review 完璧 (要対応なし)'
