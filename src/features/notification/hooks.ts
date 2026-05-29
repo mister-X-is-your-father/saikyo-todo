@@ -118,7 +118,36 @@ export function useMarkAllNotificationsRead(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async () => unwrap(await markAllNotificationsReadAction(workspaceId)),
-    onSuccess: () => {
+    // iter1467 (mode-F): NotificationBell の「全て既読」 button click 後 ~200-500ms
+    // 待ちで list 全 row の visible が「未読」のままで unread count badge も 0 に
+    // ならない flicker (useMarkNotificationRead iter1466 と同 root cause、一括版)。
+    // fire-and-forget cancelQueries + sync setQueryData で全 row の readAt を
+    // new Date() にセット、unreadCount を 0 にリセット。
+    onMutate: () => {
+      void qc.cancelQueries({ queryKey: [...notificationKeys.all, 'list', workspaceId] })
+      void qc.cancelQueries({ queryKey: notificationKeys.unreadCount(workspaceId) })
+      const listSnapshots = qc.getQueriesData<Array<{ id: string; readAt: Date | null }>>({
+        queryKey: [...notificationKeys.all, 'list', workspaceId],
+      })
+      const countSnapshot = qc.getQueryData<number>(notificationKeys.unreadCount(workspaceId))
+      const now = new Date()
+      for (const [key, prev] of listSnapshots) {
+        if (!prev) continue
+        qc.setQueryData(
+          key,
+          prev.map((n) => (n.readAt === null ? { ...n, readAt: now } : n)),
+        )
+      }
+      qc.setQueryData(notificationKeys.unreadCount(workspaceId), 0)
+      return { listSnapshots, countSnapshot }
+    },
+    onError: (_e, _v, ctx) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.listSnapshots) qc.setQueryData(key as readonly unknown[], prev)
+      if (ctx.countSnapshot !== undefined)
+        qc.setQueryData(notificationKeys.unreadCount(workspaceId), ctx.countSnapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: notificationKeys.unreadCount(workspaceId) })
       void qc.invalidateQueries({ queryKey: [...notificationKeys.all, 'list', workspaceId] })
     },
