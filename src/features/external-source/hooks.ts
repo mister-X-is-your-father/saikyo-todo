@@ -50,8 +50,28 @@ export function useUpdateExternalSource(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: UpdateSourceInput) => unwrap(await updateSourceAction(input)),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: externalSourceKeys.list(workspaceId) })
+    // iter1463 (mode-F): /integrations の External Source 編集保存後 ~200-500ms
+    // 待ちで visible name / config / enabled / cron が更新前のまま見える flicker
+    // (useUpdateWorkflow iter1451 / useUpdateTemplate iter1452 と同 root cause、
+    //  ExternalSource 版)。
+    onMutate: (input: UpdateSourceInput) => {
+      void qc.cancelQueries({ queryKey: externalSourceKeys.list(workspaceId) })
+      const snapshot = qc.getQueryData<Array<{ id: string } & Record<string, unknown>>>(
+        externalSourceKeys.list(workspaceId),
+      )
+      if (snapshot) {
+        qc.setQueryData(
+          externalSourceKeys.list(workspaceId),
+          snapshot.map((s) => (s.id === input.id ? { ...s, ...input.patch } : s)),
+        )
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(externalSourceKeys.list(workspaceId), ctx.snapshot)
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: externalSourceKeys.list(workspaceId) })
     },
   })
 }
@@ -60,8 +80,24 @@ export function useDeleteExternalSource(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => unwrap(await deleteSourceAction(id)),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: externalSourceKeys.list(workspaceId) })
+    // iter1463 (mode-F): External Source 削除後 ~200-500ms 待ちで card が残って
+    // 見える flicker (useDeleteWorkflow iter1442 と同 root cause、ExternalSource 版)。
+    onMutate: (id: string) => {
+      void qc.cancelQueries({ queryKey: externalSourceKeys.list(workspaceId) })
+      const snapshot = qc.getQueryData<Array<{ id: string }>>(externalSourceKeys.list(workspaceId))
+      if (snapshot) {
+        qc.setQueryData(
+          externalSourceKeys.list(workspaceId),
+          snapshot.filter((s) => s.id !== id),
+        )
+      }
+      return { snapshot }
+    },
+    onError: (_e, _id, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(externalSourceKeys.list(workspaceId), ctx.snapshot)
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: externalSourceKeys.list(workspaceId) })
     },
   })
 }
