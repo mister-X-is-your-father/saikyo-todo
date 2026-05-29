@@ -69,7 +69,24 @@ export function useRemoveItemArtifact(itemId: string) {
   return useMutation({
     mutationFn: async (input: RemoveItemIoArtifactInput) =>
       unwrap(await removeItemArtifactAction(input)),
-    onSuccess: () => {
+    // iter1464 (mode-F): ItemEditDialog 内 artifact (input/output) 削除後 ~200-500ms
+    // 待ちで artifact row が残って見える flicker (useDeleteWorkflow iter1442 と
+    // 同 root cause、item-metadata 版)。
+    onMutate: (input: RemoveItemIoArtifactInput) => {
+      void qc.cancelQueries({ queryKey: itemMetadataKeys.artifacts(itemId) })
+      const snapshot = qc.getQueryData<Array<{ id: string }>>(itemMetadataKeys.artifacts(itemId))
+      if (snapshot) {
+        qc.setQueryData(
+          itemMetadataKeys.artifacts(itemId),
+          snapshot.filter((a) => a.id !== input.id),
+        )
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(itemMetadataKeys.artifacts(itemId), ctx.snapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: itemMetadataKeys.artifacts(itemId) })
     },
   })
@@ -91,7 +108,25 @@ export function useRemoveItemStakeholder(itemId: string) {
   return useMutation({
     mutationFn: async (input: RemoveItemStakeholderInput) =>
       unwrap(await removeItemStakeholderAction(input)),
-    onSuccess: () => {
+    // iter1464 (mode-F): stakeholder (関係者) 削除後 ~200-500ms 待ちで row が
+    // 残って見える flicker。stakeholder は (itemId, userId) 複合 key で identity。
+    onMutate: (input: RemoveItemStakeholderInput) => {
+      void qc.cancelQueries({ queryKey: itemMetadataKeys.stakeholders(itemId) })
+      const snapshot = qc.getQueryData<Array<{ userId: string }>>(
+        itemMetadataKeys.stakeholders(itemId),
+      )
+      if (snapshot) {
+        qc.setQueryData(
+          itemMetadataKeys.stakeholders(itemId),
+          snapshot.filter((s) => s.userId !== input.userId),
+        )
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(itemMetadataKeys.stakeholders(itemId), ctx.snapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: itemMetadataKeys.stakeholders(itemId) })
     },
   })
