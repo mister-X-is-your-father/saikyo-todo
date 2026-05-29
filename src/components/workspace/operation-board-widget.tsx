@@ -441,7 +441,7 @@ function ItemRow({
     <button
       type="button"
       onClick={() => onClick(item.id)}
-      className={`hover:bg-muted/60 focus-visible:ring-ring flex w-full items-center gap-2 truncate rounded px-1 py-0.5 text-left focus-visible:ring-2 focus-visible:outline-none ${cls}`}
+      className={`hover:bg-muted/60 focus-visible:ring-ring flex min-h-11 w-full items-center gap-2 truncate rounded px-1 py-0.5 text-left focus-visible:ring-2 focus-visible:outline-none ${cls}`}
       data-testid={`operation-board-row-${item.id}`}
       aria-label={ariaLabel}
     >
