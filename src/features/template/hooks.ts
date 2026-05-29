@@ -80,7 +80,30 @@ export function useUpdateTemplate(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: UpdateTemplateInput) => unwrap(await updateTemplateAction(input)),
-    onSuccess: () => {
+    // iter1452 (mode-F): Template 編集 form 保存後 ~200-500ms 待ちで visible
+    // name / description / cron / variables が更新前のまま見える flicker
+    // (useUpdateWorkflow iter1451 / useUpdateGoal iter1450 と同 root cause、Template 版)。
+    // templateKeys.list は filter (kind=manual/recurring) を含む queryKey なので
+    // getQueriesData で複数 cache 横断 patch merge。
+    onMutate: (input: UpdateTemplateInput) => {
+      void qc.cancelQueries({ queryKey: [...templateKeys.all, workspaceId] })
+      const snapshots = qc.getQueriesData<Array<{ id: string } & Record<string, unknown>>>({
+        queryKey: [...templateKeys.all, workspaceId],
+      })
+      for (const [key, prev] of snapshots) {
+        if (!prev) continue
+        qc.setQueryData(
+          key,
+          prev.map((t) => (t.id === input.id ? { ...t, ...input.patch } : t)),
+        )
+      }
+      return { snapshots }
+    },
+    onError: (_e, _input, ctx) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.snapshots) qc.setQueryData(key as readonly unknown[], prev)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: [...templateKeys.all, workspaceId] })
     },
   })
