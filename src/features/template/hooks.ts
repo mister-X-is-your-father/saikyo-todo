@@ -159,7 +159,27 @@ export function useUpdateTemplateItem(templateId: string) {
   return useMutation({
     mutationFn: async (input: UpdateTemplateItemInput) =>
       unwrap(await updateTemplateItemAction(input)),
-    onSuccess: () => {
+    // iter1462 (mode-F): TemplateItem 編集保存後 ~200-500ms 待ちで visible title /
+    // dueOffset / MUST badge が更新前のまま見える flicker (useUpdateTemplate iter1452 と
+    // 同 root cause、template item 編集版)。fire-and-forget cancelQueries + sync
+    // setQueryData で id match の item を input.patch で merge spread。
+    onMutate: (input: UpdateTemplateItemInput) => {
+      void qc.cancelQueries({ queryKey: templateKeys.items(templateId) })
+      const snapshot = qc.getQueryData<Array<{ id: string } & Record<string, unknown>>>(
+        templateKeys.items(templateId),
+      )
+      if (snapshot) {
+        qc.setQueryData(
+          templateKeys.items(templateId),
+          snapshot.map((t) => (t.id === input.id ? { ...t, ...input.patch } : t)),
+        )
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(templateKeys.items(templateId), ctx.snapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: templateKeys.items(templateId) })
     },
   })
@@ -170,7 +190,24 @@ export function useRemoveTemplateItem(templateId: string) {
   return useMutation({
     mutationFn: async (input: RemoveTemplateItemInput) =>
       unwrap(await removeTemplateItemAction(input)),
-    onSuccess: () => {
+    // iter1462 (mode-F): TemplateItem 削除 (✕ click) 後 ~200-500ms 待ちで row が
+    // 残って見える flicker (useDeleteWorkflow iter1442 / useDeleteKeyResult iter1441
+    // と同 root cause、template item 版)。
+    onMutate: (input: RemoveTemplateItemInput) => {
+      void qc.cancelQueries({ queryKey: templateKeys.items(templateId) })
+      const snapshot = qc.getQueryData<Array<{ id: string }>>(templateKeys.items(templateId))
+      if (snapshot) {
+        qc.setQueryData(
+          templateKeys.items(templateId),
+          snapshot.filter((t) => t.id !== input.id),
+        )
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(templateKeys.items(templateId), ctx.snapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: templateKeys.items(templateId) })
     },
   })
