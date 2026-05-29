@@ -12,6 +12,8 @@ import {
   formatToneCountsJa,
   getChipToneClasses,
   pickHighestSeverityTone,
+  pickTopItemsByTone,
+  sortItemsByTone,
 } from './chip-tone'
 
 describe('getChipToneClasses', () => {
@@ -171,5 +173,128 @@ describe('pickHighestSeverityTone (最悪 tone 抽出、カード border tone �
   it('同 rank 複数 → 配列順で最初を採用 (stable)', () => {
     expect(pickHighestSeverityTone(['warn', 'warn'])).toBe('warn')
     expect(pickHighestSeverityTone(['danger', 'danger', 'urgent'])).toBe('danger')
+  })
+})
+
+describe('sortItemsByTone (危ない順で新配列を返す、immutable)', () => {
+  type Item = { id: string; tone: ChipTone }
+  const getTone = (it: Item) => it.tone
+
+  it('空 items → 空配列', () => {
+    expect(sortItemsByTone<Item>([], getTone)).toEqual([])
+  })
+
+  it('混合 tone → danger → urgent → warn → info → idle → success の順', () => {
+    const items: Item[] = [
+      { id: 'idle1', tone: 'idle' },
+      { id: 'success1', tone: 'success' },
+      { id: 'danger1', tone: 'danger' },
+      { id: 'warn1', tone: 'warn' },
+      { id: 'urgent1', tone: 'urgent' },
+      { id: 'info1', tone: 'info' },
+    ]
+    const sorted = sortItemsByTone(items, getTone)
+    expect(sorted.map((it) => it.id)).toEqual([
+      'danger1',
+      'urgent1',
+      'warn1',
+      'info1',
+      'idle1',
+      'success1',
+    ])
+  })
+
+  it('同 tone は元順保持 (stable)', () => {
+    const items: Item[] = [
+      { id: 'warn-a', tone: 'warn' },
+      { id: 'warn-b', tone: 'warn' },
+      { id: 'danger-a', tone: 'danger' },
+      { id: 'warn-c', tone: 'warn' },
+    ]
+    const sorted = sortItemsByTone(items, getTone)
+    expect(sorted.map((it) => it.id)).toEqual(['danger-a', 'warn-a', 'warn-b', 'warn-c'])
+  })
+
+  it('入力 array を mutate しない (immutable)', () => {
+    const items: Item[] = [
+      { id: 'success1', tone: 'success' },
+      { id: 'danger1', tone: 'danger' },
+    ]
+    const original = [...items]
+    const sorted = sortItemsByTone(items, getTone)
+    expect(items).toEqual(original)
+    expect(sorted).not.toBe(items)
+  })
+
+  it('getTone callback は item ごと呼ばれる (caller が tone を memoize 不要)', () => {
+    const items: Item[] = [
+      { id: 'a', tone: 'warn' },
+      { id: 'b', tone: 'danger' },
+    ]
+    let callCount = 0
+    const wrapped = (it: Item) => {
+      callCount += 1
+      return it.tone
+    }
+    sortItemsByTone(items, wrapped)
+    expect(callCount).toBeGreaterThanOrEqual(items.length)
+  })
+})
+
+describe('pickTopItemsByTone (上位 N 件 alert 抽出)', () => {
+  type Item = { id: string; tone: ChipTone }
+  const getTone = (it: Item) => it.tone
+
+  it('n <= 0 → 空配列 (defensive)', () => {
+    const items: Item[] = [{ id: 'a', tone: 'danger' }]
+    expect(pickTopItemsByTone(items, getTone, 0)).toEqual([])
+    expect(pickTopItemsByTone(items, getTone, -1)).toEqual([])
+  })
+
+  it('空 items → 空配列', () => {
+    expect(pickTopItemsByTone<Item>([], getTone, 3)).toEqual([])
+  })
+
+  it('n >= length → 全件 sort 済み', () => {
+    const items: Item[] = [
+      { id: 'a', tone: 'idle' },
+      { id: 'b', tone: 'danger' },
+    ]
+    const top = pickTopItemsByTone(items, getTone, 5)
+    expect(top.map((it) => it.id)).toEqual(['b', 'a'])
+  })
+
+  it('top 3 抽出 — 最も危ない 3 件 (= AI brief 上位 alert)', () => {
+    const items: Item[] = [
+      { id: 'idle1', tone: 'idle' },
+      { id: 'warn1', tone: 'warn' },
+      { id: 'danger1', tone: 'danger' },
+      { id: 'urgent1', tone: 'urgent' },
+      { id: 'success1', tone: 'success' },
+      { id: 'info1', tone: 'info' },
+    ]
+    const top3 = pickTopItemsByTone(items, getTone, 3)
+    expect(top3.map((it) => it.id)).toEqual(['danger1', 'urgent1', 'warn1'])
+  })
+
+  it('同 rank が境界に並んだ場合は元順 (stable) を保つ', () => {
+    const items: Item[] = [
+      { id: 'warn-a', tone: 'warn' },
+      { id: 'warn-b', tone: 'warn' },
+      { id: 'danger-a', tone: 'danger' },
+      { id: 'warn-c', tone: 'warn' },
+    ]
+    const top2 = pickTopItemsByTone(items, getTone, 2)
+    expect(top2.map((it) => it.id)).toEqual(['danger-a', 'warn-a'])
+  })
+
+  it('入力 array を mutate しない', () => {
+    const items: Item[] = [
+      { id: 'a', tone: 'danger' },
+      { id: 'b', tone: 'idle' },
+    ]
+    const original = [...items]
+    pickTopItemsByTone(items, getTone, 1)
+    expect(items).toEqual(original)
   })
 })

@@ -246,3 +246,60 @@ export function pickHighestSeverityTone(tones: ReadonlyArray<ChipTone>): ChipTon
   }
   return best
 }
+
+/**
+ * iter1423 basics: 任意 items を tone 危ない順 (= attention rank 降順) で並べ替えた **新配列** を返す
+ * pure helper。`countItemsByTone` (iter493) / `pickHighestSeverityTone` (iter496) と並ぶ
+ * 「items × getTone callback」 pattern の sort 軸版。
+ *
+ * 仕様:
+ *  - 入力 array を mutate せず、新配列を返す (= immutable)
+ *  - 同 tone 内の元順を保持 (= stable、Array.sort ES2019+ 保証に依存)
+ *  - 並び順は `compareChipTones` (= danger → urgent → warn → info → idle → success)
+ *  - getTone は item ごと 1 回だけ呼ばれる (= caller が tone を memoize 済みでなくとも安全)
+ *
+ * 用途:
+ *  - AI 朝 brief / Slack daily digest の「上位 N 件 alert」 headline 生成 (`pickTopItemsByTone` と組み合わせる)
+ *  - dashboard 「危ない順」 list view (= 多数 item を tone 別 grouping せず 1 配列で並べたい)
+ *  - chip 表示順を「常に danger 始まり」 で固定したい時の整列
+ *
+ * caller pattern:
+ *   const sorted = sortItemsByTone(items, (it) => dueProximityTone(it.kind))
+ *   // → sorted[0] は最も危ない item、tail に success
+ *
+ * `analyticsSignalsToArray` は domain 固有の表示順 (= concerningRole→costProjection→...) を
+ * 採用しているため別経路。本 helper は「純粋に tone severity だけで並べる」 軸。
+ */
+export function sortItemsByTone<T>(items: ReadonlyArray<T>, getTone: (item: T) => ChipTone): T[] {
+  return [...items].sort((a, b) => compareChipTones(getTone(a), getTone(b)))
+}
+
+/**
+ * iter1423 basics: items を tone 危ない順で並べて先頭 N 件だけ抽出する pure helper。
+ *
+ * `sortItemsByTone` + `slice(0, n)` の薄ラッパー、caller が頻出する「top N alerts」
+ * pattern を 1 関数化。
+ *
+ * 仕様:
+ *  - n <= 0 → 空配列 (caller の defensive check 不要)
+ *  - n >= items.length → 全件を sort して返す
+ *  - 順序は `sortItemsByTone` と同 (= attention rank 降順、stable)
+ *  - 入力 array を mutate せず、新配列を返す
+ *
+ * 用途:
+ *  - AI 朝 brief 「上位 3 alert」 chip 列 (= analyticsSignalsToArray + 本 helper で n=3)
+ *  - Slack daily digest 「最重要 3 件」 (`pickHighestSeveritySignal` は 1 件、本 helper は N 件)
+ *  - dashboard 「最も危ない 5 件」 panel (= 全 item を tone 別表示せず top N で凝集)
+ *
+ * caller pattern:
+ *   const top3 = pickTopItemsByTone(items, (it) => urgencyTierTone(it.tier), 3)
+ *   // → 最も危ない 3 件を取得 (danger / urgent 優先、必要なら warn まで)
+ */
+export function pickTopItemsByTone<T>(
+  items: ReadonlyArray<T>,
+  getTone: (item: T) => ChipTone,
+  n: number,
+): T[] {
+  if (n <= 0) return []
+  return sortItemsByTone(items, getTone).slice(0, n)
+}
