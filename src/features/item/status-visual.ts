@@ -12,6 +12,8 @@
  * config に fallback (落ちない、label="不明")。
  */
 import { formatNonZeroCounts } from '@/lib/format-counts'
+import type { Severity } from '@/lib/widget/severity'
+import { aggregateCountsBySeverity } from '@/lib/widget/severity-bridges'
 
 export type StatusIconKey = 'circle' | 'progress' | 'done' | 'cancel' | 'block' | 'unknown'
 
@@ -254,17 +256,9 @@ export function statusKeySeverity(
  */
 export function statusCountsToSeverityCounts(
   counts: Record<StatusKey, number>,
-): Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> {
-  const out: Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> = {
-    ok: 0,
-    info: 0,
-    warn: 0,
-    danger: 0,
-    muted: 0,
-  }
-  for (const k of STATUS_ORDER) {
-    const sev = STATUS_SEVERITY[k]
-    out[sev] += counts[k] ?? 0
-  }
-  return out
+): Record<Severity, number> {
+  // iter1433 basics: iter1430 で extract した汎用 `aggregateCountsBySeverity` に委譲。
+  // 旧 inline boilerplate (= empty Record 初期化 + for-loop + Severity map lookup) を排除。
+  // semantics は完全保持: STATUS_SEVERITY[k] の Record lookup を function call で wrap。
+  return aggregateCountsBySeverity<StatusKey>(counts, (k) => STATUS_SEVERITY[k])
 }
