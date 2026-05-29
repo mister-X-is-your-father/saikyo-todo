@@ -4,10 +4,12 @@ import type { AssigneeRef } from '@/features/item/repository'
 
 import {
   type AiHandoffPhase,
+  countItemsByHandoffPhase,
   formatHandoffPhaseStatusJa,
   getAiHandoffPhase,
   getHandoffPhaseDescriptor,
   type HandoffItemFields,
+  type HandoffSignals,
   isHandoffActive,
   isHandoffWaitingForUser,
 } from './handoff-phase'
@@ -210,5 +212,97 @@ describe('formatHandoffPhaseStatusJa', () => {
       expect(formatHandoffPhaseStatusJa(p).length).toBeGreaterThan(0)
       expect(formatHandoffPhaseStatusJa(p)).toContain(' — ')
     }
+  })
+})
+
+describe('countItemsByHandoffPhase (iter1429 — phase 別件数集計)', () => {
+  const noSig: HandoffSignals = { hasPlanComment: false, hasAiReviewComment: false }
+  const planSig: HandoffSignals = { hasPlanComment: true, hasAiReviewComment: false }
+  const reviewSig: HandoffSignals = { hasPlanComment: true, hasAiReviewComment: true }
+
+  it('空 items → 6 phase すべて 0', () => {
+    const counts = countItemsByHandoffPhase<HandoffItemFields>([], () => noSig)
+    expect(counts).toEqual({
+      'no-ai': 0,
+      'pending-handoff': 0,
+      'plan-ready-for-review': 0,
+      'in-execution': 0,
+      'review-requested': 0,
+      completed: 0,
+    })
+  })
+
+  it('単一 item → 該当 phase が 1、他は 0', () => {
+    const items = [mk({ assignees: [AI] })] // pending-handoff
+    const counts = countItemsByHandoffPhase(items, () => noSig)
+    expect(counts['pending-handoff']).toBe(1)
+    expect(counts['no-ai']).toBe(0)
+    expect(counts.completed).toBe(0)
+  })
+
+  it('混合 items → phase 別件数で正しく分配', () => {
+    const items: HandoffItemFields[] = [
+      mk({ assignees: [HUMAN] }), // no-ai
+      mk({ assignees: [HUMAN] }), // no-ai
+      mk({ assignees: [AI] }), // pending-handoff (no plan)
+      mk({ assignees: [AI], status: 'in_progress' }), // in-execution (after plan)
+      mk({ assignees: [AI], status: 'done' }), // completed
+    ]
+    const signalsById: Record<number, HandoffSignals> = {
+      0: noSig,
+      1: noSig,
+      2: noSig, // no plan → pending-handoff
+      3: planSig, // plan exists + in_progress → in-execution
+      4: noSig, // status=done overrides → completed
+    }
+    const counts = countItemsByHandoffPhase(items, (it) => signalsById[items.indexOf(it)]!)
+    expect(counts['no-ai']).toBe(2)
+    expect(counts['pending-handoff']).toBe(1)
+    expect(counts['in-execution']).toBe(1)
+    expect(counts.completed).toBe(1)
+    // 合計 = items.length
+    const total =
+      counts['no-ai'] +
+      counts['pending-handoff'] +
+      counts['plan-ready-for-review'] +
+      counts['in-execution'] +
+      counts['review-requested'] +
+      counts.completed
+    expect(total).toBe(items.length)
+  })
+
+  it('review-requested + plan-ready-for-review を区別', () => {
+    const items: HandoffItemFields[] = [
+      mk({ assignees: [AI] }), // plan-ready-for-review (status=todo + plan)
+      mk({ assignees: [AI] }), // review-requested (plan + review)
+    ]
+    const counts = countItemsByHandoffPhase(items, (it) =>
+      items.indexOf(it) === 0 ? planSig : reviewSig,
+    )
+    expect(counts['plan-ready-for-review']).toBe(1)
+    expect(counts['review-requested']).toBe(1)
+  })
+
+  it('集計値は getAiHandoffPhase の sum と一致 (= phase 解決の semantics 等価)', () => {
+    const items: HandoffItemFields[] = [
+      mk({ assignees: [AI], status: 'in_progress' }),
+      mk({ assignees: [AI] }),
+      mk({ assignees: [HUMAN] }),
+    ]
+    const sig = planSig
+    const counts = countItemsByHandoffPhase(items, () => sig)
+    // 各 item を単独で getAiHandoffPhase で解いた件数と一致
+    const expected: Record<AiHandoffPhase, number> = {
+      'no-ai': 0,
+      'pending-handoff': 0,
+      'plan-ready-for-review': 0,
+      'in-execution': 0,
+      'review-requested': 0,
+      completed: 0,
+    }
+    for (const it of items) {
+      expected[getAiHandoffPhase(it, sig)] += 1
+    }
+    expect(counts).toEqual(expected)
   })
 })

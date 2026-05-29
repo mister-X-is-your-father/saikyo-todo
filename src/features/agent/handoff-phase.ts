@@ -186,3 +186,53 @@ export function formatHandoffPhaseStatusJa(phase: AiHandoffPhase): string {
   const d = DESCRIPTORS[phase]
   return `${d.chipLabel} — ${d.description}`
 }
+
+/**
+ * iter1429 ai-automation: items 配列を AI handoff phase 別に件数集計する pure helper。
+ *
+ * dashboard 「AI handoff 状態別件数」 chip 列 / Slack daily digest 「AI workflow 状態」 panel /
+ * Backlog filter 「Plan 確認待ち N 件」 集計 の substrate。
+ *
+ * 仕様:
+ *  - getSignals callback で item ごと HandoffSignals を解決 (comment 検索等の I/O は caller の
+ *    責務、本 helper は pure 計算のみ)
+ *  - 6 phase (`no-ai` / `pending-handoff` / `plan-ready-for-review` / `in-execution` /
+ *    `review-requested` / `completed`) 全 key を持つ Record、該当無し phase は 0
+ *  - 順序付き走査、deterministic
+ *
+ * 用途 (combine pattern):
+ *   const signalsByItem = new Map<string, HandoffSignals>()
+ *   // caller: comment query で各 item の hasPlanComment / hasAiReviewComment を解決
+ *   for (const item of items) {
+ *     signalsByItem.set(item.id, await resolveHandoffSignals(item.id))
+ *   }
+ *   const counts = countItemsByHandoffPhase(items, (it) => signalsByItem.get(it.id)!)
+ *   // → { 'no-ai': 5, 'pending-handoff': 2, 'plan-ready-for-review': 1, ... }
+ *
+ * 既存 helper との関係:
+ *   - `getAiHandoffPhase`: 単一 item の phase 解決 (= 本 helper の 1 callback)
+ *   - `getHandoffPhaseDescriptor`: phase → 表示用 label / severity (= caller が phase 別 chip render)
+ *   - 本 helper: 全 items を phase 別件数に集計 (= dashboard / Slack 状態俯瞰)
+ *
+ * `isHandoffActive` / `isHandoffWaitingForUser` の集計版が欲しい場合:
+ *   const counts = countItemsByHandoffPhase(items, getSignals)
+ *   const waiting = counts['pending-handoff'] + counts['plan-ready-for-review'] + counts['review-requested']
+ *   const active = waiting + counts['in-execution']
+ */
+export function countItemsByHandoffPhase<T extends HandoffItemFields>(
+  items: ReadonlyArray<T>,
+  getSignals: (item: T) => HandoffSignals,
+): Record<AiHandoffPhase, number> {
+  const counts: Record<AiHandoffPhase, number> = {
+    'no-ai': 0,
+    'pending-handoff': 0,
+    'plan-ready-for-review': 0,
+    'in-execution': 0,
+    'review-requested': 0,
+    completed: 0,
+  }
+  for (const item of items) {
+    counts[getAiHandoffPhase(item, getSignals(item))] += 1
+  }
+  return counts
+}
