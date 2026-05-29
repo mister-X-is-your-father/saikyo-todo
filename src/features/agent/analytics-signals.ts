@@ -449,3 +449,33 @@ export function pickHighestSeveritySignal(signals: AnalyticsSignals): AgentBrief
 export function pickTopSignalsBySeverity(signals: AnalyticsSignals, n: number): AgentBriefSignal[] {
   return pickTopItemsByTone(analyticsSignalsToArray(signals), (s) => s.tone, n)
 }
+
+/**
+ * iter1426 basics: AnalyticsSignals の上位 N severe signals を 1 行 ja-JP に整形する compose helper。
+ *
+ * 役割は `formatAnalyticsSignalsLineJa` (iter816、= 全 signal text を `/` 連結) の **top N 版**。
+ * AI 朝 brief / Slack daily digest 「最重要 3 alert headline」 の 1 行を `caller` が
+ * 自前で `pickTopSignalsBySeverity + .map(s => s.text).join(...)` する pattern を 1 関数化。
+ *
+ * 仕様:
+ *  - 全 signal null → '記録なし' (= 既存 `formatAnalyticsSignalsLineJa` と同 sentinel)
+ *  - n <= 0 → '記録なし' (= `pickTopSignalsBySeverity` が空配列 → 整形結果も sentinel)
+ *  - n >= 非 null signal 数 → 全 non-null signal を severity 順で連結
+ *  - 並び順 = `pickTopSignalsBySeverity` と同 (= chip-tone attention rank 降順、同 rank stable)
+ *  - 連結文字は ' / ' (= `formatAnalyticsSignalsLineJa` と整合)
+ *
+ * caller pattern (AI 朝 brief 「最重要 3 alert」 1 行 headline):
+ *   const signals = composeAnalyticsSignals({...})
+ *   const headline = formatTopSignalsLineJa(signals, 3)
+ *   // → '弱点: PM 要調査 (50%) / コスト超過 (+80%) / 期限達成率 低 (45%)'
+ *
+ * 既存 helper との関係:
+ *   - `formatAnalyticsSignalsLineJa`: 全 signal を domain 表示順で連結 (= chip 群一覧 向け)
+ *   - 本 helper: 上位 N を severity 順で連結 (= 「最重要だけ」 headline 向け)
+ *   - `pickTopSignalsBySeverity`: chip render 用 (= UI が個別 tone 配色を bind したい場合)
+ */
+export function formatTopSignalsLineJa(signals: AnalyticsSignals, n: number): string {
+  const top = pickTopSignalsBySeverity(signals, n)
+  if (top.length === 0) return '記録なし'
+  return top.map((s) => s.text).join(' / ')
+}

@@ -15,6 +15,7 @@ import {
   countAnalyticsSignalsByTone,
   formatAnalyticsSignalsLineJa,
   formatAnalyticsSignalsToneSummaryJa,
+  formatTopSignalsLineJa,
   pickHighestSeveritySignal,
   pickTopSignalsBySeverity,
 } from './analytics-signals'
@@ -826,5 +827,58 @@ describe('pickTopSignalsBySeverity (iter1424 — 上位 N severe signals)', () =
     // (concerningRole は s.concerningRole の text を含む = 'PM' or 'role' 関連)
     expect(top2[0]!.tone).toBe('warn')
     expect(top2[1]!.tone).toBe('warn')
+  })
+})
+
+describe('formatTopSignalsLineJa (iter1426 — 上位 N severe を 1 行 ja-JP)', () => {
+  it('全空 → 「記録なし」 sentinel', () => {
+    const s = composeAnalyticsSignals({})
+    expect(formatTopSignalsLineJa(s, 3)).toBe('記録なし')
+  })
+
+  it('n <= 0 → 「記録なし」 sentinel (defensive)', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 },
+    ])
+    const s = composeAnalyticsSignals({ reliability })
+    expect(formatTopSignalsLineJa(s, 0)).toBe('記録なし')
+    expect(formatTopSignalsLineJa(s, -1)).toBe('記録なし')
+  })
+
+  it('top 1 → 単一 signal text (= pickHighestSeveritySignal.text と同等)', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 }, // danger
+    ])
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 } // success
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const line = formatTopSignalsLineJa(s, 1)
+    const single = pickHighestSeveritySignal(s)
+    expect(line).toBe(single!.text)
+  })
+
+  it('top 2 → 2 signal を " / " で連結 (= pickTopSignalsBySeverity と整合)', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 }, // danger
+    ])
+    const dueHitRate = { total: 10, hit: 5, miss: 5, hitRate: 0.5 } // warn
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const line = formatTopSignalsLineJa(s, 2)
+    const top2 = pickTopSignalsBySeverity(s, 2)
+    expect(line).toBe(top2.map((sig) => sig.text).join(' / '))
+    // danger signal text が先頭
+    expect(line.startsWith(top2[0]!.text)).toBe(true)
+  })
+
+  it('n >= 非 null signal 数 → 全 signal を severity 順で連結', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 }, // danger
+    ])
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 } // success
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const line = formatTopSignalsLineJa(s, 99)
+    const allTop = pickTopSignalsBySeverity(s, 99)
+    expect(line).toBe(allTop.map((sig) => sig.text).join(' / '))
+    // 「全 signal」 連結なので formatAnalyticsSignalsLineJa とは「順序」 のみ異なる
+    // (本 helper = severity 順、formatAnalyticsSignalsLineJa = domain 順)
   })
 })
