@@ -97,7 +97,28 @@ export function useSoftDeleteSchedule(workspaceId: string, date: string) {
   return useMutation({
     mutationFn: async (input: SoftDeleteScheduleInput) =>
       unwrap(await softDeleteScheduleAction(input)),
-    onSuccess: () => {
+    // iter1444 (mode-F): Schedule (timeline/calendar の予定 block) 削除後
+    // ~200-500ms 待ちで block が消えない flicker (useDeleteWorkflow iter1442 /
+    // useDeleteKeyResult iter1441 / useSoftDeleteTemplate iter1443 と同 root cause)。
+    // fire-and-forget cancelQueries + sync setQueryData で list cache から id match
+    // で filter 除外、onError rollback、onSettled で正規 invalidate。
+    onMutate: (input: SoftDeleteScheduleInput) => {
+      void qc.cancelQueries({ queryKey: scheduleKeys.byDate(workspaceId, date) })
+      const snapshot = qc.getQueryData<Array<{ id: string }>>(
+        scheduleKeys.byDate(workspaceId, date),
+      )
+      if (snapshot) {
+        qc.setQueryData(
+          scheduleKeys.byDate(workspaceId, date),
+          snapshot.filter((s) => s.id !== input.id),
+        )
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(scheduleKeys.byDate(workspaceId, date), ctx.snapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: scheduleKeys.byDate(workspaceId, date) })
     },
   })
