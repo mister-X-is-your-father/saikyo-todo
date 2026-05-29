@@ -483,7 +483,26 @@ export function useClearItemWaitingFor(workspaceId: string) {
   return useMutation({
     mutationFn: async (input: { id: string; expectedVersion: number }) =>
       unwrap(await clearItemWaitingForAction(input)),
-    onSuccess: () => {
+    // iter1487 (mode-F): 連絡待ち state 解除 button click 後 ~200-500ms 待ちで
+    // 「待ち中」 badge / chip が消えない flicker (useSetItemBaseline iter1486 と
+    // 同 root cause、waitingFor field 版)。waitingFor を null に即セット。
+    onMutate: (input) => {
+      void qc.cancelQueries({ queryKey: [...itemKeys.all, workspaceId] })
+      const snapshots = qc.getQueriesData<Item[]>({ queryKey: [...itemKeys.all, workspaceId] })
+      for (const [key, prev] of snapshots) {
+        if (!prev) continue
+        qc.setQueryData<Item[]>(
+          key,
+          prev.map((it) => (it.id === input.id ? { ...it, waitingFor: null } : it)),
+        )
+      }
+      return { snapshots }
+    },
+    onError: (_e, _input, ctx) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.snapshots) qc.setQueryData(key as readonly unknown[], prev)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
     },
   })
