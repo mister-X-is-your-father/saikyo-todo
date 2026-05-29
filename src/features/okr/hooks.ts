@@ -185,7 +185,30 @@ export function useAssignItemToKeyResult(workspaceId: string) {
   return useMutation({
     mutationFn: async (input: AssignItemToKeyResultInput) =>
       unwrap(await assignItemToKeyResultAction(input)),
-    onSuccess: () => {
+    // iter1456 (mode-F): Item ↔ KR 紐付け変更後 ~200-500ms 待ちで item.keyResultId
+    // が反映されない flicker (useAssignItemToSprint iter1455 と同 root cause、KR 版)。
+    // fire-and-forget cancelQueries + sync setQueryData で item.keyResultId を即書換。
+    onMutate: (input: AssignItemToKeyResultInput) => {
+      void qc.cancelQueries({ queryKey: [...itemKeys.all, workspaceId] })
+      const snapshots = qc.getQueriesData<Array<{ id: string } & Record<string, unknown>>>({
+        queryKey: [...itemKeys.all, workspaceId],
+      })
+      for (const [key, prev] of snapshots) {
+        if (!prev) continue
+        qc.setQueryData(
+          key,
+          prev.map((it) =>
+            it.id === input.itemId ? { ...it, keyResultId: input.keyResultId } : it,
+          ),
+        )
+      }
+      return { snapshots }
+    },
+    onError: (_e, _input, ctx) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.snapshots) qc.setQueryData(key as readonly unknown[], prev)
+    },
+    onSettled: () => {
       invalidateGoalScope(qc, workspaceId)
       void qc.invalidateQueries({ queryKey: okrKeys.all })
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
