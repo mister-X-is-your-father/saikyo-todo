@@ -116,7 +116,25 @@ export function useDeleteKeyResult(goalId: string, workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => unwrap(await deleteKeyResultAction(id)),
-    onSuccess: () => {
+    // iter1441 (mode-F): KR ✕ click 後 ~200-500ms 待ちで列が消えない flicker
+    // (useReorderItem iter437 / useToggleCompleteItem iter1013 / useArchiveItem
+    // iter1437 / useChangeSprintStatus iter1440 と同 root cause)。
+    // fire-and-forget cancelQueries + sync setQueryData で row を即除外。
+    onMutate: (id: string) => {
+      void qc.cancelQueries({ queryKey: okrKeys.krs(goalId) })
+      const snapshot = qc.getQueryData<Array<{ id: string }>>(okrKeys.krs(goalId))
+      if (snapshot) {
+        qc.setQueryData(
+          okrKeys.krs(goalId),
+          snapshot.filter((k) => k.id !== id),
+        )
+      }
+      return { snapshot }
+    },
+    onError: (_e, _id, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(okrKeys.krs(goalId), ctx.snapshot)
+    },
+    onSettled: () => {
       invalidateKrScope(qc, goalId)
       invalidateGoalScope(qc, workspaceId)
     },
