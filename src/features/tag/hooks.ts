@@ -38,7 +38,26 @@ export function useUpdateTag(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: UpdateTagInput) => unwrap(await updateTagAction(input)),
-    onSuccess: () => {
+    // iter1469 (mode-F): Tag rename / 色変更後 ~200-500ms 待ちで TagPicker / item 上 chip
+    // が更新前のまま見える flicker (useUpdateGoal iter1450 / useUpdateProposal iter1449 と
+    // 同 root cause、Tag 編集版)。
+    onMutate: (input: UpdateTagInput) => {
+      void qc.cancelQueries({ queryKey: tagKeys.list(workspaceId) })
+      const snapshot = qc.getQueryData<Array<{ id: string } & Record<string, unknown>>>(
+        tagKeys.list(workspaceId),
+      )
+      if (snapshot) {
+        qc.setQueryData(
+          tagKeys.list(workspaceId),
+          snapshot.map((t) => (t.id === input.id ? { ...t, ...input.patch } : t)),
+        )
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(tagKeys.list(workspaceId), ctx.snapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: tagKeys.list(workspaceId) })
     },
   })
@@ -48,7 +67,23 @@ export function useDeleteTag(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: DeleteTagInput) => unwrap(await deleteTagAction(input)),
-    onSuccess: () => {
+    // iter1469 (mode-F): Tag 削除後 ~200-500ms 待ちで TagPicker 上 tag が残って見える
+    // flicker (useDeleteWorkflow iter1442 と同 root cause、Tag 版)。
+    onMutate: (input: DeleteTagInput) => {
+      void qc.cancelQueries({ queryKey: tagKeys.list(workspaceId) })
+      const snapshot = qc.getQueryData<Array<{ id: string }>>(tagKeys.list(workspaceId))
+      if (snapshot) {
+        qc.setQueryData(
+          tagKeys.list(workspaceId),
+          snapshot.filter((t) => t.id !== input.id),
+        )
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(tagKeys.list(workspaceId), ctx.snapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: tagKeys.list(workspaceId) })
     },
   })
