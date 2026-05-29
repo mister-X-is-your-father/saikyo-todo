@@ -54,7 +54,34 @@ export function useUpdateSchedule(workspaceId: string, date: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: UpdateScheduleInput) => unwrap(await updateScheduleAction(input)),
-    onSuccess: () => {
+    // iter1458 (mode-F): Schedule 編集 (note / startAt / endAt / itemId) 保存後
+    // ~200-500ms 待ちで visible が更新前のまま見える flicker (useMoveSchedule iter63 と
+    // 同 file 楽観 update pattern の note 編集版)。fire-and-forget cancelQueries + sync
+    // setQueryData で id match の schedule を input.patch で merge spread。startAt/endAt
+    // は ISO string なので new Date() に変換 (Schedule 型整合)。
+    onMutate: (input: UpdateScheduleInput) => {
+      void qc.cancelQueries({ queryKey: scheduleKeys.byDate(workspaceId, date) })
+      const snapshot = qc.getQueryData<Schedule[]>(scheduleKeys.byDate(workspaceId, date))
+      if (snapshot) {
+        qc.setQueryData<Schedule[]>(
+          scheduleKeys.byDate(workspaceId, date),
+          snapshot.map((s) => {
+            if (s.id !== input.id) return s
+            const next: Schedule = { ...s }
+            if (input.patch.itemId !== undefined) next.itemId = input.patch.itemId ?? null
+            if (input.patch.startAt !== undefined) next.startAt = new Date(input.patch.startAt)
+            if (input.patch.endAt !== undefined) next.endAt = new Date(input.patch.endAt)
+            if (input.patch.note !== undefined) next.note = input.patch.note ?? null
+            return next
+          }),
+        )
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(scheduleKeys.byDate(workspaceId, date), ctx.snapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: scheduleKeys.byDate(workspaceId, date) })
     },
   })
