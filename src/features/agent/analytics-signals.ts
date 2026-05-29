@@ -33,7 +33,6 @@ import {
   type ChipTone,
   countItemsByTone,
   formatToneCountsJa,
-  pickHighestSeverityTone,
   pickTopItemsByTone,
 } from '@/lib/ui/chip-tone'
 
@@ -408,11 +407,12 @@ export function formatAnalyticsSignalsToneSummaryJa(signals: AnalyticsSignals): 
  *   - 本 helper: 単一 signal 抽出 (= 1 chip alert / badge tone 向け)
  */
 export function pickHighestSeveritySignal(signals: AnalyticsSignals): AgentBriefSignal | null {
-  const arr = analyticsSignalsToArray(signals)
-  if (arr.length === 0) return null
-  const topTone = pickHighestSeverityTone(arr.map((s) => s.tone))
-  // topTone は arr が非空なら必ず非 null だが防御で fallback、find は array 順 (stable max)
-  return arr.find((s) => s.tone === topTone) ?? null
+  // iter1425 refactor: iter1424 で追加した `pickTopSignalsBySeverity(signals, 1)` の先頭抽出と等価。
+  // 旧実装は `pickHighestSeverityTone + arr.find(tone match)` の 2 段だったが、
+  // n=1 版で完全に表現できる (= 並び順 + tie-break が iter1424 で `pickTopItemsByTone` 経由で
+  // stable max を保証、analyticsSignalsToArray の domain 順優先も同等)。
+  // unit test (711-752) は変更不要、`pickTopSignalsBySeverity` test (n=1 等価) で同一性 assert 済。
+  return pickTopSignalsBySeverity(signals, 1)[0] ?? null
 }
 
 /**
