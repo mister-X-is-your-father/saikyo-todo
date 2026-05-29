@@ -86,7 +86,27 @@ export function useUpdateGoal(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: UpdateGoalInput) => unwrap(await updateGoalAction(input)),
-    onSuccess: () => invalidateGoalScope(qc, workspaceId),
+    // iter1450 (mode-F): Goal 編集 form 保存後 ~200-500ms 待ちで visible title /
+    // description / status が更新前のまま見える flicker (useUpdateProposal iter1449 /
+    // useUpdateItemStatus iter1013 と同 root cause)。fire-and-forget cancelQueries +
+    // sync setQueryData で id match の goal を patch field で merge spread。
+    onMutate: (input: UpdateGoalInput) => {
+      void qc.cancelQueries({ queryKey: okrKeys.goals(workspaceId) })
+      const snapshot = qc.getQueryData<Array<{ id: string } & Record<string, unknown>>>(
+        okrKeys.goals(workspaceId),
+      )
+      if (snapshot) {
+        qc.setQueryData(
+          okrKeys.goals(workspaceId),
+          snapshot.map((g) => (g.id === input.id ? { ...g, ...input.patch } : g)),
+        )
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(okrKeys.goals(workspaceId), ctx.snapshot)
+    },
+    onSettled: () => invalidateGoalScope(qc, workspaceId),
   })
 }
 
@@ -105,7 +125,26 @@ export function useUpdateKeyResult(goalId: string, workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: UpdateKeyResultInput) => unwrap(await updateKeyResultAction(input)),
-    onSuccess: () => {
+    // iter1450 (mode-F): KR 編集 form 保存後 ~200-500ms 待ちで visible title /
+    // weight / progressMode / target / unit が更新前のまま見える flicker
+    // (useUpdateGoal 同 sweep の KR 版)。
+    onMutate: (input: UpdateKeyResultInput) => {
+      void qc.cancelQueries({ queryKey: okrKeys.krs(goalId) })
+      const snapshot = qc.getQueryData<Array<{ id: string } & Record<string, unknown>>>(
+        okrKeys.krs(goalId),
+      )
+      if (snapshot) {
+        qc.setQueryData(
+          okrKeys.krs(goalId),
+          snapshot.map((k) => (k.id === input.id ? { ...k, ...input.patch } : k)),
+        )
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(okrKeys.krs(goalId), ctx.snapshot)
+    },
+    onSettled: () => {
       invalidateKrScope(qc, goalId)
       invalidateGoalScope(qc, workspaceId)
     },
