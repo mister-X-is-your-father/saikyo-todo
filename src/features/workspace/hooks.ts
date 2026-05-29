@@ -43,8 +43,22 @@ export function useUpdateWorkspaceDefaultMode(workspaceId: string) {
   return useMutation({
     mutationFn: async (defaultMode: WorkspaceMode) =>
       unwrap(await updateWorkspaceDefaultModeAction({ workspaceId, defaultMode })),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: workspaceKeys.defaultMode(workspaceId) })
+    // iter1465 (mode-F): WorkspaceModeSelector で mode 切替 (radiogroup click) 後
+    // ~200-500ms 待ちで aria-checked が新 mode に切り替わらない flicker
+    // (useUpdateSprintDefaults iter1459 と同 root cause、workspace defaultMode 版)。
+    // fire-and-forget cancelQueries + sync setQueryData で即書換。
+    onMutate: (defaultMode: WorkspaceMode) => {
+      void qc.cancelQueries({ queryKey: workspaceKeys.defaultMode(workspaceId) })
+      const snapshot = qc.getQueryData(workspaceKeys.defaultMode(workspaceId))
+      qc.setQueryData(workspaceKeys.defaultMode(workspaceId), defaultMode)
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot !== undefined)
+        qc.setQueryData(workspaceKeys.defaultMode(workspaceId), ctx.snapshot)
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: workspaceKeys.defaultMode(workspaceId) })
     },
   })
 }
@@ -64,8 +78,21 @@ export function useUpdateTeamContext(workspaceId: string) {
   return useMutation({
     mutationFn: async (teamContext: string) =>
       unwrap(await updateTeamContextAction({ workspaceId, teamContext })),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: workspaceKeys.teamContext(workspaceId) })
+    // iter1465 (mode-F): チームコンテキスト textarea 保存後 ~200-500ms 待ちで
+    // visible text が更新前のまま見える flicker
+    // (useUpsertPersonalPeriodGoal iter1460 と同 root cause、teamContext 版)。
+    onMutate: (teamContext: string) => {
+      void qc.cancelQueries({ queryKey: workspaceKeys.teamContext(workspaceId) })
+      const snapshot = qc.getQueryData(workspaceKeys.teamContext(workspaceId))
+      qc.setQueryData(workspaceKeys.teamContext(workspaceId), teamContext)
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot !== undefined)
+        qc.setQueryData(workspaceKeys.teamContext(workspaceId), ctx.snapshot)
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: workspaceKeys.teamContext(workspaceId) })
     },
   })
 }
