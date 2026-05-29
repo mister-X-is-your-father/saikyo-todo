@@ -305,14 +305,48 @@ export function useSoftDeleteItem(workspaceId: string) {
   })
 }
 
+/**
+ * iter1437 (mode-F flicker): archive/unarchive に楽観 update を追加。
+ * /archive view (`archivedAt !== null` でフィルタ) で復元時、dashboard/taskchute view
+ * (`!archivedAt` でフィルタ) で archive 時に、refetch (~200-500ms) 完了まで
+ * 元 list に item が残って見える flicker root cause。`useReorderItem` iter437 と
+ * 同 fire-and-forget pattern で setQueryData を sync 走らせ drop と同 frame で反映。
+ */
+function archiveMutationConfig(workspaceId: string, archived: boolean) {
+  return (qc: ReturnType<typeof useQueryClient>) => ({
+    onMutate: (input: { id: string }) => {
+      void qc.cancelQueries({ queryKey: [...itemKeys.all, workspaceId] })
+      const snapshots = qc.getQueriesData<Item[]>({ queryKey: [...itemKeys.all, workspaceId] })
+      const archivedAt = archived ? new Date() : null
+      for (const [key, prev] of snapshots) {
+        if (!prev) continue
+        qc.setQueryData<Item[]>(
+          key,
+          prev.map((it) => (it.id === input.id ? { ...it, archivedAt } : it)),
+        )
+      }
+      return { snapshots }
+    },
+    onError: (
+      _e: unknown,
+      _input: unknown,
+      ctx: { snapshots: [unknown, Item[] | undefined][] } | undefined,
+    ) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.snapshots) qc.setQueryData(key as readonly unknown[], prev)
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
+}
+
 export function useArchiveItem(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: { id: string; expectedVersion: number }) =>
       unwrap(await archiveItemAction(input)),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
-    },
+    ...archiveMutationConfig(workspaceId, true)(qc),
   })
 }
 
@@ -321,9 +355,7 @@ export function useUnarchiveItem(workspaceId: string) {
   return useMutation({
     mutationFn: async (input: { id: string; expectedVersion: number }) =>
       unwrap(await unarchiveItemAction(input)),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
-    },
+    ...archiveMutationConfig(workspaceId, false)(qc),
   })
 }
 
