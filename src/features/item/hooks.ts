@@ -84,7 +84,28 @@ export function useUpdateItem(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: UpdateItemInput) => unwrap(await updateItemAction(input)),
-    onSuccess: () => {
+    // iter1453 (mode-F): ItemEditDialog 保存後 ~200-500ms 待ちで visible title /
+    // description / status / dates / priority / MUST / DoD が更新前のまま見える
+    // flicker (useUpdate{Goal,KeyResult,Workflow,Template,Proposal} 同 sweep の
+    // 本丸 = 最も user-visible な mutation)。fire-and-forget cancelQueries + sync
+    // setQueryData。id match の item を input.patch で merge spread。
+    onMutate: (input: UpdateItemInput) => {
+      void qc.cancelQueries({ queryKey: [...itemKeys.all, workspaceId] })
+      const snapshots = qc.getQueriesData<Item[]>({ queryKey: [...itemKeys.all, workspaceId] })
+      for (const [key, prev] of snapshots) {
+        if (!prev) continue
+        qc.setQueryData<Item[]>(
+          key,
+          prev.map((it) => (it.id === input.id ? { ...it, ...input.patch } : it)),
+        )
+      }
+      return { snapshots }
+    },
+    onError: (_e, _input, ctx) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.snapshots) qc.setQueryData(key as readonly unknown[], prev)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
     },
   })
