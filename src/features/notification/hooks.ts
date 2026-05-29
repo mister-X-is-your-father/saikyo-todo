@@ -69,7 +69,45 @@ export function useMarkNotificationRead(workspaceId: string) {
   return useMutation({
     mutationFn: async (notificationId: string) =>
       unwrap(await markNotificationReadAction(notificationId)),
-    onSuccess: () => {
+    // iter1466 (mode-F): NotificationBell で 1 件既読 click 後 ~200-500ms 待ちで
+    // visible が「未読」のままで unread count badge も減らない flicker
+    // (useToggleCompleteItem iter1013 と同 root cause、notification 既読版)。
+    // fire-and-forget cancelQueries + sync setQueryData で readAt を即セット +
+    // unreadCount を 1 減算。
+    onMutate: (notificationId: string) => {
+      void qc.cancelQueries({ queryKey: [...notificationKeys.all, 'list', workspaceId] })
+      void qc.cancelQueries({ queryKey: notificationKeys.unreadCount(workspaceId) })
+      const listSnapshots = qc.getQueriesData<Array<{ id: string; readAt: Date | null }>>({
+        queryKey: [...notificationKeys.all, 'list', workspaceId],
+      })
+      const countSnapshot = qc.getQueryData<number>(notificationKeys.unreadCount(workspaceId))
+      const now = new Date()
+      let changed = false
+      for (const [key, prev] of listSnapshots) {
+        if (!prev) continue
+        const target = prev.find((n) => n.id === notificationId)
+        if (target && target.readAt === null) {
+          changed = true
+        }
+        qc.setQueryData(
+          key,
+          prev.map((n) =>
+            n.id === notificationId && n.readAt === null ? { ...n, readAt: now } : n,
+          ),
+        )
+      }
+      if (countSnapshot !== undefined && changed && countSnapshot > 0) {
+        qc.setQueryData(notificationKeys.unreadCount(workspaceId), countSnapshot - 1)
+      }
+      return { listSnapshots, countSnapshot }
+    },
+    onError: (_e, _id, ctx) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.listSnapshots) qc.setQueryData(key as readonly unknown[], prev)
+      if (ctx.countSnapshot !== undefined)
+        qc.setQueryData(notificationKeys.unreadCount(workspaceId), ctx.countSnapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: notificationKeys.unreadCount(workspaceId) })
       void qc.invalidateQueries({ queryKey: [...notificationKeys.all, 'list', workspaceId] })
     },
