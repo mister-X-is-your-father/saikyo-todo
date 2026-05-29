@@ -97,7 +97,30 @@ export function useUpdateSprint(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: UpdateSprintInput) => unwrap(await updateSprintAction(input)),
-    onSuccess: () => invalidateSprintScope(qc, workspaceId),
+    // iter1454 (mode-F): Sprint 編集 form 保存後 / 期間 inline 編集後 ~200-500ms
+    // 待ちで visible name / goal / startDate / endDate が更新前のまま見える flicker
+    // (useUpdateItem iter1453 / useChangeSprintStatus iter1440 と同 root cause、
+    //  Sprint 編集版)。fire-and-forget cancelQueries + sync setQueryData。
+    onMutate: (input: UpdateSprintInput) => {
+      void qc.cancelQueries({ queryKey: sprintKeys.list(workspaceId) })
+      void qc.cancelQueries({ queryKey: sprintKeys.active(workspaceId) })
+      const snapshots = qc.getQueriesData<Array<{ id: string } & Record<string, unknown>>>({
+        queryKey: sprintKeys.all,
+      })
+      for (const [key, prev] of snapshots) {
+        if (!Array.isArray(prev)) continue
+        qc.setQueryData(
+          key,
+          prev.map((s) => (s.id === input.id ? { ...s, ...input.patch } : s)),
+        )
+      }
+      return { snapshots }
+    },
+    onError: (_e, _input, ctx) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.snapshots) qc.setQueryData(key as readonly unknown[], prev)
+    },
+    onSettled: () => invalidateSprintScope(qc, workspaceId),
   })
 }
 
