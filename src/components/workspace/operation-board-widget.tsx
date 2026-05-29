@@ -177,7 +177,7 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                       <button
                         type="button"
                         onClick={() => openItem(it.id)}
-                        className="hover:bg-muted/60 focus-visible:ring-ring flex w-full items-center gap-1 truncate rounded px-1 py-0.5 text-left focus-visible:ring-2 focus-visible:outline-none"
+                        className="hover:bg-muted/60 focus-visible:ring-ring flex min-h-11 w-full items-center gap-1 truncate rounded px-1 py-0.5 text-left focus-visible:ring-2 focus-visible:outline-none"
                         aria-label={`${it.title} を開く (見積 ${it.estimateMin}分)`}
                       >
                         <span
@@ -210,7 +210,7 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                       <button
                         type="button"
                         onClick={() => openItem(it.id)}
-                        className="hover:bg-muted/60 focus-visible:ring-ring flex w-full items-center gap-1 truncate rounded px-1 py-0.5 text-left focus-visible:ring-2 focus-visible:outline-none"
+                        className="hover:bg-muted/60 focus-visible:ring-ring flex min-h-11 w-full items-center gap-1 truncate rounded px-1 py-0.5 text-left focus-visible:ring-2 focus-visible:outline-none"
                         aria-label={`${it.title} を開く (集中 ${it.estimateMin}分)`}
                       >
                         <span
