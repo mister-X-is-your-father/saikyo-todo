@@ -450,7 +450,7 @@ function BacklogRow({
         <td
           key={cell.id}
           style={{ width: cell.column.getSize() }}
-          className="px-3 py-2"
+          className="focus-visible:ring-ring px-3 py-2 focus-visible:ring-2 focus-visible:outline-none"
           {...(cell.column.id === 'drag' && dndEnabled ? { ...attributes, ...listeners } : {})}
         >
           {flexRender(cell.column.columnDef.cell, cell.getContext())}
