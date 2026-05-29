@@ -54,8 +54,26 @@ export function useDeleteWorkflow(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => unwrap(await deleteWorkflowAction(id)),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: workflowKeys.list(workspaceId) })
+    // iter1442 (mode-F): 削除 button click 後 ~200-500ms 待ちで card が消えない
+    // flicker (useDeleteKeyResult iter1441 / useArchiveItem iter1437 / useReorderItem
+    // iter437 と同 root cause)。fire-and-forget cancelQueries + sync setQueryData
+    // で list cache から filter 除外、onError rollback、onSettled で正規 invalidate。
+    onMutate: (id: string) => {
+      void qc.cancelQueries({ queryKey: workflowKeys.list(workspaceId) })
+      const snapshot = qc.getQueryData<Array<{ id: string }>>(workflowKeys.list(workspaceId))
+      if (snapshot) {
+        qc.setQueryData(
+          workflowKeys.list(workspaceId),
+          snapshot.filter((w) => w.id !== id),
+        )
+      }
+      return { snapshot }
+    },
+    onError: (_e, _id, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(workflowKeys.list(workspaceId), ctx.snapshot)
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: workflowKeys.list(workspaceId) })
     },
   })
 }
