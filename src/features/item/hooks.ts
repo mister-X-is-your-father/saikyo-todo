@@ -579,7 +579,28 @@ export function useBulkUpdateItemStatus(workspaceId: string) {
   return useMutation({
     mutationFn: async (input: { ids: string[]; status: string }) =>
       unwrap(await bulkUpdateItemStatusAction({ workspaceId, ...input })),
-    onSuccess: () => {
+    // iter1448 (mode-F): bulk-action-bar の status 変更 button click 後
+    // ~200-500ms 待ちで一括選択した items の status が反映されない flicker
+    // (useUpdateItemStatus iter1013 と同 pattern の bulk 版)。fire-and-forget
+    // cancelQueries + sync setQueryData で ids set match の items を一括書き換え。
+    onMutate: (input) => {
+      void qc.cancelQueries({ queryKey: [...itemKeys.all, workspaceId] })
+      const snapshots = qc.getQueriesData<Item[]>({ queryKey: [...itemKeys.all, workspaceId] })
+      const idSet = new Set(input.ids)
+      for (const [key, prev] of snapshots) {
+        if (!prev) continue
+        qc.setQueryData<Item[]>(
+          key,
+          prev.map((it) => (idSet.has(it.id) ? { ...it, status: input.status } : it)),
+        )
+      }
+      return { snapshots }
+    },
+    onError: (_e, _input, ctx) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.snapshots) qc.setQueryData(key as readonly unknown[], prev)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
     },
   })
@@ -590,7 +611,26 @@ export function useBulkSoftDeleteItem(workspaceId: string) {
   return useMutation({
     mutationFn: async (input: { ids: string[] }) =>
       unwrap(await bulkSoftDeleteItemAction({ workspaceId, ...input })),
-    onSuccess: () => {
+    // iter1448 (mode-F): bulk 削除も同様 — 楽観 update で ids set match の items を
+    // 即除外 (filter)、snapshot rollback、onSettled で正規 invalidate。
+    onMutate: (input) => {
+      void qc.cancelQueries({ queryKey: [...itemKeys.all, workspaceId] })
+      const snapshots = qc.getQueriesData<Item[]>({ queryKey: [...itemKeys.all, workspaceId] })
+      const idSet = new Set(input.ids)
+      for (const [key, prev] of snapshots) {
+        if (!prev) continue
+        qc.setQueryData<Item[]>(
+          key,
+          prev.filter((it) => !idSet.has(it.id)),
+        )
+      }
+      return { snapshots }
+    },
+    onError: (_e, _input, ctx) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.snapshots) qc.setQueryData(key as readonly unknown[], prev)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
     },
   })
