@@ -112,7 +112,28 @@ export function useUpdateProposal(parentItemId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (vars: UpdateProposalVariables) => unwrap(await updateProposalAction(vars)),
-    onSuccess: () => {
+    // iter1449 (mode-F): 編集 form の「保存」 button click 後 ~200-500ms 待ちで
+    // proposal の visible title / description / MUST badge が更新前のままに見える flicker
+    // (useRejectProposal iter1445 / useUpdateItemStatus iter1013 と同 root cause)。
+    // fire-and-forget cancelQueries + sync setQueryData で id match の proposal を
+    // patch field で上書き、snapshot rollback、onSettled で正規 invalidate。
+    onMutate: (vars: UpdateProposalVariables) => {
+      void qc.cancelQueries({ queryKey: proposalKeys.pendingByParent(parentItemId) })
+      const snapshot = qc.getQueryData<Array<{ id: string } & Record<string, unknown>>>(
+        proposalKeys.pendingByParent(parentItemId),
+      )
+      if (snapshot) {
+        qc.setQueryData(
+          proposalKeys.pendingByParent(parentItemId),
+          snapshot.map((p) => (p.id === vars.id ? { ...p, ...vars.patch } : p)),
+        )
+      }
+      return { snapshot }
+    },
+    onError: (_e, _vars, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(proposalKeys.pendingByParent(parentItemId), ctx.snapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: proposalKeys.pendingByParent(parentItemId) })
     },
   })
