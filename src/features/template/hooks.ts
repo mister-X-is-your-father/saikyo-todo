@@ -54,7 +54,45 @@ export function useCreateTemplate(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: CreateTemplateInput) => unwrap(await createTemplateAction(input)),
-    onSuccess: () => {
+    // iter1482 (mode-F、Add 系): /templates で Template 作成後 ~200-500ms 待ちで card が
+    // 現れない flicker (useCreateWorkflow iter1481 と同 root cause、Template 版)。
+    // templateKeys.list は filter (kind=manual/recurring) を含む queryKey なので
+    // getQueriesData で複数 cache 横断 append。filter mismatch (kind != filter) の
+    // cache には append しない方針 (UI 上 list が wrong filter で 1 item 多く見える bug 回避)。
+    onMutate: (input: CreateTemplateInput) => {
+      void qc.cancelQueries({ queryKey: [...templateKeys.all, workspaceId] })
+      const snapshots = qc.getQueriesData<Array<{ id: string }>>({
+        queryKey: [...templateKeys.all, workspaceId],
+      })
+      const tempEntry = {
+        id: `temp-${crypto.randomUUID()}`,
+        workspaceId: input.workspaceId,
+        name: input.name,
+        description: input.description ?? '',
+        kind: input.kind ?? 'manual',
+        scheduleCron: input.scheduleCron ?? null,
+        variablesSchema: input.variablesSchema ?? {},
+        tags: input.tags ?? [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        version: 0,
+        deletedAt: null,
+        createdBy: '',
+      }
+      for (const [key, prev] of snapshots) {
+        if (!Array.isArray(prev)) continue
+        // key の最後の filter object に kind フィルタが付いていたら mismatch 時 skip
+        const filter = key[key.length - 1] as { kind?: string } | undefined
+        if (filter && filter.kind && filter.kind !== tempEntry.kind) continue
+        qc.setQueryData(key, [...prev, tempEntry])
+      }
+      return { snapshots }
+    },
+    onError: (_e, _input, ctx) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.snapshots) qc.setQueryData(key as readonly unknown[], prev)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: [...templateKeys.all, workspaceId] })
     },
   })
