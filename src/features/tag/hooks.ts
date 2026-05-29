@@ -28,7 +28,34 @@ export function useCreateTag(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: CreateTagInput) => unwrap(await createTagAction(input)),
-    onSuccess: () => {
+    // iter1478 (mode-F、Add 系): TagPicker で「+ 新規」 で新 tag 作成後 ~200-500ms
+    // 待ちで tag が候補一覧に現れない flicker (useCreateSchedule iter1477 と
+    // 同 root cause、Tag 版)。temp id で仮 tag append、name 重複 guard 付き。
+    onMutate: (input: CreateTagInput) => {
+      void qc.cancelQueries({ queryKey: tagKeys.list(workspaceId) })
+      const snapshot = qc.getQueryData<Array<{ id: string; name: string }>>(
+        tagKeys.list(workspaceId),
+      )
+      if (snapshot && !snapshot.some((t) => t.name === input.name)) {
+        const tempEntry = {
+          id: `temp-${crypto.randomUUID()}`,
+          workspaceId: input.workspaceId,
+          name: input.name,
+          color: input.color ?? '#64748b',
+          kind: 'normal' as const,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          version: 0,
+          deletedAt: null,
+        }
+        qc.setQueryData(tagKeys.list(workspaceId), [...snapshot, tempEntry])
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(tagKeys.list(workspaceId), ctx.snapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: tagKeys.list(workspaceId) })
     },
   })
