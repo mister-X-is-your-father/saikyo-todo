@@ -184,7 +184,30 @@ export function useAssignItemToSprint(workspaceId: string) {
   return useMutation({
     mutationFn: async (input: AssignItemToSprintInput) =>
       unwrap(await assignItemToSprintAction(input)),
-    onSuccess: () => {
+    // iter1455 (mode-F): Sprint 割当変更後 ~200-500ms 待ちで item.sprintId が
+    // 反映されず filter `sprint=...` の view が古い結果のまま見える flicker
+    // (useUpdateItem iter1453 / useUpdateItemStatus iter1013 と同 root cause、
+    //  Sprint 割当版)。fire-and-forget cancelQueries + sync setQueryData で
+    // 該当 item.sprintId を即書換。
+    onMutate: (input: AssignItemToSprintInput) => {
+      void qc.cancelQueries({ queryKey: [...itemKeys.all, workspaceId] })
+      const snapshots = qc.getQueriesData<Array<{ id: string } & Record<string, unknown>>>({
+        queryKey: [...itemKeys.all, workspaceId],
+      })
+      for (const [key, prev] of snapshots) {
+        if (!prev) continue
+        qc.setQueryData(
+          key,
+          prev.map((it) => (it.id === input.itemId ? { ...it, sprintId: input.sprintId } : it)),
+        )
+      }
+      return { snapshots }
+    },
+    onError: (_e, _input, ctx) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.snapshots) qc.setQueryData(key as readonly unknown[], prev)
+    },
+    onSettled: () => {
       invalidateSprintScope(qc, workspaceId)
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
     },
