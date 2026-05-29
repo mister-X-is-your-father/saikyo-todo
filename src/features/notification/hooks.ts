@@ -176,7 +176,23 @@ export function useUpdateNotificationPreferences() {
   return useMutation({
     mutationFn: async (patch: NotificationPreferenceUpdate) =>
       unwrap(await updateNotificationPreferencesAction(patch)),
-    onSuccess: () => {
+    // iter1468 (mode-F): NotificationPreferences popover で email チャネル toggle
+    // (checkbox) click 後 ~200-500ms 待ちで visible が更新前のまま見える flicker
+    // (useUpdateWorkspaceDefaultMode iter1465 と同 root cause、notification 設定版)。
+    // fire-and-forget cancelQueries + sync setQueryData で patch field を merge。
+    onMutate: (patch: NotificationPreferenceUpdate) => {
+      void qc.cancelQueries({ queryKey: notificationKeys.preferences() })
+      const snapshot = qc.getQueryData(notificationKeys.preferences())
+      qc.setQueryData(notificationKeys.preferences(), {
+        ...(snapshot as Record<string, unknown> | undefined),
+        ...patch,
+      })
+      return { snapshot }
+    },
+    onError: (_e, _patch, ctx) => {
+      if (ctx?.snapshot !== undefined) qc.setQueryData(notificationKeys.preferences(), ctx.snapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: notificationKeys.preferences() })
     },
   })
