@@ -328,7 +328,7 @@ function KanbanCard({
       {...attributes}
       {...listeners}
       onClick={() => onEdit(item)}
-      className={`group cursor-grab rounded border p-2 text-sm shadow-sm active:cursor-grabbing ${accent.bgClass} ${accent.borderClass}`}
+      className={`group focus-visible:ring-ring cursor-grab rounded border p-2 text-sm shadow-sm focus-visible:ring-2 focus-visible:outline-none active:cursor-grabbing ${accent.bgClass} ${accent.borderClass}`}
       data-testid={`kanban-card-${item.id}`}
       data-status={item.status}
     >
