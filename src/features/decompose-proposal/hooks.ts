@@ -37,7 +37,27 @@ export function useAcceptProposal(workspaceId: string, parentItemId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => unwrap(await acceptProposalAction({ id })),
-    onSuccess: () => {
+    // iter1488 (mode-F): 「採用」 button click 後 ~200-500ms 待ちで proposal row が
+    // pending list に残り続ける flicker (useRejectProposal iter1445 と同 root cause、
+    //  accept 版)。proposal を pending list から即除外 (新 Item の append は server
+    //  canonical fetch で複雑な構造で生成されるため、items 側は invalidate のみ)。
+    onMutate: (id: string) => {
+      void qc.cancelQueries({ queryKey: proposalKeys.pendingByParent(parentItemId) })
+      const snapshot = qc.getQueryData<Array<{ id: string }>>(
+        proposalKeys.pendingByParent(parentItemId),
+      )
+      if (snapshot) {
+        qc.setQueryData(
+          proposalKeys.pendingByParent(parentItemId),
+          snapshot.filter((p) => p.id !== id),
+        )
+      }
+      return { snapshot }
+    },
+    onError: (_e, _id, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(proposalKeys.pendingByParent(parentItemId), ctx.snapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: proposalKeys.pendingByParent(parentItemId) })
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
     },
