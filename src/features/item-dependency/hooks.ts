@@ -54,8 +54,46 @@ export function useRemoveItemDependency(itemId: string) {
   return useMutation({
     mutationFn: async (input: RemoveItemDependencyInput) =>
       unwrap(await removeItemDependencyAction(input)),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: itemDependencyKeys.forItem(itemId) })
+    // iter1470 (mode-F): ItemEditDialog 依存 tab で「外す」 button click 後 ~200-500ms
+    // 待ちで blockedBy / blocking / related list row が残って見える flicker
+    // (useDeleteWorkflow iter1442 / useRemoveTemplateItem iter1462 と同 root cause、
+    //  dependency 版)。Group 構造 (blockedBy/blocking/related) に対する filter:
+    //   - type='blocks' で input.toItemId === currentItem (= itemId): blockedBy から fromItemId 除外
+    //   - type='blocks' で input.fromItemId === currentItem: blocking から toItemId 除外
+    //   - type='relates_to': related から「もう一方の id」 を除外
+    onMutate: (input: RemoveItemDependencyInput) => {
+      void qc.cancelQueries({ queryKey: itemDependencyKeys.forItem(itemId) })
+      const snapshot = qc.getQueryData<{
+        blockedBy: Array<{ ref: { id: string } } & Record<string, unknown>>
+        blocking: Array<{ ref: { id: string } } & Record<string, unknown>>
+        related: Array<{ ref: { id: string } } & Record<string, unknown>>
+      }>(itemDependencyKeys.forItem(itemId))
+      if (snapshot) {
+        const otherId = input.fromItemId === itemId ? input.toItemId : input.fromItemId
+        const next = {
+          ...snapshot,
+          blockedBy:
+            input.type === 'blocks' && input.toItemId === itemId
+              ? snapshot.blockedBy.filter((e) => e.ref.id !== input.fromItemId)
+              : snapshot.blockedBy,
+          blocking:
+            input.type === 'blocks' && input.fromItemId === itemId
+              ? snapshot.blocking.filter((e) => e.ref.id !== input.toItemId)
+              : snapshot.blocking,
+          related:
+            input.type === 'relates_to'
+              ? snapshot.related.filter((e) => e.ref.id !== otherId)
+              : snapshot.related,
+        }
+        qc.setQueryData(itemDependencyKeys.forItem(itemId), next)
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(itemDependencyKeys.forItem(itemId), ctx.snapshot)
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: itemDependencyKeys.forItem(itemId) })
     },
   })
 }
