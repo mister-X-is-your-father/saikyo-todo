@@ -48,7 +48,28 @@ export function useRejectProposal(parentItemId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => unwrap(await rejectProposalAction({ id })),
-    onSuccess: () => {
+    // iter1445 (mode-F): 「却下」 button click 後 ~200-500ms 待ちで proposal が
+    // 一覧から消えない flicker (useDeleteWorkflow iter1442 / useSoftDeleteSchedule
+    // iter1444 / useDeleteKeyResult iter1441 と同 root cause)。
+    // fire-and-forget cancelQueries + sync setQueryData で proposal を即除外、
+    // onError rollback、onSettled で正規 invalidate。
+    onMutate: (id: string) => {
+      void qc.cancelQueries({ queryKey: proposalKeys.pendingByParent(parentItemId) })
+      const snapshot = qc.getQueryData<Array<{ id: string }>>(
+        proposalKeys.pendingByParent(parentItemId),
+      )
+      if (snapshot) {
+        qc.setQueryData(
+          proposalKeys.pendingByParent(parentItemId),
+          snapshot.filter((p) => p.id !== id),
+        )
+      }
+      return { snapshot }
+    },
+    onError: (_e, _id, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(proposalKeys.pendingByParent(parentItemId), ctx.snapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: proposalKeys.pendingByParent(parentItemId) })
     },
   })
