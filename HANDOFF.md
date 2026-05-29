@@ -761,6 +761,19 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 ## 9. UI/UX バグログ (Playwright 探索 — Phase 6.15 loop)
 
+> **[playwright fire 2026-05-29 サマリ iter1423-1489 / mode-F 楽観 update 大規模 sweep 45 件]** mutation hook の楽観 update を **45 件** 一気に着地 (本 fire の主成果)。
+> **Update / Set 系 21 件**: useUpdate{Item,Goal,KeyResult,Workflow,Template,TemplateItem,Sprint,Schedule,ExternalSource,Proposal,Tag,SprintDefaults} / useChangeSprintStatus / useSetItem{Baseline} / useClearItem{Baseline,WaitingFor} / useSetItemGoal / useUpdateWorkspaceDefaultMode / useUpdateTeamContext / useUpsertPersonalPeriodGoal / useUpdateNotificationPreferences
+> **Delete / Remove 系 12 件**: useArchive/UnarchiveItem (helper 化) / useDelete{KeyResult,Workflow,Template,Schedule,TemplateItem,ExternalSource,Tag} / useRemove{ItemArtifact,ItemStakeholder,ItemDependency,TemplateItem}
+> **Bulk 系 2 件**: useBulkUpdateItemStatus / useBulkSoftDeleteItem
+> **Add 系 11 件 (temp id append pattern)**: useAdd{ItemDependency,ItemArtifact,ItemStakeholder,TemplateItem} / useCreate{Schedule,Tag,Goal,KeyResult,Sprint,Workflow,Template,ExternalSource,Item,TimeEntry}
+> **Notification 系 2 件**: useMarkNotificationRead (atomic unread badge -1) / useMarkAllNotificationsRead (badge 0 reset)
+> **decompose-proposal 4 件**: useRejectProposal / useRejectAllPendingProposals / useUpdateProposal / useAcceptProposal
+> **a11y / contrast 3 件**: status chip text-zinc-500 → 700 (4.13→9.62 AA+AAA、Inbox/Backlog/Today/Dashboard/Kanban 横断) / Kanban カード focus-visible 2px ring (WCAG 2.4.7) / Backlog drag cell focus-visible 2px ring
+> **mode-M tap target 4 件**: Sprint/Goal create form date input (4 個) / 作戦盤 row button (3 個) / Goal KR target+unit
+> **探索のみ 9 件**: populated /sprints /goals /pdca /archive / overlay / dialog tab / iPhone SE Today / /integrations / /time-entries / /pdca で全 light+dark axe clean を再確認、Kanban nested-interactive のみ既知 deferred (dnd-kit)
+>
+> 直接 user 体感が ~200-500ms → 数 ms に。`scripts/explore-uiux-flicker-*-iter14*.ts` の 45+ 個 codify で各々 fragment + invariant cross-check assert (push 前 verify 兼回帰 guard)。残 deferred: useDecomposeItem/Goal AI mutation (server 重処理)、useRunRetro/Premortem AI、comment hooks (スレッド整合性優先で意図的 non-optimistic)、useMoveItem (tree restructure 複雑)、useUpdateSyncTimeEntry (AI auto-categorize)、Kanban nested-interactive (dnd-kit sortable inner button)。
+
 > **[playwright fire 2026-05-26 サマリ iter1365-1403]** dark-mode a11y を中心に 22 fix を push: reduced-motion グローバル reset (WCAG 2.3.3) / 通知受信時刻の SR 伝達 (1.3.1) / light contrast (ItemEditDialog AI box・assignee/tag placeholder) / **dark severity-color 12 件** (WeeklyInsight・gantt MUST・operation-board[推奨/期限超過/quickwins/focus/summary]・today 期限超過・dashboard 期限日付・taskchute ticker・OKR 達成完了%・sprint retro/risk・swimlane・subtask・time-entries 曜日peak・summary tab・recovery-plan・MUST ラベル) / **応答性 2 件** (tag・assignee 付与に楽観 update、~1s→~0.1s)。回帰 guard script 多数。**重大発見**: multi-item seed が is_must/description NOT NULL で silent fail → iter1365/1373 の view scan は空 view を見ていた (iter1382 で is_must 明示して実 populated 再 scan)。残 deferred: kanban dnd-kit / cmdk aria-required-children / React Flow nested-interactive / sonner toast richColors / dependency 楽観 update (joined data 複雑)。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
