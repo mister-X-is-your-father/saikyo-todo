@@ -303,3 +303,47 @@ export function pickTopItemsByTone<T>(
   if (n <= 0) return []
   return sortItemsByTone(items, getTone).slice(0, n)
 }
+
+/**
+ * iter1431 basics: 任意 items を ChipTone 別の T[] に分配する pure helper。
+ *
+ * `countItemsByTone` (iter493) は **件数のみ** だが、本 helper は **items 自身** を
+ * 6 tone 別 Record に分配。`analytics-signals.ts#groupSignalsByTone` (iter1428) の
+ * AnalyticsSignals 特化版を、任意 items に generalize した chip-tone primitive。
+ *
+ * 仕様:
+ *  - 6 tone (danger / urgent / warn / info / idle / success) すべての key を持つ Record
+ *  - 該当 item 無し tone は空配列 (= caller の undefined check 不要)
+ *  - 各 array 内の並び順は **入力 items の元順保持** (stable、走査順)
+ *  - 入力 items を mutate しない
+ *  - getTone は item ごと 1 回呼ばれる
+ *
+ * 用途:
+ *  - dashboard 「tone 別 chip row layout」 (= 危ない行 / 注意行 / 達成行 を縦に並べる)
+ *  - AI 朝 brief「重要度別 grouping」 出力
+ *  - Slack daily digest「concerning / positive section 分離」
+ *  - 任意 domain item の tone-faceted UI (= due-proximity item / urgency item / etc.)
+ *
+ * 既存 helper との関係:
+ *  - `countItemsByTone`: tone 別件数 (= 集計のみ)
+ *  - `sortItemsByTone`: 全 items を tone severity 順で 1 配列に (= tone は混在)
+ *  - `pickTopItemsByTone`: 上位 N 件 (= severity 順 + 件数制限)
+ *  - 本 helper: tone 別 **分配** (= 6 軸 grouping、UI 縦配置 / section 分離 向け)
+ */
+export function groupItemsByTone<T>(
+  items: ReadonlyArray<T>,
+  getTone: (item: T) => ChipTone,
+): Record<ChipTone, T[]> {
+  const grouped: Record<ChipTone, T[]> = {
+    danger: [],
+    urgent: [],
+    warn: [],
+    info: [],
+    idle: [],
+    success: [],
+  }
+  for (const it of items) {
+    grouped[getTone(it)].push(it)
+  }
+  return grouped
+}

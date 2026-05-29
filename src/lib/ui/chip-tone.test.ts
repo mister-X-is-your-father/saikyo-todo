@@ -11,6 +11,7 @@ import {
   countItemsByTone,
   formatToneCountsJa,
   getChipToneClasses,
+  groupItemsByTone,
   pickHighestSeverityTone,
   pickTopItemsByTone,
   sortItemsByTone,
@@ -296,5 +297,70 @@ describe('pickTopItemsByTone (上位 N 件 alert 抽出)', () => {
     const original = [...items]
     pickTopItemsByTone(items, getTone, 1)
     expect(items).toEqual(original)
+  })
+})
+
+describe('groupItemsByTone (iter1431 — tone 別 items 分配)', () => {
+  type Item = { id: string; tone: ChipTone }
+  const getTone = (it: Item) => it.tone
+
+  it('空 items → 6 tone すべて空配列', () => {
+    const grouped = groupItemsByTone<Item>([], getTone)
+    expect(grouped.danger).toEqual([])
+    expect(grouped.urgent).toEqual([])
+    expect(grouped.warn).toEqual([])
+    expect(grouped.info).toEqual([])
+    expect(grouped.idle).toEqual([])
+    expect(grouped.success).toEqual([])
+  })
+
+  it('混合 → tone 別に正しく分配', () => {
+    const items: Item[] = [
+      { id: 'a', tone: 'danger' },
+      { id: 'b', tone: 'warn' },
+      { id: 'c', tone: 'warn' },
+      { id: 'd', tone: 'success' },
+    ]
+    const grouped = groupItemsByTone(items, getTone)
+    expect(grouped.danger.map((it) => it.id)).toEqual(['a'])
+    expect(grouped.warn.map((it) => it.id)).toEqual(['b', 'c'])
+    expect(grouped.success.map((it) => it.id)).toEqual(['d'])
+    expect(grouped.info).toEqual([])
+  })
+
+  it('各 array 内は入力 items の元順保持 (stable)', () => {
+    const items: Item[] = [
+      { id: 'warn-1', tone: 'warn' },
+      { id: 'warn-2', tone: 'warn' },
+      { id: 'danger-1', tone: 'danger' },
+      { id: 'warn-3', tone: 'warn' },
+    ]
+    const grouped = groupItemsByTone(items, getTone)
+    expect(grouped.warn.map((it) => it.id)).toEqual(['warn-1', 'warn-2', 'warn-3'])
+    expect(grouped.danger.map((it) => it.id)).toEqual(['danger-1'])
+  })
+
+  it('入力 items を mutate しない', () => {
+    const items: Item[] = [{ id: 'a', tone: 'danger' }]
+    const original = [...items]
+    groupItemsByTone(items, getTone)
+    expect(items).toEqual(original)
+  })
+
+  it('集計と整合 (countItemsByTone との len/count 一致)', () => {
+    const items: Item[] = [
+      { id: 'a', tone: 'danger' },
+      { id: 'b', tone: 'warn' },
+      { id: 'c', tone: 'warn' },
+      { id: 'd', tone: 'success' },
+    ]
+    const grouped = groupItemsByTone(items, getTone)
+    const counts = countItemsByTone(items, getTone)
+    expect(grouped.danger.length).toBe(counts.danger)
+    expect(grouped.warn.length).toBe(counts.warn)
+    expect(grouped.success.length).toBe(counts.success)
+    expect(grouped.info.length).toBe(counts.info)
+    expect(grouped.idle.length).toBe(counts.idle)
+    expect(grouped.urgent.length).toBe(counts.urgent)
   })
 })
