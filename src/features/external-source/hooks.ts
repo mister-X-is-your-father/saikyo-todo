@@ -40,8 +40,37 @@ export function useCreateExternalSource(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: CreateSourceInput) => unwrap(await createSourceAction(input)),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: externalSourceKeys.list(workspaceId) })
+    // iter1483 (mode-F、Add 系): /integrations で ExternalSource 作成後 ~200-500ms
+    // 待ちで card が現れない flicker (useCreateWorkflow iter1481 と同 root cause、
+    //  ExternalSource 版)。
+    onMutate: (input: CreateSourceInput) => {
+      void qc.cancelQueries({ queryKey: externalSourceKeys.list(workspaceId) })
+      const snapshot = qc.getQueryData<Array<{ id: string }>>(externalSourceKeys.list(workspaceId))
+      if (snapshot) {
+        const tempEntry = {
+          id: `temp-${crypto.randomUUID()}`,
+          workspaceId: input.workspaceId,
+          name: input.name,
+          kind: input.kind,
+          config: input.config,
+          scheduleCron: input.scheduleCron ?? null,
+          enabled: false,
+          lastPulledAt: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          version: 0,
+          deletedAt: null,
+          createdBy: '',
+        }
+        qc.setQueryData(externalSourceKeys.list(workspaceId), [...snapshot, tempEntry])
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(externalSourceKeys.list(workspaceId), ctx.snapshot)
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: externalSourceKeys.list(workspaceId) })
     },
   })
 }
