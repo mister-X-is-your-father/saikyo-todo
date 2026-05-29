@@ -107,7 +107,34 @@ export function useCreateSprint(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: CreateSprintInput) => unwrap(await createSprintAction(input)),
-    onSuccess: () => invalidateSprintScope(qc, workspaceId),
+    // iter1480 (mode-F、Add 系): /sprints で Sprint 作成後 ~200-500ms 待ちで card が
+    // 現れない flicker (useCreateGoal iter1479 と同 root cause、Sprint 版)。
+    onMutate: (input: CreateSprintInput) => {
+      void qc.cancelQueries({ queryKey: sprintKeys.list(workspaceId) })
+      const snapshot = qc.getQueryData<Array<{ id: string }>>(sprintKeys.list(workspaceId))
+      if (snapshot) {
+        const tempEntry = {
+          id: `temp-${crypto.randomUUID()}`,
+          workspaceId: input.workspaceId,
+          name: input.name,
+          goal: input.goal ?? null,
+          startDate: input.startDate,
+          endDate: input.endDate,
+          status: 'planning' as const,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          version: 0,
+          deletedAt: null,
+          createdBy: '',
+        }
+        qc.setQueryData(sprintKeys.list(workspaceId), [...snapshot, tempEntry])
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(sprintKeys.list(workspaceId), ctx.snapshot)
+    },
+    onSettled: () => invalidateSprintScope(qc, workspaceId),
   })
 }
 
