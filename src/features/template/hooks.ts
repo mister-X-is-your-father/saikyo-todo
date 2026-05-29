@@ -91,7 +91,31 @@ export function useSoftDeleteTemplate(workspaceId: string) {
   return useMutation({
     mutationFn: async (input: SoftDeleteTemplateInput) =>
       unwrap(await softDeleteTemplateAction(input)),
-    onSuccess: () => {
+    // iter1443 (mode-F): Template 削除 button click 後 ~200-500ms 待ちで card が
+    // 消えない flicker (useDeleteWorkflow iter1442 / useDeleteKeyResult iter1441
+    // と同 root cause)。fire-and-forget cancelQueries + sync setQueryData で
+    // 全 filter 別 list cache から filter 除外、onError rollback、onSettled で
+    // 正規 invalidate。templateKeys.list は filter を含む queryKey なので
+    // getQueriesData で複数 cache 横断取得。
+    onMutate: (input: SoftDeleteTemplateInput) => {
+      void qc.cancelQueries({ queryKey: [...templateKeys.all, workspaceId] })
+      const snapshots = qc.getQueriesData<Array<{ id: string }>>({
+        queryKey: [...templateKeys.all, workspaceId],
+      })
+      for (const [key, prev] of snapshots) {
+        if (!prev) continue
+        qc.setQueryData(
+          key,
+          prev.filter((t) => t.id !== input.id),
+        )
+      }
+      return { snapshots }
+    },
+    onError: (_e, _input, ctx) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.snapshots) qc.setQueryData(key as readonly unknown[], prev)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: [...templateKeys.all, workspaceId] })
     },
   })
