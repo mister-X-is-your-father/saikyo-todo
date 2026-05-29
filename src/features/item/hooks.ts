@@ -74,7 +74,48 @@ export function useCreateItem(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: CreateItemInput) => unwrap(await createItemAction(input)),
-    onSuccess: () => {
+    // iter1484 (mode-F、Add 系): QuickAdd / ItemEditDialog / decompose 等で Item 作成後
+    // ~200-500ms 待ちで item が一覧に現れない flicker (useCreateGoal iter1479 と
+    // 同 root cause、Item 本丸版)。Item Select 型は多 field のため、Item 型を `as Item`
+    // で cast する代わりに、items query 群へ追加するだけにとどめる (server canonical
+    // refetch で完全 row に差し替え)。最小限の Item-like object でも sort / filter は
+    // 機能、temp row は短時間後に正規 row で置換される (UI に違和感最小)。
+    onMutate: (input: CreateItemInput) => {
+      void qc.cancelQueries({ queryKey: [...itemKeys.all, workspaceId] })
+      const snapshots = qc.getQueriesData<Item[]>({ queryKey: [...itemKeys.all, workspaceId] })
+      const tempEntry = {
+        id: `temp-${crypto.randomUUID()}`,
+        workspaceId: input.workspaceId,
+        title: input.title,
+        description: input.description ?? '',
+        status: input.status ?? 'todo',
+        parentPath: '',
+        startDate: input.startDate ?? null,
+        dueDate: input.dueDate ?? null,
+        dueTime: input.dueTime ?? null,
+        scheduledFor: input.scheduledFor ?? null,
+        priority: input.priority ?? 4,
+        isMust: input.isMust ?? false,
+        dod: input.dod ?? null,
+        position: 'zzz~temp',
+        archivedAt: null,
+        doneAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        version: 0,
+        deletedAt: null,
+      } as unknown as Item
+      for (const [key, prev] of snapshots) {
+        if (!Array.isArray(prev)) continue
+        qc.setQueryData<Item[]>(key, [...prev, tempEntry])
+      }
+      return { snapshots }
+    },
+    onError: (_e, _input, ctx) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.snapshots) qc.setQueryData(key as readonly unknown[], prev)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
     },
   })
