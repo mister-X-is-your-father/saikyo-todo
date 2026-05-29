@@ -80,7 +80,37 @@ export function useAddItemArtifact(itemId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: AddItemIoArtifactInput) => unwrap(await addItemArtifactAction(input)),
-    onSuccess: () => {
+    // iter1475 (mode-F、Add 系): ItemEditDialog 内 artifact (input/output) 追加後
+    // ~200-500ms 待ちで artifact row が現れない flicker (useAddItemDependency iter1474
+    // と同 root cause、Add 系 helper パターンの artifact 版)。temp id ('temp-' + uuid)
+    // で仮 row を append、server canonical fetch (onSettled invalidate) で正規 id に上書き。
+    onMutate: (input: AddItemIoArtifactInput) => {
+      void qc.cancelQueries({ queryKey: itemMetadataKeys.artifacts(itemId) })
+      const snapshot = qc.getQueryData<Array<{ id: string } & Record<string, unknown>>>(
+        itemMetadataKeys.artifacts(itemId),
+      )
+      if (snapshot) {
+        const tempId = `temp-${crypto.randomUUID()}`
+        const tempEntry = {
+          id: tempId,
+          itemId: input.itemId,
+          kind: input.kind,
+          label: input.label,
+          url: input.url ?? null,
+          filePath: input.filePath ?? null,
+          mime: input.mime ?? null,
+          description: input.description ?? null,
+          createdAt: new Date(),
+          version: 0,
+        }
+        qc.setQueryData(itemMetadataKeys.artifacts(itemId), [...snapshot, tempEntry])
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(itemMetadataKeys.artifacts(itemId), ctx.snapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: itemMetadataKeys.artifacts(itemId) })
     },
   })
@@ -119,7 +149,24 @@ export function useAddItemStakeholder(itemId: string) {
   return useMutation({
     mutationFn: async (input: AddItemStakeholderInput) =>
       unwrap(await addItemStakeholderAction(input)),
-    onSuccess: () => {
+    // iter1475 (mode-F、Add 系): stakeholder (関係者) 追加後 ~200-500ms 待ちで
+    // row が現れない flicker。stakeholder は (itemId, userId) 複合 key で identity
+    // (temp id 不要)、input field をそのまま append。
+    onMutate: (input: AddItemStakeholderInput) => {
+      void qc.cancelQueries({ queryKey: itemMetadataKeys.stakeholders(itemId) })
+      const snapshot = qc.getQueryData<Array<{ userId: string } & Record<string, unknown>>>(
+        itemMetadataKeys.stakeholders(itemId),
+      )
+      if (snapshot && !snapshot.some((s) => s.userId === input.userId)) {
+        const tempEntry = { itemId: input.itemId, userId: input.userId, createdAt: new Date() }
+        qc.setQueryData(itemMetadataKeys.stakeholders(itemId), [...snapshot, tempEntry])
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(itemMetadataKeys.stakeholders(itemId), ctx.snapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: itemMetadataKeys.stakeholders(itemId) })
     },
   })
