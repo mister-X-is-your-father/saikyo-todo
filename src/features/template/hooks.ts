@@ -148,7 +148,38 @@ export function useAddTemplateItem(templateId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: AddTemplateItemInput) => unwrap(await addTemplateItemAction(input)),
-    onSuccess: () => {
+    // iter1476 (mode-F、Add 系): Template 編集 dialog で TemplateItem 追加後
+    // ~200-500ms 待ちで row が現れない flicker (useAddItemArtifact iter1475 と
+    // 同 root cause、TemplateItem 版)。temp id で仮 row append、server canonical
+    // fetch (onSettled invalidate) で正規 id に上書き。
+    onMutate: (input: AddTemplateItemInput) => {
+      void qc.cancelQueries({ queryKey: templateKeys.items(templateId) })
+      const snapshot = qc.getQueryData<Array<{ id: string } & Record<string, unknown>>>(
+        templateKeys.items(templateId),
+      )
+      if (snapshot) {
+        const tempEntry = {
+          id: `temp-${crypto.randomUUID()}`,
+          templateId: input.templateId,
+          title: input.title,
+          description: input.description ?? '',
+          parentPath: input.parentPath ?? '',
+          statusInitial: input.statusInitial ?? 'todo',
+          dueOffsetDays: input.dueOffsetDays ?? null,
+          isMust: input.isMust ?? false,
+          dod: input.dod ?? null,
+          defaultAssignees: input.defaultAssignees ?? [],
+          agentRoleToInvoke: input.agentRoleToInvoke ?? null,
+          createdAt: new Date(),
+        }
+        qc.setQueryData(templateKeys.items(templateId), [...snapshot, tempEntry])
+      }
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(templateKeys.items(templateId), ctx.snapshot)
+    },
+    onSettled: () => {
       void qc.invalidateQueries({ queryKey: templateKeys.items(templateId) })
     },
   })
