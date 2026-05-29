@@ -50,8 +50,26 @@ export function useUpdateSprintDefaults(workspaceId: string) {
   return useMutation({
     mutationFn: async (input: { startDow: number; lengthDays: number }) =>
       unwrap(await updateSprintDefaultsAction({ workspaceId, ...input })),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: sprintKeys.defaults(workspaceId) })
+    // iter1459 (mode-F): Sprint workspace デフォルト (基本曜日 / 期間日数) 編集
+    // 保存後 ~200-500ms 待ちで visible summary "基本: 月曜開始 / 14 日" や
+    // 新規 Sprint form の startDate auto-fill が更新前のまま見える flicker。
+    // fire-and-forget cancelQueries + sync setQueryData で即書換 (1 key の object 型)。
+    onMutate: (input) => {
+      void qc.cancelQueries({ queryKey: sprintKeys.defaults(workspaceId) })
+      const snapshot = qc.getQueryData(sprintKeys.defaults(workspaceId))
+      qc.setQueryData(sprintKeys.defaults(workspaceId), {
+        ...(snapshot as Record<string, unknown> | undefined),
+        startDow: input.startDow,
+        lengthDays: input.lengthDays,
+      })
+      return { snapshot }
+    },
+    onError: (_e, _input, ctx) => {
+      if (ctx?.snapshot !== undefined)
+        qc.setQueryData(sprintKeys.defaults(workspaceId), ctx.snapshot)
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: sprintKeys.defaults(workspaceId) })
     },
   })
 }
