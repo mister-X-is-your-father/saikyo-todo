@@ -13,6 +13,7 @@ import {
   analyticsSignalsToArray,
   composeAnalyticsSignals,
   countAnalyticsSignalsByTone,
+  filterSignalsByMinTone,
   formatAnalyticsSignalsLineJa,
   formatAnalyticsSignalsToneSummaryJa,
   formatTopSignalsLineJa,
@@ -880,5 +881,67 @@ describe('formatTopSignalsLineJa (iter1426 — 上位 N severe を 1 行 ja-JP)'
     expect(line).toBe(allTop.map((sig) => sig.text).join(' / '))
     // 「全 signal」 連結なので formatAnalyticsSignalsLineJa とは「順序」 のみ異なる
     // (本 helper = severity 順、formatAnalyticsSignalsLineJa = domain 順)
+  })
+})
+
+describe('filterSignalsByMinTone (iter1427 — 閾値以上の signal を凝集表示)', () => {
+  it('全空 → 空配列', () => {
+    const s = composeAnalyticsSignals({})
+    expect(filterSignalsByMinTone(s, 'warn')).toEqual([])
+  })
+
+  it('minTone=warn → danger / urgent / warn のみ通過、info / idle / success は除外', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 }, // danger
+    ])
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 } // success
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const filtered = filterSignalsByMinTone(s, 'warn')
+    // danger は通過、success は除外
+    expect(filtered.some((sig) => sig.tone === 'danger')).toBe(true)
+    expect(filtered.some((sig) => sig.tone === 'success')).toBe(false)
+  })
+
+  it('minTone=danger → danger のみ通過 (= 最も厳しい閾値)', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 }, // critical → danger
+    ])
+    const dueHitRate = { total: 10, hit: 5, miss: 5, hitRate: 0.5 } // warn
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const filtered = filterSignalsByMinTone(s, 'danger')
+    expect(filtered.every((sig) => sig.tone === 'danger')).toBe(true)
+    expect(filtered.length).toBeGreaterThan(0)
+  })
+
+  it('minTone=success → 全 signal を通過 (= 閾値なし相当)', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 }, // danger
+    ])
+    const dueHitRate = { total: 10, hit: 9, miss: 1, hitRate: 0.9 } // success
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const all = analyticsSignalsToArray(s)
+    const filtered = filterSignalsByMinTone(s, 'success')
+    expect(filtered).toEqual(all)
+  })
+
+  it('並び順は analyticsSignalsToArray の domain 順 を保持 (severity 順並べ替えしない)', () => {
+    const reliability = computeAgentReliability([
+      { role: 'pm', invocations: 10, completed: 5, failed: 5 }, // danger → concerningRole 先頭
+    ])
+    const dueHitRate = { total: 10, hit: 5, miss: 5, hitRate: 0.5 } // warn
+    const s = composeAnalyticsSignals({ reliability, dueHitRate })
+    const filtered = filterSignalsByMinTone(s, 'warn')
+    const arr = analyticsSignalsToArray(s).filter(
+      (sig) => sig.tone === 'danger' || sig.tone === 'urgent' || sig.tone === 'warn',
+    )
+    expect(filtered).toEqual(arr)
+  })
+
+  it('全 signal が閾値未満 → 空配列', () => {
+    // success のみ
+    const items: VelocityFields[] = [{ doneAt: TODAY }, { doneAt: TODAY }, { doneAt: TODAY }]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const s = composeAnalyticsSignals({ velocity })
+    expect(filterSignalsByMinTone(s, 'warn')).toEqual([])
   })
 })

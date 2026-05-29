@@ -31,6 +31,7 @@
 
 import {
   type ChipTone,
+  chipToneAttentionRank,
   countItemsByTone,
   formatToneCountsJa,
   pickTopItemsByTone,
@@ -478,4 +479,39 @@ export function formatTopSignalsLineJa(signals: AnalyticsSignals, n: number): st
   const top = pickTopSignalsBySeverity(signals, n)
   if (top.length === 0) return '記録なし'
   return top.map((s) => s.text).join(' / ')
+}
+
+/**
+ * iter1427 ai-automation: AnalyticsSignals から「`minTone` 以上の severity を持つ signals のみ」
+ * filter して返す pure helper。
+ *
+ * 用途: AI 朝 brief / Slack daily digest の「**concerning だけ headline**」 (= success / idle を
+ * 除外して chip 列を凝集表示) の substrate。dashboard 「現在の警戒 signal」 panel も同。
+ *
+ * 仕様:
+ *  - `minTone` 以上の attention rank を持つ signal のみ通過 (= rank >= rank(minTone))
+ *    例: minTone='warn' → danger / urgent / warn のみ通過 (info / idle / success は除外)
+ *  - 並び順は `analyticsSignalsToArray` の domain 表示順 (= 既存 chip 並びと整合)
+ *  - 全 null or 全 filter 除外 → 空配列
+ *  - `pickTopSignalsBySeverity` (= severity 降順 + N 件) とは異なる軸:
+ *      - 本 helper: severity 閾値 filter (件数制限なし、domain 順保持)
+ *      - pickTop: severity 順 + 件数制限 (= top N alert headline 向け)
+ *
+ * caller pattern (「警戒 signal だけ chip 列」):
+ *   const concerning = filterSignalsByMinTone(signals, 'warn')
+ *   // → danger/urgent/warn の signal だけ、domain 表示順で
+ *   concerning.map(s => <Chip text={s.text} tone={s.tone} />)
+ *
+ * 既存 helper との関係:
+ *  - `analyticsSignalsToArray`: 全 non-null signal 配列 (= 閾値なし)
+ *  - `pickTopSignalsBySeverity`: 上位 N 件 (= severity 順、件数制限)
+ *  - `pickHighestSeveritySignal`: 単一最重要 signal
+ *  - 本 helper: 閾値以上の signal 全件 (= 「警戒 signal だけ凝集」)
+ */
+export function filterSignalsByMinTone(
+  signals: AnalyticsSignals,
+  minTone: ChipTone,
+): AgentBriefSignal[] {
+  const minRank = chipToneAttentionRank(minTone)
+  return analyticsSignalsToArray(signals).filter((s) => chipToneAttentionRank(s.tone) >= minRank)
 }
