@@ -489,14 +489,58 @@ export function useClearItemWaitingFor(workspaceId: string) {
   })
 }
 
+function baselineMutationConfig(workspaceId: string, set: boolean) {
+  return (qc: ReturnType<typeof useQueryClient>) => ({
+    onMutate: (input: { id: string }) => {
+      void qc.cancelQueries({ queryKey: [...itemKeys.all, workspaceId] })
+      const snapshots = qc.getQueriesData<Item[]>({ queryKey: [...itemKeys.all, workspaceId] })
+      const now = set ? new Date() : null
+      for (const [key, prev] of snapshots) {
+        if (!prev) continue
+        qc.setQueryData<Item[]>(
+          key,
+          prev.map((it) => {
+            if (it.id !== input.id) return it
+            return set
+              ? {
+                  ...it,
+                  baselineStartDate: it.startDate,
+                  baselineEndDate: it.dueDate,
+                  baselineTakenAt: now ?? new Date(),
+                }
+              : {
+                  ...it,
+                  baselineStartDate: null,
+                  baselineEndDate: null,
+                  baselineTakenAt: null,
+                }
+          }),
+        )
+      }
+      return { snapshots }
+    },
+    onError: (
+      _e: unknown,
+      _input: unknown,
+      ctx: { snapshots: [unknown, Item[] | undefined][] } | undefined,
+    ) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.snapshots) qc.setQueryData(key as readonly unknown[], prev)
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
+    },
+  })
+}
+
 export function useSetItemBaseline(workspaceId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: { id: string; expectedVersion: number }) =>
       unwrap(await setItemBaselineAction(input)),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
-    },
+    // iter1486 (mode-F): Gantt baseline 取得 button click 後 ~200-500ms 待ちで
+    // baseline bar が現れない flicker (useArchiveItem iter1437 と同 helper パターン)。
+    ...baselineMutationConfig(workspaceId, true)(qc),
   })
 }
 
@@ -505,9 +549,8 @@ export function useClearItemBaseline(workspaceId: string) {
   return useMutation({
     mutationFn: async (input: { id: string; expectedVersion: number }) =>
       unwrap(await clearItemBaselineAction(input)),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: [...itemKeys.all, workspaceId] })
-    },
+    // iter1486 (mode-F): baseline clear button click 後 baseline bar が消えない flicker。
+    ...baselineMutationConfig(workspaceId, false)(qc),
   })
 }
 
