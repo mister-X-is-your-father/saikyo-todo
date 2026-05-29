@@ -893,7 +893,7 @@ function KeyResultList({
               value={target}
               onChange={(e) => setTarget(e.target.value)}
               placeholder="例: 100"
-              className="w-32 text-sm"
+              className="min-h-11 w-32 text-sm"
               required
               aria-required="true"
               aria-invalid={(target !== '' && Number.isNaN(Number(target))) || undefined}
@@ -918,7 +918,7 @@ function KeyResultList({
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
               placeholder="例: 件 / %"
-              className="w-24 text-sm"
+              className="min-h-11 w-24 text-sm"
               aria-label={
                 unit.length === 0
                   ? '単位 (任意、最大 20 文字、目標値とセット — 例: 件 / % / hours)'
