@@ -47,7 +47,29 @@ export function useSetItemGoal() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (input: SetItemGoalInput) => unwrap(await setItemGoalAction(input)),
-    onSuccess: (_data, vars) => {
+    // iter1471 (mode-F): ItemEditDialog の goal textarea 保存後 ~200-500ms 待ちで
+    // visible が更新前のまま見える flicker (useUpdateItem iter1453 と同 root cause、
+    //  goal 単体 field 編集版)。items query (multi-key) を横断 setQueryData で
+    // item.goal field を即書換。
+    onMutate: (input: SetItemGoalInput) => {
+      void qc.cancelQueries({ queryKey: ['items'] })
+      const snapshots = qc.getQueriesData<Array<{ id: string } & Record<string, unknown>>>({
+        queryKey: ['items'],
+      })
+      for (const [key, prev] of snapshots) {
+        if (!Array.isArray(prev)) continue
+        qc.setQueryData(
+          key,
+          prev.map((it) => (it.id === input.id ? { ...it, goal: input.goal } : it)),
+        )
+      }
+      return { snapshots }
+    },
+    onError: (_e, _input, ctx) => {
+      if (!ctx) return
+      for (const [key, prev] of ctx.snapshots) qc.setQueryData(key as readonly unknown[], prev)
+    },
+    onSettled: (_data, _e, vars) => {
       void qc.invalidateQueries({ queryKey: ['items'] })
       void qc.invalidateQueries({ queryKey: ['items', 'detail', vars.id] })
     },
