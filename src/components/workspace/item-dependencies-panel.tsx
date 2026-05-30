@@ -349,7 +349,9 @@ function Section({
                 {ref.isMust && <MustBadge className="mr-1" iconOnly />}
                 {ref.title}
               </span>
-              {ref.doneAt && <span className="text-[10px] text-emerald-600">完了済み</span>}
+              {ref.doneAt && (
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400">完了済み</span>
+              )}
               {/* iter1301: 旧 aria-label `依存「title」を解除[中…]` は visible "解除" を
                   末尾 "を**解除**" position に持ち voice control prefix-matching
                   「click 解除」 match 不可 (substring 一致のみ)。backlog-edit iter1152 /

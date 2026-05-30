@@ -247,7 +247,9 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
 
         {board.overdue.total > 0 && (
           <Section
-            icon={<AlertOctagon className="h-4 w-4 text-red-600" aria-hidden="true" />}
+            icon={
+              <AlertOctagon className="h-4 w-4 text-red-600 dark:text-red-400" aria-hidden="true" />
+            }
             label="期限超過"
             count={board.overdue.total}
             tone="red"
