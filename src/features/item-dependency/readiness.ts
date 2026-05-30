@@ -119,28 +119,32 @@ export interface DependencyReadinessVisual {
   toneLabel: string
 }
 
+// iter1539: dependency readiness 3 tone (blocked/idle/ready) は `bg-{color}-50
+// text-{color}-{700,900} ring-{color}-200` で light 固定。iter1376/1493/1512-1538 chip dark
+// sweep + central feature 7 件目 (notification iter1537 / audit iter1538 と同 pattern)。
+// 各 visual に dark token 併記、テストは tone/iconKey logic のみで class string check なし。
 const TONE_VISUAL: Record<DependencyReadinessTone, DependencyReadinessVisual> = {
   blocked: {
     tone: 'blocked',
-    bgClass: 'bg-amber-50',
-    textClass: 'text-amber-900',
-    ringClass: 'ring-amber-200',
+    bgClass: 'bg-amber-50 dark:bg-amber-950/30',
+    textClass: 'text-amber-900 dark:text-amber-200',
+    ringClass: 'ring-amber-200 dark:ring-amber-900/50',
     iconKey: 'pause',
     toneLabel: 'ブロック中',
   },
   idle: {
     tone: 'idle',
-    bgClass: 'bg-zinc-50',
-    textClass: 'text-zinc-700',
-    ringClass: 'ring-zinc-200',
+    bgClass: 'bg-zinc-50 dark:bg-zinc-900/30',
+    textClass: 'text-zinc-700 dark:text-zinc-300',
+    ringClass: 'ring-zinc-200 dark:ring-zinc-700/50',
     iconKey: 'idle',
     toneLabel: '依存なし',
   },
   ready: {
     tone: 'ready',
-    bgClass: 'bg-emerald-50',
-    textClass: 'text-emerald-900',
-    ringClass: 'ring-emerald-200',
+    bgClass: 'bg-emerald-50 dark:bg-emerald-950/30',
+    textClass: 'text-emerald-900 dark:text-emerald-200',
+    ringClass: 'ring-emerald-200 dark:ring-emerald-900/50',
     iconKey: 'check',
     toneLabel: '着手可能',
   },
