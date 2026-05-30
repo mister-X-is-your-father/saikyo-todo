@@ -238,7 +238,7 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
           {preview.assignees.map((a) => (
             <span
               key={a}
-              className="rounded bg-emerald-100 px-1.5 py-0.5 text-emerald-700"
+              className="rounded bg-emerald-100 px-1.5 py-0.5 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
               aria-hidden="true"
             >
               @{a}
@@ -249,7 +249,7 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
             // consistency を揃え、見積 chip にも `role="img"` 付与 (role=img sweep 15 弾目、
             // iter1023/1049-1061 同 pattern)。
             <span
-              className="rounded bg-cyan-100 px-1.5 py-0.5 text-cyan-700"
+              className="rounded bg-cyan-100 px-1.5 py-0.5 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300"
               data-testid="quick-add-estimate"
               role="img"
               aria-label={`見積 ${formatEstimate(preview.estimateMinutes)}`}

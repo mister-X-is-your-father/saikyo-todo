@@ -188,7 +188,9 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
             // iter1056: role 無 span + aria-label を `role="img"` で authoritative 化
             // (iter1023/1049-1055 同 pattern、隣の calibrated chip と同 role=img に揃え)。
             <span
-              className="ml-1 rounded bg-cyan-100 px-1 text-[9px] text-cyan-700"
+              // iter1521: estimate chip は light 固定で iter1376/1493/1512-1519 dark chip
+              // sweep からこぼれていた。dark variant 補完。
+              className="ml-1 rounded bg-cyan-100 px-1 text-[9px] text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300"
               data-testid="active-timer-estimate"
               role="img"
               aria-label={`見積 ${estimateMinutes}分`}
