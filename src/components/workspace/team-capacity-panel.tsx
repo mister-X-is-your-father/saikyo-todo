@@ -62,10 +62,12 @@ export function TeamCapacityPanel({ workspaceId }: Props) {
         <summary
           id="team-capacity-summary"
           className="text-foreground focus-visible:ring-ring inline-flex cursor-pointer items-center gap-1.5 rounded text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+          /* iter1544: 旧 ` を閉じる` / ` を開く` 助詞接続は iter1093-1543 sweep の em-dash 区切と
+             divergent。sprint-swimlane summary (iter1042 系) と同 pattern で em-dash 化。 */
           aria-label={
             open
-              ? 'チームメンバー 余裕時間 (今日 / 今週) を閉じる'
-              : 'チームメンバー 余裕時間 (今日 / 今週) を開く'
+              ? 'チームメンバー 余裕時間 (今日 / 今週) — 閉じる'
+              : 'チームメンバー 余裕時間 (今日 / 今週) — 開く'
           }
           data-testid="team-capacity-summary-toggle"
         >
