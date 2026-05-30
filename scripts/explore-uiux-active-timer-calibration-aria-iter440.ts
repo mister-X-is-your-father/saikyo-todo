@@ -57,7 +57,7 @@ async function main(): Promise<void> {
 
   // 2. 新 aria-label に "中央値 ...× 補正" を集約
   if (
-    /aria-label=\{`校正後 \$\{calibrated\.calibratedMinutes\}分[\s\S]{0,200}?中央値 \$\{calibrationFactor\?\.toFixed\(2\)\}× 補正\)`\}/.test(
+    /aria-label=\{`校正後 \$\{calibrated\.calibratedMinutes\}分[\s\S]{0,200}?中央値 \$\{calibrationFactor\?\.toFixed\(2\)\}× 補正`\}/.test(
       src,
     )
   ) {

@@ -265,7 +265,7 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
               className="rounded border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 text-[10px] text-cyan-600"
               data-testid="quick-add-estimate-calibrated"
               role="img"
-              aria-label={`校正後 ${formatEstimate(calibrated.calibratedMinutes)} (${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正)`}
+              aria-label={`校正後 ${formatEstimate(calibrated.calibratedMinutes)} — ${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正`}
             >
               <span aria-hidden="true">→ {formatEstimate(calibrated.calibratedMinutes)}</span>
             </span>

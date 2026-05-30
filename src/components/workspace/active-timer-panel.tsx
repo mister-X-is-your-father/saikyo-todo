@@ -204,7 +204,7 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
               className="ml-1 rounded border border-cyan-200 bg-cyan-50 px-1 text-[9px] text-cyan-600"
               data-testid="active-timer-estimate-calibrated"
               role="img"
-              aria-label={`校正後 ${calibrated.calibratedMinutes}分 (${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正)`}
+              aria-label={`校正後 ${calibrated.calibratedMinutes}分 — ${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正`}
             >
               <span aria-hidden="true">→ {calibrated.calibratedMinutes}分</span>
             </span>
