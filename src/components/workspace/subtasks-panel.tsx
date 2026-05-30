@@ -190,7 +190,9 @@ function SubtaskTreeNode({
       </span>
       {hasChildren && (
         <span
-          className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[10px] text-slate-700 tabular-nums"
+          // iter1535: child count chip は light 固定 (bg-slate-200 + text-slate-700) で
+          // iter1376/1493/1512-1534 chip dark sweep からこぼれていた。dark variant 補完。
+          className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[10px] text-slate-700 tabular-nums dark:bg-slate-800/40 dark:text-slate-300"
           role="img"
           aria-label={`このタスクには子タスクが ${grandchildren.length} 件あります`}
           data-testid={`subtask-childcount-${item.id}`}
