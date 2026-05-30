@@ -12,11 +12,14 @@ import type { Item } from '@/features/item/schema'
  *
  * p1: 赤 / p2: 橙 / p3: 青 / p4 (既定): 灰
  */
+// iter1534: hover:bg-{color}-50/100 は light 固定で dark mode で hover state が明色のまま
+// 浮く (light hover が dark bg にしみる)。dark:hover:bg-{color}-950/30 を併記、border は
+// 500 mid-shade で theme 中間色のため touch なし、checked bg も 500 で theme 中間色維持。
 const PRIORITY_CLASS: Record<number, string> = {
-  1: 'border-red-500 hover:bg-red-50 data-[checked=true]:bg-red-500',
-  2: 'border-amber-500 hover:bg-amber-50 data-[checked=true]:bg-amber-500',
-  3: 'border-blue-500 hover:bg-blue-50 data-[checked=true]:bg-blue-500',
-  4: 'border-slate-400 hover:bg-slate-100 data-[checked=true]:bg-slate-500',
+  1: 'border-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 data-[checked=true]:bg-red-500',
+  2: 'border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/30 data-[checked=true]:bg-amber-500',
+  3: 'border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30 data-[checked=true]:bg-blue-500',
+  4: 'border-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900/30 data-[checked=true]:bg-slate-500',
 }
 
 export function ItemCheckbox({
