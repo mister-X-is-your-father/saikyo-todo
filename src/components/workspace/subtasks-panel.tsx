@@ -466,10 +466,10 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
         <div
           className={`rounded-md border px-3 py-2 ring-1 ring-inset ${
             descendantsProgress.isComplete
-              ? 'border-emerald-200 bg-emerald-50 ring-emerald-200'
+              ? 'border-emerald-200 bg-emerald-50 ring-emerald-200 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:ring-emerald-900/50'
               : descendantsProgress.blocked > 0
-                ? 'border-amber-200 bg-amber-50 ring-amber-200'
-                : 'border-slate-200 bg-slate-50 ring-slate-200'
+                ? 'border-amber-200 bg-amber-50 ring-amber-200 dark:border-amber-900/50 dark:bg-amber-950/30 dark:ring-amber-900/50'
+                : 'border-slate-200 bg-slate-50 ring-slate-200 dark:border-slate-700/50 dark:bg-slate-900/30 dark:ring-slate-700/50'
           }`}
           role="status"
           aria-live="polite"
