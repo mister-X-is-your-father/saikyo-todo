@@ -18,11 +18,13 @@ import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
 import { MustBadge } from '@/components/workspace/must-badge'
 
+// iter1518: PRIO_COLOR 4 階調は light 固定で dark mode で 明色 chip 浮き contrast 不適。
+// iter1376/1493/1512-1517 chip dark variant pattern を本 PRIO chip にも展開。
 const PRIO_COLOR: Record<number, string> = {
-  1: 'bg-red-100 text-red-700',
-  2: 'bg-amber-100 text-amber-700',
-  3: 'bg-blue-100 text-blue-700',
-  4: 'bg-slate-100 text-slate-700',
+  1: 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300',
+  2: 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
+  3: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
+  4: 'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300',
 }
 
 /**
