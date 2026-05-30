@@ -1183,7 +1183,7 @@ export function DashboardView({ workspaceId }: Props) {
         {mustStale ? (
           <DashboardChip
             testId="dashboard-must-stale-chip"
-            toneClass="border-red-300 bg-red-50 text-red-800"
+            toneClass="border-red-300 bg-red-50 text-red-800 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200"
             glyph="⏳"
             ariaLabel={mustStale.detail}
             title={mustStale.detail}
