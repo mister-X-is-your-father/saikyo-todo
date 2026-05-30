@@ -41,13 +41,20 @@ interface Props {
 // pure helper 化、本 widget は public API を直接呼ぶ。
 
 function trendIcon(trend: 'up' | 'down' | 'flat') {
+  // iter1507: trend icon (改善/悪化/横ばい) は 3 色とも light 固定で dark mode で
+  // contrast が薄れる (`text-emerald-600` / `text-rose-600` / `text-slate-500` が
+  // dark slate bg 上で hue が浅く視認性低)。iter1391 pattern (固定 emerald-700 +
+  // dark:emerald-400 併記) を 3 icon に展開、icon は aria-hidden なので WCAG 1.4.3
+  // 必須ではないが「ぱっと見の伝達」 を保つため dark variant 補完。
   if (trend === 'up') {
-    return <TrendingUp className="h-4 w-4 text-emerald-600" aria-hidden="true" />
+    return (
+      <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+    )
   }
   if (trend === 'down') {
-    return <TrendingDown className="h-4 w-4 text-rose-600" aria-hidden="true" />
+    return <TrendingDown className="h-4 w-4 text-rose-600 dark:text-rose-400" aria-hidden="true" />
   }
-  return <Minus className="h-4 w-4 text-slate-500" aria-hidden="true" />
+  return <Minus className="h-4 w-4 text-slate-500 dark:text-slate-400" aria-hidden="true" />
 }
 
 function trendLabel(trend: 'up' | 'down' | 'flat'): string {
