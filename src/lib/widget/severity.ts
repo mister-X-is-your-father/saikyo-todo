@@ -28,36 +28,41 @@ export interface SeverityClasses {
   ring?: string
 }
 
+// iter1530: SEVERITY_CLASSES 5 severity (ok/info/warn/danger/muted) は border/bg/text/ring
+// 4 軸とも light 固定。iter1376/1493/1512-1529 chip dark sweep + iter1528 MUST badge /
+// iter1529 status-visual と並ぶ高 leverage central feature 着地。各 field 末尾に dark variant
+// 併記、test (severity.test.ts) は `^border-`/`^bg-`/`^text-`/.toContain('emerald') 形式の
+// substring/prefix check で dark variant 追加に透過。
 const SEVERITY_CLASSES: Record<Severity, SeverityClasses> = {
   ok: {
-    border: 'border-emerald-300',
-    bg: 'bg-emerald-50',
-    text: 'text-emerald-700',
-    ring: 'ring-emerald-200',
+    border: 'border-emerald-300 dark:border-emerald-900/50',
+    bg: 'bg-emerald-50 dark:bg-emerald-950/30',
+    text: 'text-emerald-700 dark:text-emerald-300',
+    ring: 'ring-emerald-200 dark:ring-emerald-900/50',
   },
   info: {
-    border: 'border-sky-300',
-    bg: 'bg-sky-50',
-    text: 'text-sky-700',
-    ring: 'ring-sky-200',
+    border: 'border-sky-300 dark:border-sky-900/50',
+    bg: 'bg-sky-50 dark:bg-sky-950/30',
+    text: 'text-sky-700 dark:text-sky-300',
+    ring: 'ring-sky-200 dark:ring-sky-900/50',
   },
   warn: {
-    border: 'border-amber-300',
-    bg: 'bg-amber-50',
-    text: 'text-amber-700',
-    ring: 'ring-amber-200',
+    border: 'border-amber-300 dark:border-amber-900/50',
+    bg: 'bg-amber-50 dark:bg-amber-950/30',
+    text: 'text-amber-700 dark:text-amber-300',
+    ring: 'ring-amber-200 dark:ring-amber-900/50',
   },
   danger: {
-    border: 'border-rose-300',
-    bg: 'bg-rose-50',
-    text: 'text-rose-700',
-    ring: 'ring-rose-200',
+    border: 'border-rose-300 dark:border-rose-900/50',
+    bg: 'bg-rose-50 dark:bg-rose-950/30',
+    text: 'text-rose-700 dark:text-rose-300',
+    ring: 'ring-rose-200 dark:ring-rose-900/50',
   },
   muted: {
-    border: 'border-slate-300',
-    bg: 'bg-slate-100',
-    text: 'text-slate-600',
-    ring: 'ring-slate-200',
+    border: 'border-slate-300 dark:border-slate-700/50',
+    bg: 'bg-slate-100 dark:bg-slate-900/30',
+    text: 'text-slate-600 dark:text-slate-400',
+    ring: 'ring-slate-200 dark:ring-slate-700/50',
   },
 }
 
