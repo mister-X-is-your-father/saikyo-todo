@@ -40,11 +40,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 // iter520 refactor: TENDENCY_LABEL は `biasTendencyLabelJa` (iter519 helper) に集約。
 // TENDENCY_TONE は visual (mixed=violet 等) を保持するため component 内に残す
 // (severity bridge 化は別 iter で UX shift を伴うため別 commit が望ましい)。
+// iter1517: 4 tone chip は light 固定で dark mode で明色 box が浮く + text contrast 不適。
+// iter1376/1493/1512/1513 副/1515/1516 で確立済の dark chip token pattern
+// (dark:bg-{color}-950/30 + dark:text-{color}-300 + dark:border-{color}-900/50) を
+// 4 tone に展開、unknown は theme-aware で touch なし。
 const TENDENCY_TONE: Record<ReturnType<typeof computeEstimateBias>['tendency'], string> = {
-  'on-track': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  underestimating: 'bg-amber-50 text-amber-700 border-amber-200',
-  overestimating: 'bg-sky-50 text-sky-700 border-sky-200',
-  mixed: 'bg-violet-50 text-violet-700 border-violet-200',
+  'on-track':
+    'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-900/50',
+  underestimating:
+    'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-900/50',
+  overestimating:
+    'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/30 dark:text-sky-300 dark:border-sky-900/50',
+  mixed:
+    'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/30 dark:text-violet-300 dark:border-violet-900/50',
   unknown: 'bg-muted text-foreground border-border',
 }
 
