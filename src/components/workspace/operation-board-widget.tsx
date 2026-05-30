@@ -451,7 +451,10 @@ function ItemRow({
   const statePrefix = tone === 'red' ? '期限超過: ' : muted ? '完了済: ' : highlight ? '推奨: ' : ''
   const timePart = showTime && item.dueTime ? ` ${item.dueTime.slice(0, 5)}` : ''
   const datePart = item.dueDate ? ` 期限 ${item.dueDate}` : ''
-  const ariaLabel = `${statePrefix}${item.title}${timePart}${datePart} を編集ダイアログで開く`
+  // iter1542: 旧 ` を編集ダイアログで開く` は visible-prefix ${item.title} を満たすが
+  // ' を' 助詞接続で iter1093-1541 sweep の em-dash 区切と divergent。inbox-view iter1541 と
+  // 同 pattern で em-dash 化。
+  const ariaLabel = `${statePrefix}${item.title}${timePart}${datePart} — 編集ダイアログで開く`
   return (
     <button
       type="button"
