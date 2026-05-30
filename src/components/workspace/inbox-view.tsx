@@ -147,7 +147,10 @@ export function InboxView({
         >
           {gtdSummary.counts.immediate > 0 && (
             <span
-              className="inline-flex items-center gap-0.5 rounded-full border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-emerald-700"
+              /* iter1517: GTD 3 chip (immediate/project/next-action) は light 固定で
+                 dark mode で明色 chip 浮き contrast 不適。iter1376/1493/1512-1516 chip dark
+                 variant pattern を本 3 chip にも展開。 */
+              className="inline-flex items-center gap-0.5 rounded-full border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300"
               aria-hidden="true"
             >
               <span>⚡</span>
@@ -156,7 +159,7 @@ export function InboxView({
           )}
           {gtdSummary.counts.project > 0 && (
             <span
-              className="inline-flex items-center gap-0.5 rounded-full border border-sky-300 bg-sky-50 px-1.5 py-0.5 text-sky-700"
+              className="inline-flex items-center gap-0.5 rounded-full border border-sky-300 bg-sky-50 px-1.5 py-0.5 text-sky-700 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-300"
               aria-hidden="true"
             >
               <span>🗂</span>
@@ -165,7 +168,7 @@ export function InboxView({
           )}
           {gtdSummary.counts['next-action'] > 0 && (
             <span
-              className="inline-flex items-center gap-0.5 rounded-full border border-slate-300 bg-slate-50 px-1.5 py-0.5 text-slate-700"
+              className="inline-flex items-center gap-0.5 rounded-full border border-slate-300 bg-slate-50 px-1.5 py-0.5 text-slate-700 dark:border-slate-700/50 dark:bg-slate-900/30 dark:text-slate-300"
               aria-hidden="true"
             >
               {/* iter932: 兄弟 chip (immediate ⚡ / project 🗂) と視覚一貫性を揃え、
