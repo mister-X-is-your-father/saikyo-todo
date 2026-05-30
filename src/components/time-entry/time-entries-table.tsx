@@ -26,7 +26,9 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
     return (
       <Badge
         variant="outline"
-        className="border-transparent bg-emerald-100 text-emerald-700"
+        // iter1524: time-entry sync badge 3 状態 (synced/failed/pending) は light 固定で
+        // iter1376/1493/1512-1523 chip dark sweep からこぼれていた。dark variant 補完。
+        className="border-transparent bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
         role="img"
         aria-label="synced — 外部同期: 完了"
         data-testid="sync-badge"
@@ -39,7 +41,7 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
     return (
       <Badge
         variant="outline"
-        className="border-transparent bg-red-100 text-red-700"
+        className="border-transparent bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300"
         role="img"
         aria-label="failed — 外部同期: 失敗"
         data-testid="sync-badge"
@@ -51,7 +53,7 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
   return (
     <Badge
       variant="outline"
-      className="border-transparent bg-slate-100 text-slate-700"
+      className="border-transparent bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300"
       role="img"
       aria-label="pending — 外部同期: 未実行"
       data-testid="sync-badge"
