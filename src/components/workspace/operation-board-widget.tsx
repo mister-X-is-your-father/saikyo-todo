@@ -178,7 +178,10 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                         type="button"
                         onClick={() => openItem(it.id)}
                         className="hover:bg-muted/60 focus-visible:ring-ring flex min-h-11 w-full items-center gap-1 truncate rounded px-1 py-0.5 text-left focus-visible:ring-2 focus-visible:outline-none"
-                        aria-label={`${it.title} を開く (見積 ${it.estimateMin}分)`}
+                        /* iter1493: iter1093-1151 sweep の em-dash visible-prefix convention に
+                           合わせ () 区切から em-dash 区切に。visible-prefix ${it.title} は無変更、
+                           voice control prefix-matching「click {title}」維持。 */
+                        aria-label={`${it.title} を開く — 見積 ${it.estimateMin}分`}
                       >
                         <span
                           className="text-muted-foreground text-[10px] tabular-nums"
@@ -211,7 +214,8 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                         type="button"
                         onClick={() => openItem(it.id)}
                         className="hover:bg-muted/60 focus-visible:ring-ring flex min-h-11 w-full items-center gap-1 truncate rounded px-1 py-0.5 text-left focus-visible:ring-2 focus-visible:outline-none"
-                        aria-label={`${it.title} を開く (集中 ${it.estimateMin}分)`}
+                        /* iter1493: 同上 (quick-wins と pair で em-dash 統一)。 */
+                        aria-label={`${it.title} を開く — 集中 ${it.estimateMin}分`}
                       >
                         <span
                           className="text-muted-foreground text-[10px] tabular-nums"
