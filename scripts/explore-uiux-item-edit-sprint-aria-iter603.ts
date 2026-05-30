@@ -83,7 +83,7 @@ async function main(): Promise<void> {
     'utf8',
   )
   if (
-    /aria-label=\{`\$\{entry\.item\.title\} を開く \(risk score \$\{entry\.riskScore\}\$\{/.test(
+    /aria-label=\{`\$\{entry\.item\.title\} を開く — risk score \$\{entry\.riskScore\}\$\{/.test(
       srbw,
     )
   ) {

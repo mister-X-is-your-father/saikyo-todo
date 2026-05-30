@@ -116,9 +116,9 @@ export function SprintRiskBoardWidget<T extends RiskBoardItemFields>({
                         type="button"
                         onClick={() => onItemClick(entry.item)}
                         className="hover:bg-muted/60 focus-visible:ring-ring flex w-full items-center gap-2 rounded px-1 py-1 focus-visible:ring-2 focus-visible:outline-none"
-                        aria-label={`${entry.item.title} を開く (risk score ${entry.riskScore}${
+                        aria-label={`${entry.item.title} を開く — risk score ${entry.riskScore}${
                           entry.reasons.length > 0 ? ` / 理由 ${entry.reasons.length} 件` : ''
-                        })`}
+                        }`}
                       >
                         {inner}
                       </button>
