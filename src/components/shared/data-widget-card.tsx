@@ -126,7 +126,7 @@ export function DataWidgetCard({
         ) : errorMsg ? (
           <div
             role="alert"
-            className="text-destructive flex items-start gap-2 rounded border border-rose-200 bg-rose-50 p-3 text-sm"
+            className="text-destructive flex items-start gap-2 rounded border border-rose-200 bg-rose-50 p-3 text-sm dark:border-rose-900/50 dark:bg-rose-950/30"
           >
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
             <span>{errorMsg}</span>
