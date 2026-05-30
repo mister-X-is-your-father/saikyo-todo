@@ -113,7 +113,8 @@ export function BudgetPanel({ workspaceId }: Props) {
             </span>
           )}
           {!s.exceeded && s.warnTriggered && (
-            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+              {/* iter1522: budget warn chip light 固定だった、iter1376/1493/1512-1521 と同 dark variant 補完。 */}
               警告
             </span>
           )}

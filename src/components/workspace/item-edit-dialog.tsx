@@ -401,8 +401,8 @@ function ItemEditDialogInner({
                 <span
                   className={`ml-1 inline-flex items-center justify-center rounded-full px-1.5 text-[10px] font-medium ring-1 ring-inset ${
                     descendantsProgress.isComplete
-                      ? 'bg-emerald-100 text-emerald-800 ring-emerald-300'
-                      : 'bg-slate-100 text-slate-700 ring-slate-300'
+                      ? 'bg-emerald-100 text-emerald-800 ring-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-900/50'
+                      : 'bg-slate-100 text-slate-700 ring-slate-300 dark:bg-slate-900/40 dark:text-slate-300 dark:ring-slate-700/50'
                   }`}
                   data-testid="tab-subtasks-progress"
                   aria-hidden="true"
