@@ -107,14 +107,18 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
         {forecast.totalEstimateMin > 0
           ? (() => {
               const sev = forecastSeverity(forecast)
+              // iter1512: sevCls 4 階調 (ok/info/warn/danger) は bg-{color}-50 + text-{color}-700
+              // で light 固定、dark mode で 明色 box が dark page 上に浮く + contrast 不適。
+              // iter1376 RecoveryPlanSection / iter1493 data-widget-card error と同 pattern で
+              // bg を `dark:bg-{color}-950/30`、text を `dark:text-{color}-300` に補完。
               const sevCls =
                 sev === 'ok'
-                  ? 'bg-emerald-50 text-emerald-700'
+                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300'
                   : sev === 'info'
-                    ? 'bg-sky-50 text-sky-700'
+                    ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-300'
                     : sev === 'warn'
-                      ? 'bg-amber-50 text-amber-700'
-                      : 'bg-rose-50 text-rose-700'
+                      ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300'
+                      : 'bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-300'
               return (
                 <div
                   className={`flex items-center gap-2 rounded px-2 py-1 text-xs ${sevCls}`}
