@@ -348,7 +348,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
               checked={must}
               onChange={(e) => setMust(e.target.checked || null)}
               data-testid="filter-must"
-              aria-label={must ? 'MUST のみ表示中 (クリックで解除)' : 'MUST のみ表示に絞り込む'}
+              aria-label={must ? 'MUST のみ表示中 — クリックで解除' : 'MUST のみ表示に絞り込む'}
             />
             <span aria-hidden="true">MUST のみ</span>
           </label>
