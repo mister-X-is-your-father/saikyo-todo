@@ -86,8 +86,10 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
             aria-valuenow={stats.completionRate}
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-label={`PDCA Cycle 完了率 ${stats.completionRate}% (${severityLabelJa(sev)})`}
-            aria-valuetext={`${stats.completionRate}% (${severityLabelJa(sev)})`}
+            /* iter1503: paren convention `( ${sev} )` を em-dash に統一
+               (iter1094 goals + iter1501 副 sprint + iter1502 sprint-retro と同 sweep)。 */
+            aria-label={`PDCA Cycle 完了率 ${stats.completionRate}% — ${severityLabelJa(sev)}`}
+            aria-valuetext={`${stats.completionRate}% — ${severityLabelJa(sev)}`}
           >
             <div
               className={`h-full ${sevBarCls}`}

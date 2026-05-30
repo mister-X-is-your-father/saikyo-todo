@@ -80,12 +80,13 @@ async function main(): Promise<void> {
   }
 
   // 4. iter758 invariant: cycle 完了率 progressbar 維持
+  //    iter1503: () → em-dash migration (iter1093-1502 sweep に追従)
   const ccs = readFileSync(
     resolve(process.cwd(), 'src/components/pdca/cycle-check-stats-card.tsx'),
     'utf8',
   )
   if (
-    /aria-label=\{`PDCA Cycle 完了率 \$\{stats\.completionRate\}% \(\$\{severityLabelJa\(sev\)\}\)`\}/.test(
+    /aria-label=\{`PDCA Cycle 完了率 \$\{stats\.completionRate\}% — \$\{severityLabelJa\(sev\)\}`\}/.test(
       ccs,
     )
   ) {
