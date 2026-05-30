@@ -50,11 +50,12 @@ async function main() {
     })
   }
   // default visible "Heartbeat" は既に aria-label prefix なので維持確認
-  if (!src.includes("'Heartbeat: MUST item")) {
+  // iter1504: ':' → ' — ' migration (iter1226 / iter1498 colon → em-dash sweep)
+  if (!src.includes("'Heartbeat — MUST item")) {
     findings.push({
       level: 'error',
       source: 'a11y',
-      message: `HeartbeatButton の default aria-label 'Heartbeat: MUST item ...' (visible "Heartbeat" prefix) が消失`,
+      message: `HeartbeatButton の default aria-label 'Heartbeat — MUST item ...' (visible "Heartbeat" prefix em-dash) が消失`,
     })
   }
 
