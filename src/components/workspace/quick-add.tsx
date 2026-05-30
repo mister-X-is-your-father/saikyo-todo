@@ -229,7 +229,7 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
           {preview.tags.map((t) => (
             <span
               key={t}
-              className="rounded bg-indigo-100 px-1.5 py-0.5 text-indigo-700"
+              className="rounded bg-indigo-100 px-1.5 py-0.5 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300"
               aria-hidden="true"
             >
               #{t}
@@ -286,7 +286,7 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
           )}
           {preview.decomposeHint && (
             <span
-              className="rounded bg-violet-100 px-1.5 py-0.5 text-violet-700"
+              className="rounded bg-violet-100 px-1.5 py-0.5 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300"
               aria-hidden="true"
             >
               🧠 AI 分解
