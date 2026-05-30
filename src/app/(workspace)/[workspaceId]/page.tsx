@@ -66,7 +66,7 @@ export default async function WorkspacePage({ params }: PageProps) {
               <Button variant="outline" asChild size="sm" className="min-h-11">
                 <Link
                   href={`/${workspaceId}/goals`}
-                  aria-label="Goals: OKR / Goals (Objective + Key Results) ページへ移動"
+                  aria-label="Goals — OKR / Goals (Objective + Key Results) ページへ移動"
                 >
                   Goals
                 </Link>
@@ -74,7 +74,7 @@ export default async function WorkspacePage({ params }: PageProps) {
               <Button variant="outline" asChild size="sm" className="min-h-11">
                 <Link
                   href={`/${workspaceId}/sprints`}
-                  aria-label="Sprints: Sprint 計画 → 稼働 → 完了 ページへ移動"
+                  aria-label="Sprints — Sprint 計画 → 稼働 → 完了 ページへ移動"
                 >
                   Sprints
                 </Link>
@@ -82,7 +82,7 @@ export default async function WorkspacePage({ params }: PageProps) {
               <Button variant="outline" asChild size="sm" className="min-h-11">
                 <Link
                   href={`/${workspaceId}/pdca`}
-                  aria-label="PDCA: Plan / Do / Check / Act + Lead time ページへ移動"
+                  aria-label="PDCA — Plan / Do / Check / Act + Lead time ページへ移動"
                 >
                   PDCA
                 </Link>
@@ -90,7 +90,7 @@ export default async function WorkspacePage({ params }: PageProps) {
               <Button variant="outline" asChild size="sm" className="min-h-11">
                 <Link
                   href={`/${workspaceId}/templates`}
-                  aria-label="Templates: ワークパッケージ定義 ページへ移動"
+                  aria-label="Templates — ワークパッケージ定義 ページへ移動"
                 >
                   Templates
                 </Link>
@@ -98,7 +98,7 @@ export default async function WorkspacePage({ params }: PageProps) {
               <Button variant="outline" asChild size="sm" className="min-h-11">
                 <Link
                   href={`/${workspaceId}/workflows`}
-                  aria-label="Workflows: 自動化ワークフロー (n8n 風) ページへ移動"
+                  aria-label="Workflows — 自動化ワークフロー (n8n 風) ページへ移動"
                 >
                   Workflows
                 </Link>
@@ -106,7 +106,7 @@ export default async function WorkspacePage({ params }: PageProps) {
               <Button variant="outline" asChild size="sm" className="min-h-11">
                 <Link
                   href={`/${workspaceId}/integrations`}
-                  aria-label="API 連携: 外部 API (Yamory / カスタム REST) → Item 取込 ページへ移動"
+                  aria-label="API 連携 — 外部 API (Yamory / カスタム REST) → Item 取込 ページへ移動"
                 >
                   API 連携
                 </Link>
@@ -114,7 +114,7 @@ export default async function WorkspacePage({ params }: PageProps) {
               <Button variant="outline" asChild size="sm" className="min-h-11">
                 <Link
                   href={`/${workspaceId}/time-entries`}
-                  aria-label="Time Entries: 稼働入力 やったこと + 時間を記録 ページへ移動"
+                  aria-label="Time Entries — 稼働入力 やったこと + 時間を記録 ページへ移動"
                 >
                   Time Entries
                 </Link>
@@ -122,7 +122,7 @@ export default async function WorkspacePage({ params }: PageProps) {
               <Button variant="outline" asChild size="sm" className="min-h-11">
                 <Link
                   href={`/${workspaceId}/archive`}
-                  aria-label="Archive: アーカイブ済 Item 一覧 ページへ移動"
+                  aria-label="Archive — アーカイブ済 Item 一覧 ページへ移動"
                 >
                   Archive
                 </Link>

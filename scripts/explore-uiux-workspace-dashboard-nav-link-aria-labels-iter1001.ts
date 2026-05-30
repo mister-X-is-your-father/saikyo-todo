@@ -45,39 +45,42 @@ async function main(): Promise<void> {
     'utf8',
   )
 
+  // iter1498: iter1093-1497 em-dash sweep に合わせ ':' → ' — ' に migration
+  // (iter1226 workspace-mode-selector と同 colon → em-dash 変換、iter1001 検証目的 =
+  // visible-prefix + functional descriptive 存在 guard で区切 punctuation は不問)
   const expectations: Array<{ name: string; pattern: RegExp }> = [
     {
       name: 'Goals',
-      pattern: /aria-label="Goals: OKR \/ Goals \(Objective \+ Key Results\) ページへ移動"/,
+      pattern: /aria-label="Goals — OKR \/ Goals \(Objective \+ Key Results\) ページへ移動"/,
     },
     {
       name: 'Sprints',
-      pattern: /aria-label="Sprints: Sprint 計画 → 稼働 → 完了 ページへ移動"/,
+      pattern: /aria-label="Sprints — Sprint 計画 → 稼働 → 完了 ページへ移動"/,
     },
     {
       name: 'PDCA',
-      pattern: /aria-label="PDCA: Plan \/ Do \/ Check \/ Act \+ Lead time ページへ移動"/,
+      pattern: /aria-label="PDCA — Plan \/ Do \/ Check \/ Act \+ Lead time ページへ移動"/,
     },
     {
       name: 'Templates',
-      pattern: /aria-label="Templates: ワークパッケージ定義 ページへ移動"/,
+      pattern: /aria-label="Templates — ワークパッケージ定義 ページへ移動"/,
     },
     {
       name: 'Workflows',
-      pattern: /aria-label="Workflows: 自動化ワークフロー \(n8n 風\) ページへ移動"/,
+      pattern: /aria-label="Workflows — 自動化ワークフロー \(n8n 風\) ページへ移動"/,
     },
     {
       name: 'API 連携',
       pattern:
-        /aria-label="API 連携: 外部 API \(Yamory \/ カスタム REST\) → Item 取込 ページへ移動"/,
+        /aria-label="API 連携 — 外部 API \(Yamory \/ カスタム REST\) → Item 取込 ページへ移動"/,
     },
     {
       name: 'Time Entries',
-      pattern: /aria-label="Time Entries: 稼働入力 やったこと \+ 時間を記録 ページへ移動"/,
+      pattern: /aria-label="Time Entries — 稼働入力 やったこと \+ 時間を記録 ページへ移動"/,
     },
     {
       name: 'Archive',
-      pattern: /aria-label="Archive: アーカイブ済 Item 一覧 ページへ移動"/,
+      pattern: /aria-label="Archive — アーカイブ済 Item 一覧 ページへ移動"/,
     },
   ]
   for (const e of expectations) {
