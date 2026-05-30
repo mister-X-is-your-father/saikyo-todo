@@ -61,7 +61,9 @@ export function SprintRiskBoardWidget<T extends RiskBoardItemFields>({
   return (
     <DataWidgetCard
       title="Sprint リスクボード"
-      icon={<AlertOctagon className="h-4 w-4 text-rose-600" aria-hidden="true" />}
+      icon={
+        <AlertOctagon className="h-4 w-4 text-rose-600 dark:text-rose-400" aria-hidden="true" />
+      }
       count={board.all.length}
       empty={board.all.length === 0}
       emptyTitle="リスク対象 item がありません"

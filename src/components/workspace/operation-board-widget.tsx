@@ -327,7 +327,10 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
               ) : (
                 <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
               )}
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
+              <CheckCircle2
+                className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400"
+                aria-hidden="true"
+              />
               <span aria-hidden="true">昨日 done {board.doneYesterday.count} 件</span>
             </button>
             {showDoneYesterday && (
