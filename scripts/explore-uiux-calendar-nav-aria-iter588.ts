@@ -35,8 +35,9 @@ async function main(): Promise<void> {
   )
 
   // 1. prev button: aria-label に subDays(date, 1) format で target 日付埋込み
+  //    iter1496: () 区切 → em-dash 区切 (iter1093-1494 sweep に追従)
   if (
-    /aria-label=\{`前日 \(\$\{format\(subDays\(date, 1\), 'M月d日 \(eee\)'\)\}\) を表示`\}/.test(cv)
+    /aria-label=\{`前日 — \$\{format\(subDays\(date, 1\), 'M月d日 \(eee\)'\)\} を表示`\}/.test(cv)
   ) {
     findings.push({
       level: 'info',
@@ -50,8 +51,9 @@ async function main(): Promise<void> {
   }
 
   // 2. next button: aria-label に addDays(date, 1) format で target 日付埋込み
+  //    iter1496: () 区切 → em-dash 区切 (iter1093-1494 sweep に追従)
   if (
-    /aria-label=\{`翌日 \(\$\{format\(addDays\(date, 1\), 'M月d日 \(eee\)'\)\}\) を表示`\}/.test(cv)
+    /aria-label=\{`翌日 — \$\{format\(addDays\(date, 1\), 'M月d日 \(eee\)'\)\} を表示`\}/.test(cv)
   ) {
     findings.push({
       level: 'info',

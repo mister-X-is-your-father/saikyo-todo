@@ -170,7 +170,7 @@ export function CalendarView({ workspaceId }: Props) {
             size="icon"
             className="min-h-11 min-w-11"
             onClick={() => setDate((d) => subDays(d, 1))}
-            aria-label={`前日 (${format(subDays(date, 1), 'M月d日 (eee)')}) を表示`}
+            aria-label={`前日 — ${format(subDays(date, 1), 'M月d日 (eee)')} を表示`}
             data-testid="calendar-prev-btn"
           >
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
@@ -183,7 +183,7 @@ export function CalendarView({ workspaceId }: Props) {
             size="icon"
             className="min-h-11 min-w-11"
             onClick={() => setDate((d) => addDays(d, 1))}
-            aria-label={`翌日 (${format(addDays(date, 1), 'M月d日 (eee)')}) を表示`}
+            aria-label={`翌日 — ${format(addDays(date, 1), 'M月d日 (eee)')} を表示`}
             data-testid="calendar-next-btn"
           >
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
