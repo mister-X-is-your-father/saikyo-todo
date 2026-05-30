@@ -108,7 +108,9 @@ export function BudgetPanel({ workspaceId }: Props) {
         >
           AI 月次コスト
           {s.exceeded && (
-            <span className="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-700">
+            <span className="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-700 dark:bg-red-950/40 dark:text-red-300">
+              {/* iter1532: budget exceeded chip light 固定だった、iter1522 で warn を覆ったが
+                  exceeded がこぼれていた。dark variant 補完。 */}
               上限到達
             </span>
           )}
