@@ -128,7 +128,11 @@ export default async function WorkspacePage({ params }: PageProps) {
                 </Link>
               </Button>
               <Button variant="outline" asChild size="sm" className="min-h-11">
-                <Link href="/" aria-label="Workspace 一覧へ戻る">
+                {/* iter1540: 旧 aria-label `"Workspace 一覧へ戻る"` は visible "一覧" を中位置
+                    "Workspace **一覧** へ戻る" に持ち voice control prefix-matching「click 一覧」
+                    が strict prefix-match で不可 (substring 一致のみ)。iter1093-1539 sweep
+                    convention に揃え visible "一覧" 冒頭固定 + em-dash 区切で descriptive 末尾保持。 */}
+                <Link href="/" aria-label="一覧 — Workspace 一覧へ戻る">
                   <span aria-hidden="true">← 一覧</span>
                 </Link>
               </Button>
