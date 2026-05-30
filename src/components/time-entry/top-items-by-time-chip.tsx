@@ -93,8 +93,10 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
     : null
   const fullWeekdayAria = peakLabel ? `${peakLabel} — 直近 14 日 ${summary.weekdayLine}` : null
   const streakActive = summary.streak.currentStreak > 0
+  // iter1518: streak active chip は light 固定で dark mode で明色 box 浮き
+  // (iter1515/1516/1517 chip dark sweep の最後の 1 件)。
   const streakClass = streakActive
-    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-900/50'
     : 'bg-muted text-foreground border-border'
 
   return (
