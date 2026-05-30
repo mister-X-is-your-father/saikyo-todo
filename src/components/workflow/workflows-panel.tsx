@@ -966,7 +966,11 @@ function WorkflowNodeRunsList({ runId }: { runId: string }) {
             <details className="text-[10px]">
               <summary
                 className="text-muted-foreground focus-visible:ring-ring cursor-pointer rounded focus-visible:ring-2 focus-visible:outline-none"
-                aria-label={`node ${nr.nodeId} の output (jsonb) を開閉`}
+                /* iter1543: 旧 `node ${nr.nodeId} の output (jsonb) を開閉` は visible
+                   "output (jsonb)" を中位置 "node ${nodeId} の **output (jsonb)** を開閉" に
+                   持ち voice control prefix-matching「click output」 が strict prefix-match
+                   で不可。iter1093-1542 sweep convention に揃え visible 冒頭固定 + em-dash 区切。 */
+                aria-label={`output (jsonb) — node ${nr.nodeId} の出力を開閉`}
                 data-testid={`wf-node-run-output-summary-${nr.id}`}
               >
                 output (jsonb)
