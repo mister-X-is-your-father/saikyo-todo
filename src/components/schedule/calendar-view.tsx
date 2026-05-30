@@ -229,7 +229,7 @@ export function CalendarView({ workspaceId }: Props) {
         >
           <h3
             id="calendar-lane-planned-heading"
-            className="border-b px-3 py-1.5 text-xs font-semibold tracking-wide text-indigo-700"
+            className="border-b px-3 py-1.5 text-xs font-semibold tracking-wide text-indigo-700 dark:text-indigo-400"
           >
             想定タイムライン
             <span className="text-muted-foreground ml-1 font-normal">
@@ -267,7 +267,7 @@ export function CalendarView({ workspaceId }: Props) {
         >
           <h3
             id="calendar-lane-actual-heading"
-            className="border-b px-3 py-1.5 text-xs font-semibold tracking-wide text-emerald-700"
+            className="border-b px-3 py-1.5 text-xs font-semibold tracking-wide text-emerald-700 dark:text-emerald-400"
           >
             実測タイムライン
             <span className="text-muted-foreground ml-1 font-normal">
