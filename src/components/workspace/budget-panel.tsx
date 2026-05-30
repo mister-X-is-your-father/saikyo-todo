@@ -162,7 +162,7 @@ export function BudgetPanel({ workspaceId }: Props) {
           {s.limit !== null && (
             <div
               role="progressbar"
-              aria-label={`AI 月次コスト消費率 ${ratioPct}% (警告閾値 ${rateToPct(s.warnThreshold)}%)`}
+              aria-label={`AI 月次コスト消費率 ${ratioPct}% — 警告閾値 ${rateToPct(s.warnThreshold)}%`}
               aria-valuenow={ratioPct}
               aria-valuemin={0}
               aria-valuemax={100}
