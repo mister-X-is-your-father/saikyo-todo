@@ -201,7 +201,10 @@ export function InboxView({
                 void setOpenItemId(it.id)
               }
             }}
-            aria-label={`${it.title} を編集ダイアログで開く`}
+            /* iter1541: 旧 aria-label `${it.title} を編集ダイアログで開く` は visible-prefix
+               ${it.title} を満たすが ' を' 助詞接続で iter1093-1540 sweep の em-dash 区切と
+               divergent。`${it.title} — 編集ダイアログで開く` に統一。 */
+            aria-label={`${it.title} — 編集ダイアログで開く`}
             className="focus-visible:ring-ring flex flex-1 cursor-pointer items-center gap-2 rounded focus-visible:ring-2 focus-visible:outline-none"
           >
             <span
