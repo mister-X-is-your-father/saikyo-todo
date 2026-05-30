@@ -75,11 +75,14 @@ const TIER_BAR_CLASS: Record<GoalHealthTier, string> = {
   idle: 'bg-primary',
 }
 
+// iter1509: 4 tier 色 (achieved/on-track/at-risk/behind) は固定 light のみで dark mode で
+// hue が浅く視認性低 (iter1391/1393/1508 と同 root)。dark variant を併記、idle は CSS var で
+// theme-aware なので touch なし。
 const TIER_ICON_CLASS: Record<GoalHealthTier, string> = {
-  achieved: 'text-emerald-600',
-  'on-track': 'text-blue-600',
-  'at-risk': 'text-amber-600',
-  behind: 'text-red-600',
+  achieved: 'text-emerald-600 dark:text-emerald-400',
+  'on-track': 'text-blue-600 dark:text-blue-400',
+  'at-risk': 'text-amber-600 dark:text-amber-400',
+  behind: 'text-red-600 dark:text-red-400',
   idle: 'text-muted-foreground',
 }
 
