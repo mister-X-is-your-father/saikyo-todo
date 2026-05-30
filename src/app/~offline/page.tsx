@@ -47,10 +47,12 @@ export default function OfflinePage() {
         className="flex flex-wrap items-center justify-center gap-2 pt-2"
       >
         <OfflineRetryButton />
+        {/* iter1492: iter1093-1151 sweep の em-dash visible-prefix convention に合わせ
+            旧 () 区切から em-dash 区切に。visible "ホームに戻る" は無変更。 */}
         <Link
           href="/"
           prefetch={false}
-          aria-label="ホームに戻る (アプリの起点画面に遷移、オンライン復帰後は最新状態を表示)"
+          aria-label="ホームに戻る — アプリの起点画面に遷移、オンライン復帰後は最新状態を表示"
           className={cn(buttonVariants({ variant: 'outline' }), 'h-11 px-4')}
         >
           <span aria-hidden="true">ホームに戻る</span>
