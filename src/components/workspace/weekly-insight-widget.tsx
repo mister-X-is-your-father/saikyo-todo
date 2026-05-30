@@ -229,9 +229,11 @@ export function WeeklyInsightWidget({ items, now }: Props) {
               // iter504 ai-automation: highCompletionDay は positive anomaly (= 集中日)
               // で emerald 配色、その他 (lowCompletionDay / overdueSpike) は amber 配色。
               const isPositive = a.kind === 'highCompletionDay'
+              // iter1526: anomaly chip 2 tone (emerald positive / amber negative) は
+              // light 固定で iter1376/1493/1512-1525 chip dark sweep からこぼれていた。
               const tone = isPositive
-                ? 'bg-emerald-50 text-emerald-800'
-                : 'bg-amber-50 text-amber-800'
+                ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-200'
+                : 'bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-200'
               const Icon = isPositive ? Sparkles : AlertTriangle
               return (
                 <li

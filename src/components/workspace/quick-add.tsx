@@ -208,7 +208,7 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
             // ISO 日付不可達。<time dateTime> 要素に格上げ (HTML5 semantic、
             // iter435 / iter436 / iter437 と同 pattern 5 view 目)。
             <time
-              className="rounded bg-blue-100 px-1.5 py-0.5 text-blue-700"
+              className="rounded bg-blue-100 px-1.5 py-0.5 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
               dateTime={preview.scheduledFor}
             >
               <span aria-hidden="true">
