@@ -113,10 +113,13 @@ export function NotificationPreferencesButton({ Icon = Settings }: { Icon?: Luci
           type="button"
           variant="ghost"
           size="icon"
+          /* iter1505: iter1093-1504 em-dash sweep に追従し () → em-dash 区切に。
+             icon-only button (Bell-like icon は aria-hidden) なので accessible name =
+             aria-label の値、voice control「click 通知設定」 prefix match 維持。 */
           aria-label={
             onCount !== null
-              ? `通知設定 (メール通知 ${onCount}/${TOGGLES.length} 種 ON)`
-              : '通知設定 (メール通知 4 種を ON/OFF)'
+              ? `通知設定 — メール通知 ${onCount}/${TOGGLES.length} 種 ON`
+              : '通知設定 — メール通知 4 種を ON/OFF'
           }
           aria-haspopup="dialog"
           className="min-h-11 min-w-11"

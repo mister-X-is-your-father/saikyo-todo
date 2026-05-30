@@ -35,8 +35,10 @@ async function main(): Promise<void> {
     /const onCount = data\s*\n?\s*\? TOGGLES\.filter\(\(t\) => Boolean\(data\[t\.key as keyof typeof data\]\)\)\.length\s*\n?\s*: null/.test(
       np,
     )
+  // iter1505: () → em-dash migration (iter1093-1504 sweep に追従、検証目的 = onCount 動的
+  // content 存在の guard で punctuation は本質的 invariant ではない)
   const hasDynamicLabel =
-    /aria-label=\{\s*\n?\s*onCount !== null\s*\n?\s*\? `通知設定 \(メール通知 \$\{onCount\}\/\$\{TOGGLES\.length\} 種 ON\)`\s*\n?\s*: '通知設定 \(メール通知 4 種を ON\/OFF\)'/.test(
+    /aria-label=\{\s*\n?\s*onCount !== null\s*\n?\s*\? `通知設定 — メール通知 \$\{onCount\}\/\$\{TOGGLES\.length\} 種 ON`\s*\n?\s*: '通知設定 — メール通知 4 種を ON\/OFF'/.test(
       np,
     )
 
