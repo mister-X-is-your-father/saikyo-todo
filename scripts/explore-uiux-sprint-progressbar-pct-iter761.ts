@@ -32,8 +32,10 @@ async function main(): Promise<void> {
   )
 
   // 1. Sprint progressbar 動的 aria-label
+  //    iter1501: () 区切 → em-dash 区切 (iter1093-1500 sweep に追従、検証目的 = 動的
+  //    pct/done/total/tone content 維持の guard で punctuation は本質的 invariant ではない)
   const hasDynamicLabel =
-    /aria-label=\{`Sprint「\$\{sprint\.name\}」完了率 \$\{pct\}% \(\$\{done\}\/\$\{total\} 件、\$\{sprintProgressToneLabel\(tone\)\}\)`\}/.test(
+    /aria-label=\{`Sprint「\$\{sprint\.name\}」完了率 \$\{pct\}% — \$\{done\}\/\$\{total\} 件、\$\{sprintProgressToneLabel\(tone\)\}`\}/.test(
       sp,
     )
 

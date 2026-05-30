@@ -586,7 +586,10 @@ function SprintCard({
                 <div
                   className="bg-muted relative h-1.5 w-full overflow-hidden rounded-full"
                   role="progressbar"
-                  aria-label={`Sprint「${sprint.name}」完了率 ${pct}% (${done}/${total} 件、${sprintProgressToneLabel(tone)})`}
+                  /* iter1501: aria-valuetext (line 593) は em-dash 区切で iter1494 goals-panel
+                     も em-dash 化済。本 progressbar aria-label のみ () 区切が残存していたため、
+                     同 row + sibling progressbar と punctuation 体系を揃えた em-dash 化。 */
+                  aria-label={`Sprint「${sprint.name}」完了率 ${pct}% — ${done}/${total} 件、${sprintProgressToneLabel(tone)}`}
                   aria-valuenow={pct}
                   aria-valuemin={0}
                   aria-valuemax={100}
