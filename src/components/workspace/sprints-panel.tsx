@@ -511,13 +511,15 @@ function SprintCard({
         : tone === 'behind'
           ? AlertTriangle
           : null
+  // iter1510: 3 tone 色 (done/onTrack/behind) は light 固定で dark mode で hue が浅く
+  // 視認性低 (iter1391/1393/1508/1509 と同 root)。dark variant を併記。
   const toneIconClass =
     tone === 'done'
-      ? 'text-emerald-600'
+      ? 'text-emerald-600 dark:text-emerald-400'
       : tone === 'onTrack'
-        ? 'text-blue-600'
+        ? 'text-blue-600 dark:text-blue-400'
         : tone === 'behind'
-          ? 'text-amber-600'
+          ? 'text-amber-600 dark:text-amber-400'
           : ''
 
   return (
