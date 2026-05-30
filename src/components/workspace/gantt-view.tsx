@@ -691,7 +691,11 @@ export function GanttView({
                     data-critical={criticalSet.has(item.id) ? 'true' : 'false'}
                     role="button"
                     tabIndex={0}
-                    aria-label={`${item.title} (milestone ${format(start, 'yyyy-MM-dd')})${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}${slipText}`}
+                    /* iter1500: aria-label と title attribute で format divergence
+                       (aria-label `(milestone date)` vs title `date (milestone)` で SR と
+                       mouse hover で異なる文字列が露見)。title と byte-identical な
+                       em-dash 形式に統一、iter1093-1499 sweep convention とも整合。 */
+                    aria-label={`${item.title} — ${format(start, 'yyyy-MM-dd')} (milestone)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}${slipText}`}
                     className="focus-visible:ring-foreground absolute focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none"
                     style={{
                       left: barLeft + (dayPx - 18) / 2,
@@ -719,7 +723,10 @@ export function GanttView({
                     data-dragging={drag?.barId === item.id && drag.moved ? 'true' : 'false'}
                     role="button"
                     tabIndex={0}
-                    aria-label={`${item.title} ${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')} (${spanDays}日)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}${slipText}${progressPct > 0 ? ` [進捗 ${progressPct}%]` : ''}${dragEnabled ? ' (ドラッグで期間移動)' : ''}`}
+                    /* iter1500: 同上 — aria-label と title (line 765) を byte-identical
+                       em-dash 形式に統一。${title} の後に em-dash で区切り、 ドラッグ hint も
+                       title と同じ em-dash 区切に揃え iter1093-1499 sweep convention とも整合。 */
+                    aria-label={`${item.title} — ${format(start, 'yyyy-MM-dd')} → ${format(due, 'yyyy-MM-dd')} (${spanDays}日)${isDone ? ' [完了]' : ''}${criticalSet.has(item.id) ? ' [critical path]' : ''}${slipText}${progressPct > 0 ? ` [進捗 ${progressPct}%]` : ''}${dragEnabled ? ' — ドラッグで期間移動' : ''}`}
                     onKeyDown={onBarKeyDown}
                     onPointerDown={(e) => onBarPointerDown(e, item.id)}
                     onPointerMove={(e) => onBarPointerMove(e, item.id)}
