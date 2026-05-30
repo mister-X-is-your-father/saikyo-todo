@@ -92,7 +92,10 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
   async function handleCancel() {
     if (!progress.invocationId) return
     try {
-      await cancel.mutateAsync(progress.invocationId)
+      await cancel.mutateAsync({
+        invocationId: progress.invocationId,
+        targetItemId: parentItemId,
+      })
       toast.success('中止リクエストを送信しました')
     } catch (e) {
       toast.error(isAppError(e) ? e.message : '中止に失敗')

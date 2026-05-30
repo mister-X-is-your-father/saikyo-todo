@@ -22,6 +22,7 @@ import {
   listAgentsAction,
   researchItemViaClaudeAction,
 } from './actions'
+import { type AgentInvocationProgress, agentProgressKeys } from './realtime'
 
 export const agentKeys = {
   all: ['agents'] as const,
@@ -166,14 +167,43 @@ export function useGeneratePlan() {
   })
 }
 
+export interface CancelInvocationVariables {
+  invocationId: string
+  /**
+   * iter1490 (mode-F): cancel click 後、realtime UPDATE が届く ~2-3 秒の間「分解中…」
+   * spinner / streaming text が残り続ける flicker を消すため、agentProgressKeys
+   * cache を即時 status='cancelled' に上書きしたい時に渡す。realtime が確定値で
+   * 上書きするので、cache key と invocationId が一致した時のみ optimistic に書く。
+   */
+  targetItemId?: string
+}
+
 /**
  * 実行中 invocation を中止する。Server Action は status='cancelled' を立てるだけで、
  * tool-loop 側 (researcher / pm service) の shouldAbort poll が次の iteration で
  * 検知してループを抜ける (~2-3 秒で UI が完了状態に遷移)。
+ *
+ * iter1490 (mode-F): targetItemId 渡し時は agentProgressKeys cache を即時 cancelled に
+ * setQueryData。realtime UPDATE が来るまでの「分解中」 spinner / streaming text 残留を消す。
  */
 export function useCancelInvocation() {
+  const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (invocationId: string) =>
-      unwrap(await cancelInvocationAction({ invocationId })),
+    mutationFn: async (vars: CancelInvocationVariables) =>
+      unwrap(await cancelInvocationAction({ invocationId: vars.invocationId })),
+    onMutate: (vars) => {
+      if (!vars.targetItemId) return undefined
+      const queryKey = agentProgressKeys.byTarget(vars.targetItemId)
+      void qc.cancelQueries({ queryKey })
+      const prev = qc.getQueryData<AgentInvocationProgress>(queryKey)
+      if (prev && prev.invocationId === vars.invocationId) {
+        qc.setQueryData<AgentInvocationProgress>(queryKey, { ...prev, status: 'cancelled' })
+      }
+      return { queryKey, prev }
+    },
+    onError: (_e, _vars, ctx) => {
+      if (!ctx?.queryKey) return
+      qc.setQueryData(ctx.queryKey, ctx.prev)
+    },
   })
 }
