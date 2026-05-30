@@ -404,7 +404,7 @@ export function GanttView({
             checked={showDeps}
             onChange={(e) => setShowDeps(e.target.checked)}
             className="size-3.5 cursor-pointer accent-current"
-            aria-label={showDeps ? '依存線を表示中 (クリックで非表示)' : '依存線を表示する'}
+            aria-label={showDeps ? '依存線を表示中 — クリックで非表示' : '依存線を表示する'}
           />
           <span aria-hidden="true">依存線</span>
         </label>
