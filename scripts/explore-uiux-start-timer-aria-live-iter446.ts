@@ -59,7 +59,7 @@ async function main(): Promise<void> {
 
   // 2. 新 role="img" + aria-label 集約配線
   if (
-    /data-testid=\{`start-timer-active-\$\{item\.id\}`\}[\s\S]{0,300}?role="img"[\s\S]{0,400}?aria-label=\{`「\$\{item\.title\}」を計測中 \(経過 \$\{formatElapsed\(elapsedFn\(\)\)\}/.test(
+    /data-testid=\{`start-timer-active-\$\{item\.id\}`\}[\s\S]{0,300}?role="img"[\s\S]{0,400}?aria-label=\{`「\$\{item\.title\}」を計測中 — 経過 \$\{formatElapsed\(elapsedFn\(\)\)\}/.test(
       src,
     )
   ) {

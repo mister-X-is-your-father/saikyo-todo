@@ -61,7 +61,7 @@ export function StartTimerButton({ item, size = 'default' }: Props) {
         className="text-muted-foreground inline-flex items-center gap-1 text-xs"
         data-testid={`start-timer-active-${item.id}`}
         role="img"
-        aria-label={`「${item.title}」を計測中 (経過 ${formatElapsed(elapsedFn())}、右下 panel で停止)`}
+        aria-label={`「${item.title}」を計測中 — 経過 ${formatElapsed(elapsedFn())}、右下 panel で停止`}
       >
         <Timer className="h-3.5 w-3.5 text-amber-500" aria-hidden="true" />
         <span className="font-mono tabular-nums" aria-hidden="true">
