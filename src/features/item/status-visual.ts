@@ -32,12 +32,17 @@ export interface StatusVisualConfig {
   iconKey: StatusIconKey
 }
 
+// iter1529: STATUS_MAP の 5 status (todo/in_progress/done/cancelled/blocked) + UNKNOWN_CONFIG が
+// `bg-{color}-100 text-{color}-{700,800} ring-{color}-{200,300}` で light 固定。
+// iter1376/1493/1512-1528 chip dark sweep に追従し dark variant 補完。これで StatusBadge
+// (= 10+ surface で使われる中央 component) が dark mode に対応化される。
+// 各 status: dark:bg-{color}-{900-950}/40, dark:text-{color}-300, dark:ring-{color}-{700-900}/50
 const UNKNOWN_CONFIG: StatusVisualConfig = {
   label: '不明',
   shortLabel: '不明',
-  bgClass: 'bg-zinc-100',
-  textClass: 'text-zinc-700',
-  ringClass: 'ring-zinc-200',
+  bgClass: 'bg-zinc-100 dark:bg-zinc-900/40',
+  textClass: 'text-zinc-700 dark:text-zinc-300',
+  ringClass: 'ring-zinc-200 dark:ring-zinc-700/50',
   iconKey: 'unknown',
 }
 
@@ -45,41 +50,41 @@ const STATUS_MAP: Record<string, StatusVisualConfig> = {
   todo: {
     label: 'TODO (未着手)',
     shortLabel: 'TODO',
-    bgClass: 'bg-slate-100',
-    textClass: 'text-slate-700',
-    ringClass: 'ring-slate-300',
+    bgClass: 'bg-slate-100 dark:bg-slate-900/40',
+    textClass: 'text-slate-700 dark:text-slate-300',
+    ringClass: 'ring-slate-300 dark:ring-slate-700/50',
     iconKey: 'circle',
   },
   in_progress: {
     label: '進行中',
     shortLabel: '進行中',
-    bgClass: 'bg-blue-100',
-    textClass: 'text-blue-700',
-    ringClass: 'ring-blue-300',
+    bgClass: 'bg-blue-100 dark:bg-blue-950/40',
+    textClass: 'text-blue-700 dark:text-blue-300',
+    ringClass: 'ring-blue-300 dark:ring-blue-900/50',
     iconKey: 'progress',
   },
   done: {
     label: '完了',
     shortLabel: '完了',
-    bgClass: 'bg-emerald-100',
-    textClass: 'text-emerald-700',
-    ringClass: 'ring-emerald-300',
+    bgClass: 'bg-emerald-100 dark:bg-emerald-950/40',
+    textClass: 'text-emerald-700 dark:text-emerald-300',
+    ringClass: 'ring-emerald-300 dark:ring-emerald-900/50',
     iconKey: 'done',
   },
   cancelled: {
     label: 'キャンセル',
     shortLabel: 'キャンセル',
-    bgClass: 'bg-zinc-100',
-    textClass: 'text-zinc-700 line-through',
-    ringClass: 'ring-zinc-300',
+    bgClass: 'bg-zinc-100 dark:bg-zinc-900/40',
+    textClass: 'text-zinc-700 dark:text-zinc-400 line-through',
+    ringClass: 'ring-zinc-300 dark:ring-zinc-700/50',
     iconKey: 'cancel',
   },
   blocked: {
     label: '依存待ち (blocked)',
     shortLabel: 'blocked',
-    bgClass: 'bg-amber-100',
-    textClass: 'text-amber-800',
-    ringClass: 'ring-amber-300',
+    bgClass: 'bg-amber-100 dark:bg-amber-950/40',
+    textClass: 'text-amber-800 dark:text-amber-200',
+    ringClass: 'ring-amber-300 dark:ring-amber-900/50',
     iconKey: 'block',
   },
 }
