@@ -34,11 +34,20 @@ export const TREND_GLYPH: Record<TrendDirection, string> = {
  */
 export type TrendPolarity = 'positive' | 'negative'
 
+// iter1536: 4 trend tone class は light 固定 (bg-{color}-50 + text-{color}-700 + border-{color}-200)
+// で iter1376/1493/1512-1535 chip dark sweep + central vocabulary 着地 (MUST iter1528 /
+// status iter1529 / severity iter1530 / chip-tone iter1531) と同 pattern。各 class に dark
+// variant 併記、test (trend-tone.test.ts) は厳密 toBe で expected strings 4 件同 commit migration。
+// NEUTRAL_CLASS は既に theme-aware なので touch なし。
 const NEUTRAL_CLASS = 'bg-muted text-muted-foreground border-border'
-const POSITIVE_UP_CLASS = 'bg-blue-50 text-blue-700 border-blue-200'
-const POSITIVE_DOWN_CLASS = 'bg-red-50 text-red-700 border-red-200'
-const NEGATIVE_UP_CLASS = 'bg-amber-50 text-amber-700 border-amber-200'
-const NEGATIVE_DOWN_CLASS = 'bg-emerald-50 text-emerald-700 border-emerald-200'
+const POSITIVE_UP_CLASS =
+  'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-900/50'
+const POSITIVE_DOWN_CLASS =
+  'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-300 dark:border-red-900/50'
+const NEGATIVE_UP_CLASS =
+  'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-900/50'
+const NEGATIVE_DOWN_CLASS =
+  'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-900/50'
 
 export function trendToneClass(
   direction: TrendDirection,
