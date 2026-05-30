@@ -276,7 +276,8 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
             <>
               <MustBadge />
               <span
-                className="rounded border border-red-300 bg-red-50 px-1.5 py-0.5 text-[10px] text-red-700"
+                // iter1533: MUST DoD warn chip も light 固定だった、iter1376/1493/1512-1532 と同 dark variant 補完。
+                className="rounded border border-red-300 bg-red-50 px-1.5 py-0.5 text-[10px] text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300"
                 role="alert"
                 data-testid="quick-add-must-warn"
               >
