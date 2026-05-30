@@ -33,7 +33,11 @@ interface Props {
 export function MustBadge({ className, iconOnly = false, 'data-testid': dataTestid }: Props) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700 ring-1 ring-red-200 ring-inset ${className ?? ''}`}
+      // iter1528: MUST badge は light 固定 (bg-red-100 + text-red-700 + ring-red-200)
+      // で iter1376/1493/1512-1527 chip dark sweep からこぼれていた。MUST は重要 marker で
+      // dark mode でも目立つべき。dark token: bg-red-950/40 + text-red-300 + ring-red-900/50
+      // (iter1376/1493 同 pattern + ring 込み)。className override は最後で adopted。
+      className={`inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700 ring-1 ring-red-200 ring-inset dark:bg-red-950/40 dark:text-red-300 dark:ring-red-900/50 ${className ?? ''}`}
       role="img"
       aria-label="MUST タスク"
       data-testid={dataTestid}
