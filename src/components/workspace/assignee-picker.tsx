@@ -116,7 +116,9 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
       <PopoverContent
         className="w-64 p-0"
         align="start"
-        aria-label="アサイン (メンバー / AI Agent) を選択"
+        /* iter1545: 旧 "アサイン (メンバー / AI Agent) を選択" は ' を' 助詞接続。
+           iter1093-1544 sweep convention に揃え em-dash 区切。 */
+        aria-label="アサイン — メンバー / AI Agent を選択"
       >
         <Command>
           <CommandInput
