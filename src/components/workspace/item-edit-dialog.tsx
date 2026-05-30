@@ -425,7 +425,7 @@ function ItemEditDialogInner({
               <span aria-hidden="true">依存</span>
               {depsReadiness && depsReadiness.isBlocked ? (
                 <span
-                  className="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-100 px-1 text-[10px] font-medium text-amber-800 ring-1 ring-amber-300 ring-inset"
+                  className="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-100 px-1 text-[10px] font-medium text-amber-800 ring-1 ring-amber-300 ring-inset dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-800/60"
                   data-testid="tab-dependencies-blocker-count"
                   aria-hidden="true"
                   title={`未完了の前提 ${depsReadiness.openBlockedByCount} 件`}
