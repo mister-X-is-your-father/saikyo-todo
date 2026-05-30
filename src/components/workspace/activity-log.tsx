@@ -119,7 +119,8 @@ export function ActivityLog({ itemId }: { itemId: string }) {
           )}
           {topActor && (
             <span
-              className="inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] text-emerald-700"
+              // iter1514: light 固定 chip を iter1376/1493/1512/1513 pattern で dark variant 補完。
+              className="inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300"
               data-testid="activity-log-top-actor"
               role="img"
               aria-label={formatTopActorJa(topActor)}
