@@ -53,10 +53,14 @@ const BASE_CLASS = 'inline-flex items-center gap-1.5 rounded border px-2 py-1 te
  */
 export type ChipTone3 = 'good' | 'neutral' | 'warn'
 
+// iter1513: good/warn の border + bg + text は light 固定、dark mode で明色 box が
+// dark page 上に浮き emerald-700 / amber-700 text 色も contrast 不適。iter1376 / iter1493 /
+// iter1512 の `dark:border-{color}-900/50 dark:bg-{color}-950/30 dark:text-{color}-300`
+// pattern を 2 tone に展開。neutral は CSS var で theme-aware なので touch なし。
 const TONE3_CLASS: Record<ChipTone3, string> = {
-  good: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  good: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300',
   neutral: 'border-border bg-muted text-foreground',
-  warn: 'border-amber-200 bg-amber-50 text-amber-700',
+  warn: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300',
 }
 
 export function chipTone3Class(tone: ChipTone3): string {
