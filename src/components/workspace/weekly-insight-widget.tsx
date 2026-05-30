@@ -134,7 +134,9 @@ export function WeeklyInsightWidget({ items, now }: Props) {
           </span>
           {bestDay !== null && (
             <span
-              className="rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700"
+              // iter1519: best-day chip + worst-day chip 2 件は light 固定で iter1376/1493/
+              // 1512-1518 dark chip pattern からこぼれていた。dark variant 補完。
+              className="rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300"
               data-testid="weekly-insight-best-day"
               aria-hidden="true"
             >
@@ -144,7 +146,9 @@ export function WeeklyInsightWidget({ items, now }: Props) {
           {worstDay !== null && worstDay.dayIndex !== bestDay?.dayIndex && (
             <span
               className={`rounded px-2 py-0.5 text-[11px] font-medium ${
-                worstDay.current === 0 ? 'bg-amber-50 text-amber-700' : 'bg-slate-50 text-slate-700'
+                worstDay.current === 0
+                  ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300'
+                  : 'bg-slate-50 text-slate-700 dark:bg-slate-900/30 dark:text-slate-300'
               }`}
               data-testid="weekly-insight-worst-day"
               data-worst-current={worstDay.current}
