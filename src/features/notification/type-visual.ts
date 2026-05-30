@@ -31,42 +31,46 @@ export interface NotificationTypeVisual {
   ringClass: string
 }
 
+// iter1537: TYPE_MAP 4 type (heartbeat/mention/invite/sync-failure) + UNKNOWN は
+// `bg-{color}-100 text-{color}-{600,700} ring-{color}-200` で light 固定。iter1376/1493/
+// 1512-1536 chip dark sweep + central vocabulary 着地と同 pattern。各 visual に dark token
+// 併記、test (type-visual.test.ts) は `.toContain('red')` 形式で dark variant 追加に透過。
 const UNKNOWN_VISUAL: NotificationTypeVisual = {
   label: '通知',
   iconKey: 'bell',
-  bgClass: 'bg-zinc-100',
-  textClass: 'text-zinc-600',
-  ringClass: 'ring-zinc-200',
+  bgClass: 'bg-zinc-100 dark:bg-zinc-900/40',
+  textClass: 'text-zinc-600 dark:text-zinc-400',
+  ringClass: 'ring-zinc-200 dark:ring-zinc-700/50',
 }
 
 const TYPE_MAP: Record<string, NotificationTypeVisual> = {
   heartbeat: {
     label: '期限近接',
     iconKey: 'alarm',
-    bgClass: 'bg-red-100',
-    textClass: 'text-red-700',
-    ringClass: 'ring-red-200',
+    bgClass: 'bg-red-100 dark:bg-red-950/40',
+    textClass: 'text-red-700 dark:text-red-300',
+    ringClass: 'ring-red-200 dark:ring-red-900/50',
   },
   mention: {
     label: 'メンション',
     iconKey: 'at-sign',
-    bgClass: 'bg-blue-100',
-    textClass: 'text-blue-700',
-    ringClass: 'ring-blue-200',
+    bgClass: 'bg-blue-100 dark:bg-blue-950/40',
+    textClass: 'text-blue-700 dark:text-blue-300',
+    ringClass: 'ring-blue-200 dark:ring-blue-900/50',
   },
   invite: {
     label: '招待',
     iconKey: 'user-plus',
-    bgClass: 'bg-emerald-100',
-    textClass: 'text-emerald-700',
-    ringClass: 'ring-emerald-200',
+    bgClass: 'bg-emerald-100 dark:bg-emerald-950/40',
+    textClass: 'text-emerald-700 dark:text-emerald-300',
+    ringClass: 'ring-emerald-200 dark:ring-emerald-900/50',
   },
   'sync-failure': {
     label: '同期失敗',
     iconKey: 'alert-circle',
-    bgClass: 'bg-amber-100',
-    textClass: 'text-amber-700',
-    ringClass: 'ring-amber-200',
+    bgClass: 'bg-amber-100 dark:bg-amber-950/40',
+    textClass: 'text-amber-700 dark:text-amber-300',
+    ringClass: 'ring-amber-200 dark:ring-amber-900/50',
   },
 }
 
