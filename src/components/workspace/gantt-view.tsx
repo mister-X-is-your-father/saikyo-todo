@@ -421,10 +421,13 @@ export function GanttView({
             // "完了済を隠す" を literal substring に含まず ("隠す" vs "隠して" の conjugation
             // divergence) WCAG 2.5.3 (Label in Name) 違反。visible "完了済を隠す" を冒頭固定で
             // satisfy。
+            /* iter1506: iter1199 で checked path のみ em-dash 化されたが unchecked path 旧 paren
+               convention が iter1093-1505 em-dash sweep からこぼれていた。両 path で「現在は X」 を
+               em-dash 区切に統一、iter1495 dependency toggle と同 pattern。 */
             aria-label={
               hideDone
                 ? '完了済を隠す — 現在は隠している (クリックで表示に戻す)'
-                : '完了済を隠す (現在は表示中)'
+                : '完了済を隠す — 現在は表示中'
             }
           />
           <span aria-hidden="true">完了済を隠す</span>
