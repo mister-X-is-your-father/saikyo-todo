@@ -262,7 +262,7 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
               (iter440 ActiveTimerPanel と同 pattern)。 */}
           {calibrated && calibrated.deltaMinutes !== 0 && (
             <span
-              className="rounded border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 text-[10px] text-cyan-600"
+              className="rounded border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 text-[10px] text-cyan-600 dark:border-cyan-900/50 dark:bg-cyan-950/30 dark:text-cyan-300"
               data-testid="quick-add-estimate-calibrated"
               role="img"
               aria-label={`校正後 ${formatEstimate(calibrated.calibratedMinutes)} — ${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正`}

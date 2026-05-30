@@ -201,7 +201,7 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
             // に校正値 + 中央値の factor 情報を集約 (factor は SR ユーザにも価値ある
             // signal、データ source の透明性 UX)。
             <span
-              className="ml-1 rounded border border-cyan-200 bg-cyan-50 px-1 text-[9px] text-cyan-600"
+              className="ml-1 rounded border border-cyan-200 bg-cyan-50 px-1 text-[9px] text-cyan-600 dark:border-cyan-900/50 dark:bg-cyan-950/30 dark:text-cyan-300"
               data-testid="active-timer-estimate-calibrated"
               role="img"
               aria-label={`校正後 ${calibrated.calibratedMinutes}分 — ${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正`}
