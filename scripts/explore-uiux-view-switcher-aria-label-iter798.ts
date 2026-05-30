@@ -37,19 +37,19 @@ async function main(): Promise<void> {
     resolve(process.cwd(), 'src/components/workspace/items-board.tsx'),
     'utf8',
   )
+  // iter1494: iter1093-1493 em-dash sweep に合わせ regex 形式を () → em-dash に migration
+  // (iter798 の検証目的 = visible-prefix + functional descriptive content が aria-label に
+  // ある事の guard。区切 punctuation 変更は本質的 invariant ではないため新 convention に追従)
   const checks: Array<[string, RegExp]> = [
-    ['Today', /aria-label="Today \(今日のタスク優先順、scheduledFor=今日 \+ 期限近接\)"/],
-    ['Inbox', /aria-label="Inbox \(未整理 \/ 未トリアージのタスク一覧\)"/],
-    ['Kanban', /aria-label="Kanban \(status 別カラムで Item を可視化、DnD で status 移動\)"/],
-    [
-      'Backlog',
-      /aria-label="Backlog \(Item 一覧テーブル、列ヘッダ click で sort、DnD で並び替え\)"/,
-    ],
+    ['Today', /aria-label="Today — 今日のタスク優先順、scheduledFor=今日 \+ 期限近接"/],
+    ['Inbox', /aria-label="Inbox — 未整理 \/ 未トリアージのタスク一覧"/],
+    ['Kanban', /aria-label="Kanban — status 別カラムで Item を可視化、DnD で status 移動"/],
+    ['Backlog', /aria-label="Backlog — Item 一覧テーブル、列ヘッダ click で sort、DnD で並び替え"/],
     [
       'Gantt',
-      /aria-label="Gantt \(Item の期間 bar チャート、依存線 \/ critical path \/ 遅延を可視化\)"/,
+      /aria-label="Gantt — Item の期間 bar チャート、依存線 \/ critical path \/ 遅延を可視化"/,
     ],
-    ['Dashboard', /aria-label="Dashboard \(PDCA \/ 進捗 \/ 健全性 widget の集約画面\)"/],
+    ['Dashboard', /aria-label="Dashboard — PDCA \/ 進捗 \/ 健全性 widget の集約画面"/],
   ]
   let allOk = true
   for (const [name, re] of checks) {
