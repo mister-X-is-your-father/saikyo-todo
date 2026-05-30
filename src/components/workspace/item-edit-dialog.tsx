@@ -761,8 +761,8 @@ function ItemEditDialogInner({
                 data-testid="edit-item-must"
                 aria-label={
                   isMust
-                    ? 'MUST が ON: 絶対落とさない (DoD 必須、クリックで OFF)'
-                    : 'MUST が OFF: 通常タスク (クリックで ON、DoD 必須化)'
+                    ? 'MUST が ON: 絶対落とさない — DoD 必須、クリックで OFF'
+                    : 'MUST が OFF: 通常タスク — クリックで ON、DoD 必須化'
                 }
               />
               {/* iter1371: text-red-700 (#b91c1c) は dark card bg 上で <4.5 (WCAG 1.4.3)。

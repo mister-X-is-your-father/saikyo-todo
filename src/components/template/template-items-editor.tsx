@@ -151,8 +151,8 @@ export function TemplateItemsEditor({ templateId }: Props) {
             onChange={(e) => setIsMust(e.target.checked)}
             aria-label={
               isMust
-                ? 'MUST が ON: 絶対落とさない (DoD 必須、クリックで OFF)'
-                : 'MUST が OFF: 通常タスク (クリックで ON、DoD 必須化)'
+                ? 'MUST が ON: 絶対落とさない — DoD 必須、クリックで OFF'
+                : 'MUST が OFF: 通常タスク — クリックで ON、DoD 必須化'
             }
           />
           <span aria-hidden="true">MUST (絶対落とさない)</span>

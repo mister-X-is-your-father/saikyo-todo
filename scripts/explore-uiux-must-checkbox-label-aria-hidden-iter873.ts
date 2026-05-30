@@ -83,8 +83,8 @@ async function main(): Promise<void> {
 
   // 4. input aria-label 完全 content 維持 (両 file)
   if (
-    /isMust[\s\S]+?'MUST が ON: 絶対落とさない \(DoD 必須、クリックで OFF\)'/.test(ied) &&
-    /isMust[\s\S]+?'MUST が ON: 絶対落とさない \(DoD 必須、クリックで OFF\)'/.test(dpp)
+    /isMust[\s\S]+?'MUST が ON: 絶対落とさない — DoD 必須、クリックで OFF'/.test(ied) &&
+    /isMust[\s\S]+?'MUST が ON: 絶対落とさない — DoD 必須、クリックで OFF'/.test(dpp)
   ) {
     findings.push({
       level: 'info',

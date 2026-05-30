@@ -467,8 +467,8 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               data-testid={`proposal-${proposal.id}-must`}
               aria-label={
                 isMust
-                  ? 'MUST が ON: 絶対落とさない (DoD 必須、クリックで OFF)'
-                  : 'MUST が OFF: 通常タスク (クリックで ON、DoD 必須化)'
+                  ? 'MUST が ON: 絶対落とさない — DoD 必須、クリックで OFF'
+                  : 'MUST が OFF: 通常タスク — クリックで ON、DoD 必須化'
               }
             />
             {/* iter1371: item-edit-dialog と同型。dark card bg で text-red-700 は <4.5。 */}

@@ -47,7 +47,7 @@ async function main(): Promise<void> {
   }
 
   // 2. template-items-editor input aria-label 完全 content 維持
-  if (/isMust[\s\S]+?'MUST が ON: 絶対落とさない \(DoD 必須、クリックで OFF\)'/.test(tie)) {
+  if (/isMust[\s\S]+?'MUST が ON: 絶対落とさない — DoD 必須、クリックで OFF'/.test(tie)) {
     findings.push({
       level: 'info',
       message: `template-items-editor MUST input aria-label 完全 content 維持 OK`,
