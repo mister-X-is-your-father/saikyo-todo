@@ -778,7 +778,9 @@ function ItemEditDialogInner({
               <div className="space-y-1.5">
                 <Label htmlFor="editDod">
                   DoD (完了条件)
-                  <span className="ml-1 text-red-600" aria-hidden="true">
+                  {/* iter1511: DoD 必須 asterisk は light 固定 text-red-600 で dark mode で
+                      hue が浅く視認性低、iter1508-1510 と同 root。dark variant 補完。 */}
+                  <span className="ml-1 text-red-600 dark:text-red-400" aria-hidden="true">
                     *
                   </span>
                 </Label>

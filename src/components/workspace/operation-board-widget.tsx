@@ -247,6 +247,8 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
 
         {board.overdue.total > 0 && (
           <Section
+            /* iter1511: 期限超過 icon は light 固定 text-red-600 で dark mode 視認性低、
+               iter1508/1509/1510 と同 root。dark variant 補完。 */
             icon={
               <AlertOctagon className="h-4 w-4 text-red-600 dark:text-red-400" aria-hidden="true" />
             }
