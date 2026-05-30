@@ -1150,7 +1150,7 @@ export function DashboardView({ workspaceId }: Props) {
         {mustStuckWip ? (
           <DashboardChip
             testId="dashboard-must-stuck-wip-chip"
-            toneClass="border-red-300 bg-red-100 text-red-800"
+            toneClass="border-red-300 bg-red-100 text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200"
             glyph="🚨"
             ariaLabel={mustStuckWip.detail}
             title={mustStuckWip.detail}
@@ -1166,7 +1166,7 @@ export function DashboardView({ workspaceId }: Props) {
         {mustOverdue ? (
           <DashboardChip
             testId="dashboard-must-overdue-chip"
-            toneClass="border-red-400 bg-red-100 text-red-900"
+            toneClass="border-red-400 bg-red-100 text-red-900 dark:border-red-800/50 dark:bg-red-950/50 dark:text-red-100"
             glyph="🆘"
             ariaLabel={mustOverdue.detail}
             title={mustOverdue.detail}
