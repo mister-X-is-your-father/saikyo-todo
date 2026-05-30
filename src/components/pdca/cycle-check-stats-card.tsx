@@ -137,7 +137,9 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
         >
           <div aria-hidden="true">
             <dt className="text-muted-foreground">完了</dt>
-            <dd className="font-semibold text-emerald-700 tabular-nums">{stats.done}</dd>
+            <dd className="font-semibold text-emerald-700 tabular-nums dark:text-emerald-400">
+              {stats.done}
+            </dd>
           </div>
           <div aria-hidden="true">
             <dt className="text-muted-foreground">未完了</dt>
