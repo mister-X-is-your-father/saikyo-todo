@@ -895,7 +895,7 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-urgency-tiers-chip"
             toneClass={
               urgencyTiers.severity === 'severe'
-                ? 'border-red-200 bg-red-50 text-red-700'
+                ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300'
                 : chipTone3Class('warn')
             }
             glyph="🚨"
@@ -912,7 +912,7 @@ export function DashboardView({ workspaceId }: Props) {
         {staleUrgent ? (
           <DashboardChip
             testId="dashboard-stale-urgent-chip"
-            toneClass="border-red-200 bg-red-50 text-red-700"
+            toneClass="border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300"
             glyph="⏳"
             ariaLabel={staleUrgent.detail}
             title={staleUrgent.detail}
@@ -1047,7 +1047,7 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-must-hygiene-chip"
             toneClass={
               mustHygiene.severity === 'severe'
-                ? 'border-red-200 bg-red-50 text-red-700'
+                ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300'
                 : mustHygiene.severity === 'mild'
                   ? chipTone3Class('warn')
                   : chipTone3Class('good')
@@ -1084,7 +1084,7 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-wip-stuck-chip"
             toneClass={
               wipStuck.severity === 'severe'
-                ? 'border-red-200 bg-red-50 text-red-700'
+                ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300'
                 : chipTone3Class('warn')
             }
             glyph="⏸"
@@ -1234,8 +1234,8 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-slip-days-chip"
             toneClass={
               slipDays.severe
-                ? 'border-red-200 bg-red-50 text-red-700'
-                : 'border-amber-200 bg-amber-50 text-amber-700'
+                ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300'
+                : 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300'
             }
             glyph="⏰"
             ariaLabel={slipDays.detail}
@@ -1252,7 +1252,7 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-overdue-active-chip"
             toneClass={
               overdueActive.severity === 'severe'
-                ? 'border-red-200 bg-red-50 text-red-700'
+                ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300'
                 : chipTone3Class('warn')
             }
             glyph="📅"
