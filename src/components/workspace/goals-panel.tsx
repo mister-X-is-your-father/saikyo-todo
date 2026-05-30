@@ -485,7 +485,7 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                   <div
                     className="bg-muted h-1.5 w-full overflow-hidden rounded-full"
                     role="progressbar"
-                    aria-label={`Goal「${goal.title}」全体進捗 ${goalPct}%${health ? ` (${health.label})` : ''}`}
+                    aria-label={`Goal「${goal.title}」全体進捗 ${goalPct}%${health ? ` — ${health.label}` : ''}`}
                     aria-valuenow={goalPct}
                     aria-valuemin={0}
                     aria-valuemax={100}
