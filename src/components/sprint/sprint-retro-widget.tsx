@@ -278,14 +278,16 @@ function StatusChip({
   tone?: 'ok' | 'warn' | 'muted'
 }) {
   if (count === 0) return null
+  // iter1516: StatusChip 4 tone は light 固定で dark mode で 明色 chip 浮き contrast 不適。
+  // iter1376/1493/1512/1513/1514/1515 chip dark variant pattern を本 4 tone にも展開。
   const cls =
     tone === 'ok'
-      ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+      ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300'
       : tone === 'warn'
-        ? 'border-amber-300 bg-amber-50 text-amber-700'
+        ? 'border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300'
         : tone === 'muted'
-          ? 'border-slate-300 bg-slate-100 text-slate-600'
-          : 'border-slate-200 bg-slate-50 text-slate-700'
+          ? 'border-slate-300 bg-slate-100 text-slate-600 dark:border-slate-700/50 dark:bg-slate-900/30 dark:text-slate-400'
+          : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700/50 dark:bg-slate-900/30 dark:text-slate-300'
   // iter98 PDCA bar / iter417 TaskChute priority chip と同 pattern: role="img" +
   // 集約 aria-label で chip を atomic 1 unit として読み上げ。tone (ok/warn/muted)
   // を SR 文言に prefix し、色のみで意味伝達 (WCAG 1.4.1) を text 側で代替。
