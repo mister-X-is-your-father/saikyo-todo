@@ -64,12 +64,13 @@ async function main(): Promise<void> {
   }
 
   // 3. iter759 invariant: sprint-retro progressbar 維持
+  //    iter1502: () → em-dash migration (iter1093-1501 sweep に追従)
   const sr = readFileSync(
     resolve(process.cwd(), 'src/components/sprint/sprint-retro-widget.tsx'),
     'utf8',
   )
   if (
-    /aria-label=\{`Sprint Retro 完了率 \$\{summary\.completionRate\}% \(\$\{completionRateSeverityLabelJa\(sev\)\}\)`\}/.test(
+    /aria-label=\{`Sprint Retro 完了率 \$\{summary\.completionRate\}% — \$\{completionRateSeverityLabelJa\(sev\)\}`\}/.test(
       sr,
     )
   ) {

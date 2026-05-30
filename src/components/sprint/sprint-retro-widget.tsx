@@ -98,8 +98,12 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
             aria-valuenow={summary.completionRate}
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-label={`Sprint Retro 完了率 ${summary.completionRate}% (${completionRateSeverityLabelJa(sev)})`}
-            aria-valuetext={`${summary.completionRate}% (${completionRateSeverityLabelJa(sev)})`}
+            /* iter1502: aria-label / aria-valuetext で `( ${sev} )` paren convention が
+               iter1494 goals-panel / iter1501 副 sprint-progressbar の em-dash 統一からこぼれて
+               残存していた。両 attribute を em-dash 区切に統一、aria-label と aria-valuetext で
+               punctuation 体系一致 (sibling Sprint / Goal / KR progressbar とも整合)。 */
+            aria-label={`Sprint Retro 完了率 ${summary.completionRate}% — ${completionRateSeverityLabelJa(sev)}`}
+            aria-valuetext={`${summary.completionRate}% — ${completionRateSeverityLabelJa(sev)}`}
           >
             <div
               className={
