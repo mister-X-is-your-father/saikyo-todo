@@ -28,30 +28,33 @@ describe('getChipToneClasses', () => {
     }
   })
 
+  // iter1531: source の TONE_CLASSES に dark variant を併記したため expected strings を
+  // 新形式に更新 (`'bg-rose-100'` → `'bg-rose-100 dark:bg-rose-950/40'` 等)。
+  // テスト意図 (light 配色 token が変わらず維持) は新形式の light 部分で satisfy。
   it('danger → rose 系 (期限切れ / 超過 / 緊急)', () => {
     const c = getChipToneClasses('danger')
-    expect(c.bgClass).toBe('bg-rose-100')
-    expect(c.textClass).toBe('text-rose-700')
-    expect(c.ringClass).toBe('ring-rose-300')
+    expect(c.bgClass).toBe('bg-rose-100 dark:bg-rose-950/40')
+    expect(c.textClass).toBe('text-rose-700 dark:text-rose-300')
+    expect(c.ringClass).toBe('ring-rose-300 dark:ring-rose-900/50')
   })
 
   it('urgent (強amber) と warn (薄amber) で強弱を区別', () => {
-    expect(getChipToneClasses('urgent').bgClass).toBe('bg-amber-100')
-    expect(getChipToneClasses('warn').bgClass).toBe('bg-amber-50')
-    expect(getChipToneClasses('urgent').textClass).toBe('text-amber-800')
-    expect(getChipToneClasses('warn').textClass).toBe('text-amber-700')
+    expect(getChipToneClasses('urgent').bgClass).toBe('bg-amber-100 dark:bg-amber-950/40')
+    expect(getChipToneClasses('warn').bgClass).toBe('bg-amber-50 dark:bg-amber-950/30')
+    expect(getChipToneClasses('urgent').textClass).toBe('text-amber-800 dark:text-amber-200')
+    expect(getChipToneClasses('warn').textClass).toBe('text-amber-700 dark:text-amber-300')
   })
 
   it('info → blue 薄 (計画範囲内)、idle → slate 薄 (対象外)', () => {
-    expect(getChipToneClasses('info').textClass).toBe('text-blue-700')
-    expect(getChipToneClasses('idle').textClass).toBe('text-slate-600')
+    expect(getChipToneClasses('info').textClass).toBe('text-blue-700 dark:text-blue-300')
+    expect(getChipToneClasses('idle').textClass).toBe('text-slate-600 dark:text-slate-400')
   })
 
   it('success → emerald 薄 (達成 / 余裕 / 完了 / 健全、severity 軸と直交)', () => {
     const c = getChipToneClasses('success')
-    expect(c.bgClass).toBe('bg-emerald-50')
-    expect(c.textClass).toBe('text-emerald-700')
-    expect(c.ringClass).toBe('ring-emerald-200')
+    expect(c.bgClass).toBe('bg-emerald-50 dark:bg-emerald-950/30')
+    expect(c.textClass).toBe('text-emerald-700 dark:text-emerald-300')
+    expect(c.ringClass).toBe('ring-emerald-200 dark:ring-emerald-900/50')
   })
 })
 

@@ -44,36 +44,40 @@ export interface ChipToneClasses {
   ringClass: string
 }
 
+// iter1531: TONE_CLASSES 6 tone × 3 軸 = 18 token は light 固定で iter1376/1493/1512-1530
+// chip dark sweep からこぼれていた。central vocabulary 3 件目 (MUST iter1528 / status iter1529 /
+// severity iter1530 と同 high-leverage 着地)。各 field に dark variant 併記。test (chip-tone.test.ts)
+// は厳密 toBe 形式なので同 commit で expected strings を新 form に更新。
 const TONE_CLASSES: Record<ChipTone, ChipToneClasses> = {
   danger: {
-    bgClass: 'bg-rose-100',
-    textClass: 'text-rose-700',
-    ringClass: 'ring-rose-300',
+    bgClass: 'bg-rose-100 dark:bg-rose-950/40',
+    textClass: 'text-rose-700 dark:text-rose-300',
+    ringClass: 'ring-rose-300 dark:ring-rose-900/50',
   },
   urgent: {
-    bgClass: 'bg-amber-100',
-    textClass: 'text-amber-800',
-    ringClass: 'ring-amber-300',
+    bgClass: 'bg-amber-100 dark:bg-amber-950/40',
+    textClass: 'text-amber-800 dark:text-amber-200',
+    ringClass: 'ring-amber-300 dark:ring-amber-900/50',
   },
   warn: {
-    bgClass: 'bg-amber-50',
-    textClass: 'text-amber-700',
-    ringClass: 'ring-amber-200',
+    bgClass: 'bg-amber-50 dark:bg-amber-950/30',
+    textClass: 'text-amber-700 dark:text-amber-300',
+    ringClass: 'ring-amber-200 dark:ring-amber-900/50',
   },
   info: {
-    bgClass: 'bg-blue-50',
-    textClass: 'text-blue-700',
-    ringClass: 'ring-blue-200',
+    bgClass: 'bg-blue-50 dark:bg-blue-950/30',
+    textClass: 'text-blue-700 dark:text-blue-300',
+    ringClass: 'ring-blue-200 dark:ring-blue-900/50',
   },
   idle: {
-    bgClass: 'bg-slate-50',
-    textClass: 'text-slate-600',
-    ringClass: 'ring-slate-200',
+    bgClass: 'bg-slate-50 dark:bg-slate-900/30',
+    textClass: 'text-slate-600 dark:text-slate-400',
+    ringClass: 'ring-slate-200 dark:ring-slate-700/50',
   },
   success: {
-    bgClass: 'bg-emerald-50',
-    textClass: 'text-emerald-700',
-    ringClass: 'ring-emerald-200',
+    bgClass: 'bg-emerald-50 dark:bg-emerald-950/30',
+    textClass: 'text-emerald-700 dark:text-emerald-300',
+    ringClass: 'ring-emerald-200 dark:ring-emerald-900/50',
   },
 }
 
