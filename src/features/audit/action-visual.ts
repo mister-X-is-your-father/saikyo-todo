@@ -41,55 +41,60 @@ export interface AuditActionVisual {
   ringClass: string
 }
 
+// iter1538: 7 audit action visual (UNKNOWN/CREATE/UPDATE/TRANSITION/COMPLETE/REOPEN/DELETE)
+// は `bg-{color}-100 text-{color}-{600,700} ring-{color}-200` で light 固定。iter1376/1493/
+// 1512-1537 chip dark sweep + central feature 着地 (notification iter1537 と同 pattern)。
+// 各 visual に dark token 併記、test (action-visual.test.ts) は `.toContain('emerald')` 形式で
+// dark variant 追加に透過。
 const UNKNOWN_VISUAL: AuditActionVisual = {
   label: '操作',
   iconKey: 'activity',
-  bgClass: 'bg-zinc-100',
-  textClass: 'text-zinc-600',
-  ringClass: 'ring-zinc-200',
+  bgClass: 'bg-zinc-100 dark:bg-zinc-900/40',
+  textClass: 'text-zinc-600 dark:text-zinc-400',
+  ringClass: 'ring-zinc-200 dark:ring-zinc-700/50',
 }
 
 const CREATE_VISUAL: AuditActionVisual = {
   label: '作成',
   iconKey: 'plus',
-  bgClass: 'bg-emerald-100',
-  textClass: 'text-emerald-700',
-  ringClass: 'ring-emerald-200',
+  bgClass: 'bg-emerald-100 dark:bg-emerald-950/40',
+  textClass: 'text-emerald-700 dark:text-emerald-300',
+  ringClass: 'ring-emerald-200 dark:ring-emerald-900/50',
 }
 const UPDATE_VISUAL: AuditActionVisual = {
   label: '更新',
   iconKey: 'pencil',
-  bgClass: 'bg-blue-100',
-  textClass: 'text-blue-700',
-  ringClass: 'ring-blue-200',
+  bgClass: 'bg-blue-100 dark:bg-blue-950/40',
+  textClass: 'text-blue-700 dark:text-blue-300',
+  ringClass: 'ring-blue-200 dark:ring-blue-900/50',
 }
 const TRANSITION_VISUAL: AuditActionVisual = {
   label: 'ステータス変更',
   iconKey: 'arrow-right-left',
-  bgClass: 'bg-amber-100',
-  textClass: 'text-amber-700',
-  ringClass: 'ring-amber-200',
+  bgClass: 'bg-amber-100 dark:bg-amber-950/40',
+  textClass: 'text-amber-700 dark:text-amber-300',
+  ringClass: 'ring-amber-200 dark:ring-amber-900/50',
 }
 const COMPLETE_VISUAL: AuditActionVisual = {
   label: '完了',
   iconKey: 'check-circle',
-  bgClass: 'bg-emerald-100',
-  textClass: 'text-emerald-700',
-  ringClass: 'ring-emerald-200',
+  bgClass: 'bg-emerald-100 dark:bg-emerald-950/40',
+  textClass: 'text-emerald-700 dark:text-emerald-300',
+  ringClass: 'ring-emerald-200 dark:ring-emerald-900/50',
 }
 const REOPEN_VISUAL: AuditActionVisual = {
   label: '完了取消',
   iconKey: 'rotate-ccw',
-  bgClass: 'bg-slate-100',
-  textClass: 'text-slate-700',
-  ringClass: 'ring-slate-200',
+  bgClass: 'bg-slate-100 dark:bg-slate-900/40',
+  textClass: 'text-slate-700 dark:text-slate-300',
+  ringClass: 'ring-slate-200 dark:ring-slate-700/50',
 }
 const DELETE_VISUAL: AuditActionVisual = {
   label: '削除',
   iconKey: 'trash',
-  bgClass: 'bg-red-100',
-  textClass: 'text-red-700',
-  ringClass: 'ring-red-200',
+  bgClass: 'bg-red-100 dark:bg-red-950/40',
+  textClass: 'text-red-700 dark:text-red-300',
+  ringClass: 'ring-red-200 dark:ring-red-900/50',
 }
 
 const ACTION_MAP: Record<string, AuditActionVisual> = {
