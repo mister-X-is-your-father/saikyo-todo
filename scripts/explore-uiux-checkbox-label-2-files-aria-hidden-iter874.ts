@@ -76,7 +76,7 @@ async function main(): Promise<void> {
 
   // 4. engineer-trigger-button input aria-label 完全 content 維持
   if (
-    /autoPr[\s\S]+?'PR 自動起票が ON: Engineer 起動時に Draft PR も作成される \(クリックで OFF\)'/.test(
+    /autoPr[\s\S]+?'PR 自動起票が ON: Engineer 起動時に Draft PR も作成される — クリックで OFF'/.test(
       etb,
     )
   ) {

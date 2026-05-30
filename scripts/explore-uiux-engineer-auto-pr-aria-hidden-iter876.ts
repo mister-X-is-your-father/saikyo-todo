@@ -44,10 +44,10 @@ async function main(): Promise<void> {
     })
   }
   if (
-    /aria-label=\{[\s\S]+?'PR 自動起票が ON: Engineer 起動時に Draft PR も作成される \(クリックで OFF\)'/.test(
+    /aria-label=\{[\s\S]+?'PR 自動起票が ON: Engineer 起動時に Draft PR も作成される — クリックで OFF'/.test(
       etb,
     ) &&
-    /aria-label=\{[\s\S]+?'PR 自動起票が OFF: Engineer 起動時は commit のみ、PR は人間が後で push \(クリックで ON\)'/.test(
+    /aria-label=\{[\s\S]+?'PR 自動起票が OFF: Engineer 起動時は commit のみ、PR は人間が後で push — クリックで ON'/.test(
       etb,
     )
   ) {

@@ -70,8 +70,8 @@ export function EngineerTriggerButton({ item }: Props) {
           data-testid="engineer-auto-pr"
           aria-label={
             autoPr
-              ? 'PR 自動起票が ON: Engineer 起動時に Draft PR も作成される (クリックで OFF)'
-              : 'PR 自動起票が OFF: Engineer 起動時は commit のみ、PR は人間が後で push (クリックで ON)'
+              ? 'PR 自動起票が ON: Engineer 起動時に Draft PR も作成される — クリックで OFF'
+              : 'PR 自動起票が OFF: Engineer 起動時は commit のみ、PR は人間が後で push — クリックで ON'
           }
         />
         <span className="text-muted-foreground" aria-hidden="true">
