@@ -840,10 +840,13 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
                 onClick={() => setExpandedRunId(isOpen ? null : r.id)}
                 aria-expanded={isOpen}
                 aria-controls={`wf-run-nodes-${r.id}`}
+                /* iter1555: 旧 `のノード詳細を{閉じる|表示}` は ' を' 助詞接続で iter1093-1554
+                   sweep の em-dash 区切と divergent。operation-board disclosure (iter1547) と
+                   同 pattern で em-dash 化。visible prefix `${triggerKind} 実行 (${time})` は維持。 */
                 aria-label={
                   isOpen
-                    ? `${r.triggerKind} 実行 (${formatRunTime(r)}) のノード詳細を閉じる`
-                    : `${r.triggerKind} 実行 (${formatRunTime(r)}) のノード詳細を表示`
+                    ? `${r.triggerKind} 実行 (${formatRunTime(r)}) — ノード詳細を閉じる`
+                    : `${r.triggerKind} 実行 (${formatRunTime(r)}) — ノード詳細を表示`
                 }
                 data-testid={`wf-run-toggle-${r.id}`}
               >
