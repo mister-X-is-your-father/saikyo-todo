@@ -188,7 +188,9 @@ export function KanbanView({ workspaceId, items }: Props) {
           style={{ gridTemplateColumns: `repeat(${statuses.length}, minmax(260px, 1fr))` }}
           data-testid="kanban-board"
           role="group"
-          aria-label={`Kanban ボード (${statuses.length} 列)`}
+          /* iter1576: 旧 aria-label paren convention `"Kanban ボード (X 列)"` は iter1093-1575
+             sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
+          aria-label={`Kanban ボード — ${statuses.length} 列`}
         >
           {statuses.map((s) => (
             <KanbanColumn
