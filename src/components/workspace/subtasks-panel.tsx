@@ -485,7 +485,10 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
           }`}
           role="status"
           aria-live="polite"
-          aria-label={`サマリ: ${formatDescendantsActivityHintJa(descendantsProgress)} — ${formatDescendantsProgressJa(descendantsProgress)}`}
+          /* iter1599: 旧 aria-label `"サマリ: X — Y"` の先頭 colon `:` は iter1093-1598 sweep の
+             em-dash 区切と divergent。`サマリ:` colon を ` — ` em-dash に統一 (内部 em-dash と
+             整合)。 */
+          aria-label={`サマリ — ${formatDescendantsActivityHintJa(descendantsProgress)} — ${formatDescendantsProgressJa(descendantsProgress)}`}
           data-testid="subtasks-progress-summary"
           data-pct-done={descendantsProgress.pctDone}
         >
