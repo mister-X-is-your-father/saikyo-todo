@@ -1017,7 +1017,10 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
               // visible "編集" を中位置 "の**編集**モードを開く" に持ち voice control
               // prefix-matching「click 編集」 match 不可。iter1093-1152 sweep convention
               // に揃え visible "編集" 冒頭固定 + em-dash 区切で descriptive 末尾保持。
-              aria-label={`編集 — Sprint デフォルト (現在: ${DOW_JA[cur.startDow]}曜開始 / ${cur.lengthDays} 日) の編集モードを開く`}
+              // iter1597: 内部 paren+colon `(現在: X曜開始 / Y 日)` を iter1093-1596 sweep の
+              // em-dash 区切に統一。'(' → ' ' (空白)、'現在:' → '現在'、')' → ' ' (空白) で
+              // descriptive 維持。
+              aria-label={`編集 — Sprint デフォルト 現在 ${DOW_JA[cur.startDow]}曜開始 / ${cur.lengthDays} 日 の編集モードを開く`}
             >
               <span aria-hidden="true">編集</span>
             </Button>
