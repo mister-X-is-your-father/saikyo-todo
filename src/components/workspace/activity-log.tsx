@@ -112,7 +112,11 @@ export function ActivityLog({ itemId }: { itemId: string }) {
               data-testid="activity-log-hint"
               data-severity={hint.severity}
               role="img"
-              aria-label={`Activity 状態: ${hint.label}`}
+              /* iter1557: 旧 `Activity 状態: ${hint.label}` は ':' colon 区切で visible
+                 ${hint.label} を末尾に持ち voice control prefix-matching「click ${label}」
+                 が strict prefix-match で不可。iter1093-1556 sweep convention で
+                 visible 冒頭固定 + em-dash 区切。 */
+              aria-label={`${hint.label} — Activity 状態`}
             >
               <span aria-hidden="true">{hint.label}</span>
             </span>
