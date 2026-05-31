@@ -163,8 +163,10 @@ export function SprintRiskBoardWidget<T extends RiskBoardItemFields>({
             </h3>
             <table className="w-full text-xs" aria-labelledby="sprint-risk-load-heading">
               <caption className="sr-only">
-                担当者ごとの負荷一覧 ({loadEntries.length} 名 / 担当 / 件数 / MUST 件数 /
-                負荷スコア合計)
+                {/* iter1618: 旧 sr-only caption paren convention `({N} 名 / 担当 / 件数 / MUST 件数 / 負荷スコア合計)` は
+                    iter1093-1617 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */}
+                担当者ごとの負荷一覧 — {loadEntries.length} 名 / 担当 / 件数 / MUST 件数 /
+                負荷スコア合計
               </caption>
               <thead>
                 <tr className="text-muted-foreground border-b">
