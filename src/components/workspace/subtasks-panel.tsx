@@ -179,7 +179,8 @@ function SubtaskTreeNode({
         // dark:ring-slate-700 を補完で contrast 整合。
         className="bg-muted text-foreground inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[11px] tabular-nums ring-1 ring-slate-200 ring-inset dark:ring-slate-700"
         role="img"
-        aria-label={`${index + 1} 番目 (深さ ${depth + 1})`}
+        /* iter1590: paren convention を em-dash 区切に統一 (iter1093-1589 sweep)。 */
+        aria-label={`${index + 1} 番目 — 深さ ${depth + 1}`}
         data-testid={`subtask-step-${item.id}`}
       >
         <span aria-hidden="true">{index + 1}</span>
