@@ -531,7 +531,11 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
             <div
               className="flex flex-wrap items-center justify-end gap-1.5"
               role="group"
-              aria-label={`Goal「${goal.title}」のステータス操作 (現在: ${goalStatusLabelJa(status)}、完了 / アーカイブ / 再開)`}
+              /* iter1579: 旧 paren convention `"Goal「${title}」のステータス操作 (現在: ${status}、完了 / アーカイブ / 再開)"` を
+                 iter1093-1578 sweep + iter1578 sprint operations group と同 pattern で em-dash 区切に
+                 統一。visible 冒頭 "Goal「${title}」" は維持、区切のみ '(現在:' → ' — 現在' に統一、
+                 closing ')' は削除。 */
+              aria-label={`Goal「${goal.title}」のステータス操作 — 現在 ${goalStatusLabelJa(status)}、完了 / アーカイブ / 再開`}
             >
               {status === 'active' && (
                 <>
