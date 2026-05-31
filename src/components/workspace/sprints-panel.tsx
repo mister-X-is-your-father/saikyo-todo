@@ -723,7 +723,8 @@ function SprintCard({
               <div
                 className="flex justify-end gap-1.5"
                 role="group"
-                aria-label={`Sprint「${sprint.name}」の期間編集 form 操作 (キャンセル / 保存)`}
+                /* iter1585: paren convention を em-dash 区切に統一 (iter1093-1584 sweep)。 */
+                aria-label={`Sprint「${sprint.name}」の期間編集 form 操作 — キャンセル / 保存`}
               >
                 <Button
                   type="button"
