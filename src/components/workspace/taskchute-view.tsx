@@ -234,7 +234,10 @@ export function TaskChuteView({ workspaceId, items }: Props) {
                     className="text-muted-foreground inline-flex shrink-0 items-center gap-0.5 font-mono text-[10px] tabular-nums"
                     title={`予測完了 ${tickerRow.eta}`}
                     role="img"
-                    aria-label={`予測完了時刻 ${tickerRow.eta}`}
+                    /* iter1604: 旧 aria-label `"予測完了時刻 ${eta}"` は visible "${eta}" を末尾に
+                       持ち voice control prefix-matching「click HH:MM」 が strict prefix-match で不可。
+                       iter1553-1603 visible 冒頭 em-dash sweep に合わせ visible 冒頭固定 + em-dash 区切。 */
+                    aria-label={`${tickerRow.eta} — 予測完了時刻`}
                     data-testid={`taskchute-eta-${item.id}`}
                   >
                     <span aria-hidden="true">→{tickerRow.eta}</span>
