@@ -304,13 +304,15 @@ export function GanttView({
         data-testid="gantt-summary"
         className="bg-muted/40 text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 border-b px-3 py-1.5 text-xs"
         role="group"
-        aria-label={`Gantt project summary (表示範囲 ${totalSpanDays} 日 / 表示中 Item ${withDates.length} 件${
+        /* iter1587: paren convention `Gantt project summary (...)` を iter1093-1586 sweep の
+           em-dash 区切に統一。visible "Gantt project summary" は元から冒頭 prefix。 */
+        aria-label={`Gantt project summary — 表示範囲 ${totalSpanDays} 日 / 表示中 Item ${withDates.length} 件${
           projectDurationDays !== undefined && projectDurationDays > 0
             ? ` / CPM 期間 ${projectDurationDays} 日`
             : ''
         }${criticalCount > 0 ? ` / critical ${criticalCount} 件` : ''}${
           baselineCount > 0 ? ` / baseline ${baselineCount} 件` : ''
-        }${slipItemCount > 0 ? ` / 遅延 ${slipItemCount} 件 計 ${totalSlipDays} 日` : ''})`}
+        }${slipItemCount > 0 ? ` / 遅延 ${slipItemCount} 件 計 ${totalSlipDays} 日` : ''}`}
       >
         {/* iter917: parent role="group" aria-label が "表示範囲 X 日 / 表示中 Item Y 件
             / CPM 期間 Z 日 / ..." 完全 content を持つため、内側 3 span は visible
