@@ -149,7 +149,10 @@ export function InboxView({
           // 適切 (iter423 SeverityChip と同 pattern)。aria-label は集約 source の
           // まま。
           role="group"
-          aria-label={`GTD 分類: 2 分以内 ${gtdSummary.counts.immediate} 件、Project ${gtdSummary.counts.project} 件、次の action ${gtdSummary.counts['next-action']} 件`}
+          /* iter1600: 旧 aria-label `"GTD 分類: 2 分以内 X 件、Project Y 件、次の action Z 件"` の
+             先頭 colon `:` は iter1093-1599 sweep の em-dash 区切と divergent。`GTD 分類:` colon を
+             ` — ` em-dash に統一 (内部の 、 separator は維持)。 */
+          aria-label={`GTD 分類 — 2 分以内 ${gtdSummary.counts.immediate} 件、Project ${gtdSummary.counts.project} 件、次の action ${gtdSummary.counts['next-action']} 件`}
         >
           {gtdSummary.counts.immediate > 0 && (
             <span
