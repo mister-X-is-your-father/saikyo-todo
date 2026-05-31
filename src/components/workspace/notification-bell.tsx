@@ -171,7 +171,11 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                   data-testid="notification-bell-hint"
                   data-severity={hint.severity}
                   role="img"
-                  aria-label={`通知 健全性: ${hint.label}`}
+                  /* iter1561: 旧 aria-label `"通知 健全性: ${hint.label}"` は visible "${label}" を末尾
+                     に持ち voice control prefix-matching「click 健全」 が strict prefix-match で不可
+                     (substring 一致のみ)。iter1553-1560 status/role/health Badge family と同 pattern、
+                     visible 冒頭固定 + em-dash 区切。 */
+                  aria-label={`${hint.label} — 通知 健全性`}
                 >
                   <span aria-hidden="true">{hint.label}</span>
                 </span>
