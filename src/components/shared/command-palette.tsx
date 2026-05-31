@@ -128,7 +128,10 @@ export function CommandPalette({ commands, items, onSelectItem }: CommandPalette
     >
       <CommandInput
         placeholder="コマンド or ? でタスク検索…"
-        aria-label="コマンドパレット 検索 (コマンド名 or ? でタスクを fuzzy 検索)"
+        /* iter1551: 旧 "コマンドパレット 検索 (コマンド名 or ? でタスクを fuzzy 検索)" は ' を' 助詞接続で
+           iter1093-1550 sweep の em-dash 区切と divergent。iter1549/1550 CommandInput
+           (assignee-picker / tag-picker) と同 pattern。 */
+        aria-label="コマンドパレット — コマンド名 or ? でタスクを fuzzy 検索"
         value={query}
         onValueChange={setQuery}
       />
