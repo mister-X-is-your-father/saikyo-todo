@@ -222,7 +222,8 @@ export function WeeklyInsightWidget({ items, now }: Props) {
         {insight.anomalies.length > 0 && (
           <ul
             className="space-y-1"
-            aria-label={`今週の特筆事項 ${insight.anomalies.length} 件 (集中日 / 過小日 / 期限超過 spike)`}
+            /* iter1588: paren convention を em-dash 区切に統一 (iter1093-1587 sweep)。 */
+            aria-label={`今週の特筆事項 ${insight.anomalies.length} 件 — 集中日 / 過小日 / 期限超過 spike`}
             data-testid="weekly-insight-anomalies"
           >
             {insight.anomalies.map((a) => {
