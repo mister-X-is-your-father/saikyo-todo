@@ -60,7 +60,10 @@ export function EngineerTriggerButton({ item }: Props) {
     <div
       className="flex items-center gap-2"
       role="group"
-      aria-label={`「${item.title}」を Engineer Agent に投入 (PR 自動起票 toggle / 実装起動)`}
+      /* iter1550: 旧 `「${title}」を Engineer Agent に投入 (...)` は ' を' 助詞接続で
+         iter1093-1549 sweep の em-dash 区切と divergent。内部 button (line 97) は既に em-dash
+         convention (`Engineer に実装させる — ...`) で、group landmark も convention 合わせる。 */
+      aria-label={`「${item.title}」 — Engineer Agent に投入 (PR 自動起票 toggle / 実装起動)`}
     >
       <label className="flex min-h-11 items-center gap-1 text-xs">
         <input
