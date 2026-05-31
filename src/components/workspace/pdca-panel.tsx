@@ -60,7 +60,9 @@ export function PdcaPanel({ workspaceId }: Props) {
           <div
             className="flex gap-1"
             role="group"
-            aria-label={`集計期間 (現在: ${days} 日、30 / 90 から選択)`}
+            /* iter1582: 旧 aria-label paren convention `"集計期間 (現在: X 日、30 / 90 から選択)"` は
+               iter1093-1581 sweep の em-dash 区切と divergent。区切のみ '(現在:' → ' — 現在' に統一、closing ')' は削除。 */
+            aria-label={`集計期間 — 現在 ${days} 日、30 / 90 から選択`}
           >
             <Button
               size="sm"
