@@ -652,7 +652,9 @@ function SourceImportHistory({ sourceId }: { sourceId: string }) {
     <ul
       className="divide-y rounded border text-xs"
       data-testid={`src-imports-list-${sourceId}`}
-      aria-label={`直近の Pull 履歴 ${imports.length} 件 (最新順)`}
+      /* iter1587: 旧 aria-label paren convention `"直近の Pull 履歴 X 件 (最新順)"` は iter1093-1586
+         sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
+      aria-label={`直近の Pull 履歴 ${imports.length} 件 — 最新順`}
     >
       {imports.map((r) => (
         <li
