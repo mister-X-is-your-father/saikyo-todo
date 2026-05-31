@@ -552,7 +552,11 @@ function SprintCard({
               variant={STATUS_COLOR[status]}
               data-testid={`sprint-status-${sprint.id}`}
               role="img"
-              aria-label={`Sprint「${sprint.name}」のステータス: ${sprintStatusLabelJa(status)}`}
+              /* iter1553: 旧 aria-label `"Sprint「${sprint.name}」のステータス: ${status}"` は visible
+                 "${status}" を末尾に持ち voice control prefix-matching「click 進行中」 が strict
+                 prefix-match で不可 (substring 一致のみ)。iter1093-1552 sweep convention で
+                 visible 冒頭固定 + em-dash 区切。 */
+              aria-label={`${sprintStatusLabelJa(status)} — Sprint「${sprint.name}」のステータス`}
             >
               <span aria-hidden="true">{sprintStatusLabelJa(status)}</span>
             </Badge>
