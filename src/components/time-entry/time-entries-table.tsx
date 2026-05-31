@@ -85,7 +85,9 @@ export function TimeEntriesTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm" data-testid="time-entries-table">
         <caption className="sr-only">
-          稼働時間記録一覧 (日付 / カテゴリ / 作業内容 / 時間 / 外部同期ステータス)
+          {/* iter1617: 旧 sr-only caption paren convention `(日付 / カテゴリ / 作業内容 / 時間 / 外部同期ステータス)` は
+              iter1093-1616 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */}
+          稼働時間記録一覧 — 日付 / カテゴリ / 作業内容 / 時間 / 外部同期ステータス
         </caption>
         <thead>
           <tr className="border-b text-left">
