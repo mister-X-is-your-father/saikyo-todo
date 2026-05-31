@@ -702,7 +702,10 @@ function ImportStatusBadge({ status }: { status: string }) {
     <span
       className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${cls}`}
       role="img"
-      aria-label={`Pull ステータス: ${label}`}
+      /* iter1559: 旧 aria-label `"Pull ステータス: ${label}"` は visible "${label}" を末尾に持ち
+         voice control prefix-matching「click 成功」 が strict prefix-match で不可 (substring 一致のみ)。
+         iter1553-1558 status/role Badge family と同 pattern、visible 冒頭固定 + em-dash 区切。 */
+      aria-label={`${label} — Pull ステータス`}
     >
       <span aria-hidden="true">{label}</span>
     </span>
