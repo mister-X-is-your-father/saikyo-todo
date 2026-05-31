@@ -140,14 +140,3 @@ export async function moveSubtree(
       AND deleted_at IS NULL
   `)
 }
-
-/**
- * root の下に item を挿入する場合の parent_path (= '') を返す helper。
- * 非 root に入れる場合は fullPathOf(parent) を使う。
- */
-export function parentPathForInsertUnder(
-  parent: { id: string; parentPath: string } | null,
-): string {
-  if (parent === null) return ''
-  return fullPathOf(parent)
-}
