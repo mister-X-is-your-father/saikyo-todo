@@ -76,7 +76,9 @@ export function BulkActionBar({ workspaceId }: Props) {
       className="bg-background fixed bottom-4 left-1/2 z-40 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-2 overflow-x-auto rounded-lg border px-4 py-2 shadow-lg"
       data-testid="bulk-action-bar"
       role="region"
-      aria-label={`一括操作 (${count} 件選択中)`}
+      /* iter1579: 旧 aria-label paren convention `"一括操作 (X 件選択中)"` は iter1093-1578 sweep の
+         em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
+      aria-label={`一括操作 — ${count} 件選択中`}
     >
       <span
         className="text-sm font-medium"
