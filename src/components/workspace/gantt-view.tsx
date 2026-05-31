@@ -411,7 +411,9 @@ export function GanttView({
             checked={showDeps}
             onChange={(e) => setShowDeps(e.target.checked)}
             className="size-3.5 cursor-pointer accent-current"
-            aria-label={showDeps ? '依存線を表示中 — クリックで非表示' : '依存線を表示する'}
+            /* iter1602: inactive path `'依存線を表示する'` は active path (`'依存線を表示中 — クリックで非表示'`)
+               の em-dash convention と divergent。両 path で visible "依存線" prefix 維持 + em-dash 区切に統一。 */
+            aria-label={showDeps ? '依存線を表示中 — クリックで非表示' : '依存線 — クリックで表示'}
           />
           <span aria-hidden="true">依存線</span>
         </label>
