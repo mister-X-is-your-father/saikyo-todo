@@ -229,7 +229,9 @@ function DailyBars({
       <div
         className="flex h-[100px] items-end gap-px overflow-hidden rounded border p-1"
         role="list"
-        aria-label={`日次完了 throughput (${data.length} 日分)`}
+        /* iter1584: 旧 aria-label paren convention `"日次完了 throughput (X 日分)"` は iter1093-1583
+           sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
+        aria-label={`日次完了 throughput — ${data.length} 日分`}
         data-testid="pdca-daily-bars"
       >
         {data.map((d) => {
