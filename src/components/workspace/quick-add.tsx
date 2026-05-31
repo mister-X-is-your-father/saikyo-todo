@@ -198,7 +198,9 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
           role="status"
           aria-live="polite"
           aria-atomic="true"
-          aria-label={`解析結果: ${previewSummary}`}
+          /* iter1601: 旧 aria-label `"解析結果: X"` の colon は iter1093-1600 sweep の em-dash 区切と
+             divergent。live region announce text の `:` を ` — ` em-dash に統一。 */
+          aria-label={`解析結果 — ${previewSummary}`}
         >
           <span className="truncate font-mono" aria-hidden="true">
             → {preview.title}
