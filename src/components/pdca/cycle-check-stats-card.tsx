@@ -108,7 +108,9 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
           <dl
             className="grid grid-cols-3 gap-2 text-xs"
             role="img"
-            aria-label={`Lead time 統計 (平均 ${stats.leadTimeAvgHours}h / 中央 ${stats.leadTimeMedianHours ?? '不明'}h / 期間 ${stats.cycleDurationDays}d)`}
+            /* iter1574: 旧 aria-label paren convention `"Lead time 統計 (...)"` は iter1093-1573
+               sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
+            aria-label={`Lead time 統計 — 平均 ${stats.leadTimeAvgHours}h / 中央 ${stats.leadTimeMedianHours ?? '不明'}h / 期間 ${stats.cycleDurationDays}d`}
           >
             <div aria-hidden="true">
               <dt className="text-muted-foreground">平均 lead</dt>
@@ -133,7 +135,9 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
         <dl
           className="grid grid-cols-3 gap-2 text-xs"
           role="img"
-          aria-label={`ステータス分布 (完了 ${stats.done} 件 / 未完了 ${stats.inProgressOrTodo} 件 / cancelled ${stats.cancelled} 件)`}
+          /* iter1574: 旧 aria-label paren convention `"ステータス分布 (...)"` は iter1093-1573
+             sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
+          aria-label={`ステータス分布 — 完了 ${stats.done} 件 / 未完了 ${stats.inProgressOrTodo} 件 / cancelled ${stats.cancelled} 件`}
         >
           <div aria-hidden="true">
             <dt className="text-muted-foreground">完了</dt>
