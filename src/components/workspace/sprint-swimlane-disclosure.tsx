@@ -149,7 +149,9 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
     <div
       className="mt-2 space-y-1.5"
       role="group"
-      aria-label={`Sprint「${sprintName}」 担当者 swim-lane (lane ${rows.length} 件)`}
+      /* iter1580: 旧 aria-label paren convention `"Sprint「${sprintName}」 担当者 swim-lane (lane X 件)"` は
+         iter1093-1579 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
+      aria-label={`Sprint「${sprintName}」 担当者 swim-lane — lane ${rows.length} 件`}
     >
       {/* iter1053: role 無 div + aria-label の SR picked-up divergence を `role="img"`
           で authoritative 化 (iter1023/1049/1050/1051/1052 同 pattern)。 */}
