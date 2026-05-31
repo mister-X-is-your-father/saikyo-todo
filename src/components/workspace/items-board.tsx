@@ -221,7 +221,11 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         className="flex flex-wrap items-center gap-2"
         data-testid="view-switcher"
         role="group"
-        aria-label={`表示切替 (現在: ${VIEW_LABEL_JA[view] ?? view})`}
+        /* iter1577: 旧 paren convention `表示切替 (現在: ${X})` を iter1093-1576 sweep の
+           em-dash 区切に統一。visible "表示切替" は元から冒頭 prefix、区切のみ '(現在:' → ' — 現在'
+           に統一、closing ')' は削除。iter1573 operation-board / iter1575 taskchute / iter1576
+           active-timer region と同 pattern。 */
+        aria-label={`表示切替 — 現在 ${VIEW_LABEL_JA[view] ?? view}`}
       >
         <Button
           variant={view === 'today' ? 'default' : 'outline'}
