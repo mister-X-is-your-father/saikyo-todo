@@ -131,7 +131,11 @@ export function TimeEntriesTable({
                     className="text-muted-foreground mt-1 max-w-[220px] truncate text-[10px]"
                     title={e.syncError}
                     role="img"
-                    aria-label={`同期エラー: ${e.syncError}`}
+                    /* iter1566: 旧 aria-label `"同期エラー: ${e.syncError}"` は visible
+                       "${e.syncError}" を末尾に持ち voice control prefix-matching が strict
+                       prefix-match で不可 (substring 一致のみ)。iter1553-1565 status/role/health/
+                       傾向/summary chip family と同 pattern、visible 冒頭固定 + em-dash 区切。 */
+                    aria-label={`${e.syncError} — 同期エラー`}
                     data-testid={`sync-error-${e.id}`}
                   >
                     <span aria-hidden="true">{e.syncError}</span>
