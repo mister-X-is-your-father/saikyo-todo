@@ -153,7 +153,11 @@ function PanelBody({ workspaceId }: Props) {
             {/* iter1054: 3 chip 全てに `role="img"` 付与し aria-label authoritative 化
                 (iter1023/1049-1053 同 pattern、role 無 div + aria-label の SR
                 picked-up divergence を解消)。 */}
-            <div className="font-medium" role="img" aria-label={`member: ${name}`}>
+            {/* iter1557: 旧 aria-label `"member: ${name}"` は visible "${name}" を末尾に持ち
+                voice control prefix-matching「click {name}」 が strict prefix-match で不可
+                (substring 一致のみ)。iter1553-1556 status/role Badge family と同 pattern、
+                visible 冒頭固定 + em-dash 区切。 */}
+            <div className="font-medium" role="img" aria-label={`${name} — member`}>
               <span aria-hidden="true">{name}</span>
             </div>
             <div
