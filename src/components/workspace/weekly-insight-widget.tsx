@@ -112,7 +112,9 @@ export function WeeklyInsightWidget({ items, now }: Props) {
   return (
     <Card
       role="region"
-      aria-label={`週次 Insight (${hint.label}): ${deltaLabel}。${bestDayLabel}${worstDayAriaPart}`}
+      /* iter1596: 旧 aria-label paren + colon convention `"週次 Insight (X): Y。Z"` は iter1093-1595
+         sweep の em-dash 区切と divergent。`(hint.label)` paren + `:` colon を ` — ` em-dash 区切に統一。 */
+      aria-label={`週次 Insight — ${hint.label} — ${deltaLabel}。${bestDayLabel}${worstDayAriaPart}`}
       data-weekly-insight-hint={hint.label}
       data-testid="weekly-insight-widget"
     >
