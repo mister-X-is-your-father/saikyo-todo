@@ -254,7 +254,11 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
               className="rounded bg-cyan-100 px-1.5 py-0.5 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300"
               data-testid="quick-add-estimate"
               role="img"
-              aria-label={`見積 ${formatEstimate(preview.estimateMinutes)}`}
+              /* iter1605: 旧 aria-label `"見積 ${estimate}"` は visible "🕐 ${estimate}" の text 部 を
+                 末尾に持ち voice control prefix-matching「click 30分」 が strict prefix-match で不可
+                 (substring 一致のみ)。iter1553-1604 visible 冒頭 em-dash sweep に合わせ visible
+                 (icon 抜きの text 部) 冒頭固定 + em-dash 区切。 */
+              aria-label={`${formatEstimate(preview.estimateMinutes)} — 見積`}
             >
               <span aria-hidden="true">🕐 {formatEstimate(preview.estimateMinutes)}</span>
             </span>
