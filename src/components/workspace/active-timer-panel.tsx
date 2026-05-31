@@ -209,7 +209,11 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
               className="ml-1 rounded border border-cyan-200 bg-cyan-50 px-1 text-[9px] text-cyan-600 dark:border-cyan-900/50 dark:bg-cyan-950/30 dark:text-cyan-300"
               data-testid="active-timer-estimate-calibrated"
               role="img"
-              aria-label={`校正後 ${calibrated.calibratedMinutes}分 — ${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正`}
+              /* iter1610: 旧 aria-label `"校正後 ${calibratedMinutes}分 — ..."` は visible "→ ${calibratedMinutes}分"
+                 の text 部 を 中位置 (`校正後 **30分**`) に持ち voice control prefix-matching「click 30分」 が
+                 strict prefix-match で不可。iter1605 quick-add estimate (iter1553-1604 visible 冒頭 em-dash
+                 sweep) と同 pattern、visible (icon 抜き) 冒頭固定 + em-dash 区切。 */
+              aria-label={`${calibrated.calibratedMinutes}分 — 校正後 ${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正`}
             >
               <span aria-hidden="true">→ {calibrated.calibratedMinutes}分</span>
             </span>
