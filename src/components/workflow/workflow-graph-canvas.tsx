@@ -121,7 +121,10 @@ export function WorkflowGraphCanvas({ graph, className, testId }: Props) {
       className={`overflow-hidden rounded border ${className ?? 'h-64'}`}
       data-testid={testId}
       role="img"
-      aria-label={`Workflow graph: ${graph.nodes.length} nodes (${nodeTypeSummary}), ${graph.edges.length} edges`}
+      /* iter1598: 旧 aria-label paren+colon convention `"Workflow graph: X nodes (Y), Z edges"` は
+         iter1093-1597 sweep の em-dash 区切と divergent。区切のみ ':' / '(' → ' — ' に統一、
+         closing ')' は削除。 */
+      aria-label={`Workflow graph — ${graph.nodes.length} nodes — ${nodeTypeSummary}、${graph.edges.length} edges`}
     >
       <ReactFlow {...props}>
         <Background gap={16} size={1} />
