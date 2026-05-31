@@ -126,7 +126,11 @@ export function InboxView({
           data-testid="inbox-health-hint"
           data-severity={healthChip.severity}
           role="img"
-          aria-label={`Inbox 健全性: ${healthChip.label}`}
+          /* iter1560: 旧 aria-label `"Inbox 健全性: ${healthChip.label}"` は visible "${label}" を
+             末尾に持ち voice control prefix-matching「click 健全」 が strict prefix-match で不可
+             (substring 一致のみ)。iter1553-1559 status/role/health Badge family と同 pattern、
+             visible 冒頭固定 + em-dash 区切。 */
+          aria-label={`${healthChip.label} — Inbox 健全性`}
         >
           <span aria-hidden="true">{healthChip.label}</span>
         </span>
