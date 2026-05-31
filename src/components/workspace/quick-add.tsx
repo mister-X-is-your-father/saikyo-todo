@@ -273,7 +273,10 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
               className="rounded border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 text-[10px] text-cyan-600 dark:border-cyan-900/50 dark:bg-cyan-950/30 dark:text-cyan-300"
               data-testid="quick-add-estimate-calibrated"
               role="img"
-              aria-label={`校正後 ${formatEstimate(calibrated.calibratedMinutes)} — ${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正`}
+              /* iter1611: 旧 aria-label `"校正後 ${X} — ${delta}"` は visible "→ ${X}" の text 部 を
+                 中位置に持ち voice control prefix-matching「click 30分」 が strict prefix-match で不可。
+                 iter1610 active-timer calibrated と同 pattern、visible (icon 抜き) 冒頭固定 + em-dash 区切。 */
+              aria-label={`${formatEstimate(calibrated.calibratedMinutes)} — 校正後 ${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正`}
             >
               <span aria-hidden="true">→ {formatEstimate(calibrated.calibratedMinutes)}</span>
             </span>
