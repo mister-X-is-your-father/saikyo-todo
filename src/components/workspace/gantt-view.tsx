@@ -478,7 +478,9 @@ export function GanttView({
           <div
             data-testid="gantt-today-line"
             role="img"
-            aria-label={`今日 (${format(new Date(), 'yyyy年M月d日 (eee)')}) の縦線`}
+            /* iter1589: paren convention `今日 (X) の縦線` を iter1093-1588 sweep の
+               em-dash 区切に統一 (visible は無 / role=img、SR-only)。 */
+            aria-label={`今日 ${format(new Date(), 'yyyy年M月d日 (eee)')} — 縦線`}
             className="pointer-events-none absolute z-20"
             style={{
               left: LABEL_COL_PX + todayX,
