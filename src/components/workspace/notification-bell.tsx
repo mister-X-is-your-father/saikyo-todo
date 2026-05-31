@@ -282,7 +282,10 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                               ? n.createdAt.toISOString()
                               : new Date(n.createdAt).toISOString()
                           }
-                          aria-label={`${formatRelativeTime(n.createdAt)} (${n.createdAt instanceof Date ? n.createdAt.toISOString() : new Date(n.createdAt).toISOString()})`}
+                          /* iter1572: 旧 aria-label paren convention `"${relative} (${iso})"` は
+                             iter1093-1571 sweep の em-dash 区切と divergent。visible "${relative}" は
+                             既に冒頭、区切のみ '(' → ' — ' に統一。 */
+                          aria-label={`${formatRelativeTime(n.createdAt)} — ${n.createdAt instanceof Date ? n.createdAt.toISOString() : new Date(n.createdAt).toISOString()}`}
                         >
                           <span aria-hidden="true">{formatRelativeTime(n.createdAt)}</span>
                         </time>
