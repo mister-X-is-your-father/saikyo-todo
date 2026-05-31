@@ -204,7 +204,15 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
                       25 弾目 (iter1023/1049-1077 sweep 続編)。top-items-by-time-chip 各
                       row 末尾 2 chip (合計時間 / entryCount) は role 無 span + aria-label
                       のみで SR picked-up divergence。両 span に role="img" 付与で統一。 */}
-                  <span className="font-mono tabular-nums" role="img" aria-label={`合計 ${label}`}>
+                  <span
+                    className="font-mono tabular-nums"
+                    role="img"
+                    /* iter1614: 旧 aria-label `"合計 ${label}"` は visible "${label}" を末尾に持ち
+                       voice control prefix-matching「click 30分」 が strict prefix-match で不可
+                       (substring 一致のみ)。iter1604/1605/1610-1612 visible 冒頭 em-dash sweep に
+                       合わせ visible 冒頭固定 + em-dash 区切。 */
+                    aria-label={`${label} — 合計`}
+                  >
                     <span aria-hidden="true">{label}</span>
                   </span>
                   <span
