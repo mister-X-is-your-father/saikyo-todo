@@ -163,7 +163,9 @@ export function CalendarView({ workspaceId }: Props) {
         <div
           className="flex items-center gap-2"
           role="group"
-          aria-label={`カレンダー日付ナビゲーション (現在: ${format(date, 'yyyy年M月d日 (eee)')}、前日 / 翌日 / 今日)`}
+          /* iter1588: 旧 aria-label paren convention `"カレンダー日付ナビゲーション (現在: X、前日 / 翌日 / 今日)"` は
+             iter1093-1587 sweep の em-dash 区切と divergent。区切のみ '(現在:' → ' — 現在' に統一、closing ')' は削除。 */
+          aria-label={`カレンダー日付ナビゲーション — 現在 ${format(date, 'yyyy年M月d日 (eee)')}、前日 / 翌日 / 今日`}
         >
           <Button
             variant="outline"
