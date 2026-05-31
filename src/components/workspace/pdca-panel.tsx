@@ -234,7 +234,10 @@ function DailyBars({
             <div
               key={d.date}
               role="listitem"
-              aria-label={`${d.date}: 完了 ${d.done} 件`}
+              /* iter1568: 旧 aria-label `"${d.date}: 完了 ${d.done} 件"` は ':' colon 区切で
+                 iter1093-1567 sweep の em-dash convention と divergent。visible prefix
+                 ${d.date} は維持 (voice control)、区切のみ em-dash 化。 */
+              aria-label={`${d.date} — 完了 ${d.done} 件`}
               className="flex flex-1 flex-col items-center justify-end"
               title={`${d.date}: ${d.done} 件`}
             >
