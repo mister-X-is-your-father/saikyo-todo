@@ -160,10 +160,13 @@ function PanelBody({ workspaceId }: Props) {
             <div className="font-medium" role="img" aria-label={`${name} — member`}>
               <span aria-hidden="true">{name}</span>
             </div>
+            {/* iter1570: 旧 `今日: ${loadJa}` / `今週: ${loadJa}` は ':' colon 区切で iter1093-1569
+                sweep の em-dash convention と divergent。visible "今日"/"今週" は元から冒頭 prefix
+                (voice control OK)、区切のみ em-dash 化で convention 統一。 */}
             <div
               className={TONE_CLASS[today.loadStatus]}
               role="img"
-              aria-label={`今日: ${formatMemberCapacityLoadJa(today)}`}
+              aria-label={`今日 — ${formatMemberCapacityLoadJa(today)}`}
             >
               <span className="text-muted-foreground mr-1" aria-hidden="true">
                 今日
@@ -173,7 +176,7 @@ function PanelBody({ workspaceId }: Props) {
             <div
               className={TONE_CLASS[week.loadStatus]}
               role="img"
-              aria-label={`今週: ${formatMemberCapacityLoadJa(week)}`}
+              aria-label={`今週 — ${formatMemberCapacityLoadJa(week)}`}
             >
               <span className="text-muted-foreground mr-1" aria-hidden="true">
                 今週
