@@ -180,7 +180,9 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
         <div
           className="text-muted-foreground mt-2 grid grid-cols-3 gap-2 text-[11px]"
           role="img"
-          aria-label={`見積バイアス内訳 (見積内 ${report.underCount} 件 / ±10% 以内 ${report.onCount} 件 / 超過 ${report.overCount} 件)`}
+          /* iter1591: 旧 aria-label paren convention `"見積バイアス内訳 (見積内 X / ±10% 以内 Y / 超過 Z)"` は
+             iter1093-1590 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
+          aria-label={`見積バイアス内訳 — 見積内 ${report.underCount} 件 / ±10% 以内 ${report.onCount} 件 / 超過 ${report.overCount} 件`}
         >
           <div aria-hidden="true">
             <div>見積内 (under)</div>
