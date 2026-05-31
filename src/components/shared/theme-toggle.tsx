@@ -18,7 +18,11 @@ export function ThemeToggle() {
       type="button"
       variant="ghost"
       size="icon"
-      aria-label={resolvedTheme === 'dark' ? 'ライトテーマに切替' : 'ダークテーマに切替'}
+      /* iter1603: 旧 aria-label `'ライトテーマに切替'` / `'ダークテーマに切替'` は ' に' 助詞接続で
+         iter1093-1602 sweep の em-dash 区切と divergent。両 path で em-dash 区切に統一。 */
+      aria-label={
+        resolvedTheme === 'dark' ? 'ライトテーマ — クリックで切替' : 'ダークテーマ — クリックで切替'
+      }
       aria-pressed={resolvedTheme === 'dark'}
       className="min-h-11 min-w-11"
       onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
