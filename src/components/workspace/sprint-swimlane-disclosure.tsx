@@ -216,7 +216,10 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
                   })`}
                   className={
                     it.conflicted
-                      ? 'absolute top-0 h-full bg-amber-500/70 ring-1 ring-amber-700'
+                      ? // iter1571: ring-amber-700 (固定暗色) は dark bg 上で対 swimlane bar に
+                        // 視認性低下 (ring is darker than bar)。dark:ring-amber-400 併記で
+                        // dark mode 視認性確保 (iter1493/1512-1535 chip ring dark sweep と同 pattern)。
+                        'absolute top-0 h-full bg-amber-500/70 ring-1 ring-amber-700 dark:ring-amber-400'
                       : 'absolute top-0 h-full bg-blue-500/70'
                   }
                   style={{
