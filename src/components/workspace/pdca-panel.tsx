@@ -90,7 +90,9 @@ export function PdcaPanel({ workspaceId }: Props) {
         <div
           className="grid grid-cols-2 gap-2 md:grid-cols-4"
           role="group"
-          aria-label={`PDCA 4 段階の集計 (Plan ${counts.plan} / Do ${counts.do} / Check ${counts.check} / Act ${counts.act} 件)`}
+          /* iter1577: 旧 aria-label paren convention `"PDCA 4 段階の集計 (...)"` は iter1093-1576
+             sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
+          aria-label={`PDCA 4 段階の集計 — Plan ${counts.plan} / Do ${counts.do} / Check ${counts.check} / Act ${counts.act} 件`}
         >
           <PdcaStat label="Plan" sub="未着手" value={counts.plan} color={PDCA_COLORS.plan} />
           <PdcaStat label="Do" sub="進行中" value={counts.do} color={PDCA_COLORS.do} />
