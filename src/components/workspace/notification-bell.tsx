@@ -187,7 +187,10 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                 className="text-muted-foreground truncate text-[10px]"
                 data-testid="notification-bell-breakdown"
                 role="img"
-                aria-label={`未読内訳: ${unreadBreakdown}`}
+                /* iter1565: 旧 `未読内訳: ${unreadBreakdown}` は ':' colon 区切で visible
+                   "${unreadBreakdown}" を末尾に持ち voice control prefix-matching 不可。
+                   iter1561 同 file 内 hint chip と同 pattern、visible 冒頭固定 + em-dash 区切。 */
+                aria-label={`${unreadBreakdown} — 未読内訳`}
                 title={unreadBreakdown}
               >
                 <span aria-hidden="true">{unreadBreakdown}</span>
