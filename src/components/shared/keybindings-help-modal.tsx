@@ -113,7 +113,11 @@ function KbdRow({ kb }: { kb: Keybinding }) {
       <dt
         className="flex items-center gap-1 whitespace-nowrap"
         data-testid={`keybinding-combo-${kb.combo}`}
-        aria-label={`ショートカット ${kb.combo}`}
+        /* iter1552: 旧 aria-label `"ショートカット ${kb.combo}"` は visible "${kb.combo}" を中位置
+           "ショートカット **g t**" に持ち voice control prefix-matching「click g t」が
+           strict prefix-match で不可 (substring 一致のみ)。iter1093-1551 sweep convention で
+           visible 冒頭固定 + em-dash 区切。 */
+        aria-label={`${kb.combo} — ショートカット`}
       >
         {parts.map((p, i) => (
           <kbd
