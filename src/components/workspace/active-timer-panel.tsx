@@ -241,7 +241,10 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
       <div
         className="flex shrink-0 items-center gap-1"
         role="group"
-        aria-label={`タスクタイマーの操作 (現在: ${running ? '計測中' : '一時停止中'}、一時停止 / 再開 / Picture-in-Picture / 停止)`}
+        /* iter1580: 旧 paren convention の `(現在:` 区切を iter1578 sprint operations /
+           iter1579 goal operations と同 pattern で em-dash 区切に統一。
+           visible 冒頭 "タスクタイマー" は維持、closing ')' は削除。 */
+        aria-label={`タスクタイマーの操作 — 現在 ${running ? '計測中' : '一時停止中'}、一時停止 / 再開 / Picture-in-Picture / 停止`}
       >
         {/* iter1024: icon-only buttons (Pause / Play / PictureInPicture2) は size="sm" +
             `min-h-11` で高さ 44px は満たすが、幅は icon 12px + padding = 36px で
