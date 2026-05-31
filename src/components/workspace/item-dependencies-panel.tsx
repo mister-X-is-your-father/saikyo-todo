@@ -139,7 +139,11 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
         className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs ring-1 ring-inset ${readinessVisual.bgClass} ${readinessVisual.textClass} ${readinessVisual.ringClass}`}
         role="status"
         aria-live="polite"
-        aria-label={`依存サマリ (${readinessVisual.toneLabel}): ${readinessSummary}`}
+        /* iter1569: 旧 aria-label `"依存サマリ (${toneLabel}): ${readinessSummary}"` は visible
+           "${readinessSummary}" を末尾に持ち voice control prefix-matching が strict prefix-match
+           で不可 (substring 一致のみ)。iter1553-1568 status/role/health/傾向/summary chip family と
+           同 pattern、visible 冒頭固定 + em-dash 区切。 */
+        aria-label={`${readinessSummary} — 依存サマリ (${readinessVisual.toneLabel})`}
         data-testid="dep-readiness-chip"
         data-blocked={readiness.isBlocked}
         data-tone={readinessVisual.tone}
