@@ -170,7 +170,11 @@ function ActivityRow({
           <span
             className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full ring-1 ring-inset ${visual.bgClass} ${visual.textClass} ${visual.ringClass}`}
             role="img"
-            aria-label={`操作種別: ${label}`}
+            /* iter1558: 旧 `操作種別: ${label}` は ':' colon 区切で visible "${label}"
+               (= 隣接 aria-hidden span の text) を末尾に持ち voice control prefix-matching
+               「click ${label}」 が strict prefix-match で不可。iter1093-1557 sweep convention
+               で visible 冒頭固定 + em-dash 区切。 */
+            aria-label={`${label} — 操作種別`}
             data-testid={`activity-action-icon-${entry.action}`}
           >
             <Icon className="h-3 w-3" aria-hidden="true" />
