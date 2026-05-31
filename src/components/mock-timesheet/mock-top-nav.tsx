@@ -39,7 +39,10 @@ export function MockTopNav({ sessionId }: { sessionId: string }) {
             入力一覧
           </Link>
         </Button>
-        <form action={mockLogoutAction} aria-label="mock-timesheet からログアウト">
+        {/* iter1613: 旧 aria-label `"mock-timesheet からログアウト"` は visible "ログアウト" (button)
+            を末尾に持ち voice control prefix-matching「click ログアウト」 が strict prefix-match で不可。
+            iter1553-1612 visible 冒頭 em-dash sweep に合わせ visible 冒頭固定 + em-dash 区切。 */}
+        <form action={mockLogoutAction} aria-label="ログアウト — mock-timesheet session を終了">
           {/* iter1095: 旧 aria-label "mock-timesheet session をログアウト" は visible "ログアウト"
               を末尾に持つ → voice control prefix-matching で「click ログアウト」 match 不可。
               iter1093/1094 sweep convention に合わせ visible 冒頭固定。 */}
