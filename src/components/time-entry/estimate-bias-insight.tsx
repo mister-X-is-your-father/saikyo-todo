@@ -146,7 +146,10 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
             className={`rounded border px-2 py-0.5 text-[11px] ${tone}`}
             data-testid="estimate-bias-tendency"
             role="img"
-            aria-label={`傾向: ${label}`}
+            /* iter1562: 旧 aria-label `"傾向: ${label}"` は visible "${label}" を末尾に持ち voice
+               control prefix-matching「click 過大」 が strict prefix-match で不可 (substring 一致のみ)。
+               iter1553-1561 status/role/health Badge family と同 pattern、visible 冒頭固定 + em-dash 区切。 */
+            aria-label={`${label} — 傾向`}
           >
             <span aria-hidden="true">{label}</span>
           </span>
