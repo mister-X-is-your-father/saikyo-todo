@@ -93,7 +93,10 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
     <Card
       className="border-primary/30 bg-primary/5"
       role="region"
-      aria-label={`今日の作戦盤 (期限超過 ${board.overdue.total} 件 / 今日 MUST ${board.mustToday.count} 件 / 今日予定 ${board.todayScheduled.count} 件)`}
+      /* iter1573: 旧 aria-label paren convention `"今日の作戦盤 (期限超過 X / MUST Y / 今日予定 Z)"` は
+         iter1093-1572 sweep の em-dash 区切と divergent。visible "今日の作戦盤" は元から冒頭 prefix
+         (voice control OK)、区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
+      aria-label={`今日の作戦盤 — 期限超過 ${board.overdue.total} 件 / 今日 MUST ${board.mustToday.count} 件 / 今日予定 ${board.todayScheduled.count} 件`}
       data-testid="operation-board-widget"
     >
       <CardHeader className="pb-2">
