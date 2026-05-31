@@ -283,7 +283,8 @@ function SubtaskTreeNode({
           className="space-y-2 rounded-lg bg-slate-50/60 p-1.5 ring-1 ring-slate-200 dark:bg-slate-900/30 dark:ring-slate-800"
           data-testid={`subtask-group-${item.id}`}
           role="group"
-          aria-label={`グループ「${item.title}」 (子タスク ${grandchildren.length} 件)`}
+          /* iter1586: paren convention を em-dash 区切に統一 (iter1093-1585 sweep)。 */
+          aria-label={`グループ「${item.title}」 — 子タスク ${grandchildren.length} 件`}
         >
           {headerRow}
           {!overDepth && (
@@ -539,7 +540,8 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
               <ol
                 className="space-y-1"
                 data-testid="subtasks-list"
-                aria-label={`子タスク 全 ${children.length} 件 (子孫含め ${totalDescendants} 件)`}
+                /* iter1586: paren convention を em-dash 区切に統一 (iter1093-1585 sweep)。 */
+                aria-label={`子タスク 全 ${children.length} 件 — 子孫含め ${totalDescendants} 件`}
               >
                 {children.map((c, idx) => (
                   <SubtaskTreeNode
