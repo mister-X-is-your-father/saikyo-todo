@@ -888,7 +888,9 @@ export function DashboardView({ workspaceId }: Props) {
       <div
         className="flex flex-wrap items-center gap-2"
         role="group"
-        aria-label="Dashboard 健全性 chip 群 (urgency / velocity / momentum / due-coverage / dod-coverage / aging / due-hit-rate / slip / completion-gap / wip-bias)"
+        /* iter1609: 旧 aria-label paren convention `"Dashboard 健全性 chip 群 (urgency / velocity / ...)"` は
+           iter1093-1608 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
+        aria-label="Dashboard 健全性 chip 群 — urgency / velocity / momentum / due-coverage / dod-coverage / aging / due-hit-rate / slip / completion-gap / wip-bias"
       >
         {urgencyTiers ? (
           <DashboardChip
