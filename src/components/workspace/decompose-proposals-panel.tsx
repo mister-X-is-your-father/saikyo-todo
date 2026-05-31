@@ -198,7 +198,9 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
           <div
             className="flex shrink-0 flex-wrap items-center justify-end gap-1.5"
             role="group"
-            aria-label={`AI 分解提案の bulk 操作 (全て採用 / 全て却下 / 再分解、保留中 ${list.length} 件)`}
+            /* iter1582: paren convention `"AI 分解提案の bulk 操作 (...)"` を iter1578-1581
+               operations group sweep に合わせ em-dash 区切に統一。 */
+            aria-label={`AI 分解提案の bulk 操作 — 全て採用 / 全て却下 / 再分解、保留中 ${list.length} 件`}
           >
             {list.length > 0 && (
               <>
@@ -511,7 +513,8 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
           <div
             className="flex justify-end gap-1"
             role="group"
-            aria-label={`提案「${proposal.title}」の編集 form 操作 (キャンセル / 保存)`}
+            /* iter1582: paren convention を em-dash 区切に統一。 */
+            aria-label={`提案「${proposal.title}」の編集 form 操作 — キャンセル / 保存`}
           >
             {/* iter1106: visible-prefix sweep (iter1093-1105) を decompose-proposal edit
                 buttons にも展開。visible "キャンセル" / "保存" / "保存中…" を冒頭固定。 */}
@@ -583,7 +586,8 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
       <div
         className="flex shrink-0 gap-1"
         role="group"
-        aria-label={`提案「${proposal.title}」の操作 (採用 / 却下)`}
+        /* iter1582: paren convention を em-dash 区切に統一。 */
+        aria-label={`提案「${proposal.title}」の操作 — 採用 / 却下`}
       >
         <Button
           size="sm"
