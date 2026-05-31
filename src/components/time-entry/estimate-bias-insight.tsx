@@ -215,7 +215,8 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
               return (
                 <ul
                   className="text-muted-foreground space-y-0.5 text-[11px]"
-                  aria-label={`典型的な見積分の校正推奨 ${suggestions.length} 件 (calibration ${report.calibrationFactor.toFixed(2)}× 適用)`}
+                  /* iter1594: paren convention を em-dash 区切に統一 (iter1093-1593 sweep)。 */
+                  aria-label={`典型的な見積分の校正推奨 ${suggestions.length} 件 — calibration ${report.calibrationFactor.toFixed(2)}× 適用`}
                   data-testid="estimate-bias-suggestions"
                 >
                   {suggestions.map((s) => (
