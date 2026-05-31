@@ -156,7 +156,10 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
       <div
         className="text-muted-foreground text-[11px]"
         role="img"
-        aria-label={`Sprint 全体: ${populationLabel}`}
+        /* iter1563: 旧 aria-label `"Sprint 全体: ${populationLabel}"` は visible "${populationLabel}" を
+           末尾に持ち voice control prefix-matching が strict prefix-match で不可 (substring 一致のみ)。
+           iter1553-1562 status/role/health/傾向 chip family と同 pattern、visible 冒頭固定 + em-dash 区切。 */
+        aria-label={`${populationLabel} — Sprint 全体`}
         data-testid="sprint-swimlane-population"
       >
         <span aria-hidden="true">{populationLabel}</span>
