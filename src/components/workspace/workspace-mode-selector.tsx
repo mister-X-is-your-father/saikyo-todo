@@ -118,7 +118,9 @@ export function WorkspaceModeSelector({ workspaceId }: Props) {
       <CardContent>
         <div
           role="radiogroup"
-          aria-label={`workspace の default 作業モード (現在: ${MODE_OPTIONS.find((o) => o.value === current)?.label ?? current})`}
+          /* iter1592: 旧 aria-label paren convention `"workspace の default 作業モード (現在: X)"` は
+             iter1093-1591 sweep の em-dash 区切と divergent。区切のみ '(現在:' → ' — 現在' に統一、closing ')' は削除。 */
+          aria-label={`workspace の default 作業モード — 現在 ${MODE_OPTIONS.find((o) => o.value === current)?.label ?? current}`}
           aria-describedby="workspace-mode-hint"
           aria-busy={upd.isPending || undefined}
           className="grid grid-cols-1 gap-2 sm:grid-cols-3"
