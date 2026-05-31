@@ -1098,7 +1098,9 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
             <div
               className="flex gap-1.5"
               role="group"
-              aria-label="Sprint デフォルト編集の操作 (キャンセル / 保存)"
+              /* iter1607: 旧 aria-label paren convention `"Sprint デフォルト編集の操作 (キャンセル / 保存)"` は
+                 iter1093-1606 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
+              aria-label="Sprint デフォルト編集の操作 — キャンセル / 保存"
             >
               <Button
                 type="button"
