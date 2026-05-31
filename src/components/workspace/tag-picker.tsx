@@ -122,7 +122,13 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-72 p-0" align="start" aria-label="タグを選択 / 新規作成">
+      <PopoverContent
+        className="w-72 p-0"
+        align="start"
+        /* iter1546: 旧 "タグを選択 / 新規作成" は ' を' 助詞接続で iter1093-1545 sweep の
+           em-dash 区切と divergent。assignee-picker PopoverContent (iter1545) と同 pattern。 */
+        aria-label="タグ — 選択 / 新規作成"
+      >
         <Command>
           <CommandInput
             placeholder="タグを検索 or 作成…"
