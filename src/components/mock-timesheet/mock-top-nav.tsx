@@ -24,7 +24,9 @@ export function MockTopNav({ sessionId }: { sessionId: string }) {
         </p>
       </div>
       <nav
-        aria-label="mock-timesheet (新規入力 / 入力一覧 / ログアウト)"
+        /* iter1608: 旧 aria-label paren convention `"mock-timesheet (新規入力 / 入力一覧 / ログアウト)"` は
+           iter1093-1607 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
+        aria-label="mock-timesheet — 新規入力 / 入力一覧 / ログアウト"
         className="flex items-center gap-2"
       >
         <Button variant={isNew ? 'default' : 'outline'} size="sm" className="min-h-11" asChild>
