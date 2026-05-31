@@ -182,7 +182,11 @@ export function TaskChuteView({ workspaceId, items }: Props) {
               <span
                 className="text-muted-foreground inline-flex w-12 shrink-0 items-center gap-0.5 font-mono text-[11px] tabular-nums"
                 role="img"
-                aria-label={timeLabel ? `予定時刻 ${timeLabel}` : '時刻未指定'}
+                /* iter1612: 旧 aria-label `"予定時刻 ${timeLabel}"` (timeLabel ありの path) は
+                   visible "${timeLabel}" を末尾に持ち voice control prefix-matching「click HH:MM」 が
+                   strict prefix-match で不可。iter1604 ETA chip と同 pattern、visible 冒頭固定 +
+                   em-dash 区切。null path (`'時刻未指定'`) は visible "--:--" のみで text-prefix 無、維持。 */
+                aria-label={timeLabel ? `${timeLabel} — 予定時刻` : '時刻未指定'}
               >
                 {timeLabel ? (
                   <>
