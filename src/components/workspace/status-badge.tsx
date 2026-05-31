@@ -67,7 +67,11 @@ export function StatusBadge({
       variant="outline"
       className={`inline-flex items-center gap-1 border-transparent ring-1 ring-inset ${cfg.bgClass} ${cfg.textClass} ${cfg.ringClass} ${className ?? ''}`}
       role="img"
-      aria-label={`ステータス: ${cfg.label}`}
+      /* iter1555: 旧 aria-label `"ステータス: ${cfg.label}"` は visible "${cfg.shortLabel}" (e.g.,
+         "完了" / "TODO" / "blocked") を末尾の cfg.label にしか含まず voice control prefix-matching
+        「click 完了」 が strict prefix-match で不可 (substring 一致のみ)。iter1553/1554 sprint/goal
+         status Badge と同 pattern、visible 冒頭固定 + em-dash 区切。 */
+      aria-label={`${cfg.shortLabel} — ステータス: ${cfg.label}`}
       data-testid={dataTestid}
     >
       <Icon className="h-3 w-3 shrink-0" aria-hidden="true" />
