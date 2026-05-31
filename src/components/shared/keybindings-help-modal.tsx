@@ -86,7 +86,9 @@ export function KeybindingsHelpModal({ open, onOpenChange }: Props) {
                   className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase"
                 >
                   {group}
-                  <span className="sr-only"> ({list.length} 件)</span>
+                  {/* iter1619: 旧 sr-only paren convention ` (X 件)` は iter1093-1618 sweep の
+                      em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */}
+                  <span className="sr-only"> — {list.length} 件</span>
                 </h3>
                 <dl
                   className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2"
