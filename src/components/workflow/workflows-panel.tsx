@@ -343,7 +343,9 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
         <div
           className="flex flex-wrap gap-1.5"
           role="group"
-          aria-label={`Workflow「${wf.name}」の操作 (現在: ${wf.enabled ? '有効' : '無効'}、実行 / 編集 / 有効化切替 / 削除)`}
+          /* iter1581: paren convention の `(現在:` を iter1578-1580 operations group sweep に
+             合わせ em-dash 区切に統一。visible 冒頭 "Workflow「${name}」" は維持。 */
+          aria-label={`Workflow「${wf.name}」の操作 — 現在 ${wf.enabled ? '有効' : '無効'}、実行 / 編集 / 有効化切替 / 削除`}
         >
           <Button
             size="sm"

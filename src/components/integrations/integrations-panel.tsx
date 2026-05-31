@@ -156,7 +156,9 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
         <div
           className="flex flex-wrap gap-1.5"
           role="group"
-          aria-label={`Source「${src.name}」の操作 (現在: ${src.enabled ? '有効' : '無効'}、pull / 編集 / 有効化切替 / 削除)`}
+          /* iter1581: paren convention の `(現在:` を iter1578-1580 operations group sweep に
+             合わせ em-dash 区切に統一。visible 冒頭 "Source「${name}」" は維持。 */
+          aria-label={`Source「${src.name}」の操作 — 現在 ${src.enabled ? '有効' : '無効'}、pull / 編集 / 有効化切替 / 削除`}
         >
           {/* iter1115: src-pull / src-toggle / src-imports-toggle の旧 aria-label は visible
               "Pull" / "Pull 中…" / "無効化"or"有効化" / "履歴" を末尾持ちで voice control
