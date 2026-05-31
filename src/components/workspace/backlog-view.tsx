@@ -302,7 +302,11 @@ export function BacklogView({ workspaceId, items }: Props) {
           className="bg-muted text-foreground inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs"
           data-testid="backlog-estimate-summary"
           role="img"
-          aria-label={`Backlog 見積サマリ: ${estimateSummary}`}
+          /* iter1564: 旧 aria-label `"Backlog 見積サマリ: ${estimateSummary}"` は visible
+             "${estimateSummary}" を末尾に持ち voice control prefix-matching が strict prefix-match
+             で不可 (substring 一致のみ)。iter1553-1563 status/role/health/傾向 chip family と同
+             pattern、visible 冒頭固定 + em-dash 区切。 */
+          aria-label={`${estimateSummary} — Backlog 見積サマリ`}
         >
           <span aria-hidden="true">⏱</span>
           <span aria-hidden="true">{estimateSummary}</span>
