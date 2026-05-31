@@ -512,7 +512,10 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
               variant={STATUS_COLOR[status]}
               data-testid={`goal-status-${goal.id}`}
               role="img"
-              aria-label={`Goal「${goal.title}」のステータス: ${goalStatusLabelJa(status)}`}
+              /* iter1554: 旧 aria-label `"Goal「${goal.title}」のステータス: ${status}"` は visible
+                 "${status}" を末尾に持ち voice control prefix-matching「click 完了」 が strict
+                 prefix-match で不可。iter1553 sprint-status Badge と同 pattern、visible 冒頭固定 + em-dash 区切。 */
+              aria-label={`${goalStatusLabelJa(status)} — Goal「${goal.title}」のステータス`}
             >
               <span aria-hidden="true">{goalStatusLabelJa(status)}</span>
             </Badge>
