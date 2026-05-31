@@ -175,7 +175,10 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
       data-testid="active-timer-panel"
       data-pip={inPip ? 'true' : 'false'}
       role="region"
-      aria-label={`タスクタイマー (経過 ${formatElapsed(elapsedMs)}${running ? ' 計測中' : ' 一時停止中'})`}
+      /* iter1576: 旧 paren convention `タスクタイマー (経過 ${X} 計測中|一時停止中)` を
+         iter1093-1575 sweep の em-dash 区切に統一。visible "タスクタイマー" は元から冒頭
+         prefix (voice control OK)、区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
+      aria-label={`タスクタイマー — 経過 ${formatElapsed(elapsedMs)}${running ? ' 計測中' : ' 一時停止中'}`}
     >
       <div className="min-w-0 flex-1">
         <div className="text-muted-foreground text-[10px]">
