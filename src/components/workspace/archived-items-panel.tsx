@@ -103,7 +103,9 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
     <div className="overflow-hidden rounded-lg border" data-testid="archive-list">
       <table className="w-full border-collapse text-sm">
         <caption className="sr-only">
-          アーカイブ済 Item 一覧 (タイトル / ステータス / 期限 / アーカイブ日時 / 復元操作)
+          {/* iter1615: 旧 sr-only caption paren convention `(タイトル / ステータス / ...)` は
+              iter1093-1614 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */}
+          アーカイブ済 Item 一覧 — タイトル / ステータス / 期限 / アーカイブ日時 / 復元操作
         </caption>
         <thead className="bg-muted">
           <tr>
