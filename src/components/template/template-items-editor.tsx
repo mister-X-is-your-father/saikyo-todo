@@ -229,7 +229,10 @@ export function TemplateItemsEditor({ templateId }: Props) {
                 <span
                   className="text-muted-foreground text-xs"
                   role="img"
-                  aria-label={`期日 offset +${it.dueOffsetDays} 日`}
+                  /* iter1574: 旧 `期日 offset +${days} 日` は visible "+${days}日" を末尾に持ち
+                     voice control prefix-matching「click +N日」 が strict prefix-match で不可。
+                     iter1093-1573 sweep convention で visible 冒頭固定 + em-dash 区切。 */
+                  aria-label={`+${it.dueOffsetDays} 日 — 期日 offset`}
                 >
                   <span aria-hidden="true">+{it.dueOffsetDays}日</span>
                 </span>
