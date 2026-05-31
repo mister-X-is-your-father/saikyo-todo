@@ -178,7 +178,9 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
         ) : (
           <ol
             className="space-y-1"
-            aria-label={`直近 ${WINDOW_DAYS} 日 Item 別稼働 top ${summary.top.length} 件 (合計時間が多い順)`}
+            /* iter1590: 旧 aria-label paren convention `"直近 X 日 Item 別稼働 top Y 件 (合計時間が多い順)"` は
+               iter1093-1589 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
+            aria-label={`直近 ${WINDOW_DAYS} 日 Item 別稼働 top ${summary.top.length} 件 — 合計時間が多い順`}
           >
             {summary.top.map((row, idx) => {
               const title = summary.titles.get(row.itemId) ?? '(無題)'
