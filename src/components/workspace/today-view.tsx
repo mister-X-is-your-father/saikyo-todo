@@ -251,7 +251,10 @@ export function TodayView({
                           <span
                             className="tabular-nums"
                             role="img"
-                            aria-label={`期限時刻 ${it.dueTime.slice(0, 5)}`}
+                            /* iter1567: 旧 `期限時刻 ${HH:MM}` は visible (= "HH:MM" のみ) を末尾に持ち
+                               voice control prefix-matching「click HH:MM」 が strict prefix-match で
+                               不可。iter1093-1566 sweep convention で visible 冒頭固定 + em-dash 区切。 */
+                            aria-label={`${it.dueTime.slice(0, 5)} — 期限時刻`}
                           >
                             <span aria-hidden="true">{it.dueTime.slice(0, 5)}</span>
                           </span>
