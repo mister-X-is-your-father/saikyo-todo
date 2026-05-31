@@ -22,7 +22,11 @@ export function WorkspaceHeader({ title, role, subtitle, pageActions, utility }:
     // iter994: " header" suffix を削除 (iter945 sweep、element tag 名 redundant)。
     <header
       className="flex flex-wrap items-start justify-between gap-3"
-      aria-label={`Workspace: ${title}`}
+      /* iter1563: 旧 `Workspace: ${title}` は ':' colon 区切で visible h1 "${title}" を末尾に持ち
+         voice control prefix-matching「click ${title}」 / SR landmark navigation の prefix scan
+         が strict prefix-match で不可。iter1553-1562 status/role Badge family + iter1556
+         workspace-role Badge と同 file 内 pattern、visible 冒頭固定 + em-dash 区切。 */
+      aria-label={`${title} — Workspace`}
     >
       <div className="min-w-0">
         <div className="flex items-center gap-2">
