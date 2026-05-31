@@ -286,7 +286,9 @@ export function BudgetPanel({ workspaceId }: Props) {
             <div
               className="flex justify-end gap-1.5"
               role="group"
-              aria-label="AI 月次コスト上限編集の操作 (キャンセル / 保存)"
+              /* iter1606: 旧 aria-label paren convention `"AI 月次コスト上限編集の操作 (キャンセル / 保存)"` は
+                 iter1093-1605 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
+              aria-label="AI 月次コスト上限編集の操作 — キャンセル / 保存"
             >
               {/* iter1102: budget-edit-cancel / budget-save-btn の旧 aria-label は visible
                   "キャンセル" / "保存" / "保存中…" を末尾持ち、voice control prefix-matching
