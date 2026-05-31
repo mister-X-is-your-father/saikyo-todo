@@ -998,7 +998,10 @@ function RunStatusBadge({ status }: { status: string }) {
     <span
       className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${cls}`}
       role="img"
-      aria-label={`実行ステータス: ${label}`}
+      /* iter1558: 旧 aria-label `"実行ステータス: ${label}"` は visible "${label}" を末尾に持ち
+         voice control prefix-matching「click 成功」 が strict prefix-match で不可 (substring 一致のみ)。
+         iter1553-1557 status/role Badge family と同 pattern、visible 冒頭固定 + em-dash 区切。 */
+      aria-label={`${label} — 実行ステータス`}
     >
       <span aria-hidden="true">{label}</span>
     </span>
