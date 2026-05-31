@@ -763,7 +763,11 @@ function SprintCard({
           <div
             className="flex flex-wrap gap-1.5"
             role="group"
-            aria-label={`Sprint「${sprint.name}」の操作 (現在: ${sprintStatusLabelJa(status)}、期間編集 / ステータス遷移 / Retro / Pre-mortem)`}
+            /* iter1578: 旧 paren convention `"Sprint「${name}」の操作 (現在: ${status}、...)"` を
+               iter1093-1577 sweep の em-dash 区切に統一。visible 冒頭 "Sprint「${name}」" は維持、
+               区切のみ '(現在:' → ' — 現在' に統一、closing ')' は削除。iter1573-1577 region/group
+               landmark sweep の sprint operations group 着地。 */
+            aria-label={`Sprint「${sprint.name}」の操作 — 現在 ${sprintStatusLabelJa(status)}、期間編集 / ステータス遷移 / Retro / Pre-mortem`}
           >
             {!editing && status !== 'cancelled' && status !== 'completed' && (
               <Button
