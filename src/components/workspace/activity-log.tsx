@@ -192,9 +192,15 @@ function ActivityRow({
                 : 'bg-muted text-foreground'
             }`}
             role="img"
-            aria-label={entry.actorType === 'agent' ? '実行者: AI Agent' : '実行者: ユーザ'}
+            /* iter1561: 旧 `実行者: {AI Agent|ユーザ}` は ':' colon 区切で visible
+               ("AI"/"user") を先頭に持たず voice control prefix-matching 不可。
+               agent path は visible "AI" → aria "AI Agent — 実行者" で prefix-match 復活。
+               user path は旧 visible "user" (English) と旧 aria "ユーザ" (Japanese) の
+               language divergence で voice control「click user」 / 「click ユーザ」 どちらでも
+               不可 → visible を Ja "ユーザ" に揃え、aria を "ユーザ — 実行者" 形式に統一。 */
+            aria-label={entry.actorType === 'agent' ? 'AI Agent — 実行者' : 'ユーザ — 実行者'}
           >
-            <span aria-hidden="true">{entry.actorType === 'agent' ? 'AI' : 'user'}</span>
+            <span aria-hidden="true">{entry.actorType === 'agent' ? 'AI' : 'ユーザ'}</span>
           </span>
         </div>
         <time
