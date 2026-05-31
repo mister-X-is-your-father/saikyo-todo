@@ -639,7 +639,9 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
             <div
               className="flex flex-wrap gap-1.5"
               role="group"
-              aria-label="trigger プリセット (4 種: manual / cron / item-event / webhook、JSON に 1 click 投入)"
+              /* iter1595: 旧 aria-label paren convention `"trigger プリセット (4 種: manual / cron / item-event / webhook、JSON に 1 click 投入)"` は
+                 iter1093-1594 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、内部 colon は space、closing ')' は削除。 */
+              aria-label="trigger プリセット — 4 種 manual / cron / item-event / webhook、JSON に 1 click 投入"
             >
               <Button
                 type="button"
