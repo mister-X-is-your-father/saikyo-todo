@@ -295,7 +295,9 @@ export function GanttView({
       // label 付き role="group" (必須子なし) に降格。各 bar は role="button" + aria-label で
       // 個別に accessible なので情報損失は無し。
       role="group"
-      aria-label={`Gantt チャート (Item ${withDates.length} 件 × 期間 ${totalSpanDays} 日)`}
+      /* iter1578: 旧 aria-label paren convention `"Gantt チャート (Item X 件 × 期間 Y 日)"` は
+         iter1093-1577 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
+      aria-label={`Gantt チャート — Item ${withDates.length} 件 × 期間 ${totalSpanDays} 日`}
     >
       {/* Project summary banner (Phase 6.15 iter 46 — TeamGantt/GanttPRO 風) */}
       <div
