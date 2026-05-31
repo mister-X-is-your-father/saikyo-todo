@@ -132,7 +132,9 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
         <Command>
           <CommandInput
             placeholder="タグを検索 or 作成…"
-            aria-label="タグを検索 or 新規作成 (Item に紐付けるラベル、新規 tag は色がランダム生成)"
+            /* iter1550: 旧 "タグを検索 or 新規作成 (Item に紐付けるラベル、新規 tag は色がランダム生成)" は ' を' 助詞接続で
+               iter1093-1549 sweep の em-dash 区切と divergent。iter1549 assignee-picker CommandInput と同 surface 内 pattern。 */
+            aria-label="タグ — Item に紐付けるラベルを検索 or 新規作成 (新規 tag は色がランダム生成)"
             value={query}
             onValueChange={setQuery}
           />
