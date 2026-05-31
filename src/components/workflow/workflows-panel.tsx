@@ -587,7 +587,9 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
             <div
               className="flex flex-wrap gap-1.5"
               role="group"
-              aria-label={`node 追加プリセット (${NODE_PRESETS.length} 種、graph JSON に skeleton を 1 click 投入)`}
+              /* iter1593: 旧 aria-label paren convention `"node 追加プリセット (X 種、graph JSON に skeleton を 1 click 投入)"` は
+                 iter1093-1592 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
+              aria-label={`node 追加プリセット — ${NODE_PRESETS.length} 種、graph JSON に skeleton を 1 click 投入`}
             >
               {NODE_PRESETS.map((preset) => (
                 <Button
