@@ -320,7 +320,9 @@ export function BacklogView({ workspaceId, items }: Props) {
         >
           <table className="w-full border-collapse text-sm">
             <caption className="sr-only">
-              バックログ一覧 (DnD で並び替え可能 / 列ヘッダ click で sort)
+              {/* iter1616: 旧 sr-only caption paren convention `(DnD で並び替え可能 / 列ヘッダ click で sort)` は
+                  iter1093-1615 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */}
+              バックログ一覧 — DnD で並び替え可能 / 列ヘッダ click で sort
             </caption>
             <thead className="bg-muted sticky top-0 z-10">
               {table.getHeaderGroups().map((hg) => (
