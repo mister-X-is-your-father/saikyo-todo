@@ -187,7 +187,11 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
                     : 'text-muted-foreground'
                 }
                 role="img"
-                aria-label={`lane: ${row.loadSummaryJa} / ${row.conflictsJa}`}
+                /* iter1564: 旧 `lane: ${row.loadSummaryJa} / ${row.conflictsJa}` は ':' colon 区切で
+                   visible "${loadSummaryJa}" を末尾に持ち voice control prefix-matching 不可。
+                   iter1553-1563 sweep convention + iter1563 同 file 内 population chip と同 pattern、
+                   visible 冒頭固定 + em-dash 区切。 */
+                aria-label={`${row.loadSummaryJa} — lane / ${row.conflictsJa}`}
               >
                 <span aria-hidden="true">{row.loadSummaryJa}</span>
               </span>
