@@ -268,7 +268,11 @@ function SubtaskTreeNode({
     <li
       ref={setNodeRef}
       style={sortableStyle}
-      className="space-y-1 outline-none focus-within:ring-1 focus-within:ring-blue-200"
+      /* iter1573: focus-within:ring-blue-200 は light 固定で iter1493/1512-1571 ring dark sweep
+         からこぼれていた (subtasks-panel step number iter1548 と同 file 内の別 ring 漏れ)。
+         dark mode で ring-blue-200 (very-light blue) は dark bg 上で blowout、focus indicator が
+         潰れる。dark:focus-within:ring-blue-700 (= darker) で contrast 整合。 */
+      className="space-y-1 outline-none focus-within:ring-1 focus-within:ring-blue-200 dark:focus-within:ring-blue-700"
       data-testid={`subtask-${item.id}`}
       data-depth={depth}
       tabIndex={-1}
