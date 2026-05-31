@@ -287,13 +287,17 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
           // 概念名 "Picture-in-Picture" が末尾 () 内に divergence、voice control
           // 「click Picture-in-Picture」 prefix-match 不可。他 3 path は既に "Picture-in-Picture"
           // 冒頭 OK だったため default のみ修正、4 path 全部冒頭 "Picture-in-Picture" 統一。
+          /* iter1553: 4 path のうち 3 path (unsupported / inPip / pending) は visible
+             "Picture-in-Picture" 冒頭 OK だが ' を' 助詞接続 / ' は' で iter1093-1552 sweep の
+             em-dash 区切と divergent。default path のみ em-dash convention に合致していた。
+             全 4 path で em-dash convention 統一 (iter1222 visible-prefix 維持 + em-dash 揃え)。 */
           aria-label={
             !pipSupported
-              ? 'Picture-in-Picture は Chrome / Edge で利用可能'
+              ? 'Picture-in-Picture — Chrome / Edge で利用可能'
               : inPip
-                ? 'Picture-in-Picture を閉じてページに戻す'
+                ? 'Picture-in-Picture — 閉じてページに戻す'
                 : pipPending
-                  ? 'Picture-in-Picture を開いています…'
+                  ? 'Picture-in-Picture — 開いています…'
                   : 'Picture-in-Picture — 常に手前表示で別 window 化'
           }
           title={
