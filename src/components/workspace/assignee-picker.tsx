@@ -123,7 +123,10 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
         <Command>
           <CommandInput
             placeholder="メンバー / AI を検索…"
-            aria-label="アサイン候補を検索 (workspace メンバー / AI Agent)"
+            /* iter1549: 旧 "アサイン候補を検索 (workspace メンバー / AI Agent)" は ' を' 助詞接続で
+               iter1093-1548 sweep の em-dash 区切と divergent。iter1545 PopoverContent と同 surface 内で
+               aria-label convention 統一。 */
+            aria-label="アサイン候補 — workspace メンバー / AI Agent を検索"
           />
           <CommandList>
             <CommandEmpty>
