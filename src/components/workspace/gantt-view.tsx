@@ -336,7 +336,8 @@ export function GanttView({
             className="text-red-600 dark:text-red-400"
             title="critical path 上の item (= project 全体期間に直接影響、遅延すると全体遅延)"
             role="img"
-            aria-label={`critical path ${criticalCount} 件 (project 全体期間に直接影響、遅延すると全体遅延)`}
+            /* iter1583: paren convention を em-dash 区切に統一 (iter1093-1582 sweep)。 */
+            aria-label={`critical path ${criticalCount} 件 — project 全体期間に直接影響、遅延すると全体遅延`}
           >
             <span aria-hidden="true">
               critical path <span className="font-mono">{criticalCount}</span> 件
@@ -348,7 +349,8 @@ export function GanttView({
             data-testid="gantt-summary-baseline"
             title="baseline = 計画策定時に固定した開始/終了日 (実績との遅延差分計測の基準)"
             role="img"
-            aria-label={`baseline ${baselineCount} 件 (計画策定時に固定した開始/終了日、実績との遅延差分計測の基準)`}
+            /* iter1583: paren convention を em-dash 区切に統一 (iter1093-1582 sweep)。 */
+            aria-label={`baseline ${baselineCount} 件 — 計画策定時に固定した開始/終了日、実績との遅延差分計測の基準`}
           >
             <span aria-hidden="true">
               baseline <span className="font-mono">{baselineCount}</span> 件
@@ -361,7 +363,8 @@ export function GanttView({
             className="text-amber-600 dark:text-amber-400"
             title={`baseline より遅れている item の合計遅延日数`}
             role="img"
-            aria-label={`遅延 ${slipItemCount} 件 (baseline より遅れている item)、計 ${totalSlipDays} 日`}
+            /* iter1583: paren convention を em-dash 区切に統一 (iter1093-1582 sweep)。 */
+            aria-label={`遅延 ${slipItemCount} 件 — baseline より遅れている item、計 ${totalSlipDays} 日`}
           >
             <span aria-hidden="true">
               遅延 <span className="font-mono">{slipItemCount}</span> 件 / 計
