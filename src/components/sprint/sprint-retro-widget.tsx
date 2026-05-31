@@ -297,7 +297,10 @@ function StatusChip({
     <span
       className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] ${cls}`}
       role="img"
-      aria-label={`${toneLabel}: ${label} ${count} 件`}
+      /* iter1569: 旧 `${toneLabel}: ${label} ${count} 件` は ':' colon 区切で visible "${label} ${count}"
+         を末尾に持ち voice control prefix-matching「click ${label}」 が strict prefix-match で不可。
+         iter1093-1568 sweep convention で visible 冒頭固定 + em-dash 区切。 */
+      aria-label={`${label} ${count} 件 — ${toneLabel}`}
       data-testid={`retro-status-chip-${label}`}
     >
       <span aria-hidden="true">{label}</span>
