@@ -161,7 +161,7 @@ function SubtaskTreeNode({
         // で 16+24=40 両軸、WCAG 2.5.5 (44x44) 未達。`inline-flex min-h-11 min-w-11 items-center
         // justify-center` 追加で両軸 44 強制、icon は center 配置で見た目バランス維持。
         className="text-muted-foreground hover:text-foreground focus-visible:ring-ring relative -ml-1 inline-flex min-h-11 min-w-11 cursor-grab touch-none items-center justify-center rounded before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none active:cursor-grabbing"
-        aria-label={`「${item.title}」をドラッグで並び替え`}
+        aria-label={`「${item.title}」 — ドラッグで並び替え`}
         data-testid={`subtask-drag-${item.id}`}
         {...attributes}
         {...listeners}
