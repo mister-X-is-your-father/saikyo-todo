@@ -323,10 +323,13 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
               onClick={() => setShowDoneYesterday((v) => !v)}
               aria-expanded={showDoneYesterday}
               aria-controls="operation-board-done-yesterday-list"
+              /* iter1547: 旧 `件の一覧を{閉じる|表示}` は ' を' 助詞接続で iter1093-1546 sweep の
+                 em-dash 区切と divergent。team-capacity-panel summary (iter1544) と同 pattern で
+                 em-dash 化。visible prefix `昨日 done {count} 件` は維持 (voice control)。 */
               aria-label={
                 showDoneYesterday
-                  ? `昨日 done ${board.doneYesterday.count} 件の一覧を閉じる`
-                  : `昨日 done ${board.doneYesterday.count} 件の一覧を表示`
+                  ? `昨日 done ${board.doneYesterday.count} 件 — 一覧を閉じる`
+                  : `昨日 done ${board.doneYesterday.count} 件 — 一覧を表示`
               }
               data-testid="operation-board-done-yesterday-toggle"
             >
