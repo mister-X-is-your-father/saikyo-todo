@@ -682,7 +682,10 @@ function SourceImportHistory({ sourceId }: { sourceId: string }) {
             <span
               className="text-destructive line-clamp-1 w-full text-[10px]"
               title={r.error}
-              aria-label={`Pull エラー: ${r.error}`}
+              /* iter1566: 旧 `Pull エラー: ${r.error}` は ':' colon 区切で visible "${r.error}"
+                 (= 隣接 aria-hidden span text) を末尾に持ち voice control prefix-matching 不可。
+                 iter1553-1565 sweep convention で visible 冒頭固定 + em-dash 区切。 */
+              aria-label={`${r.error} — Pull エラー`}
               role="alert"
             >
               <span aria-hidden="true">{r.error}</span>
