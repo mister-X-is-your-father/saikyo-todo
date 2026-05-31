@@ -173,7 +173,11 @@ function SubtaskTreeNode({
           authoritative 化 (iter1023/1049-1060 同 pattern、role=img sweep
           14 弾目)。subtask step 番号 chip。 */}
       <span
-        className="bg-muted text-foreground inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[11px] tabular-nums ring-1 ring-slate-200 ring-inset"
+        // iter1548: ring-slate-200 は light 固定で iter1376/1493/1512-1547 chip/ring dark sweep
+        // からこぼれていた (subtasks child count iter1535 と同 file 内の漏れ)。bg-muted/text-foreground は
+        // CSS var で theme-aware だが ring のみ explicit、dark 時に ring-slate-200 が浮く。
+        // dark:ring-slate-700 を補完で contrast 整合。
+        className="bg-muted text-foreground inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[11px] tabular-nums ring-1 ring-slate-200 ring-inset dark:ring-slate-700"
         role="img"
         aria-label={`${index + 1} 番目 (深さ ${depth + 1})`}
         data-testid={`subtask-step-${item.id}`}
