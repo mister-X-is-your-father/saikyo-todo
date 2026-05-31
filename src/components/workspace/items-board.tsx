@@ -348,7 +348,10 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
               checked={must}
               onChange={(e) => setMust(e.target.checked || null)}
               data-testid="filter-must"
-              aria-label={must ? 'MUST のみ表示中 — クリックで解除' : 'MUST のみ表示に絞り込む'}
+              /* iter1556: inactive path は旧 ` に` 助詞接続で iter1093-1555 sweep の em-dash
+                 区切と divergent。active path は既に em-dash convention。両 path で visible
+                 "MUST のみ" 冒頭は維持 (voice control)。 */
+              aria-label={must ? 'MUST のみ表示中 — クリックで解除' : 'MUST のみ — 表示に絞り込む'}
             />
             <span aria-hidden="true">MUST のみ</span>
           </label>
