@@ -108,7 +108,9 @@ export function InboxView({
       className="space-y-1 rounded-lg border p-2"
       data-testid="inbox-view"
       role="region"
-      aria-label={`Inbox view (${inbox.length} 件、scheduledFor も期限も未設定、健全性: ${healthChip.label})`}
+      /* iter1592: paren convention `Inbox view (...)` を iter1093-1591 sweep の em-dash 区切に統一。
+         内側 ':' colon (健全性: X) は em-dash convention で ' — ' に整える。 */
+      aria-label={`Inbox view — ${inbox.length} 件、scheduledFor も期限も未設定、健全性 ${healthChip.label}`}
     >
       <div className="mb-1 flex items-center gap-2 px-2 text-xs">
         {/* iter923: parent region aria-label "Inbox view (${N} 件、scheduledFor も
