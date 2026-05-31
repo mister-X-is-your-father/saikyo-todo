@@ -188,7 +188,8 @@ export function WeeklyInsightWidget({ items, now }: Props) {
         <div
           className="grid grid-cols-7 gap-1"
           role="img"
-          aria-label={`曜日別完了件数 (今週 vs 前週): ${insight.byDay
+          /* iter1595: paren + colon convention を iter1093-1594 sweep の em-dash 区切に統一。 */
+          aria-label={`曜日別完了件数 — 今週 vs 前週 — ${insight.byDay
             .map((d) => `${d.day} 今週${d.current} / 前週${d.prev}`)
             .join(', ')}`}
           data-testid="weekly-insight-by-day"
