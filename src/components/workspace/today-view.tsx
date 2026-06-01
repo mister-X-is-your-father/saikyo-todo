@@ -182,7 +182,11 @@ export function TodayView({
                   role="heading"
                   aria-level={2}
                 >
-                  {g.label} ({g.items.length})
+                  {/* iter1656: 旧 visible `${g.label} (${N})` paren convention は g.label が
+                     内部 paren を持つ「今日 (6/1 月)」case で double paren `今日 (6/1 月) (2)` と
+                     なり awkward。iter1093-1655 sweep 全般の em-dash 区切 convention に揃え
+                     `${g.label} — ${N} 件` で全 group (期限超過 / 今日 / 明日 / 今週内) を統一。 */}
+                  {g.label} — {g.items.length} 件
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
