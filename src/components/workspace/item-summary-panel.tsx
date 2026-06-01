@@ -94,10 +94,12 @@ export function ItemSummaryPanel({ workspaceId, item }: Props) {
               : 'border-slate-200 bg-slate-50 ring-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:ring-slate-700'
         }`}
         role="status"
+        /* iter1669: 旧 `子タスク進捗: ${X} — ${Y}` の colon 区切は em-dash convention と
+           mixed。両 path で colon → em-dash に統一、aria-label format を 1 形式に。 */
         aria-label={
           progress
-            ? `子タスク進捗: ${formatDescendantsActivityHintJa(progress)} — ${formatDescendantsProgressJa(progress)}`
-            : '子タスク進捗: 読み込み中'
+            ? `子タスク進捗 — ${formatDescendantsActivityHintJa(progress)} / ${formatDescendantsProgressJa(progress)}`
+            : '子タスク進捗 — 読み込み中'
         }
         data-testid="item-summary-progress"
         data-pct-done={progress?.pctDone ?? 0}
@@ -118,7 +120,7 @@ export function ItemSummaryPanel({ workspaceId, item }: Props) {
         }`}
         role="status"
         aria-label={
-          readiness ? `依存: ${formatDependencyReadiness(readiness)}` : '依存: 読み込み中'
+          readiness ? `依存 — ${formatDependencyReadiness(readiness)}` : '依存 — 読み込み中'
         }
         data-testid="item-summary-dependency"
         data-blocked={readiness?.isBlocked ?? false}
