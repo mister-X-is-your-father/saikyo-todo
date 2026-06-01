@@ -76,7 +76,7 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
         ) : (
           <ul
             className="flex flex-col gap-1"
-            aria-label={`検索結果 ${filtered.length} 件`}
+            aria-label={`検索結果 — ${filtered.length} 件`}
             data-testid="schedule-picker-list"
           >
             {filtered.map((it) => (

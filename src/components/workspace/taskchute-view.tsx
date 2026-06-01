@@ -165,7 +165,7 @@ export function TaskChuteView({ workspaceId, items }: Props) {
 
         <ol
           className="divide-border divide-y"
-          aria-label={`今日の task を時刻昇順で並べた 1 列 timeline ${ordered.length} 件`}
+          aria-label={`今日の task を時刻昇順で並べた 1 列 timeline — ${ordered.length} 件`}
         >
           {ordered.map(({ item, timeLabel }) => (
             <li

@@ -138,7 +138,7 @@ export function ActivityLog({ itemId }: { itemId: string }) {
       <ul
         className="space-y-2"
         data-testid="activity-log"
-        aria-label={`Activity 履歴 ${data.length} 件`}
+        aria-label={`Activity 履歴 — ${data.length} 件`}
       >
         {data.map((entry) => (
           <ActivityRow key={entry.id} entry={entry} />
