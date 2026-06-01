@@ -104,6 +104,7 @@ export function WorkflowsPanel({ workspaceId }: Props) {
               <Label htmlFor="wf-name">名前</Label>
               <IMEInput
                 id="wf-name"
+                className="h-11"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="例: 朝の Slack 通知"
