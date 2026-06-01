@@ -114,6 +114,7 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
             {/* iter1017: 同上、CLAUDE.md 規約 IMEInput 採用 (日本語メモ入力)。 */}
             <IMEInput
               id="schedule-picker-interrupt-note"
+              className="h-11"
               placeholder="例: 急な電話 / 昼休み"
               value={interruptNote}
               onChange={(e) => setInterruptNote(e.target.value)}
