@@ -210,7 +210,9 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
             role="heading"
             aria-level={2}
           >
-            {periodLabelJa(period)}の Item ({filtered.length})
+            {/* iter1660: iter1656 today-view group heading と同 sweep。`${X}の Item (${N})`
+                paren 区切 → em-dash 区切で SR / 視覚共に convention 統一。 */}
+            {periodLabelJa(period)}の Item — {filtered.length} 件
           </CardTitle>
         </CardHeader>
         <CardContent>
