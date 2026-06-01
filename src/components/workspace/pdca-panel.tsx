@@ -166,7 +166,16 @@ export function PdcaPanel({ workspaceId }: Props) {
         )}
 
         {/* Lead time stats */}
-        <div className="grid grid-cols-3 gap-2">
+        {/* iter1621: 3 LeadStat (平均 / 中央値 / P95) は dt/dd 構造を持たない単純 div で SR が
+           "平均", "0", "日", "中央値", "0", "日", ... と 9 piece に分解し読み上げる UX gap。
+           cycle-check-stats-card (iter1081 + iter1574 sweep) と同 atomic chip pattern で
+           grid 親に role="img" + 集約 aria-label を付与、内側 LeadStat は aria-hidden で
+           重複読み上げを抑止し SR が 1 unit として解釈するように。 */}
+        <div
+          className="grid grid-cols-3 gap-2"
+          role="img"
+          aria-label={`Lead time 内訳 — 平均 ${leadTimeDays.avg} 日 / 中央値 ${leadTimeDays.p50} 日 / P95 ${leadTimeDays.p95} 日`}
+        >
           <LeadStat label="平均" value={leadTimeDays.avg} unit="日" />
           <LeadStat label="中央値" value={leadTimeDays.p50} unit="日" />
           <LeadStat label="P95" value={leadTimeDays.p95} unit="日" />
@@ -271,8 +280,10 @@ function DailyBars({
 }
 
 function LeadStat({ label, value, unit }: { label: string; value: number; unit: string }) {
+  // iter1621: aria-hidden で親 grid (role=img) の集約 aria-label を authoritative 化
+  // (cycle-check-stats-card iter1081 pattern と統一)。
   return (
-    <div className="rounded border p-2 text-center">
+    <div className="rounded border p-2 text-center" aria-hidden="true">
       <div className="text-muted-foreground text-xs">{label}</div>
       <div className="font-mono text-lg">
         {value} <span className="text-xs">{unit}</span>
