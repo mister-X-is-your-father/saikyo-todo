@@ -66,7 +66,12 @@ export function ItemCheckbox({
       onClick={handle}
       disabled={toggle.isPending}
       aria-busy={toggle.isPending || undefined}
-      className={`relative inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors before:absolute before:-inset-3 before:rounded-full before:content-[''] disabled:before:hidden ${colorClass} ${className ?? ''}`}
+      /* iter1667: 旧 className に focus-visible:ring が無く、keyboard user が
+         Tab focus した時に視覚 indicator が出なかった (WCAG 2.4.7 Focus Visible
+         違反)。`focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none`
+         を追加し、EMPTY_CTA_BUTTON_CLASS / Button shadcn / 他 inline custom button と
+         focus convention 統一。 */
+      className={`focus-visible:ring-ring relative inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors before:absolute before:-inset-3 before:rounded-full before:content-[''] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none disabled:before:hidden ${colorClass} ${className ?? ''}`}
       data-testid={`item-checkbox-${item.id}`}
       // iter1219: 旧 aria-label は visible 概念名 "完了にする" / "未完了に戻す" / "切替中…"
       // を末尾 ("「title」を **完了にする**" / "「title」の完了状態を **切替中…**") に持ち
