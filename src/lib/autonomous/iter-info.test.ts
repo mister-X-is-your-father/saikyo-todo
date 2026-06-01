@@ -46,6 +46,19 @@ describe('parseIterFromGitLog', () => {
     expect(parseIterFromGitLog('aaa iteration test iter loop')).toBe(0)
   })
 
+  it('iter1654: `[iter1653 basics 1/1]` 形式 + `playwright-iter1652` 形式の混在を正しく max 抽出', () => {
+    // 実運用で 2 commit subject 形式が混在 (本 fire iter1620+ で観測):
+    // - in-session loop: `[iter<N> <track> <i>/<j>]` 形式
+    // - playwright fire: `playwright-iter<N>` 形式 (prefix `playwright-` あり)
+    // parseIterFromGitLog は両形式とも `iter\d+` regex で抽出するため max は安定。
+    const log = [
+      'aaa test(global-shortcuts): G_PREFIX_VIEWS invariant test [iter1653 basics 1/1]',
+      'bbb chore(handoff): playwright-iter1652 §9 — picker / template mobile h-11',
+      'ccc fix(phase6.15): mobile h-11 picker [playwright-iter1651 1/1 mode-M]',
+    ].join('\n')
+    expect(parseIterFromGitLog(log)).toBe(1653)
+  })
+
   it('並行 fire iter 番号衝突 — 同 iter が複数 commit に出ても max が安定 (重複した iter は新規 iter ではない)', () => {
     // 実際の運用パターン (iter1625 で並行 fire の 2 agent が同 iter 番号を使った例):
     // - 'feat(focus-form-cta) [iter1625 refactor 1/1]'   ← parallel A
