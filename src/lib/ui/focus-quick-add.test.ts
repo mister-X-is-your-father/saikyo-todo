@@ -99,4 +99,21 @@ describe('focusElementById (iter1625 — 任意 id 版)', () => {
     expect(focusQuickAdd()).toBe(true)
     expect(focusSpy).toHaveBeenCalledOnce()
   })
+
+  it("空文字 id → false (document.getElementById('') は null を返す defensive 契約)", () => {
+    expect(focusElementById('')).toBe(false)
+  })
+
+  it('非 input element (div) も id があれば focus される (HTMLElement generic 契約)', () => {
+    const el = document.createElement('div')
+    el.id = 'cycle-do-tab'
+    el.tabIndex = -1 // programmatic focus 可能化
+    ;(el as HTMLElement & { scrollIntoView: (...args: unknown[]) => void }).scrollIntoView =
+      () => {}
+    document.body.appendChild(el)
+    const focusSpy = vi.spyOn(el, 'focus')
+
+    expect(focusElementById('cycle-do-tab')).toBe(true)
+    expect(focusSpy).toHaveBeenCalledOnce()
+  })
 })
