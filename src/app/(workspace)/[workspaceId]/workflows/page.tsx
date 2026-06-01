@@ -39,7 +39,7 @@ export default async function WorkflowsPage({ params }: PageProps) {
     <main
       id="main-content"
       tabIndex={-1}
-      aria-label="Workflows 自動化ワークフロー (n8n 風)"
+      aria-label="Workflows — 自動化ワークフロー (n8n 風)"
       className="container mx-auto max-w-5xl space-y-6 p-4 focus-visible:outline-none md:p-6"
     >
       <WorkspaceHeader

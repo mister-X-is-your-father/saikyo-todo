@@ -49,7 +49,7 @@ export default async function WorkspacePage({ params }: PageProps) {
     <main
       id="main-content"
       tabIndex={-1}
-      aria-label="Workspace dashboard (Today / Inbox / Kanban / Backlog / Gantt / Dashboard)"
+      aria-label="Workspace dashboard — Today / Inbox / Kanban / Backlog / Gantt / Dashboard"
       className="container mx-auto max-w-5xl space-y-6 p-4 focus-visible:outline-none md:p-6"
     >
       <WorkspaceHeader
@@ -60,7 +60,7 @@ export default async function WorkspacePage({ params }: PageProps) {
           <>
             <HeartbeatButton workspaceId={workspaceId} />
             <nav
-              aria-label="ワークスペース内 (Goals / Sprints / PDCA / Templates / Workflows / API / Time / Archive)"
+              aria-label="ワークスペース内 — Goals / Sprints / PDCA / Templates / Workflows / API / Time / Archive"
               className="flex flex-wrap items-center gap-2"
             >
               <Button variant="outline" asChild size="sm" className="min-h-11">
