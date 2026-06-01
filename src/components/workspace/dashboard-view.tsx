@@ -1384,7 +1384,11 @@ export function DashboardView({ workspaceId }: Props) {
       {itemsQ.data && <WeeklyInsightWidget items={itemsQ.data} />}
 
       {/* MUST 一覧 */}
-      <Card role="region" aria-label={`MUST Item 一覧 ${s.items.length} 件`}>
+      {/* iter1633: 旧 `MUST Item 一覧 ${N} 件` space-separator は iter1093-1631 sweep の
+          em-dash 区切と divergent (visible CardTitle "MUST Item 一覧" を冒頭固定で voice
+          control prefix-match「click MUST Item 一覧」を維持しつつ em-dash 区切で count
+          chip 同 file 内の Dashboard 健全性 chip 群 / StatCard と convention 統一)。 */}
+      <Card role="region" aria-label={`MUST Item 一覧 — ${s.items.length} 件`}>
         <CardHeader>
           <CardTitle
             id="dashboard-must-list-heading"
