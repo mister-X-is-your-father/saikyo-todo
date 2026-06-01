@@ -145,7 +145,15 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
               ? `クイック追加 — タスクをすばやく作成 (現在 ${text.length} / 500 文字、上限近接、Enter で確定)`
               : 'クイック追加 — タスクをすばやく作成 (Enter で確定、自然言語で日時・優先度・タグ・見積時間を指定可)'
           }
-          aria-describedby="quick-add-preview quick-add-hint"
+          /* iter1637: 旧 `aria-describedby="quick-add-preview quick-add-hint"` は
+             quick-add-preview ID が `{preview && preview.title}` 条件下でのみ render される
+             ため、空 input 時 (page load 直後) に `getElementById('quick-add-preview')` が
+             null = 無効 ARIA reference (axe-core minor、SR は silent ignore する仕様だが
+             dangling reference は規約違反)。preview 有無で aria-describedby を切替、常に
+             有効 ID のみを reference。`quick-add-hint` は line 310 で常時 render。 */
+          aria-describedby={
+            preview && preview.title ? 'quick-add-preview quick-add-hint' : 'quick-add-hint'
+          }
           maxLength={500}
           value={text}
           onChange={(e) => setText(e.target.value)}
