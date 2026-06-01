@@ -82,7 +82,7 @@ await runExplore({
     const badgeText = await page
       .locator('[data-testid^="time-entry-row-"]')
       .first()
-      .locator('[data-testid="sync-badge"]')
+      .locator('[data-testid^="sync-badge-"]')
       .first()
       .getAttribute('aria-label')
       .catch(() => null)

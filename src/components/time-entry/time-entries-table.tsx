@@ -31,7 +31,7 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
         className="border-transparent bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
         role="img"
         aria-label="synced — 外部同期: 完了"
-        data-testid="sync-badge"
+        data-testid="sync-badge-synced"
       >
         <span aria-hidden="true">synced</span>
       </Badge>
@@ -44,7 +44,7 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
         className="border-transparent bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300"
         role="img"
         aria-label="failed — 外部同期: 失敗"
-        data-testid="sync-badge"
+        data-testid="sync-badge-failed"
       >
         <span aria-hidden="true">failed</span>
       </Badge>
@@ -56,7 +56,7 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
       className="border-transparent bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300"
       role="img"
       aria-label="pending — 外部同期: 未実行"
-      data-testid="sync-badge"
+      data-testid="sync-badge-pending"
     >
       <span aria-hidden="true">pending</span>
     </Badge>
