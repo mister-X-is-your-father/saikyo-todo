@@ -11,6 +11,8 @@
  */
 import { focusQuickAdd } from '@/lib/ui/focus-quick-add'
 
+import { EMPTY_CTA_BUTTON_CLASS } from '@/components/shared/empty-cta-button-class'
+
 interface Props {
   /** Playwright / a11y 探索 script が状態 view 別に discriminate するための ID */
   testId: 'today-empty-quick-add' | 'inbox-empty-quick-add' | 'board-empty-quick-add'
@@ -28,7 +30,7 @@ export function FocusQuickAddButton({ testId }: Props) {
   return (
     <button
       type="button"
-      className="text-primary hover:bg-muted focus-visible:ring-ring mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline focus-visible:ring-2 focus-visible:outline-none"
+      className={EMPTY_CTA_BUTTON_CLASS}
       data-testid={testId}
       aria-keyshortcuts="q"
       aria-label="クイック追加にフォーカス (キー: q) — quick-add input にフォーカスして即タスク入力"

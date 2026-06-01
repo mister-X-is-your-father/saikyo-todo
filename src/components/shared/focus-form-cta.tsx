@@ -17,6 +17,8 @@
  */
 import { focusElementById } from '@/lib/ui/focus-quick-add'
 
+import { EMPTY_CTA_BUTTON_CLASS } from '@/components/shared/empty-cta-button-class'
+
 interface Props {
   /** 焦点 target の input element id (e.g., `sprint-name` / `goal-title`) */
   targetId: string
@@ -32,7 +34,7 @@ export function FocusFormCta({ targetId, entityName, fieldName, testId }: Props)
   return (
     <button
       type="button"
-      className="text-primary hover:bg-muted focus-visible:ring-ring mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline focus-visible:ring-2 focus-visible:outline-none"
+      className={EMPTY_CTA_BUTTON_CLASS}
       data-testid={testId}
       aria-label={`作成フォームへ — ${entityName} 作成フォームの『${fieldName}』入力欄にフォーカス`}
       onClick={() => focusElementById(targetId)}
