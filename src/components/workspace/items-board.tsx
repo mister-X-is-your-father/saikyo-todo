@@ -340,7 +340,10 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         <div
           className="mt-2 ml-0 flex flex-wrap items-center gap-2 text-sm sm:mt-0 sm:ml-4"
           role="group"
-          aria-label={`Item の絞り込み (MUST / ステータス / Sprint、現在 ${
+          // iter1631: 旧 paren convention `Item の絞り込み (MUST / ... 、現在 ${X})` を
+          // iter1093-1630 em-dash sweep の dynamic template convention と統一。
+          // 区切のみ '(' → ' — ' / closing ')' 削除、現在状態 expression は維持。
+          aria-label={`Item の絞り込み — MUST / ステータス / Sprint、現在 ${
             [
               must ? 'MUST のみ' : null,
               statusFilter ? `ステータス=${statusFilter}` : null,
@@ -348,7 +351,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
             ]
               .filter(Boolean)
               .join(' + ') || '絞り込みなし'
-          })`}
+          }`}
         >
           <label htmlFor="filter-must" className="flex min-h-11 items-center gap-1">
             <input
