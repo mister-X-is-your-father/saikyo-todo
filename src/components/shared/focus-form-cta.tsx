@@ -28,7 +28,7 @@ import { EMPTY_CTA_BUTTON_CLASS } from '@/components/shared/empty-cta-button-cla
  * (`FORM_DESCRIPTORS`) に集約。caller は 2 prop (targetId + testId) のみで OK、
  * aria-label の 6 つの descriptive 文言は本 file 内で完全管理。
  */
-type FocusFormTestId =
+export type FocusFormTestId =
   | 'sprints-empty-create'
   | 'goals-empty-create'
   | 'integrations-empty-create'
@@ -36,7 +36,7 @@ type FocusFormTestId =
   | 'time-entries-empty-create'
   | 'templates-empty-create'
 
-type FocusFormTargetId =
+export type FocusFormTargetId =
   | 'sprint-name'
   | 'goal-title'
   | 'src-name'
@@ -44,8 +44,16 @@ type FocusFormTargetId =
   | 'teDate'
   | 'tmpl-name'
 
-/** target input id → (entity 名, field 名) の 1 source of truth */
-const FORM_DESCRIPTORS: Record<FocusFormTargetId, { entityName: string; fieldName: string }> = {
+/**
+ * target input id → (entity 名, field 名) の 1 source of truth。
+ *
+ * iter1648: invariant test (`focus-form-cta.test.ts`) で 6 key 完全性 +
+ * 非空 entityName/fieldName を assert する。export することで test 可能化。
+ */
+export const FORM_DESCRIPTORS: Record<
+  FocusFormTargetId,
+  { entityName: string; fieldName: string }
+> = {
   'sprint-name': { entityName: 'Sprint', fieldName: '名前' },
   'goal-title': { entityName: 'Goal', fieldName: 'Objective' },
   'src-name': { entityName: 'Source', fieldName: '名前' },
