@@ -95,6 +95,10 @@ export function InstantiateForm({ workspaceId, template }: Props) {
           onChange={(e) => setOverride(e.target.value)}
           maxLength={500}
           enterKeyHint="next"
+          /* iter1679: root Item タイトル input は task title 系 (iter350 quick-add /
+             iter1623 template-items-editor 同 convention) で browser autoComplete 候補は
+             無関係、頻繁な入力 hot path で suggested 候補のチラ見えは集中阻害なので "off"。 */
+          autoComplete="off"
           // iter1212: 旧 aria-label empty-path `Template「${name}」展開時の root Item タイトル (...)` は
           // visible Label "root Item タイトル (任意)" を中位置 "Template「name」展開時の **root
           // Item タイトル** (...)" に持ち voice control prefix-matching「click root Item タイトル」
@@ -124,6 +128,9 @@ export function InstantiateForm({ workspaceId, template }: Props) {
                 onChange={(e) => setValues({ ...values, [v]: e.target.value })}
                 required
                 aria-required="true"
+                /* iter1679: Mustache 変数値 input は task title 系 (iter350) と同 hot path、
+                   browser autoComplete 候補は無関係なため "off"。 */
+                autoComplete="off"
                 aria-invalid={
                   ((values[v] ?? '').length > 0 && (values[v] ?? '').trim() === '') || undefined
                 }
