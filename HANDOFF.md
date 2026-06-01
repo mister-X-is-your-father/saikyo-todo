@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1684 1/1 mode-D decompose-proposals autoComplete 2 件] iter1682 続編。AI 分解提案の編集 form p-title + p-dod IMEInput 2 件に autoComplete="off" 追加。これで saikyo-todo 内全 task title 系 input (7+ 件) で autoComplete convention 統一完成。
 - ✅ [playwright-iter1682 1/1 mode-D time-entry autoComplete=off] iter1680 続編。create-time-entry-form の teDescription IMEInput に autoComplete="off" を追加。これで saikyo-todo 内 task title 系 IMEInput (quick-add / template-items / instantiate-form override + Mustache 変数 / time-entry description / schedule-picker search) で autoComplete="off" convention 完全統一。
 - ✅ [playwright-iter1680 1/1 mode-D instantiate-form autoComplete=off 2 件] iter1678 schedule-picker autoComplete 続編。Template 展開 form (instantiate-form.tsx) の 2 IMEInput (root override タイトル + Mustache 変数値 input) に autoComplete="off" を追加。両 input は task title 系 hot path で browser autoComplete suggestion は無関係、suggested 候補のチラ見えは集中阻害なので "off"。iter350 quick-add convention 全 task title 系 input に展開。
 - ✅ [playwright-iter1678 1/1 mode-D schedule-picker autoComplete=off] dialog 内 search box は browser autocomplete suggestion が dropdown を被せて in-dialog filtering を阻害するため `autoComplete="off"` を設定。quick-add iter350 と同 convention 採用、UI 状態 ("読込中" / フィルタ結果 list) と autocomplete dropdown が重ならないように。codify: `scripts/explore-uiux-picker-autocomplete-iter1677.ts` 2 assert。
