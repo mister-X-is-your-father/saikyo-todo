@@ -1511,9 +1511,13 @@ function StatCard({
         ? 'border-amber-500/50 bg-amber-500/5'
         : ''
   // tone は視覚 (border 色) だけで示しており SR に伝わらないため、
-  // aria-label に状態語を含める (Phase 6.15 iter 80)
+  // aria-label に状態語を含める (Phase 6.15 iter 80)。
+  // iter1626: 旧 `${label}: ${value} (${toneText})` colon + paren convention は
+  // iter1093-1620 sweep の em-dash 区切と divergent (iter1620 mature 報告で見逃した dynamic
+  // template)。`${label} — ${value} / ${toneText}` の em-dash + slash 区切に統一、voice
+  // control prefix-match「click ${label}」は visible ${label} 冒頭で維持。
   const toneText = tone === 'danger' ? '要対応' : tone === 'warning' ? '注意' : ''
-  const ariaLabel = toneText ? `${label}: ${value} (${toneText})` : `${label}: ${value}`
+  const ariaLabel = toneText ? `${label} — ${value} / ${toneText}` : `${label} — ${value}`
   return (
     <div
       className={`rounded-lg border p-4 ${toneCls}`}
