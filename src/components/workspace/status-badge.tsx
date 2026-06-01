@@ -50,7 +50,9 @@ interface Props {
 /**
  * Item.status を icon + 配色 + 短縮ラベルの graphical chip で描画する。
  *
- * - role=img + aria-label でフル文言 (例: "ステータス: TODO (未着手)") を SR に
+ * - role=img + aria-label でフル文言 (例: "TODO — ステータス TODO (未着手)") を SR に
+ *   (iter1629 で colon → em-dash convention に統一済、visible "TODO" 冒頭 prefix で
+ *   voice control prefix-match を保持)
  * - icon は aria-hidden で重複防止、shortLabel は visible
  * - 不明な status key は HelpCircle + "不明" で fallback (落ちない)
  */
