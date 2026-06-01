@@ -122,6 +122,9 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
               placeholder="例: 急な電話 / 昼休み"
               value={interruptNote}
               onChange={(e) => setInterruptNote(e.target.value)}
+              /* iter1685: interrupt メモは task title 系 hot path (iter350 quick-add
+                 convention)、autoComplete suggestion は無関係なので "off"。 */
+              autoComplete="off"
               aria-label={
                 interruptNote.length === 0
                   ? '割込み / 休憩のメモ (任意、空欄で「割込み」 fallback)'
