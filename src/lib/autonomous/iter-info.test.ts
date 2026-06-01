@@ -46,6 +46,20 @@ describe('parseIterFromGitLog', () => {
     expect(parseIterFromGitLog('aaa iteration test iter loop')).toBe(0)
   })
 
+  it('iter1658: chore(handoff) で iter\\d+ が subject に含まれる commit (HANDOFF entry 形式) も max に寄与', () => {
+    // 実 fire で頻発する HANDOFF chore commit パターン:
+    //  `chore(handoff): iter1657 §9 — ...`
+    //  `chore(handoff): playwright-iter1652 §9 — ...`
+    // どちらも iter\d+ regex でマッチして max 計算に寄与することを確認
+    const log = [
+      'aaa chore(handoff): iter1657 §9 — ...',
+      'bbb chore(handoff): playwright-iter1655 §9 — ...',
+      'ccc test(focus): [iter1653 basics 1/1]',
+    ].join('\n')
+    // max = 1657 (chore(handoff) 形式が一番大きい)
+    expect(parseIterFromGitLog(log)).toBe(1657)
+  })
+
   it('iter1654: `[iter1653 basics 1/1]` 形式 + `playwright-iter1652` 形式の混在を正しく max 抽出', () => {
     // 実運用で 2 commit subject 形式が混在 (本 fire iter1620+ で観測):
     // - in-session loop: `[iter<N> <track> <i>/<j>]` 形式
