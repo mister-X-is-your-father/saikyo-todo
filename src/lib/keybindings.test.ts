@@ -67,4 +67,13 @@ describe('KEYBINDINGS invariant', () => {
     expect(qEntry?.group).toBe('Item')
     expect(qEntry?.description).toMatch(/クイック追加/)
   })
+
+  it('iter1651: Cmd+S / Ctrl+S 保存 shortcut が Item group に登録 (item-edit-dialog aria-keyshortcuts と同期)', () => {
+    // item-edit-dialog.tsx の save button が aria-keyshortcuts="Meta+S Control+S"
+    // を宣言。KEYBINDINGS table も同 shortcut を documented していることを確認。
+    const saveEntry = KEYBINDINGS.find((kb) => kb.combo === 'Cmd+S / Ctrl+S')
+    expect(saveEntry).toBeDefined()
+    expect(saveEntry?.group).toBe('Item')
+    expect(saveEntry?.description).toMatch(/保存/)
+  })
 })
