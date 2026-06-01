@@ -13,9 +13,19 @@ import { focusQuickAdd } from '@/lib/ui/focus-quick-add'
 
 import { EMPTY_CTA_BUTTON_CLASS } from '@/components/shared/empty-cta-button-class'
 
+/**
+ * iter1649: testId union を独立 type に分離 + export。iter1648 FocusFormTestId / FORM_DESCRIPTORS
+ * と同 pattern (= type narrow + invariant test) で、3 caller の testid drift を compile + test
+ * の 2 段 guard。
+ */
+export type FocusQuickAddTestId =
+  | 'today-empty-quick-add'
+  | 'inbox-empty-quick-add'
+  | 'board-empty-quick-add'
+
 interface Props {
   /** Playwright / a11y 探索 script が状態 view 別に discriminate するための ID */
-  testId: 'today-empty-quick-add' | 'inbox-empty-quick-add' | 'board-empty-quick-add'
+  testId: FocusQuickAddTestId
 }
 
 /**
