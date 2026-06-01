@@ -58,4 +58,13 @@ describe('KEYBINDINGS invariant', () => {
     expect(indentEntry?.group).toBe('子タスク')
     expect(outdentEntry?.group).toBe('子タスク')
   })
+
+  it('iter1638: `q` (クイック追加にフォーカス) が Item group に登録 (iter1622 aria-keyshortcuts と同期)', () => {
+    // iter1622 で quick-add input の aria-keyshortcuts に 'q' を追加。
+    // KEYBINDINGS table と aria-keyshortcuts (UI 上の宣言) が同期している invariant。
+    const qEntry = KEYBINDINGS.find((kb) => kb.combo === 'q')
+    expect(qEntry).toBeDefined()
+    expect(qEntry?.group).toBe('Item')
+    expect(qEntry?.description).toMatch(/クイック追加/)
+  })
 })
