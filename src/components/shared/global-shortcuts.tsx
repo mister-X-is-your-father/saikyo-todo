@@ -28,8 +28,11 @@ import { focusQuickAdd } from '@/lib/ui/focus-quick-add'
  * iter1645: 「g + キー → view」 写像。旧 6 段 nested ternary を 1 lookup table に。
  * 視認性 + 拡張性が上がる (= 新規 view 追加時の diff が 1 行)、`Object.keys`
  * での「全 view 一覧」 検査も可能。
+ *
+ * iter1653: export することで KEYBINDINGS table と invariant test で同期 check 可能化
+ * (iter1648 FORM_DESCRIPTORS / iter1649 FocusQuickAddTestId と同 pattern)。
  */
-const G_PREFIX_VIEWS = {
+export const G_PREFIX_VIEWS = {
   t: 'today',
   i: 'inbox',
   k: 'kanban',
