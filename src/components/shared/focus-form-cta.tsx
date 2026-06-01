@@ -19,15 +19,36 @@ import { focusElementById } from '@/lib/ui/focus-quick-add'
 
 import { EMPTY_CTA_BUTTON_CLASS } from '@/components/shared/empty-cta-button-class'
 
+/**
+ * iter1639: testId / targetId を string ではなく既知の literal union に narrow。
+ * 6 callsite の data-testid と target input id が typo されたら typecheck で
+ * 早期検出可能に (= 規約から外れた testid 創出を unit level で防ぐ)。
+ */
+type FocusFormTestId =
+  | 'sprints-empty-create'
+  | 'goals-empty-create'
+  | 'integrations-empty-create'
+  | 'workflows-empty-create'
+  | 'time-entries-empty-create'
+  | 'templates-empty-create'
+
+type FocusFormTargetId =
+  | 'sprint-name'
+  | 'goal-title'
+  | 'src-name'
+  | 'wf-name'
+  | 'teDate'
+  | 'tmpl-name'
+
 interface Props {
-  /** 焦点 target の input element id (e.g., `sprint-name` / `goal-title`) */
-  targetId: string
+  /** 焦点 target の input element id (6 panel 内のいずれか) */
+  targetId: FocusFormTargetId
   /** aria-label に inline する entity 名 (e.g., `'Sprint'` / `'Goal'`) */
   entityName: string
   /** aria-label に inline する field 名 (e.g., `'名前'` / `'Objective'` / `'勤務日'`) */
   fieldName: string
-  /** Playwright が panel 別 discriminate するための testid */
-  testId: string
+  /** Playwright が panel 別 discriminate するための testid (6 callsite 限定 union) */
+  testId: FocusFormTestId
 }
 
 export function FocusFormCta({ targetId, entityName, fieldName, testId }: Props) {
