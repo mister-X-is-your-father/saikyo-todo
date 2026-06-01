@@ -77,11 +77,14 @@ export default async function HomePage() {
               <li key={ws.id}>
                 {/* iter1498: iter1093-1497 em-dash sweep に追従し () → em-dash 区切に
                     migration。visible-prefix ${ws.name} は無変更で voice control prefix-matching
-                    維持、verb "を開く" を先頭側に置き iter1493 operation-board pattern と統一。 */}
+                    維持、verb "を開く" を先頭側に置き iter1493 operation-board pattern と統一。
+                    iter1629: 内部 colon `slug: ${X} / role: ${Y}` を iter1626-1628 sweep の
+                    em-dash dynamic template convention に合わせ削除、`slug ${X} / role ${Y}` の
+                    descriptor-value pair に natural-reading 統一。 */}
                 <Link
                   href={`/${ws.id}`}
                   className="hover:bg-muted focus-visible:ring-ring block rounded-lg border p-4 transition focus-visible:ring-2 focus-visible:outline-none"
-                  aria-label={`${ws.name} を開く — slug: ${ws.slug} / role: ${ws.role}`}
+                  aria-label={`${ws.name} を開く — slug ${ws.slug} / role ${ws.role}`}
                   data-testid={`workspace-link-${ws.id}`}
                 >
                   <div className="flex items-center justify-between" aria-hidden="true">
