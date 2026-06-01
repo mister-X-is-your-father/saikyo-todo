@@ -23,6 +23,21 @@ import { focusQuickAdd } from '@/lib/ui/focus-quick-add'
  *
  * IME 変換中 / input / textarea / contentEditable にフォーカスしてる時は無効。
  */
+
+/**
+ * iter1645: 「g + キー → view」 写像。旧 6 段 nested ternary を 1 lookup table に。
+ * 視認性 + 拡張性が上がる (= 新規 view 追加時の diff が 1 行)、`Object.keys`
+ * での「全 view 一覧」 検査も可能。
+ */
+const G_PREFIX_VIEWS = {
+  t: 'today',
+  i: 'inbox',
+  k: 'kanban',
+  b: 'backlog',
+  g: 'gantt',
+  d: 'dashboard',
+} as const
+
 export function GlobalShortcuts({ workspaceId }: { workspaceId: string }) {
   const router = useRouter()
 
@@ -45,22 +60,9 @@ export function GlobalShortcuts({ workspaceId }: { workspaceId: string }) {
       if (e.metaKey || e.ctrlKey || e.altKey) return
 
       if (gPressed) {
-        const target = e.key
+        const target = e.key as keyof typeof G_PREFIX_VIEWS
         clearG()
-        const v =
-          target === 't'
-            ? 'today'
-            : target === 'i'
-              ? 'inbox'
-              : target === 'k'
-                ? 'kanban'
-                : target === 'b'
-                  ? 'backlog'
-                  : target === 'g'
-                    ? 'gantt'
-                    : target === 'd'
-                      ? 'dashboard'
-                      : null
+        const v = G_PREFIX_VIEWS[target]
         if (v) {
           e.preventDefault()
           router.push(`/${workspaceId}?view=${v}`)
