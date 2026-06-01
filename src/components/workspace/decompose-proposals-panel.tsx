@@ -407,6 +407,9 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               minLength={1}
               maxLength={500}
               enterKeyHint="next"
+              /* iter1683: 提案タイトルは task title 系 hot path (iter350 quick-add convention)、
+                 browser autoComplete 候補は無関係、suggested 候補のチラ見えは集中阻害なので "off"。 */
+              autoComplete="off"
               // iter1201: 旧 aria-label `提案タイトル (...)` (全 4 path) は visible Label
               // "タイトル" を中位置 "提案 **タイトル** (...)" に持ち voice control
               // prefix-matching「click タイトル」 match 不可 (substring 一致のみ)。
@@ -493,6 +496,9 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
                 minLength={1}
                 maxLength={2000}
                 enterKeyHint="send"
+                /* iter1683: 提案 DoD は task title 系 hot path、autoComplete suggestion は
+                   無関係なので "off"。 */
+                autoComplete="off"
                 // iter1210: 旧 aria-label `提案 DoD (...)` (全 4 path) は visible Label
                 // "DoD" を中位置 "提案 **DoD** (...)" に持ち voice control prefix-matching
                 // 「click DoD」 match 不可 (substring 一致のみ)。p-title iter1201 / p-desc
