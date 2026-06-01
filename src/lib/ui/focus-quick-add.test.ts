@@ -116,4 +116,25 @@ describe('focusElementById (iter1625 — 任意 id 版)', () => {
     expect(focusElementById('cycle-do-tab')).toBe(true)
     expect(focusSpy).toHaveBeenCalledOnce()
   })
+
+  it('同じ id を持つ複数 element がある時、最初の 1 件だけ focus + scrollIntoView する (document.getElementById 仕様)', () => {
+    // HTML 仕様 : 同 id が複数あっても getElementById は最初の 1 件のみ返す。
+    // 本 helper は generic で、複数 element 対応は呼び出し側の責務外。
+    const el1 = document.createElement('input')
+    el1.id = 'duplicate-id'
+    ;(el1 as HTMLElement & { scrollIntoView: (...args: unknown[]) => void }).scrollIntoView =
+      () => {}
+    const el2 = document.createElement('input')
+    el2.id = 'duplicate-id'
+    ;(el2 as HTMLElement & { scrollIntoView: (...args: unknown[]) => void }).scrollIntoView =
+      () => {}
+    document.body.appendChild(el1)
+    document.body.appendChild(el2)
+    const focus1 = vi.spyOn(el1, 'focus')
+    const focus2 = vi.spyOn(el2, 'focus')
+
+    expect(focusElementById('duplicate-id')).toBe(true)
+    expect(focus1).toHaveBeenCalledOnce()
+    expect(focus2).not.toHaveBeenCalled()
+  })
 })
