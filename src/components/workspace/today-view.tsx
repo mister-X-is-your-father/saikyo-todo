@@ -17,6 +17,7 @@ import { buildTodayGroups } from '@/features/today/build-groups'
 
 import { EmptyState } from '@/components/shared/async-states'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { FocusQuickAddButton } from '@/components/workspace/focus-quick-add-button'
 import { ItemCheckbox } from '@/components/workspace/item-checkbox'
 import { MustBadge } from '@/components/workspace/must-badge'
 import { OperationBoardWidget } from '@/components/workspace/operation-board-widget'
@@ -154,22 +155,7 @@ export function TodayView({
               のように日付を含めるとここに表示されます
             </span>
           }
-          action={
-            <button
-              type="button"
-              className="text-primary hover:bg-muted focus-visible:ring-ring mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline focus-visible:ring-2 focus-visible:outline-none"
-              data-testid="today-empty-quick-add"
-              aria-label="クイック追加にフォーカス (キー: q) — quick-add input にフォーカスして即タスク入力"
-              aria-keyshortcuts="q"
-              onClick={() => {
-                const el = document.getElementById('quick-add-input') as HTMLInputElement | null
-                el?.focus()
-                el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-              }}
-            >
-              <span aria-hidden="true">クイック追加にフォーカス (キー: q)</span>
-            </button>
-          }
+          action={<FocusQuickAddButton testId="today-empty-quick-add" />}
         />
       </div>
     )

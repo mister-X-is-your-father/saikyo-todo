@@ -27,6 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BacklogView } from '@/components/workspace/backlog-view'
 import { BulkActionBar } from '@/components/workspace/bulk-action-bar'
 import { DashboardView } from '@/components/workspace/dashboard-view'
+import { FocusQuickAddButton } from '@/components/workspace/focus-quick-add-button'
 import { GanttView } from '@/components/workspace/gantt-view'
 import { InboxView } from '@/components/workspace/inbox-view'
 import { ItemEditDialog } from '@/components/workspace/item-edit-dialog'
@@ -505,22 +506,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
               view を切り替えられます。
             </span>
           }
-          action={
-            <button
-              type="button"
-              className="text-primary hover:bg-muted focus-visible:ring-ring mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline focus-visible:ring-2 focus-visible:outline-none"
-              data-testid="board-empty-quick-add"
-              aria-keyshortcuts="q"
-              aria-label="クイック追加にフォーカス (キー: q) — quick-add input にフォーカスして即タスク入力"
-              onClick={() => {
-                const el = document.getElementById('quick-add-input') as HTMLInputElement | null
-                el?.focus()
-                el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-              }}
-            >
-              <span aria-hidden="true">クイック追加にフォーカス (キー: q)</span>
-            </button>
-          }
+          action={<FocusQuickAddButton testId="board-empty-quick-add" />}
         />
       ) : view === 'backlog' ? (
         <BacklogView workspaceId={workspaceId} items={filtered} currentUserId={currentUserId} />

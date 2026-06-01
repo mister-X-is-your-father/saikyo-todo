@@ -16,6 +16,7 @@ import { priorityClass, priorityLabel } from '@/features/item/priority'
 import type { Item } from '@/features/item/schema'
 
 import { EmptyState } from '@/components/shared/async-states'
+import { FocusQuickAddButton } from '@/components/workspace/focus-quick-add-button'
 import { ItemCheckbox } from '@/components/workspace/item-checkbox'
 import { MustBadge } from '@/components/workspace/must-badge'
 import { StatusBadge } from '@/components/workspace/status-badge'
@@ -76,22 +77,7 @@ export function InboxView({
             を後付けで。
           </span>
         }
-        action={
-          <button
-            type="button"
-            className="text-primary hover:bg-muted focus-visible:ring-ring mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline focus-visible:ring-2 focus-visible:outline-none"
-            data-testid="inbox-empty-quick-add"
-            aria-keyshortcuts="q"
-            aria-label="クイック追加にフォーカス (キー: q) — quick-add input にフォーカスして即タスク入力"
-            onClick={() => {
-              const el = document.getElementById('quick-add-input') as HTMLInputElement | null
-              el?.focus()
-              el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            }}
-          >
-            <span aria-hidden="true">クイック追加にフォーカス (キー: q)</span>
-          </button>
-        }
+        action={<FocusQuickAddButton testId="inbox-empty-quick-add" />}
       />
     )
   }
