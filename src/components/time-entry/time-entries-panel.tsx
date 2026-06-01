@@ -45,7 +45,10 @@ export function TimeEntriesPanel({ workspaceId }: { workspaceId: string }) {
             aria-level={2}
           >
             <span aria-hidden="true">一覧 {q.data ? `(${q.data.length} 件)` : ''}</span>
-            <span className="sr-only">{q.data ? `一覧 ${q.data.length} 件` : '一覧'}</span>
+            {/* iter1653: 旧 sr-only `一覧 ${N} 件` space-separator は iter1619 keybindings-help
+                / iter1633 dashboard MUST list / iter1640 list aria-label sweep の em-dash
+                convention と divergent。区切を em-dash に統一。 */}
+            <span className="sr-only">{q.data ? `一覧 — ${q.data.length} 件` : '一覧'}</span>
           </CardTitle>
         </CardHeader>
         <CardContent>

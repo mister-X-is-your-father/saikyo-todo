@@ -256,7 +256,9 @@ function KanbanColumn({
             aria-hidden="true"
           />
           {label}
-          <span className="sr-only">{` ${items.length} 件`}</span>
+          {/* iter1653: sr-only count を em-dash 区切に統一 (iter1619 keybindings-help /
+              iter1633 dashboard MUST list と同 sweep)。leading space ` ` → ` — `。 */}
+          <span className="sr-only">{` — ${items.length} 件`}</span>
         </h3>
         <span className="text-muted-foreground text-xs" aria-hidden="true">
           {items.length}
