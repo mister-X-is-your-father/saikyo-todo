@@ -25,6 +25,7 @@ import { importStatusBadgeClass, importStatusLabel } from '@/features/external-s
 import type { ExternalImport, ExternalSource } from '@/features/external-source/schema'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
+import { FocusFormCta } from '@/components/shared/focus-form-cta'
 import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -56,19 +57,12 @@ export function IntegrationsPanel({ workspaceId }: Props) {
           title="外部 API 連携がありません"
           description="上の form から Yamory / カスタム REST を Source として登録すると、定期 / 手動で Item を pull できます。"
           action={
-            <button
-              type="button"
-              className="text-primary hover:bg-muted focus-visible:ring-ring mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline focus-visible:ring-2 focus-visible:outline-none"
-              data-testid="integrations-empty-create"
-              aria-label="作成フォームへ — Source 作成フォームの『名前』入力欄にフォーカス"
-              onClick={() => {
-                const el = document.getElementById('src-name') as HTMLInputElement | null
-                el?.focus()
-                el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-              }}
-            >
-              <span aria-hidden="true">作成フォームへ</span>
-            </button>
+            <FocusFormCta
+              targetId="src-name"
+              entityName="Source"
+              fieldName="名前"
+              testId="integrations-empty-create"
+            />
           }
         />
       ) : (

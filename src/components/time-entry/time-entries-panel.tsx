@@ -5,6 +5,7 @@ import { isAppError } from '@/lib/errors'
 import { useTimeEntries } from '@/features/time-entry/hooks'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
+import { FocusFormCta } from '@/components/shared/focus-form-cta'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 import { CreateTimeEntryForm } from './create-time-entry-form'
@@ -60,19 +61,12 @@ export function TimeEntriesPanel({ workspaceId }: { workspaceId: string }) {
               title="まだ記録がありません"
               description="上のフォームから作成してください"
               action={
-                <button
-                  type="button"
-                  className="text-primary hover:bg-muted focus-visible:ring-ring mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline focus-visible:ring-2 focus-visible:outline-none"
-                  data-testid="time-entries-empty-create"
-                  aria-label="作成フォームへ — 稼働記録 作成フォームの『勤務日』入力欄にフォーカス"
-                  onClick={() => {
-                    const el = document.getElementById('teDate') as HTMLInputElement | null
-                    el?.focus()
-                    el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                  }}
-                >
-                  <span aria-hidden="true">作成フォームへ</span>
-                </button>
+                <FocusFormCta
+                  targetId="teDate"
+                  entityName="稼働記録"
+                  fieldName="勤務日"
+                  testId="time-entries-empty-create"
+                />
               }
             />
           ) : (

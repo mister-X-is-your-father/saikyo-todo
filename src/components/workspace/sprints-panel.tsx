@@ -54,6 +54,7 @@ import {
 } from '@/features/sprint/sprint-date-helpers'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
+import { FocusFormCta } from '@/components/shared/focus-form-cta'
 import { IMEInput } from '@/components/shared/ime-input'
 import { SprintRetroWidget } from '@/components/sprint/sprint-retro-widget'
 import { SprintRiskBoardWidget } from '@/components/sprint/sprint-risk-board-widget'
@@ -381,19 +382,12 @@ export function SprintsPanel({ workspaceId }: Props) {
             </span>
           }
           action={
-            <button
-              type="button"
-              className="text-primary hover:bg-muted focus-visible:ring-ring mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline focus-visible:ring-2 focus-visible:outline-none"
-              data-testid="sprints-empty-create"
-              aria-label="作成フォームへ — Sprint 作成フォームの『名前』入力欄にフォーカス"
-              onClick={() => {
-                const el = document.getElementById('sprint-name') as HTMLInputElement | null
-                el?.focus()
-                el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-              }}
-            >
-              <span aria-hidden="true">作成フォームへ</span>
-            </button>
+            <FocusFormCta
+              targetId="sprint-name"
+              entityName="Sprint"
+              fieldName="名前"
+              testId="sprints-empty-create"
+            />
           }
         />
       ) : (

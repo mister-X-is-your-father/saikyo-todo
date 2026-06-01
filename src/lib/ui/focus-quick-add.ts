@@ -15,15 +15,31 @@
  */
 
 /**
- * `#quick-add-input` 要素を focus + scrollIntoView する。
- * 要素が DOM に存在しない (= layout 未 mount / 別 page) ときは noop。
+ * 任意の id を持つ HTMLElement を focus + scrollIntoView する pure DOM helper。
  *
- * 返り値: focus できたら true、要素が無ければ false (= caller が hint 表示等に使う場合用)。
+ * iter1625: 6 panel (sprints / goals / integrations / workflows / time-entries /
+ * templates) の 「作成フォームへ」 CTA + iter1624 focusQuickAdd で 共通利用。
+ *
+ * 返り値: focus できたら true、要素が無ければ false。
  */
-export function focusQuickAdd(): boolean {
-  const el = document.getElementById('quick-add-input') as HTMLInputElement | null
+export function focusElementById(id: string): boolean {
+  const el = document.getElementById(id) as HTMLElement | null
   if (!el) return false
   el.focus()
   el.scrollIntoView({ behavior: 'smooth', block: 'center' })
   return true
+}
+
+/**
+ * `#quick-add-input` 要素を focus + scrollIntoView する。
+ * 要素が DOM に存在しない (= layout 未 mount / 別 page) ときは noop。
+ *
+ * `focusElementById('quick-add-input')` の thin wrapper。意味的にも実装的にも
+ * 「quick-add input」 専用の名前付き helper として 3 caller (global-shortcuts /
+ * empty-state CTA / Command Palette command) が使う。
+ *
+ * 返り値: focus できたら true、要素が無ければ false (= caller が hint 表示等に使う場合用)。
+ */
+export function focusQuickAdd(): boolean {
+  return focusElementById('quick-add-input')
 }

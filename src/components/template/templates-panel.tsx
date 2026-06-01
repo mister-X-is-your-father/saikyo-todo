@@ -15,6 +15,7 @@ import { useCreateTemplate, useSoftDeleteTemplate, useTemplates } from '@/featur
 import type { Template } from '@/features/template/schema'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
+import { FocusFormCta } from '@/components/shared/focus-form-cta'
 import { IMEInput } from '@/components/shared/ime-input'
 import { InstantiateForm } from '@/components/template/instantiate-form'
 import { TemplateItemsEditor } from '@/components/template/template-items-editor'
@@ -266,19 +267,12 @@ export function TemplatesPanel({ workspaceId }: Props) {
             </>
           }
           action={
-            <button
-              type="button"
-              className="text-primary hover:bg-muted focus-visible:ring-ring mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline focus-visible:ring-2 focus-visible:outline-none"
-              data-testid="templates-empty-create"
-              aria-label="作成フォームへ — Template 作成フォームの『名前』入力欄にフォーカス"
-              onClick={() => {
-                const el = document.getElementById('tmpl-name') as HTMLInputElement | null
-                el?.focus()
-                el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-              }}
-            >
-              <span aria-hidden="true">作成フォームへ</span>
-            </button>
+            <FocusFormCta
+              targetId="tmpl-name"
+              entityName="Template"
+              fieldName="名前"
+              testId="templates-empty-create"
+            />
           }
         />
       ) : (

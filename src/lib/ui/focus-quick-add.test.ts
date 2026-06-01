@@ -8,7 +8,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { focusQuickAdd } from './focus-quick-add'
+import { focusElementById, focusQuickAdd } from './focus-quick-add'
 
 describe('focusQuickAdd', () => {
   afterEach(() => {
@@ -62,5 +62,41 @@ describe('focusQuickAdd', () => {
       focusQuickAdd()
       expect(calls).toEqual(['focus', 'scroll'])
     })
+  })
+})
+
+describe('focusElementById (iter1625 — 任意 id 版)', () => {
+  afterEach(() => {
+    document.body.innerHTML = ''
+  })
+
+  it('要素無 → false 返し副作用なし', () => {
+    expect(focusElementById('nonexistent-input-zzz')).toBe(false)
+  })
+
+  it('要素あり → focus + scrollIntoView を呼んで true 返し', () => {
+    const el = document.createElement('input')
+    el.id = 'sprint-name'
+    ;(el as HTMLElement & { scrollIntoView: (...args: unknown[]) => void }).scrollIntoView =
+      () => {}
+    document.body.appendChild(el)
+    const focusSpy = vi.spyOn(el, 'focus')
+    const scrollSpy = vi.spyOn(el, 'scrollIntoView')
+
+    expect(focusElementById('sprint-name')).toBe(true)
+    expect(focusSpy).toHaveBeenCalledOnce()
+    expect(scrollSpy).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' })
+  })
+
+  it('focusQuickAdd は focusElementById(quick-add-input) の thin wrapper', () => {
+    const el = document.createElement('input')
+    el.id = 'quick-add-input'
+    ;(el as HTMLElement & { scrollIntoView: (...args: unknown[]) => void }).scrollIntoView =
+      () => {}
+    document.body.appendChild(el)
+    const focusSpy = vi.spyOn(el, 'focus')
+
+    expect(focusQuickAdd()).toBe(true)
+    expect(focusSpy).toHaveBeenCalledOnce()
   })
 })

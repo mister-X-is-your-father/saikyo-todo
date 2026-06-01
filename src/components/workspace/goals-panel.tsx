@@ -44,6 +44,7 @@ import {
 } from '@/features/okr/schema'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
+import { FocusFormCta } from '@/components/shared/focus-form-cta'
 import { IMEInput } from '@/components/shared/ime-input'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -322,19 +323,12 @@ export function GoalsPanel({ workspaceId }: Props) {
             </span>
           }
           action={
-            <button
-              type="button"
-              className="text-primary hover:bg-muted focus-visible:ring-ring mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline focus-visible:ring-2 focus-visible:outline-none"
-              data-testid="goals-empty-create"
-              aria-label="作成フォームへ — Goal 作成フォームの『Objective』入力欄にフォーカス"
-              onClick={() => {
-                const el = document.getElementById('goal-title') as HTMLInputElement | null
-                el?.focus()
-                el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-              }}
-            >
-              <span aria-hidden="true">作成フォームへ</span>
-            </button>
+            <FocusFormCta
+              targetId="goal-title"
+              entityName="Goal"
+              fieldName="Objective"
+              testId="goals-empty-create"
+            />
           }
         />
       ) : (

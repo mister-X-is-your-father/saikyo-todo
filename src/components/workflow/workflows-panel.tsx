@@ -31,6 +31,7 @@ import type { Workflow, WorkflowRun } from '@/features/workflow/schema'
 import { WorkflowGraphSchema, WorkflowTriggerSchema } from '@/features/workflow/schema'
 
 import { EmptyState, ErrorState, Loading } from '@/components/shared/async-states'
+import { FocusFormCta } from '@/components/shared/focus-form-cta'
 import { IMEInput } from '@/components/shared/ime-input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -232,19 +233,12 @@ export function WorkflowsPanel({ workspaceId }: Props) {
             </span>
           }
           action={
-            <button
-              type="button"
-              className="text-primary hover:bg-muted focus-visible:ring-ring mt-2 inline-flex min-h-11 items-center rounded border px-3 py-1.5 text-xs hover:underline focus-visible:ring-2 focus-visible:outline-none"
-              data-testid="workflows-empty-create"
-              aria-label="作成フォームへ — Workflow 作成フォームの『名前』入力欄にフォーカス"
-              onClick={() => {
-                const el = document.getElementById('wf-name') as HTMLInputElement | null
-                el?.focus()
-                el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-              }}
-            >
-              <span aria-hidden="true">作成フォームへ</span>
-            </button>
+            <FocusFormCta
+              targetId="wf-name"
+              entityName="Workflow"
+              fieldName="名前"
+              testId="workflows-empty-create"
+            />
           }
         />
       ) : (
