@@ -39,4 +39,9 @@ describe('FocusQuickAddTestId (iter1649 — type narrow invariant)', () => {
     const prefixes = EXPECTED_TESTIDS.map((id) => id.replace('-empty-quick-add', ''))
     expect(prefixes.sort()).toEqual(['board', 'inbox', 'today'])
   })
+
+  it('iter1655: testid は view prefix unique (重複 view 名は許可しない、Playwright locator 安定化)', () => {
+    const prefixes = EXPECTED_TESTIDS.map((id) => id.replace('-empty-quick-add', ''))
+    expect(new Set(prefixes).size).toBe(prefixes.length)
+  })
 })
