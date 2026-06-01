@@ -176,7 +176,9 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                   className="font-medium text-emerald-800 dark:text-emerald-300"
                   id="op-board-quickwins-heading"
                 >
-                  <span aria-hidden="true">⚡ </span>Quick wins ({forecast.quickWins.length})
+                  {/* iter1662: iter1656/iter1660 visible heading em-dash sweep を operation-board
+                      quick wins / focus blocks にも展開。`${X} (${N})` → `${X} — ${N} 件`。 */}
+                  <span aria-hidden="true">⚡ </span>Quick wins — {forecast.quickWins.length} 件
                 </h3>
                 <ul className="space-y-0.5" aria-labelledby="op-board-quickwins-heading">
                   {forecast.quickWins.slice(0, 3).map((it) => (
@@ -212,7 +214,7 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                   className="font-medium text-sky-800 dark:text-sky-300"
                   id="op-board-focus-heading"
                 >
-                  <span aria-hidden="true">🎯 </span>集中ブロック ({forecast.focusBlocks.length})
+                  <span aria-hidden="true">🎯 </span>集中ブロック — {forecast.focusBlocks.length} 件
                 </h3>
                 <ul className="space-y-0.5" aria-labelledby="op-board-focus-heading">
                   {forecast.focusBlocks.slice(0, 2).map((it) => (
