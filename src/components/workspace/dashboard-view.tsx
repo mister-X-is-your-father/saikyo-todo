@@ -928,7 +928,7 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-recent-done-chip"
             toneClass={chipTone3Class('good')}
             glyph="🎉"
-            ariaLabel={`${recentDone.momentumLabel}: ${recentDone.detail}`}
+            ariaLabel={`${recentDone.momentumLabel} — ${recentDone.detail}`}
             title={`${recentDone.momentumLabel} — ${recentDone.detail}`}
             text={recentDone.summary}
             truncateText
@@ -944,7 +944,7 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-velocity-chip"
             toneClass={trendToneClass(velocity.result.trend, 'positive')}
             glyph={trendGlyph(velocity.result.trend)}
-            ariaLabel={`${velocity.hintLabel}: ${velocity.detail}`}
+            ariaLabel={`${velocity.hintLabel} — ${velocity.detail}`}
             title={`${velocity.hintLabel} — ${velocity.detail}`}
             text={velocity.line}
             dataAttrs={{
@@ -1104,7 +1104,7 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-blocked-items-chip"
             toneClass={chipTone3Class('warn')}
             glyph="🔒"
-            ariaLabel={`${blockedWorkspaceItems.hintLabel}: ${blockedWorkspaceItems.detail}`}
+            ariaLabel={`${blockedWorkspaceItems.hintLabel} — ${blockedWorkspaceItems.detail}`}
             title={`${blockedWorkspaceItems.hintLabel} — ${blockedWorkspaceItems.detail}`}
             text={blockedWorkspaceItems.summary}
             truncateText
@@ -1120,7 +1120,7 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-at-risk-parents-chip"
             toneClass={chipTone3Class('warn')}
             glyph="💤"
-            ariaLabel={`${atRiskParents.hintLabel}: ${atRiskParents.detail}`}
+            ariaLabel={`${atRiskParents.hintLabel} — ${atRiskParents.detail}`}
             title={`${atRiskParents.hintLabel} — ${atRiskParents.detail}`}
             text={atRiskParents.summary}
             truncateText
@@ -1136,7 +1136,7 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-parent-items-progress-chip"
             toneClass={chipTone3Class('neutral')}
             glyph="📋"
-            ariaLabel={`${parentItemsProgress.hintLabel}: ${parentItemsProgress.detail}`}
+            ariaLabel={`${parentItemsProgress.hintLabel} — ${parentItemsProgress.detail}`}
             title={`${parentItemsProgress.hintLabel} — ${parentItemsProgress.detail}`}
             text={parentItemsProgress.summary}
             truncateText
