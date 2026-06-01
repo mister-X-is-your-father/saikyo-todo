@@ -126,6 +126,9 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           required
           aria-required="true"
           aria-invalid={(description.length > 0 && description.trim() === '') || undefined}
+          /* iter1681: 作業内容は task title 系 hot path (iter350 quick-add convention)、
+             browser autoComplete 候補は無関係、suggested 候補のチラ見えは集中阻害なので "off"。 */
+          autoComplete="off"
           minLength={1}
           maxLength={500}
           enterKeyHint="next"
