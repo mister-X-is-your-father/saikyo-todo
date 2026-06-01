@@ -11,6 +11,8 @@
  */
 import type { ReactNode } from 'react'
 
+import { focusQuickAdd } from '@/lib/ui/focus-quick-add'
+
 interface Props {
   /** Playwright / a11y 探索 script が状態 view 別に discriminate するための ID */
   testId: 'today-empty-quick-add' | 'inbox-empty-quick-add' | 'board-empty-quick-add'
@@ -30,11 +32,7 @@ export function FocusQuickAddButton({ testId, children }: Props) {
       data-testid={testId}
       aria-keyshortcuts="q"
       aria-label="クイック追加にフォーカス (キー: q) — quick-add input にフォーカスして即タスク入力"
-      onClick={() => {
-        const el = document.getElementById('quick-add-input') as HTMLInputElement | null
-        el?.focus()
-        el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }}
+      onClick={focusQuickAdd}
     >
       <span aria-hidden="true">{children ?? 'クイック追加にフォーカス (キー: q)'}</span>
     </button>

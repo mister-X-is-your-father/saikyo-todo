@@ -12,6 +12,7 @@ import { useMemo, useState } from 'react'
 import { parseAsBoolean, parseAsString, parseAsStringEnum, useQueryState } from 'nuqs'
 
 import { isAppError } from '@/lib/errors'
+import { focusQuickAdd } from '@/lib/ui/focus-quick-add'
 
 import { applyBoardFilters } from '@/features/item/board-filter'
 import { useItems } from '@/features/item/hooks'
@@ -168,7 +169,10 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
         id: 'focus-new',
         label: 'クイック追加にフォーカス (q)',
         group: 'Item',
-        run: () => document.getElementById('quick-add-input')?.focus(),
+        // iter1624: focus + scrollIntoView を共有 helper に集約 (旧 inline は scrollIntoView 無)。
+        run: () => {
+          focusQuickAdd()
+        },
         keywords: ['create', 'new', '作成', 'q'],
       },
       {

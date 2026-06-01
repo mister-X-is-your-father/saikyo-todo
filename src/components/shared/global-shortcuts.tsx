@@ -3,6 +3,8 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
+import { focusQuickAdd } from '@/lib/ui/focus-quick-add'
+
 /**
  * グローバルキーボードショートカット。
  *
@@ -67,11 +69,9 @@ export function GlobalShortcuts({ workspaceId }: { workspaceId: string }) {
       }
 
       if (e.key === 'q') {
-        const el = document.getElementById('quick-add-input') as HTMLInputElement | null
-        if (el) {
-          e.preventDefault()
-          el.focus()
-        }
+        // iter1624: focus + scrollIntoView を `focusQuickAdd` helper に集約。
+        // 旧 inline は scrollIntoView 無、本 iter で常に scrollIntoView (off-screen でも視野に入る、WCAG 2.4.3 補完)。
+        if (focusQuickAdd()) e.preventDefault()
         return
       }
       if (e.key === 'g') {
