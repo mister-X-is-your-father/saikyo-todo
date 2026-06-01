@@ -400,8 +400,13 @@ function Section({
       <h3 id={headingId} className={`flex items-center gap-1.5 text-xs font-medium ${labelTone}`}>
         {icon}
         <span>{label}</span>
+        {/* iter1663: Section sub-heading count を `(${N})` から em-dash + 件 convention に統一
+            (iter1662 op-board top sub-heading / iter1659 today-view group と同 sweep)。 */}
         {typeof count === 'number' ? (
-          <span className="text-foreground/80 font-normal tabular-nums">({count})</span>
+          <span className="text-foreground/80 font-normal tabular-nums">
+            {' — '}
+            {count} 件
+          </span>
         ) : null}
       </h3>
       <div className="pl-5">{children}</div>
