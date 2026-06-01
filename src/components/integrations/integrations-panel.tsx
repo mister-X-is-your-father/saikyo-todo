@@ -375,6 +375,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
               <Label htmlFor="src-name">名前</Label>
               <IMEInput
                 id="src-name"
+                className="h-11"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="例: Yamory チーム A"
@@ -409,6 +410,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                 <Label htmlFor="src-token">API Token</Label>
                 <IMEInput
                   id="src-token"
+                  className="h-11"
                   type="password"
                   value={token}
                   onChange={(e) => setToken(e.target.value)}
@@ -433,6 +435,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                 <Label htmlFor="src-project-ids">project IDs (1 件以上)</Label>
                 <IMEInput
                   id="src-project-ids"
+                  className="h-11"
                   value={projectIds}
                   onChange={(e) => setProjectIds(e.target.value)}
                   placeholder="カンマ区切り (例: proj-a, proj-b)"
@@ -456,6 +459,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                   <Label htmlFor="src-url">URL</Label>
                   <IMEInput
                     id="src-url"
+                    className="h-11"
                     type="url"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
@@ -506,6 +510,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                   <Label htmlFor="src-items-path">items path (任意)</Label>
                   <IMEInput
                     id="src-items-path"
+                    className="h-11"
                     value={itemsPath}
                     onChange={(e) => setItemsPath(e.target.value)}
                     placeholder="例: data.items (省略で root)"
@@ -523,6 +528,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                   <Label htmlFor="src-due-path">due path (任意)</Label>
                   <IMEInput
                     id="src-due-path"
+                    className="h-11"
                     value={duePath}
                     onChange={(e) => setDuePath(e.target.value)}
                     placeholder="例: due_date"
@@ -540,6 +546,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                   <Label htmlFor="src-id-path">id path</Label>
                   <IMEInput
                     id="src-id-path"
+                    className="h-11"
                     value={idPath}
                     onChange={(e) => setIdPath(e.target.value)}
                     required
@@ -559,6 +566,7 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                   <Label htmlFor="src-title-path">title path</Label>
                   <IMEInput
                     id="src-title-path"
+                    className="h-11"
                     value={titlePath}
                     onChange={(e) => setTitlePath(e.target.value)}
                     required
