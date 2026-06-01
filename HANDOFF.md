@@ -769,6 +769,30 @@ const spy = vi.spyOn(el, 'scrollIntoView')
 を使う今後の DOM helper test 全部で同 pattern が必要。`window.scrollTo` も同様に
 未実装なので spy 前 define が要る。
 
+### 5.31 並行 fire の iter 番号衝突 (in-session loop ↔ playwright fire)
+
+本リポは in-session loop fire (autonomous mode) と playwright fire (UI/UX 探索 mode) が
+**同時実行され得る**。両 fire が同じ git log を参照して「次 iter = max + 1」 を計算する
+ため、ほぼ同時刻に commit すると **同じ iter 番号** で 2 commit が landed する
+(例: iter1625 で focus-form-cta refactor + pdca-panel atomic chip pattern が並行 landed)。
+
+挙動と対処:
+
+- `parseIterFromGitLog` (`src/lib/autonomous/iter-info.ts`) は max を取るだけなので、
+  重複は新規 iter を生まない (= 次 iter は重複した番号 + 1)
+- commit message に `[iter<N> <track> 1/1]` を入れる時、push-main.sh の rebase が走って
+  parent が更新されると **同 subject の commit が異なる hash で 2 件残る** 場合がある
+  (= 同一内容なら冪等扱い OK、別内容なら HANDOFF entry を sibling として追加)
+- HANDOFF §9 は両 commit に entry を残す (`[iter<N>` と `[playwright-iter<N>`)
+- test fixture: `iter-info.test.ts` の「並行 fire iter 番号衝突」 + 「混在 subject 形式」
+  test が回帰 guard (iter1637 + iter1654 で追加)
+
+実観測例 (本 fire iter1620+):
+
+- iter1625: focus-form-cta + pdca-panel atomic chip (parallel A + B)
+- iter1626: StatCard em-dash + 別 refactor (parallel collision)
+- iter1631, iter1646, iter1647, iter1648 等で頻発
+
 ### 5.15 pg_trgm 閾値
 
 `pg_trgm.word_similarity_threshold` の既定は 0.6 で短いクエリに厳しすぎる。
