@@ -45,6 +45,20 @@ describe('parseIterFromGitLog', () => {
     // "iteration" / "literally" 等は "iter" + 非 digit のため非マッチ
     expect(parseIterFromGitLog('aaa iteration test iter loop')).toBe(0)
   })
+
+  it('並行 fire iter 番号衝突 — 同 iter が複数 commit に出ても max が安定 (重複した iter は新規 iter ではない)', () => {
+    // 実際の運用パターン (iter1625 で並行 fire の 2 agent が同 iter 番号を使った例):
+    // - 'feat(focus-form-cta) [iter1625 refactor 1/1]'   ← parallel A
+    // - 'fix(pdca-panel) [playwright-iter1625 1/1]'      ← parallel B
+    // → parseIterFromGitLog は max = 1625 を返す (=  並行 fire の重複番号でも前進判定が安定)。
+    // 次 iter は 1626 になる (NOT 1627、衝突を「+1」 は重複呼び出しのため次 iter で実態追従)。
+    const log = [
+      'aaaa feat(focus-form-cta): A [iter1625 refactor 1/1]',
+      'bbbb fix(pdca-panel): B [playwright-iter1625 1/1]',
+      'cccc chore(handoff): iter1624 §9',
+    ].join('\n')
+    expect(parseIterFromGitLog(log)).toBe(1625)
+  })
 })
 
 describe('decideBaseTrack', () => {
