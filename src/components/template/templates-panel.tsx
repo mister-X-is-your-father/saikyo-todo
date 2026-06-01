@@ -276,7 +276,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
           }
         />
       ) : (
-        <ul className="space-y-3" aria-label={`Template 一覧 ${list.data!.length} 件`}>
+        <ul className="space-y-3" aria-label={`Template 一覧 — ${list.data!.length} 件`}>
           {list.data!.map((t) => (
             <li key={t.id}>
               <Card

@@ -68,7 +68,7 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
         // iter447: ul に aria-label を付与し SR の list navigation で
         // 「コメント一覧 N 件」 が context として伝わるように (iter427 / iter428 /
         // iter438 と同 pattern 8 件目)。
-        <ul className="space-y-3" aria-label={`コメント一覧 ${comments!.length} 件`}>
+        <ul className="space-y-3" aria-label={`コメント一覧 — ${comments!.length} 件`}>
           {comments!.map((c) => (
             <CommentItem
               key={c.id}

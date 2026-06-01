@@ -397,7 +397,7 @@ export function SprintsPanel({ workspaceId }: Props) {
         <ul
           className="space-y-3"
           data-testid="sprints-list"
-          aria-label={`Sprint 一覧 ${list.data.length} 件`}
+          aria-label={`Sprint 一覧 — ${list.data.length} 件`}
         >
           {list.data.map((sp) => (
             <SprintCard

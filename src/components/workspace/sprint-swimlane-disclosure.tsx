@@ -166,7 +166,9 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
       >
         <span aria-hidden="true">{populationLabel}</span>
       </div>
-      <ul className="space-y-1" aria-label={`Sprint Swimlane lane 一覧 ${rows.length} 件`}>
+      {/* iter1640: 旧 `${entity} 一覧 ${N} 件` space-separator は iter1093-1633 sweep の
+          em-dash 区切と divergent (iter1633 dashboard MUST list と同 pattern)。 */}
+      <ul className="space-y-1" aria-label={`Sprint Swimlane lane 一覧 — ${rows.length} 件`}>
         {rows.map((row) => (
           <li
             key={row.laneKey ?? '__unassigned__'}

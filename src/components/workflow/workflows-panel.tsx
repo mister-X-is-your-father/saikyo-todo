@@ -245,7 +245,7 @@ export function WorkflowsPanel({ workspaceId }: Props) {
         <ul
           className="space-y-3"
           data-testid="workflows-list"
-          aria-label={`Workflow 一覧 ${list.data!.length} 件`}
+          aria-label={`Workflow 一覧 — ${list.data!.length} 件`}
         >
           {list.data!.map((wf) => (
             <li key={wf.id}>

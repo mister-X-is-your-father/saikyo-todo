@@ -209,7 +209,7 @@ export function TemplateItemsEditor({ templateId }: Props) {
       ) : (
         <ul
           className="divide-y text-sm"
-          aria-label={`Template 子 Item 一覧 ${items.data!.length} 件`}
+          aria-label={`Template 子 Item 一覧 — ${items.data!.length} 件`}
         >
           {items.data!.map((it) => (
             <li
