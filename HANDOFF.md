@@ -752,6 +752,23 @@ JWT が realtime client に渡っていないと、ステータスは SUBSCRIBED
 `supabase.realtime.setAuth(token)` → `channel.subscribe()` の順を必ず守る。
 既存 `item/realtime.ts` も同 pattern に修正済 (Phase 4 commit で同梱)。
 
+### 5.30 jsdom 環境 (vitest) は `HTMLElement.prototype.scrollIntoView` 未実装
+
+vitest の `// @vitest-environment jsdom` を使う DOM helper test で
+`scrollIntoView` を spy しようとすると `"The property 'scrollIntoView' is not defined"`
+で fail する (`vi.spyOn(el, 'scrollIntoView')` は target property が undefined で例外)。
+
+対処: spy 前に property を define して noop に置く:
+
+```ts
+;(el as HTMLElement & { scrollIntoView: (...args: unknown[]) => void }).scrollIntoView = () => {}
+const spy = vi.spyOn(el, 'scrollIntoView')
+```
+
+`focus-quick-add.test.ts` で発覚 (iter1624 / iter1634)。jsdom + smooth-scroll
+を使う今後の DOM helper test 全部で同 pattern が必要。`window.scrollTo` も同様に
+未実装なので spy 前 define が要る。
+
 ### 5.15 pg_trgm 閾値
 
 `pg_trgm.word_similarity_threshold` の既定は 0.6 で短いクエリに厳しすぎる。
