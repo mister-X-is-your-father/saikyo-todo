@@ -62,6 +62,10 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
           placeholder="task を検索…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
+          /* iter1677: dialog 内 search input は browser autocomplete suggestion が
+             dropdown を被せて in-dialog filtering を阻害するため "off"。quick-add iter350
+             と同 convention。 */
+          autoComplete="off"
         />
       </div>
       <div className="max-h-72 overflow-auto">
