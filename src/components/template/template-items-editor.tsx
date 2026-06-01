@@ -96,7 +96,7 @@ export function TemplateItemsEditor({ templateId }: Props) {
             placeholder="子 Item のタイトル"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="flex-1"
+            className="h-11 flex-1"
             aria-label={
               title.length === 0
                 ? '子 Item のタイトル (必須、最大 500 文字、Mustache 変数 {{var}} 利用可)'

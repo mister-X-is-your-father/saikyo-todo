@@ -53,6 +53,7 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
             handler 無いが、将来 enter-to-pick 等を足したときの IME hazard を排除)。 */}
         <IMEInput
           autoFocus
+          className="h-11"
           aria-label={
             q.length === 0
               ? 'task を検索 (タイトルで部分一致)'
