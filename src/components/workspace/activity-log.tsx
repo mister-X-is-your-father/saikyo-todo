@@ -222,7 +222,11 @@ function ActivityRow({
           className="text-muted-foreground focus-visible:ring-ring relative mt-1 inline-flex min-h-11 items-center rounded text-[11px] underline before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
-          aria-controls={detailId}
+          /* iter1645: 旧 `aria-controls={detailId}` は静的だが、controlled `<pre id={detailId}>`
+             は `{open && hasDetail}` 条件下のみ render される (collapsed 時は null)。dangling
+             ARIA id-ref で iter1637 quick-add と同 pattern (WAI-ARIA spec 1.2 §9.4 違反)。
+             open 時のみ aria-controls を設定し disclosure pattern 完全性を維持。 */
+          aria-controls={open ? detailId : undefined}
           // iter1041: visible "詳細を見る" / "詳細を閉じる" を aria-label の prefix に
           // 固定し WCAG 2.5.3 satisfy (旧 aria-label は "差分 (before / after) を見る"
           // で "詳細を見る" literal substring 不一致だった)。

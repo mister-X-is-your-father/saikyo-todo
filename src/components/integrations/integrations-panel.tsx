@@ -207,7 +207,9 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             variant="ghost"
             onClick={() => setImportsOpen((v) => !v)}
             aria-expanded={importsOpen}
-            aria-controls={`src-imports-${src.id}`}
+            /* iter1645: controlled div は `{importsOpen && (...)}` 条件下のみ render される。
+               importsOpen 時のみ aria-controls 設定で dangling 回避 (iter1637/iter1645 sweep)。 */
+            aria-controls={importsOpen ? `src-imports-${src.id}` : undefined}
             aria-label={
               importsOpen
                 ? `履歴 — Source「${src.name}」の Pull 履歴 (直近 5 件) を閉じる`

@@ -414,7 +414,10 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             variant="ghost"
             onClick={() => setRunsOpen((v) => !v)}
             aria-expanded={runsOpen}
-            aria-controls={`wf-runs-${wf.id}`}
+            /* iter1645: controlled `<div id={`wf-runs-${wf.id}`}>` は `{runsOpen && (...)}`
+               条件下のみ render される。runsOpen 時のみ aria-controls 設定で dangling 回避
+               (iter1637/iter1645 sweep)。 */
+            aria-controls={runsOpen ? `wf-runs-${wf.id}` : undefined}
             aria-label={
               runsOpen
                 ? `履歴 — Workflow「${wf.name}」の実行履歴 (直近 5 件) を閉じる`
@@ -841,7 +844,9 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
                 className="hover:bg-muted/50 focus-visible:ring-ring flex w-full items-center gap-2 px-2 py-1.5 text-left focus-visible:ring-2 focus-visible:outline-none"
                 onClick={() => setExpandedRunId(isOpen ? null : r.id)}
                 aria-expanded={isOpen}
-                aria-controls={`wf-run-nodes-${r.id}`}
+                /* iter1645: controlled div は `{isOpen && (...)}` 条件下のみ render される。
+                   isOpen 時のみ aria-controls 設定で dangling 回避 (iter1637/iter1645 sweep)。 */
+                aria-controls={isOpen ? `wf-run-nodes-${r.id}` : undefined}
                 /* iter1555: 旧 `のノード詳細を{閉じる|表示}` は ' を' 助詞接続で iter1093-1554
                    sweep の em-dash 区切と divergent。operation-board disclosure (iter1547) と
                    同 pattern で em-dash 化。visible prefix `${triggerKind} 実行 (${time})` は維持。 */

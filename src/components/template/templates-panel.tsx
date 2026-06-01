@@ -295,7 +295,10 @@ export function TemplatesPanel({ workspaceId }: Props) {
                     className="focus-visible:ring-ring flex-1 rounded text-left focus-visible:ring-2 focus-visible:outline-none"
                     onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
                     aria-expanded={expandedId === t.id}
-                    aria-controls={`template-body-${t.id}`}
+                    /* iter1645: controlled CardContent は `{expandedId === t.id}` 条件下のみ
+                       render される。expanded 時のみ aria-controls 設定で dangling 回避
+                       (iter1637/iter1645 sweep)。 */
+                    aria-controls={expandedId === t.id ? `template-body-${t.id}` : undefined}
                     // iter1221: 旧 aria-label `Template「${name}」(...)` は visible {name}
                     // (CardTitle heading) を中位置 "Template「**name**」(...)" に持ち voice
                     // control prefix-matching「click {name}」 match 不可 (substring 一致のみ)。

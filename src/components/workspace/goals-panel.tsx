@@ -425,7 +425,11 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
               onClick={() => setOpen((v) => !v)}
               className="hover:bg-muted focus-visible:ring-ring relative mt-0.5 inline-flex min-h-11 min-w-11 items-center justify-center rounded p-1 before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
               aria-expanded={open}
-              aria-controls={`goal-body-${goal.id}`}
+              /* iter1645: controlled CardContent は `{open && (...)}` 条件下のみ render される
+                 ため、collapsed 時に aria-controls={`goal-body-${goal.id}`} は dangling
+                 (iter1637 quick-add / iter1645 activity-log と同 pattern、WAI-ARIA spec 1.2
+                 §9.4 違反)。open 時のみ参照を設定し disclosure pattern 完全性を維持。 */
+              aria-controls={open ? `goal-body-${goal.id}` : undefined}
               // iter1223: 旧 aria-label `Goal「${title}」の KR ...` は visible title を中位置
               // "Goal「**title**」の..." に持ち voice control prefix-matching「click {title}」
               // match 不可 (icon-only Chevron、visible text 無、title の goal は siblings の
