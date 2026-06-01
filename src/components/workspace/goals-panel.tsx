@@ -322,14 +322,7 @@ export function GoalsPanel({ workspaceId }: Props) {
               。 KR は items 連動 (linked items の done 比) でも手動 (current/target) でも測れます。
             </span>
           }
-          action={
-            <FocusFormCta
-              targetId="goal-title"
-              entityName="Goal"
-              fieldName="Objective"
-              testId="goals-empty-create"
-            />
-          }
+          action={<FocusFormCta targetId="goal-title" testId="goals-empty-create" />}
         />
       ) : (
         <ul

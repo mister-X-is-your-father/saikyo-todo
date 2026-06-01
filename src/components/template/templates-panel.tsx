@@ -266,14 +266,7 @@ export function TemplatesPanel({ workspaceId }: Props) {
               </p>
             </>
           }
-          action={
-            <FocusFormCta
-              targetId="tmpl-name"
-              entityName="Template"
-              fieldName="名前"
-              testId="templates-empty-create"
-            />
-          }
+          action={<FocusFormCta targetId="tmpl-name" testId="templates-empty-create" />}
         />
       ) : (
         <ul className="space-y-3" aria-label={`Template 一覧 — ${list.data!.length} 件`}>

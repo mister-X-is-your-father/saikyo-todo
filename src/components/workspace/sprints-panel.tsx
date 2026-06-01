@@ -381,14 +381,7 @@ export function SprintsPanel({ workspaceId }: Props) {
               。 完了時に Retro Doc / 開始前に Pre-mortem を生成できます。
             </span>
           }
-          action={
-            <FocusFormCta
-              targetId="sprint-name"
-              entityName="Sprint"
-              fieldName="名前"
-              testId="sprints-empty-create"
-            />
-          }
+          action={<FocusFormCta targetId="sprint-name" testId="sprints-empty-create" />}
         />
       ) : (
         // iter448: ul に aria-label を付与し SR list nav で

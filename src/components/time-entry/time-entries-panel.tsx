@@ -60,14 +60,7 @@ export function TimeEntriesPanel({ workspaceId }: { workspaceId: string }) {
             <EmptyState
               title="まだ記録がありません"
               description="上のフォームから作成してください"
-              action={
-                <FocusFormCta
-                  targetId="teDate"
-                  entityName="稼働記録"
-                  fieldName="勤務日"
-                  testId="time-entries-empty-create"
-                />
-              }
+              action={<FocusFormCta targetId="teDate" testId="time-entries-empty-create" />}
             />
           ) : (
             <TimeEntriesTable workspaceId={workspaceId} entries={q.data ?? []} />

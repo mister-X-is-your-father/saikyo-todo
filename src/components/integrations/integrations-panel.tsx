@@ -56,14 +56,7 @@ export function IntegrationsPanel({ workspaceId }: Props) {
         <EmptyState
           title="外部 API 連携がありません"
           description="上の form から Yamory / カスタム REST を Source として登録すると、定期 / 手動で Item を pull できます。"
-          action={
-            <FocusFormCta
-              targetId="src-name"
-              entityName="Source"
-              fieldName="名前"
-              testId="integrations-empty-create"
-            />
-          }
+          action={<FocusFormCta targetId="src-name" testId="integrations-empty-create" />}
         />
       ) : (
         <ul

@@ -232,14 +232,7 @@ export function WorkflowsPanel({ workspaceId }: Props) {
               。 まず空 graph で作成し、後から graph editor で node / edge を追加します。
             </span>
           }
-          action={
-            <FocusFormCta
-              targetId="wf-name"
-              entityName="Workflow"
-              fieldName="名前"
-              testId="workflows-empty-create"
-            />
-          }
+          action={<FocusFormCta targetId="wf-name" testId="workflows-empty-create" />}
         />
       ) : (
         <ul
