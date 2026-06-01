@@ -381,7 +381,10 @@ function ItemEditDialogInner({
             <TabsTrigger
               value="summary"
               data-testid="tab-summary"
-              aria-label="サマリ タブ — この案件の進捗 / 依存 / 最終更新を一目で確認"
+              /* iter1671: 旧 "サマリ タブ" / "子タスク タブ" の space-separator は他 tab
+                 ("基本タブ" / "依存タブ" / "コメントタブ" / "アクティビティタブ") の no-space
+                 convention と divergent。space 削除で全 6 tab を統一 noun-compound format に。 */
+              aria-label="サマリタブ — この案件の進捗 / 依存 / 最終更新を一目で確認"
             >
               <span aria-hidden="true">サマリ</span>
             </TabsTrigger>
@@ -392,8 +395,8 @@ function ItemEditDialogInner({
               data-subtask-done={descendantsProgress?.done ?? 0}
               aria-label={
                 descendantsProgress && descendantsProgress.total > 0
-                  ? `子タスク タブ — 進捗 ${descendantsProgress.pctDone}% (完了 ${descendantsProgress.done} / 全 ${descendantsProgress.total} 件)`
-                  : '子タスク タブ'
+                  ? `子タスクタブ — 進捗 ${descendantsProgress.pctDone}% (完了 ${descendantsProgress.done} / 全 ${descendantsProgress.total} 件)`
+                  : '子タスクタブ'
               }
             >
               <span aria-hidden="true">子タスク</span>
