@@ -231,6 +231,7 @@ export function BudgetPanel({ workspaceId }: Props) {
               </Label>
               <Input
                 id="budget-limit"
+                className="h-11"
                 type="number"
                 step="0.01"
                 min={0}
@@ -261,6 +262,7 @@ export function BudgetPanel({ workspaceId }: Props) {
               </Label>
               <Input
                 id="budget-warn"
+                className="h-11"
                 type="number"
                 step="0.05"
                 min={0}
