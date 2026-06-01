@@ -39,7 +39,7 @@ export default async function IntegrationsPage({ params }: PageProps) {
     <main
       id="main-content"
       tabIndex={-1}
-      aria-label="API 連携 外部 API (Yamory / カスタム REST) → Item 取込"
+      aria-label="API 連携 — 外部 API (Yamory / カスタム REST) → Item 取込"
       className="container mx-auto max-w-5xl space-y-6 p-4 focus-visible:outline-none md:p-6"
     >
       <WorkspaceHeader

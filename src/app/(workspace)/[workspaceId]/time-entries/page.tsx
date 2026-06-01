@@ -39,7 +39,7 @@ export default async function TimeEntriesPage({ params }: PageProps) {
     <main
       id="main-content"
       tabIndex={-1}
-      aria-label="稼働入力 やったこと + 時間を記録"
+      aria-label="稼働入力 — やったこと + 時間を記録"
       className="container mx-auto max-w-5xl space-y-6 p-4 focus-visible:outline-none md:p-6"
     >
       <WorkspaceHeader
