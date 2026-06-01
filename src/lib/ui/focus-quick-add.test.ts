@@ -10,6 +10,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { focusElementById, focusQuickAdd } from './focus-quick-add'
 
+/**
+ * iter1642: jsdom は `HTMLElement.prototype.scrollIntoView` を実装しないため
+ * (HANDOFF §5.30)、`vi.spyOn(el, 'scrollIntoView')` 前に property を define
+ * しなければ `"The property 'scrollIntoView' is not defined"` で例外。
+ * 5 callsite で同 pattern を書いていたので 1 helper に集約。
+ */
+function defineScrollIntoView(el: HTMLElement): void {
+  ;(el as HTMLElement & { scrollIntoView: (...args: unknown[]) => void }).scrollIntoView = () => {}
+}
+
 describe('focusQuickAdd', () => {
   afterEach(() => {
     document.body.innerHTML = ''
@@ -31,8 +41,7 @@ describe('focusQuickAdd', () => {
       input.id = 'quick-add-input'
       // jsdom は HTMLElement.prototype.scrollIntoView を実装していないので spy 前に
       // 定義する (= caller の `el.scrollIntoView(...)` 呼び出しを spy で観測可能に)
-      ;(input as HTMLElement & { scrollIntoView: (...args: unknown[]) => void }).scrollIntoView =
-        () => {}
+      defineScrollIntoView(input)
       document.body.appendChild(input)
       focusSpy = vi.spyOn(input, 'focus')
       scrollSpy = vi.spyOn(input, 'scrollIntoView')
@@ -77,8 +86,7 @@ describe('focusElementById (iter1625 — 任意 id 版)', () => {
   it('要素あり → focus + scrollIntoView を呼んで true 返し', () => {
     const el = document.createElement('input')
     el.id = 'sprint-name'
-    ;(el as HTMLElement & { scrollIntoView: (...args: unknown[]) => void }).scrollIntoView =
-      () => {}
+    defineScrollIntoView(el)
     document.body.appendChild(el)
     const focusSpy = vi.spyOn(el, 'focus')
     const scrollSpy = vi.spyOn(el, 'scrollIntoView')
@@ -91,8 +99,7 @@ describe('focusElementById (iter1625 — 任意 id 版)', () => {
   it('focusQuickAdd は focusElementById(quick-add-input) の thin wrapper', () => {
     const el = document.createElement('input')
     el.id = 'quick-add-input'
-    ;(el as HTMLElement & { scrollIntoView: (...args: unknown[]) => void }).scrollIntoView =
-      () => {}
+    defineScrollIntoView(el)
     document.body.appendChild(el)
     const focusSpy = vi.spyOn(el, 'focus')
 
@@ -108,8 +115,7 @@ describe('focusElementById (iter1625 — 任意 id 版)', () => {
     const el = document.createElement('div')
     el.id = 'cycle-do-tab'
     el.tabIndex = -1 // programmatic focus 可能化
-    ;(el as HTMLElement & { scrollIntoView: (...args: unknown[]) => void }).scrollIntoView =
-      () => {}
+    defineScrollIntoView(el)
     document.body.appendChild(el)
     const focusSpy = vi.spyOn(el, 'focus')
 
