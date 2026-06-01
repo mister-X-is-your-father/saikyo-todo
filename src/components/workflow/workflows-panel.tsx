@@ -940,7 +940,7 @@ function WorkflowNodeRunsList({ runId }: { runId: string }) {
     <ul
       className="space-y-1.5"
       data-testid={`wf-node-runs-${runId}`}
-      aria-label={`Workflow node 実行履歴 ${rows.length} 件`}
+      aria-label={`Workflow node 実行履歴 — ${rows.length} 件`}
     >
       {rows.map((nr) => (
         <li
