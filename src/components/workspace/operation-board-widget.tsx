@@ -325,7 +325,11 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
               className="hover:text-foreground text-muted-foreground focus-visible:ring-ring relative flex min-h-11 items-center gap-1 rounded text-xs before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
               onClick={() => setShowDoneYesterday((v) => !v)}
               aria-expanded={showDoneYesterday}
-              aria-controls="operation-board-done-yesterday-list"
+              /* iter1647: controlled `<div id="operation-board-done-yesterday-list">` は
+                 `{showDoneYesterday && (...)}` 条件下のみ render。collapsed 時の static
+                 aria-controls は dangling reference (WAI-ARIA 1.2 §9.4 違反、SR stuttering)。
+                 iter1645/1646 disclosure aria-controls conditional 化 sweep の取りこぼし回収。 */
+              aria-controls={showDoneYesterday ? 'operation-board-done-yesterday-list' : undefined}
               /* iter1547: 旧 `件の一覧を{閉じる|表示}` は ' を' 助詞接続で iter1093-1546 sweep の
                  em-dash 区切と divergent。team-capacity-panel summary (iter1544) と同 pattern で
                  em-dash 化。visible prefix `昨日 done {count} 件` は維持 (voice control)。 */
