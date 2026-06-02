@@ -22,6 +22,9 @@
  * AI 不使用、副作用無し、依存無し。
  */
 
+import type { Severity } from '@/lib/widget/severity'
+import { aggregateCountsBySeverity } from '@/lib/widget/severity-bridges'
+
 export interface ForecastItemFields {
   id: string
   title: string
@@ -186,16 +189,15 @@ export function forecastSeverityLabelJa(sev: ForecastSeverity): string {
  * 例: workspace 内の各 person 別 / 日別 / sprint 別 forecast を集計して 1 行 summary
  * で「危険 1 / 注意 2 / 情報 3 / OK 4 (合計 10)」 と出せる。
  */
+// iter1692 refactor: iter1430 で extract した汎用 `aggregateCountsBySeverity` に委譲。
+// iter1687-1691 (due-proximity / goal-health / bias / recovery-plan / ai-assignee) に続く
+// 外部 file 追従 7 件目。ForecastSeverity ('ok'|'info'|'warn'|'danger') が共通 Severity の
+// subset (muted 不在) なので identity mapping `(k) => k`、muted bucket は 0 padding される。
+// inline tuple type `'ok'|...` を共通 `Severity` 型に統一。
 export function forecastSeverityCountsToSeverityCounts(
   counts: Record<ForecastSeverity, number>,
-): Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> {
-  return {
-    ok: counts.ok ?? 0,
-    info: counts.info ?? 0,
-    warn: counts.warn ?? 0,
-    danger: counts.danger ?? 0,
-    muted: 0,
-  }
+): Record<Severity, number> {
+  return aggregateCountsBySeverity(counts, (k) => k)
 }
 
 /**

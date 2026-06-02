@@ -269,4 +269,13 @@ describe('forecastSeverityCountsToSeverityCounts', () => {
       sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
     expect(sevTotal).toBe(total)
   })
+
+  // iter1692 refactor regression guard: aggregateCountsBySeverity 委譲後も identity copy
+  // (ForecastSeverity ⊂ Severity の subset、muted は 0 padding) が保証されることを assert。
+  it('入力 key 順を変えても結果同一 + muted は常に 0', () => {
+    const a = forecastSeverityCountsToSeverityCounts({ ok: 4, info: 3, warn: 2, danger: 1 })
+    const b = forecastSeverityCountsToSeverityCounts({ danger: 1, warn: 2, info: 3, ok: 4 })
+    expect(a).toEqual(b)
+    expect(a.muted).toBe(0)
+  })
 })
