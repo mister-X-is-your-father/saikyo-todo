@@ -55,10 +55,12 @@ export function severityToChipTone(sev: Severity): ChipTone {
  * `Record<Severity, number>` に集約する **汎用 helper**。
  *
  * iter533-548 系で同 pattern (= empty Record 初期化 + for-loop + ?? 0 + toSeverity 委譲)
- * を 11+ 関数 (`checklistStatusCountsToSeverityCounts` /
- * `improvementSeverityCountsToSeverityCounts` / `assigneeLoadSeverityCountsToSeverityCounts` /
- * `pdcaPhaseSeverityCountsToSeverityCounts` / `fourStateHintCountsToSeverityCounts` + 他 file
- * の 6 件) が完全に同じ boilerplate を持っていたのを 1 関数に集約。
+ * を 14 関数 (severity-bridges.ts 内 5 件 = checklistStatus / improvementSeverity /
+ * assigneeLoadSeverity / pdcaPhaseSeverity / fourStateHint + 外部 file 9 件 = status-visual
+ * (iter1433) / due-proximity (iter1687) / goal-health (iter1688) / bias (iter1689) /
+ * recovery-plan (iter1690) / ai-assignee (iter1691) / forecast (iter1692) / retro-completion
+ * (iter1693) / priority (iter1694)) が完全に同じ boilerplate を持っていたのを 1 関数に集約。
+ * iter1694 で全 14 関数追従完了。
  *
  * 仕様:
  *  - 5 Severity bucket (ok / info / warn / danger / muted) を 0 で初期化
@@ -70,9 +72,6 @@ export function severityToChipTone(sev: Severity): ChipTone {
  *
  * caller pattern (= 各 `*CountsToSeverityCounts` の薄ラッパー):
  *   return aggregateCountsBySeverity(counts, checklistStatusToSeverity)
- *
- * 注: 本 helper は severity-bridges.ts 内の 5 関数の boilerplate を排除する用 (= 11+ 関数の
- * 一括 refactor は本 iter scope 外、別 iter で外部 file も追従)。
  *
  * iter1694: `K extends PropertyKey` (= string | number | symbol) に汎用化。number key の
  * Record (= priority の `Record<1|2|3|4, number>` 等) も同 helper で扱えるよう拡張。
