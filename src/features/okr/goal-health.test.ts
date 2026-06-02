@@ -336,4 +336,24 @@ describe('goalHealthTierCountsToSeverityCounts', () => {
     expect(r.danger).toBe(1)
     expect(r.muted).toBe(1)
   })
+
+  // iter1688 refactor regression guard: aggregateCountsBySeverity 委譲後も TIER_SEVERITY の
+  // 1:1 mapping (lossy 縮約なし) が経由されることを assert (= 入力 key 順を変えても結果同一)。
+  it('入力 key 順を変えても結果同一 (集約は加算的、順序不変)', () => {
+    const a = goalHealthTierCountsToSeverityCounts({
+      achieved: 4,
+      'on-track': 3,
+      'at-risk': 2,
+      behind: 1,
+      idle: 1,
+    })
+    const b = goalHealthTierCountsToSeverityCounts({
+      idle: 1,
+      behind: 1,
+      'at-risk': 2,
+      'on-track': 3,
+      achieved: 4,
+    })
+    expect(a).toEqual(b)
+  })
 })

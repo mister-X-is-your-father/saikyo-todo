@@ -27,6 +27,8 @@
  */
 
 import { formatNonZeroCounts } from '@/lib/format-counts'
+import type { Severity } from '@/lib/widget/severity'
+import { aggregateCountsBySeverity } from '@/lib/widget/severity-bridges'
 
 import { daysBetween, todayISO } from '@/features/sprint/sprint-date-helpers'
 
@@ -186,7 +188,7 @@ export function formatGoalHealthCounts(counts: Record<GoalHealthTier, number>): 
  * goals-panel.tsx 内の TIER_BAR_CLASS (= progress bar 色) は 5 色 (emerald/blue/amber/
  * red/primary) で本 helper 5 段と整合的。SeverityChip / Slack chip の標準軸と同期。
  */
-const TIER_SEVERITY: Record<GoalHealthTier, 'ok' | 'info' | 'warn' | 'danger' | 'muted'> = {
+const TIER_SEVERITY: Record<GoalHealthTier, Severity> = {
   achieved: 'ok',
   'on-track': 'info',
   'at-risk': 'warn',
@@ -194,9 +196,7 @@ const TIER_SEVERITY: Record<GoalHealthTier, 'ok' | 'info' | 'warn' | 'danger' | 
   idle: 'muted',
 }
 
-export function goalHealthTierSeverity(
-  tier: GoalHealthTier,
-): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
+export function goalHealthTierSeverity(tier: GoalHealthTier): Severity {
   return TIER_SEVERITY[tier]
 }
 
@@ -221,19 +221,13 @@ export function goalHealthTierSeverity(
  *
  * 集約後の合計件数は tier 合計と一致 (集約だけで増減しない)。
  */
+// iter1688 refactor: iter1430 で extract した汎用 `aggregateCountsBySeverity` に委譲。
+// iter1433 status-visual / iter1687 due-proximity に続く外部 file 追従 3 件目。
+// 振る舞い不変: TIER_SEVERITY (achieved→ok / on-track→info / at-risk→warn / behind→danger /
+// idle→muted) の domain mapping は本 file 責務、boilerplate (空 Record + for-loop + ?? 0) を
+// 1 行委譲に縮約。
 export function goalHealthTierCountsToSeverityCounts(
   counts: Record<GoalHealthTier, number>,
-): Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> {
-  const out: Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> = {
-    ok: 0,
-    info: 0,
-    warn: 0,
-    danger: 0,
-    muted: 0,
-  }
-  for (const t of TIER_ORDER) {
-    const sev = TIER_SEVERITY[t]
-    out[sev] += counts[t] ?? 0
-  }
-  return out
+): Record<Severity, number> {
+  return aggregateCountsBySeverity(counts, goalHealthTierSeverity)
 }
