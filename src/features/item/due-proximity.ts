@@ -26,6 +26,8 @@
 import { MS_PER_DAY, parseIsoDateAsLocalMidnight, toLocalMidnight } from '@/lib/date/iso'
 import { formatNonZeroCounts } from '@/lib/format-counts'
 import { type ChipToneClasses, getChipToneClasses } from '@/lib/ui/chip-tone'
+import type { Severity } from '@/lib/widget/severity'
+import { aggregateCountsBySeverity } from '@/lib/widget/severity-bridges'
 
 export type DueProximityKind = 'overdue' | 'today' | 'tomorrow' | 'thisWeek' | 'later' | 'noDate'
 
@@ -208,7 +210,7 @@ export function dueProximityChipClasses(kind: DueProximityKind): DueProximityChi
  * `DueProximityTone` は TONE_MAP の 5 階調 chip 配色用 (Today / Backlog 等の visual)、
  * 本 helper は SeverityChip / Slack 等の 5 段 共通 token 用。caller 用途で使い分け可。
  */
-const PROXIMITY_SEVERITY: Record<DueProximityKind, 'ok' | 'info' | 'warn' | 'danger' | 'muted'> = {
+const PROXIMITY_SEVERITY: Record<DueProximityKind, Severity> = {
   overdue: 'danger',
   today: 'warn',
   tomorrow: 'info',
@@ -217,9 +219,7 @@ const PROXIMITY_SEVERITY: Record<DueProximityKind, 'ok' | 'info' | 'warn' | 'dan
   noDate: 'muted',
 }
 
-export function dueProximitySeverity(
-  kind: DueProximityKind,
-): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
+export function dueProximitySeverity(kind: DueProximityKind): Severity {
   return PROXIMITY_SEVERITY[kind]
 }
 
@@ -247,19 +247,12 @@ export function dueProximitySeverity(
  * 同 severity 集約に乗せられるため、危険 N / 注意 N / OK N の単一 severity 1 行
  * summary で「全 axis 横断の状況」 を 1 行で出せる。
  */
+// iter1687 refactor: iter1430 で extract した汎用 `aggregateCountsBySeverity` に委譲。
+// iter1433 status-visual に続く外部 file 追従の 2 件目 (= iter1430 推奨の 6 関数追従の 1 つ)。
+// 振る舞い不変: PROXIMITY_SEVERITY の domain → severity mapping は本 file の責務、
+// boilerplate な「空 Record 初期化 + for-loop + ?? 0」が 1 行委譲に短縮。
 export function dueProximityCountsToSeverityCounts(
   counts: Record<DueProximityKind, number>,
-): Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> {
-  const out: Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> = {
-    ok: 0,
-    info: 0,
-    warn: 0,
-    danger: 0,
-    muted: 0,
-  }
-  for (const k of KIND_ORDER) {
-    const sev = PROXIMITY_SEVERITY[k]
-    out[sev] += counts[k] ?? 0
-  }
-  return out
+): Record<Severity, number> {
+  return aggregateCountsBySeverity(counts, dueProximitySeverity)
 }

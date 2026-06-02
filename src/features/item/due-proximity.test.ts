@@ -363,4 +363,27 @@ describe('dueProximityCountsToSeverityCounts', () => {
     })
     expect(r.ok).toBe(0)
   })
+
+  // iter1687 refactor regression guard: aggregateCountsBySeverity 委譲後も
+  // dueProximitySeverity の domain mapping が経由されることを assert (= 入力 key 順
+  // 違いでも合算は順序不変、object spread でも結果同一)。
+  it('入力 key 順を変えても結果同一 (集約は加算的、順序不変)', () => {
+    const a = dueProximityCountsToSeverityCounts({
+      overdue: 2,
+      today: 1,
+      tomorrow: 1,
+      thisWeek: 3,
+      later: 5,
+      noDate: 1,
+    })
+    const b = dueProximityCountsToSeverityCounts({
+      noDate: 1,
+      later: 5,
+      thisWeek: 3,
+      tomorrow: 1,
+      today: 1,
+      overdue: 2,
+    })
+    expect(a).toEqual(b)
+  })
 })
