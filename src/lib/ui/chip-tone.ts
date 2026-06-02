@@ -238,17 +238,16 @@ export function formatToneCountsJa(counts: Record<ChipTone, number>): string {
  *
  * 注: severity が高い = '対応が必要' という意味。'success' (rank=0、positive 軸)
  * と他 tone (severity 軸) が混在しても、severity 軸が常に prioritize される。
+ *
+ * iter1697 refactor: iter1423 で着地した `pickTopItemsByTone` (n=1) を identity getTone callback
+ * で薄ラッパー化、手書き for-loop + best 更新の重複ロジックを排除。iter1425
+ * `pickHighestSeveritySignal → pickTopSignalsBySeverity(n=1)` / iter1696
+ * `pickWorstChecklistFinding → pickTopChecklistFindings(n=1)` 統一の chip-tone primitive 版。
+ * stable sort semantics により「同 rank が複数なら入力順最初」 が `compareChipTones` (= rank 降順)
+ * の stable sort で保証される (= 既存 17 test PASS で検証済)。
  */
 export function pickHighestSeverityTone(tones: ReadonlyArray<ChipTone>): ChipTone | null {
-  if (tones.length === 0) return null
-  let best: ChipTone = tones[0]!
-  for (let i = 1; i < tones.length; i++) {
-    const candidate = tones[i]!
-    if (TONE_ATTENTION_RANK[candidate] > TONE_ATTENTION_RANK[best]) {
-      best = candidate
-    }
-  }
-  return best
+  return pickTopItemsByTone(tones, (t) => t, 1)[0] ?? null
 }
 
 /**
