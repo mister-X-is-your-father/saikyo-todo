@@ -15,6 +15,7 @@ import {
   computeVelocityByPriority,
   formatBestStreakJa,
   formatCompletionStreakJa,
+  formatStreakWithMilestoneJa,
   formatVelocityByPriorityJa,
   formatVelocityHintJa,
   formatVelocitySummary,
@@ -390,6 +391,37 @@ describe('getStreakMilestone / streakMilestoneLabelJa (iter1704)', () => {
     expect(streakMilestoneChipTone('gold')).toBe('success')
     expect(streakMilestoneChipTone('platinum')).toBe('success')
     expect(streakMilestoneChipTone('legend')).toBe('success')
+  })
+
+  it('formatStreakWithMilestoneJa (iter1706): milestone 未到達は数字のみ、到達後は label 付与', () => {
+    // milestone 'none' (streak < 3) は base のみ、emoji 等 含まない
+    expect(formatStreakWithMilestoneJa(0)).toBe('完了 streak 0 日 (今日まだ完了なし)')
+    expect(formatStreakWithMilestoneJa(1)).toBe('完了 streak 1 日 (今日完了あり)')
+    expect(formatStreakWithMilestoneJa(2)).toBe('完了 streak 2 日連続!')
+
+    // bronze (3-6)
+    expect(formatStreakWithMilestoneJa(3)).toBe('完了 streak 3 日連続! 🥉 ブロンズ (3 日連続)')
+    expect(formatStreakWithMilestoneJa(6)).toBe('完了 streak 6 日連続! 🥉 ブロンズ (3 日連続)')
+
+    // silver (7-13)
+    expect(formatStreakWithMilestoneJa(7)).toBe('完了 streak 7 日連続! 🥈 シルバー (1 週間連続)')
+
+    // gold (14-29)
+    expect(formatStreakWithMilestoneJa(14)).toBe('完了 streak 14 日連続! 🥇 ゴールド (2 週間連続)')
+
+    // platinum (30-99)
+    expect(formatStreakWithMilestoneJa(50)).toBe('完了 streak 50 日連続! 💎 プラチナ (1 ヶ月連続)')
+
+    // legend (>= 100)
+    expect(formatStreakWithMilestoneJa(100)).toBe(
+      '完了 streak 100 日連続! 👑 レジェンド (100 日連続!)',
+    )
+  })
+
+  it('formatStreakWithMilestoneJa は streak=0 で milestone 表示なし (empty 状態を強調しない)', () => {
+    const r = formatStreakWithMilestoneJa(0)
+    expect(r).not.toContain('🥉')
+    expect(r).not.toContain('マイルストーン')
   })
 
   it('streakMilestoneChipTone は streak 順で tone が悪化しない (monotonic non-decreasing positive)', () => {

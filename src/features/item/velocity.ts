@@ -369,6 +369,35 @@ export function streakMilestoneChipTone(m: StreakMilestone): ChipTone {
 }
 
 /**
+ * iter1706 basics: streak 数 + milestone label を 1 行 ja-JP に統合 (UI / Slack / AI brief 共通)。
+ *
+ * iter1704 `formatCompletionStreakJa` (= 数字のみ) + iter1704 `streakMilestoneLabelJa` (= milestone
+ * label のみ) を 1 関数で出す合成 helper。caller が 2 関数を別々に呼んで concat する boilerplate
+ * を排除。dashboard chip / Slack daily digest / AI 朝 brief で「現在 streak + 到達 milestone」
+ * を 1 行で表示。
+ *
+ * 出力形式:
+ *  - streak=0 → '完了 streak 0 日 (今日まだ完了なし)' (milestone 'none' は表示しない、empty 状態)
+ *  - streak < 3 (= bronze 未満) → '完了 streak 2 日連続!' (milestone なし、シンプルに数字のみ)
+ *  - streak >= 3 → '完了 streak 5 日連続! 🥈 シルバー (1 週間連続)' (milestone label を末尾に付与)
+ *
+ * 設計意図: milestone 未到達時は数字だけ淡々と、milestone 到達時 (= bronze 以上) に label を
+ * 付けて達成感を出す。これで AI brief / Slack 通知が「streak が milestone に乗ったタイミング」
+ * のみ強調表示できる (= ノイズ削減 + やる気アップ)。
+ *
+ * 既存 helper との関係:
+ *  - `formatCompletionStreakJa(streak)`: 数字のみ整形 (= milestone 不要な場面)
+ *  - `streakMilestoneLabelJa(m)`: label のみ整形 (= 数字不要な場面)
+ *  - 本 helper: 両方を 1 行に統合 (= dashboard chip / digest 用)
+ */
+export function formatStreakWithMilestoneJa(streak: number): string {
+  const base = formatCompletionStreakJa(streak)
+  const milestone = getStreakMilestone(streak)
+  if (milestone === 'none') return base
+  return `${base} ${streakMilestoneLabelJa(milestone)}`
+}
+
+/**
  * iter459 ai-automation: byDay window 内の **最長連続 done 日数** (= best streak)
  * を計算する pure helper。
  *
