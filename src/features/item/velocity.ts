@@ -551,6 +551,60 @@ export function formatStreakTransitionJa(
 }
 
 /**
+ * iter1712 ai-automation: VelocitySummary → streak chain 全 data を 1 関数で orchestrate。
+ *
+ * iter1704-1711 で揃えた substrate 7 helper を 1 call にまとめて、caller (= dashboard /
+ * cron worker / Slack notifier) が VelocitySummary を渡すだけで render に必要な data 全 7 件
+ * を取得できる orchestrator。各 helper の合成 boilerplate を caller から完全除去。
+ *
+ * 出力:
+ *  - currStreak: 今日含む末尾連続日数 (iter457)
+ *  - prevStreak: 昨日まで連続日数 (iter1710、transition 計算用)
+ *  - currMilestone: 今日の milestone 6 段階 (iter1704)
+ *  - prevMilestone: 昨日の milestone (transition source)
+ *  - transition: 'achieved' / 'broken' / 'maintained' (iter1707)
+ *  - briefSignal: AgentBriefSignal (text + tone、iter1708、chip render 用)
+ *  - toastMessage: 'achieved'/'broken' 時の toast 文言 (iter1711、maintained は null)
+ *
+ * caller pattern (= 全 1 関数で chip + toast 同時 render):
+ *   const chain = computeStreakChain(summary)
+ *   <Chip text={chain.briefSignal.text} tone={chain.briefSignal.tone} />
+ *   if (chain.toastMessage) toast.show(chain.toastMessage)
+ *
+ * 設計意図: dashboard / cron / Slack の 3 caller 全てで同じ 7 helper chain が必要 → 1 関数化で
+ * caller の boilerplate -7 行 / chain。helper 配置を変えても caller は影響受けず本 orchestrator
+ * 内部の修正で済む。
+ */
+export interface StreakChainData {
+  currStreak: number
+  prevStreak: number
+  currMilestone: StreakMilestone
+  prevMilestone: StreakMilestone
+  transition: StreakMilestoneTransition
+  briefSignal: AgentBriefSignal
+  toastMessage: string | null
+}
+
+export function computeStreakChain(summary: VelocitySummary): StreakChainData {
+  const currStreak = computeCompletionStreak(summary)
+  const prevStreak = computeCompletionStreakExcludingToday(summary)
+  const currMilestone = getStreakMilestone(currStreak)
+  const prevMilestone = getStreakMilestone(prevStreak)
+  const transition = classifyStreakMilestoneTransition(prevStreak, currStreak)
+  const briefSignal = streakToBriefSignal(currStreak)
+  const toastMessage = formatStreakTransitionJa(transition, currStreak, prevStreak)
+  return {
+    currStreak,
+    prevStreak,
+    currMilestone,
+    prevMilestone,
+    transition,
+    briefSignal,
+    toastMessage,
+  }
+}
+
+/**
  * iter459 ai-automation: byDay window 内の **最長連続 done 日数** (= best streak)
  * を計算する pure helper。
  *

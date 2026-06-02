@@ -13,6 +13,7 @@ import {
   computeBestStreak,
   computeCompletionStreak,
   computeCompletionStreakExcludingToday,
+  computeStreakChain,
   computeVelocity,
   computeVelocityByPriority,
   formatBestStreakJa,
@@ -325,6 +326,51 @@ describe('computeCompletionStreak / formatCompletionStreakJa (iter457)', () => {
       expect(prev).toBe(2)
       expect(curr).toBe(3)
       // (caller は classifyStreakMilestoneTransition(prev, curr) で 'achieved' 取得)
+    })
+  })
+
+  describe('computeStreakChain (iter1712 — orchestrator)', () => {
+    it('[1, 1, 1] (bronze 到達) → achieved + toast 文言 + chip data 全て返る', () => {
+      const chain = computeStreakChain(mkByDay([1, 1, 1]))
+      expect(chain.currStreak).toBe(3)
+      expect(chain.prevStreak).toBe(2)
+      expect(chain.currMilestone).toBe('bronze')
+      expect(chain.prevMilestone).toBe('none')
+      expect(chain.transition).toBe('achieved')
+      expect(chain.briefSignal.tone).toBe('info') // bronze → info
+      expect(chain.briefSignal.text).toContain('🥉')
+      expect(chain.toastMessage).toContain('🎉')
+      expect(chain.toastMessage).toContain('ブロンズ')
+    })
+
+    it('[1, 1, 0] (今日 streak 途切れ) → broken + 励まし toast', () => {
+      const chain = computeStreakChain(mkByDay([1, 1, 0]))
+      expect(chain.currStreak).toBe(0)
+      expect(chain.prevStreak).toBe(2)
+      expect(chain.currMilestone).toBe('none')
+      expect(chain.prevMilestone).toBe('none') // 2 < 3 で none
+      expect(chain.transition).toBe('maintained') // none → none
+      expect(chain.toastMessage).toBeNull()
+    })
+
+    it('[1, 1, 1, 1, 1, 1, 1, 1] (silver 範囲 維持) → maintained + toast null', () => {
+      // 8 日連続 → prev=7 (silver), curr=8 (silver) → maintained
+      const chain = computeStreakChain(mkByDay([1, 1, 1, 1, 1, 1, 1, 1]))
+      expect(chain.currStreak).toBe(8)
+      expect(chain.prevStreak).toBe(7)
+      expect(chain.currMilestone).toBe('silver')
+      expect(chain.prevMilestone).toBe('silver')
+      expect(chain.transition).toBe('maintained')
+      expect(chain.toastMessage).toBeNull()
+    })
+
+    it('[] (空 byDay) → 全 0 / none / maintained / toast null (defensive)', () => {
+      const chain = computeStreakChain(mkByDay([]))
+      expect(chain.currStreak).toBe(0)
+      expect(chain.prevStreak).toBe(0)
+      expect(chain.currMilestone).toBe('none')
+      expect(chain.transition).toBe('maintained')
+      expect(chain.toastMessage).toBeNull()
     })
   })
 })
