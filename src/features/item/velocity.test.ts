@@ -24,6 +24,7 @@ import {
   type StreakMilestone,
   streakMilestoneChipTone,
   streakMilestoneLabelJa,
+  streakToBriefSignal,
   type VelocityByPriorityFields,
   velocityChipTone,
   type VelocityFields,
@@ -448,6 +449,33 @@ describe('getStreakMilestone / streakMilestoneLabelJa (iter1704)', () => {
     expect(classifyStreakMilestoneTransition(NaN, NaN)).toBe('maintained') // both none
     expect(classifyStreakMilestoneTransition(-1, 0)).toBe('maintained') // none → none
     expect(classifyStreakMilestoneTransition(NaN, 3)).toBe('achieved') // none → bronze
+  })
+
+  it('streakToBriefSignal (iter1708): text + tone を 1 chip 形式で返す', () => {
+    // streak=0 → idle / 'まだ完了なし'
+    const s0 = streakToBriefSignal(0)
+    expect(s0.tone).toBe('idle')
+    expect(s0.text).toBe('完了 streak 0 日 (今日まだ完了なし)')
+
+    // streak=2 (< 3、none) → idle / 数字のみ
+    const s2 = streakToBriefSignal(2)
+    expect(s2.tone).toBe('idle')
+    expect(s2.text).toBe('完了 streak 2 日連続!')
+
+    // streak=3 (bronze) → info / label 付き
+    const s3 = streakToBriefSignal(3)
+    expect(s3.tone).toBe('info')
+    expect(s3.text).toContain('🥉')
+
+    // streak=7 (silver) → success / label 付き
+    const s7 = streakToBriefSignal(7)
+    expect(s7.tone).toBe('success')
+    expect(s7.text).toContain('🥈')
+
+    // streak=100 (legend) → success / label 付き
+    const s100 = streakToBriefSignal(100)
+    expect(s100.tone).toBe('success')
+    expect(s100.text).toContain('👑')
   })
 
   it('streakMilestoneChipTone は streak 順で tone が悪化しない (monotonic non-decreasing positive)', () => {

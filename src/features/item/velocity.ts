@@ -446,6 +446,34 @@ export function classifyStreakMilestoneTransition(
 }
 
 /**
+ * iter1708 ai-automation: streak を `AgentBriefSignal` 形式 (text + tone) に変換する compose helper。
+ *
+ * iter794-797 / iter798 / iter799 / iter802 (velocityToBriefSignal) の `*ToBriefSignal` パターン
+ * の streak milestone 版。AI 朝 brief / Slack daily digest / dashboard chip area で 1 chip
+ * として表示するための統合 substrate。
+ *
+ * text: `formatStreakWithMilestoneJa(streak)` (iter1706、= 数字 + milestone label)
+ * tone: `streakMilestoneChipTone(getStreakMilestone(streak))` (iter1705、= positive polarity)
+ *
+ * caller pattern:
+ *   const sig = streakToBriefSignal(currStreak)
+ *   <Chip text={sig.text} tone={sig.tone} />
+ *
+ * 用途:
+ *  - AI 朝 brief 「streak signal」 chip
+ *  - Slack daily digest 「現在 streak」 chip
+ *  - dashboard 「やる気」 panel の 1 chip
+ *  - analytics-signals.ts の compose に組込み可能 (= 将来 streak signal を AnalyticsSignals に
+ *    追加する場合のための substrate)
+ */
+export function streakToBriefSignal(streak: number): AgentBriefSignal {
+  return {
+    text: formatStreakWithMilestoneJa(streak),
+    tone: streakMilestoneChipTone(getStreakMilestone(streak)),
+  }
+}
+
+/**
  * iter459 ai-automation: byDay window 内の **最長連続 done 日数** (= best streak)
  * を計算する pure helper。
  *
