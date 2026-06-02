@@ -22,6 +22,8 @@
  */
 
 import { dayDiffISO } from '@/lib/date/iso'
+import type { Severity } from '@/lib/widget/severity'
+import { aggregateCountsBySeverity } from '@/lib/widget/severity-bridges'
 
 export interface RecoveryPlanItemFields {
   id: string
@@ -176,10 +178,7 @@ export function recoveryActionKindLabelJa(kind: RecoveryActionKind): string {
  * 'reschedule' → 'info'   (= 期限調整、計画見直しのみ)
  * 'escalate'   → 'danger' (= 自動推論不能 + 上位者へ)
  */
-const ACTION_KIND_SEVERITY: Record<
-  RecoveryActionKind,
-  'ok' | 'info' | 'warn' | 'danger' | 'muted'
-> = {
+const ACTION_KIND_SEVERITY: Record<RecoveryActionKind, Severity> = {
   unblock: 'warn',
   reassign: 'warn',
   split: 'info',
@@ -187,9 +186,7 @@ const ACTION_KIND_SEVERITY: Record<
   escalate: 'danger',
 }
 
-export function recoveryActionKindSeverity(
-  kind: RecoveryActionKind,
-): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
+export function recoveryActionKindSeverity(kind: RecoveryActionKind): Severity {
   return ACTION_KIND_SEVERITY[kind]
 }
 
@@ -211,29 +208,16 @@ export function recoveryActionKindSeverity(
  * ok / muted bucket には出ない (= 「救済不要」 は本 helper で扱わない、
  * formatRecoveryPlanJa の sentinel "救済不要" で別表現)。
  */
-const RECOVERY_ACTION_KIND_ORDER: readonly RecoveryActionKind[] = [
-  'unblock',
-  'reassign',
-  'split',
-  'reschedule',
-  'escalate',
-]
-
+// iter1690 refactor: iter1430 で extract した汎用 `aggregateCountsBySeverity` に委譲。
+// iter1687-1689 (due-proximity / goal-health / bias) に続く外部 file 追従 5 件目。
+// 振る舞い不変: ACTION_KIND_SEVERITY (unblock+reassign→warn lossy / split+reschedule→info lossy /
+// escalate→danger) の domain mapping は本 file 責務、boilerplate (空 Record + 順序配列 +
+// for-loop + ?? 0) を 1 行委譲に縮約。inline `RECOVERY_ACTION_KIND_ORDER` 配列も
+// `aggregateCountsBySeverity` が `Object.keys` で走査するため不要に。
 export function recoveryActionKindCountsToSeverityCounts(
   counts: Record<RecoveryActionKind, number>,
-): Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> {
-  const out: Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> = {
-    ok: 0,
-    info: 0,
-    warn: 0,
-    danger: 0,
-    muted: 0,
-  }
-  for (const k of RECOVERY_ACTION_KIND_ORDER) {
-    const sev = ACTION_KIND_SEVERITY[k]
-    out[sev] += counts[k] ?? 0
-  }
-  return out
+): Record<Severity, number> {
+  return aggregateCountsBySeverity(counts, recoveryActionKindSeverity)
 }
 
 /**

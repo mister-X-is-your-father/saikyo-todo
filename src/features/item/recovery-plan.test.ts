@@ -443,4 +443,26 @@ describe('recoveryActionKindCountsToSeverityCounts', () => {
     expect(r.ok).toBe(0)
     expect(r.muted).toBe(0)
   })
+
+  // iter1690 refactor regression guard: aggregateCountsBySeverity 委譲後も ACTION_KIND_SEVERITY の
+  // lossy mapping (unblock+reassign → warn / split+reschedule → info) が経由されることを assert。
+  it('入力 key 順を変えても結果同一 (集約は加算的、順序不変)', () => {
+    const a = recoveryActionKindCountsToSeverityCounts({
+      unblock: 3,
+      reassign: 2,
+      split: 1,
+      reschedule: 4,
+      escalate: 5,
+    })
+    const b = recoveryActionKindCountsToSeverityCounts({
+      escalate: 5,
+      reschedule: 4,
+      split: 1,
+      reassign: 2,
+      unblock: 3,
+    })
+    expect(a).toEqual(b)
+    expect(a.warn).toBe(3 + 2) // unblock + reassign が warn に lossy 縮約
+    expect(a.info).toBe(1 + 4) // split + reschedule が info に lossy 縮約
+  })
 })
