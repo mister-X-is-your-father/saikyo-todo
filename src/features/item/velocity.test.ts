@@ -12,6 +12,7 @@ import {
   classifyVelocityHint,
   computeBestStreak,
   computeCompletionStreak,
+  computeCompletionStreakExcludingToday,
   computeVelocity,
   computeVelocityByPriority,
   formatBestStreakJa,
@@ -285,6 +286,45 @@ describe('computeCompletionStreak / formatCompletionStreakJa (iter457)', () => {
   it('途中 break → 末尾連続部分のみ', () => {
     // [1, 0, 1, 1, 1] → 末尾 3 日連続 (途中 0 で break するが末尾から遡って 3 まで)
     expect(computeCompletionStreak(mkByDay([1, 0, 1, 1, 1]))).toBe(3)
+  })
+
+  describe('computeCompletionStreakExcludingToday (iter1710 — 昨日時点 streak)', () => {
+    it('byDay.length < 2 → 0 (1 日以下では prev 不明)', () => {
+      expect(computeCompletionStreakExcludingToday(mkByDay([]))).toBe(0)
+      expect(computeCompletionStreakExcludingToday(mkByDay([1]))).toBe(0)
+    })
+
+    it('末尾 1 つ手前 (yesterday) count=0 → 0 (昨日まで途切れ)', () => {
+      expect(computeCompletionStreakExcludingToday(mkByDay([1, 1, 0, 1]))).toBe(0)
+      expect(computeCompletionStreakExcludingToday(mkByDay([1, 1, 1, 0, 1]))).toBe(0)
+    })
+
+    it('末尾を除いて遡った連続日数', () => {
+      // [1, 1, 1, 1] → 末尾除いて [1,1,1] = 3 (= 昨日まで 3 日連続)
+      expect(computeCompletionStreakExcludingToday(mkByDay([1, 1, 1, 1]))).toBe(3)
+      // [0, 1, 1, 0] → 末尾除いて [0,1,1] = 末尾から遡って [1,1] = 2
+      expect(computeCompletionStreakExcludingToday(mkByDay([0, 1, 1, 0]))).toBe(2)
+    })
+
+    it('全日 count > 0 → byDay.length - 1', () => {
+      expect(computeCompletionStreakExcludingToday(mkByDay([1, 1, 1, 1, 1, 1, 1]))).toBe(6)
+    })
+
+    it('今日 done あっても 昨日まで途切れなら 0 (= achievement transition source)', () => {
+      // [1, 0, 1] → 末尾除いて [1, 0] = 昨日 count=0 → 0
+      // (curr = computeCompletionStreak = 1、prev = 0 → milestone none→none で maintained)
+      expect(computeCompletionStreakExcludingToday(mkByDay([1, 0, 1]))).toBe(0)
+    })
+
+    it('caller pattern: prev + curr で transition 検知', () => {
+      // [1, 1, 1] (3 日連続) → prev=2 (= [1,1])、curr=3 → none→bronze で achieved
+      const summary = mkByDay([1, 1, 1])
+      const prev = computeCompletionStreakExcludingToday(summary)
+      const curr = computeCompletionStreak(summary)
+      expect(prev).toBe(2)
+      expect(curr).toBe(3)
+      // (caller は classifyStreakMilestoneTransition(prev, curr) で 'achieved' 取得)
+    })
   })
 })
 

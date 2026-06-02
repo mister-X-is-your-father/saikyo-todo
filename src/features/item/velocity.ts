@@ -261,6 +261,42 @@ export function computeCompletionStreak(summary: VelocitySummary): number {
 }
 
 /**
+ * iter1710 basics: 「昨日時点の streak」 (= 末尾を除いて遡った連続日数) を計算する pure helper。
+ *
+ * `computeCompletionStreak` は「末尾今日からの連続」 (= 現在 streak)、本 helper は
+ * **末尾を除外して** 遡った streak。`classifyStreakMilestoneTransition(prevStreak,
+ * currStreak)` (iter1707) の `prevStreak` を 1 関数で取得するための substrate。
+ *
+ * caller pattern:
+ *   const summary = computeVelocity(items, {}, today)
+ *   const curr = computeCompletionStreak(summary)        // = 今日含む 末尾連続
+ *   const prev = computeCompletionStreakExcludingToday(summary) // = 昨日まで 末尾連続
+ *   const transition = classifyStreakMilestoneTransition(prev, curr)
+ *   if (transition === 'achieved') showConfetti()
+ *
+ * 仕様:
+ *  - byDay.length < 2 → 0 (= 過去 1 日以下では streak 判定不能)
+ *  - 末尾 (= today) を除いた byDay[..-2] を末尾から遡って count>0 連続を数える
+ *  - 末尾 1 つ手前 (= yesterday) count=0 → 0 (= 昨日 done なし = 昨日まで streak 途切れ)
+ *  - 末尾 1 つ手前から全日 count>0 → byDay.length - 1
+ *
+ * 用途:
+ *  - dashboard streak chip で「今日 streak が伸びたか」 を transition 判定
+ *  - daily cron で前日との比較で confetti / Slack 通知 trigger
+ *  - achievement 履歴の検証 (= 「ちょうど milestone 移行した日」 を遡って算出)
+ */
+export function computeCompletionStreakExcludingToday(summary: VelocitySummary): number {
+  if (summary.byDay.length < 2) return 0
+  let streak = 0
+  for (let i = summary.byDay.length - 2; i >= 0; i--) {
+    const day = summary.byDay[i]
+    if (!day || day.count === 0) break
+    streak += 1
+  }
+  return streak
+}
+
+/**
  * AI prompt 用 1 行サマリ:
  *   '完了 streak 0 日 (今日まだ完了なし)'
  *   '完了 streak 1 日 (今日完了あり)'
