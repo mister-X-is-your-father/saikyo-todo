@@ -275,4 +275,13 @@ describe('retroCompletionSeverityCountsToSeverityCounts', () => {
       sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
     expect(sevTotal).toBe(total)
   })
+
+  // iter1693 refactor regression guard: aggregateCountsBySeverity 委譲後も identity copy
+  // (RetroCompletionSeverity ⊂ Severity の subset、muted は 0 padding) が保証されることを assert。
+  it('入力 key 順を変えても結果同一 + muted は常に 0', () => {
+    const a = retroCompletionSeverityCountsToSeverityCounts({ ok: 3, info: 2, warn: 1, danger: 1 })
+    const b = retroCompletionSeverityCountsToSeverityCounts({ danger: 1, warn: 1, info: 2, ok: 3 })
+    expect(a).toEqual(b)
+    expect(a.muted).toBe(0)
+  })
 })

@@ -25,6 +25,8 @@
  */
 import { MS_PER_DAY, parseDateOrNull } from '@/lib/date/iso'
 import { rateToPct } from '@/lib/format-rate'
+import type { Severity } from '@/lib/widget/severity'
+import { aggregateCountsBySeverity } from '@/lib/widget/severity-bridges'
 
 import { normalizeStatus } from '@/features/item/status-visual'
 
@@ -213,16 +215,15 @@ export function completionRateSeverityLabelJa(sev: RetroCompletionSeverity): str
  * caller は workspace 内 sprint 群の完了率 distribution を 1 行 severity サマリで
  * AI prompt / Slack / dashboard に出せる。例: 「危険 1 / 注意 1 / 情報 2 / OK 3 (合計 7)」
  */
+// iter1693 refactor: iter1430 で extract した汎用 `aggregateCountsBySeverity` に委譲。
+// iter1687-1692 (due-proximity / goal-health / bias / recovery-plan / ai-assignee / forecast) に
+// 続く外部 file 追従 8 件目。`RetroCompletionSeverity` が共通 Severity の subset (muted 不在)
+// なので identity mapping `(k) => k`、muted bucket は 0 padding される。iter1692 forecast と
+// 同 pattern (subset identity copy 2 件目)。inline tuple type を共通 `Severity` 型に統一。
 export function retroCompletionSeverityCountsToSeverityCounts(
   counts: Record<RetroCompletionSeverity, number>,
-): Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> {
-  return {
-    ok: counts.ok ?? 0,
-    info: counts.info ?? 0,
-    warn: counts.warn ?? 0,
-    danger: counts.danger ?? 0,
-    muted: 0,
-  }
+): Record<Severity, number> {
+  return aggregateCountsBySeverity(counts, (k) => k)
 }
 
 /**
