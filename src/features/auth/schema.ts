@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const SignupInputSchema = z.object({
   email: z.string().trim().email('正しいメールアドレスを入力してください'),
-  password: z.string().min(8, 'パスワードは 8 文字以上'),
+  password: z.string().min(8, 'パスワードは 8 文字以上で入力してください'),
   displayName: z
     .string()
     .trim()
