@@ -195,7 +195,7 @@ import {
   computeCompletionStreak,
   computeVelocity,
   computeVelocityByPriority,
-  formatCompletionStreakJa,
+  formatStreakWithMilestoneJa,
   formatVelocityByPriorityJa,
   formatVelocityHintJa,
   formatVelocitySummary,
@@ -275,8 +275,13 @@ export function DashboardView({ workspaceId }: Props) {
     // iter458 basics: iter457 で追加した completion streak を SR / hover に append、
     // streak ≥ 2 (= 連続日数 OK) のみ表示 (= 0/1 日は冗長省略)。positive feedback で
     // 「3 日連続!」が SR 経路で読める。
+    // iter1709 fix: formatCompletionStreakJa → formatStreakWithMilestoneJa に置換。
+    // streak >= 3 (= bronze 到達) で milestone emoji (🥉🥈🥇💎👑) と label が SR に追加表示
+    // される (= 「完了 streak 7 日連続! 🥈 シルバー (1 週間連続)」)。iter1704-1708 で構築した
+    // streak milestone substrate を UI に bind する第 1 弾。streak < 3 は milestone なし =
+    // iter458 までと同じ「数字のみ」表示で regression なし。
     const streak = computeCompletionStreak(result)
-    const streakDetail = streak >= 2 ? ` — ${formatCompletionStreakJa(streak)}` : ''
+    const streakDetail = streak >= 2 ? ` — ${formatStreakWithMilestoneJa(streak)}` : ''
     const detail = `${line}${priorityDetailSuffix(priorityBuckets, () =>
       formatVelocityByPriorityJa(byPriority, 7),
     )}${streakDetail}`
