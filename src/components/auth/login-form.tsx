@@ -73,8 +73,6 @@ export function LoginForm() {
           }
           {...form.register('email')}
         />
-        {/* iter737: signup-form 側 (iter735race/iter736race) と同 pattern。
-            login も同じ hint で「Magic Link 送信先」 mental model を共有する。 */}
         <p id="login-email-hint" className="text-muted-foreground text-xs">
           サインアップ時に登録したメールアドレス。例: you@example.com
         </p>
