@@ -10,10 +10,13 @@ describe('chipTone3Class', () => {
     expect(cls).toContain('emerald-700')
   })
 
-  it('returns muted/border classes for "neutral"', () => {
+  it('returns muted/border classes for "neutral" (iter1345 で WCAG 1.4.3 対応 text-foreground 化)', () => {
     const cls = chipTone3Class('neutral')
     expect(cls).toContain('bg-muted')
-    expect(cls).toContain('text-muted-foreground')
+    // iter1345 (commit 10987ee): muted-on-muted 4.34:1 が text-xs (12px) で AA 未達のため
+    // text-muted-foreground → text-foreground に統一。bg-muted + border 維持で「中立」 visual
+    // は不変、ただし可読 contrast 確保。
+    expect(cls).toContain('text-foreground')
     expect(cls).toContain('border-border')
   })
 
