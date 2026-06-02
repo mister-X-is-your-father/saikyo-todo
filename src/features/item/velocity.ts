@@ -273,6 +273,62 @@ export function formatCompletionStreakJa(streak: number): string {
 }
 
 /**
+ * iter1704 basics: streak (日数) を 6 段階の「達成 milestone」に分類する pure helper。
+ *
+ * UX 卓越憲章 派生 P0「Dashboard × 軸5 やる気 — 連続完了 streak (3/5/7 日 マイルストーン
+ * badge)」 の substrate。dashboard chip / Slack 通知 / Inbox 上部 badge で「streak が milestone
+ * を超えた瞬間」 を強調するための分類軸。Duolingo / GitHub Contributions / Streak.app の
+ * milestone UI と整合。
+ *
+ * 6 milestone 段階:
+ *  - 'none'    (streak < 3、まだマイルストーン未到達)
+ *  - 'bronze'  (streak ∈ [3, 6]、3 日連続 = 習慣化初動)
+ *  - 'silver'  (streak ∈ [7, 13]、1 週間連続 = 習慣化確立)
+ *  - 'gold'    (streak ∈ [14, 29]、2 週間連続 = 習慣化定着)
+ *  - 'platinum' (streak ∈ [30, 99]、1 ヶ月連続 = 達人領域)
+ *  - 'legend'  (streak >= 100、100 日連続!)
+ *
+ * 仕様:
+ *  - 負の数 / 0 / NaN / Infinity → 'none' (defensive、streak は非負前提)
+ *  - 閾値は GitHub Contributions の「Longest streak」 階段と Duolingo の Achievements を参考に
+ *    3 / 7 / 14 / 30 / 100 日に設定
+ *  - chip-tone への bind は別 helper (本 iter scope 外、UI 配色は次 iter で決定)
+ *
+ * 用途:
+ *  - dashboard 「現在 streak」 chip に milestone badge (🥉 🥈 🥇 💎 👑) を付与
+ *  - milestone 到達瞬間の toast / confetti trigger 判定
+ *  - Slack daily digest「今週 silver 達成!」 自動通知
+ *  - AI 朝 brief headline「streak gold (14 日連続)」
+ */
+export type StreakMilestone = 'none' | 'bronze' | 'silver' | 'gold' | 'platinum' | 'legend'
+
+export function getStreakMilestone(streak: number): StreakMilestone {
+  if (!Number.isFinite(streak) || streak < 3) return 'none'
+  if (streak >= 100) return 'legend'
+  if (streak >= 30) return 'platinum'
+  if (streak >= 14) return 'gold'
+  if (streak >= 7) return 'silver'
+  return 'bronze'
+}
+
+const STREAK_MILESTONE_LABEL_JA: Record<StreakMilestone, string> = {
+  none: 'マイルストーン前',
+  bronze: '🥉 ブロンズ (3 日連続)',
+  silver: '🥈 シルバー (1 週間連続)',
+  gold: '🥇 ゴールド (2 週間連続)',
+  platinum: '💎 プラチナ (1 ヶ月連続)',
+  legend: '👑 レジェンド (100 日連続!)',
+}
+
+/**
+ * iter1704 basics: streak milestone を日本語 chip label に整形 (UI / Slack / AI brief 共通)。
+ * caller は `getStreakMilestone(streak)` の結果を本 helper に渡して chip 文言を取得。
+ */
+export function streakMilestoneLabelJa(m: StreakMilestone): string {
+  return STREAK_MILESTONE_LABEL_JA[m]
+}
+
+/**
  * iter459 ai-automation: byDay window 内の **最長連続 done 日数** (= best streak)
  * を計算する pure helper。
  *

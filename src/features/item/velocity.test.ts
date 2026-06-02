@@ -16,6 +16,9 @@ import {
   formatVelocityByPriorityJa,
   formatVelocityHintJa,
   formatVelocitySummary,
+  getStreakMilestone,
+  type StreakMilestone,
+  streakMilestoneLabelJa,
   type VelocityByPriorityFields,
   velocityChipTone,
   type VelocityFields,
@@ -318,6 +321,63 @@ describe('computeBestStreak / formatBestStreakJa (iter459)', () => {
 
   it('1 日 → "!" なし', () => {
     expect(formatBestStreakJa(1)).toBe('直近 7 日の最長連続: 1 日')
+  })
+})
+
+describe('getStreakMilestone / streakMilestoneLabelJa (iter1704)', () => {
+  it('streak < 3 → none (まだマイルストーン未到達)', () => {
+    expect(getStreakMilestone(0)).toBe('none')
+    expect(getStreakMilestone(1)).toBe('none')
+    expect(getStreakMilestone(2)).toBe('none')
+  })
+
+  it('streak 3-6 → bronze (3 日連続)', () => {
+    expect(getStreakMilestone(3)).toBe('bronze')
+    expect(getStreakMilestone(4)).toBe('bronze')
+    expect(getStreakMilestone(6)).toBe('bronze')
+  })
+
+  it('streak 7-13 → silver (1 週間連続)', () => {
+    expect(getStreakMilestone(7)).toBe('silver')
+    expect(getStreakMilestone(10)).toBe('silver')
+    expect(getStreakMilestone(13)).toBe('silver')
+  })
+
+  it('streak 14-29 → gold (2 週間連続)', () => {
+    expect(getStreakMilestone(14)).toBe('gold')
+    expect(getStreakMilestone(20)).toBe('gold')
+    expect(getStreakMilestone(29)).toBe('gold')
+  })
+
+  it('streak 30-99 → platinum (1 ヶ月連続)', () => {
+    expect(getStreakMilestone(30)).toBe('platinum')
+    expect(getStreakMilestone(50)).toBe('platinum')
+    expect(getStreakMilestone(99)).toBe('platinum')
+  })
+
+  it('streak >= 100 → legend (100 日連続!)', () => {
+    expect(getStreakMilestone(100)).toBe('legend')
+    expect(getStreakMilestone(365)).toBe('legend')
+    expect(getStreakMilestone(1000)).toBe('legend')
+  })
+
+  it('defensive: 負の数 / NaN / Infinity → none', () => {
+    expect(getStreakMilestone(-1)).toBe('none')
+    expect(getStreakMilestone(NaN)).toBe('none')
+    expect(getStreakMilestone(Infinity)).toBe('none')
+    expect(getStreakMilestone(-Infinity)).toBe('none')
+  })
+
+  it('streakMilestoneLabelJa は 6 milestone に対応', () => {
+    const all: StreakMilestone[] = ['none', 'bronze', 'silver', 'gold', 'platinum', 'legend']
+    for (const m of all) {
+      expect(streakMilestoneLabelJa(m)).toMatch(/.+/)
+    }
+    expect(streakMilestoneLabelJa('bronze')).toContain('🥉')
+    expect(streakMilestoneLabelJa('silver')).toContain('🥈')
+    expect(streakMilestoneLabelJa('gold')).toContain('🥇')
+    expect(streakMilestoneLabelJa('platinum')).toContain('💎')
+    expect(streakMilestoneLabelJa('legend')).toContain('👑')
   })
 })
 
