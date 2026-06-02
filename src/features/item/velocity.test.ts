@@ -5,6 +5,8 @@
  */
 import { describe, expect, it } from 'vitest'
 
+import { type ChipTone } from '@/lib/ui/chip-tone'
+
 import {
   classifyVelocityHint,
   computeBestStreak,
@@ -18,6 +20,7 @@ import {
   formatVelocitySummary,
   getStreakMilestone,
   type StreakMilestone,
+  streakMilestoneChipTone,
   streakMilestoneLabelJa,
   type VelocityByPriorityFields,
   velocityChipTone,
@@ -378,6 +381,35 @@ describe('getStreakMilestone / streakMilestoneLabelJa (iter1704)', () => {
     expect(streakMilestoneLabelJa('gold')).toContain('🥇')
     expect(streakMilestoneLabelJa('platinum')).toContain('💎')
     expect(streakMilestoneLabelJa('legend')).toContain('👑')
+  })
+
+  it('streakMilestoneChipTone (iter1705): none→idle / bronze→info / silver+→success (positive polarity)', () => {
+    expect(streakMilestoneChipTone('none')).toBe('idle')
+    expect(streakMilestoneChipTone('bronze')).toBe('info')
+    expect(streakMilestoneChipTone('silver')).toBe('success')
+    expect(streakMilestoneChipTone('gold')).toBe('success')
+    expect(streakMilestoneChipTone('platinum')).toBe('success')
+    expect(streakMilestoneChipTone('legend')).toBe('success')
+  })
+
+  it('streakMilestoneChipTone は streak 順で tone が悪化しない (monotonic non-decreasing positive)', () => {
+    // positive polarity: idle < info < success (= attention rank 逆)。streak が上がるほど
+    // success 寄り。同じ success に収束しても降格しない。
+    const order: StreakMilestone[] = ['none', 'bronze', 'silver', 'gold', 'platinum', 'legend']
+    const positiveRank: Record<ChipTone, number> = {
+      idle: 0,
+      info: 1,
+      warn: -1, // 出ない想定
+      urgent: -2, // 出ない想定
+      danger: -3, // 出ない想定
+      success: 2,
+    }
+    let prev = -Infinity
+    for (const m of order) {
+      const curr = positiveRank[streakMilestoneChipTone(m)]
+      expect(curr).toBeGreaterThanOrEqual(prev)
+      prev = curr
+    }
   })
 })
 

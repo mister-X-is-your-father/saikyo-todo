@@ -329,6 +329,46 @@ export function streakMilestoneLabelJa(m: StreakMilestone): string {
 }
 
 /**
+ * iter1705 basics: streak milestone を ChipTone (= 配色 token) に変換する pure bridge。
+ *
+ * iter1704 で出した `StreakMilestone` 6 段階 を UI chip / dashboard badge / Slack notification
+ * の **視覚配色** に bind するための substrate。
+ *
+ * positive polarity (= 高 milestone ほど positive を強調、severity 軸とは逆):
+ *  - 'none'     → 'idle'    (= グレー、未到達 = 視覚的に控えめ)
+ *  - 'bronze'   → 'info'    (= 青、初動 = neutral だが positive 兆し)
+ *  - 'silver'   → 'success' (= 緑、習慣化確立 = 達成)
+ *  - 'gold'     → 'success' (= 緑、習慣化定着 = 達成、silver と同 success bucket lossy)
+ *  - 'platinum' → 'success' (= 緑、達人領域 = 達成、強調は label の 💎 で)
+ *  - 'legend'   → 'success' (= 緑、100 日 = 達成、強調は label の 👑 で)
+ *
+ * 設計意図: severity 軸 (danger / warn / info / idle / success) の **positive 軸** で
+ * milestone を表現。high milestone (silver+) は全て `success` に縮約 (= 一度習慣化したら
+ * 全部「達成」として褒める)、特別感は emoji + label で出す。これで chip の border / bg / text
+ * が緑系で一貫し、milestone 移行時に視覚的な「色が変わる驚き」 を 1 度だけに集約 (= bronze→silver
+ * = info→success の transition が UI の wow ポイント)。
+ *
+ * `velocityChipTone` (iter802、4 hint → 4 tone の positive polarity) と同 polarity 軸。
+ *
+ * 用途:
+ *  - dashboard streak badge の border / bg 色決定
+ *  - milestone 到達 toast の tone bind (= info → success の transition 時に confetti trigger)
+ *  - Slack daily digest 「streak [tone] 」 chip 配色
+ */
+const STREAK_MILESTONE_CHIP_TONE: Record<StreakMilestone, ChipTone> = {
+  none: 'idle',
+  bronze: 'info',
+  silver: 'success',
+  gold: 'success',
+  platinum: 'success',
+  legend: 'success',
+}
+
+export function streakMilestoneChipTone(m: StreakMilestone): ChipTone {
+  return STREAK_MILESTONE_CHIP_TONE[m]
+}
+
+/**
  * iter459 ai-automation: byDay window 内の **最長連続 done 日数** (= best streak)
  * を計算する pure helper。
  *
