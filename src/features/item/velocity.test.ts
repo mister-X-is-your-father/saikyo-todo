@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest'
 import { type ChipTone } from '@/lib/ui/chip-tone'
 
 import {
+  classifyStreakMilestoneTransition,
   classifyVelocityHint,
   computeBestStreak,
   computeCompletionStreak,
@@ -422,6 +423,31 @@ describe('getStreakMilestone / streakMilestoneLabelJa (iter1704)', () => {
     const r = formatStreakWithMilestoneJa(0)
     expect(r).not.toContain('🥉')
     expect(r).not.toContain('マイルストーン')
+  })
+
+  it('classifyStreakMilestoneTransition (iter1707): milestone rank が上がる/下がる/同じ で 3 状態', () => {
+    // achieved: rank up
+    expect(classifyStreakMilestoneTransition(2, 3)).toBe('achieved') // none → bronze
+    expect(classifyStreakMilestoneTransition(6, 7)).toBe('achieved') // bronze → silver
+    expect(classifyStreakMilestoneTransition(13, 14)).toBe('achieved') // silver → gold
+    expect(classifyStreakMilestoneTransition(29, 30)).toBe('achieved') // gold → platinum
+    expect(classifyStreakMilestoneTransition(99, 100)).toBe('achieved') // platinum → legend
+
+    // broken: rank down
+    expect(classifyStreakMilestoneTransition(7, 0)).toBe('broken') // silver → none (streak 途切れ)
+    expect(classifyStreakMilestoneTransition(100, 99)).toBe('broken') // legend → platinum (rare)
+
+    // maintained: same milestone
+    expect(classifyStreakMilestoneTransition(3, 4)).toBe('maintained') // bronze → bronze
+    expect(classifyStreakMilestoneTransition(7, 13)).toBe('maintained') // silver → silver
+    expect(classifyStreakMilestoneTransition(0, 0)).toBe('maintained') // none → none
+    expect(classifyStreakMilestoneTransition(0, 2)).toBe('maintained') // none → none (still < 3)
+  })
+
+  it('classifyStreakMilestoneTransition は defensive (NaN / 負 → none 経由で maintained)', () => {
+    expect(classifyStreakMilestoneTransition(NaN, NaN)).toBe('maintained') // both none
+    expect(classifyStreakMilestoneTransition(-1, 0)).toBe('maintained') // none → none
+    expect(classifyStreakMilestoneTransition(NaN, 3)).toBe('achieved') // none → bronze
   })
 
   it('streakMilestoneChipTone は streak 順で tone が悪化しない (monotonic non-decreasing positive)', () => {

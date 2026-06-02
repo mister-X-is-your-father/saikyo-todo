@@ -397,6 +397,54 @@ export function formatStreakWithMilestoneJa(streak: number): string {
   return `${base} ${streakMilestoneLabelJa(milestone)}`
 }
 
+const STREAK_MILESTONE_RANK: Record<StreakMilestone, number> = {
+  none: 0,
+  bronze: 1,
+  silver: 2,
+  gold: 3,
+  platinum: 4,
+  legend: 5,
+}
+
+/**
+ * iter1707 basics: streak milestone 到達 (= 昨日 → 今日 で 1 段上がった) を検知する pure helper。
+ *
+ * dashboard chip / Slack 通知 / Toast / confetti trigger で「ちょうど milestone を超えた瞬間」
+ * を判定する用。caller は前日 streak と今日 streak を渡して `'achieved'` (= 何らかの milestone
+ * 到達) / `'maintained'` (= 同 milestone 内に留まる) / `'broken'` (= streak 途切れ = milestone
+ * 降格) を取得。
+ *
+ * 仕様:
+ *  - `prevStreak` = 昨日時点の streak (例: VelocitySummary を昨日 today で計算した値)
+ *  - `currStreak` = 今日時点の streak (例: 今日 done あり → prev+1、なし → 0)
+ *  - 返り値:
+ *    - `'achieved'`: milestone rank が前日より上がった (= bronze→silver / silver→gold 等)、
+ *      または new milestone 到達 (= 'none' → 'bronze')
+ *    - `'broken'`: milestone rank が下がった (= 多くは streak 途切れで none に戻る)
+ *    - `'maintained'`: 同 milestone 内、または 'none' → 'none' (= 何も起きていない)
+ *  - 不正値 (負/NaN/Infinity) は `getStreakMilestone` 側で 'none' に縮約されるため透過処理
+ *
+ * 用途:
+ *  - 'achieved' → confetti / toast / Slack 通知 trigger (= 達成感の wow ポイント)
+ *  - 'broken' → 「streak 途切れた、また始めよう」 励まし toast
+ *  - 'maintained' → 何もしない (= UI ノイズ削減)
+ *
+ * 設計意図: dashboard で「streak が今日 1 段上がった!」 だけを能動的に提示、毎日同じ chip を
+ * 出して見飽きさせない。Duolingo / GitHub Contributions の milestone toast UX と整合。
+ */
+export type StreakMilestoneTransition = 'achieved' | 'broken' | 'maintained'
+
+export function classifyStreakMilestoneTransition(
+  prevStreak: number,
+  currStreak: number,
+): StreakMilestoneTransition {
+  const prev = STREAK_MILESTONE_RANK[getStreakMilestone(prevStreak)]
+  const curr = STREAK_MILESTONE_RANK[getStreakMilestone(currStreak)]
+  if (curr > prev) return 'achieved'
+  if (curr < prev) return 'broken'
+  return 'maintained'
+}
+
 /**
  * iter459 ai-automation: byDay window 内の **最長連続 done 日数** (= best streak)
  * を計算する pure helper。
