@@ -250,22 +250,28 @@ describe('dueProximityTone (graphical 波及 — chip tone token)', () => {
   })
 })
 
+// iter1701 fix: iter1531 で chip-tone.ts が `light dark:dark` 形式 (= `bg-rose-100
+// dark:bg-rose-950/40`) に拡張されたが、本 file の旧 test は light 単独 class を assert して
+// いて regression 化していた。chip-tone.test.ts 同 pattern (`.toBe('bg-rose-100
+// dark:bg-rose-950/40')`) に合わせる。class 値の重複 source of truth は chip-tone.test.ts
+// (canonical) なので、本 file は「色系 prefix が正しい」 を toMatch で軽く checking する
+// strategy にも置換可能だが、既存 strict assert を活かして dark variant を追加。
 describe('dueProximityChipClasses (tone → Tailwind 3 軸 class)', () => {
-  it('overdue → rose 系 (bg / text / ring)', () => {
+  it('overdue → rose 系 (bg / text / ring、light + dark)', () => {
     const c = dueProximityChipClasses('overdue')
-    expect(c.bgClass).toBe('bg-rose-100')
-    expect(c.textClass).toBe('text-rose-700')
-    expect(c.ringClass).toBe('ring-rose-300')
+    expect(c.bgClass).toBe('bg-rose-100 dark:bg-rose-950/40')
+    expect(c.textClass).toBe('text-rose-700 dark:text-rose-300')
+    expect(c.ringClass).toBe('ring-rose-300 dark:ring-rose-900/50')
   })
 
   it('today → amber 強、tomorrow → amber 薄 (urgent vs warn 区別)', () => {
-    expect(dueProximityChipClasses('today').bgClass).toBe('bg-amber-100')
-    expect(dueProximityChipClasses('tomorrow').bgClass).toBe('bg-amber-50')
+    expect(dueProximityChipClasses('today').bgClass).toBe('bg-amber-100 dark:bg-amber-950/40')
+    expect(dueProximityChipClasses('tomorrow').bgClass).toBe('bg-amber-50 dark:bg-amber-950/30')
   })
 
   it('thisWeek / noDate は別 tone でも class が定まっている', () => {
-    expect(dueProximityChipClasses('thisWeek').textClass).toBe('text-blue-700')
-    expect(dueProximityChipClasses('noDate').textClass).toBe('text-slate-600')
+    expect(dueProximityChipClasses('thisWeek').textClass).toBe('text-blue-700 dark:text-blue-300')
+    expect(dueProximityChipClasses('noDate').textClass).toBe('text-slate-600 dark:text-slate-400')
   })
 })
 
