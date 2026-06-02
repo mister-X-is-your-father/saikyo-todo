@@ -13,6 +13,8 @@
  */
 
 import { rateToPct } from '@/lib/format-rate'
+import type { Severity } from '@/lib/widget/severity'
+import { aggregateCountsBySeverity } from '@/lib/widget/severity-bridges'
 
 export interface BiasSample {
   actualMinutes: number
@@ -201,7 +203,7 @@ export function biasTendencyLabelJa(tendency: BiasTendency): string {
  *   - overestimating は「buffer 取り過ぎで時間効率損失」 = 中期影響 = info
  *   - mixed は両方混在 = 学習対象 = warn
  */
-const TENDENCY_SEVERITY: Record<BiasTendency, 'ok' | 'info' | 'warn' | 'danger' | 'muted'> = {
+const TENDENCY_SEVERITY: Record<BiasTendency, Severity> = {
   'on-track': 'ok',
   underestimating: 'warn',
   overestimating: 'info',
@@ -209,9 +211,7 @@ const TENDENCY_SEVERITY: Record<BiasTendency, 'ok' | 'info' | 'warn' | 'danger' 
   unknown: 'muted',
 }
 
-export function biasTendencySeverity(
-  tendency: BiasTendency,
-): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
+export function biasTendencySeverity(tendency: BiasTendency): Severity {
   return TENDENCY_SEVERITY[tendency]
 }
 
@@ -237,20 +237,14 @@ export function biasTendencySeverity(
  * iter533/534/535/536/537 で priority / status / due-proximity / goal-health /
  * bias-tendency の 5 ドメインが counts → severity-counts bridge を持つ。
  */
+// iter1689 refactor: iter1430 で extract した汎用 `aggregateCountsBySeverity` に委譲。
+// iter1687 due-proximity / iter1688 goal-health に続く外部 file 追従 4 件目。
+// 振る舞い不変: TENDENCY_SEVERITY (on-track→ok / underestimating→warn / overestimating→info /
+// mixed→warn / unknown→muted) の domain mapping は本 file 責務、boilerplate (空 Record +
+// inline tendency 配列 + for-loop + ?? 0) を 1 行委譲に縮約。inline `BiasTendency[]` 配列も
+// `aggregateCountsBySeverity` が `Object.keys(counts)` で走査するため不要に。
 export function biasTendencyCountsToSeverityCounts(
   counts: Record<BiasTendency, number>,
-): Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> {
-  const out: Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> = {
-    ok: 0,
-    info: 0,
-    warn: 0,
-    danger: 0,
-    muted: 0,
-  }
-  const all: BiasTendency[] = ['on-track', 'underestimating', 'overestimating', 'mixed', 'unknown']
-  for (const t of all) {
-    const sev = TENDENCY_SEVERITY[t]
-    out[sev] += counts[t] ?? 0
-  }
-  return out
+): Record<Severity, number> {
+  return aggregateCountsBySeverity(counts, biasTendencySeverity)
 }

@@ -290,4 +290,25 @@ describe('biasTendencyCountsToSeverityCounts', () => {
     })
     expect(r.danger).toBe(0)
   })
+
+  // iter1689 refactor regression guard: aggregateCountsBySeverity 委譲後も TENDENCY_SEVERITY の
+  // mapping (underestimating + mixed → 同 warn 加算 lossy 縮約) が経由されることを assert。
+  it('入力 key 順を変えても結果同一 (集約は加算的、順序不変)', () => {
+    const a = biasTendencyCountsToSeverityCounts({
+      'on-track': 4,
+      underestimating: 3,
+      overestimating: 2,
+      mixed: 5,
+      unknown: 1,
+    })
+    const b = biasTendencyCountsToSeverityCounts({
+      unknown: 1,
+      mixed: 5,
+      overestimating: 2,
+      underestimating: 3,
+      'on-track': 4,
+    })
+    expect(a).toEqual(b)
+    expect(a.warn).toBe(3 + 5) // underestimating + mixed が warn に lossy 縮約
+  })
 })
