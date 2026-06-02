@@ -510,6 +510,47 @@ export function streakToBriefSignal(streak: number): AgentBriefSignal {
 }
 
 /**
+ * iter1711 ai-automation: streak milestone transition を toast 文言に整形する pure helper。
+ *
+ * `classifyStreakMilestoneTransition` (iter1707) の出力 + currStreak を 1 行 ja-JP toast に
+ * 整形する compose helper。caller は本文字列を Toast / Slack message / confetti header に
+ * 直接埋め込む想定。
+ *
+ * 仕様:
+ *  - 'achieved' → `🎉 マイルストーン到達! 完了 streak X 日連続! [milestone label]`
+ *    (= 達成感の最大化、emoji + 強調文言 + milestone label)
+ *  - 'broken'   → `😢 streak 途切れました (前 X 日連続)。また始めよう!`
+ *    (= 励まし、broken を責めない、再開を促す)
+ *  - 'maintained' → null (= 何も表示しない、UI ノイズ削減)
+ *
+ * caller pattern:
+ *   const transition = classifyStreakMilestoneTransition(prev, curr)
+ *   const msg = formatStreakTransitionJa(transition, curr, prev)
+ *   if (msg !== null) toast.show(msg)
+ *
+ * 設計意図: 'maintained' で null を返すことで caller の if 分岐が「null check 1 回」 に集約、
+ * Toast 不要時の早期 return が単純化。'achieved' / 'broken' でのみ文言生成、UI トリガーは
+ * caller 判断 (= 本 helper は pure)。
+ *
+ * iter1707 + 1710 + 1711 で「summary → prev/curr → transition → toast 文言」 の full chain が
+ * substrate のみで完結 (caller は 4 関数呼出 + null check 1 行)。
+ */
+export function formatStreakTransitionJa(
+  transition: StreakMilestoneTransition,
+  currStreak: number,
+  prevStreak: number,
+): string | null {
+  if (transition === 'maintained') return null
+  if (transition === 'achieved') {
+    const milestone = getStreakMilestone(currStreak)
+    const label = streakMilestoneLabelJa(milestone)
+    return `🎉 マイルストーン到達! 完了 streak ${currStreak} 日連続! ${label}`
+  }
+  // broken
+  return `😢 streak 途切れました (前 ${prevStreak} 日連続)。また始めよう!`
+}
+
+/**
  * iter459 ai-automation: byDay window 内の **最長連続 done 日数** (= best streak)
  * を計算する pure helper。
  *

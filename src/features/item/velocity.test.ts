@@ -17,6 +17,7 @@ import {
   computeVelocityByPriority,
   formatBestStreakJa,
   formatCompletionStreakJa,
+  formatStreakTransitionJa,
   formatStreakWithMilestoneJa,
   formatVelocityByPriorityJa,
   formatVelocityHintJa,
@@ -489,6 +490,30 @@ describe('getStreakMilestone / streakMilestoneLabelJa (iter1704)', () => {
     expect(classifyStreakMilestoneTransition(NaN, NaN)).toBe('maintained') // both none
     expect(classifyStreakMilestoneTransition(-1, 0)).toBe('maintained') // none → none
     expect(classifyStreakMilestoneTransition(NaN, 3)).toBe('achieved') // none → bronze
+  })
+
+  it('formatStreakTransitionJa (iter1711): achieved → 🎉 メッセージ / broken → 😢 / maintained → null', () => {
+    // achieved: bronze 到達
+    expect(formatStreakTransitionJa('achieved', 3, 2)).toBe(
+      '🎉 マイルストーン到達! 完了 streak 3 日連続! 🥉 ブロンズ (3 日連続)',
+    )
+    // achieved: silver 到達
+    expect(formatStreakTransitionJa('achieved', 7, 6)).toBe(
+      '🎉 マイルストーン到達! 完了 streak 7 日連続! 🥈 シルバー (1 週間連続)',
+    )
+    // achieved: legend 到達
+    expect(formatStreakTransitionJa('achieved', 100, 99)).toBe(
+      '🎉 マイルストーン到達! 完了 streak 100 日連続! 👑 レジェンド (100 日連続!)',
+    )
+
+    // broken: silver から streak 途切れ
+    expect(formatStreakTransitionJa('broken', 0, 7)).toBe(
+      '😢 streak 途切れました (前 7 日連続)。また始めよう!',
+    )
+
+    // maintained: 何も表示しない
+    expect(formatStreakTransitionJa('maintained', 5, 5)).toBeNull()
+    expect(formatStreakTransitionJa('maintained', 0, 0)).toBeNull()
   })
 
   it('streakToBriefSignal (iter1708): text + tone を 1 chip 形式で返す', () => {
