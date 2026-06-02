@@ -18,6 +18,17 @@
  *      ((後半 - 前半) / max(1, 前半) >= +0.2 → up、≤ -0.2 → down、それ以外 flat)
  *  - 不正 doneAt は除外 (fail-soft)、windowDays<=0 は空 result
  *  - archive 済 / deletedAt の done item は集計に含める (= 一度完了したものは消えない)
+ *
+ * iter1704-1712 streak milestone substrate (UX 卓越憲章 派生 P0「Dashboard × 軸5 やる気」):
+ *  - StreakMilestone 6 段階分類 (none/bronze/silver/gold/platinum/legend、3/7/14/30/100 日階段)
+ *  - streakMilestoneLabelJa (🥉🥈🥇💎👑 + 日本語 chip 文言)
+ *  - streakMilestoneChipTone (positive polarity: none→idle / bronze→info / silver+→success)
+ *  - formatStreakWithMilestoneJa (数字 + label 1 行統合)
+ *  - classifyStreakMilestoneTransition (achieved / broken / maintained 検知)
+ *  - streakToBriefSignal (AgentBriefSignal compose、text + tone)
+ *  - computeCompletionStreakExcludingToday (prev 取得、transition source)
+ *  - formatStreakTransitionJa (achieved 🎉 / broken 😢 toast 文言)
+ *  - computeStreakChain (orchestrator、1 call で全 chain data 取得)
  */
 import { formatLocalISO, MS_PER_DAY, parseDateOrNull, toLocalMidnight } from '@/lib/date/iso'
 import { makeHintLabelFormatter } from '@/lib/hint'
