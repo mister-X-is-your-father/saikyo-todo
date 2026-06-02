@@ -143,17 +143,17 @@ export function formatReviewSummaryJa(summary: ReviewSummary): string {
  * - 同 status 内では入力順 (= AI が並べた順、通常 importance 順) で先頭採用
  *
  * 用途: chip 「最重要: <point>」、Slack escalation 通知の見出し、AI 再 prompt の context。
+ *
+ * iter1696 refactor: iter1432 で着地した `pickTopChecklistFindings` (n=1) を薄ラッパーで再利用、
+ * 2 段 for-loop の重複ロジック (= fail 走査 → warn 走査) を排除。'ok' は alert 対象外なので
+ * `top.status !== 'ok'` で gate (= status='ok' 単一の review は null = 完璧 review 表現)。
+ * iter1425 `pickHighestSeveritySignal → pickTopSignalsBySeverity(n=1)` 統一の review 版。
  */
 export function pickWorstChecklistFinding(
   review: Pick<StructuredReview, 'checklist'>,
 ): ChecklistItem | null {
-  for (const c of review.checklist) {
-    if (c.status === 'fail') return c
-  }
-  for (const c of review.checklist) {
-    if (c.status === 'warn') return c
-  }
-  return null
+  const top = pickTopChecklistFindings(review, 1)[0]
+  return top && top.status !== 'ok' ? top : null
 }
 
 /**
@@ -163,17 +163,16 @@ export function pickWorstChecklistFinding(
  * - high なければ medium、それもなければ low、空なら null
  *
  * 用途: chip 「優先改善: <title>」、Slack 通知の 1 行アクション提示。
+ *
+ * iter1696 refactor: iter1432 で着地した `pickTopImprovements` (n=1) を薄ラッパーで再利用、
+ * 3 段 sequential severity 走査ロジックを排除。`pickWorstChecklistFinding` と対称 pattern。
+ * Improvement 全 severity (high/medium/low) は alert 対象 (= 「改善提案」 自体が即対応軸) なので
+ * `pickWorstChecklistFinding` のような 'ok' gate は不要、単純な薄ラッパー。
  */
 export function pickTopImprovement(
   review: Pick<StructuredReview, 'improvements'>,
 ): Improvement | null {
-  if (review.improvements.length === 0) return null
-  const order: Improvement['severity'][] = ['high', 'medium', 'low']
-  for (const sev of order) {
-    const found = review.improvements.find((imp) => imp.severity === sev)
-    if (found) return found
-  }
-  return null
+  return pickTopImprovements(review, 1)[0] ?? null
 }
 
 const CHECKLIST_STATUS_RANK: Record<ChecklistStatus, number> = {
