@@ -31,8 +31,8 @@
 
 import {
   type ChipTone,
-  chipToneAttentionRank,
   countItemsByTone,
+  filterItemsByMinTone,
   formatToneCountsJa,
   pickTopItemsByTone,
 } from '@/lib/ui/chip-tone'
@@ -508,12 +508,16 @@ export function formatTopSignalsLineJa(signals: AnalyticsSignals, n: number): st
  *  - `pickHighestSeveritySignal`: 単一最重要 signal
  *  - 本 helper: 閾値以上の signal 全件 (= 「警戒 signal だけ凝集」)
  */
+// iter1699 refactor: iter1698 で着地した generic `filterItemsByMinTone` (chip-tone primitive) に
+// 委譲、手書き `chipToneAttentionRank` + `filter` の重複ロジックを排除。`groupSignalsByTone`
+// (iter1428) / `pickTopSignalsBySeverity` (iter1424) と同 pattern の AnalyticsSignals 特化薄
+// ラッパー。signal の表示順 (domain order = concerningRole 先頭) は `analyticsSignalsToArray`
+// が担保、本 helper は閾値 filter のみ責務。
 export function filterSignalsByMinTone(
   signals: AnalyticsSignals,
   minTone: ChipTone,
 ): AgentBriefSignal[] {
-  const minRank = chipToneAttentionRank(minTone)
-  return analyticsSignalsToArray(signals).filter((s) => chipToneAttentionRank(s.tone) >= minRank)
+  return filterItemsByMinTone(analyticsSignalsToArray(signals), (s) => s.tone, minTone)
 }
 
 /**
