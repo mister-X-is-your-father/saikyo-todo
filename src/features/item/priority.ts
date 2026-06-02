@@ -6,6 +6,8 @@
  * dot に aria-label として付与する想定)。
  */
 import { formatNonZeroCounts } from '@/lib/format-counts'
+import type { Severity } from '@/lib/widget/severity'
+import { aggregateCountsBySeverity } from '@/lib/widget/severity-bridges'
 
 export const PRIO_DOT_CLASS: Record<number, string> = {
   1: 'bg-red-500',
@@ -50,16 +52,14 @@ export function priorityLabel(p: number | null | undefined): string {
  * との整合: `Severity` 型は同源、bridge を本 file (= priority のドメインに近い) に置く
  * のは「caller が priority.ts を import するついでに severity が取れる」 ergonomic 優先。
  */
-const PRIORITY_SEVERITY: Record<PriorityKey, 'ok' | 'info' | 'warn' | 'danger' | 'muted'> = {
+const PRIORITY_SEVERITY: Record<PriorityKey, Severity> = {
   1: 'danger',
   2: 'warn',
   3: 'info',
   4: 'muted',
 }
 
-export function prioritySeverity(
-  p: number | null | undefined,
-): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
+export function prioritySeverity(p: number | null | undefined): Severity {
   return PRIORITY_SEVERITY[normalizePriority(p)]
 }
 
@@ -77,21 +77,18 @@ export function prioritySeverity(
  *
  * 例: {1: 3, 2: 1, 3: 2, 4: 4} → {danger: 3, warn: 1, info: 2, muted: 4, ok: 0}
  */
+// iter1694 refactor: iter1430 で extract した汎用 `aggregateCountsBySeverity` に委譲。
+// iter1687-1693 (due-proximity / goal-health / bias / recovery-plan / ai-assignee / forecast /
+// retro-completion) に続く外部 file 追従の **最終 9 件目**。iter1430 推奨の status-visual
+// (iter1433) + 6 関数追従が全完了。
+// 同 iter で `aggregateCountsBySeverity` を `K extends PropertyKey` に汎用化、number key の
+// `PriorityKey = 1|2|3|4` も identity mapping で扱えるように。`PRIORITY_SEVERITY` の domain
+// mapping (p1→danger / p2→warn / p3→info / p4→muted) は本 file 責務、boilerplate (PRIORITY_ORDER
+// 走査 + 空 Record + for-loop + ?? 0) を 1 行委譲に縮約。inline tuple type を共通 Severity 型に統一。
 export function priorityCountsToSeverityCounts(
   counts: Record<PriorityKey, number>,
-): Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> {
-  const out: Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> = {
-    ok: 0,
-    info: 0,
-    warn: 0,
-    danger: 0,
-    muted: 0,
-  }
-  for (const k of PRIORITY_ORDER) {
-    const sev = PRIORITY_SEVERITY[k]
-    out[sev] += counts[k] ?? 0
-  }
-  return out
+): Record<Severity, number> {
+  return aggregateCountsBySeverity(counts, (k) => PRIORITY_SEVERITY[k])
 }
 
 /**

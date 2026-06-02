@@ -521,5 +521,14 @@ describe('countNonEmptyPriorityBuckets / countNonEmptyPriorityBucketsBy', () => 
         sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
       expect(sevTotal).toBe(priorityTotal)
     })
+
+    // iter1694 refactor regression guard: aggregateCountsBySeverity を `K extends PropertyKey` に
+    // 汎用化したため number key (PriorityKey) でも domain mapping (p1→danger / p2→warn /
+    // p3→info / p4→muted) が経由されることを assert。
+    it('number key でも入力 key 順を変えても結果同一 (集約は加算的、順序不変)', () => {
+      const a = priorityCountsToSeverityCounts({ 1: 3, 2: 1, 3: 2, 4: 4 })
+      const b = priorityCountsToSeverityCounts({ 4: 4, 3: 2, 2: 1, 1: 3 })
+      expect(a).toEqual(b)
+    })
   })
 })

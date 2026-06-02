@@ -444,4 +444,20 @@ describe('aggregateCountsBySeverity (iter1430 — 汎用 domain → severity cou
     aggregateCountsBySeverity<'a' | 'b'>(counts, (k) => (k === 'a' ? 'danger' : ('ok' as Severity)))
     expect(counts).toEqual(original)
   })
+
+  // iter1694: K extends PropertyKey に汎用化したため number literal key (priority 用) も
+  // 同 helper で扱える。Object.keys は string[] を返すが JS object indexing は string/number
+  // 等価扱いのため counts[k] / toSeverity(k) ともに runtime 整合。
+  it('number literal key (= PriorityKey 1|2|3|4) も集約できる (PropertyKey 汎用化)', () => {
+    type PriorityKey = 1 | 2 | 3 | 4
+    const PRIO_SEV: Record<PriorityKey, Severity> = {
+      1: 'danger',
+      2: 'warn',
+      3: 'info',
+      4: 'muted',
+    }
+    const counts: Record<PriorityKey, number> = { 1: 3, 2: 1, 3: 2, 4: 4 }
+    const out = aggregateCountsBySeverity<PriorityKey>(counts, (k) => PRIO_SEV[k])
+    expect(out).toEqual({ danger: 3, warn: 1, info: 2, muted: 4, ok: 0 })
+  })
 })

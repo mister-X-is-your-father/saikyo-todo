@@ -73,8 +73,14 @@ export function severityToChipTone(sev: Severity): ChipTone {
  *
  * 注: 本 helper は severity-bridges.ts 内の 5 関数の boilerplate を排除する用 (= 11+ 関数の
  * 一括 refactor は本 iter scope 外、別 iter で外部 file も追従)。
+ *
+ * iter1694: `K extends PropertyKey` (= string | number | symbol) に汎用化。number key の
+ * Record (= priority の `Record<1|2|3|4, number>` 等) も同 helper で扱えるよう拡張。
+ * 注: `Object.keys` は string[] を返すため number key も runtime では文字列化されるが、
+ * JS object indexing は string/number を等価に扱う (counts[k] / toSeverity(k) で問題なし)。
+ * 既存 caller (`K extends string` で書かれた callsite) は subset なので breaking なし。
  */
-export function aggregateCountsBySeverity<K extends string>(
+export function aggregateCountsBySeverity<K extends PropertyKey>(
   counts: Readonly<Record<K, number>>,
   toSeverity: (k: K) => Severity,
 ): Record<Severity, number> {
