@@ -613,22 +613,23 @@ describe('urgencyTierTone (graphical 波及 — tier → chip tone token)', () =
   })
 })
 
+// iter1702 fix: iter1531 chip-tone `light dark:dark` 拡張への追従 (iter1701 due-proximity と同 sweep)。
 describe('urgencyTierChipClasses (Tailwind 3 軸 class、iter481/482 と整合)', () => {
   it('critical → rose 3 軸 (iter481 dueProximity overdue と同色)', () => {
     const c = urgencyTierChipClasses('critical')
-    expect(c.bgClass).toBe('bg-rose-100')
-    expect(c.textClass).toBe('text-rose-700')
-    expect(c.ringClass).toBe('ring-rose-300')
+    expect(c.bgClass).toBe('bg-rose-100 dark:bg-rose-950/40')
+    expect(c.textClass).toBe('text-rose-700 dark:text-rose-300')
+    expect(c.ringClass).toBe('ring-rose-300 dark:ring-rose-900/50')
   })
 
   it('high vs medium で amber 強弱を区別 (urgent 100 vs warn 50)', () => {
-    expect(urgencyTierChipClasses('high').bgClass).toBe('bg-amber-100')
-    expect(urgencyTierChipClasses('medium').bgClass).toBe('bg-amber-50')
+    expect(urgencyTierChipClasses('high').bgClass).toBe('bg-amber-100 dark:bg-amber-950/40')
+    expect(urgencyTierChipClasses('medium').bgClass).toBe('bg-amber-50 dark:bg-amber-950/30')
   })
 
   it('low → blue 薄、none → slate 薄 (計画範囲内 vs 対象外を区別)', () => {
-    expect(urgencyTierChipClasses('low').textClass).toBe('text-blue-700')
-    expect(urgencyTierChipClasses('none').textClass).toBe('text-slate-600')
+    expect(urgencyTierChipClasses('low').textClass).toBe('text-blue-700 dark:text-blue-300')
+    expect(urgencyTierChipClasses('none').textClass).toBe('text-slate-600 dark:text-slate-400')
   })
 })
 

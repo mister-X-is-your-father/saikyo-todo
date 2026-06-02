@@ -234,23 +234,24 @@ describe('costMonthProjectionTone (graphical 波及 — risk → chip tone token
   })
 })
 
+// iter1702 fix: iter1531 chip-tone `light dark:dark` 拡張への追従 (iter1701 due-proximity と同 sweep)。
 describe('costMonthProjectionChipClasses (Tailwind 3 軸 class、iter481 dueProximity と整合)', () => {
   it('over → rose 3 軸 (bg / text / ring)', () => {
     const c = costMonthProjectionChipClasses('over')
-    expect(c.bgClass).toBe('bg-rose-100')
-    expect(c.textClass).toBe('text-rose-700')
-    expect(c.ringClass).toBe('ring-rose-300')
+    expect(c.bgClass).toBe('bg-rose-100 dark:bg-rose-950/40')
+    expect(c.textClass).toBe('text-rose-700 dark:text-rose-300')
+    expect(c.ringClass).toBe('ring-rose-300 dark:ring-rose-900/50')
   })
 
   it('warn → amber 強 / safe → blue 薄 (urgent vs info の区別)', () => {
-    expect(costMonthProjectionChipClasses('warn').bgClass).toBe('bg-amber-100')
-    expect(costMonthProjectionChipClasses('safe').bgClass).toBe('bg-blue-50')
+    expect(costMonthProjectionChipClasses('warn').bgClass).toBe('bg-amber-100 dark:bg-amber-950/40')
+    expect(costMonthProjectionChipClasses('safe').bgClass).toBe('bg-blue-50 dark:bg-blue-950/30')
   })
 
   it('idle (today 不正) → slate (計算不能を視覚で控えめに表現)', () => {
     const c = costMonthProjectionChipClasses('idle')
-    expect(c.textClass).toBe('text-slate-600')
-    expect(c.ringClass).toBe('ring-slate-200')
+    expect(c.textClass).toBe('text-slate-600 dark:text-slate-400')
+    expect(c.ringClass).toBe('ring-slate-200 dark:ring-slate-700/50')
   })
 })
 

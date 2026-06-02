@@ -278,15 +278,16 @@ describe('formatWorkspaceMomentumCompactJa (iter791 — chip / Slack 通知 用 
   })
 })
 
+// iter1702 fix: iter1531 chip-tone `light dark:dark` 拡張への追従 (iter1701 due-proximity と同 sweep)。
 describe('momentumTone / momentumChipClasses (iter793 — graphical chip 配色)', () => {
   it('growing → warn (amber、backlog 増 = 警戒)', () => {
     expect(momentumTone('growing')).toBe('warn')
-    expect(momentumChipClasses('growing').bgClass).toBe('bg-amber-50')
+    expect(momentumChipClasses('growing').bgClass).toBe('bg-amber-50 dark:bg-amber-950/30')
   })
 
   it('shrinking → success (emerald、backlog 縮小 = 改善)', () => {
     expect(momentumTone('shrinking')).toBe('success')
-    expect(momentumChipClasses('shrinking').bgClass).toBe('bg-emerald-50')
+    expect(momentumChipClasses('shrinking').bgClass).toBe('bg-emerald-50 dark:bg-emerald-950/30')
   })
 
   it('balanced → info (blue、安定)', () => {
@@ -295,7 +296,7 @@ describe('momentumTone / momentumChipClasses (iter793 — graphical chip 配色)
 
   it('idle → idle (slate、活動なし)', () => {
     expect(momentumTone('idle')).toBe('idle')
-    expect(momentumChipClasses('idle').bgClass).toBe('bg-slate-50')
+    expect(momentumChipClasses('idle').bgClass).toBe('bg-slate-50 dark:bg-slate-900/30')
   })
 })
 

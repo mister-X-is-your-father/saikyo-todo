@@ -166,24 +166,29 @@ describe('memberCapacityTone (graphical 波及 — load status → chip tone tok
   })
 })
 
+// iter1702 fix: iter1531 chip-tone `light dark:dark` 拡張への追従 (iter1701 due-proximity と同 sweep)。
 describe('memberCapacityChipClasses (Tailwind 3 軸 class、iter485 chip-tone と整合)', () => {
   it('overloaded → rose、free → emerald (success tone 初登場)', () => {
     const overloaded = memberCapacityChipClasses('overloaded')
-    expect(overloaded.bgClass).toBe('bg-rose-100')
-    expect(overloaded.textClass).toBe('text-rose-700')
+    expect(overloaded.bgClass).toBe('bg-rose-100 dark:bg-rose-950/40')
+    expect(overloaded.textClass).toBe('text-rose-700 dark:text-rose-300')
 
     const free = memberCapacityChipClasses('free')
-    expect(free.bgClass).toBe('bg-emerald-50')
-    expect(free.textClass).toBe('text-emerald-700')
-    expect(free.ringClass).toBe('ring-emerald-200')
+    expect(free.bgClass).toBe('bg-emerald-50 dark:bg-emerald-950/30')
+    expect(free.textClass).toBe('text-emerald-700 dark:text-emerald-300')
+    expect(free.ringClass).toBe('ring-emerald-200 dark:ring-emerald-900/50')
   })
 
   it('tight (強amber) と comfortable (blue) で区別', () => {
-    expect(memberCapacityChipClasses('tight').bgClass).toBe('bg-amber-100')
-    expect(memberCapacityChipClasses('comfortable').textClass).toBe('text-blue-700')
+    expect(memberCapacityChipClasses('tight').bgClass).toBe('bg-amber-100 dark:bg-amber-950/40')
+    expect(memberCapacityChipClasses('comfortable').textClass).toBe(
+      'text-blue-700 dark:text-blue-300',
+    )
   })
 
   it('unknown → slate (計算不能)', () => {
-    expect(memberCapacityChipClasses('unknown').textClass).toBe('text-slate-600')
+    expect(memberCapacityChipClasses('unknown').textClass).toBe(
+      'text-slate-600 dark:text-slate-400',
+    )
   })
 })

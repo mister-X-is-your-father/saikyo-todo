@@ -368,17 +368,18 @@ describe('agentReliabilityTone (graphical 波及 — level → ChipTone)', () =>
   })
 })
 
+// iter1702 fix: iter1531 chip-tone `light dark:dark` 拡張への追従 (iter1701 due-proximity と同 sweep)。
 describe('agentReliabilityChipClasses (Tailwind 3 軸)', () => {
   it('critical → rose、healthy → emerald (iter486 success tone 2 件目活用)', () => {
     const crit = agentReliabilityChipClasses('critical')
-    expect(crit.bgClass).toBe('bg-rose-100')
+    expect(crit.bgClass).toBe('bg-rose-100 dark:bg-rose-950/40')
     const healthy = agentReliabilityChipClasses('healthy')
-    expect(healthy.bgClass).toBe('bg-emerald-50')
-    expect(healthy.textClass).toBe('text-emerald-700')
+    expect(healthy.bgClass).toBe('bg-emerald-50 dark:bg-emerald-950/30')
+    expect(healthy.textClass).toBe('text-emerald-700 dark:text-emerald-300')
   })
 
   it('warn → amber 薄、idle → slate 薄', () => {
-    expect(agentReliabilityChipClasses('warn').bgClass).toBe('bg-amber-50')
-    expect(agentReliabilityChipClasses('idle').bgClass).toBe('bg-slate-50')
+    expect(agentReliabilityChipClasses('warn').bgClass).toBe('bg-amber-50 dark:bg-amber-950/30')
+    expect(agentReliabilityChipClasses('idle').bgClass).toBe('bg-slate-50 dark:bg-slate-900/30')
   })
 })

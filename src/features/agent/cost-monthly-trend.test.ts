@@ -398,15 +398,16 @@ describe('formatMonthlyCostTrendCompactJa (iter792 — chip / Slack 用 短縮�
   })
 })
 
+// iter1702 fix: iter1531 chip-tone `light dark:dark` 拡張への追従 (iter1701 due-proximity と同 sweep)。
 describe('monthlyCostTrendTone / monthlyCostTrendChipClasses (iter792 — graphical chip)', () => {
   it('up → warn (amber、コスト増 = 注意)', () => {
     expect(monthlyCostTrendTone('up')).toBe('warn')
-    expect(monthlyCostTrendChipClasses('up').bgClass).toBe('bg-amber-50')
+    expect(monthlyCostTrendChipClasses('up').bgClass).toBe('bg-amber-50 dark:bg-amber-950/30')
   })
 
   it('down → success (emerald、コスト減 = 改善)', () => {
     expect(monthlyCostTrendTone('down')).toBe('success')
-    expect(monthlyCostTrendChipClasses('down').bgClass).toBe('bg-emerald-50')
+    expect(monthlyCostTrendChipClasses('down').bgClass).toBe('bg-emerald-50 dark:bg-emerald-950/30')
   })
 
   it('flat → info (blue、安定)', () => {
