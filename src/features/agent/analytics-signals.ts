@@ -34,6 +34,7 @@ import {
   countItemsByTone,
   filterItemsByMinTone,
   formatToneCountsJa,
+  groupItemsByTone,
   pickTopItemsByTone,
 } from '@/lib/ui/chip-tone'
 
@@ -552,19 +553,13 @@ export function filterSignalsByMinTone(
  *  - `filterSignalsByMinTone`: 閾値以上の signal (= 1 軸 filter)
  *  - 本 helper: tone 別 **分配** (= 6 軸 grouping、UI 縦配置 / Slack section 分離 向け)
  */
+// iter1700 refactor: iter1431 で着地した generic `groupItemsByTone` (chip-tone primitive) に
+// 委譲、手書き 6 tone Record 初期化 + for-loop の重複ロジックを排除。iter1699
+// `filterSignalsByMinTone → filterItemsByMinTone` と同 pattern (= primitive 委譲の 4 軸目)。
+// signal の domain 表示順 (concerningRole 先頭) は `analyticsSignalsToArray` が担保、本 helper
+// は tone 別分配のみ責務に集約。
 export function groupSignalsByTone(
   signals: AnalyticsSignals,
 ): Record<ChipTone, AgentBriefSignal[]> {
-  const grouped: Record<ChipTone, AgentBriefSignal[]> = {
-    danger: [],
-    urgent: [],
-    warn: [],
-    info: [],
-    idle: [],
-    success: [],
-  }
-  for (const s of analyticsSignalsToArray(signals)) {
-    grouped[s.tone].push(s)
-  }
-  return grouped
+  return groupItemsByTone(analyticsSignalsToArray(signals), (s) => s.tone)
 }
