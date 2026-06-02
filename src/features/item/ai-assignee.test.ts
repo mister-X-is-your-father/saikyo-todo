@@ -357,5 +357,24 @@ describe('ai-assignee', () => {
         sevCounts.ok + sevCounts.info + sevCounts.warn + sevCounts.danger + sevCounts.muted
       expect(sevTotal).toBe(total)
     })
+
+    // iter1691 refactor regression guard: aggregateCountsBySeverity 委譲後も COLLAB_MODE_SEVERITY
+    // の mapping (user-only + mixed → 同 ok lossy 縮約) が経由されることを assert。
+    it('入力 key 順を変えても結果同一 (集約は加算的、順序不変)', () => {
+      const a = collaborationModeCountsToSeverityCounts({
+        unassigned: 2,
+        'ai-only': 3,
+        'user-only': 5,
+        mixed: 1,
+      })
+      const b = collaborationModeCountsToSeverityCounts({
+        mixed: 1,
+        'user-only': 5,
+        'ai-only': 3,
+        unassigned: 2,
+      })
+      expect(a).toEqual(b)
+      expect(a.ok).toBe(5 + 1) // user-only + mixed が ok に lossy 縮約
+    })
   })
 })

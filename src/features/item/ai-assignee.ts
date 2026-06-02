@@ -13,6 +13,9 @@
  *
  * pure 関数のみ (DB / I/O 無し) — vitest で単体検証可能。
  */
+import type { Severity } from '@/lib/widget/severity'
+import { aggregateCountsBySeverity } from '@/lib/widget/severity-bridges'
+
 import type { AgentRole } from '@/features/agent/schema'
 
 import type { AssigneeRef } from './repository'
@@ -138,17 +141,14 @@ export function collaborationModeLabelJa(mode: CollaborationMode): string {
  *
  * unassigned は warn で「誰の責任か曖昧」 risk を可視化。
  */
-const COLLAB_MODE_SEVERITY: Record<CollaborationMode, 'ok' | 'info' | 'warn' | 'danger' | 'muted'> =
-  {
-    unassigned: 'warn',
-    'ai-only': 'info',
-    'user-only': 'ok',
-    mixed: 'ok',
-  }
+const COLLAB_MODE_SEVERITY: Record<CollaborationMode, Severity> = {
+  unassigned: 'warn',
+  'ai-only': 'info',
+  'user-only': 'ok',
+  mixed: 'ok',
+}
 
-export function collaborationModeSeverity(
-  mode: CollaborationMode,
-): 'ok' | 'info' | 'warn' | 'danger' | 'muted' {
+export function collaborationModeSeverity(mode: CollaborationMode): Severity {
   return COLLAB_MODE_SEVERITY[mode]
 }
 
@@ -191,22 +191,15 @@ export function countItemsByCollaborationMode<T extends { assignees: readonly As
  *   unassigned → warn / ai-only → info / user-only → ok / mixed → ok (severity を
  *   合算なので user-only と mixed が同 ok bucket)
  */
+// iter1691 refactor: iter1430 で extract した汎用 `aggregateCountsBySeverity` に委譲。
+// iter1687-1690 (due-proximity / goal-health / bias / recovery-plan) に続く外部 file 追従 6 件目。
+// 振る舞い不変: COLLAB_MODE_SEVERITY (unassigned→warn / ai-only→info / user-only+mixed→ok lossy)
+// の domain mapping は本 file 責務、boilerplate (空 Record + inline `CollaborationMode[]` 配列 +
+// for-loop + ?? 0) を 1 行委譲に縮約。
 export function collaborationModeCountsToSeverityCounts(
   counts: Record<CollaborationMode, number>,
-): Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> {
-  const out: Record<'ok' | 'info' | 'warn' | 'danger' | 'muted', number> = {
-    ok: 0,
-    info: 0,
-    warn: 0,
-    danger: 0,
-    muted: 0,
-  }
-  const all: CollaborationMode[] = ['unassigned', 'ai-only', 'user-only', 'mixed']
-  for (const m of all) {
-    const sev = COLLAB_MODE_SEVERITY[m]
-    out[sev] += counts[m] ?? 0
-  }
-  return out
+): Record<Severity, number> {
+  return aggregateCountsBySeverity(counts, collaborationModeSeverity)
 }
 
 /**
