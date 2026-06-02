@@ -192,10 +192,9 @@ import {
 } from '@/features/item/urgency'
 import {
   classifyVelocityHint,
-  computeCompletionStreak,
+  computeStreakChain,
   computeVelocity,
   computeVelocityByPriority,
-  formatStreakWithMilestoneJa,
   formatVelocityByPriorityJa,
   formatVelocityHintJa,
   formatVelocitySummary,
@@ -277,11 +276,12 @@ export function DashboardView({ workspaceId }: Props) {
     // 「3 日連続!」が SR 経路で読める。
     // iter1709 fix: formatCompletionStreakJa → formatStreakWithMilestoneJa に置換。
     // streak >= 3 (= bronze 到達) で milestone emoji (🥉🥈🥇💎👑) と label が SR に追加表示
-    // される (= 「完了 streak 7 日連続! 🥈 シルバー (1 週間連続)」)。iter1704-1708 で構築した
-    // streak milestone substrate を UI に bind する第 1 弾。streak < 3 は milestone なし =
-    // iter458 までと同じ「数字のみ」表示で regression なし。
-    const streak = computeCompletionStreak(result)
-    const streakDetail = streak >= 2 ? ` — ${formatStreakWithMilestoneJa(streak)}` : ''
+    // される (= 「完了 streak 7 日連続! 🥈 シルバー (1 週間連続)」)。
+    // iter1713 fix: computeStreakChain (iter1712 orchestrator) 経由に短縮、chain.briefSignal.text
+    // で同じ format 結果 + 将来 toast / chip tone を bind するときに chain 1 関数で揃う。
+    const chain = computeStreakChain(result)
+    const streak = chain.currStreak
+    const streakDetail = streak >= 2 ? ` — ${chain.briefSignal.text}` : ''
     const detail = `${line}${priorityDetailSuffix(priorityBuckets, () =>
       formatVelocityByPriorityJa(byPriority, 7),
     )}${streakDetail}`
