@@ -357,7 +357,7 @@ export function BacklogView({ workspaceId, items }: Props) {
                         tabIndex={h.column.getCanSort() ? 0 : undefined}
                         aria-label={
                           h.column.getCanSort()
-                            ? `「${headerName}」列でソート (現在: ${sortLabel}) — Enter / Space で次の状態に切替`
+                            ? `${headerName} 列でソート (現在: ${sortLabel}) — Enter / Space で次の状態に切替`
                             : undefined
                         }
                         style={{ width: h.getSize() }}
