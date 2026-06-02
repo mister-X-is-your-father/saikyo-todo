@@ -9,6 +9,7 @@ import {
   chipToneLabelJa,
   compareChipTones,
   countItemsByTone,
+  filterItemsByMinTone,
   formatToneCountsJa,
   getChipToneClasses,
   groupItemsByTone,
@@ -365,5 +366,69 @@ describe('groupItemsByTone (iter1431 — tone 別 items 分配)', () => {
     expect(grouped.info.length).toBe(counts.info)
     expect(grouped.idle.length).toBe(counts.idle)
     expect(grouped.urgent.length).toBe(counts.urgent)
+  })
+})
+
+describe('filterItemsByMinTone (iter1698 — 閾値以上の items を凝集)', () => {
+  type Item = { id: string; tone: ChipTone }
+  const getTone = (it: Item) => it.tone
+
+  it('minTone=warn → danger / urgent / warn のみ通過 (info / idle / success 除外)', () => {
+    const items: Item[] = [
+      { id: 'a', tone: 'danger' },
+      { id: 'b', tone: 'urgent' },
+      { id: 'c', tone: 'warn' },
+      { id: 'd', tone: 'info' },
+      { id: 'e', tone: 'idle' },
+      { id: 'f', tone: 'success' },
+    ]
+    const out = filterItemsByMinTone(items, getTone, 'warn')
+    expect(out.map((x) => x.id)).toEqual(['a', 'b', 'c'])
+  })
+
+  it('minTone=danger → danger のみ通過', () => {
+    const items: Item[] = [
+      { id: 'a', tone: 'danger' },
+      { id: 'b', tone: 'urgent' },
+      { id: 'c', tone: 'warn' },
+    ]
+    const out = filterItemsByMinTone(items, getTone, 'danger')
+    expect(out.map((x) => x.id)).toEqual(['a'])
+  })
+
+  it('minTone=success → 全 tone 通過 (success rank=0 = 最低なので filter なし)', () => {
+    const items: Item[] = [
+      { id: 'a', tone: 'idle' },
+      { id: 'b', tone: 'success' },
+      { id: 'c', tone: 'danger' },
+    ]
+    const out = filterItemsByMinTone(items, getTone, 'success')
+    expect(out.map((x) => x.id)).toEqual(['a', 'b', 'c'])
+  })
+
+  it('入力順保持 (stable、filter 走査順)', () => {
+    const items: Item[] = [
+      { id: 'a', tone: 'warn' },
+      { id: 'b', tone: 'success' },
+      { id: 'c', tone: 'danger' },
+      { id: 'd', tone: 'info' },
+      { id: 'e', tone: 'urgent' },
+    ]
+    const out = filterItemsByMinTone(items, getTone, 'warn')
+    expect(out.map((x) => x.id)).toEqual(['a', 'c', 'e'])
+  })
+
+  it('空配列 → 空配列', () => {
+    expect(filterItemsByMinTone<Item>([], getTone, 'warn')).toEqual([])
+  })
+
+  it('入力 items を mutate しない (immutable)', () => {
+    const items: Item[] = [
+      { id: 'a', tone: 'danger' },
+      { id: 'b', tone: 'idle' },
+    ]
+    const original = [...items]
+    filterItemsByMinTone(items, getTone, 'warn')
+    expect(items).toEqual(original)
   })
 })

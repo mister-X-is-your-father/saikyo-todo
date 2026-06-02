@@ -350,3 +350,38 @@ export function groupItemsByTone<T>(
   }
   return grouped
 }
+
+/**
+ * iter1698 basics: 任意 items を「`minTone` 以上の attention rank を持つ」 ものに filter する
+ * pure helper。`analytics-signals.ts#filterSignalsByMinTone` (iter1427) の AnalyticsSignals 特化版
+ * を、任意 items に generalize した chip-tone primitive。
+ *
+ * 仕様:
+ *  - `minTone` 以上の attention rank を持つ item のみ通過 (= rank >= rank(minTone))
+ *    例: minTone='warn' → danger / urgent / warn のみ通過 (info / idle / success は除外)
+ *  - 並び順は **入力 items の元順保持** (stable、filter 走査順)
+ *  - 入力 items を mutate しない、新配列を返す
+ *  - getTone は item ごと 1 回呼ばれる
+ *  - minTone='danger' → danger / urgent / warn / info / idle / success の attention rank と
+ *    比較 (= success は rank=0 で最低、danger は rank=5 で最大)
+ *
+ * 用途:
+ *  - dashboard 「警戒 item だけ」 chip 列 (= success/idle 除外で凝集表示)
+ *  - AI 朝 brief 「警戒 signal だけ」 headline
+ *  - Slack daily digest concerning section
+ *  - 任意 domain item の「閾値以上だけ」 表示 (= due-proximity item / urgency item / etc.)
+ *
+ * 既存 helper との関係:
+ *  - `pickTopItemsByTone`: 上位 N 件 (= severity 順、件数制限)
+ *  - `sortItemsByTone`: 全 items を tone severity 順で 1 配列に
+ *  - `groupItemsByTone`: tone 別 分配 (= 6 軸 grouping)
+ *  - 本 helper: 閾値以上 filter (= 1 軸 threshold filter、件数制限なし)
+ */
+export function filterItemsByMinTone<T>(
+  items: ReadonlyArray<T>,
+  getTone: (item: T) => ChipTone,
+  minTone: ChipTone,
+): T[] {
+  const minRank = TONE_ATTENTION_RANK[minTone]
+  return items.filter((it) => TONE_ATTENTION_RANK[getTone(it)] >= minRank)
+}
