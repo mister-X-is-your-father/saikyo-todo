@@ -28,7 +28,8 @@ export function SignupForm() {
       const result = await signupAction(values)
       if (!result.ok) {
         toast.error(result.error.message)
-        form.setFocus('email')
+        const target = result.error.message.includes('パスワード') ? 'password' : 'email'
+        form.setFocus(target)
         return
       }
       toast.success('サインアップ完了。Workspace を作りましょう')
