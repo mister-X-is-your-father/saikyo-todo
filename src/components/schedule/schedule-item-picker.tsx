@@ -56,8 +56,8 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
           className="h-11"
           aria-label={
             q.length === 0
-              ? 'task を検索 (タイトルで部分一致)'
-              : `task を検索 (現在のクエリ "${q}" — ${q.length} 文字)`
+              ? 'task を検索 — タイトルで部分一致'
+              : `task を検索 — 現在のクエリ "${q}" (${q.length} 文字)`
           }
           placeholder="task を検索…"
           value={q}
