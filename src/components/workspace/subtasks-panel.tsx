@@ -161,7 +161,13 @@ function SubtaskTreeNode({
         // で 16+24=40 両軸、WCAG 2.5.5 (44x44) 未達。`inline-flex min-h-11 min-w-11 items-center
         // justify-center` 追加で両軸 44 強制、icon は center 配置で見た目バランス維持。
         className="text-muted-foreground hover:text-foreground focus-visible:ring-ring relative -ml-1 inline-flex min-h-11 min-w-11 cursor-grab touch-none items-center justify-center rounded before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none active:cursor-grabbing"
-        aria-label={`「${item.title}」 — ドラッグで並び替え`}
+        /* iter1698: 旧 `「${item.title}」 — ドラッグで並び替え` は accessible name 先頭が
+           「 (U+300C) で voice control「click ${item.title}」 strict prefix match と不一致
+           (WCAG 2.5.3、iter1697 backlog sortable <th> と同 pattern)。drag handle は
+           interactive (button + listeners) で voice control 対象、「」 quote を外し
+           ${item.title} を literal prefix に。」 close-quote が抜けるが、em-dash 区切で
+           title と action 文の境界は SR に明瞭。 */
+        aria-label={`${item.title} — ドラッグで並び替え`}
         data-testid={`subtask-drag-${item.id}`}
         {...attributes}
         {...listeners}
