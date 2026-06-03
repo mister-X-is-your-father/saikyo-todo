@@ -29,6 +29,22 @@
  *  - computeCompletionStreakExcludingToday (prev 取得、transition source)
  *  - formatStreakTransitionJa (achieved 🎉 / broken 😢 toast 文言)
  *  - computeStreakChain (orchestrator、1 call で全 chain data 取得)
+ *
+ * iter1716-1720 streak best-comparison substrate (best streak への pull motivator):
+ *  - formatStreakBestComparisonJa (現在 vs best 1 行 比較 text、単独 chip 用)
+ *  - streakComparisonToBriefSignal (curr/best → 比較 chip text+tone)
+ *  - computeStreakComparisonSignal (summary → 比較 chip orchestrator)
+ *  - formatStreakBestSuffix (milestone と組合せ用 suffix のみ、重複なし統合)
+ *  - composeStreakBriefSignals (summary → { milestone, comparison } 2 chip fan-out)
+ *
+ * iter1726-1727 today done count substrate (UX 卓越憲章 派生 P0「Today × 軸5 やる気」):
+ *  - countDoneToday (今日 done 件数、軽量 O(items))
+ *  - formatDoneTodayJa (0→「まだ 0 件」 / 1→「1 件完了」 / 2+→「N 件完了!」)
+ *  - doneTodayToBriefSignal (今日完了 chip text+tone、idle/info/success 3 段階)
+ *
+ * 上記 substrate の AnalyticsSignals 統合: iter1715 streakMilestone (= 19 軸目) +
+ * iter1719 streakComparison (= 20 軸目) + iter1728 doneToday (= 21 軸目)。
+ * UI 配線: iter1709/1721/1724 dashboard velocity chip + iter1729-1730 Today view header chip。
  */
 import { formatLocalISO, MS_PER_DAY, parseDateOrNull, toLocalMidnight } from '@/lib/date/iso'
 import { makeHintLabelFormatter } from '@/lib/hint'
