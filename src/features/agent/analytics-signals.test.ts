@@ -19,6 +19,7 @@ import {
   formatAnalyticsSignalsToneSummaryJa,
   formatTopSignalsLineJa,
   groupSignalsByTone,
+  hasAchievementSignals,
   pickAchievementSignals,
   pickHighestSeveritySignal,
   pickTopSignalsBySeverity,
@@ -1249,5 +1250,20 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
     expect(arr.length).toBe(2)
     expect(arr[0]).toBe(s.doneToday)
     expect(arr[1]).toBe(s.velocity)
+  })
+
+  it('iter1742: hasAchievementSignals — 4 軸全 null → false', () => {
+    const s = composeAnalyticsSignals({})
+    expect(hasAchievementSignals(s)).toBe(false)
+  })
+
+  it('iter1742: hasAchievementSignals — 1 軸 (doneToday) active → true', () => {
+    const s = composeAnalyticsSignals({ doneToday: 2 })
+    expect(hasAchievementSignals(s)).toBe(true)
+  })
+
+  it('iter1742: hasAchievementSignals — 他軸 (= weeklyReviewDue) のみ active → false', () => {
+    const s = composeAnalyticsSignals({ weeklyReviewDue: 'overdue' })
+    expect(hasAchievementSignals(s)).toBe(false)
   })
 })

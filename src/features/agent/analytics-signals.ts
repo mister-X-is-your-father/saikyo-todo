@@ -440,6 +440,30 @@ export function pickAchievementSignals(signals: AnalyticsSignals): AgentBriefSig
 }
 
 /**
+ * iter1742 ai-automation: 達成感 cluster に 1 軸以上 active signal があるかの predicate。
+ *
+ * `pickAchievementSignals(signals).length > 0` の薄い wrapper、UI / Slack notifier
+ * の「達成感セクション表示 gate」 を 1 関数で書ける。
+ *
+ * caller pattern (達成感 panel 表示 gate):
+ *   const signals = composeAnalyticsSignals({ ... })
+ *   if (hasAchievementSignals(signals)) {
+ *     return <AchievementPanel signals={signals} />
+ *   }
+ *
+ * `pickAchievementSignals(signals).length > 0` で書くより semantic に明確 (= 「ある or
+ * ない」 が boolean で示される、配列 length 比較の意図が読み手に伝わりやすい)。
+ */
+export function hasAchievementSignals(signals: AnalyticsSignals): boolean {
+  return (
+    signals.doneToday !== null ||
+    signals.velocity !== null ||
+    signals.streakMilestone !== null ||
+    signals.streakComparison !== null
+  )
+}
+
+/**
  * iter1725 refactor: 達成感 cluster 3 軸を「達成感: ...」 prefix 付き 1 行 ja-JP text に
  * 整形する compose helper。Slack daily digest「今日の達成感」 section / AI 朝 brief
  * 「達成感セクション」 で plain text 行として埋め込む用。
