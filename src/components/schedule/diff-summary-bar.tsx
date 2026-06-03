@@ -83,7 +83,10 @@ export function DiffSummaryBar({ schedules, itemTitleById, onSelect }: Props) {
             // 中位置 "{sevLabel}: **{title}** ..." に持ち voice control prefix-matching
             //「click {title}」 match 不可 (onClick あり時 button render なので visible-prefix 必要)。
             // visible {title} 冒頭固定 + em-dash 区切で sevLabel を descriptive 末尾保持。
-            ariaLabel={`${title} — ${sevLabel}: 想定 ${fmtMin(r.plannedMinutes)} 実測 ${fmtMin(r.actualMinutes)}${deltaText}`}
+            // iter1705: 旧 `${sevLabel}: 想定 ...` の colon は iter1629 / iter1701 / iter1702 /
+            // iter1703 sweep (em-dash + colon 無 natural-reading convention) と divergent。
+            // `${sevLabel} 想定 ...` に統一、SR 読み上げが sibling chip family と整合。
+            ariaLabel={`${title} — ${sevLabel} 想定 ${fmtMin(r.plannedMinutes)} 実測 ${fmtMin(r.actualMinutes)}${deltaText}`}
             className="max-w-[260px]"
             onClick={onSelect ? () => onSelect(r.itemId) : undefined}
             testId={`diff-chip-${r.itemId ?? 'interrupt'}`}
