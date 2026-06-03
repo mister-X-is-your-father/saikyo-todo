@@ -21,6 +21,7 @@ import {
   groupSignalsByTone,
   hasAchievementSignals,
   pickAchievementSignals,
+  pickConcerningSignals,
   pickHighestSeveritySignal,
   pickTopSignalsBySeverity,
 } from './analytics-signals'
@@ -1265,6 +1266,29 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
   it('iter1742: hasAchievementSignals — 他軸 (= weeklyReviewDue) のみ active → false', () => {
     const s = composeAnalyticsSignals({ weeklyReviewDue: 'overdue' })
     expect(hasAchievementSignals(s)).toBe(false)
+  })
+
+  it('iter1744: pickConcerningSignals — 全 null → 空配列', () => {
+    const s = composeAnalyticsSignals({})
+    expect(pickConcerningSignals(s)).toEqual([])
+  })
+
+  it('iter1744: pickConcerningSignals — weeklyReviewDue overdue (danger) → 1 件', () => {
+    const s = composeAnalyticsSignals({ weeklyReviewDue: 'overdue' })
+    const arr = pickConcerningSignals(s)
+    expect(arr.length).toBe(1)
+    expect(arr[0]).toBe(s.weeklyReviewDue)
+  })
+
+  it('iter1744: pickConcerningSignals — 達成感のみ active → 空配列 (= positive 軸は除外)', () => {
+    const items: VelocityFields[] = [{ doneAt: TODAY }]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const s = composeAnalyticsSignals({ doneToday: 2, velocity })
+    // doneToday=2 → success / velocity active で何らかの tone
+    const arr = pickConcerningSignals(s)
+    // 達成感系 signal は positive polarity (success/info/idle) で warn/danger/urgent
+    // を出さない、よって空配列
+    expect(arr).toEqual([])
   })
 
   it('iter1743: hasAchievementSignals invariant — pickAchievementSignals.length > 0 と等価', () => {

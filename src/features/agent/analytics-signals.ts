@@ -464,6 +464,37 @@ export function hasAchievementSignals(signals: AnalyticsSignals): boolean {
 }
 
 /**
+ * iter1744 ai-automation: 警戒系 (warn/danger/urgent tone) の signal を抽出する subset
+ * extractor。`pickAchievementSignals` (= 達成感 cluster) の complement。
+ *
+ * `filterSignalsByMinTone('warn')` (iter1427) と同 semantics だが、analyticsSignalsToArray
+ * の表示順を保つ薄い wrapper として明示的に export。「警戒 panel」 / 「concerning section」
+ * UI / Slack notifier の concerning row gate caller に直接渡せる。
+ *
+ * 仕様:
+ *  - tone ∈ {warn, danger, urgent} の signal のみ抽出
+ *  - 表示順は `analyticsSignalsToArray` (severity rank 上位 → 補助 下位) を保持
+ *  - 0 件 (= 警戒なし) → 空配列
+ *
+ * caller pattern (concerning panel 表示 gate):
+ *   const signals = composeAnalyticsSignals({ ... })
+ *   const concerning = pickConcerningSignals(signals)
+ *   if (concerning.length > 0) {
+ *     return <ConcerningPanel signals={concerning} />
+ *   }
+ *
+ * 既存 helper との関係:
+ *  - `pickAchievementSignals`: 達成感 4 軸 (positive polarity) 抽出
+ *  - 本 helper: 警戒系 (severity 軸) 抽出 (= negative polarity / concerning)
+ *  - `filterSignalsByMinTone('warn')`: 同等の semantics、本 helper は名前で意図明確化
+ */
+export function pickConcerningSignals(signals: AnalyticsSignals): AgentBriefSignal[] {
+  return analyticsSignalsToArray(signals).filter(
+    (s) => s.tone === 'warn' || s.tone === 'danger' || s.tone === 'urgent',
+  )
+}
+
+/**
  * iter1725 refactor: 達成感 cluster 3 軸を「達成感: ...」 prefix 付き 1 行 ja-JP text に
  * 整形する compose helper。Slack daily digest「今日の達成感」 section / AI 朝 brief
  * 「達成感セクション」 で plain text 行として埋め込む用。
