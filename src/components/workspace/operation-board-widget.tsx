@@ -128,6 +128,12 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                   data-testid="operation-board-forecast"
                   data-severity={sev}
                   role="status"
+                  /* iter1711: dashboard-chip (iter1710) / today-view chip (iter1709) と同 sweep
+                     で `aria-atomic="true"` 付与。forecast chip は estimate / remaining 値が
+                     items / 時刻に応じて変化、ARIA 1.2 implicit true の browser/SR 実装
+                     inconsistency による partial announce (= 「3h」 だけ読み上げ
+                     「今日完了予測」 prefix が失われる) を解消、SR 読み上げ context を維持。 */
+                  aria-atomic="true"
                   aria-label={`今日完了予測 ${formatTodayForecastJa(forecast)}`}
                 >
                   <Timer className="h-3.5 w-3.5" aria-hidden="true" />
