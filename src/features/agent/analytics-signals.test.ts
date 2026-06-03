@@ -1266,4 +1266,23 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
     const s = composeAnalyticsSignals({ weeklyReviewDue: 'overdue' })
     expect(hasAchievementSignals(s)).toBe(false)
   })
+
+  it('iter1743: hasAchievementSignals invariant — pickAchievementSignals.length > 0 と等価', () => {
+    // 4 軸 × 各 active/null = 16 組合せから代表 6 ケースで invariant 確認
+    const items: VelocityFields[] = [{ doneAt: TODAY }]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const cases = [
+      composeAnalyticsSignals({}),
+      composeAnalyticsSignals({ doneToday: 0 }),
+      composeAnalyticsSignals({ velocity }),
+      composeAnalyticsSignals({ doneToday: 2, velocity }),
+      composeAnalyticsSignals({ streakMilestone: velocity }),
+      composeAnalyticsSignals({ weeklyReviewDue: 'overdue' }), // 達成感外
+    ]
+    for (const s of cases) {
+      const hasFlag = hasAchievementSignals(s)
+      const hasArray = pickAchievementSignals(s).length > 0
+      expect(hasFlag).toBe(hasArray)
+    }
+  })
 })
