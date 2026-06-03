@@ -12,7 +12,11 @@ import { getChipToneClasses } from '@/lib/ui/chip-tone'
 
 import { formatFriendlyDate } from '@/features/item/date-tokens'
 import { useToggleCompleteItem } from '@/features/item/hooks'
-import { priorityClass, priorityLabel } from '@/features/item/priority'
+import {
+  countNonEmptyPriorityBucketsBy,
+  priorityClass,
+  priorityLabel,
+} from '@/features/item/priority'
 import type { Item } from '@/features/item/schema'
 import {
   composeStreakBriefSignals,
@@ -190,10 +194,11 @@ export function TodayView({
   // iter1738 basics: 今日完了 chip aria-label に priority 別 内訳を append
   // (= iter1737 formatDoneTodayByPriorityJa を初配線、3 層情報設計 SR detail)。
   // priority bucket >= 2 の時のみ append、単一偏在は冗長省略 (iter386 / iter408 等同手法)。
+  // iter1739 refactor: 手書き `.filter(p => byP[p] > 0).length` を generic helper
+  // `countNonEmptyPriorityBucketsBy` (iter422) 経由に統一。`{count}` shape ではなく
+  // 純 `Record<PriorityKey, number>` shape も同 helper で処理可能 (generic T)。
   const doneTodayByPriority = countDoneTodayByPriority(items, todayDate)
-  const doneTodayPriorityBuckets = ([1, 2, 3, 4] as const).filter(
-    (p) => doneTodayByPriority[p] > 0,
-  ).length
+  const doneTodayPriorityBuckets = countNonEmptyPriorityBucketsBy(doneTodayByPriority, (n) => n > 0)
   const doneTodayPriorityDetail =
     doneTodayPriorityBuckets >= 2 ? ` (${formatDoneTodayByPriorityJa(doneTodayByPriority)})` : ''
   // streak milestone chip は velocity 集計内に done が 1 件でもあれば表示 (= 「過去 7 日」
