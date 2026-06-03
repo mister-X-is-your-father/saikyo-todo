@@ -1024,7 +1024,12 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-hygiene-debt-chip"
             toneClass={chipTone3Class(hygieneDebt.tone)}
             glyph="📋"
-            ariaLabel={hygieneDebt.detail}
+            /* iter1704: 旧 ariaLabel `hygieneDebt.detail` (= "Hygiene Debt: 8 件 ...")
+               は visible chip text `Triage 候補: ${count}` を一切含まず WCAG 2.5.3
+               (Label in Name) 違反 + voice control「click Triage 候補」 strict prefix
+               match 不可。visible-prefix `Triage 候補: ${count}` を冒頭固定 +
+               em-dash 区切で detail を descriptive 末尾に保持し SR / voice control 整合。 */
+            ariaLabel={`Triage 候補: ${hygieneDebt.stats.debtCount} — ${hygieneDebt.detail}`}
             title={hygieneDebt.detail}
             text={`Triage 候補: ${hygieneDebt.stats.debtCount}`}
             dataAttrs={{
