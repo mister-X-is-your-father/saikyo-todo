@@ -18,6 +18,7 @@ import {
   computeVelocityByPriority,
   formatBestStreakJa,
   formatCompletionStreakJa,
+  formatStreakBestComparisonJa,
   formatStreakTransitionJa,
   formatStreakWithMilestoneJa,
   formatVelocityByPriorityJa,
@@ -414,6 +415,35 @@ describe('computeBestStreak / formatBestStreakJa (iter459)', () => {
 
   it('1 日 → "!" なし', () => {
     expect(formatBestStreakJa(1)).toBe('直近 7 日の最長連続: 1 日')
+  })
+})
+
+describe('formatStreakBestComparisonJa (iter1716 — 現在 vs best 1 行 ja-JP 比較)', () => {
+  it('bestStreak=0 (= 完了履歴なし) → "完了履歴なし" sentinel', () => {
+    expect(formatStreakBestComparisonJa(0, 0)).toBe('完了履歴なし')
+    // curr 値は best=0 のとき無視 (defensive)
+    expect(formatStreakBestComparisonJa(5, 0)).toBe('完了履歴なし')
+  })
+
+  it('currStreak=0 (= 中断中) & bestStreak>0 → "今 0 日 (最高 N 日)"', () => {
+    expect(formatStreakBestComparisonJa(0, 3)).toBe('今 0 日 (最高 3 日)')
+    expect(formatStreakBestComparisonJa(0, 14)).toBe('今 0 日 (最高 14 日)')
+  })
+
+  it('currStreak === bestStreak > 0 → "今 N 日連続 (最高記録更新中!)"', () => {
+    expect(formatStreakBestComparisonJa(5, 5)).toBe('今 5 日連続 (最高記録更新中!)')
+    expect(formatStreakBestComparisonJa(1, 1)).toBe('今 1 日連続 (最高記録更新中!)')
+  })
+
+  it('currStreak < bestStreak → "今 N 日連続 (最高 M 日)"', () => {
+    expect(formatStreakBestComparisonJa(3, 7)).toBe('今 3 日連続 (最高 7 日)')
+    expect(formatStreakBestComparisonJa(2, 10)).toBe('今 2 日連続 (最高 10 日)')
+  })
+
+  it('currStreak > bestStreak (defensive, 定義上起こらないが fail-soft) → "最高記録更新中!" 扱い', () => {
+    // 定義上 best = window 全体最長 なので curr <= best のはず。
+    // defensive: curr > best が来ても落ちず、現在を「記録更新中」 として扱う。
+    expect(formatStreakBestComparisonJa(10, 5)).toBe('今 10 日連続 (最高記録更新中!)')
   })
 })
 

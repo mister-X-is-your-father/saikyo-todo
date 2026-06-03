@@ -665,6 +665,41 @@ export function formatBestStreakJa(streak: number, windowDays: number = 7): stri
 }
 
 /**
+ * iter1716 basics: 現在 streak (`computeCompletionStreak`) と best streak
+ * (`computeBestStreak`) を 1 行 ja-JP 比較 text にまとめる pure helper。
+ *
+ * dashboard 「Velocity > 連続記録 disclosure」 / Today view 「達成感 chip」 / Slack
+ * weekly digest の「streak 比較」 行で「今と最高を 1 行に並べる」 pattern を 1 関数化。
+ *
+ * 仕様 (出力 pattern):
+ *  - bestStreak === 0 → `'完了履歴なし'` (= window 内に done 0 件、励まし sentinel)
+ *  - currStreak === 0 && bestStreak > 0 → `'今 0 日 (最高 N 日)'` (= 中断中だが過去履歴あり)
+ *  - currStreak === bestStreak (= bestStreak > 0) → `'今 N 日連続 (最高記録更新中!)'`
+ *    (= 現在が window 内最長 run、達成感最大化)
+ *  - currStreak < bestStreak → `'今 N 日連続 (最高 M 日)'` (= 過去最高は別 run、informational)
+ *  - currStreak > bestStreak → `'今 N 日連続 (最高 M 日)'` (= 定義上 curr <= best のはずだが
+ *    defensive で起きた場合は < と同 format、UI が落ちないよう fail-soft)
+ *
+ * 用途差分:
+ *  - `formatCompletionStreakJa(streak)` (iter457): 現在 streak 単独 (= chip 1 軸)
+ *  - `formatBestStreakJa(streak)` (iter459): best streak 単独 (= retro brief)
+ *  - `formatStreakWithMilestoneJa(streak)` (iter1706): 現在 streak + milestone label
+ *  - 本 helper: 現在 vs best (= 2 軸 比較、過去記録への意識付け)
+ *
+ * 設計意図: best streak が「過去の自己記録」 として可視化されると、「今日もう 1 件やって
+ * 記録更新へ」 という pull motivator が働く。Duolingo の「longest streak」 / GitHub
+ * Contributions の「longest streak」 / Strava の「PR (personal record)」 と同 pattern。
+ *
+ * 0 から始まる pure 関数、副作用なし。
+ */
+export function formatStreakBestComparisonJa(currStreak: number, bestStreak: number): string {
+  if (bestStreak === 0) return '完了履歴なし'
+  if (currStreak === 0) return `今 0 日 (最高 ${bestStreak} 日)`
+  if (currStreak >= bestStreak) return `今 ${currStreak} 日連続 (最高記録更新中!)`
+  return `今 ${currStreak} 日連続 (最高 ${bestStreak} 日)`
+}
+
+/**
  * iter802 ai-automation: velocity の VelocityHint → ChipTone (positive polarity =
  * up が完了 増 = 成功)。`agentReliabilityTone` (iter487) / `weeklyCompletionInsightTone`
  * (iter797) と同じ ChipTone vocab に bind。
