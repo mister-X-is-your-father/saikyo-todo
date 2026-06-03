@@ -14,6 +14,7 @@ import {
   computeCompletionStreak,
   computeCompletionStreakExcludingToday,
   computeStreakChain,
+  computeStreakComparisonSignal,
   computeVelocity,
   computeVelocityByPriority,
   formatBestStreakJa,
@@ -477,6 +478,43 @@ describe('streakComparisonToBriefSignal (iter1717 — 比較 chip 化)', () => {
     const sig = streakComparisonToBriefSignal(10, 5)
     expect(sig.tone).toBe('success')
     expect(sig.text).toBe('今 10 日連続 (最高記録更新中!)')
+  })
+})
+
+describe('computeStreakComparisonSignal (iter1718 — summary → 比較 chip orchestrator)', () => {
+  const mkByDay = (counts: number[]): VelocitySummary => ({
+    byDay: counts.map((count, i) => ({ date: `2026-04-${22 + i}`, count })),
+    total: counts.reduce((s, c) => s + c, 0),
+    avgPerDay: 0,
+    trend: 'flat',
+  })
+
+  it('全 0 (= 完了履歴なし) → tone=idle', () => {
+    const sig = computeStreakComparisonSignal(mkByDay([0, 0, 0, 0, 0, 0, 0]))
+    expect(sig.tone).toBe('idle')
+    expect(sig.text).toBe('完了履歴なし')
+  })
+
+  it('今日 streak 7 日 = best 7 日 → tone=success (記録更新中)', () => {
+    // 全 7 日 done → curr=7 (末尾連続) / best=7 (全長) → 記録更新中
+    const sig = computeStreakComparisonSignal(mkByDay([1, 1, 1, 1, 1, 1, 1]))
+    expect(sig.tone).toBe('success')
+    expect(sig.text).toBe('今 7 日連続 (最高記録更新中!)')
+  })
+
+  it('今日中断 (= 末尾 0) + 過去 best > 0 → tone=warn (再開 nudge)', () => {
+    // [1, 1, 1, 0, 0, 0, 0] → curr=0 (末尾 0) / best=3 → 中断中
+    const sig = computeStreakComparisonSignal(mkByDay([1, 1, 1, 0, 0, 0, 0]))
+    expect(sig.tone).toBe('warn')
+    expect(sig.text).toBe('今 0 日 (最高 3 日)')
+  })
+
+  it('現在 < best (= 過去最高未達) → tone=info', () => {
+    // [1, 1, 1, 0, 1, 1, 0] → 末尾 0、curr=0 ではなく warn (NOT 該当)。
+    // [0, 1, 1, 1, 0, 1, 1] → 末尾 2 連続 / best 3 → curr=2, best=3, info
+    const sig = computeStreakComparisonSignal(mkByDay([0, 1, 1, 1, 0, 1, 1]))
+    expect(sig.tone).toBe('info')
+    expect(sig.text).toBe('今 2 日連続 (最高 3 日)')
   })
 })
 

@@ -752,6 +752,37 @@ export function streakComparisonToBriefSignal(
 }
 
 /**
+ * iter1718 basics: VelocitySummary → 比較 chip 1 関数 orchestrator。
+ *
+ * iter1717 `streakComparisonToBriefSignal` の VelocitySummary 受口版。caller
+ * (dashboard / cron worker / Slack notifier) が summary を渡すだけで比較 chip
+ * (text + tone) を取得、curr + best の手動 compute boilerplate を排除。
+ *
+ * iter1712 `computeStreakChain` の milestone chip 版と対称構造 (= summary → 1 chip)。
+ *
+ * 内部 chain:
+ *   summary → computeCompletionStreak (= curr) + computeBestStreak (= best)
+ *           → streakComparisonToBriefSignal(curr, best) → AgentBriefSignal
+ *
+ * caller pattern (= 1 関数で比較 chip 取得):
+ *   const summary = computeVelocity(items, {}, today)
+ *   const sig = computeStreakComparisonSignal(summary)
+ *   <Chip text={sig.text} tone={sig.tone} />
+ *
+ * 設計意図: dashboard / Slack daily digest / Today 達成感 panel の 3 caller 全てで
+ * 「summary 1 つから比較 chip」 が欲しい → 1 関数化で caller の boilerplate -2 関数呼出/chip。
+ * iter1712 milestone chip orchestrator (computeStreakChain) と並列軸で、組み合わせて
+ * 「milestone chip + 比較 chip」 を 2 chip 並列 render 可能。
+ *
+ * 0 から始まる pure 関数、副作用なし。
+ */
+export function computeStreakComparisonSignal(summary: VelocitySummary): AgentBriefSignal {
+  const curr = computeCompletionStreak(summary)
+  const best = computeBestStreak(summary)
+  return streakComparisonToBriefSignal(curr, best)
+}
+
+/**
  * iter802 ai-automation: velocity の VelocityHint → ChipTone (positive polarity =
  * up が完了 増 = 成功)。`agentReliabilityTone` (iter487) / `weeklyCompletionInsightTone`
  * (iter797) と同じ ChipTone vocab に bind。
