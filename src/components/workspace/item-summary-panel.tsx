@@ -95,7 +95,11 @@ export function ItemSummaryPanel({ workspaceId, item }: Props) {
         }`}
         role="status"
         /* iter1669: 旧 `子タスク進捗: ${X} — ${Y}` の colon 区切は em-dash convention と
-           mixed。両 path で colon → em-dash に統一、aria-label format を 1 形式に。 */
+           mixed。両 path で colon → em-dash に統一、aria-label format を 1 形式に。
+           iter1713: iter1709-1712 aria-atomic sweep (today / dashboard / forecast /
+           budget) と同 sweep。chip 内容は progress / activity hint が item 完了に応じて
+           変化、partial announce 解消で SR が「子タスク進捗 — ...」 を full re-announce。 */
+        aria-atomic="true"
         aria-label={
           progress
             ? `子タスク進捗 — ${formatDescendantsActivityHintJa(progress)} / ${formatDescendantsProgressJa(progress)}`
@@ -119,6 +123,9 @@ export function ItemSummaryPanel({ workspaceId, item }: Props) {
             : 'border-slate-200 bg-slate-50 ring-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:ring-slate-700'
         }`}
         role="status"
+        /* iter1713: 同 file sweep — `aria-atomic="true"` で SR partial announce 解消、
+           依存 readiness の変化を chip 全体で full re-announce。 */
+        aria-atomic="true"
         aria-label={
           readiness ? `依存 — ${formatDependencyReadiness(readiness)}` : '依存 — 読み込み中'
         }
@@ -136,6 +143,9 @@ export function ItemSummaryPanel({ workspaceId, item }: Props) {
       <div
         className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 ring-1 ring-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:ring-slate-700"
         role="status"
+        /* iter1713: 同 file sweep — `aria-atomic="true"` で 最終更新時刻 relative
+           値変化 (「5 分前」 → 「10 分前」) を chip 全体で full re-announce。 */
+        aria-atomic="true"
         aria-label={formatLatestActivityJa(latestActivity, now, formatRelativeTime)}
         data-testid="item-summary-latest-activity"
         data-has-activity={latestActivity !== null}
