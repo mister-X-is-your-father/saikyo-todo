@@ -30,7 +30,12 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
         // iter1376/1493/1512-1523 chip dark sweep からこぼれていた。dark variant 補完。
         className="border-transparent bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
         role="img"
-        aria-label="synced — 外部同期: 完了"
+        /* iter1701: 旧 `synced — 外部同期: 完了` の colon は iter1629 sweep
+           (StatusBadge `ステータス: ${X}` → `ステータス ${X}`) の取りこぼし。
+           em-dash で visible/descriptor を分けた後の descriptor 部内は colon 無し
+           の natural-reading convention に揃え、SR 読み上げ pattern を sibling
+           Badge family と統一。 */
+        aria-label="synced — 外部同期 完了"
         data-testid="sync-badge-synced"
       >
         <span aria-hidden="true">synced</span>
@@ -43,7 +48,8 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
         variant="outline"
         className="border-transparent bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300"
         role="img"
-        aria-label="failed — 外部同期: 失敗"
+        /* iter1701: 同 file 同 sweep。 */
+        aria-label="failed — 外部同期 失敗"
         data-testid="sync-badge-failed"
       >
         <span aria-hidden="true">failed</span>
@@ -55,7 +61,8 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
       variant="outline"
       className="border-transparent bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300"
       role="img"
-      aria-label="pending — 外部同期: 未実行"
+      /* iter1701: 同 file 同 sweep。 */
+      aria-label="pending — 外部同期 未実行"
       data-testid="sync-badge-pending"
     >
       <span aria-hidden="true">pending</span>
