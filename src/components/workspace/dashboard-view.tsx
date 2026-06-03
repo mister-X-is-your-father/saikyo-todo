@@ -995,7 +995,13 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-hygiene-score-chip"
             toneClass={chipTone3Class(hygieneScore.tone)}
             glyph="🧭"
-            ariaLabel={hygieneScore.detail}
+            /* iter1706: 旧 ariaLabel `hygieneScore.detail` (= "Planning Hygiene: 75 (...)")
+               は visible chip text `Hygiene ${score}` (= "Hygiene 75"、`:` 無) を substring
+               として含まず WCAG 2.5.3 (Label in Name) 違反 + voice control「click Hygiene」
+               strict prefix match 不可 (accessible name 冒頭が "Planning")。iter1704 hygiene-debt
+               と同 pattern (visible-prefix で UI wording を冒頭固定 + em-dash 区切で detail を
+               descriptive 末尾に保持)。 */
+            ariaLabel={`Hygiene ${hygieneScore.score.score} — ${hygieneScore.detail}`}
             title={hygieneScore.detail}
             text={`Hygiene ${hygieneScore.score.score}`}
             dataAttrs={{
