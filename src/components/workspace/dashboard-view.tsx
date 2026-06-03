@@ -192,6 +192,7 @@ import {
 } from '@/features/item/urgency'
 import {
   classifyVelocityHint,
+  composeStreakBriefSignals,
   computeStreakChain,
   computeVelocity,
   computeVelocityByPriority,
@@ -279,12 +280,19 @@ export function DashboardView({ workspaceId }: Props) {
     // される (= 「完了 streak 7 日連続! 🥈 シルバー (1 週間連続)」)。
     // iter1713 fix: computeStreakChain (iter1712 orchestrator) 経由に短縮、chain.briefSignal.text
     // で同じ format 結果 + 将来 toast / chip tone を bind するときに chain 1 関数で揃う。
+    // iter1721 fix: iter1720 composeStreakBriefSignals (milestone + comparison fan-out) で
+    // 比較 chip (= 現在 vs 過去 best streak) を SR / hover に追加 append。bestStreak > 0
+    // (= tone !== 'idle') の時のみ表示、「今 7 日連続 (最高記録更新中!)」 / 「今 3 日連続
+    // (最高 7 日)」 で過去自己記録への意識付け = pull motivator (Duolingo longest streak と同 pattern)。
     const chain = computeStreakChain(result)
+    const streakSignals = composeStreakBriefSignals(result)
     const streak = chain.currStreak
     const streakDetail = streak >= 2 ? ` — ${chain.briefSignal.text}` : ''
+    const comparisonDetail =
+      streakSignals.comparison.tone !== 'idle' ? ` / ${streakSignals.comparison.text}` : ''
     const detail = `${line}${priorityDetailSuffix(priorityBuckets, () =>
       formatVelocityByPriorityJa(byPriority, 7),
-    )}${streakDetail}`
+    )}${streakDetail}${comparisonDetail}`
     // iter456 basics: iter454 で追加した velocity trend hint (idle/up/flat/down) を
     // chip aria-label prefix + data-velocity-hint attr に bind (= iter441 / iter443 /
     // iter446 / iter448 / iter451 hint chip 同手法 6 弾目)。
