@@ -2,6 +2,14 @@
  * iter796 ai-automation: analytics 4 軸 (reliability / cost-projection / cost-trend /
  * momentum) を 1 関数で `AgentBriefSignal[]` 配列に集約する compose helper。
  *
+ * iter1715-1745 拡張: 21 軸 (= reliability/dominant/concerning + costProjection/costTrend +
+ * momentum/weeklyCompletion/dueHitRate/velocity/biasTrend/backlogAging/waitingSummary/
+ * consultationCounts/weeklyReviewDue/inboxBucketCounts/stuckWip/overdueActive/slipDays/
+ * urgencyTierCounts/mustHygiene/streakMilestone/streakComparison/doneToday) に拡張。
+ * cluster-based subset API: pickAchievementSignals / hasAchievementSignals /
+ * formatAchievementSignalsLineJa + 対称 concerning 版 pickConcerningSignals /
+ * formatConcerningSignalsLineJa で 「達成感 vs 警戒」 を別 paragraph として post 可能。
+ *
  * 設計目的:
  *  - AI 朝 brief / Slack daily digest / dashboard chip area が「analytics 全体を
  *    1 行ずつ chip render」したい時に caller 側で各 helper 呼び出し + 合成 が必要
