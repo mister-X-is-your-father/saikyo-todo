@@ -700,6 +700,58 @@ export function formatStreakBestComparisonJa(currStreak: number, bestStreak: num
 }
 
 /**
+ * iter1717 ai-automation: 現在 vs best streak 比較を `AgentBriefSignal` 形式 (text + tone) に
+ * 変換する compose helper。iter1716 `formatStreakBestComparisonJa` の chip 化版。
+ *
+ * iter1708 `streakToBriefSignal` (= 現在 streak のみ → milestone chip) の比較軸版。
+ * dashboard chip / Today 達成感 panel / Slack weekly digest が「今と最高を 1 chip」 で
+ * 出すための substrate。`composeAnalyticsSignals` に組込み可能 (= 将来 streakComparison
+ * を 20 軸目として AnalyticsSignals に追加可能)。
+ *
+ * text: `formatStreakBestComparisonJa(curr, best)` (iter1716)
+ * tone (positive polarity):
+ *  - best === 0 → 'idle' (= 完了履歴なし、chip 非表示推奨)
+ *  - curr === 0 && best > 0 → 'warn' (= 中断中、過去履歴あり = nudge)
+ *  - curr >= best (= best > 0) → 'success' (= 記録更新中、達成感最大化)
+ *  - curr < best (= best > 0) → 'info' (= 現在進行中だが過去記録未達)
+ *
+ * caller pattern (= 1 chip render):
+ *   const summary = computeVelocity(items, {}, today)
+ *   const curr = computeCompletionStreak(summary)
+ *   const best = computeBestStreak(summary)
+ *   const sig = streakComparisonToBriefSignal(curr, best)
+ *   <Chip text={sig.text} tone={sig.tone} />
+ *
+ * 設計意図:
+ *  - curr=0 & best>0 を warn にすることで「過去できてたのに今中断 → 再開 nudge」 を能動 push
+ *  - curr === best → success で「記録更新中! 」 motivational wow chip
+ *  - curr < best → info で「現在進行中、目標は best 超え」 silent informational
+ *  - best=0 → idle で「履歴なし」 chip 非表示、新規ユーザの UI ノイズ削減
+ *
+ * iter1708 `streakToBriefSignal` (= milestone chip) と並列軸として両立可能 (= dashboard で
+ * 同時 render = milestone chip + 比較 chip)。
+ *
+ * 0 から始まる pure 関数、副作用なし。
+ */
+export function streakComparisonToBriefSignal(
+  currStreak: number,
+  bestStreak: number,
+): AgentBriefSignal {
+  const text = formatStreakBestComparisonJa(currStreak, bestStreak)
+  let tone: ChipTone
+  if (bestStreak === 0) {
+    tone = 'idle'
+  } else if (currStreak === 0) {
+    tone = 'warn'
+  } else if (currStreak >= bestStreak) {
+    tone = 'success'
+  } else {
+    tone = 'info'
+  }
+  return { text, tone }
+}
+
+/**
  * iter802 ai-automation: velocity の VelocityHint → ChipTone (positive polarity =
  * up が完了 増 = 成功)。`agentReliabilityTone` (iter487) / `weeklyCompletionInsightTone`
  * (iter797) と同じ ChipTone vocab に bind。

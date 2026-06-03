@@ -25,6 +25,7 @@ import {
   formatVelocityHintJa,
   formatVelocitySummary,
   getStreakMilestone,
+  streakComparisonToBriefSignal,
   type StreakMilestone,
   streakMilestoneChipTone,
   streakMilestoneLabelJa,
@@ -444,6 +445,38 @@ describe('formatStreakBestComparisonJa (iter1716 — 現在 vs best 1 行 ja-JP 
     // 定義上 best = window 全体最長 なので curr <= best のはず。
     // defensive: curr > best が来ても落ちず、現在を「記録更新中」 として扱う。
     expect(formatStreakBestComparisonJa(10, 5)).toBe('今 10 日連続 (最高記録更新中!)')
+  })
+})
+
+describe('streakComparisonToBriefSignal (iter1717 — 比較 chip 化)', () => {
+  it('best=0 → tone=idle, text="完了履歴なし"', () => {
+    const sig = streakComparisonToBriefSignal(0, 0)
+    expect(sig.tone).toBe('idle')
+    expect(sig.text).toBe('完了履歴なし')
+  })
+
+  it('curr=0 & best>0 (= 中断中) → tone=warn (= 再開 nudge)', () => {
+    const sig = streakComparisonToBriefSignal(0, 5)
+    expect(sig.tone).toBe('warn')
+    expect(sig.text).toBe('今 0 日 (最高 5 日)')
+  })
+
+  it('curr === best (= 記録更新中) → tone=success', () => {
+    const sig = streakComparisonToBriefSignal(7, 7)
+    expect(sig.tone).toBe('success')
+    expect(sig.text).toBe('今 7 日連続 (最高記録更新中!)')
+  })
+
+  it('curr < best (= 進行中だが過去未達) → tone=info', () => {
+    const sig = streakComparisonToBriefSignal(3, 10)
+    expect(sig.tone).toBe('info')
+    expect(sig.text).toBe('今 3 日連続 (最高 10 日)')
+  })
+
+  it('curr > best (defensive) → tone=success (= 記録更新中 扱い)', () => {
+    const sig = streakComparisonToBriefSignal(10, 5)
+    expect(sig.tone).toBe('success')
+    expect(sig.text).toBe('今 10 日連続 (最高記録更新中!)')
   })
 })
 
