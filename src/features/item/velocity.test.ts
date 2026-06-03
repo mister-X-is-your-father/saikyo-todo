@@ -18,8 +18,10 @@ import {
   computeStreakComparisonSignal,
   computeVelocity,
   computeVelocityByPriority,
+  countDoneToday,
   formatBestStreakJa,
   formatCompletionStreakJa,
+  formatDoneTodayJa,
   formatStreakBestComparisonJa,
   formatStreakBestSuffix,
   formatStreakTransitionJa,
@@ -836,5 +838,48 @@ describe('velocityToBriefSignal (iter802 — AgentBriefSignal compose)', () => {
     const sig = velocityToBriefSignal(summary)
     expect(sig.tone).toBe('warn')
     expect(sig.text).toBe('完了ペース: 減速中')
+  })
+})
+
+describe('countDoneToday / formatDoneTodayJa (iter1726 — 今日累計完了 chip)', () => {
+  it('空 → 0', () => {
+    expect(countDoneToday([], TODAY)).toBe(0)
+    expect(formatDoneTodayJa(0)).toBe('今日 まだ 0 件')
+  })
+
+  it('今日 done 3 件 + 昨日 done 2 件 → 3 (= 今日のみ)', () => {
+    const items: VelocityFields[] = [
+      { doneAt: dt(0) },
+      { doneAt: dt(0) },
+      { doneAt: dt(0) },
+      { doneAt: dt(1) },
+      { doneAt: dt(1) },
+    ]
+    expect(countDoneToday(items, TODAY)).toBe(3)
+    expect(formatDoneTodayJa(3)).toBe('今日 3 件完了!')
+  })
+
+  it('count=1 → "今日 1 件完了" (! なし、控えめ)', () => {
+    expect(formatDoneTodayJa(1)).toBe('今日 1 件完了')
+  })
+
+  it('count>=2 → "今日 N 件完了!" (! あり、強調)', () => {
+    expect(formatDoneTodayJa(2)).toBe('今日 2 件完了!')
+    expect(formatDoneTodayJa(10)).toBe('今日 10 件完了!')
+  })
+
+  it('count<=0 (defensive、負も含む) → "今日 まだ 0 件"', () => {
+    expect(formatDoneTodayJa(-1)).toBe('今日 まだ 0 件')
+    expect(formatDoneTodayJa(0)).toBe('今日 まだ 0 件')
+  })
+
+  it('doneAt が null/不正値は除外 (fail-soft)', () => {
+    const items: VelocityFields[] = [{ doneAt: dt(0) }, { doneAt: null }, { doneAt: 'invalid' }]
+    expect(countDoneToday(items, TODAY)).toBe(1)
+  })
+
+  it('today を ISO 文字列でも受け付ける', () => {
+    const items: VelocityFields[] = [{ doneAt: dt(0) }]
+    expect(countDoneToday(items, '2026-04-28')).toBe(1)
   })
 })

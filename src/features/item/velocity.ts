@@ -272,6 +272,63 @@ export function computeCompletionStreak(summary: VelocitySummary): number {
 }
 
 /**
+ * iter1726 basics: 今日 done になった item の件数を返す pure helper。
+ *
+ * UX 卓越憲章 派生 P0「Today × 軸5 やる気 — 今日合計時間 / 残時間 / 進捗 bar /
+ * 累計完了 chip」 の「累計完了 chip」 substrate。Today view / dashboard / Slack
+ * daily digest が「今日 X 件完了!」 chip を 1 関数で取得できる。
+ *
+ * 仕様:
+ *  - items の各 item.doneAt が today (local TZ) と同日なら count
+ *  - 不正 doneAt / null / undefined は除外 (fail-soft)
+ *  - 0 → 0 (励まし sentinel は `formatDoneTodayJa` 側で扱う)
+ *
+ * 既存 helper との関係:
+ *  - `computeVelocity(items, { windowDays: 1 })` の byDay[0].count と等価だが、
+ *    velocity 集計の overhead (= byDay 配列構築 + trend 計算) を排し O(items) で
+ *    完結する軽量 helper。Today view のような「今日のみ」 chip caller 用。
+ *  - `computeCompletionStreak` (iter457) は「末尾連続」、本 helper は「今日 1 日のみ」
+ *
+ * 0 から始まる pure 関数、副作用なし。
+ */
+export function countDoneToday<T extends VelocityFields>(
+  items: readonly T[],
+  today: Date | string = new Date(),
+): number {
+  const todayDate = toLocalMidnight(parseDateOrNull(today))
+  if (!todayDate) return 0
+  const todayISO = formatLocalISO(todayDate)
+  let count = 0
+  for (const it of items) {
+    const d = parseDateOrNull(it.doneAt)
+    if (!d) continue
+    const localMidnight = toLocalMidnight(d)
+    if (!localMidnight) continue
+    if (formatLocalISO(localMidnight) === todayISO) count += 1
+  }
+  return count
+}
+
+/**
+ * iter1726 basics: 今日完了件数を ja-JP 1 行 chip text に整形する pure helper。
+ *
+ * 仕様 (出力 pattern):
+ *  - count === 0 → '今日 まだ 0 件' (= 励まし、強い責めなし)
+ *  - count === 1 → '今日 1 件完了' (= 控えめ感謝、まだ 1 件)
+ *  - count >= 2  → `今日 ${count} 件完了!` (= 強調、達成感 + ! 付与)
+ *
+ * 設計意図: 0 で「まだ 0 件」 = 「これからやれば伸びる」 / 1 で「完了」 / 2+ で「!」 付与
+ * は milestone 系 chip と一貫した polarity (Duolingo / Streak.app の表現と整合)。
+ *
+ * 0 から始まる pure 関数、副作用なし。
+ */
+export function formatDoneTodayJa(count: number): string {
+  if (count <= 0) return '今日 まだ 0 件'
+  if (count === 1) return '今日 1 件完了'
+  return `今日 ${count} 件完了!`
+}
+
+/**
  * iter1710 basics: 「昨日時点の streak」 (= 末尾を除いて遡った連続日数) を計算する pure helper。
  *
  * `computeCompletionStreak` は「末尾今日からの連続」 (= 現在 streak)、本 helper は
