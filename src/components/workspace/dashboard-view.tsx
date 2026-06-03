@@ -829,7 +829,12 @@ export function DashboardView({ workspaceId }: Props) {
     if (counts.high > 0) actionable.push(`高 ${counts.high}`)
     const visible = `要対応: ${actionable.join(' / ')}`
     const topTitles = formatTopUrgentTitlesJa(itemsQ.data, 3)
-    const detail = `${visible} — 全体: ${formatUrgencyTierCounts(counts)} — ${topTitles}`
+    // iter1702: 旧 `${visible} — 全体: ${X} — ${Y}` の `全体:` colon は iter1629 sweep
+    // (StatusBadge `ステータス: ${X}` → `ステータス ${X}`) / iter1701 sync badge 取りこぼし
+    // sweep と divergent。em-dash 区切後の descriptor 部内は colon 無し natural-reading
+    // convention に揃え `全体: ` → `全体 ` (visible 部の `要対応:` は UI chip text 内
+    // で長く存在 → 互換性のため scope 外)。
+    const detail = `${visible} — 全体 ${formatUrgencyTierCounts(counts)} — ${topTitles}`
     return { counts, severity, visible, detail }
   }, [itemsQ.data])
 
