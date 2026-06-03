@@ -1265,10 +1265,13 @@ methodology-modes-plan.md §5 段階実装 phase の 9 P0 を 1 iter ずつ消�
 各 1 commit (30-150 行) で消化、queue track 名で commit。`docs/ux-excellence-charter.md` の採点表参照。
 
 1. **Today × 軸5 やる気** — 今日合計時間 / 残時間 / 進捗 bar / 累計完了 chip
+   - ✅ scope A 完了 (iter1726-1740 累計 15 iter): countDoneToday + formatDoneTodayJa + doneTodayToBriefSignal + countDoneInDays / 過去 N 日 chip 化 + countDoneTodayByPriority + format + AnalyticsSignals 21 軸目 + Today view header chip 配線 + streak milestone 並列 + priority 別 SR aria-label
+   - 残: 今日合計時間 (estimate sum) / 残時間 / 進捗 bar UI は未配線 (forecast.ts substrate は既存)
 2. **Inbox × 軸1 可視化** — タグ / プロジェクト / due 別 grouping toggle
 3. **Kanban × 軸5 やる気** — done drop で confetti + 累計完了 chip
 4. **Backlog × 軸5 やる気** — checkbox click 時の片付き micro-animation
 5. **Dashboard × 軸5 やる気** — 連続完了 streak (3/5/7 日 マイルストーン badge)
+   - ✅ scope A 完了 (iter1704-1724 累計 21 iter): StreakMilestone 6 段階 + 9 helper substrate + computeStreakChain orchestrator + AnalyticsSignals 19-20 軸目 + dashboard velocity chip detail 配線 (milestone+suffix 重複なし 1 行統合)
 6. **Gantt × 軸3 認知低減** — zoom level (日/週/月) smart default + 密度自動調整
 7. **Workflow × 軸1-2 可視化/操作** — React Flow graphical editor (queue 既存 entry「Workflow graphical 化」と統合)
 8. **Goals × 軸1 可視化** — KR 進捗 chart (recharts、queue 既存「ライブラリお着替え」と統合)
