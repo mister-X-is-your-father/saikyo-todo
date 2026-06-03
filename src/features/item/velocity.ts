@@ -363,6 +363,37 @@ export function countDoneToday<T extends VelocityFields>(
  *
  * 0 から始まる pure 関数、副作用なし。
  */
+/**
+ * iter1737 ai-automation: 今日完了 priority 別 内訳を 1 行 ja-JP に整形する pure helper。
+ *
+ * iter1736 `countDoneTodayByPriority` の出力を「P1 1件 / P3 2件」 形式に format。
+ * dashboard / Today view の SR / hover detail で「今日完了の priority 内訳」 を 3 層
+ * 情報設計 (= chip 本体 → priority detail) として提供する substrate。
+ *
+ * 仕様:
+ *  - 全 bucket 0 → '完了 0 件' (= 励まし sentinel、強い責めなし)
+ *  - 1+ bucket non-zero → 「P1 X件 / P3 Y件」 (= 大きい priority 順、0 件 bucket 省略)
+ *  - 単一 bucket 偏在は 1 行のまま (= 「P3 5件」 のみ)
+ *
+ * caller pattern (dashboard 達成感 disclosure):
+ *   const byP = countDoneTodayByPriority(items, today)
+ *   const buckets = countNonEmptyCountPriorityBuckets(byP)
+ *   const detail = buckets >= 2 ? formatDoneTodayByPriorityJa(byP) : null
+ *   <Chip>今日 N 件完了!{detail && ` (${detail})`}</Chip>
+ *
+ * 0 から始まる pure 関数、副作用なし。
+ */
+export function formatDoneTodayByPriorityJa(byPriority: Record<PriorityKey, number>): string {
+  const total = byPriority[1] + byPriority[2] + byPriority[3] + byPriority[4]
+  if (total === 0) return '完了 0 件'
+  const parts: string[] = []
+  for (const p of [1, 2, 3, 4] as PriorityKey[]) {
+    const count = byPriority[p]
+    if (count > 0) parts.push(`P${p} ${count}件`)
+  }
+  return parts.join(' / ')
+}
+
 export function countDoneTodayByPriority<T extends VelocityByPriorityFields>(
   items: readonly T[],
   today: Date | string = new Date(),

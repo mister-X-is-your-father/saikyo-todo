@@ -26,6 +26,7 @@ import {
   formatBestStreakJa,
   formatCompletionStreakJa,
   formatDoneInDaysJa,
+  formatDoneTodayByPriorityJa,
   formatDoneTodayJa,
   formatStreakBestComparisonJa,
   formatStreakBestSuffix,
@@ -1003,6 +1004,24 @@ describe('countDoneTodayByPriority (iter1736 — 今日完了 priority 別集計
     ]
     const r = countDoneTodayByPriority(items, TODAY)
     expect(r[1]).toBe(1)
+  })
+})
+
+describe('formatDoneTodayByPriorityJa (iter1737 — priority 別 内訳 ja-JP)', () => {
+  it('全 0 → "完了 0 件" sentinel', () => {
+    expect(formatDoneTodayByPriorityJa({ 1: 0, 2: 0, 3: 0, 4: 0 })).toBe('完了 0 件')
+  })
+
+  it('単一 bucket 偏在 → 1 行のみ', () => {
+    expect(formatDoneTodayByPriorityJa({ 1: 0, 2: 0, 3: 5, 4: 0 })).toBe('P3 5件')
+  })
+
+  it('複数 bucket non-zero → " / " 連結 (大きい priority 順 = P1→P4)', () => {
+    expect(formatDoneTodayByPriorityJa({ 1: 1, 2: 0, 3: 2, 4: 1 })).toBe('P1 1件 / P3 2件 / P4 1件')
+  })
+
+  it('0 件 bucket は省略 (= 「P2 0件」 は出ない)', () => {
+    expect(formatDoneTodayByPriorityJa({ 1: 3, 2: 0, 3: 0, 4: 0 })).toBe('P1 3件')
   })
 })
 
