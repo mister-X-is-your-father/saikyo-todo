@@ -61,8 +61,12 @@ export function WorkspaceHeader({ title, role, subtitle, pageActions, utility }:
         className="flex flex-wrap items-center gap-2"
         role="group"
         /* iter1583: 旧 aria-label paren convention `"「${title}」 ヘッダー操作 (ページ固有アクション / ユーティリティ)"` は
-           iter1093-1582 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
-        aria-label={`「${title}」 ヘッダー操作 — ページ固有アクション / ユーティリティ`}
+           iter1093-1582 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。
+           iter1699: 同 file 29 行 <header> aria-label が `${title} — Workspace` (literal-prefix) なのに
+           本 group aria-label は「${title}」 quote-prefix で divergent、SR landmark navigation の
+           prefix scan で同 page header / group が異なる prefix を読み上げる不整合。「」 quote を外し
+           ${title} literal-prefix で統一 (iter1697 backlog sortable / iter1698 subtask drag 続き)。 */
+        aria-label={`${title} — ヘッダー操作 (ページ固有アクション / ユーティリティ)`}
       >
         {pageActions}
         {utility}
