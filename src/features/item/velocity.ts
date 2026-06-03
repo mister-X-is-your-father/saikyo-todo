@@ -346,6 +346,44 @@ export function countDoneToday<T extends VelocityFields>(
  *
  * 0 から始まる pure 関数、副作用なし。
  */
+/**
+ * iter1736 basics: 今日 done になった item を priority 別に集計する pure helper。
+ *
+ * iter1726 `countDoneToday` の priority bucket 版。dashboard / Today view の「今日完了
+ * by priority」 disclosure (= 「P1 1 件 / P3 2 件」) を 1 関数で取得可能。
+ *
+ * 仕様:
+ *  - priority 1-4 を key とする Record<1|2|3|4, number>
+ *  - priority null / undefined / 範囲外 → P4 集約 (= `computeVelocityByPriority` と同
+ *    bucketing rule)
+ *  - doneAt が today と同日のみ count
+ *  - 不正 doneAt は除外 (fail-soft)
+ *
+ * `formatPriorityBucketsLabeled` で 1 行 ja-JP 化可能。
+ *
+ * 0 から始まる pure 関数、副作用なし。
+ */
+export function countDoneTodayByPriority<T extends VelocityByPriorityFields>(
+  items: readonly T[],
+  today: Date | string = new Date(),
+): Record<PriorityKey, number> {
+  const out: Record<PriorityKey, number> = { 1: 0, 2: 0, 3: 0, 4: 0 }
+  const todayDate = toLocalMidnight(parseDateOrNull(today))
+  if (!todayDate) return out
+  const todayISO = formatLocalISO(todayDate)
+  for (const it of items) {
+    const d = parseDateOrNull(it.doneAt)
+    if (!d) continue
+    const localMidnight = toLocalMidnight(d)
+    if (!localMidnight) continue
+    if (formatLocalISO(localMidnight) !== todayISO) continue
+    const p: PriorityKey =
+      it.priority === 1 || it.priority === 2 || it.priority === 3 ? it.priority : 4
+    out[p] += 1
+  }
+  return out
+}
+
 export function countDoneInDays<T extends VelocityFields>(
   items: readonly T[],
   windowDays: number,

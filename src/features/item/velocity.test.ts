@@ -20,6 +20,7 @@ import {
   computeVelocityByPriority,
   countDoneInDays,
   countDoneToday,
+  countDoneTodayByPriority,
   doneInDaysToBriefSignal,
   doneTodayToBriefSignal,
   formatBestStreakJa,
@@ -962,6 +963,46 @@ describe('formatDoneInDaysJa / doneInDaysToBriefSignal (iter1734 — N 日 chip 
   it('負値 (defensive) → "まだ 0 件" 扱い', () => {
     expect(formatDoneInDaysJa(-1, 7)).toBe('過去 7 日 まだ 0 件')
     expect(doneInDaysToBriefSignal(-1, 7).tone).toBe('idle')
+  })
+})
+
+describe('countDoneTodayByPriority (iter1736 — 今日完了 priority 別集計)', () => {
+  const mkP = (
+    doneAt: Date | string | null,
+    priority: number | null = 4,
+  ): VelocityByPriorityFields => ({ doneAt, priority })
+
+  it('空 → 全 P 0', () => {
+    const r = countDoneTodayByPriority([], TODAY)
+    expect(r).toEqual({ 1: 0, 2: 0, 3: 0, 4: 0 })
+  })
+
+  it('今日 P1=1 件 / P3=2 件 / P4=1 件 → bucket 集計', () => {
+    const items: VelocityByPriorityFields[] = [
+      mkP(dt(0), 1),
+      mkP(dt(0), 3),
+      mkP(dt(0), 3),
+      mkP(dt(0), 4),
+      mkP(dt(1), 1), // 昨日 done は除外
+    ]
+    const r = countDoneTodayByPriority(items, TODAY)
+    expect(r).toEqual({ 1: 1, 2: 0, 3: 2, 4: 1 })
+  })
+
+  it('priority null / 範囲外 → P4 集約', () => {
+    const items = [mkP(dt(0), null), mkP(dt(0), 99), mkP(dt(0), 0)]
+    const r = countDoneTodayByPriority(items, TODAY)
+    expect(r[4]).toBe(3)
+  })
+
+  it('doneAt 不正値は除外 (fail-soft)', () => {
+    const items: VelocityByPriorityFields[] = [
+      mkP(dt(0), 1),
+      { doneAt: null, priority: 1 },
+      { doneAt: 'invalid', priority: 1 },
+    ]
+    const r = countDoneTodayByPriority(items, TODAY)
+    expect(r[1]).toBe(1)
   })
 })
 
