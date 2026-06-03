@@ -329,6 +329,44 @@ export function formatDoneTodayJa(count: number): string {
 }
 
 /**
+ * iter1727 ai-automation: 今日完了件数を `AgentBriefSignal` (text + tone) に変換する
+ * compose helper。`composeAnalyticsSignals` に 21 軸目として追加可能な substrate。
+ *
+ * iter1726 `countDoneToday` + `formatDoneTodayJa` の chip 化版。AI 朝 brief / Slack
+ * daily digest / dashboard 「やる気」 panel が「今日 N 件完了!」 chip を 1 関数で取得。
+ *
+ * text: `formatDoneTodayJa(count)`
+ * tone (positive polarity):
+ *  - count === 0 → 'idle' (= まだ動いてない、責めずに表示)
+ *  - count === 1 → 'info' (= 動き始めた、控えめ青)
+ *  - count >= 2  → 'success' (= 達成感、緑強調)
+ *
+ * caller pattern (1 chip render):
+ *   const done = countDoneToday(items, today)
+ *   const sig = doneTodayToBriefSignal(done)
+ *   <Chip text={sig.text} tone={sig.tone} />
+ *
+ * 設計意図: 0 で idle (= chip 非表示 progressive disclosure も可)、1 で info (=
+ * 動き出した、青)、2+ で success (= 達成感、緑) と段階的に tone を上げることで
+ * 「今日の progression」 を一目で示す。Duolingo「Today's progress」 / GitHub
+ * Contributions の day-level intensity と同 polarity 設計。
+ *
+ * 0 から始まる pure 関数、副作用なし。
+ */
+export function doneTodayToBriefSignal(count: number): AgentBriefSignal {
+  const text = formatDoneTodayJa(count)
+  let tone: ChipTone
+  if (count <= 0) {
+    tone = 'idle'
+  } else if (count === 1) {
+    tone = 'info'
+  } else {
+    tone = 'success'
+  }
+  return { text, tone }
+}
+
+/**
  * iter1710 basics: 「昨日時点の streak」 (= 末尾を除いて遡った連続日数) を計算する pure helper。
  *
  * `computeCompletionStreak` は「末尾今日からの連続」 (= 現在 streak)、本 helper は

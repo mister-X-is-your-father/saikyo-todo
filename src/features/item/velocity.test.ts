@@ -19,6 +19,7 @@ import {
   computeVelocity,
   computeVelocityByPriority,
   countDoneToday,
+  doneTodayToBriefSignal,
   formatBestStreakJa,
   formatCompletionStreakJa,
   formatDoneTodayJa,
@@ -881,5 +882,37 @@ describe('countDoneToday / formatDoneTodayJa (iter1726 — 今日累計完了 ch
   it('today を ISO 文字列でも受け付ける', () => {
     const items: VelocityFields[] = [{ doneAt: dt(0) }]
     expect(countDoneToday(items, '2026-04-28')).toBe(1)
+  })
+})
+
+describe('doneTodayToBriefSignal (iter1727 — 今日累計完了 chip 化)', () => {
+  it('count=0 → tone=idle / "今日 まだ 0 件"', () => {
+    const sig = doneTodayToBriefSignal(0)
+    expect(sig.tone).toBe('idle')
+    expect(sig.text).toBe('今日 まだ 0 件')
+  })
+
+  it('count=1 → tone=info (= 動き出した、控えめ青)', () => {
+    const sig = doneTodayToBriefSignal(1)
+    expect(sig.tone).toBe('info')
+    expect(sig.text).toBe('今日 1 件完了')
+  })
+
+  it('count=2 → tone=success (= 達成感、緑強調)', () => {
+    const sig = doneTodayToBriefSignal(2)
+    expect(sig.tone).toBe('success')
+    expect(sig.text).toBe('今日 2 件完了!')
+  })
+
+  it('count=10 → tone=success (= 多くても同 tone)', () => {
+    const sig = doneTodayToBriefSignal(10)
+    expect(sig.tone).toBe('success')
+    expect(sig.text).toBe('今日 10 件完了!')
+  })
+
+  it('count<0 (defensive) → tone=idle', () => {
+    const sig = doneTodayToBriefSignal(-1)
+    expect(sig.tone).toBe('idle')
+    expect(sig.text).toBe('今日 まだ 0 件')
   })
 })
