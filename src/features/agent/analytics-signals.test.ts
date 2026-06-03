@@ -42,7 +42,48 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(s.momentum).toBeNull()
     expect(s.weeklyCompletion).toBeNull()
     expect(s.velocity).toBeNull()
+    expect(s.streakMilestone).toBeNull()
     expect(analyticsSignalsToArray(s)).toEqual([])
+  })
+
+  it('iter1715: streakMilestone — 3 日連続 (bronze) → tone=info / milestone label 含む', () => {
+    // 末尾 3 日連続 done (今日, 昨日, 一昨日)
+    const items: VelocityFields[] = [
+      { doneAt: TODAY },
+      { doneAt: new Date(TODAY.getTime() - 1 * MS_PER_DAY) },
+      { doneAt: new Date(TODAY.getTime() - 2 * MS_PER_DAY) },
+    ]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const s = composeAnalyticsSignals({ streakMilestone: velocity })
+    expect(s.streakMilestone).not.toBeNull()
+    expect(s.streakMilestone!.tone).toBe('info')
+    expect(s.streakMilestone!.text).toContain('3 日連続')
+    expect(s.streakMilestone!.text).toContain('🥉')
+  })
+
+  it('iter1715: streakMilestone — done なし (streak=0) → tone=idle, milestone label なし', () => {
+    const velocity = computeVelocity([], {}, TODAY)
+    const s = composeAnalyticsSignals({ streakMilestone: velocity })
+    expect(s.streakMilestone).not.toBeNull()
+    expect(s.streakMilestone!.tone).toBe('idle')
+    expect(s.streakMilestone!.text).not.toContain('🥉')
+  })
+
+  it('iter1715: streakMilestone — 表示順は velocity 直後 (= 17→18 位)', () => {
+    // velocity + streakMilestone 両方 active で表示順を検証
+    const items: VelocityFields[] = [
+      { doneAt: TODAY },
+      { doneAt: TODAY },
+      { doneAt: new Date(TODAY.getTime() - 1 * MS_PER_DAY) },
+    ]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const s = composeAnalyticsSignals({ velocity, streakMilestone: velocity })
+    const arr = analyticsSignalsToArray(s)
+    const velIdx = arr.findIndex((x) => x === s.velocity)
+    const streakIdx = arr.findIndex((x) => x === s.streakMilestone)
+    expect(velIdx).toBeGreaterThanOrEqual(0)
+    expect(streakIdx).toBeGreaterThanOrEqual(0)
+    expect(streakIdx).toBe(velIdx + 1)
   })
 
   it('iter803: velocity のみ → velocity signal、tone=success (up trend)', () => {
@@ -610,6 +651,7 @@ describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', (
       'slipDays',
       'urgencyTierCounts',
       'mustHygiene',
+      'streakMilestone',
     ] as const
     expect(Object.keys(empty).sort()).toEqual([...expectedKeys].sort())
     for (const k of expectedKeys) {

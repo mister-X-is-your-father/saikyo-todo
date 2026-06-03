@@ -53,7 +53,12 @@ import { type MustHygieneStats, mustHygieneToBriefSignal } from '@/features/item
 import { type OverdueActiveStats, overdueActiveToBriefSignal } from '@/features/item/overdue-active'
 import { type SlipDaysStats, slipDaysToBriefSignal } from '@/features/item/slip-days'
 import { type UrgencyTier, urgencyTierCountsToBriefSignal } from '@/features/item/urgency'
-import { type VelocitySummary, velocityToBriefSignal } from '@/features/item/velocity'
+import {
+  computeCompletionStreak,
+  streakToBriefSignal,
+  type VelocitySummary,
+  velocityToBriefSignal,
+} from '@/features/item/velocity'
 import { type WaitingSummary, waitingSummaryToBriefSignal } from '@/features/item/waiting-elapsed'
 import {
   type WeeklyCompletionInsight,
@@ -148,6 +153,16 @@ export interface AnalyticsSignalsInput {
    * severe (coverage < 50%) → danger / mild → warn / clean → success / idle → idle。
    */
   mustHygiene?: MustHygieneStats
+  /**
+   * iter1715 ai-automation: 19 軸目として streak milestone (= 完了 streak 6 段階 milestone) も統合。
+   * 値は `computeVelocity(items, {}, now)` の出力 (= VelocitySummary、velocity 軸と同 input)。
+   * 内部で `computeCompletionStreak` → `streakToBriefSignal` chain で chip data 化、
+   * 6 段階 milestone (none/bronze/silver/gold/platinum/legend) を positive polarity で chip 化。
+   * none → idle / bronze → info / silver+ → success (= 達成感の lossy 縮約)。
+   * velocity 軸と同 VelocitySummary を input にしているが、velocity は trend (up/flat/down)、
+   * 本 軸 は streak (連続日数) と異なる視点で chip 出力 (= 並列軸として両立可)。
+   */
+  streakMilestone?: VelocitySummary
 }
 
 export interface AnalyticsSignals {
@@ -185,6 +200,8 @@ export interface AnalyticsSignals {
   urgencyTierCounts: AgentBriefSignal | null
   /** iter1059 refactor: MUST hygiene chip (= severe=danger / mild=warn / clean=success / idle=idle) */
   mustHygiene: AgentBriefSignal | null
+  /** iter1715 ai-automation: streak milestone chip (positive polarity, bronze→info / silver+→success) */
+  streakMilestone: AgentBriefSignal | null
 }
 
 const EMPTY: AnalyticsSignals = {
@@ -208,6 +225,7 @@ const EMPTY: AnalyticsSignals = {
   slipDays: null,
   urgencyTierCounts: null,
   mustHygiene: null,
+  streakMilestone: null,
 }
 
 export function composeAnalyticsSignals(input: AnalyticsSignalsInput): AnalyticsSignals {
@@ -269,6 +287,9 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
   if (input.mustHygiene) {
     out.mustHygiene = mustHygieneToBriefSignal(input.mustHygiene)
   }
+  if (input.streakMilestone) {
+    out.streakMilestone = streakToBriefSignal(computeCompletionStreak(input.streakMilestone))
+  }
   return out
 }
 
@@ -294,9 +315,10 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
  * 15. reliability        (= 全体 信頼性 chip)
  * 16. costTrend          (= cost 月次トレンド)
  * 17. velocity           (= 完了ペース、weekly と並ぶ達成感系)
- * 18. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
- * 19. momentum           (= backlog momentum)
- * 20. dominantRole       (= 主軸 role、informational、最後)
+ * 18. streakMilestone    (= 完了 streak milestone、velocity 直後の達成感 chip、iter1715)
+ * 19. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
+ * 20. momentum           (= backlog momentum)
+ * 21. dominantRole       (= 主軸 role、informational、最後)
  */
 export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
@@ -317,6 +339,7 @@ export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSi
     signals.reliability,
     signals.costTrend,
     signals.velocity,
+    signals.streakMilestone,
     signals.weeklyCompletion,
     signals.momentum,
     signals.dominantRole,
