@@ -18,6 +18,7 @@ import {
   formatAnalyticsSignalsToneSummaryJa,
   formatTopSignalsLineJa,
   groupSignalsByTone,
+  pickAchievementSignals,
   pickHighestSeveritySignal,
   pickTopSignalsBySeverity,
 } from './analytics-signals'
@@ -1111,5 +1112,57 @@ describe('groupSignalsByTone (iter1428 — tone 別 signal 分配)', () => {
     expect(grouped.info.length).toBe(counts.info)
     expect(grouped.idle.length).toBe(counts.idle)
     expect(grouped.success.length).toBe(counts.success)
+  })
+})
+
+describe('pickAchievementSignals (iter1722 — 達成感 cluster 3 軸抽出)', () => {
+  it('全 signal null → 空配列', () => {
+    const s = composeAnalyticsSignals({})
+    expect(pickAchievementSignals(s)).toEqual([])
+  })
+
+  it('velocity のみ active → [velocity] (1 件)', () => {
+    const items: VelocityFields[] = [
+      { doneAt: TODAY },
+      { doneAt: new Date(TODAY.getTime() - 1 * MS_PER_DAY) },
+    ]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const s = composeAnalyticsSignals({ velocity })
+    const arr = pickAchievementSignals(s)
+    expect(arr.length).toBe(1)
+    expect(arr[0]).toBe(s.velocity)
+  })
+
+  it('velocity + streakMilestone + streakComparison 全 active → 表示順で 3 件 (= cluster 完全)', () => {
+    const items: VelocityFields[] = [
+      { doneAt: TODAY },
+      { doneAt: new Date(TODAY.getTime() - 1 * MS_PER_DAY) },
+      { doneAt: new Date(TODAY.getTime() - 2 * MS_PER_DAY) },
+    ]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const s = composeAnalyticsSignals({
+      velocity,
+      streakMilestone: velocity,
+      streakComparison: velocity,
+    })
+    const arr = pickAchievementSignals(s)
+    expect(arr.length).toBe(3)
+    // 表示順: velocity → streakMilestone → streakComparison
+    expect(arr[0]).toBe(s.velocity)
+    expect(arr[1]).toBe(s.streakMilestone)
+    expect(arr[2]).toBe(s.streakComparison)
+  })
+
+  it('他軸 (= reliability / cost 等) は含めない (達成感 cluster 専用 subset)', () => {
+    const items: VelocityFields[] = [{ doneAt: TODAY }]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const s = composeAnalyticsSignals({
+      velocity,
+      weeklyReviewDue: 'overdue', // = danger signal、達成感ではない
+    })
+    const arr = pickAchievementSignals(s)
+    expect(arr.length).toBe(1) // velocity のみ、weeklyReviewDue は除外
+    expect(arr[0]).toBe(s.velocity)
+    expect(arr.includes(s.weeklyReviewDue!)).toBe(false)
   })
 })

@@ -387,6 +387,40 @@ export function formatAnalyticsSignalsLineJa(signals: AnalyticsSignals): string 
 }
 
 /**
+ * iter1722 ai-automation: AnalyticsSignals から **達成感 cluster 3 軸** (velocity /
+ * streakMilestone / streakComparison) のみを抽出する subset extractor。
+ *
+ * 用途:
+ *  - Slack daily digest「今日の達成感」 section (= 警告系 chip と分離して positive
+ *    feedback を集約) で「達成感 3 chip だけ」 を render
+ *  - dashboard「やる気 panel」 disclosure で 3 chip cluster を別 row に整列
+ *  - AI 朝 brief で「達成感セクション」 を冒頭に置きたいとき (= positive 強調)
+ *
+ * 表示順: velocity → streakMilestone → streakComparison
+ * (= `analyticsSignalsToArray` の 17→18→19 位 順序に整合、達成感 cluster の
+ * polarity 順 = trend chip → milestone chip → 過去 best 比較 chip)
+ *
+ * null 除去 + 並び順保持。全 3 軸 null → 空配列 (= 達成感 chip area 非表示用 gate)。
+ *
+ * 既存 helper との関係:
+ *  - `analyticsSignalsToArray`: 全 20 軸 順序整列 + null 除去 (= 全 chip 個別 render 用)
+ *  - 本 helper: 達成感 3 軸 のみ抽出 (= positive feedback section 専用、軸 5 やる気)
+ *
+ * 設計意図: severity chip (= 警告系) と達成感 chip を **視覚的に分離** することで
+ * 「片付けるべき もの」 と「褒められる もの」 が一目で区別できる UX を作る (= 軸 5
+ * やる気)。Duolingo の「Today's progress」 / GitHub Contributions の summary widget
+ * の「ポジティブ section」 と同じ pattern。
+ */
+export function pickAchievementSignals(signals: AnalyticsSignals): AgentBriefSignal[] {
+  const ordered: (AgentBriefSignal | null)[] = [
+    signals.velocity,
+    signals.streakMilestone,
+    signals.streakComparison,
+  ]
+  return ordered.filter((s): s is AgentBriefSignal => s !== null)
+}
+
+/**
  * iter954 ai-automation: AnalyticsSignals の non-null signal を ChipTone 別に件数集計。
  *
  * 用途: AI 朝 brief / Slack daily digest の冒頭 headline で「全 chip の tone 分布」を
