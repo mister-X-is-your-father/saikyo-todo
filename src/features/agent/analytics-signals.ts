@@ -421,6 +421,40 @@ export function pickAchievementSignals(signals: AnalyticsSignals): AgentBriefSig
 }
 
 /**
+ * iter1725 refactor: 達成感 cluster 3 軸を「達成感: ...」 prefix 付き 1 行 ja-JP text に
+ * 整形する compose helper。Slack daily digest「今日の達成感」 section / AI 朝 brief
+ * 「達成感セクション」 で plain text 行として埋め込む用。
+ *
+ * iter1722 `pickAchievementSignals` (= subset 配列) + iter816 `formatAnalyticsSignalsLineJa`
+ * (= 全 chip 1 行 text) の 達成感 subset 版。「達成感: ペースは上向き / 7 日連続 🥈 シルバー
+ * / (最高記録更新中!)」 のような 1 行を 1 関数で出せる。
+ *
+ * 仕様:
+ *  - 全 3 軸 null → '達成感: 記録なし' sentinel
+ *  - 1 軸以上 active → '達成感: ' + text を `/` 連結 (= formatAnalyticsSignalsLineJa と同 join)
+ *  - tone は plain text では落とす (= 視覚 chip 経路でのみ使用)
+ *
+ * caller pattern (Slack daily digest plain text body):
+ *   const signals = composeAnalyticsSignals({...})
+ *   const achievementsLine = formatAchievementSignalsLineJa(signals)
+ *   slack.post(`今日の状況\n${achievementsLine}\n${formatAnalyticsSignalsLineJa(signals)}`)
+ *
+ * 既存 helper との関係:
+ *  - `pickAchievementSignals` (iter1722): subset 配列を返す (chip 個別 render 用)
+ *  - 本 helper: 達成感 subset を 1 行 text 化 (= plain text channel 用)
+ *  - `formatAnalyticsSignalsLineJa` (iter816): 全 20 軸を 1 行 text 化 (= 全体概要)
+ *
+ * 設計意図: severity chip (= 警告系) と達成感 chip を **視覚分離** するための text 経路。
+ * Slack channel に「警告 / 達成感」 を別 paragraph として post でき、軸 5 やる気 が
+ * 軸 3 / 4 (警告) に埋もれない UX を作る。
+ */
+export function formatAchievementSignalsLineJa(signals: AnalyticsSignals): string {
+  const arr = pickAchievementSignals(signals)
+  if (arr.length === 0) return '達成感: 記録なし'
+  return '達成感: ' + arr.map((s) => s.text).join(' / ')
+}
+
+/**
  * iter954 ai-automation: AnalyticsSignals の non-null signal を ChipTone 別に件数集計。
  *
  * 用途: AI 朝 brief / Slack daily digest の冒頭 headline で「全 chip の tone 分布」を

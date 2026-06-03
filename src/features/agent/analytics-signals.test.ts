@@ -14,6 +14,7 @@ import {
   composeAnalyticsSignals,
   countAnalyticsSignalsByTone,
   filterSignalsByMinTone,
+  formatAchievementSignalsLineJa,
   formatAnalyticsSignalsLineJa,
   formatAnalyticsSignalsToneSummaryJa,
   formatTopSignalsLineJa,
@@ -1164,5 +1165,45 @@ describe('pickAchievementSignals (iter1722 — 達成感 cluster 3 軸抽出)', 
     expect(arr.length).toBe(1) // velocity のみ、weeklyReviewDue は除外
     expect(arr[0]).toBe(s.velocity)
     expect(arr.includes(s.weeklyReviewDue!)).toBe(false)
+  })
+})
+
+describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain text 1 行)', () => {
+  it('全 null → "達成感: 記録なし" sentinel', () => {
+    const s = composeAnalyticsSignals({})
+    expect(formatAchievementSignalsLineJa(s)).toBe('達成感: 記録なし')
+  })
+
+  it('velocity のみ active → "達成感: <velocity.text>"', () => {
+    const items: VelocityFields[] = [
+      { doneAt: TODAY },
+      { doneAt: new Date(TODAY.getTime() - 1 * MS_PER_DAY) },
+    ]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const s = composeAnalyticsSignals({ velocity })
+    expect(formatAchievementSignalsLineJa(s)).toContain('達成感: ')
+    expect(formatAchievementSignalsLineJa(s)).toContain(s.velocity!.text)
+  })
+
+  it('3 軸 active → "達成感: V / M / C" (` / ` 連結、表示順)', () => {
+    const items: VelocityFields[] = [
+      { doneAt: TODAY },
+      { doneAt: new Date(TODAY.getTime() - 1 * MS_PER_DAY) },
+      { doneAt: new Date(TODAY.getTime() - 2 * MS_PER_DAY) },
+    ]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const s = composeAnalyticsSignals({
+      velocity,
+      streakMilestone: velocity,
+      streakComparison: velocity,
+    })
+    const line = formatAchievementSignalsLineJa(s)
+    expect(line.startsWith('達成感: ')).toBe(true)
+    expect(line.split(' / ').length).toBe(3)
+    // 表示順: velocity → milestone → comparison
+    expect(line.indexOf(s.velocity!.text)).toBeLessThan(line.indexOf(s.streakMilestone!.text))
+    expect(line.indexOf(s.streakMilestone!.text)).toBeLessThan(
+      line.indexOf(s.streakComparison!.text),
+    )
   })
 })
