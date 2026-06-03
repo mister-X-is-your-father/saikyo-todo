@@ -13,6 +13,7 @@ import { formatFriendlyDate } from '@/features/item/date-tokens'
 import { useToggleCompleteItem } from '@/features/item/hooks'
 import { priorityClass, priorityLabel } from '@/features/item/priority'
 import type { Item } from '@/features/item/schema'
+import { countDoneToday, doneTodayToBriefSignal } from '@/features/item/velocity'
 import { buildTodayGroups } from '@/features/today/build-groups'
 
 import { EmptyState } from '@/components/shared/async-states'
@@ -161,15 +162,39 @@ export function TodayView({
     )
   }
 
+  // iter1729 ai-automation: UX 卓越憲章 派生 P0「Today × 軸5 やる気 — 累計完了 chip」
+  // を Today view header に配線。iter1726 countDoneToday + iter1727 doneTodayToBriefSignal
+  // 着地 substrate を初配線、count=0 (idle) でも「今日 まだ 0 件」 励まし chip を表示、
+  // count>=1 で達成感 chip 配色 (info → success)。Duolingo「Today's progress」 と同 UI 軸。
+  const doneTodaySignal = doneTodayToBriefSignal(countDoneToday(items, todayDate))
+  const doneTodayChipCls =
+    doneTodaySignal.tone === 'success'
+      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300'
+      : doneTodaySignal.tone === 'info'
+        ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-300'
+        : 'bg-muted text-muted-foreground'
+
   return (
     <div className="space-y-4" data-testid="today-view">
       <OperationBoardWidget items={items} today={today} />
       {/* iter726: 静的キーボードヒントは aria-live="polite" の誤用 (live region は
           値変更時の再 announce 用、静的命令文には不要)。SR ユーザは <p> として
-          通常 reading 順で 1 回読み上げれば十分。 iter443 inbox-view と同 anti-pattern 修正。 */}
-      <p className="text-muted-foreground text-xs">
-        キーボード: j/k で移動 · Enter または e で編集 · x または Space で完了切替 · Esc で解除
-      </p>
+          通常 reading 順で 1 回読み上げれば十分。 iter443 inbox-view と同 anti-pattern 修正。
+          iter1729 ai-automation: 右端に「今日累計完了」 chip を追加 (= 軸 5 やる気)。 */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-muted-foreground text-xs">
+          キーボード: j/k で移動 · Enter または e で編集 · x または Space で完了切替 · Esc で解除
+        </p>
+        <span
+          className={`rounded px-2 py-0.5 text-xs font-medium tabular-nums ${doneTodayChipCls}`}
+          data-testid="today-done-count-chip"
+          data-tone={doneTodaySignal.tone}
+          role="status"
+          aria-label={`今日累計完了 — ${doneTodaySignal.text}`}
+        >
+          {doneTodaySignal.text}
+        </span>
+      </div>
       {groups.map((g) => {
         const headingId = `today-group-heading-${g.label.replace(/[^a-zA-Z0-9]/g, '-')}`
         return (
