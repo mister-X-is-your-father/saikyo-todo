@@ -46,6 +46,7 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(s.velocity).toBeNull()
     expect(s.streakMilestone).toBeNull()
     expect(s.streakComparison).toBeNull()
+    expect(s.doneToday).toBeNull()
     expect(analyticsSignalsToArray(s)).toEqual([])
   })
 
@@ -113,6 +114,35 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(s.streakComparison).not.toBeNull()
     expect(s.streakComparison!.tone).toBe('success')
     expect(s.streakComparison!.text).toContain('最高記録更新中')
+  })
+
+  it('iter1728: doneToday — 2 件 → tone=success / "今日 2 件完了!"', () => {
+    const s = composeAnalyticsSignals({ doneToday: 2 })
+    expect(s.doneToday).not.toBeNull()
+    expect(s.doneToday!.tone).toBe('success')
+    expect(s.doneToday!.text).toBe('今日 2 件完了!')
+  })
+
+  it('iter1728: doneToday — 0 件 → tone=idle / "今日 まだ 0 件"', () => {
+    const s = composeAnalyticsSignals({ doneToday: 0 })
+    expect(s.doneToday).not.toBeNull()
+    expect(s.doneToday!.tone).toBe('idle')
+    expect(s.doneToday!.text).toBe('今日 まだ 0 件')
+  })
+
+  it('iter1728: doneToday — 表示順は velocity 直前 (= 17 位、達成感 cluster 先頭)', () => {
+    const items: VelocityFields[] = [
+      { doneAt: TODAY },
+      { doneAt: new Date(TODAY.getTime() - 1 * MS_PER_DAY) },
+    ]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const s = composeAnalyticsSignals({ doneToday: 3, velocity })
+    const arr = analyticsSignalsToArray(s)
+    const doneIdx = arr.findIndex((x) => x === s.doneToday)
+    const velIdx = arr.findIndex((x) => x === s.velocity)
+    expect(doneIdx).toBeGreaterThanOrEqual(0)
+    expect(velIdx).toBeGreaterThanOrEqual(0)
+    expect(doneIdx).toBe(velIdx - 1) // doneToday は velocity の直前
   })
 
   it('iter1719: streakComparison — 表示順は streakMilestone 直後 (= 18→19 位)', () => {
@@ -703,6 +733,7 @@ describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', (
       'mustHygiene',
       'streakMilestone',
       'streakComparison',
+      'doneToday',
     ] as const
     expect(Object.keys(empty).sort()).toEqual([...expectedKeys].sort())
     for (const k of expectedKeys) {
@@ -1205,5 +1236,18 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
     expect(line.indexOf(s.streakMilestone!.text)).toBeLessThan(
       line.indexOf(s.streakComparison!.text),
     )
+  })
+
+  it('iter1728: doneToday 軸が追加されると 4 軸目として 先頭に並ぶ', () => {
+    const items: VelocityFields[] = [
+      { doneAt: TODAY },
+      { doneAt: new Date(TODAY.getTime() - 1 * MS_PER_DAY) },
+    ]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const s = composeAnalyticsSignals({ doneToday: 3, velocity })
+    const arr = pickAchievementSignals(s)
+    expect(arr.length).toBe(2)
+    expect(arr[0]).toBe(s.doneToday)
+    expect(arr[1]).toBe(s.velocity)
   })
 })

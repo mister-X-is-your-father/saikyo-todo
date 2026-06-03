@@ -56,6 +56,7 @@ import { type UrgencyTier, urgencyTierCountsToBriefSignal } from '@/features/ite
 import {
   computeCompletionStreak,
   computeStreakComparisonSignal,
+  doneTodayToBriefSignal,
   streakToBriefSignal,
   type VelocitySummary,
   velocityToBriefSignal,
@@ -173,6 +174,15 @@ export interface AnalyticsSignalsInput {
    * dashboard で 2 chip 同時 render 可能 (= 「7 日連続 🥈 シルバー」 + 「今 7 日連続 (最高記録更新中!)」)。
    */
   streakComparison?: VelocitySummary
+  /**
+   * iter1728 basics: 21 軸目として今日累計完了件数 (= countDoneToday の出力) も統合。
+   * 値は number (iter1726 `countDoneToday(items, today)` の出力)。
+   * 内部で `doneTodayToBriefSignal(count)` (iter1727) で chip data 化。
+   * tone (positive polarity 3 段階): count<=0→idle / count===1→info / count>=2→success。
+   * streak 系 (連続日数) と異なり「今日 1 日のみ」 の chip。Today view / dashboard 「やる気」 panel
+   * で「今日 X 件完了!」 即時可視化用 (= 達成感 cluster の 4 軸目)。
+   */
+  doneToday?: number
 }
 
 export interface AnalyticsSignals {
@@ -214,6 +224,8 @@ export interface AnalyticsSignals {
   streakMilestone: AgentBriefSignal | null
   /** iter1719 ai-automation: streak comparison chip (positive polarity, curr>=best→success 記録更新中) */
   streakComparison: AgentBriefSignal | null
+  /** iter1728 basics: 今日累計完了 chip (positive polarity 3 段階, 0→idle / 1→info / 2+→success) */
+  doneToday: AgentBriefSignal | null
 }
 
 const EMPTY: AnalyticsSignals = {
@@ -239,6 +251,7 @@ const EMPTY: AnalyticsSignals = {
   mustHygiene: null,
   streakMilestone: null,
   streakComparison: null,
+  doneToday: null,
 }
 
 export function composeAnalyticsSignals(input: AnalyticsSignalsInput): AnalyticsSignals {
@@ -306,6 +319,9 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
   if (input.streakComparison) {
     out.streakComparison = computeStreakComparisonSignal(input.streakComparison)
   }
+  if (typeof input.doneToday === 'number') {
+    out.doneToday = doneTodayToBriefSignal(input.doneToday)
+  }
   return out
 }
 
@@ -330,12 +346,13 @@ export function composeAnalyticsSignals(input: AnalyticsSignalsInput): Analytics
  * 14. mustHygiene        (= MUST hygiene、danger=coverage<50%、計画漏れ防止 軸 severity 主)
  * 15. reliability        (= 全体 信頼性 chip)
  * 16. costTrend          (= cost 月次トレンド)
- * 17. velocity           (= 完了ペース、weekly と並ぶ達成感系)
- * 18. streakMilestone    (= 完了 streak milestone、velocity 直後の達成感 chip、iter1715)
- * 19. streakComparison   (= 現在 vs best streak 比較、streakMilestone 直後の達成感 chip、iter1719)
- * 20. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
- * 21. momentum           (= backlog momentum)
- * 22. dominantRole       (= 主軸 role、informational、最後)
+ * 17. doneToday         (= 今日累計完了、最も immediate な達成感 chip、iter1728)
+ * 18. velocity           (= 完了ペース、weekly と並ぶ達成感系)
+ * 19. streakMilestone    (= 完了 streak milestone、velocity 直後の達成感 chip、iter1715)
+ * 20. streakComparison   (= 現在 vs best streak 比較、streakMilestone 直後の達成感 chip、iter1719)
+ * 21. weeklyCompletion   (= 週次完了 trend、達成感 + やる気)
+ * 22. momentum           (= backlog momentum)
+ * 23. dominantRole       (= 主軸 role、informational、最後)
  */
 export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
@@ -355,6 +372,7 @@ export function analyticsSignalsToArray(signals: AnalyticsSignals): AgentBriefSi
     signals.mustHygiene,
     signals.reliability,
     signals.costTrend,
+    signals.doneToday,
     signals.velocity,
     signals.streakMilestone,
     signals.streakComparison,
@@ -413,6 +431,7 @@ export function formatAnalyticsSignalsLineJa(signals: AnalyticsSignals): string 
  */
 export function pickAchievementSignals(signals: AnalyticsSignals): AgentBriefSignal[] {
   const ordered: (AgentBriefSignal | null)[] = [
+    signals.doneToday,
     signals.velocity,
     signals.streakMilestone,
     signals.streakComparison,
