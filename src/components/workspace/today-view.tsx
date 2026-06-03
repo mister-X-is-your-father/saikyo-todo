@@ -18,7 +18,9 @@ import {
   composeStreakBriefSignals,
   computeVelocity,
   countDoneToday,
+  countDoneTodayByPriority,
   doneTodayToBriefSignal,
+  formatDoneTodayByPriorityJa,
 } from '@/features/item/velocity'
 import { buildTodayGroups } from '@/features/today/build-groups'
 
@@ -185,6 +187,15 @@ export function TodayView({
   // fan-out) を利用、streak milestone chip も Today view header に並列 render (= 2 chip)。
   const doneTodaySignal = doneTodayToBriefSignal(countDoneToday(items, todayDate))
   const doneTodayChipClasses = getChipToneClasses(doneTodaySignal.tone)
+  // iter1738 basics: 今日完了 chip aria-label に priority 別 内訳を append
+  // (= iter1737 formatDoneTodayByPriorityJa を初配線、3 層情報設計 SR detail)。
+  // priority bucket >= 2 の時のみ append、単一偏在は冗長省略 (iter386 / iter408 等同手法)。
+  const doneTodayByPriority = countDoneTodayByPriority(items, todayDate)
+  const doneTodayPriorityBuckets = ([1, 2, 3, 4] as const).filter(
+    (p) => doneTodayByPriority[p] > 0,
+  ).length
+  const doneTodayPriorityDetail =
+    doneTodayPriorityBuckets >= 2 ? ` (${formatDoneTodayByPriorityJa(doneTodayByPriority)})` : ''
   // streak milestone chip は velocity 集計内に done が 1 件でもあれば表示 (= 「過去 7 日」
   // 内に達成ありなら milestone chip を SR / hover に出す、= dashboard chip iter1709 と同 gate)
   const showStreakChip = velocitySummary.byDay.some((d) => d.count > 0)
@@ -218,7 +229,7 @@ export function TodayView({
             data-testid="today-done-count-chip"
             data-tone={doneTodaySignal.tone}
             role="status"
-            aria-label={`今日累計完了 — ${doneTodaySignal.text}`}
+            aria-label={`今日累計完了 — ${doneTodaySignal.text}${doneTodayPriorityDetail}`}
           >
             {doneTodaySignal.text}
           </span>
