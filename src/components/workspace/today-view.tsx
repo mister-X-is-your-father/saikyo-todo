@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { todayISO } from '@/lib/date/iso'
 import { isAppError } from '@/lib/errors'
 import { moveCursor } from '@/lib/keyboard/list-cursor'
+import { getChipToneClasses } from '@/lib/ui/chip-tone'
 
 import { formatFriendlyDate } from '@/features/item/date-tokens'
 import { useToggleCompleteItem } from '@/features/item/hooks'
@@ -166,13 +167,11 @@ export function TodayView({
   // を Today view header に配線。iter1726 countDoneToday + iter1727 doneTodayToBriefSignal
   // 着地 substrate を初配線、count=0 (idle) でも「今日 まだ 0 件」 励まし chip を表示、
   // count>=1 で達成感 chip 配色 (info → success)。Duolingo「Today's progress」 と同 UI 軸。
+  // iter1730 refactor: chip class を手書き 3 軸 → 中央 chip-tone vocabulary (iter1531 dark
+  // sweep 完了済) の `getChipToneClasses` 経由に統一。色 token (success→emerald / info→blue
+  // / idle→slate) が他 chip と完全一致、設計判断 (light + dark variant) を 1 module に集約。
   const doneTodaySignal = doneTodayToBriefSignal(countDoneToday(items, todayDate))
-  const doneTodayChipCls =
-    doneTodaySignal.tone === 'success'
-      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300'
-      : doneTodaySignal.tone === 'info'
-        ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-300'
-        : 'bg-muted text-muted-foreground'
+  const doneTodayChipClasses = getChipToneClasses(doneTodaySignal.tone)
 
   return (
     <div className="space-y-4" data-testid="today-view">
@@ -186,7 +185,7 @@ export function TodayView({
           キーボード: j/k で移動 · Enter または e で編集 · x または Space で完了切替 · Esc で解除
         </p>
         <span
-          className={`rounded px-2 py-0.5 text-xs font-medium tabular-nums ${doneTodayChipCls}`}
+          className={`rounded px-2 py-0.5 text-xs font-medium tabular-nums ${doneTodayChipClasses.bgClass} ${doneTodayChipClasses.textClass}`}
           data-testid="today-done-count-chip"
           data-tone={doneTodaySignal.tone}
           role="status"
