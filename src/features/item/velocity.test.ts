@@ -10,6 +10,7 @@ import { type ChipTone } from '@/lib/ui/chip-tone'
 import {
   classifyStreakMilestoneTransition,
   classifyVelocityHint,
+  composeStreakBriefSignals,
   computeBestStreak,
   computeCompletionStreak,
   computeCompletionStreakExcludingToday,
@@ -515,6 +516,40 @@ describe('computeStreakComparisonSignal (iter1718 — summary → 比較 chip or
     const sig = computeStreakComparisonSignal(mkByDay([0, 1, 1, 1, 0, 1, 1]))
     expect(sig.tone).toBe('info')
     expect(sig.text).toBe('今 2 日連続 (最高 3 日)')
+  })
+})
+
+describe('composeStreakBriefSignals (iter1720 — milestone + comparison 2 chip fan-out)', () => {
+  const mkByDay = (counts: number[]): VelocitySummary => ({
+    byDay: counts.map((count, i) => ({ date: `2026-04-${22 + i}`, count })),
+    total: counts.reduce((s, c) => s + c, 0),
+    avgPerDay: 0,
+    trend: 'flat',
+  })
+
+  it('done なし (空 summary) → milestone tone=idle / comparison tone=idle', () => {
+    const out = composeStreakBriefSignals(mkByDay([0, 0, 0, 0, 0, 0, 0]))
+    expect(out.milestone.tone).toBe('idle')
+    expect(out.comparison.tone).toBe('idle')
+    expect(out.comparison.text).toBe('完了履歴なし')
+  })
+
+  it('7 日連続 → milestone success (silver) + comparison success (記録更新中)', () => {
+    const out = composeStreakBriefSignals(mkByDay([1, 1, 1, 1, 1, 1, 1]))
+    // curr=7, milestone=silver (>=7) → tone=success per streakMilestoneChipTone
+    expect(out.milestone.tone).toBe('success')
+    expect(out.milestone.text).toContain('🥈')
+    // curr=7 === best=7 → comparison success
+    expect(out.comparison.tone).toBe('success')
+    expect(out.comparison.text).toContain('最高記録更新中')
+  })
+
+  it('中断中 (末尾 0, 過去履歴あり) → milestone tone=idle / comparison tone=warn (再開 nudge)', () => {
+    // [1, 1, 1, 0, 0, 0, 0] → curr=0 / best=3
+    const out = composeStreakBriefSignals(mkByDay([1, 1, 1, 0, 0, 0, 0]))
+    expect(out.milestone.tone).toBe('idle')
+    expect(out.comparison.tone).toBe('warn')
+    expect(out.comparison.text).toBe('今 0 日 (最高 3 日)')
   })
 })
 

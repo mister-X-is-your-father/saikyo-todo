@@ -783,6 +783,49 @@ export function computeStreakComparisonSignal(summary: VelocitySummary): AgentBr
 }
 
 /**
+ * iter1720 refactor: VelocitySummary → 達成感 chip 2 軸 (milestone + comparison) を
+ * 1 関数で fan-out する compose helper。iter497 `composeAgentBriefSignals` (= reliability
+ * stats から reliability + dominantRole + concerningRole の 3 軸 fan-out) と同 pattern。
+ *
+ * 入力 1 → 出力 2:
+ *   summary → { milestone, comparison }
+ *
+ * 内部 chain:
+ *  - milestone = streakToBriefSignal(computeCompletionStreak(summary))   (iter1708/1715)
+ *  - comparison = computeStreakComparisonSignal(summary)                  (iter1718)
+ *
+ * caller pattern (= 1 関数で 2 chip 取得、達成感 panel 用):
+ *   const summary = computeVelocity(items, {}, today)
+ *   const streak = composeStreakBriefSignals(summary)
+ *   <Chip text={streak.milestone.text} tone={streak.milestone.tone} />
+ *   <Chip text={streak.comparison.text} tone={streak.comparison.tone} />
+ *
+ * 設計意図: dashboard / AI 朝 brief / Slack daily digest の 3 caller が「達成感 chip
+ * cluster (milestone + comparison)」 を summary 1 つから 1 関数で取得できる substrate。
+ * 各 helper を別個 import する boilerplate と curr / best 重複 compute を排除。
+ *
+ * `composeAnalyticsSignals` (iter796) が caller になる場合は input.streakMilestone と
+ * input.streakComparison を分けて受けるため別 compute path だが、本 orchestrator は
+ * 1 summary を完結関数として fan-out するシンプル形を提供 (= 単独 panel UI 用)。
+ *
+ * iter1712 `computeStreakChain` (= milestone chip + transition + toast 等 7 件 fan-out)
+ * と並列軸で、本 helper は「達成感 2 chip 表示」 用、computeStreakChain は「milestone
+ * 移行 wow ポイント」 用、と用途が異なる。
+ *
+ * 0 から始まる pure 関数、副作用なし。
+ */
+export interface StreakBriefSignals {
+  milestone: AgentBriefSignal
+  comparison: AgentBriefSignal
+}
+
+export function composeStreakBriefSignals(summary: VelocitySummary): StreakBriefSignals {
+  const milestone = streakToBriefSignal(computeCompletionStreak(summary))
+  const comparison = computeStreakComparisonSignal(summary)
+  return { milestone, comparison }
+}
+
+/**
  * iter802 ai-automation: velocity の VelocityHint → ChipTone (positive polarity =
  * up が完了 増 = 成功)。`agentReliabilityTone` (iter487) / `weeklyCompletionInsightTone`
  * (iter797) と同じ ChipTone vocab に bind。
