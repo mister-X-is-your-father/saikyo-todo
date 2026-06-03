@@ -700,6 +700,44 @@ export function formatStreakBestComparisonJa(currStreak: number, bestStreak: num
 }
 
 /**
+ * iter1723 basics: 現在 vs best streak 比較の **suffix のみ** (= 「(最高 N 日)」 /
+ * 「(最高記録更新中!)」 / null) を返す pure helper。
+ *
+ * iter1716 `formatStreakBestComparisonJa` は「今 X 日連続 (最高 Y 日)」 full text を
+ * 返すが、milestone text (= iter1706 `formatStreakWithMilestoneJa` の「完了 streak X
+ * 日連続! 🥈 シルバー」) と組み合わせると「X 日連続」 が 2 回出てしまい冗長。
+ * 本 helper は suffix 部分 (= 過去 best 比較のみ) を独立に取得することで、milestone
+ * text + suffix の組合せで「完了 streak 7 日連続! 🥈 シルバー (最高記録更新中!)」 を
+ * 重複なく出せる。
+ *
+ * 仕様 (出力 pattern):
+ *  - bestStreak === 0 → null (= 履歴なし、suffix なし)
+ *  - currStreak === 0 && bestStreak > 0 → `'(最高 N 日、中断中)'` (= 中断中 nudge を suffix で示唆)
+ *  - currStreak === bestStreak (bestStreak > 0) → `'(最高記録更新中!)'`
+ *  - currStreak < bestStreak → `'(最高 N 日)'`
+ *  - currStreak > bestStreak (defensive) → `'(最高記録更新中!)'`
+ *
+ * caller pattern (dashboard 配線最終形):
+ *   const milestoneText = formatStreakWithMilestoneJa(curr)
+ *   const suffix = formatStreakBestSuffix(curr, best)
+ *   const detail = `${milestoneText}${suffix ? ` ${suffix}` : ''}`
+ *   // → '完了 streak 7 日連続! 🥈 シルバー (最高記録更新中!)' (重複なし)
+ *
+ * 設計意図: dashboard / Slack daily digest の SR / hover area で milestone chip と
+ * 比較 chip を **重複なく 1 行 統合** するための substrate。`formatStreakBestComparisonJa`
+ * は単独 chip 用 (= 比較のみ 1 chip)、本 helper は milestone + 比較 統合用 (= 1 chip)
+ * と用途を分離。
+ *
+ * 0 から始まる pure 関数、副作用なし。
+ */
+export function formatStreakBestSuffix(currStreak: number, bestStreak: number): string | null {
+  if (bestStreak === 0) return null
+  if (currStreak === 0) return `(最高 ${bestStreak} 日、中断中)`
+  if (currStreak >= bestStreak) return '(最高記録更新中!)'
+  return `(最高 ${bestStreak} 日)`
+}
+
+/**
  * iter1717 ai-automation: 現在 vs best streak 比較を `AgentBriefSignal` 形式 (text + tone) に
  * 変換する compose helper。iter1716 `formatStreakBestComparisonJa` の chip 化版。
  *

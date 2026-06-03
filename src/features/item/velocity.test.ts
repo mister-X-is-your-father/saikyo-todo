@@ -21,6 +21,7 @@ import {
   formatBestStreakJa,
   formatCompletionStreakJa,
   formatStreakBestComparisonJa,
+  formatStreakBestSuffix,
   formatStreakTransitionJa,
   formatStreakWithMilestoneJa,
   formatVelocityByPriorityJa,
@@ -447,6 +448,48 @@ describe('formatStreakBestComparisonJa (iter1716 — 現在 vs best 1 行 ja-JP 
     // 定義上 best = window 全体最長 なので curr <= best のはず。
     // defensive: curr > best が来ても落ちず、現在を「記録更新中」 として扱う。
     expect(formatStreakBestComparisonJa(10, 5)).toBe('今 10 日連続 (最高記録更新中!)')
+  })
+})
+
+describe('formatStreakBestSuffix (iter1723 — milestone と組合せ用 suffix のみ)', () => {
+  it('best=0 → null (履歴なし、suffix なし)', () => {
+    expect(formatStreakBestSuffix(0, 0)).toBeNull()
+    // 履歴なしなら curr 値関係なく null
+    expect(formatStreakBestSuffix(5, 0)).toBeNull()
+  })
+
+  it('curr=0 & best>0 (中断中) → "(最高 N 日、中断中)" — 中断 nudge を suffix で示唆', () => {
+    expect(formatStreakBestSuffix(0, 5)).toBe('(最高 5 日、中断中)')
+    expect(formatStreakBestSuffix(0, 14)).toBe('(最高 14 日、中断中)')
+  })
+
+  it('curr === best (記録更新中) → "(最高記録更新中!)"', () => {
+    expect(formatStreakBestSuffix(7, 7)).toBe('(最高記録更新中!)')
+    expect(formatStreakBestSuffix(1, 1)).toBe('(最高記録更新中!)')
+  })
+
+  it('curr < best → "(最高 N 日)"', () => {
+    expect(formatStreakBestSuffix(3, 7)).toBe('(最高 7 日)')
+    expect(formatStreakBestSuffix(2, 10)).toBe('(最高 10 日)')
+  })
+
+  it('curr > best (defensive) → "(最高記録更新中!)" 扱い', () => {
+    expect(formatStreakBestSuffix(10, 5)).toBe('(最高記録更新中!)')
+  })
+
+  it('milestone text と組合せて重複なし 1 行統合できる (caller pattern)', () => {
+    // 想定 caller flow: milestone text + suffix で「重複なし」 構成
+    const curr = 7
+    const best = 7
+    const milestoneText = formatStreakWithMilestoneJa(curr)
+    const suffix = formatStreakBestSuffix(curr, best)
+    const combined = `${milestoneText}${suffix ? ` ${suffix}` : ''}`
+    // 「7 日連続」 が重複しない (milestone のみで完結 + suffix は best 比較のみ)
+    expect(combined).toContain('🥈 シルバー')
+    expect(combined).toContain('(最高記録更新中!)')
+    // 「7 日連続」 が 1 回のみ
+    const dupes = combined.match(/7 日連続/g) ?? []
+    expect(dupes.length).toBe(1)
   })
 })
 
