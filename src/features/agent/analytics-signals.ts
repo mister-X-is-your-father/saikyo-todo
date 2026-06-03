@@ -495,6 +495,32 @@ export function pickConcerningSignals(signals: AnalyticsSignals): AgentBriefSign
 }
 
 /**
+ * iter1745 ai-automation: 警戒 cluster を「警戒: ...」 prefix 付き 1 行 ja-JP text に
+ * 整形する compose helper。`formatAchievementSignalsLineJa` (iter1725) と対称的な
+ * concerning 版、Slack daily digest「今日の警告」 section 用。
+ *
+ * 仕様:
+ *  - 警戒 signal 0 件 → '警戒: なし' sentinel (= 安心 feedback)
+ *  - 1+ signal active → '警戒: ' + text を `/` 連結
+ *  - severity 上位順 (analyticsSignalsToArray の rank) を保持
+ *
+ * caller pattern (Slack daily digest plain text body):
+ *   const signals = composeAnalyticsSignals({...})
+ *   slack.post(
+ *     formatConcerningSignalsLineJa(signals) + '\n' +    // 警戒
+ *     formatAchievementSignalsLineJa(signals)            // 達成感
+ *   )
+ *
+ * 設計意図: 警告系 vs 達成感系 を **別 paragraph** で post することで、ユーザは
+ * channel で「何が悪い / 何が良い」 を一目で区別可能 (= 軸 1 可視化)。
+ */
+export function formatConcerningSignalsLineJa(signals: AnalyticsSignals): string {
+  const arr = pickConcerningSignals(signals)
+  if (arr.length === 0) return '警戒: なし'
+  return '警戒: ' + arr.map((s) => s.text).join(' / ')
+}
+
+/**
  * iter1725 refactor: 達成感 cluster 3 軸を「達成感: ...」 prefix 付き 1 行 ja-JP text に
  * 整形する compose helper。Slack daily digest「今日の達成感」 section / AI 朝 brief
  * 「達成感セクション」 で plain text 行として埋め込む用。

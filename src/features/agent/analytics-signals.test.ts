@@ -17,6 +17,7 @@ import {
   formatAchievementSignalsLineJa,
   formatAnalyticsSignalsLineJa,
   formatAnalyticsSignalsToneSummaryJa,
+  formatConcerningSignalsLineJa,
   formatTopSignalsLineJa,
   groupSignalsByTone,
   hasAchievementSignals,
@@ -1278,6 +1279,18 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
     const arr = pickConcerningSignals(s)
     expect(arr.length).toBe(1)
     expect(arr[0]).toBe(s.weeklyReviewDue)
+  })
+
+  it('iter1745: formatConcerningSignalsLineJa — 全 null → "警戒: なし" sentinel', () => {
+    const s = composeAnalyticsSignals({})
+    expect(formatConcerningSignalsLineJa(s)).toBe('警戒: なし')
+  })
+
+  it('iter1745: formatConcerningSignalsLineJa — weeklyReviewDue overdue → "警戒: <text>"', () => {
+    const s = composeAnalyticsSignals({ weeklyReviewDue: 'overdue' })
+    const line = formatConcerningSignalsLineJa(s)
+    expect(line.startsWith('警戒: ')).toBe(true)
+    expect(line).toContain(s.weeklyReviewDue!.text)
   })
 
   it('iter1744: pickConcerningSignals — 達成感のみ active → 空配列 (= positive 軸は除外)', () => {
