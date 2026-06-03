@@ -224,6 +224,13 @@ export function TodayView({
               data-testid="today-streak-chip"
               data-tone={streakSignals.milestone.tone}
               role="status"
+              /* iter1709: role="status" default `aria-atomic="false"` だと SR が
+                 変更部分のみ partial announce (= 「シルバー」 が変わったときに
+                 milestone label の単語だけ読み上げ context 欠落)。bulk-action-bar
+                 bulk-count (line 86) と同 pattern で `aria-atomic="true"` を付与し
+                 chip 全体を full re-announce、SR 読み上げ context (= 「完了 streak —
+                 🥈 シルバー (7 日連続)」) を維持。 */
+              aria-atomic="true"
               aria-label={`完了 streak — ${streakSignals.milestone.text}`}
             >
               {streakSignals.milestone.text}
@@ -234,6 +241,10 @@ export function TodayView({
             data-testid="today-done-count-chip"
             data-tone={doneTodaySignal.tone}
             role="status"
+            /* iter1709: streak chip と同 sweep — `aria-atomic="true"` で SR の
+               partial announce (count 数字だけ変わって context 欠落) を解消、
+               chip 全体「今日 N 件完了!」 を full re-announce で達成感伝達。 */
+            aria-atomic="true"
             /* iter1708: 旧 aria-label `今日累計完了 — ${doneTodaySignal.text}` は
                formatDoneTodayJa 出力 (= "今日 N 件完了!" 等) が「今日」 で始まるため
                `今日累計完了 — 今日 N 件完了!` と「今日」 が 2 回 redundant、SR
