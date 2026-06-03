@@ -371,6 +371,34 @@ export function countDoneInDays<T extends VelocityFields>(
 }
 
 /**
+ * iter1735 refactor: 「<prefix> まだ 0 件 / 1 件完了 / N 件完了!」 共通 format を
+ * 1 関数に集約 (= formatDoneTodayJa / formatDoneInDaysJa の重複ロジック解消)。
+ *
+ * caller は prefix (= 「今日」 / 「過去 7 日」 / 「今週」 等) のみ渡せば一貫 polarity の
+ * 1 行 ja-JP chip text を取得可能。
+ */
+function formatDoneCountJa(prefix: string, count: number): string {
+  if (count <= 0) return `${prefix} まだ 0 件`
+  if (count === 1) return `${prefix} 1 件完了`
+  return `${prefix} ${count} 件完了!`
+}
+
+/**
+ * iter1735 refactor: count → ChipTone (positive polarity 3 段階) の共通 mapping。
+ * doneTodayToBriefSignal / doneInDaysToBriefSignal の tone logic を 1 関数に集約。
+ *
+ * polarity:
+ *  - count <= 0 → 'idle' (まだ動いてない)
+ *  - count === 1 → 'info' (動き出した)
+ *  - count >= 2 → 'success' (達成感)
+ */
+function doneCountTone(count: number): ChipTone {
+  if (count <= 0) return 'idle'
+  if (count === 1) return 'info'
+  return 'success'
+}
+
+/**
  * iter1726 basics: 今日完了件数を ja-JP 1 行 chip text に整形する pure helper。
  *
  * 仕様 (出力 pattern):
@@ -381,12 +409,12 @@ export function countDoneInDays<T extends VelocityFields>(
  * 設計意図: 0 で「まだ 0 件」 = 「これからやれば伸びる」 / 1 で「完了」 / 2+ で「!」 付与
  * は milestone 系 chip と一貫した polarity (Duolingo / Streak.app の表現と整合)。
  *
+ * iter1735 refactor: 内部実装を共通 `formatDoneCountJa('今日', count)` に委譲。
+ *
  * 0 から始まる pure 関数、副作用なし。
  */
 export function formatDoneTodayJa(count: number): string {
-  if (count <= 0) return '今日 まだ 0 件'
-  if (count === 1) return '今日 1 件完了'
-  return `今日 ${count} 件完了!`
+  return formatDoneCountJa('今日', count)
 }
 
 /**
@@ -415,16 +443,7 @@ export function formatDoneTodayJa(count: number): string {
  * 0 から始まる pure 関数、副作用なし。
  */
 export function doneTodayToBriefSignal(count: number): AgentBriefSignal {
-  const text = formatDoneTodayJa(count)
-  let tone: ChipTone
-  if (count <= 0) {
-    tone = 'idle'
-  } else if (count === 1) {
-    tone = 'info'
-  } else {
-    tone = 'success'
-  }
-  return { text, tone }
+  return { text: formatDoneTodayJa(count), tone: doneCountTone(count) }
 }
 
 /**
@@ -450,10 +469,7 @@ export function doneTodayToBriefSignal(count: number): AgentBriefSignal {
  * 0 から始まる pure 関数、副作用なし。
  */
 export function formatDoneInDaysJa(count: number, windowDays: number): string {
-  const prefix = `過去 ${windowDays} 日`
-  if (count <= 0) return `${prefix} まだ 0 件`
-  if (count === 1) return `${prefix} 1 件完了`
-  return `${prefix} ${count} 件完了!`
+  return formatDoneCountJa(`過去 ${windowDays} 日`, count)
 }
 
 /**
@@ -478,16 +494,7 @@ export function formatDoneInDaysJa(count: number, windowDays: number): string {
  * 0 から始まる pure 関数、副作用なし。
  */
 export function doneInDaysToBriefSignal(count: number, windowDays: number): AgentBriefSignal {
-  const text = formatDoneInDaysJa(count, windowDays)
-  let tone: ChipTone
-  if (count <= 0) {
-    tone = 'idle'
-  } else if (count === 1) {
-    tone = 'info'
-  } else {
-    tone = 'success'
-  }
-  return { text, tone }
+  return { text: formatDoneInDaysJa(count, windowDays), tone: doneCountTone(count) }
 }
 
 /**
