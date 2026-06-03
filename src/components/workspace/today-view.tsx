@@ -14,7 +14,12 @@ import { formatFriendlyDate } from '@/features/item/date-tokens'
 import { useToggleCompleteItem } from '@/features/item/hooks'
 import { priorityClass, priorityLabel } from '@/features/item/priority'
 import type { Item } from '@/features/item/schema'
-import { countDoneToday, doneTodayToBriefSignal } from '@/features/item/velocity'
+import {
+  composeStreakBriefSignals,
+  computeVelocity,
+  countDoneToday,
+  doneTodayToBriefSignal,
+} from '@/features/item/velocity'
 import { buildTodayGroups } from '@/features/today/build-groups'
 
 import { EmptyState } from '@/components/shared/async-states'
@@ -126,6 +131,12 @@ export function TodayView({
     return () => window.removeEventListener('keydown', onKey)
   }, [total])
 
+  // iter1732 ai-automation: header chip 用の velocity/streak data を compute
+  // (= React Compiler が自動 memo、useMemo manual 不要)。total===0 early return より
+  // 前で実行されるため Hook 順序 invariant も維持。
+  const velocitySummary = computeVelocity(items, { windowDays: 7 }, todayDate)
+  const streakSignals = composeStreakBriefSignals(velocitySummary)
+
   if (total === 0) {
     return (
       <div className="space-y-4" data-testid="today-view">
@@ -170,8 +181,14 @@ export function TodayView({
   // iter1730 refactor: chip class を手書き 3 軸 → 中央 chip-tone vocabulary (iter1531 dark
   // sweep 完了済) の `getChipToneClasses` 経由に統一。色 token (success→emerald / info→blue
   // / idle→slate) が他 chip と完全一致、設計判断 (light + dark variant) を 1 module に集約。
+  // iter1732 ai-automation: iter1720 composeStreakBriefSignals (= milestone + comparison
+  // fan-out) を利用、streak milestone chip も Today view header に並列 render (= 2 chip)。
   const doneTodaySignal = doneTodayToBriefSignal(countDoneToday(items, todayDate))
   const doneTodayChipClasses = getChipToneClasses(doneTodaySignal.tone)
+  // streak milestone chip は velocity 集計内に done が 1 件でもあれば表示 (= 「過去 7 日」
+  // 内に達成ありなら milestone chip を SR / hover に出す、= dashboard chip iter1709 と同 gate)
+  const showStreakChip = velocitySummary.byDay.some((d) => d.count > 0)
+  const streakChipClasses = getChipToneClasses(streakSignals.milestone.tone)
 
   return (
     <div className="space-y-4" data-testid="today-view">
@@ -184,15 +201,28 @@ export function TodayView({
         <p className="text-muted-foreground text-xs">
           キーボード: j/k で移動 · Enter または e で編集 · x または Space で完了切替 · Esc で解除
         </p>
-        <span
-          className={`rounded px-2 py-0.5 text-xs font-medium tabular-nums ${doneTodayChipClasses.bgClass} ${doneTodayChipClasses.textClass}`}
-          data-testid="today-done-count-chip"
-          data-tone={doneTodaySignal.tone}
-          role="status"
-          aria-label={`今日累計完了 — ${doneTodaySignal.text}`}
-        >
-          {doneTodaySignal.text}
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          {showStreakChip && (
+            <span
+              className={`rounded px-2 py-0.5 text-xs font-medium tabular-nums ${streakChipClasses.bgClass} ${streakChipClasses.textClass}`}
+              data-testid="today-streak-chip"
+              data-tone={streakSignals.milestone.tone}
+              role="status"
+              aria-label={`完了 streak — ${streakSignals.milestone.text}`}
+            >
+              {streakSignals.milestone.text}
+            </span>
+          )}
+          <span
+            className={`rounded px-2 py-0.5 text-xs font-medium tabular-nums ${doneTodayChipClasses.bgClass} ${doneTodayChipClasses.textClass}`}
+            data-testid="today-done-count-chip"
+            data-tone={doneTodaySignal.tone}
+            role="status"
+            aria-label={`今日累計完了 — ${doneTodaySignal.text}`}
+          >
+            {doneTodaySignal.text}
+          </span>
+        </div>
       </div>
       {groups.map((g) => {
         const headingId = `today-group-heading-${g.label.replace(/[^a-zA-Z0-9]/g, '-')}`
