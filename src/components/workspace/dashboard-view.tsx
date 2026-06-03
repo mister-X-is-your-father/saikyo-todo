@@ -1015,7 +1015,16 @@ export function DashboardView({ workspaceId }: Props) {
             testId="dashboard-hygiene-focus-chip"
             toneClass={chipTone3Class('warn')}
             glyph="⚠"
-            ariaLabel={hygieneFocus.detail}
+            /* iter1707: 旧 ariaLabel `hygieneFocus.detail` (= "要注意: P3 Hygiene 25 — ...")
+               は visible chip text `重点: P${focus.priority} Hygiene ${focus.score}`
+               (= UI wording「重点」 CTA、format function は技術名「要注意」) と完全 wording
+               divergent。visible "重点" は accessible name に substring として含まれず WCAG 2.5.3
+               (Label in Name) 違反 + voice control「click 重点」 strict prefix match 不可。
+               iter1704 hygiene-debt / iter1706 hygiene-score と同 pattern: visible-prefix
+               `重点: P${X} Hygiene ${Y} — ` を冒頭固定 + em-dash 区切で format detail を
+               descriptive 末尾に保持。SR は両 wording を hear (UI 重点 + 技術 要注意)、
+               voice control 「click 重点」 prefix match 可能。 */
+            ariaLabel={`重点: P${hygieneFocus.focus.priority} Hygiene ${hygieneFocus.focus.score} — ${hygieneFocus.detail}`}
             title={hygieneFocus.detail}
             text={`重点: P${hygieneFocus.focus.priority} Hygiene ${hygieneFocus.focus.score}`}
             dataAttrs={{
