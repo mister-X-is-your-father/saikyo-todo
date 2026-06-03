@@ -1229,7 +1229,12 @@ export function DashboardView({ workspaceId }: Props) {
               aging.olderThanWeek > 0 ? trendToneClass('up', 'negative') : chipTone3Class('neutral')
             }
             glyph="⌛"
-            ariaLabel={`${aging.hintLabel}: Backlog 年齢: ${aging.summary}${aging.olderThanWeek > 0 ? ` — 7 日以上 ${aging.olderThanWeek} 件 (棚卸し対象)` : ''}${aging.stagnantBreakdown && aging.stagnantBreakdown !== '停滞 0 件' ? ` — ${aging.stagnantBreakdown}` : ''}`}
+            /* iter1703: 旧 ariaLabel `${hintLabel}: Backlog 年齢: ${summary}` の 2 colon は
+               iter1629 / iter1701 / iter1702 sweep (em-dash + colon 無 natural-reading) と
+               divergent。`title` attribute (line 1233) は既に em-dash convention 採用済で
+               aria-label のみ取りこぼし。colon × 2 → em-dash + space 区切に統一、
+               `${hintLabel} — Backlog 年齢 ${summary}` で title と pattern 整合。 */
+            ariaLabel={`${aging.hintLabel} — Backlog 年齢 ${aging.summary}${aging.olderThanWeek > 0 ? ` — 7 日以上 ${aging.olderThanWeek} 件 (棚卸し対象)` : ''}${aging.stagnantBreakdown && aging.stagnantBreakdown !== '停滞 0 件' ? ` — ${aging.stagnantBreakdown}` : ''}`}
             title={`${aging.hintLabel} — ${aging.summary}`}
             text={
               <>
