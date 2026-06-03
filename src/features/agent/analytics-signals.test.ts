@@ -43,6 +43,7 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(s.weeklyCompletion).toBeNull()
     expect(s.velocity).toBeNull()
     expect(s.streakMilestone).toBeNull()
+    expect(s.streakComparison).toBeNull()
     expect(analyticsSignalsToArray(s)).toEqual([])
   })
 
@@ -84,6 +85,53 @@ describe('composeAnalyticsSignals (4 軸 unified compose)', () => {
     expect(velIdx).toBeGreaterThanOrEqual(0)
     expect(streakIdx).toBeGreaterThanOrEqual(0)
     expect(streakIdx).toBe(velIdx + 1)
+  })
+
+  it('iter1719: streakComparison — done なし → tone=idle / "完了履歴なし"', () => {
+    const velocity = computeVelocity([], {}, TODAY)
+    const s = composeAnalyticsSignals({ streakComparison: velocity })
+    expect(s.streakComparison).not.toBeNull()
+    expect(s.streakComparison!.tone).toBe('idle')
+    expect(s.streakComparison!.text).toBe('完了履歴なし')
+  })
+
+  it('iter1719: streakComparison — 7 日連続 (curr === best) → tone=success / "最高記録更新中!"', () => {
+    // window 全 7 日 done → curr = best = 7
+    const items: VelocityFields[] = [
+      { doneAt: TODAY },
+      { doneAt: new Date(TODAY.getTime() - 1 * MS_PER_DAY) },
+      { doneAt: new Date(TODAY.getTime() - 2 * MS_PER_DAY) },
+      { doneAt: new Date(TODAY.getTime() - 3 * MS_PER_DAY) },
+      { doneAt: new Date(TODAY.getTime() - 4 * MS_PER_DAY) },
+      { doneAt: new Date(TODAY.getTime() - 5 * MS_PER_DAY) },
+      { doneAt: new Date(TODAY.getTime() - 6 * MS_PER_DAY) },
+    ]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const s = composeAnalyticsSignals({ streakComparison: velocity })
+    expect(s.streakComparison).not.toBeNull()
+    expect(s.streakComparison!.tone).toBe('success')
+    expect(s.streakComparison!.text).toContain('最高記録更新中')
+  })
+
+  it('iter1719: streakComparison — 表示順は streakMilestone 直後 (= 18→19 位)', () => {
+    // velocity + streakMilestone + streakComparison 3 軸 active で表示順検証
+    const items: VelocityFields[] = [
+      { doneAt: TODAY },
+      { doneAt: new Date(TODAY.getTime() - 1 * MS_PER_DAY) },
+      { doneAt: new Date(TODAY.getTime() - 2 * MS_PER_DAY) },
+    ]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const s = composeAnalyticsSignals({
+      velocity,
+      streakMilestone: velocity,
+      streakComparison: velocity,
+    })
+    const arr = analyticsSignalsToArray(s)
+    const milestoneIdx = arr.findIndex((x) => x === s.streakMilestone)
+    const comparisonIdx = arr.findIndex((x) => x === s.streakComparison)
+    expect(milestoneIdx).toBeGreaterThanOrEqual(0)
+    expect(comparisonIdx).toBeGreaterThanOrEqual(0)
+    expect(comparisonIdx).toBe(milestoneIdx + 1)
   })
 
   it('iter803: velocity のみ → velocity signal、tone=success (up trend)', () => {
@@ -652,6 +700,7 @@ describe('AnalyticsSignals invariant (iter819 — schema完全性 ガード)', (
       'urgencyTierCounts',
       'mustHygiene',
       'streakMilestone',
+      'streakComparison',
     ] as const
     expect(Object.keys(empty).sort()).toEqual([...expectedKeys].sort())
     for (const k of expectedKeys) {
