@@ -18,6 +18,7 @@ import {
   computeStreakComparisonSignal,
   computeVelocity,
   computeVelocityByPriority,
+  countDoneInDays,
   countDoneToday,
   doneTodayToBriefSignal,
   formatBestStreakJa,
@@ -882,6 +883,52 @@ describe('countDoneToday / formatDoneTodayJa (iter1726 — 今日累計完了 ch
   it('today を ISO 文字列でも受け付ける', () => {
     const items: VelocityFields[] = [{ doneAt: dt(0) }]
     expect(countDoneToday(items, '2026-04-28')).toBe(1)
+  })
+})
+
+describe('countDoneInDays (iter1733 — N 日範囲累計完了)', () => {
+  it('windowDays=1 → countDoneToday と等価 (= 今日のみ)', () => {
+    const items: VelocityFields[] = [{ doneAt: dt(0) }, { doneAt: dt(1) }]
+    expect(countDoneInDays(items, 1, TODAY)).toBe(1)
+    expect(countDoneInDays(items, 1, TODAY)).toBe(countDoneToday(items, TODAY))
+  })
+
+  it('windowDays=7 → 過去 7 日 (今日含む)', () => {
+    // 今日 / 1日前 / 6日前 / 7日前 — 7日 window で 3 件 (今日/1d/6d、7d は範囲外)
+    const items: VelocityFields[] = [
+      { doneAt: dt(0) },
+      { doneAt: dt(1) },
+      { doneAt: dt(6) },
+      { doneAt: dt(7) },
+    ]
+    expect(countDoneInDays(items, 7, TODAY)).toBe(3)
+  })
+
+  it('windowDays=30 → 過去 30 日 (今月相当)', () => {
+    const items: VelocityFields[] = [
+      { doneAt: dt(0) },
+      { doneAt: dt(15) },
+      { doneAt: dt(29) },
+      { doneAt: dt(30) }, // 30日前は範囲内 (today - 29 = 30日前)... → 確認
+    ]
+    // window: [today - 29, today] = 30 日範囲。29日前は include、30日前は exclude
+    expect(countDoneInDays(items, 30, TODAY)).toBe(3)
+  })
+
+  it('windowDays<=0 → 0 (空 result)', () => {
+    const items: VelocityFields[] = [{ doneAt: dt(0) }]
+    expect(countDoneInDays(items, 0, TODAY)).toBe(0)
+    expect(countDoneInDays(items, -1, TODAY)).toBe(0)
+  })
+
+  it('doneAt が null/不正値は除外 (fail-soft)', () => {
+    const items: VelocityFields[] = [{ doneAt: dt(0) }, { doneAt: null }, { doneAt: 'invalid' }]
+    expect(countDoneInDays(items, 7, TODAY)).toBe(1)
+  })
+
+  it('today を ISO 文字列でも受け付ける', () => {
+    const items: VelocityFields[] = [{ doneAt: dt(0) }, { doneAt: dt(3) }]
+    expect(countDoneInDays(items, 7, '2026-04-28')).toBe(2)
   })
 })
 

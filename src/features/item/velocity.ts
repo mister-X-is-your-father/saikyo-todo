@@ -326,6 +326,51 @@ export function countDoneToday<T extends VelocityFields>(
 }
 
 /**
+ * iter1733 basics: 過去 N 日間 (today 含む) に done になった item 件数を返す pure helper。
+ *
+ * iter1726 `countDoneToday` の N 日範囲版。windowDays=1 で countDoneToday と等価、
+ * windowDays=7 で「今週累計」、windowDays=30 で「今月累計」 を取得可能。Today view /
+ * dashboard / Slack daily/weekly digest が「今週 X 件完了!」 / 「今月 X 件完了!」 を
+ * 1 関数で取得できる substrate。
+ *
+ * 仕様:
+ *  - items 各 item.doneAt が `[today - (windowDays-1) 日 0時, today 23:59]` 範囲内なら count
+ *  - 不正 doneAt / null / undefined は除外 (fail-soft)
+ *  - windowDays <= 0 → 0 (空 result)
+ *  - windowDays=1 → countDoneToday と完全等価 (= 今日 1 日のみ)
+ *
+ * 既存 helper との関係:
+ *  - `computeVelocity(items, { windowDays })` の byDay の総 count 和と等価だが、
+ *    velocity 集計の overhead (= byDay 配列構築 + trend 計算) を排し O(items) で完結
+ *  - `countDoneToday` (iter1726) は本 helper の windowDays=1 特化版
+ *
+ * 0 から始まる pure 関数、副作用なし。
+ */
+export function countDoneInDays<T extends VelocityFields>(
+  items: readonly T[],
+  windowDays: number,
+  today: Date | string = new Date(),
+): number {
+  if (windowDays <= 0) return 0
+  const todayDate = toLocalMidnight(parseDateOrNull(today))
+  if (!todayDate) return 0
+  // window 開始日 = today - (windowDays - 1) 日 (= 今日含む N 日)
+  const startDate = new Date(todayDate.getTime() - (windowDays - 1) * MS_PER_DAY)
+  const startISO = formatLocalISO(startDate)
+  const endISO = formatLocalISO(todayDate)
+  let count = 0
+  for (const it of items) {
+    const d = parseDateOrNull(it.doneAt)
+    if (!d) continue
+    const localMidnight = toLocalMidnight(d)
+    if (!localMidnight) continue
+    const iso = formatLocalISO(localMidnight)
+    if (iso >= startISO && iso <= endISO) count += 1
+  }
+  return count
+}
+
+/**
  * iter1726 basics: 今日完了件数を ja-JP 1 行 chip text に整形する pure helper。
  *
  * 仕様 (出力 pattern):
