@@ -19,6 +19,12 @@ export function CreateWorkspaceForm() {
   const [isPending, startTransition] = useTransition()
   const form = useForm<CreateWorkspaceInput>({
     resolver: zodResolver(CreateWorkspaceInputSchema),
+    // iter1700: 他 useForm 系 form 4 件 (login / signup / mock-login / mock-submit) は
+    // iter255-379 sweep で `mode: 'onTouched'` 採用済 (blur 時 inline error 表示)。
+    // 本 form のみ default 'onSubmit' で取りこぼし、user は submit するまで slug pattern
+    // 違反 / name 空欄 error を見られず一発失敗体験 (WCAG 3.3.1 inline error timing と
+    // sibling form の UX 整合)。`mode: 'onTouched'` 追加で他 form と pattern 統一。
+    mode: 'onTouched',
     defaultValues: { name: '', slug: '' },
   })
 
