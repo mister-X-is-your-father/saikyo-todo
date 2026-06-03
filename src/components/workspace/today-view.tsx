@@ -234,7 +234,15 @@ export function TodayView({
             data-testid="today-done-count-chip"
             data-tone={doneTodaySignal.tone}
             role="status"
-            aria-label={`今日累計完了 — ${doneTodaySignal.text}${doneTodayPriorityDetail}`}
+            /* iter1708: 旧 aria-label `今日累計完了 — ${doneTodaySignal.text}` は
+               formatDoneTodayJa 出力 (= "今日 N 件完了!" 等) が「今日」 で始まるため
+               `今日累計完了 — 今日 N 件完了!` と「今日」 が 2 回 redundant、SR
+               読み上げが冗長。visible chip text に「今日」 + 件数 + 完了状態が既に
+               全て含まれるため aria-label を visible text と同一に集約 (+ iter1738
+               priority detail 維持)、SR の冗長読み上げを解消。streak chip (上隣) は
+               visible が emoji label のみで「streak」 context を持たないため
+               `完了 streak — ` prefix は維持 (= 異なる pattern、本 fix の scope 外)。 */
+            aria-label={`${doneTodaySignal.text}${doneTodayPriorityDetail}`}
           >
             {doneTodaySignal.text}
           </span>
