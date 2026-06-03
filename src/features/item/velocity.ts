@@ -42,9 +42,21 @@
  *  - formatDoneTodayJa (0→「まだ 0 件」 / 1→「1 件完了」 / 2+→「N 件完了!」)
  *  - doneTodayToBriefSignal (今日完了 chip text+tone、idle/info/success 3 段階)
  *
+ * iter1733-1737 window 拡張 + priority 軸 深掘り substrate (Slack daily/weekly digest 用):
+ *  - countDoneInDays (N 日範囲累計、windowDays=1 で countDoneToday と等価)
+ *  - formatDoneInDaysJa (過去 N 日 prefix + 3 段階 format)
+ *  - doneInDaysToBriefSignal (過去 N 日 chip text+tone)
+ *  - countDoneTodayByPriority (priority bucket 別 件数)
+ *  - formatDoneTodayByPriorityJa (P1 1件 / P3 2件、0 件 bucket 省略)
+ *
+ * iter1735 refactor 内部 helper:
+ *  - formatDoneCountJa (prefix + 3 段階 format、4 関数の重複 logic 集約)
+ *  - doneCountTone (count → ChipTone polarity、4 関数で再利用)
+ *
  * 上記 substrate の AnalyticsSignals 統合: iter1715 streakMilestone (= 19 軸目) +
  * iter1719 streakComparison (= 20 軸目) + iter1728 doneToday (= 21 軸目)。
- * UI 配線: iter1709/1721/1724 dashboard velocity chip + iter1729-1730 Today view header chip。
+ * UI 配線: iter1709/1721/1724 dashboard velocity chip + iter1729-1739 Today view header chip
+ * (= doneToday + streak milestone 並列 + priority 別 SR detail aria-label)。
  */
 import { formatLocalISO, MS_PER_DAY, parseDateOrNull, toLocalMidnight } from '@/lib/date/iso'
 import { makeHintLabelFormatter } from '@/lib/hint'
