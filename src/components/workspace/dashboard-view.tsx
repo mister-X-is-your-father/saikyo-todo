@@ -192,10 +192,11 @@ import {
 } from '@/features/item/urgency'
 import {
   classifyVelocityHint,
-  composeStreakBriefSignals,
+  computeBestStreak,
   computeStreakChain,
   computeVelocity,
   computeVelocityByPriority,
+  formatStreakBestSuffix,
   formatVelocityByPriorityJa,
   formatVelocityHintJa,
   formatVelocitySummary,
@@ -280,19 +281,24 @@ export function DashboardView({ workspaceId }: Props) {
     // される (= 「完了 streak 7 日連続! 🥈 シルバー (1 週間連続)」)。
     // iter1713 fix: computeStreakChain (iter1712 orchestrator) 経由に短縮、chain.briefSignal.text
     // で同じ format 結果 + 将来 toast / chip tone を bind するときに chain 1 関数で揃う。
-    // iter1721 fix: iter1720 composeStreakBriefSignals (milestone + comparison fan-out) で
-    // 比較 chip (= 現在 vs 過去 best streak) を SR / hover に追加 append。bestStreak > 0
-    // (= tone !== 'idle') の時のみ表示、「今 7 日連続 (最高記録更新中!)」 / 「今 3 日連続
-    // (最高 7 日)」 で過去自己記録への意識付け = pull motivator (Duolingo longest streak と同 pattern)。
+    // iter1721 fix: 比較 chip を「/」 区切りで append、bestStreak > 0 で表示。
+    // iter1724 fix: iter1723 `formatStreakBestSuffix` で「(最高 N 日)」 suffix のみ取得、
+    // milestone text と組合せて「X 日連続」 重複なし 1 行に統合 (= '完了 streak 7 日連続!
+    // 🥈 シルバー (最高記録更新中!)')。iter1721 の 2 chip 経路 (「/」 区切り) を 1 chip
+    // 統合経路に集約、SR が読み上げる「7 日連続」 が 1 回のみ = 認知低減。
     const chain = computeStreakChain(result)
-    const streakSignals = composeStreakBriefSignals(result)
     const streak = chain.currStreak
-    const streakDetail = streak >= 2 ? ` — ${chain.briefSignal.text}` : ''
-    const comparisonDetail =
-      streakSignals.comparison.tone !== 'idle' ? ` / ${streakSignals.comparison.text}` : ''
+    const bestStreak = computeBestStreak(result)
+    const bestSuffix = formatStreakBestSuffix(streak, bestStreak)
+    const milestoneText = streak >= 2 ? chain.briefSignal.text : ''
+    const streakDetail = milestoneText
+      ? ` — ${milestoneText}${bestSuffix ? ` ${bestSuffix}` : ''}`
+      : bestSuffix
+        ? ` — ${bestSuffix}` // curr<2 でも best>0 なら中断 nudge を表示
+        : ''
     const detail = `${line}${priorityDetailSuffix(priorityBuckets, () =>
       formatVelocityByPriorityJa(byPriority, 7),
-    )}${streakDetail}${comparisonDetail}`
+    )}${streakDetail}`
     // iter456 basics: iter454 で追加した velocity trend hint (idle/up/flat/down) を
     // chip aria-label prefix + data-velocity-hint attr に bind (= iter441 / iter443 /
     // iter446 / iter448 / iter451 hint chip 同手法 6 弾目)。
