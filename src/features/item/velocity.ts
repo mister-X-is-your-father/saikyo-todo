@@ -428,6 +428,69 @@ export function doneTodayToBriefSignal(count: number): AgentBriefSignal {
 }
 
 /**
+ * iter1734 ai-automation: N 日範囲累計完了を ja-JP 1 行 chip text に整形する pure helper。
+ *
+ * `formatDoneTodayJa` (iter1726、= 今日のみ) の N 日範囲版。windowDays=7 で「今週」、
+ * =30 で「今月」、=14 で「過去 2 週間」 等、Slack daily/weekly digest が同 helper で
+ * 複数の window 軸を 1 行 chip 化可能。
+ *
+ * 仕様 (出力 pattern):
+ *  - count <= 0 → `'過去 N 日 まだ 0 件'` (= 励まし、強い責めなし)
+ *  - count === 1 → `'過去 N 日 1 件完了'` (= 控えめ感謝)
+ *  - count >= 2  → `'過去 N 日 ${count} 件完了!'` (= 強調、達成感)
+ *
+ * windowDays をテキスト先頭に出すことで、複数 chip 並列時 (= 「今日 3 件 / 今週 12 件
+ * / 今月 47 件」) でも各 chip の scope が一目で分かる UX を作る。
+ *
+ * 設計意図: `formatDoneTodayJa` は「今日」 特化で text に「今日」 prefix、本 helper は
+ * 「過去 N 日」 generic prefix で window scope を明示。caller が windowDays=1 で呼んでも
+ * 動作するが、その場合「過去 1 日」 という冗長な表記になるので caller 側で format 切替
+ * 推奨 (= 今日のみは formatDoneTodayJa、N 日範囲は本 helper)。
+ *
+ * 0 から始まる pure 関数、副作用なし。
+ */
+export function formatDoneInDaysJa(count: number, windowDays: number): string {
+  const prefix = `過去 ${windowDays} 日`
+  if (count <= 0) return `${prefix} まだ 0 件`
+  if (count === 1) return `${prefix} 1 件完了`
+  return `${prefix} ${count} 件完了!`
+}
+
+/**
+ * iter1734 ai-automation: N 日範囲累計完了を `AgentBriefSignal` (text + tone) に変換する
+ * compose helper。`doneTodayToBriefSignal` (iter1727、= 今日のみ) の N 日範囲版。
+ *
+ * text: `formatDoneInDaysJa(count, windowDays)`
+ * tone (positive polarity 3 段階、doneTodayToBriefSignal と同 polarity):
+ *  - count <= 0 → 'idle'
+ *  - count === 1 → 'info'
+ *  - count >= 2 → 'success'
+ *
+ * caller pattern (Slack weekly digest 達成感 cluster):
+ *   const weekDone = countDoneInDays(items, 7, today)
+ *   const monthDone = countDoneInDays(items, 30, today)
+ *   const signals = [
+ *     doneInDaysToBriefSignal(weekDone, 7),
+ *     doneInDaysToBriefSignal(monthDone, 30),
+ *   ]
+ *   slack.post(signals.map(s => `• ${s.text}`).join('\n'))
+ *
+ * 0 から始まる pure 関数、副作用なし。
+ */
+export function doneInDaysToBriefSignal(count: number, windowDays: number): AgentBriefSignal {
+  const text = formatDoneInDaysJa(count, windowDays)
+  let tone: ChipTone
+  if (count <= 0) {
+    tone = 'idle'
+  } else if (count === 1) {
+    tone = 'info'
+  } else {
+    tone = 'success'
+  }
+  return { text, tone }
+}
+
+/**
  * iter1710 basics: 「昨日時点の streak」 (= 末尾を除いて遡った連続日数) を計算する pure helper。
  *
  * `computeCompletionStreak` は「末尾今日からの連続」 (= 現在 streak)、本 helper は

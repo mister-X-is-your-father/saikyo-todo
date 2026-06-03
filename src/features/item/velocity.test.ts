@@ -20,9 +20,11 @@ import {
   computeVelocityByPriority,
   countDoneInDays,
   countDoneToday,
+  doneInDaysToBriefSignal,
   doneTodayToBriefSignal,
   formatBestStreakJa,
   formatCompletionStreakJa,
+  formatDoneInDaysJa,
   formatDoneTodayJa,
   formatStreakBestComparisonJa,
   formatStreakBestSuffix,
@@ -929,6 +931,37 @@ describe('countDoneInDays (iter1733 — N 日範囲累計完了)', () => {
   it('today を ISO 文字列でも受け付ける', () => {
     const items: VelocityFields[] = [{ doneAt: dt(0) }, { doneAt: dt(3) }]
     expect(countDoneInDays(items, 7, '2026-04-28')).toBe(2)
+  })
+})
+
+describe('formatDoneInDaysJa / doneInDaysToBriefSignal (iter1734 — N 日 chip 化)', () => {
+  it('count=0 → "過去 N 日 まだ 0 件" + tone=idle', () => {
+    expect(formatDoneInDaysJa(0, 7)).toBe('過去 7 日 まだ 0 件')
+    const sig = doneInDaysToBriefSignal(0, 7)
+    expect(sig.text).toBe('過去 7 日 まだ 0 件')
+    expect(sig.tone).toBe('idle')
+  })
+
+  it('count=1 → "過去 N 日 1 件完了" (! なし) + tone=info', () => {
+    expect(formatDoneInDaysJa(1, 7)).toBe('過去 7 日 1 件完了')
+    const sig = doneInDaysToBriefSignal(1, 7)
+    expect(sig.tone).toBe('info')
+  })
+
+  it('count>=2 → "過去 N 日 X 件完了!" (! あり) + tone=success', () => {
+    expect(formatDoneInDaysJa(5, 7)).toBe('過去 7 日 5 件完了!')
+    expect(formatDoneInDaysJa(25, 30)).toBe('過去 30 日 25 件完了!')
+    expect(doneInDaysToBriefSignal(5, 7).tone).toBe('success')
+  })
+
+  it('windowDays が変わると prefix も追従', () => {
+    expect(formatDoneInDaysJa(3, 14)).toBe('過去 14 日 3 件完了!')
+    expect(formatDoneInDaysJa(0, 30)).toBe('過去 30 日 まだ 0 件')
+  })
+
+  it('負値 (defensive) → "まだ 0 件" 扱い', () => {
+    expect(formatDoneInDaysJa(-1, 7)).toBe('過去 7 日 まだ 0 件')
+    expect(doneInDaysToBriefSignal(-1, 7).tone).toBe('idle')
   })
 })
 
