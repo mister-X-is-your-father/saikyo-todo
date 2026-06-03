@@ -89,6 +89,15 @@ export function DashboardChip({
       data-testid={testId}
       role={attention ? 'alert' : 'status'}
       aria-live={attention ? 'assertive' : 'polite'}
+      /* iter1710: ARIA 1.2 spec で role="status" / role="alert" の implicit
+         aria-atomic は true だが、browser / SR 実装は inconsistent (Chrome/JAWS は
+         partial announce、Firefox/NVDA は full announce 等)。bulk-action-bar
+         bulk-count (line 86) / today-view chip 2 件 (iter1709) と同 sweep で
+         explicit `aria-atomic="true"` を付与し、chip 数字や label 変化時に SR が
+         chip 全体を full re-announce する behavior を 1 source で保証。
+         全 dashboard chip (= 約 20 chip) に一括適用、partial announce による
+         context 欠落を解消。 */
+      aria-atomic="true"
       aria-label={ariaLabel}
       title={title}
       {...(dataAttrs ?? {})}
