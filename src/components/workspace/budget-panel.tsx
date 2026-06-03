@@ -153,6 +153,12 @@ export function BudgetPanel({ workspaceId }: Props) {
               data-direction={trendChip.trend.direction}
               role="status"
               aria-live="polite"
+              /* iter1712: iter1709 today / iter1710 dashboard-chip / iter1711 forecast chip と
+                 同 sweep で `aria-atomic="true"` 付与。cost trend chip は ratio / direction が
+                 月次で変化、partial announce で context 欠落 (「+3%」 だけ読み上げて「AI コスト傾向」
+                 prefix が失われる) を解消、SR は trend chip 全体「コスト傾向 ↑ +3% (...)」 を
+                 full re-announce で hear。 */
+              aria-atomic="true"
               aria-label={trendChip.line}
               title={trendChip.line}
             >
