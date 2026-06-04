@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= JL. editTitle input title sweep (iter2295) =========
+  const edJL = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
+  if (!edJL.includes('iter2295')) {
+    findings.push({
+      level: 'error',
+      source: 'JL.edit-title-input-title',
+      message: '[JL] iter2295 editTitle input title 4-path sync が消えている',
+    })
+  }
+
   // ========= JK. activity-detail-toggle title sweep (iter2293) =========
   const alJK = read(here, `${root}/src/components/workspace/activity-log.tsx`)
   if (!alJK.includes('iter2293')) {
