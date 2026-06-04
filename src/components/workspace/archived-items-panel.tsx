@@ -181,6 +181,12 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
                       ? `復元中… — 「${item.title}」を復元中…`
                       : `復元 — 「${item.title}」を復元 (${fmt(item.archivedAt)} にアーカイブ)`
                   }
+                  // iter1831: iter1787 ItemEditDialog unarchive と同 pattern を archive-restore に展開。
+                  title={
+                    unarchive.isPending
+                      ? `復元中… — 「${item.title}」を復元中…`
+                      : `復元 — 「${item.title}」を復元 (${fmt(item.archivedAt)} にアーカイブ)`
+                  }
                 >
                   <span aria-hidden="true">{unarchive.isPending ? '復元中…' : '復元'}</span>
                 </Button>
