@@ -161,6 +161,20 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
                   ? `作業内容 (現在 ${description.length} / 500 文字、上限近接)`
                   : `作業内容 (現在 ${description.length} / 500 文字)`
           }
+          /* iter2303: te-description input の aria-label は state-dependent 4-path (空 /
+             空白のみ / 上限近接 / 通常) で SR には full context (validation + 文字数) を渡すが
+             browser tooltip にならず sighted は hover で同 context disclose 不可。MCP path A
+             で /time-entries 探索中に発見、ItemEditDialog editTitle iter2295 と同 input title
+             pattern を time-entry description input にも展開、teMinutes と pair 完成。 */
+          title={
+            description.length === 0
+              ? '作業内容 (必須、最大 500 文字、何をやったかを 1 行で)'
+              : description.trim() === ''
+                ? `作業内容 (現在 ${description.length} / 500 文字、空白のみは不正)`
+                : description.length > 480
+                  ? `作業内容 (現在 ${description.length} / 500 文字、上限近接)`
+                  : `作業内容 (現在 ${description.length} / 500 文字)`
+          }
         />
       </div>
       <div className="space-y-1">
@@ -183,6 +197,18 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           inputMode="numeric"
           enterKeyHint="send"
           aria-label={(() => {
+            if (durationMinutes <= 0)
+              return `分 (1 以上、最大 1440 = 24h、現在値 ${durationMinutes} は不正)`
+            if (durationMinutes > 24 * 60)
+              return `分 (有効範囲 1-1440、現在値 ${durationMinutes} は範囲外)`
+            const h = Math.floor(durationMinutes / 60)
+            const m = durationMinutes % 60
+            const hm = h > 0 ? (m > 0 ? `${h}時間${m}分` : `${h}時間`) : `${m}分`
+            return `分 (現在 ${durationMinutes} 分 = ${hm}、step 15)`
+          })()}
+          /* iter2303: teMinutes input も description と pair の state-dependent 3-path title sync。
+             h/m parsed display (例: "1時間30分") は visible に無く SR + hover でだけ伝わる。 */
+          title={(() => {
             if (durationMinutes <= 0)
               return `分 (1 以上、最大 1440 = 24h、現在値 ${durationMinutes} は不正)`
             if (durationMinutes > 24 * 60)
