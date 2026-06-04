@@ -64,6 +64,17 @@ export function ItemPlanGenerateButton({ workspaceId, item, assignees }: Props) 
           ? `Plan 生成中… — 「${item.title}」の Plan を生成中`
           : `Plan を生成 — 「${item.title}」の AI 担当が実行計画を comment に投下します`
       }
+      /* iter2321: item-plan-generate-button の aria-label は state-dependent 2-path
+         (pending / idle、item.title + AI 担当 副作用 含む) で SR には full context を渡すが
+         browser tooltip にならず sighted は hover で同 context disclose 不可。
+         item-decompose-btn iter2213 / item-research-btn iter2231 / engineer-trigger-btn
+         iter2211 と同 AI action button title pattern を plan-generate にも展開、AI action
+         button family 4 element 完成 (decompose / research / engineer / plan-generate)。 */
+      title={
+        generate.isPending
+          ? `Plan 生成中… — 「${item.title}」の Plan を生成中`
+          : `Plan を生成 — 「${item.title}」の AI 担当が実行計画を comment に投下します`
+      }
     >
       <BotIcon className="size-4" aria-hidden="true" />
       <span aria-hidden="true">{generate.isPending ? 'Plan 生成中…' : 'Plan を生成'}</span>
