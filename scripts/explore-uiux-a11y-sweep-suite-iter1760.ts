@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= AO. WorkspaceHeader role Badge title sweep (iter1835) =========
+  const wsHeader = read(here, `${root}/src/components/workspace/workspace-header.tsx`)
+  if (!wsHeader.includes('title={`${role} — あなたの workspace role`}')) {
+    findings.push({
+      level: 'error',
+      source: 'AO.role-badge',
+      message: '[AO] iter1835 WorkspaceHeader role Badge title が消えている',
+    })
+  }
+
   // ========= AN. schedule-picker footer title sweep (iter1833) =========
   const picker = read(here, `${root}/src/components/schedule/schedule-item-picker.tsx`)
   if (
