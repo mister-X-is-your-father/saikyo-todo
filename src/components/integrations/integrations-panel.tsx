@@ -178,6 +178,8 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             <Play className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             <span aria-hidden="true">{trigger.isPending ? 'Pull 中…' : 'Pull'}</span>
           </Button>
+          {/* iter1815: iter1813 wf-actions と同 pattern を src-* button family にも展開、
+              src-card 4 button (pull + toggle + imports-toggle + delete) 全 hover disclosure 完備。 */}
           <Button
             size="sm"
             className="min-h-11"
@@ -187,6 +189,15 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             aria-busy={update.isPending || undefined}
             data-testid={`src-toggle-${src.id}`}
             aria-label={
+              update.isPending
+                ? src.enabled
+                  ? `無効化 — Source「${src.name}」の状態を更新中…`
+                  : `有効化 — Source「${src.name}」の状態を更新中…`
+                : src.enabled
+                  ? `無効化 — Source「${src.name}」を無効化`
+                  : `有効化 — Source「${src.name}」を有効化`
+            }
+            title={
               update.isPending
                 ? src.enabled
                   ? `無効化 — Source「${src.name}」の状態を更新中…`
@@ -208,6 +219,11 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
                importsOpen 時のみ aria-controls 設定で dangling 回避 (iter1637/iter1645 sweep)。 */
             aria-controls={importsOpen ? `src-imports-${src.id}` : undefined}
             aria-label={
+              importsOpen
+                ? `履歴 — Source「${src.name}」の Pull 履歴 (直近 5 件) を閉じる`
+                : `履歴 — Source「${src.name}」の Pull 履歴 (直近 5 件) を表示`
+            }
+            title={
               importsOpen
                 ? `履歴 — Source「${src.name}」の Pull 履歴 (直近 5 件) を閉じる`
                 : `履歴 — Source「${src.name}」の Pull 履歴 (直近 5 件) を表示`
@@ -236,7 +252,14 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             // に持ち voice control prefix-matching「click 削除」 match 不可 (icon-only Trash2
             // で visible text 無、title attribute も無し)。subtasks-indent iter1213 と同 sweep。
             // 概念名 "削除" / "削除中…" を aria-label 冒頭固定 + em-dash 区切で descriptive 末尾保持。
+            // iter1815: icon-only Trash2 で sighted は hover で何の操作か即把握できなかった。
+            // title 付与で sighted hover で delete context (source name) disclose。
             aria-label={
+              del.isPending
+                ? `削除中… — Source「${src.name}」を削除中`
+                : `削除 — Source「${src.name}」を削除`
+            }
+            title={
               del.isPending
                 ? `削除中… — Source「${src.name}」を削除中`
                 : `削除 — Source「${src.name}」を削除`
