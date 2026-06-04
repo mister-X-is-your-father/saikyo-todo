@@ -740,6 +740,19 @@ async function main() {
     })
   }
 
+  // ========= FN. sprint-retro title state-dependent 同期 sweep (iter2093) =========
+  const spFN = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (
+    !spFN.includes('iter2093') ||
+    !spFN.includes('振り返り生成中… — Sprint「${sprint.name}」の振り返り')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'FN.sprint-retro-title',
+      message: '[FN] iter2093 sprint-retro title state-dependent 同期 が消えている',
+    })
+  }
+
   // ========= FM. wf-trigger title 4-path 同期 sweep (iter2091) =========
   const wfpFM = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
   if (
