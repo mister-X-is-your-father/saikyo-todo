@@ -21,6 +21,7 @@ import {
   formatTopSignalsLineJa,
   groupSignalsByTone,
   hasAchievementSignals,
+  hasConcerningSignals,
   pickAchievementSignals,
   pickConcerningSignals,
   pickHighestSeveritySignal,
@@ -1302,6 +1303,39 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
     // 達成感系 signal は positive polarity (success/info/idle) で warn/danger/urgent
     // を出さない、よって空配列
     expect(arr).toEqual([])
+  })
+
+  it('iter1747: hasConcerningSignals — 全 null → false', () => {
+    const s = composeAnalyticsSignals({})
+    expect(hasConcerningSignals(s)).toBe(false)
+  })
+
+  it('iter1747: hasConcerningSignals — weeklyReviewDue overdue (danger) → true', () => {
+    const s = composeAnalyticsSignals({ weeklyReviewDue: 'overdue' })
+    expect(hasConcerningSignals(s)).toBe(true)
+  })
+
+  it('iter1747: hasConcerningSignals — 達成感のみ active → false (= positive 軸は警戒外)', () => {
+    const s = composeAnalyticsSignals({ doneToday: 2 })
+    expect(hasConcerningSignals(s)).toBe(false)
+  })
+
+  it('iter1747: hasConcerningSignals invariant — pickConcerningSignals.length > 0 と等価', () => {
+    const items: VelocityFields[] = [{ doneAt: TODAY }]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const cases = [
+      composeAnalyticsSignals({}),
+      composeAnalyticsSignals({ doneToday: 0 }),
+      composeAnalyticsSignals({ velocity }),
+      composeAnalyticsSignals({ doneToday: 2, velocity }),
+      composeAnalyticsSignals({ weeklyReviewDue: 'overdue' }),
+      composeAnalyticsSignals({ weeklyReviewDue: 'never-reviewed' }),
+    ]
+    for (const s of cases) {
+      const hasFlag = hasConcerningSignals(s)
+      const hasArray = pickConcerningSignals(s).length > 0
+      expect(hasFlag).toBe(hasArray)
+    }
   })
 
   it('iter1743: hasAchievementSignals invariant — pickAchievementSignals.length > 0 と等価', () => {

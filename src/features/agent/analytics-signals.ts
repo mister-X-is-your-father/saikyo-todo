@@ -8,7 +8,8 @@
  * urgencyTierCounts/mustHygiene/streakMilestone/streakComparison/doneToday) に拡張。
  * cluster-based subset API: pickAchievementSignals / hasAchievementSignals /
  * formatAchievementSignalsLineJa + 対称 concerning 版 pickConcerningSignals /
- * formatConcerningSignalsLineJa で 「達成感 vs 警戒」 を別 paragraph として post 可能。
+ * hasConcerningSignals / formatConcerningSignalsLineJa で 「達成感 vs 警戒」 を別 paragraph
+ * として post 可能 (達成感 cluster と完全対称な subset API trio = pick / has / formatLineJa)。
  *
  * 設計目的:
  *  - AI 朝 brief / Slack daily digest / dashboard chip area が「analytics 全体を
@@ -498,6 +499,35 @@ export function hasAchievementSignals(signals: AnalyticsSignals): boolean {
  */
 export function pickConcerningSignals(signals: AnalyticsSignals): AgentBriefSignal[] {
   return analyticsSignalsToArray(signals).filter(
+    (s) => s.tone === 'warn' || s.tone === 'danger' || s.tone === 'urgent',
+  )
+}
+
+/**
+ * iter1747 ai-automation: 警戒 cluster に 1 軸以上 active signal があるかの predicate。
+ * iter1742 `hasAchievementSignals` (達成感 cluster 版) の対称 concerning 版。
+ *
+ * `pickConcerningSignals(signals).length > 0` の薄い wrapper、UI / Slack notifier
+ * の「警戒セクション表示 gate」 を 1 関数 boolean で書ける。
+ *
+ * caller pattern (concerning panel 表示 gate):
+ *   const signals = composeAnalyticsSignals({ ... })
+ *   if (hasConcerningSignals(signals)) {
+ *     return <ConcerningPanel signals={signals} />
+ *   }
+ *
+ * 既存 helper との関係:
+ *  - `hasAchievementSignals` (iter1742): 達成感 cluster 4 軸 boolean (positive polarity)
+ *  - `pickConcerningSignals` (iter1744): 警戒 subset 配列 (warn/danger/urgent)
+ *  - `formatConcerningSignalsLineJa` (iter1745): 警戒 1 行 text (Slack section 用)
+ *  - 本 helper: 警戒 cluster boolean (= 「警戒あり/なし」 gate)
+ *
+ * 設計意図: 達成感 cluster と対称的に「ある or ない」 を 1 関数 boolean で示す。
+ * UI / Slack notifier の「警戒セクション render 判定」 で `if (length > 0)` 比較より
+ * semantic 明確 (= 「警戒があるか」 が読み手に直接伝わる)。
+ */
+export function hasConcerningSignals(signals: AnalyticsSignals): boolean {
+  return analyticsSignalsToArray(signals).some(
     (s) => s.tone === 'warn' || s.tone === 'danger' || s.tone === 'urgent',
   )
 }
