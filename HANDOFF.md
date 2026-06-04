@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2306 1/1 test a11y-sweep-suite に iter2305 Sprint Swimlane lane 一覧 ul entry 追加] 検査軸 276 個 (新 JQ 軸)、計約 394 invariant check に拡張、7 entity 一覧 ul family 完成。
+- ✅ [playwright-iter2305 1/1] Sprint Swimlane lane 一覧 ul: aria-label "Sprint Swimlane lane 一覧 — N 件" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-swimlane-lane-ul-title-iter2305.ts)、iter2291 Activity 履歴 ul と同 pattern、7 entity 一覧 ul family (sources / workflows / goals / templates / workspaces / activity-log / sprint-swimlane-lanes) 完成。
 - ✅ [playwright-iter2304 1/1 test a11y-sweep-suite に iter2303 te-description/teMinutes input entry 追加] 検査軸 275 個 (新 JP 軸)、計約 393 invariant check に拡張、time-entry create form 2 input title sync 完成 (MCP path A 経由発見)、検査軸 275 milestone 突破。
 - ✅ [playwright-iter2303 1/1] time-entry create form 2 input (作業内容 / 分): aria-label state-dependent multi-path (4-path / 3-path) を sighted hover で disclose 不可 → 同 text の title を 2 input 同時に付与し sync (path B codify scripts/explore-uiux-te-description-minutes-title-iter2303.ts)。**MCP path A で /time-entries 探索中に発見**、ItemEditDialog editTitle iter2295 と同 input title pattern を time-entry input にも展開、h/m parsed display を hover でも disclose。
 - ✅ [playwright-iter2302 1/1 test a11y-sweep-suite に iter2301 pickers trigger empty path entry 追加] 検査軸 274 個 (新 JO 軸)、計約 392 invariant check に拡張、picker family trigger button 両 path (empty + non-empty) 完成 (MCP path A 経由発見)。
