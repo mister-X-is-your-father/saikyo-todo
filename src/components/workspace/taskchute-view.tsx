@@ -134,6 +134,13 @@ export function TaskChuteView({ workspaceId, items }: Props) {
             aria-label={`合計 ${ticker.totalEstimateMin} 分 / 完了済 ${ticker.doneEstimateMin} 分 / 残 ${ticker.remainingEstimateMin} 分${
               ticker.estimateUnknownCount > 0 ? ` (見積無 ${ticker.estimateUnknownCount} 件)` : ''
             }`}
+            /* iter2179: taskchute-ticker-summary は visible で個別 span (h+m 形式) を表示するが
+               aria-label の "分" unit + 完了済/残 integrated readout は sighted hover で
+               disclose されない。dep-readiness-chip iter2177 / sync-error iter2175 と同
+               title=aria-label sync pattern。 */
+            title={`合計 ${ticker.totalEstimateMin} 分 / 完了済 ${ticker.doneEstimateMin} 分 / 残 ${ticker.remainingEstimateMin} 分${
+              ticker.estimateUnknownCount > 0 ? ` (見積無 ${ticker.estimateUnknownCount} 件)` : ''
+            }`}
           >
             <Timer className="text-muted-foreground h-3.5 w-3.5" aria-hidden="true" />
             <span className="font-medium tabular-nums" aria-hidden="true">
