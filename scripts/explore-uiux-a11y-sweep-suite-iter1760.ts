@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CP. items-board filter-sprint title sweep (iter1941) =========
+  const boardCP = read(here, `${root}/src/components/workspace/items-board.tsx`)
+  if (!boardCP.includes('iter1941') || !boardCP.includes('「全 Sprint」で解除')) {
+    findings.push({
+      level: 'error',
+      source: 'CP.filter-sprint',
+      message: '[CP] iter1941 items-board filter-sprint title が消えている',
+    })
+  }
+
   // ========= CO. items-board filter-status title sweep (iter1939) =========
   const boardCO = read(here, `${root}/src/components/workspace/items-board.tsx`)
   if (!boardCO.includes('iter1939') || !boardCO.includes('「全ステータス」で解除')) {
