@@ -212,6 +212,9 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
                        (substring 一致のみ)。iter1604/1605/1610-1612 visible 冒頭 em-dash sweep に
                        合わせ visible 冒頭固定 + em-dash 区切。 */
                     aria-label={`${label} — 合計`}
+                    /* iter1919: visible は label のみで「合計」 context が無い、
+                       sighted hover で disclose (iter1915 estimate-bias-tendency と同 chip pattern)。 */
+                    title={`${label} — 合計`}
                   >
                     <span aria-hidden="true">{label}</span>
                   </span>
