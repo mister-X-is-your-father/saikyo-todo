@@ -766,6 +766,19 @@ async function main() {
     })
   }
 
+  // ========= ID. workspace-header ヘッダー操作 group title sweep (iter2229) =========
+  const whID = read(here, `${root}/src/components/workspace/workspace-header.tsx`)
+  if (
+    !whID.includes('iter2229') ||
+    !whID.includes('title={`${title} — ヘッダー操作 (ページ固有アクション / ユーティリティ)`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'ID.workspace-header-ops-group-title',
+      message: '[ID] iter2229 workspace-header ヘッダー操作 group title 同期 が消えている',
+    })
+  }
+
   // ========= IC. workspace-header title sweep (iter2227) =========
   const whIC = read(here, `${root}/src/components/workspace/workspace-header.tsx`)
   if (!whIC.includes('iter2227') || !whIC.includes('title={`${title} — Workspace`}')) {
