@@ -740,6 +740,17 @@ async function main() {
     })
   }
 
+  // ========= FJ. sprint-complete + sprint-replan button title sweep (iter2085) =========
+  const spFJ = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  const iter2085CountFJ = (spFJ.match(/iter2085/g) ?? []).length
+  if (iter2085CountFJ < 2) {
+    findings.push({
+      level: 'error',
+      source: 'FJ.sprint-status-btns',
+      message: `[FJ] iter2085 sprint-complete + sprint-replan title が消えている (count=${iter2085CountFJ})`,
+    })
+  }
+
   // ========= FI. sprint-activate button title sweep (iter2083) =========
   const spFI = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (!spFI.includes('iter2083')) {
