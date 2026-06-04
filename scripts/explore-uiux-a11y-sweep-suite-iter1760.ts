@@ -744,6 +744,30 @@ async function main() {
     })
   }
 
+  // ========= AI. proposal-edit footer title sweep (iter1823) =========
+  const decomposePanel = read(
+    here,
+    `${root}/src/components/workspace/decompose-proposals-panel.tsx`,
+  )
+  if (!decomposePanel.includes('title={`キャンセル — 提案「${proposal.title}」の編集を破棄`}')) {
+    findings.push({
+      level: 'error',
+      source: 'AI.proposal-edit',
+      message: '[AI] iter1823 proposal-edit-cancel title が消えている',
+    })
+  }
+  if (
+    !decomposePanel.includes(
+      '`保存 — 提案「${proposal.title}」の編集を保存 (Cmd/Ctrl+Enter でも可)`',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'AI.proposal-edit',
+      message: '[AI] iter1823 proposal-save default path text が消えている',
+    })
+  }
+
   // ========= AH. notification-item title sweep (iter1821) =========
   if (
     !notifBell.includes(
