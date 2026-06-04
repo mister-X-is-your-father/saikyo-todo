@@ -740,6 +740,38 @@ async function main() {
     })
   }
 
+  // ========= FZ. gantt-summary 3 chip title sweep (iter2117) =========
+  const gvFZ = read(here, `${root}/src/components/workspace/gantt-view.tsx`)
+  const iter2117CountFZ = (gvFZ.match(/iter2117/g) ?? []).length
+  if (iter2117CountFZ < 3) {
+    findings.push({
+      level: 'error',
+      source: 'FZ.gantt-summary-chips-title',
+      message: `[FZ] iter2117 marker 不足 (count=${iter2117CountFZ}、critical/baseline/slip 3 個必要)`,
+    })
+  }
+  if (/^\s+title="critical path 上の item/m.test(gvFZ)) {
+    findings.push({
+      level: 'error',
+      source: 'FZ.gantt-summary-chips-title',
+      message: '[FZ] iter2117 gantt-summary-critical 旧 静的 title が残っている',
+    })
+  }
+  if (/^\s+title="baseline = 計画策定時/m.test(gvFZ)) {
+    findings.push({
+      level: 'error',
+      source: 'FZ.gantt-summary-chips-title',
+      message: '[FZ] iter2117 gantt-summary-baseline 旧 静的 title が残っている',
+    })
+  }
+  if (/title=\{`baseline より遅れている item の合計遅延日数`\}/.test(gvFZ)) {
+    findings.push({
+      level: 'error',
+      source: 'FZ.gantt-summary-chips-title',
+      message: '[FZ] iter2117 gantt-summary-slip 旧 静的 title が残っている',
+    })
+  }
+
   // ========= FY. kanban-edit title aria-sync (em-dash convention) sweep (iter2115) =========
   const kvFY = read(here, `${root}/src/components/workspace/kanban-view.tsx`)
   if (
