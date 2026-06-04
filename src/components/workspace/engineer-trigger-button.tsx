@@ -64,6 +64,10 @@ export function EngineerTriggerButton({ item }: Props) {
          iter1093-1549 sweep の em-dash 区切と divergent。内部 button (line 97) は既に em-dash
          convention (`Engineer に実装させる — ...`) で、group landmark も convention 合わせる。 */
       aria-label={`「${item.title}」 — Engineer Agent に投入 (PR 自動起票 toggle / 実装起動)`}
+      /* iter2207: engineer-trigger group の aria-label は browser tooltip にならず sighted は
+         hover で item.title + Engineer Agent 用途 context disclose 不可。
+         heartbeat-button iter2205 / risk-reasons iter2203 と同 title=aria-label sync pattern。 */
+      title={`「${item.title}」 — Engineer Agent に投入 (PR 自動起票 toggle / 実装起動)`}
     >
       <label className="flex min-h-11 items-center gap-1 text-xs">
         <input
