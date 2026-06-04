@@ -328,6 +328,11 @@ function SubtaskTreeNode({
           role="group"
           /* iter1586: paren convention を em-dash 区切に統一 (iter1093-1585 sweep)。 */
           aria-label={`グループ「${item.title}」 — 子タスク ${grandchildren.length} 件`}
+          /* iter2139: subtask group の aria-label "グループ「title」 — 子タスク N 件" は
+             browser tooltip にならず sighted は hover で child count context disclose 不可。
+             budget-edit-ops iter2137 / proposal-ops iter2135 / comment-ops iter2133 と同
+             title=aria-label sync pattern。 */
+          title={`グループ「${item.title}」 — 子タスク ${grandchildren.length} 件`}
         >
           {headerRow}
           {!overDepth && (
