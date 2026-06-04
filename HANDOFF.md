@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2252 1/1 test a11y-sweep-suite に iter2251 picker family PopoverContent entry 追加] 検査軸 249 個 (新 IP 軸)、計約 367 invariant check に拡張、picker family 2 element (tag / assignee) PopoverContent title pair 完成。
+- ✅ [playwright-iter2251 1/1] tag-picker / assignee-picker PopoverContent: aria-label "タグ — 選択 / 新規作成" / "アサイン — メンバー / AI Agent を選択" を sighted hover で disclose 不可 → 同 text の title を 2 picker 同時に付与し sync (path B codify scripts/explore-uiux-pickers-popover-title-iter2251.ts)、picker family 2 element PopoverContent title 統一。
 - ✅ [playwright-iter2250 1/1 test a11y-sweep-suite に iter2249 today-view header chips entry 追加] 検査軸 248 個 (新 IO 軸)、計約 366 invariant check に拡張、today-header chip 2 element pair 完成 (streak / doneToday)。
 - ✅ [playwright-iter2249 1/1] today-view header chips: 2 chip (streak / doneToday) の aria-label を sighted hover で disclose 不可 → 同 text の title を 2 chip 同時に付与し sync (path B codify scripts/explore-uiux-today-header-chips-title-iter2249.ts)、today-header chip 2 element pair 完成。
 - ✅ [playwright-iter2248 1/1 test a11y-sweep-suite に iter2247 Gantt root container entry 追加] 検査軸 247 個 (新 IN 軸)、計約 365 invariant check に拡張、Gantt root container title 補完。
