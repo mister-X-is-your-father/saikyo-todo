@@ -600,6 +600,37 @@ async function main() {
     })
   }
 
+  // ========= V. mock-timesheet submit button title sweep (iter1797) =========
+  if (
+    !mockLoginForm.includes("'ログイン — mock-timesheet email + password で認証'") ||
+    !mockLoginForm.includes("'認証中… — mock-timesheet 認証処理を実行中'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'V.mock-submit',
+      message: '[V] iter1797 mock-login-submit conditional 2 path text が消えている',
+    })
+  }
+  if (
+    !mockSubmitForm.includes("'送信 — 工数を送信 (mock-timesheet 入力フォーム)'") ||
+    !mockSubmitForm.includes("'送信中… — mock-timesheet 工数送信処理を実行中'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'V.mock-submit',
+      message: '[V] iter1797 mock-submit-action conditional 2 path text が消えている',
+    })
+  }
+  const mockLoginTitleCount = (mockLoginForm.match(/\btitle=\{/g) ?? []).length
+  const mockSubmitTitleCount = (mockSubmitForm.match(/\btitle=\{/g) ?? []).length
+  if (mockLoginTitleCount < 1 || mockSubmitTitleCount < 1) {
+    findings.push({
+      level: 'error',
+      source: 'V.mock-submit',
+      message: `[V] iter1797 mock form title 件数 login=${mockLoginTitleCount} submit=${mockSubmitTitleCount} (各 >=1 期待)`,
+    })
+  }
+
   // ========= N. logout button title sweep (iter1781) =========
   // homePage は C 軸で既に読込済 (line 277)
   if (!homePage.includes('title="ログアウト — ログイン画面に戻る"')) {
