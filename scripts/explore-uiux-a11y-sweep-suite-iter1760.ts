@@ -744,6 +744,18 @@ async function main() {
     })
   }
 
+  // ========= BM. subtasks-panel child-count title sweep (iter1883) =========
+  const subtasksBM = read(here, `${root}/src/components/workspace/subtasks-panel.tsx`)
+  if (
+    !subtasksBM.includes('title={`このタスクには子タスクが ${grandchildren.length} 件あります`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'BM.subtasks-childcount',
+      message: '[BM] iter1883 subtasks child-count title が消えている',
+    })
+  }
+
   // ========= BL. team-capacity member name title sweep (iter1881) =========
   const teamCapBL = read(here, `${root}/src/components/workspace/team-capacity-panel.tsx`)
   if (!teamCapBL.includes('title={`${name} — member`}')) {
