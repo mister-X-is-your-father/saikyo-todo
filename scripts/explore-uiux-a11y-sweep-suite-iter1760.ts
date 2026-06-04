@@ -762,6 +762,19 @@ async function main() {
     })
   }
 
+  // ========= HH. BulkHeaderCheckbox title sweep (iter2185) =========
+  const baHH = read(here, `${root}/src/components/workspace/bulk-action-bar.tsx`)
+  if (
+    !baHH.includes('iter2185') ||
+    !baHH.includes('`全解除 — 現ページ ${rowIds.length} 行をすべて選択中、クリックで全解除`')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HH.bulk-header-checkbox-title',
+      message: '[HH] iter2185 BulkHeaderCheckbox title 同期 が消えている',
+    })
+  }
+
   // ========= HG. BulkCheckbox title sweep (iter2183) =========
   const baHG = read(here, `${root}/src/components/workspace/bulk-action-bar.tsx`)
   if (!baHG.includes('iter2183') || !baHG.includes('title={label}')) {
