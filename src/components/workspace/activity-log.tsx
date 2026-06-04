@@ -180,6 +180,10 @@ function ActivityRow({
                で visible 冒頭固定 + em-dash 区切。 */
             aria-label={`${label} — 操作種別`}
             data-testid={`activity-action-icon-${entry.action}`}
+            /* iter1903: icon-only chip は visible に label 文字無 (隣 span が visible)、
+               icon 上 hover で「{label} — 操作種別」 disclose
+               (iter1901 hint chip / iter1853 sprint-status と同 status chip family pattern)。 */
+            title={`${label} — 操作種別`}
           >
             <Icon className="h-3 w-3" aria-hidden="true" />
           </span>
