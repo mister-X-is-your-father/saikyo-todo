@@ -609,6 +609,11 @@ function SprintCard({
                   aria-valuetext={`${done}/${total} (${pct}%) — ${sprintProgressToneLabel(tone)}`}
                   data-testid={`sprint-progress-${sprint.id}`}
                   data-tone={tone}
+                  /* iter1931: progressbar 色 tone (success/warn/danger) は WCAG 1.4.1 (色のみで
+                     意味伝達回避) 用に SR aria-valuetext に明示しているが sighted hover では
+                     不可達。aria-label と同 text を title に付与し sighted hover で tone disclose
+                     (sprint-retro-status-chip iter1923 と同 tone label disclose pattern)。 */
+                  title={`Sprint「${sprint.name}」完了率 ${pct}% — ${done}/${total} 件、${sprintProgressToneLabel(tone)}`}
                 >
                   <div
                     className={`${PROGRESS_TONE_BAR_CLASS[tone]} h-full`}
