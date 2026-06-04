@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= EH. template + 追加 button title sweep (iter2029) =========
+  const tmplEH = read(here, `${root}/src/components/template/template-items-editor.tsx`)
+  if (!tmplEH.includes('iter2029')) {
+    findings.push({
+      level: 'error',
+      source: 'EH.template-add-btn',
+      message: '[EH] iter2029 template + 追加 button title が消えている',
+    })
+  }
+
   // ========= EG. sprint-create endDate input title sweep (iter2027) =========
   const spEG = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (!spEG.includes('iter2027')) {
