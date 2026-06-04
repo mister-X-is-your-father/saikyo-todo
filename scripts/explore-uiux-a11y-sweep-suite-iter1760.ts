@@ -762,6 +762,16 @@ async function main() {
     })
   }
 
+  // ========= HN. StatCard role=group title sweep (iter2197) =========
+  const dvHN = read(here, `${root}/src/components/workspace/dashboard-view.tsx`)
+  if (!dvHN.includes('iter2197') || !dvHN.includes('title={ariaLabel}')) {
+    findings.push({
+      level: 'error',
+      source: 'HN.stat-card-title',
+      message: '[HN] iter2197 StatCard title 同期 が消えている',
+    })
+  }
+
   // ========= HM. Goal 一覧 ul title sweep (iter2195) =========
   const gpHM = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
   if (
