@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DG. workflows-panel wf-name input title sweep (iter1975) =========
+  const wfpDG = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
+  if (!wfpDG.includes('iter1975')) {
+    findings.push({
+      level: 'error',
+      source: 'DG.wf-name',
+      message: '[DG] iter1975 workflows-panel wf-name input title が消えている',
+    })
+  }
+
   // ========= DF. comment-thread edit textarea title sweep (iter1973) =========
   const ctDF = read(here, `${root}/src/components/workspace/comment-thread.tsx`)
   if (!ctDF.includes('iter1973')) {
