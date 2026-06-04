@@ -198,7 +198,13 @@ async function main() {
       'title={load.name}',
       'sprint-risk-board assigneeLoad',
     ],
-    [`${root}/src/components/workspace/dashboard-view.tsx`, 'title={item.title}', 'dashboard MUST'],
+    // iter2145: dashboard MUST item button title を `title={item.title}` から
+    // `title={`${item.title} — MUST item を編集`}` に変更し aria-label と sync。
+    [
+      `${root}/src/components/workspace/dashboard-view.tsx`,
+      'title={`${item.title} — MUST item を編集`}',
+      'dashboard MUST',
+    ],
     [`${root}/src/components/workspace/dashboard-view.tsx`, 'title={item.dod}', 'dashboard DoD'],
     [
       `${root}/src/components/workspace/decompose-proposals-panel.tsx`,
@@ -737,6 +743,16 @@ async function main() {
       level: 'error',
       source: 'AB.sprint-goal-create',
       message: '[AB] iter1809 goal-create conditional path text が消えている',
+    })
+  }
+
+  // ========= GN. dashboard MUST item button title sweep (iter2145) =========
+  const dvGN = read(here, `${root}/src/components/workspace/dashboard-view.tsx`)
+  if (!dvGN.includes('iter2145') || !dvGN.includes('title={`${item.title} — MUST item を編集`}')) {
+    findings.push({
+      level: 'error',
+      source: 'GN.dashboard-must-edit-title',
+      message: '[GN] iter2145 dashboard MUST item button title 同期 が消えている',
     })
   }
 
