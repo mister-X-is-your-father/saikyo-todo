@@ -412,6 +412,25 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
                   })()
                 : '全ステータス — ステータスで絞り込み未設定 (TODO / 進行中 / 完了)'
             }
+            /* iter1939: filter-status select は visible option text のみで filter context が
+               sighted には不明、aria-label と同 text を title に付与し sighted hover で
+               state + action context disclose (filter-must iter1937 と同 state-dependent
+               filter pattern)。 */
+            title={
+              statusFilter
+                ? (() => {
+                    const visible =
+                      statusFilter === 'todo'
+                        ? 'TODO'
+                        : statusFilter === 'in_progress'
+                          ? '進行中'
+                          : statusFilter === 'done'
+                            ? '完了'
+                            : statusFilter
+                    return `${visible} — ステータスで絞り込み中 (現在: ${visible})。「全ステータス」で解除`
+                  })()
+                : '全ステータス — ステータスで絞り込み未設定 (TODO / 進行中 / 完了)'
+            }
           >
             <option value="">全ステータス</option>
             <option value="todo">TODO</option>
