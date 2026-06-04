@@ -744,6 +744,20 @@ async function main() {
     })
   }
 
+  // ========= DB. workspace main landmark title sweep (iter1965) =========
+  const wsDB = read(here, `${root}/src/app/(workspace)/[workspaceId]/page.tsx`)
+  if (
+    !wsDB.includes(
+      'title="Workspace dashboard — Today / Inbox / Kanban / Backlog / Gantt / Dashboard"',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'DB.workspace-main',
+      message: '[DB] iter1965 workspace main landmark title が消えている',
+    })
+  }
+
   // ========= DA. workspace nav landmark title sweep (iter1963) =========
   const wsDA = read(here, `${root}/src/app/(workspace)/[workspaceId]/page.tsx`)
   if (
