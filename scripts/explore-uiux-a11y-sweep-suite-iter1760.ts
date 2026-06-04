@@ -766,6 +766,21 @@ async function main() {
     })
   }
 
+  // ========= IE. item-research-button title sweep (iter2231) =========
+  const rbIE = read(here, `${root}/src/components/workspace/item-research-button.tsx`)
+  if (
+    !rbIE.includes('iter2231') ||
+    !rbIE.includes('「${item.title}」は完了済のため AI 調査不可') ||
+    !rbIE.includes('「${item.title}」を AI 調査中…') ||
+    !rbIE.includes('「${item.title}」を AI 調査して Doc を作成')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'IE.item-research-btn-title',
+      message: '[IE] iter2231 item-research-button title 3-path sync が消えている',
+    })
+  }
+
   // ========= ID. workspace-header ヘッダー操作 group title sweep (iter2229) =========
   const whID = read(here, `${root}/src/components/workspace/workspace-header.tsx`)
   if (
