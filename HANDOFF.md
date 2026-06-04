@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2296 1/1 test a11y-sweep-suite に iter2295 editTitle input entry 追加] 検査軸 271 個 (新 JL 軸)、計約 389 invariant check に拡張、ItemEditDialog primary input title 補完 (MCP path A 経由発見)。
+- ✅ [playwright-iter2295 1/1] editTitle input (ItemEditDialog 基本タブ): aria-label state-dependent 4-path (空 / 空白のみ / 上限近接 / 通常) を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-edit-title-input-title-iter2295.ts)。**MCP path A で ItemEditDialog 基本タブで発見**、edit-item-sprint/kr iter2287 と同 state-dependent title pattern を title input にも展開、primary input title 補完。
 - ✅ [playwright-iter2294 1/1 test a11y-sweep-suite に iter2293 activity-detail-toggle entry 追加] 検査軸 270 個 (新 JK 軸)、計約 388 invariant check に拡張、disclosure button title 完成 (template-card iter2239 / activity-detail-toggle pair)、検査軸 270 milestone 突破。
 - ✅ [playwright-iter2293 1/1] activity-detail-toggle (活動詳細 disclosure button): aria-label state-dependent 2-path (open / closed、label context 含む) を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-activity-detail-toggle-title-iter2293.ts)。**MCP path A でアクティビティタブで発見**、subtask-outdent/indent iter2113 と同 state-dependent toggle title pattern、template-card iter2239 と同 disclosure button title 完成。
 - ✅ [playwright-iter2292 1/1 test a11y-sweep-suite に iter2291 Activity 履歴 ul entry 追加] 検査軸 269 個 (新 JJ 軸)、計約 387 invariant check に拡張、6 entity 一覧 ul family 完成 (MCP path A 経由発見)。
