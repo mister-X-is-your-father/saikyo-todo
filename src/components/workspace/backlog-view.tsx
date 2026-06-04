@@ -198,6 +198,12 @@ function buildColumns(
             // match 不可。iter1093-1151 sweep convention に揃え visible "編集"
             // 冒頭固定 + em-dash 区切で title を descriptive 末尾保持。
             aria-label={`編集 — 「${row.original.title}」を編集`}
+            /* iter2279: backlog-edit button の aria-label は item.title 含む context を
+               SR には渡すが browser tooltip にならず sighted は hover で「どの item を編集
+               するか」 disclose 不可。MCP path A で Backlog view で発見、today-title-edit
+               iter1737 と同 pattern を backlog-edit にも展開、cross-view edit button title
+               統一。 */
+            title={`編集 — 「${row.original.title}」を編集`}
           >
             <span aria-hidden="true">編集</span>
           </Button>
