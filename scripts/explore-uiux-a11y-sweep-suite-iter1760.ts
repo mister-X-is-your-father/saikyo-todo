@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= JK. activity-detail-toggle title sweep (iter2293) =========
+  const alJK = read(here, `${root}/src/components/workspace/activity-log.tsx`)
+  if (!alJK.includes('iter2293')) {
+    findings.push({
+      level: 'error',
+      source: 'JK.activity-detail-toggle-title',
+      message: '[JK] iter2293 activity-detail-toggle title 2-path sync が消えている',
+    })
+  }
+
   // ========= JJ. Activity 履歴 ul title sweep (iter2291) =========
   const alJJ = read(here, `${root}/src/components/workspace/activity-log.tsx`)
   if (!alJJ.includes('iter2291') || !alJJ.includes('title={`Activity 履歴 — ${data.length} 件`}')) {
