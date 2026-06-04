@@ -70,18 +70,23 @@ export function SignupForm() {
           aria-invalid={form.formState.errors.displayName ? true : undefined}
           aria-describedby={
             form.formState.errors.displayName
-              ? 'displayName-hint displayName-error'
-              : 'displayName-hint'
+              ? 'signup-displayName-hint signup-displayName-error'
+              : 'signup-displayName-hint'
           }
           {...form.register('displayName')}
         />
         {/* iter735: pattern エラー前に format hint を出す (create-workspace-form
-            slug iter733 と同 pattern)。SR は input focus 時に hint も読む。 */}
-        <p id="displayName-hint" className="text-muted-foreground text-xs">
+            slug iter733 と同 pattern)。SR は input focus 時に hint も読む。
+            iter1723: 旧 id `displayName-hint` / `displayName-error` は sibling email/password
+            (signup-email-hint / signup-password-error 等) と prefix divergent。signup-form 内
+            hint/error id を全 `signup-` prefix で統一 (= defensive namespacing + iter1715
+            login-form 同 sweep の signup 側 counterpart)。field id="displayName" 自体は form の
+            register('displayName') と一致させるため camelCase 維持。 */}
+        <p id="signup-displayName-hint" className="text-muted-foreground text-xs">
           チームメンバーに表示される名前。最大 50 文字。
         </p>
         {form.formState.errors.displayName && (
-          <p id="displayName-error" className="text-destructive text-xs" role="alert">
+          <p id="signup-displayName-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.displayName.message}
           </p>
         )}

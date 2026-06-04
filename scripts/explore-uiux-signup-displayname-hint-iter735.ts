@@ -29,13 +29,15 @@ async function main(): Promise<void> {
   const sf = readFileSync(resolve(process.cwd(), 'src/components/auth/signup-form.tsx'), 'utf8')
 
   // 1. displayName-hint paragraph 追加
+  //    iter1723: id を `displayName-hint` → `signup-displayName-hint` に prefix 統一したので regex 追従。
   const hasHint =
-    /<p id="displayName-hint" className="text-muted-foreground text-xs">\s*\n\s*チームメンバーに表示される名前。最大 50 文字。\s*\n\s*<\/p>/.test(
+    /<p id="signup-displayName-hint" className="text-muted-foreground text-xs">\s*\n\s*チームメンバーに表示される名前。最大 50 文字。\s*\n\s*<\/p>/.test(
       sf,
     )
-  // 2. aria-describedby が常に displayName-hint を含む
+  // 2. aria-describedby が常に signup-displayName-hint を含む
+  //    iter1723: error id も `displayName-error` → `signup-displayName-error` に追従。
   const hasDescribedBy =
-    /aria-describedby=\{\s*\n?\s*form\.formState\.errors\.displayName\s*\n?\s*\?\s*['"]displayName-hint displayName-error['"]\s*\n?\s*:\s*['"]displayName-hint['"]/.test(
+    /aria-describedby=\{\s*\n?\s*form\.formState\.errors\.displayName\s*\n?\s*\?\s*['"]signup-displayName-hint signup-displayName-error['"]\s*\n?\s*:\s*['"]signup-displayName-hint['"]/.test(
       sf,
     )
   // 3. iter735 説明 comment が存在
