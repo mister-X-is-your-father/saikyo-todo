@@ -168,6 +168,8 @@ function SubtaskTreeNode({
            ${item.title} を literal prefix に。」 close-quote が抜けるが、em-dash 区切で
            title と action 文の境界は SR に明瞭。 */
         aria-label={`${item.title} — ドラッグで並び替え`}
+        // iter1829: iter1827 bulk-action と同 pattern を subtask-drag (icon-only GripVertical) にも展開。
+        title={`${item.title} — ドラッグで並び替え`}
         data-testid={`subtask-drag-${item.id}`}
         {...attributes}
         {...listeners}
