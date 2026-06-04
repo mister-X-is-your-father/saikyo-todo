@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= EN. sprint-period edit form group title sweep (iter2041) =========
+  const spEN = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (!spEN.includes('iter2041')) {
+    findings.push({
+      level: 'error',
+      source: 'EN.sprint-period-edit-group',
+      message: '[EN] iter2041 sprint-period edit form group title が消えている',
+    })
+  }
+
   // ========= EM. quick-add input title sweep (iter2039) =========
   const qaEM = read(here, `${root}/src/components/workspace/quick-add.tsx`)
   if (!qaEM.includes('iter2039')) {
