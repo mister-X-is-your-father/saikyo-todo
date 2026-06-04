@@ -619,7 +619,11 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
         // sighted hover → 全 proposal title disclose (iter1720-1747 sweep を decompose-proposals
         // にも展開)。
         aria-label={`${proposal.title} — 提案を編集${proposal.isMust ? ' (MUST)' : ''}`}
-        title={proposal.title}
+        /* iter2223: proposal title button の title は proposal.title のみで aria-label
+           "${proposal.title} — 提案を編集 (MUST?)" の "提案を編集" + MUST hint context が
+           sighted hover で disclose されない。interrupt-note iter2221 / mock-top-nav
+           iter2219 と同 title=aria-label sync pattern。 */
+        title={`${proposal.title} — 提案を編集${proposal.isMust ? ' (MUST)' : ''}`}
       >
         <div className="flex items-center gap-1.5">
           {proposal.isMust && <MustBadge />}
