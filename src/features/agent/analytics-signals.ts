@@ -6,10 +6,21 @@
  * momentum/weeklyCompletion/dueHitRate/velocity/biasTrend/backlogAging/waitingSummary/
  * consultationCounts/weeklyReviewDue/inboxBucketCounts/stuckWip/overdueActive/slipDays/
  * urgencyTierCounts/mustHygiene/streakMilestone/streakComparison/doneToday) に拡張。
- * cluster-based subset API: pickAchievementSignals / hasAchievementSignals /
- * formatAchievementSignalsLineJa + 対称 concerning 版 pickConcerningSignals /
- * hasConcerningSignals / formatConcerningSignalsLineJa で 「達成感 vs 警戒」 を別 paragraph
- * として post 可能 (達成感 cluster と完全対称な subset API trio = pick / has / formatLineJa)。
+ * iter1722-1754 cluster-based subset API (達成感 / 警戒 cluster 完全対称 8 関数 + 2 combine):
+ *  - 4 軸 trio (各 cluster):
+ *    - pick    : pickAchievementSignals     / pickConcerningSignals     (subset 配列)
+ *    - has     : hasAchievementSignals      / hasConcerningSignals      (boolean gate)
+ *    - count   : countAchievementSignals    / countConcerningSignals    (active 数 number)
+ *    - format  : formatAchievementSignalsLineJa / formatConcerningSignalsLineJa (1 行 ja text)
+ *  - 2 combine helper:
+ *    - formatClusterSummaryLinesJa     : 警戒 + 達成感 詳細 2 行 (Slack body / AI brief paragraph)
+ *    - formatClusterCountsHeadlineJa   : '警戒 N / 達成感 M' 件数 1 行 headline (channel header)
+ *  - 2 invariant gate (iter1748 / iter1753):
+ *    - 互いに disjoint (∩=∅)
+ *    - 部分集合性 (countAch + countCon <= analyticsSignalsToArray.length)
+ *
+ * これで Slack daily digest / AI 朝 brief / dashboard 全 caller pattern を 1 関数 chain で
+ * build 可能 (= 「ポジティブ vs 警告」 paragraph 分離 + 件数 headline)。
  *
  * 設計目的:
  *  - AI 朝 brief / Slack daily digest / dashboard chip area が「analytics 全体を
