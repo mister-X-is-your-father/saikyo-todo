@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1928 1/1 test a11y-sweep-suite に iter1927 cycle status entry 追加] 検査軸 87 個 (新 CI 軸)、計約 183 invariant check に拡張。
 - ✅ [playwright-iter1927 1/1 mode-D cycle-check ステータス分布 grid に title 付与] 3 cell grid (完了 / 未完了 / cancelled) は visible で個別読めるが integrated summary は表示されず、aria-label の 1 行 summary を sighted hover で disclose。
 - ✅ [playwright-iter1926 1/1 test a11y-sweep-suite に iter1925 cycle Lead time entry 追加] 検査軸 86 個 (新 CH 軸)、計約 182 invariant check に拡張。
 - ✅ [playwright-iter1925 1/1 mode-D cycle-check Lead time grid に title 付与] 3 cell grid (平均 lead / 中央 lead / 期間) は visible で個別読めるが integrated summary は表示されず、aria-label の 1 行 summary を sighted hover で disclose。
