@@ -338,6 +338,16 @@ export function SprintsPanel({ workspaceId }: Props) {
                       ? `ゴール — Sprint ゴール (現在 ${goal.length} / 500 文字、上限近接、Cmd/Ctrl+Enter で作成)`
                       : `ゴール — Sprint ゴール (現在 ${goal.length} / 500 文字、Cmd/Ctrl+Enter で作成)`
                 }
+                /* iter1981: sprint-name iter1979 と pair、sprint-goal textarea も
+                   state-dependent aria-label の sighted hover disclose、sprints-panel 内
+                   2 input/textarea sweep 完備 (7 state-dependent input family)。 */
+                title={
+                  goal.length === 0
+                    ? 'ゴール — Sprint ゴール (任意、最大 500 文字、この Sprint で達成したいこと、Cmd/Ctrl+Enter で作成)'
+                    : goal.length > 480
+                      ? `ゴール — Sprint ゴール (現在 ${goal.length} / 500 文字、上限近接、Cmd/Ctrl+Enter で作成)`
+                      : `ゴール — Sprint ゴール (現在 ${goal.length} / 500 文字、Cmd/Ctrl+Enter で作成)`
+                }
               />
             </div>
             <div className="flex justify-end">
