@@ -1005,11 +1005,19 @@ function SprintCard({
                 aria-busy={retroPending || undefined}
                 onClick={onRunRetro}
                 data-testid={`sprint-retro-${sprint.id}`}
-                title="PM Agent が完了/未完 items を要約して Retro Doc を生成"
                 // iter1038: visible "振り返り生成" を aria-label の prefix に固定し
                 // WCAG 2.5.3 satisfy (旧 "振り返り Doc を生成" は "Doc を" 挿入で
                 // literal "振り返り生成" substring 不一致)。
                 aria-label={
+                  retroPending
+                    ? `振り返り生成中… — Sprint「${sprint.name}」の振り返りを生成中`
+                    : `振り返り生成 — Sprint「${sprint.name}」の振り返り Doc を生成 (PM Agent が完了/未完 items を要約)`
+                }
+                /* iter2093: 旧 title は静的 "PM Agent が完了/未完 items を要約して Retro Doc を
+                   生成" で state-dependent aria-label と divergent + Sprint name 欠落。
+                   aria-label と同 text に揃え (wf-trigger iter2091 / theme-toggle iter1971 と
+                   同 title-aria 4-path 同期 pattern)。 */
+                title={
                   retroPending
                     ? `振り返り生成中… — Sprint「${sprint.name}」の振り返りを生成中`
                     : `振り返り生成 — Sprint「${sprint.name}」の振り返り Doc を生成 (PM Agent が完了/未完 items を要約)`
