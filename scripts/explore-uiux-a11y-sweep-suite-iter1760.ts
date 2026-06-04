@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CT. start-timer-button active title sweep (iter1949) =========
+  const stCT = read(here, `${root}/src/components/workspace/start-timer-button.tsx`)
+  if (!stCT.includes('title={`「${item.title}」を計測中 — 経過 ${formatElapsed(elapsedFn())}')) {
+    findings.push({
+      level: 'error',
+      source: 'CT.start-timer-active',
+      message: '[CT] iter1949 start-timer-button active title が消えている',
+    })
+  }
+
   // ========= CS. inbox-view GTD 分類 group title sweep (iter1947) =========
   const inboxCS = read(here, `${root}/src/components/workspace/inbox-view.tsx`)
   if (!inboxCS.includes('title={`GTD 分類 — 2 分以内')) {
