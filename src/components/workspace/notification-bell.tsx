@@ -271,7 +271,11 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                       // iter1366: button が subtree を name するため内側 `<time>` の相対時刻が
                       // SR に届かなかった (視覚のみ)。受信時刻を accessible name 末尾に含め、
                       // SR ユーザにも「いつ届いたか」を伝える (WCAG 1.3.1)。
+                      // iter1821: aria-label は browser tooltip にならず sighted は hover で
+                      // notification 全体 context (body + status + relative time) 即把握できなかった。
+                      // iter1807 mark-all-read と pair で notification-bell 全 button hover disclosure 完備。
                       aria-label={`${formatNotificationBody(n)} — ${n.readAt ? '既読' : '未読'}${visual.label}通知 — ${formatRelativeTime(n.createdAt)}`}
+                      title={`${formatNotificationBody(n)} — ${n.readAt ? '既読' : '未読'}${visual.label}通知 — ${formatRelativeTime(n.createdAt)}`}
                     >
                       <span
                         className={`mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full ring-1 ring-inset ${visual.bgClass} ${visual.textClass} ${visual.ringClass}`}
