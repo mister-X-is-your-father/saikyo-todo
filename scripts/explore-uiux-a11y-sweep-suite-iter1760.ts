@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= JP. te-description / teMinutes input title sweep (iter2303) =========
+  const teJP = read(here, `${root}/src/components/time-entry/create-time-entry-form.tsx`)
+  if (!teJP.includes('iter2303')) {
+    findings.push({
+      level: 'error',
+      source: 'JP.te-description-minutes-title',
+      message: '[JP] iter2303 te-description / teMinutes input title sync が消えている',
+    })
+  }
+
   // ========= JO. pickers trigger empty path title sweep (iter2301) =========
   const apJO = read(here, `${root}/src/components/workspace/assignee-picker.tsx`)
   if (
