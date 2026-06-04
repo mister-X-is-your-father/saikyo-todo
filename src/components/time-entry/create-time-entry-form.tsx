@@ -58,6 +58,9 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
       onSubmit={handleSubmit}
       noValidate
       aria-label="稼働記録 作成フォーム"
+      /* iter2065: 8 form family の続編 (時間 entry 作成 form 9 個目)、稼働記録 作成 form の
+         用途 hover disclose、mock-login/submit iter2061-2063 と同 form landmark pattern。 */
+      title="稼働記録 作成フォーム"
       aria-busy={create.isPending || undefined}
       className="grid gap-3 md:grid-cols-[auto_auto_1fr_auto_auto]"
       data-testid="create-time-entry-form"
