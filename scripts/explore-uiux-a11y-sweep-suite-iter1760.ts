@@ -744,6 +744,15 @@ async function main() {
     })
   }
 
+  // ========= AU. notification-bell-hint chip title sweep (iter1847) =========
+  if (!notifBell.includes('title={`${hint.label} — 通知 健全性`}')) {
+    findings.push({
+      level: 'error',
+      source: 'AU.notif-hint',
+      message: '[AU] iter1847 notification-bell-hint title が消えている',
+    })
+  }
+
   // ========= AT. comment-thread AI Agent badge title sweep (iter1845) =========
   // commentThread は R 軸で既に読込済
   if (!commentThread.includes('title="AI Agent による投稿"')) {
