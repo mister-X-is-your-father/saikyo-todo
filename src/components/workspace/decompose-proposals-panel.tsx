@@ -182,7 +182,16 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               aria-busy={cancel.isPending || undefined}
               onClick={() => void handleCancel()}
               data-testid="agent-cancel"
-              title="実行中の Agent を中止"
+              /* iter2105: agent-cancel static title="実行中の Agent を中止" は
+                 state-dependent aria-label (2-path: pending / idle) と divergent
+                 → 2-path sync。src-pull iter2103 / wf-run-rerun iter2101 /
+                 kr-delete iter2099 と同 title-aria divergence 修正 pattern。
+                 state context を sighted hover で disclose。 */
+              title={
+                cancel.isPending
+                  ? '中止 — 実行中の Agent を中止中…'
+                  : '中止 — 実行中の Agent を中止 (Researcher / 分解処理を停止)'
+              }
               // iter1166: 旧 aria-label 2 path とも visible "中止" を中位置 "Agent を
               // **中止** ..." に持ち voice control prefix-matching「click 中止」
               // match 不可。iter1093-1165 sweep convention に揃え visible "中止"
