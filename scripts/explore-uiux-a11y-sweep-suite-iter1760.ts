@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DI. sprints-panel sprint-name input title sweep (iter1979) =========
+  const spDI = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (!spDI.includes('iter1979')) {
+    findings.push({
+      level: 'error',
+      source: 'DI.sprint-name',
+      message: '[DI] iter1979 sprints-panel sprint-name input title が消えている',
+    })
+  }
+
   // ========= DH. workflows-panel wf-desc textarea title sweep (iter1977) =========
   const wfpDH = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
   if (!wfpDH.includes('iter1977')) {
