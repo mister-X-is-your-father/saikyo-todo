@@ -97,6 +97,9 @@ export function InboxView({
       /* iter1592: paren convention `Inbox view (...)` を iter1093-1591 sweep の em-dash 区切に統一。
          内側 ':' colon (健全性: X) は em-dash convention で ' — ' に整える。 */
       aria-label={`Inbox view — ${inbox.length} 件、scheduledFor も期限も未設定、健全性 ${healthChip.label}`}
+      /* iter1945: region 全体に title を付与し sighted hover で count + 説明 + 健全性
+         integrated summary disclose (op-board iter1943 と同 region/widget summary pattern)。 */
+      title={`Inbox view — ${inbox.length} 件、scheduledFor も期限も未設定、健全性 ${healthChip.label}`}
     >
       <div className="mb-1 flex items-center gap-2 px-2 text-xs">
         {/* iter923: parent region aria-label "Inbox view (${N} 件、scheduledFor も
