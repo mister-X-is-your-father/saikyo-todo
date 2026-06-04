@@ -939,6 +939,12 @@ function KeyResultList({
         className="space-y-2 rounded border border-dashed p-2"
         noValidate
         aria-label={`Goal「${goalTitle}」の Key Result 追加フォーム`}
+        /* iter2241: KR 追加 form 全体の aria-label は browser tooltip にならず sighted は
+           hover で「どの Goal の KR 追加 form か」 disclose 不可。Goal 作成フォーム title
+           iter2045 と同 create-form family title pattern を KR 追加 form にも展開、KR
+           add form が goal scope 内で複数並ぶ場合 (multi-goal 一覧画面) に Goal 名で
+           discriminate 可能化。 */
+        title={`Goal「${goalTitle}」の Key Result 追加フォーム`}
         aria-busy={create.isPending || undefined}
         onSubmit={(e) => {
           e.preventDefault()
