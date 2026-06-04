@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DM. template-items 子 Item タイトル input title sweep (iter1987) =========
+  const tmplDM = read(here, `${root}/src/components/template/template-items-editor.tsx`)
+  if (!tmplDM.includes('iter1987')) {
+    findings.push({
+      level: 'error',
+      source: 'DM.template-title-input',
+      message: '[DM] iter1987 template-items 子 Item タイトル input title が消えている',
+    })
+  }
+
   // ========= DL. goals-panel goal-desc textarea title sweep (iter1985) =========
   const gpDL = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
   if (!gpDL.includes('iter1985')) {
