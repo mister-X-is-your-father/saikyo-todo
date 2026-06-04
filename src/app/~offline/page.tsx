@@ -48,11 +48,16 @@ export default function OfflinePage() {
       >
         <OfflineRetryButton />
         {/* iter1492: iter1093-1151 sweep の em-dash visible-prefix convention に合わせ
-            旧 () 区切から em-dash 区切に。visible "ホームに戻る" は無変更。 */}
+            旧 () 区切から em-dash 区切に。visible "ホームに戻る" は無変更。
+            iter1716: iter1714 (signup login-link) と対称な data-testid を offline page Link
+            にも付与。Playwright で offline 復帰アクション 2 個 (retry-button / home-link) を
+            標準 selector で発見可能に、focus order / aria-label / em-dash convention の自動
+            audit を offline page にも展開できるようにする。 */}
         <Link
           href="/"
           prefetch={false}
           aria-label="ホームに戻る — アプリの起点画面に遷移、オンライン復帰後は最新状態を表示"
+          data-testid="offline-home-link"
           className={cn(buttonVariants({ variant: 'outline' }), 'h-11 px-4')}
         >
           <span aria-hidden="true">ホームに戻る</span>
