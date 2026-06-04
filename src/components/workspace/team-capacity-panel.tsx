@@ -54,7 +54,14 @@ const TONE_CLASS: Record<MemberCapacityLoad['loadStatus'], string> = {
 export function TeamCapacityPanel({ workspaceId }: Props) {
   const [open, setOpen] = useState(false)
   return (
-    <section className="bg-card/50 rounded-md border p-3" aria-label="チームメンバー余裕時間 一覧">
+    <section
+      className="bg-card/50 rounded-md border p-3"
+      aria-label="チームメンバー余裕時間 一覧"
+      /* iter2053: section 全体に title を付与し sighted hover で 余裕時間一覧 用途
+         disclose、weekly-insight iter2049 / taskchute iter2047 と同 region landmark hover
+         summary pattern (7 region landmark family)。 */
+      title="チームメンバー余裕時間 一覧"
+    >
       <details
         onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}
         data-testid="team-capacity-panel"
