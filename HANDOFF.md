@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1871 1/1 mode-D backlog estimate-summary chip に title 付与] ⏱ + estimateSummary 表示の chip は visible が「Backlog 見積サマリ」 context を持たず、sighted hover で chip の意味 disclose。
 - ✅ [playwright-iter1870 1/1 test a11y-sweep-suite に iter1869 kanban child-count entry 追加] 検査軸 58 個 (新 BF 軸)、計約 154 invariant check に拡張。
 - ✅ [playwright-iter1869 1/1 mode-D kanban-view child-count chip に title 付与] visible `子 N 件` (省略) と aria-label `子タスク N 件` (full) の divergent を sighted hover で full text disclose。palette/taskchute/period/inbox priority dot title sweep の続編。
 - ✅ [playwright-iter1868 1/1 test a11y-sweep-suite に iter1867 palette priority entry 追加] 検査軸 57 個 (新 BE 軸)、計約 153 invariant check に拡張。
