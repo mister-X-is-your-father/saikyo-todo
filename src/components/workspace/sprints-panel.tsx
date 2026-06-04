@@ -843,6 +843,9 @@ function SprintCard({
                区切のみ '(現在:' → ' — 現在' に統一、closing ')' は削除。iter1573-1577 region/group
                landmark sweep の sprint operations group 着地。 */
             aria-label={`Sprint「${sprint.name}」の操作 — 現在 ${sprintStatusLabelJa(status)}、期間編集 / ステータス遷移 / Retro / Pre-mortem`}
+            /* iter2033: workflows-panel operations group iter2031 と同 pattern を sprints-panel
+               operations group にも展開、Sprint 名 + 現在 status + operations 構成 hover disclose。 */
+            title={`Sprint「${sprint.name}」の操作 — 現在 ${sprintStatusLabelJa(status)}、期間編集 / ステータス遷移 / Retro / Pre-mortem`}
           >
             {!editing && status !== 'cancelled' && status !== 'completed' && (
               <Button
