@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= JC. backlog sortable th title sweep (iter2277) =========
+  const bvJC = read(here, `${root}/src/components/workspace/backlog-view.tsx`)
+  if (!bvJC.includes('iter2277')) {
+    findings.push({
+      level: 'error',
+      source: 'JC.backlog-th-sort-title',
+      message: '[JC] iter2277 backlog sortable th title sync が消えている',
+    })
+  }
+
   // ========= JB. today-view 期限 span title sweep (iter2275) =========
   const tvJB = read(here, `${root}/src/components/workspace/today-view.tsx`)
   if (!tvJB.includes('iter2275') || !tvJB.includes('title={`期限 ${it.dueDate}`}')) {
