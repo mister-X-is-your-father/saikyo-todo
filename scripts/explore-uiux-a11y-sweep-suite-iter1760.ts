@@ -746,6 +746,27 @@ async function main() {
     })
   }
 
+  // ========= GP. op-board quick-wins + focus-blocks button title sweep (iter2149) =========
+  const opGP = read(here, `${root}/src/components/workspace/operation-board-widget.tsx`)
+  const iter2149CountGP = (opGP.match(/iter2149/g) ?? []).length
+  if (iter2149CountGP < 2) {
+    findings.push({
+      level: 'error',
+      source: 'GP.op-board-buttons-title',
+      message: `[GP] iter2149 marker 不足 (count=${iter2149CountGP}、quick-wins + focus-blocks 2 個必要)`,
+    })
+  }
+  if (
+    !opGP.includes('title={`${it.title} を開く — 見積 ${it.estimateMin}分`}') ||
+    !opGP.includes('title={`${it.title} を開く — 集中 ${it.estimateMin}分`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GP.op-board-buttons-title',
+      message: '[GP] iter2149 op-board buttons title sync が消えている',
+    })
+  }
+
   // ========= GO. filter-count status title sweep (iter2147) =========
   const ibGO = read(here, `${root}/src/components/workspace/items-board.tsx`)
   if (!ibGO.includes('iter2147') || !ibGO.includes('title={label}')) {
