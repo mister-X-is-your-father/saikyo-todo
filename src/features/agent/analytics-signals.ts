@@ -586,6 +586,38 @@ export function countConcerningSignals(signals: AnalyticsSignals): number {
 }
 
 /**
+ * iter1764 ai-automation: 警戒 cluster の中で最も severe な 1 signal を抽出。
+ * `pickHighestSeveritySignal` (iter957、全 signals から最重要) の 警戒 cluster 限定版。
+ *
+ * 仕様:
+ *  - tone severity rank で最大 (= 'danger' > 'urgent' > 'warn') の signal を 1 件返す
+ *  - 警戒 signal 0 件 → null sentinel
+ *  - 同 rank 複数 → `pickConcerningSignals` の表示順 (= analyticsSignalsToArray の
+ *    domain 順 = concerningRole 先頭) を保持 (stable max)
+ *
+ * 用途:
+ *  - dashboard 「main alert chip」 (= 警戒 1 件だけ大きく表示)
+ *  - notification badge tone (= 警戒の最 severe tone を採用)
+ *  - Slack daily digest 「最優先警告」 headline (= 1 行)
+ *
+ * 既存 helper との関係:
+ *  - `pickHighestSeveritySignal` (iter957): 全 signal 軸 (= 達成感も含む) から最重要
+ *  - `pickConcerningSignals` (iter1744): 警戒 subset 配列 (件数制限なし、domain 順)
+ *  - 本 helper: 警戒 subset の最 severe 1 件 (= alert 1 chip 用、severity rank 順)
+ *  - `formatConcerningSignalsLineJa` (iter1745): 警戒 全件 1 行 text (= 詳細表示)
+ *
+ * 設計意図: `pickHighestSeveritySignal(signals)` は達成感 signal を返すケースがあるが、
+ * 「main alert chip」 では達成感 signal を返したくない (= 警告軸の chip にしたい)。
+ * 本 helper で「警戒だけから 1 chip」 を確実に選出。null sentinel で「警戒なし」 状態は
+ * caller が gate 可能 (= chip 非表示 / muted display)。
+ */
+export function pickHighestSeverityConcerningSignal(
+  signals: AnalyticsSignals,
+): AgentBriefSignal | null {
+  return pickTopItemsByTone(pickConcerningSignals(signals), (s) => s.tone, 1)[0] ?? null
+}
+
+/**
  * iter1745 ai-automation: 警戒 cluster を「警戒: ...」 prefix 付き 1 行 ja-JP text に
  * 整形する compose helper。`formatAchievementSignalsLineJa` (iter1725) と対称的な
  * concerning 版、Slack daily digest「今日の警告」 section 用。

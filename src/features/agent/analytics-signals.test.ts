@@ -4,6 +4,8 @@
  */
 import { describe, expect, it } from 'vitest'
 
+import { chipToneAttentionRank } from '@/lib/ui/chip-tone'
+
 import { computeWorkspaceMomentum, type MomentumFields } from '@/features/item/momentum'
 import { computeVelocity, type VelocityFields } from '@/features/item/velocity'
 import { buildWeeklyCompletionInsight } from '@/features/item/weekly-completion-insight'
@@ -29,6 +31,7 @@ import {
   hasConcerningSignals,
   pickAchievementSignals,
   pickConcerningSignals,
+  pickHighestSeverityConcerningSignal,
   pickHighestSeveritySignal,
   pickTopSignalsBySeverity,
 } from './analytics-signals'
@@ -1557,6 +1560,38 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
       const hasAch = hasAchievementSignals(s)
       const expectedTone = hasCon ? 'warn' : hasAch ? 'success' : 'idle'
       expect(sig.tone).toBe(expectedTone)
+    }
+  })
+
+  it('iter1764: pickHighestSeverityConcerningSignal — 警戒なし → null sentinel', () => {
+    expect(pickHighestSeverityConcerningSignal(composeAnalyticsSignals({}))).toBeNull()
+  })
+
+  it('iter1764: pickHighestSeverityConcerningSignal — 達成感のみ active → null (= 警戒 subset 0 件)', () => {
+    expect(
+      pickHighestSeverityConcerningSignal(composeAnalyticsSignals({ doneToday: 2 })),
+    ).toBeNull()
+  })
+
+  it('iter1764: pickHighestSeverityConcerningSignal — weeklyReviewDue overdue (danger) → 1 件返る', () => {
+    const s = composeAnalyticsSignals({ weeklyReviewDue: 'overdue' })
+    const sig = pickHighestSeverityConcerningSignal(s)
+    expect(sig).not.toBeNull()
+    expect(sig).toBe(s.weeklyReviewDue)
+  })
+
+  it('iter1764: pickHighestSeverityConcerningSignal — 警戒 subset の中で最 severe を選ぶ', () => {
+    // pickConcerningSignals の全件と比較、本 helper の戻り値が severity rank 最大であること
+    const s = composeAnalyticsSignals({ weeklyReviewDue: 'overdue' })
+    const all = pickConcerningSignals(s)
+    const picked = pickHighestSeverityConcerningSignal(s)
+    if (picked && all.length > 0) {
+      // pick は severity rank で最大、他 signal がより severe ということはない
+      for (const a of all) {
+        expect(chipToneAttentionRank(picked.tone)).toBeGreaterThanOrEqual(
+          chipToneAttentionRank(a.tone),
+        )
+      }
     }
   })
 
