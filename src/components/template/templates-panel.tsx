@@ -359,6 +359,17 @@ export function TemplatesPanel({ workspaceId }: Props) {
                         ? `削除中… — Template「${t.name}」を削除中`
                         : `削除 — Template「${t.name}」を削除`
                     }
+                    /* iter2317: template-card delete button の aria-label は state-dependent
+                       2-path (pending / idle、template.name 含む) で SR には full context を
+                       渡すが browser tooltip にならず sighted は hover で同 context disclose
+                       不可 (icon-only Trash2 で visible text 無)。MCP path A で /templates 探索
+                       中に発見、proposals-accept/reject iter2253 / wf-delete iter1815 と同
+                       state-dependent delete button title pattern。 */
+                    title={
+                      deleteMut.isPending
+                        ? `削除中… — Template「${t.name}」を削除中`
+                        : `削除 — Template「${t.name}」を削除`
+                    }
                   >
                     <Trash2 className="h-4 w-4 text-red-500" aria-hidden="true" />
                   </Button>
