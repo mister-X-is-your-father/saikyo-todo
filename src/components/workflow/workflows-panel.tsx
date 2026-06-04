@@ -384,6 +384,9 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             <Play className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             <span aria-hidden="true">{trigger.isPending ? '実行中…' : '実行'}</span>
           </Button>
+          {/* iter1813: iter1809 sprint/goal / iter1811 template/wf-create と同 pattern を
+              wf-edit/toggle/runs-toggle/delete 4 button family にも展開、wf-* button group
+              全 hover disclosure 完備。 */}
           <Button
             size="sm"
             className="min-h-11"
@@ -391,6 +394,7 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             onClick={() => setEditorOpen(true)}
             data-testid={`wf-edit-${wf.id}`}
             aria-label={`編集 — Workflow「${wf.name}」の graph / trigger を編集`}
+            title={`編集 — Workflow「${wf.name}」の graph / trigger を編集`}
           >
             <Pencil className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             <span aria-hidden="true">編集</span>
@@ -416,6 +420,15 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
                   ? `無効化 — Workflow「${wf.name}」を無効化`
                   : `有効化 — Workflow「${wf.name}」を有効化`
             }
+            title={
+              update.isPending
+                ? wf.enabled
+                  ? `無効化 — Workflow「${wf.name}」の状態を更新中…`
+                  : `有効化 — Workflow「${wf.name}」の状態を更新中…`
+                : wf.enabled
+                  ? `無効化 — Workflow「${wf.name}」を無効化`
+                  : `有効化 — Workflow「${wf.name}」を有効化`
+            }
           >
             <span aria-hidden="true">{wf.enabled ? '無効化' : '有効化'}</span>
           </Button>
@@ -430,6 +443,11 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
                (iter1637/iter1645 sweep)。 */
             aria-controls={runsOpen ? `wf-runs-${wf.id}` : undefined}
             aria-label={
+              runsOpen
+                ? `履歴 — Workflow「${wf.name}」の実行履歴 (直近 5 件) を閉じる`
+                : `履歴 — Workflow「${wf.name}」の実行履歴 (直近 5 件) を表示`
+            }
+            title={
               runsOpen
                 ? `履歴 — Workflow「${wf.name}」の実行履歴 (直近 5 件) を閉じる`
                 : `履歴 — Workflow「${wf.name}」の実行履歴 (直近 5 件) を表示`
@@ -458,7 +476,14 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             // に持ち voice control prefix-matching「click 削除」 match 不可 (icon-only Trash2
             // で visible text 無、title attribute も無し)。src-delete と同 sweep を wf-delete
             // にも展開。概念名 "削除" / "削除中…" を aria-label 冒頭固定 + em-dash 区切。
+            // iter1813: icon-only Trash2 で sighted は hover で何の操作か即把握できなかった。
+            // title 付与で sighted hover で delete context (workflow name) disclose。
             aria-label={
+              del.isPending
+                ? `削除中… — Workflow「${wf.name}」を削除中`
+                : `削除 — Workflow「${wf.name}」を削除`
+            }
+            title={
               del.isPending
                 ? `削除中… — Workflow「${wf.name}」を削除中`
                 : `削除 — Workflow「${wf.name}」を削除`
