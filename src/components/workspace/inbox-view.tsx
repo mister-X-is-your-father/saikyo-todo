@@ -198,8 +198,12 @@ export function InboxView({
             }}
             /* iter1541: 旧 aria-label `${it.title} を編集ダイアログで開く` は visible-prefix
                ${it.title} を満たすが ' を' 助詞接続で iter1093-1540 sweep の em-dash 区切と
-               divergent。`${it.title} — 編集ダイアログで開く` に統一。 */
+               divergent。`${it.title} — 編集ダイアログで開く` に統一。
+               iter1736: inner truncate span は visual で long title 切れ、aria-label は browser
+               tooltip にならず sighted は hover で全 title 見られなかった。title 付与で
+               sighted hover → 全 title disclose (iter1720/1733/1734/1735 sweep を inbox にも)。 */
             aria-label={`${it.title} — 編集ダイアログで開く`}
+            title={it.title}
             className="focus-visible:ring-ring flex flex-1 cursor-pointer items-center gap-2 rounded focus-visible:ring-2 focus-visible:outline-none"
           >
             <span
