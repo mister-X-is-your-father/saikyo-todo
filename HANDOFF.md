@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1853 1/1 mode-D sprint-status Badge に title 付与] iter1841 StatusBadge / iter1851 calibrated と同 pattern を sprint-status Badge にも展開、sprint name context sighted hover disclosure。1 file 1 line 追加 + 2 line comment 追加 (= 3 line)。経路 B。検証 codify: `scripts/explore-uiux-sprint-status-title-iter1853.ts` で 8 軸 assert (0/0 OK)。typecheck / lint 緑 (warning baseline 2)。
 - ✅ [playwright-iter1852 1/1 test a11y-sweep-suite に iter1851 calibrated chip title entry 追加] 検査軸 49 個 (A-Z + AA-AW、新 AW 軸 calibrated chip title sweep)、計約 145 invariant check に拡張。1 file 13 line 追加。`pnpm tsx scripts/explore-uiux-a11y-sweep-suite-iter1760.ts` → 0/0 OK。
 - ✅ [playwright-iter1851 1/1 mode-D active-timer-estimate-calibrated chip に title 付与] iter1849 unreadBreakdown / iter1847 hint chip と同 pattern を calibrated chip にも展開。calibrated chip は visible "→ ${calibratedMinutes}分" のみ + aria-label で calibration factor / delta context を SR 提供だが sighted は hover で context 即把握できなかった。`title={同 aria-label}` 付与。1 file 1 line 追加 + 2 line comment 追加 (= 3 line)。経路 B。検証 codify: `scripts/explore-uiux-timer-calibrated-title-iter1851.ts` で 8 軸 assert (0/0 OK)。typecheck / lint 緑 (warning baseline 2)。
 - ✅ [playwright-iter1850 1/1 test a11y-sweep-suite に iter1849 unreadBreakdown title entry 追加] 検査軸 48 個 (A-Z + AA-AV、新 AV 軸 unreadBreakdown title sweep)、計約 144 invariant check に拡張。1 file 9 line 追加。`pnpm tsx scripts/explore-uiux-a11y-sweep-suite-iter1760.ts` → 0/0 OK。
