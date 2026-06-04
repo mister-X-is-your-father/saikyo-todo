@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2077 1/1 mode-D 5 sub-page main landmark title 付与] 9 main landmark family 完成 (workspace + 8 sub-pages: sprints/goals/pdca/workflows/time-entries/templates/integrations/archive)。
 - ✅ [playwright-iter2076 1/1 test a11y-sweep-suite に iter2075 sub-page-mains entry 追加] 検査軸 161 個 (新 FE 軸)、計約 257 invariant check に拡張。
 - ✅ [playwright-iter2075 1/1 mode-D 3 sub-page main landmark title 付与] Sprint/Goals/PDCA sub-page main、workspace-main iter1965 と同 pattern。
 - ✅ [playwright-iter2074 1/1 test a11y-sweep-suite に iter2073 home-header entry 追加] 検査軸 160 個 (新 FD 軸)、計約 256 invariant check、検査軸 160 突破。
