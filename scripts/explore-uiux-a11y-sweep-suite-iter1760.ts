@@ -744,6 +744,20 @@ async function main() {
     })
   }
 
+  // ========= CN. items-board filter-must title sweep (iter1937) =========
+  const boardCN = read(here, `${root}/src/components/workspace/items-board.tsx`)
+  if (
+    !boardCN.includes(
+      "title={must ? 'MUST のみ表示中 — クリックで解除' : 'MUST のみ — 表示に絞り込む'}",
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'CN.filter-must',
+      message: '[CN] iter1937 items-board filter-must title が消えている',
+    })
+  }
+
   // ========= CM. goals-panel KR progressbar title sweep (iter1935) =========
   const gpCM = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
   if (!gpCM.includes('title={`KR「${kr.title}」進捗 ${pct}%`}')) {
