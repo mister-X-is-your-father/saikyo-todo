@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1933 1/1 mode-D goals-panel progressbar に title 付与] progressbar 色 tier は WCAG 1.4.1 で SR には aria-valuetext で明示するが sighted hover では不可達、aria-label と同 text を title に付与し sighted hover で tier label disclose。
 - ✅ [playwright-iter1932 1/1 test a11y-sweep-suite に iter1931 sprint progressbar entry 追加] 検査軸 89 個 (新 CK 軸)、計約 185 invariant check に拡張。
 - ✅ [playwright-iter1931 1/1 mode-D sprints-panel progressbar に title 付与] progressbar 色 tone は WCAG 1.4.1 で SR には aria-valuetext で明示するが sighted hover では不可達、aria-label と同 text を title に付与し sighted hover で tone disclose。
 - ✅ [playwright-iter1930 1/1 test a11y-sweep-suite に iter1929 workflow-graph entry 追加] 検査軸 88 個 (新 CJ 軸)、計約 184 invariant check に拡張。
