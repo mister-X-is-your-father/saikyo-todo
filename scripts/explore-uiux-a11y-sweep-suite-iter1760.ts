@@ -631,6 +631,22 @@ async function main() {
     })
   }
 
+  // ========= AE. src-* actions title sweep (iter1815) =========
+  const integrationsPanel = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
+  for (const t of [
+    '`無効化 — Source「${src.name}」を無効化`',
+    '`履歴 — Source「${src.name}」の Pull 履歴 (直近 5 件) を表示`',
+    '`削除 — Source「${src.name}」を削除`',
+  ]) {
+    if (!integrationsPanel.includes(t)) {
+      findings.push({
+        level: 'error',
+        source: 'AE.src-actions',
+        message: `[AE] iter1815 src-* conditional path text ${t} が消えている`,
+      })
+    }
+  }
+
   // ========= AD. wf-* actions title sweep (iter1813) =========
   const wfPanelAD = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
   // wf-edit static
