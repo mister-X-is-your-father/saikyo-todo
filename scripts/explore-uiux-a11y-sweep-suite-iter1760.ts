@@ -415,6 +415,21 @@ async function main() {
     })
   }
 
+  // ========= L. items-board view-switcher title sweep (iter1777) =========
+  const itemsBoard = read(here, `${root}/src/components/workspace/items-board.tsx`)
+  const viewSwitcherTitleCount = (
+    itemsBoard.match(
+      /title="(Today|Inbox|Kanban|Backlog|Gantt|Dashboard|日次レビュー画面|週次レビュー画面|月次レビュー画面)/g,
+    ) ?? []
+  ).length
+  if (viewSwitcherTitleCount !== 9) {
+    findings.push({
+      level: 'error',
+      source: 'L.view-switcher',
+      message: `[L] iter1777 items-board view-switcher title 件数が ${viewSwitcherTitleCount} (期待 9)`,
+    })
+  }
+
   // ========= K. shared ErrorState retry title (iter1767) =========
   const asyncStates = read(here, `${root}/src/components/shared/async-states.tsx`)
   if (!asyncStates.includes('title={`再試行 — 「${message}」をクリアして再試行`}')) {
