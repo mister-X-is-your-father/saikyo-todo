@@ -513,7 +513,10 @@ function ItemRow({
       // title を disclose 可能 (iter1720 mock-entries / iter1733 time-entries 同 pattern を
       // operation-board row 共通 component に展開、3 caller: today /上段 quickwins / focusBlocks
       // 等 多数で一括効果)。
-      title={item.title}
+      /* iter2225: ItemRow title は item.title のみで aria-label の statePrefix + 期限 +
+         "編集ダイアログで開く" context が sighted hover で disclose されない。proposal-title-btn
+         iter2223 / interrupt-note iter2221 と同 title=aria-label sync pattern。 */
+      title={ariaLabel}
     >
       {showTime && item.dueTime ? (
         <span className="text-foreground/80 text-xs tabular-nums" aria-hidden="true">
