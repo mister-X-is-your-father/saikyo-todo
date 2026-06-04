@@ -744,6 +744,21 @@ async function main() {
     })
   }
 
+  // ========= AN. schedule-picker footer title sweep (iter1833) =========
+  const picker = read(here, `${root}/src/components/schedule/schedule-item-picker.tsx`)
+  if (
+    !picker.includes('title="キャンセル — task pick を破棄"') ||
+    !picker.includes(
+      "title={`割込みとして追加 — 割込み / 休憩として追加${interruptNote ? ` (メモ: ${interruptNote})` : ''}`}",
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'AN.schedule-picker-footer',
+      message: '[AN] iter1833 schedule-picker footer 2 button title が消えている',
+    })
+  }
+
   // ========= AM. archive-restore title sweep (iter1831) =========
   const archivePanel = read(here, `${root}/src/components/workspace/archived-items-panel.tsx`)
   if (
