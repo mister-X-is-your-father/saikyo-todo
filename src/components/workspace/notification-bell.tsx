@@ -177,8 +177,10 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                   /* iter1561: 旧 aria-label `"通知 健全性: ${hint.label}"` は visible "${label}" を末尾
                      に持ち voice control prefix-matching「click 健全」 が strict prefix-match で不可
                      (substring 一致のみ)。iter1553-1560 status/role/health Badge family と同 pattern、
-                     visible 冒頭固定 + em-dash 区切。 */
+                     visible 冒頭固定 + em-dash 区切。
+                     iter1847: iter1843 MustBadge / iter1845 AI badge と同 pattern を hint chip にも展開。 */
                   aria-label={`${hint.label} — 通知 健全性`}
+                  title={`${hint.label} — 通知 健全性`}
                 >
                   <span aria-hidden="true">{hint.label}</span>
                 </span>
