@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DS. bulk-action-bar region title sweep (iter1999) =========
+  const bbDS = read(here, `${root}/src/components/workspace/bulk-action-bar.tsx`)
+  if (!bbDS.includes('title={`一括操作 — ${count} 件選択中`}')) {
+    findings.push({
+      level: 'error',
+      source: 'DS.bulk-action-bar',
+      message: '[DS] iter1999 bulk-action-bar region title が消えている',
+    })
+  }
+
   // ========= DR. decompose-proposals bulk group title sweep (iter1997) =========
   const decDR = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
   if (
