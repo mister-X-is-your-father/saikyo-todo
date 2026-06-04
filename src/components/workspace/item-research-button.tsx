@@ -57,6 +57,19 @@ export function ItemResearchButton({ workspaceId, item }: Props) {
             ? `調査中… — 「${item.title}」を AI 調査中…`
             : `AI 調査 — 「${item.title}」を AI 調査して Doc を作成`
       }
+      /* iter2231: item-research-button の aria-label は state-dependent 3-path
+         (done / pending / idle、item.title + AI 調査用途含む) で SR には full context を
+         渡すが browser tooltip にならず sighted は hover で同 context disclose 不可。
+         item-decompose-btn iter2213 / engineer-trigger-btn iter2211 と同 state-dependent
+         title=aria-label sync pattern、AI action 系 button 3 element 完成 (decompose /
+         engineer / research)。 */
+      title={
+        item.status === 'done'
+          ? `AI 調査 — 「${item.title}」は完了済のため AI 調査不可`
+          : research.isPending
+            ? `調査中… — 「${item.title}」を AI 調査中…`
+            : `AI 調査 — 「${item.title}」を AI 調査して Doc を作成`
+      }
     >
       <span aria-hidden="true">{research.isPending ? '調査中…' : 'AI 調査'}</span>
     </Button>
