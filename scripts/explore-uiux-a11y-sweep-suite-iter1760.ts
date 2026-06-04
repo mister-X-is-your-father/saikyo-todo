@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DH. workflows-panel wf-desc textarea title sweep (iter1977) =========
+  const wfpDH = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
+  if (!wfpDH.includes('iter1977')) {
+    findings.push({
+      level: 'error',
+      source: 'DH.wf-desc',
+      message: '[DH] iter1977 workflows-panel wf-desc textarea title が消えている',
+    })
+  }
+
   // ========= DG. workflows-panel wf-name input title sweep (iter1975) =========
   const wfpDG = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
   if (!wfpDG.includes('iter1975')) {
