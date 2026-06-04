@@ -673,7 +673,11 @@ export function GanttView({
                 >
                   {idx + 1}
                 </span>
-                <span className="truncate">{item.title}</span>
+                {/* iter1742: gantt-view 左列 row label の truncate span に title 付与で
+                    sighted hover で全 title disclose (iter1720-1741 sweep を gantt にも展開)。 */}
+                <span className="truncate" title={item.title}>
+                  {item.title}
+                </span>
                 {item.isMust && (
                   <span
                     // iter1383: text-red-600 (#e7000b) は dark gantt bg 上で 4.15:1 (<4.5)。
