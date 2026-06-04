@@ -105,6 +105,16 @@ export function ItemSummaryPanel({ workspaceId, item }: Props) {
             ? `子タスク進捗 — ${formatDescendantsActivityHintJa(progress)} / ${formatDescendantsProgressJa(progress)}`
             : '子タスク進捗 — 読み込み中'
         }
+        /* iter2237: item-summary-panel 3 chip (progress / dependency / latest-activity) の
+           aria-label は SR には full context を渡すが browser tooltip にならず、visible は emoji +
+           短文 + 小文字 subtext のみで sighted は hover で「子タスク進捗 / 依存 / 動き」 prefix +
+           full context disclose 不可。chip 3 element 同時 title sync、ItemEditDialog サマリタブ
+           内の status chip family 完成。 */
+        title={
+          progress
+            ? `子タスク進捗 — ${formatDescendantsActivityHintJa(progress)} / ${formatDescendantsProgressJa(progress)}`
+            : '子タスク進捗 — 読み込み中'
+        }
         data-testid="item-summary-progress"
         data-pct-done={progress?.pctDone ?? 0}
       >
@@ -129,6 +139,8 @@ export function ItemSummaryPanel({ workspaceId, item }: Props) {
         aria-label={
           readiness ? `依存 — ${formatDependencyReadiness(readiness)}` : '依存 — 読み込み中'
         }
+        /* iter2237: 同 file sweep — chip 3 element 同時 title sync。 */
+        title={readiness ? `依存 — ${formatDependencyReadiness(readiness)}` : '依存 — 読み込み中'}
         data-testid="item-summary-dependency"
         data-blocked={readiness?.isBlocked ?? false}
       >
@@ -147,6 +159,8 @@ export function ItemSummaryPanel({ workspaceId, item }: Props) {
            値変化 (「5 分前」 → 「10 分前」) を chip 全体で full re-announce。 */
         aria-atomic="true"
         aria-label={formatLatestActivityJa(latestActivity, now, formatRelativeTime)}
+        /* iter2237: 同 file sweep — chip 3 element 同時 title sync。 */
+        title={formatLatestActivityJa(latestActivity, now, formatRelativeTime)}
         data-testid="item-summary-latest-activity"
         data-has-activity={latestActivity !== null}
       >
