@@ -477,6 +477,10 @@ function DragHandle() {
       role="img"
       aria-label="ドラッグで並び替え"
       data-testid="backlog-drag-handle"
+      /* iter1873: ≡ 単体では「ドラッグハンドル」と sighted も即把握できない。
+         hover で意図 disclose、palette/taskchute/period/inbox/kanban/backlog-estimate
+         title sweep の続編。 */
+      title="ドラッグで並び替え"
     >
       <span aria-hidden="true">≡</span>
     </span>
