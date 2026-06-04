@@ -90,6 +90,10 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
           <ul
             className="flex flex-col gap-1"
             aria-label={`検索結果 — ${filtered.length} 件`}
+            /* iter2161: schedule-picker 検索結果 ul の aria-label は browser tooltip に
+               ならず sighted は hover で件数 context disclose 不可。template-items-list
+               iter2159 / inbox-item iter2155 と同 title=aria-label sync pattern。 */
+            title={`検索結果 — ${filtered.length} 件`}
             data-testid="schedule-picker-list"
           >
             {filtered.map((it) => (
@@ -107,7 +111,10 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
                   // は browser tooltip にならず sighted は hover で全 title 即把握できず。
                   // title 付与で全 title disclose、iter1740 workflows-panel CardTitle / iter1769
                   // workflows description と同 truncate + title pattern を picker button にも展開。
-                  title={it.title}
+                  /* iter2161: title は it.title のみで aria-label の "item を選択" + MUST hint が
+                     sighted hover で disclose されない。backlog-title iter2157 / inbox-item
+                     iter2155 と同 title=aria-label sync pattern。 */
+                  title={`${it.title} — item を選択${it.isMust ? ' (MUST)' : ''}`}
                 >
                   <span className="truncate" aria-hidden="true">
                     {it.title}
