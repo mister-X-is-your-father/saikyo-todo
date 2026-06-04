@@ -675,6 +675,18 @@ function ItemEditDialogInner({
                         ? `開始日 (現在: ${startDate}、期限 ${dueDate} より後で不正)`
                         : `開始日 (現在: ${startDate})`
                   }
+                  /* iter2299: editStart date input の aria-label は state-dependent 3-path
+                     (空 / 不正 / 通常) で SR には validation context を渡すが browser tooltip
+                     にならず sighted は hover で同 context disclose 不可。MCP path A で
+                     ItemEditDialog 基本タブで発見、editTitle iter2295 / editDescription iter2297
+                     と同 input title pattern を date input にも展開、editDue と pair 完成。 */
+                  title={
+                    startDate === ''
+                      ? '開始日 (任意、期限以前)'
+                      : isInvalidDateRange(startDate, dueDate)
+                        ? `開始日 (現在: ${startDate}、期限 ${dueDate} より後で不正)`
+                        : `開始日 (現在: ${startDate})`
+                  }
                   // iter346: 既存 dueDate を超える startDate は不正なので max で HTML5 制約。
                   // 反対方向 (min={startDate}) は editDue 側に既設、両方向ガードで対称化。
                   max={dueDate || undefined}
@@ -693,6 +705,15 @@ function ItemEditDialogInner({
                   enterKeyHint="next"
                   aria-invalid={isInvalidDateRange(startDate, dueDate) || undefined}
                   aria-label={
+                    dueDate === ''
+                      ? '期限 (任意、開始日以降、MUST item は期限 + Heartbeat 通知が必須)'
+                      : isInvalidDateRange(startDate, dueDate)
+                        ? `期限 (現在: ${dueDate}、開始日 ${startDate} より前で不正)`
+                        : `期限 (現在: ${dueDate})`
+                  }
+                  /* iter2299: editDue も editStart と pair の state-dependent 3-path title sync。
+                     MUST item の期限 + Heartbeat 通知必須 context が sighted hover で disclose。 */
+                  title={
                     dueDate === ''
                       ? '期限 (任意、開始日以降、MUST item は期限 + Heartbeat 通知が必須)'
                       : isInvalidDateRange(startDate, dueDate)
