@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CI. cycle-check ステータス分布 grid title sweep (iter1927) =========
+  const cycleCI = read(here, `${root}/src/components/pdca/cycle-check-stats-card.tsx`)
+  if (!cycleCI.includes('title={`ステータス分布 —')) {
+    findings.push({
+      level: 'error',
+      source: 'CI.cycle-status',
+      message: '[CI] iter1927 cycle-check ステータス分布 grid title が消えている',
+    })
+  }
+
   // ========= CH. cycle-check Lead time grid title sweep (iter1925) =========
   const cycleCH = read(here, `${root}/src/components/pdca/cycle-check-stats-card.tsx`)
   if (!cycleCH.includes('title={`Lead time 統計 —')) {
