@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CH. cycle-check Lead time grid title sweep (iter1925) =========
+  const cycleCH = read(here, `${root}/src/components/pdca/cycle-check-stats-card.tsx`)
+  if (!cycleCH.includes('title={`Lead time 統計 —')) {
+    findings.push({
+      level: 'error',
+      source: 'CH.cycle-leadtime',
+      message: '[CH] iter1925 cycle-check Lead time grid title が消えている',
+    })
+  }
+
   // ========= CG. sprint-retro-status-chip title sweep (iter1923) =========
   const retroCG = read(here, `${root}/src/components/sprint/sprint-retro-widget.tsx`)
   if (!retroCG.includes('title={`${label} ${count} 件 — ${toneLabel}`}')) {
