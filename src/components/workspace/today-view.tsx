@@ -232,6 +232,11 @@ export function TodayView({
                  🥈 シルバー (7 日連続)」) を維持。 */
               aria-atomic="true"
               aria-label={`完了 streak — ${streakSignals.milestone.text}`}
+              /* iter2249: streak chip の aria-label "完了 streak — {milestone.text}" は
+                 browser tooltip にならず、visible は milestone text のみで「完了 streak —」
+                 prefix context が sighted hover で disclose 不可。doneToday chip iter1708 と
+                 pair で today-header chip 2 element 同時 title sync。 */
+              title={`完了 streak — ${streakSignals.milestone.text}`}
             >
               {streakSignals.milestone.text}
             </span>
@@ -254,6 +259,10 @@ export function TodayView({
                visible が emoji label のみで「streak」 context を持たないため
                `完了 streak — ` prefix は維持 (= 異なる pattern、本 fix の scope 外)。 */
             aria-label={`${doneTodaySignal.text}${doneTodayPriorityDetail}`}
+            /* iter2249: doneToday chip も streak chip と pair で title 付与。visible は
+               doneTodaySignal.text のみで priority detail context (sr-only 部分) が
+               sighted hover で disclose 不可、aria-label と同 text で sync。 */
+            title={`${doneTodaySignal.text}${doneTodayPriorityDetail}`}
           >
             {doneTodaySignal.text}
           </span>
