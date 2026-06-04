@@ -41,8 +41,13 @@ export function MockTopNav({ sessionId }: { sessionId: string }) {
         </Button>
         {/* iter1613: 旧 aria-label `"mock-timesheet からログアウト"` は visible "ログアウト" (button)
             を末尾に持ち voice control prefix-matching「click ログアウト」 が strict prefix-match で不可。
-            iter1553-1612 visible 冒頭 em-dash sweep に合わせ visible 冒頭固定 + em-dash 区切。 */}
-        <form action={mockLogoutAction} aria-label="ログアウト — mock-timesheet session を終了">
+            iter1553-1612 visible 冒頭 em-dash sweep に合わせ visible 冒頭固定 + em-dash 区切。
+            iter1718: 旧 form aria-label `"ログアウト — mock-timesheet session を終了"` は子 Button
+            の aria-label と完全同一で、SR landmark/rotor 経路で「ログアウト — ...」を form と button
+            の 2 回連続読み上げる redundancy。form は landmark/group descriptor として brief 名
+            "ログアウト操作" に分け、button 側で詳細 aria-label を維持 (login-form の form aria-labelledby
+            + button aria-label が divergent な codebase convention と整合)。 */}
+        <form action={mockLogoutAction} aria-label="ログアウト操作">
           {/* iter1095: 旧 aria-label "mock-timesheet session をログアウト" は visible "ログアウト"
               を末尾に持つ → voice control prefix-matching で「click ログアウト」 match 不可。
               iter1093/1094 sweep convention に合わせ visible 冒頭固定。 */}
