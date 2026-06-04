@@ -215,6 +215,9 @@ function SubtaskTreeNode({
           role="img"
           aria-label={`このタスクには子タスクが ${grandchildren.length} 件あります`}
           data-testid={`subtask-childcount-${item.id}`}
+          /* iter1883: visible は `${N} 件` のみで「このタスクには子タスクが」 context が無く、
+             sighted hover で disclose (team-capacity-name / swimlane-population title sweep 続編)。 */
+          title={`このタスクには子タスクが ${grandchildren.length} 件あります`}
         >
           <span aria-hidden="true">{grandchildren.length} 件</span>
         </span>
