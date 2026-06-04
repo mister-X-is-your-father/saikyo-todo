@@ -143,6 +143,12 @@ export function ActivityLog({ itemId }: { itemId: string }) {
         className="space-y-2"
         data-testid="activity-log"
         aria-label={`Activity 履歴 — ${data.length} 件`}
+        /* iter2291: Activity 履歴 ul の aria-label "Activity 履歴 — N 件" は browser tooltip
+           にならず sighted は hover で「Activity 履歴 + N 件」 disclose 不可。MCP path A で
+           ItemEditDialog アクティビティタブ探索中に発見、一覧 ul family 5 entity (sources /
+           workflows / goals / templates / workspaces) iter2267 と同 pattern を Activity log
+           ul にも展開、6 entity 一覧 ul family 完成。 */
+        title={`Activity 履歴 — ${data.length} 件`}
       >
         {data.map((entry) => (
           <ActivityRow key={entry.id} entry={entry} />
