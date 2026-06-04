@@ -184,6 +184,12 @@ export function MockSubmitForm() {
         disabled={isPending}
         aria-busy={isPending || undefined}
         className="h-11 w-full"
+        // iter1759: iter1717 mock-login-submit / login-submit / signup-submit sweep の
+        // mock-submit-form counterpart。`data-testid="mock-submit-action"` 付与で
+        // `[data-testid$="-submit"]` 一括発見 pattern と整合 (form 名 mock-submit-form なので
+        // -submit suffix で衝突しないよう -action 採用、iter1717 で legacy id="tsSubmit"
+        // 維持の旧 test 互換)。
+        data-testid="mock-submit-action"
         aria-label={
           isPending
             ? '送信中… — mock-timesheet 工数送信処理を実行中'
