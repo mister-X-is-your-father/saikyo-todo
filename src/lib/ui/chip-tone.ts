@@ -126,6 +126,35 @@ export function chipToneAttentionRank(tone: ChipTone): number {
 }
 
 /**
+ * iter1761 basics: 1 tone が minTone 以上の attention rank を持つか判定する pure predicate。
+ *
+ * `chipToneAttentionRank(tone) >= chipToneAttentionRank(minTone)` の薄い semantic wrapper、
+ * caller の手書き rank 比較を排除。`filterItemsByMinTone` (iter1698) / `someItemHasMinTone`
+ * (iter1759) の内部 logic と同じ判定を「単一 tone × 単一 minTone」 で公開。
+ *
+ * 用途:
+ *  - 1 個の signal/chip に対する gate (= 「この chip は警戒以上か?」)
+ *  - JSX 条件 render (= `{isMinTone(tone, 'warn') && <Badge />}`)
+ *  - tone-based 短絡条件 (= 「警戒以上なら danger color、それ以外は muted」)
+ *
+ * 仕様:
+ *  - rank(tone) >= rank(minTone) → true、それ以外 → false
+ *  - 同 tone → true (= minTone 自身は条件を満たす)
+ *  - minTone='success' → 全 tone で true (= 最低 rank なので常に >=)
+ *  - minTone='danger' → tone='danger' のみ true
+ *
+ * 既存 helper との関係:
+ *  - `chipToneAttentionRank`: tone → number (= 内部 logic 公開)
+ *  - `compareChipTones`: 2 tone の sort comparator (= -/+/0)
+ *  - 本 helper: 単一 tone 対 minTone の boolean predicate (= 1 tone × 1 minTone gate)
+ *  - `filterItemsByMinTone`: items 全体に対する filter (= N items × 1 minTone)
+ *  - `someItemHasMinTone`: items 全体に対する some boolean (= 同上 short-circuit)
+ */
+export function isMinTone(tone: ChipTone, minTone: ChipTone): boolean {
+  return TONE_ATTENTION_RANK[tone] >= TONE_ATTENTION_RANK[minTone]
+}
+
+/**
  * `Array.sort` のための comparator。a の attention rank が高い (= 危ない / 要対応) ほど
  * 前 (=index 小) に並ぶ。同 rank は元順保持 (stable sort 前提、Array.sort は ES2019+
  * 規約で stable)。

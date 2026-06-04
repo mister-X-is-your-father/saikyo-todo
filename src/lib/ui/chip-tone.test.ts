@@ -13,6 +13,7 @@ import {
   formatToneCountsJa,
   getChipToneClasses,
   groupItemsByTone,
+  isMinTone,
   pickHighestSeverityTone,
   pickTopItemsByTone,
   someItemHasMinTone,
@@ -431,6 +432,42 @@ describe('filterItemsByMinTone (iter1698 — 閾値以上の items を凝集)', 
     const original = [...items]
     filterItemsByMinTone(items, getTone, 'warn')
     expect(items).toEqual(original)
+  })
+})
+
+describe('isMinTone (iter1761 — 単一 tone × 単一 minTone gate predicate)', () => {
+  it('rank(tone) >= rank(minTone) → true', () => {
+    expect(isMinTone('danger', 'warn')).toBe(true)
+    expect(isMinTone('urgent', 'warn')).toBe(true)
+    expect(isMinTone('warn', 'warn')).toBe(true)
+  })
+
+  it('rank(tone) < rank(minTone) → false', () => {
+    expect(isMinTone('info', 'warn')).toBe(false)
+    expect(isMinTone('idle', 'warn')).toBe(false)
+    expect(isMinTone('success', 'warn')).toBe(false)
+  })
+
+  it('minTone=success → 全 tone で true (success rank=0 最低)', () => {
+    for (const t of ['danger', 'urgent', 'warn', 'info', 'idle', 'success'] as ChipTone[]) {
+      expect(isMinTone(t, 'success')).toBe(true)
+    }
+  })
+
+  it('minTone=danger → danger のみ true', () => {
+    expect(isMinTone('danger', 'danger')).toBe(true)
+    expect(isMinTone('urgent', 'danger')).toBe(false)
+    expect(isMinTone('warn', 'danger')).toBe(false)
+  })
+
+  it('someItemHasMinTone(items, getTone, minTone) === items.some(it => isMinTone(getTone(it), minTone)) invariant', () => {
+    type Item = { tone: ChipTone }
+    const items: Item[] = [{ tone: 'success' }, { tone: 'warn' }, { tone: 'danger' }]
+    for (const m of ['success', 'info', 'warn', 'danger'] as ChipTone[]) {
+      expect(someItemHasMinTone(items, (it) => it.tone, m)).toBe(
+        items.some((it) => isMinTone(it.tone, m)),
+      )
+    }
   })
 })
 
