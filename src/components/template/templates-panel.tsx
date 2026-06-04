@@ -87,6 +87,12 @@ export function TemplatesPanel({ workspaceId }: Props) {
             className="space-y-3"
             noValidate
             aria-label="Template 作成フォーム"
+            /* iter2259: Template 作成フォーム form の aria-label は browser tooltip にならず
+               sighted は hover で form 用途 disclose 不可。MCP path A で /templates 画面探索中に
+               発見、Goal 作成フォーム iter2045 / Sprint 作成フォーム iter2043 と同 create-form
+               family title pattern を Template にも展開、3 entity create-form (Goal / Sprint /
+               Template) title 完成。 */
+            title="Template 作成フォーム"
             aria-busy={createMut.isPending || undefined}
             onSubmit={(e) => {
               e.preventDefault()
