@@ -740,6 +740,23 @@ async function main() {
     })
   }
 
+  // ========= GD. active-timer-pip title 4-path sweep (iter2125) =========
+  const atpGD = read(here, `${root}/src/components/workspace/active-timer-panel.tsx`)
+  if (!atpGD.includes('iter2125') || !atpGD.includes("'Picture-in-Picture — 開いています…'")) {
+    findings.push({
+      level: 'error',
+      source: 'GD.active-timer-pip-title',
+      message: '[GD] iter2125 active-timer-pip title 4-path 同期 が消えている',
+    })
+  }
+  if (/'PiP を閉じる'/.test(atpGD)) {
+    findings.push({
+      level: 'error',
+      source: 'GD.active-timer-pip-title',
+      message: '[GD] iter2125 active-timer-pip 旧 3-path title が残っている',
+    })
+  }
+
   // ========= GC. budget-edit-btn title 付与 sweep (iter2123) =========
   const bpGC = read(here, `${root}/src/components/workspace/budget-panel.tsx`)
   if (
