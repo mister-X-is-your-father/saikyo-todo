@@ -121,6 +121,11 @@ function buildColumns(
           // sibling backlog-edit (iter1152 修正済) と差別化のため title 始まり (= 編集
           // icon button は "編集 — ..." 始まり)。
           aria-label={`${String(getValue())} — 編集`}
+          /* iter2157: backlog-title button は title 無で aria-label
+             "${title} — 編集" の "編集" context が sighted hover で disclose
+             されない。inbox-view iter2155 / today-view iter2153 / personal-period
+             iter2151 と同 title=aria-label sync pattern。 */
+          title={`${String(getValue())} — 編集`}
         >
           <span aria-hidden="true">{String(getValue())}</span>
         </button>
