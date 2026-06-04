@@ -46,6 +46,10 @@ export function MockLoginForm() {
       aria-busy={isPending || undefined}
       noValidate
       className="space-y-4"
+      // iter1717: mock-submit-form (`data-testid="mock-submit-form"`) と pair / 対称な
+      // form-level data-testid。Playwright で mock-timesheet 内の form 2 個 (login + submit)
+      // を 1 pattern (`[data-testid^="mock-"]`) で発見できるよう convention 統一。
+      data-testid="mock-login-form"
     >
       <div className="space-y-2">
         <Label htmlFor="tsEmail">メールアドレス</Label>
@@ -115,6 +119,11 @@ export function MockLoginForm() {
         className="h-11 w-full"
         disabled={isPending}
         aria-busy={isPending || undefined}
+        // iter1717: login-form の Button (`data-testid="login-submit"`) と pair / 対称な
+        // submit data-testid。既存 id="tsLoginSubmit" は legacy 経路として残置 (古い test
+        // との互換維持)。Playwright で auth flow 関連 submit を 1 pattern (`[data-testid$="-submit"]`)
+        // で発見できるよう convention 統一。
+        data-testid="mock-login-submit"
         aria-label={
           isPending
             ? '認証中… — mock-timesheet 認証処理を実行中'
