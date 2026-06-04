@@ -762,6 +762,19 @@ async function main() {
     })
   }
 
+  // ========= HB. pdca daily-bars list title sweep (iter2173) =========
+  const ppHB = read(here, `${root}/src/components/workspace/pdca-panel.tsx`)
+  if (
+    !ppHB.includes('iter2173') ||
+    !ppHB.includes('title={`日次完了 throughput — ${data.length} 日分`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HB.pdca-daily-bars-title',
+      message: '[HB] iter2173 pdca daily-bars list title 付与 が消えている',
+    })
+  }
+
   // ========= HA. PDCA 4 段階の集計 group title sweep (iter2171) =========
   const ppHA = read(here, `${root}/src/components/workspace/pdca-panel.tsx`)
   if (
