@@ -76,6 +76,10 @@ export function StatusBadge({
          iter1629: 内部 colon `ステータス: ${cfg.label}` を iter1626-1628 sweep の em-dash dynamic
          template convention に合わせ削除、`ステータス ${cfg.label}` の natural-reading Japanese 形式に。 */
       aria-label={`${cfg.shortLabel} — ステータス ${cfg.label}`}
+      // iter1841: iter1761 SeverityChip と同 pattern を StatusBadge にも展開、共通 component 1 修正で
+      // 全 caller (Today / Inbox / Backlog / Dashboard / Period / Kanban / Subtasks 等) の sighted hover
+      // disclosure 一括改善。iconOnly path も含めて status の full label を hover で disclose。
+      title={`${cfg.shortLabel} — ステータス ${cfg.label}`}
       data-testid={dataTestid}
     >
       <Icon className="h-3 w-3 shrink-0" aria-hidden="true" />
