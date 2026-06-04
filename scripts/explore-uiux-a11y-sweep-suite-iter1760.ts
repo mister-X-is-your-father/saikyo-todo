@@ -745,8 +745,8 @@ async function main() {
   }
 
   // ========= BJ. gantt-view inline MUST chip title sweep (iter1877) =========
-  const ganttView = read(here, `${root}/src/components/workspace/gantt-view.tsx`)
-  if (!ganttView.includes('iter1877') || !ganttView.includes('title="MUST タスク"')) {
+  const ganttViewBJ = read(here, `${root}/src/components/workspace/gantt-view.tsx`)
+  if (!ganttViewBJ.includes('iter1877') || !ganttViewBJ.includes('title="MUST タスク"')) {
     findings.push({
       level: 'error',
       source: 'BJ.gantt-must-inline',
