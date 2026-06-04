@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2244 1/1 test a11y-sweep-suite に iter2243 subtasks-panel 2 ol entry 追加] 検査軸 245 個 (新 IL 軸)、計約 363 invariant check に拡張、subtask family ol 階層 (root + nested) title 一致。
+- ✅ [playwright-iter2243 1/1] subtasks-panel: 2 ol element (top-level / nested) の aria-label を sighted hover で disclose 不可 → 同 text の title を 2 ol 同時に付与し sync (path B codify scripts/explore-uiux-subtasks-ol-title-iter2243.ts)、subtask group iter2139 と同 pattern を ol 階層 root + nested に展開。
 - ✅ [playwright-iter2242 1/1 test a11y-sweep-suite に iter2241 goals-panel KR add form entry 追加] 検査軸 244 個 (新 IK 軸)、計約 362 invariant check に拡張、create-form family title pattern が KR add form にも展開。
 - ✅ [playwright-iter2241 1/1] goals-panel KR (Key Result) 追加 form: aria-label "Goal「\${goalTitle}」の Key Result 追加フォーム" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-goals-kr-add-form-title-iter2241.ts)、Goal 作成フォーム title iter2045 と同 create-form family pattern。
 - ✅ [playwright-iter2240 1/1 test a11y-sweep-suite に iter2239 template-card title disclosure entry 追加] 検査軸 243 個 (新 IJ 軸)、計約 361 invariant check に拡張、list-item disclosure title pattern を template-card にも展開。
