@@ -45,6 +45,10 @@ export function MockLoginForm() {
       aria-describedby="mock-timesheet-description"
       aria-busy={isPending || undefined}
       noValidate
+      /* iter2061: mock-timesheet ログイン form の用途を sighted hover で disclose、
+         3 create form iter2045 / 3 edit form iter2059 と同 form landmark pattern
+         (7 form family の続編)。 */
+      title="Mock Timesheet ログインフォーム"
       className="space-y-4"
       // iter1717: mock-submit-form (`data-testid="mock-submit-form"`) と pair / 対称な
       // form-level data-testid。Playwright で mock-timesheet 内の form 2 個 (login + submit)
