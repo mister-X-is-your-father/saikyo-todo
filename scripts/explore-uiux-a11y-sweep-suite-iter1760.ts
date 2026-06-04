@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= IR. budget edit form button family title sweep (iter2255) =========
+  const bpIR = read(here, `${root}/src/components/workspace/budget-panel.tsx`)
+  if (!bpIR.includes('iter2255')) {
+    findings.push({
+      level: 'error',
+      source: 'IR.budget-cancel-save-title',
+      message: '[IR] iter2255 budget edit form button family title が消えている',
+    })
+  }
+
   // ========= IQ. proposals-accept-all / reject-all title sweep (iter2253) =========
   const dpIQ = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
   if (!dpIQ.includes('iter2253')) {
