@@ -144,6 +144,9 @@ export function InboxView({
              先頭 colon `:` は iter1093-1599 sweep の em-dash 区切と divergent。`GTD 分類:` colon を
              ` — ` em-dash に統一 (内部の 、 separator は維持)。 */
           aria-label={`GTD 分類 — 2 分以内 ${gtdSummary.counts.immediate} 件、Project ${gtdSummary.counts.project} 件、次の action ${gtdSummary.counts['next-action']} 件`}
+          /* iter1947: group 全体に title を付与し sighted hover で GTD 3 分類 integrated
+             summary disclose (inbox-region iter1945 と同 file 内 sweep)。 */
+          title={`GTD 分類 — 2 分以内 ${gtdSummary.counts.immediate} 件、Project ${gtdSummary.counts.project} 件、次の action ${gtdSummary.counts['next-action']} 件`}
         >
           {gtdSummary.counts.immediate > 0 && (
             <span
