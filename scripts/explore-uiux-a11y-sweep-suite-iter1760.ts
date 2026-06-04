@@ -762,6 +762,16 @@ async function main() {
     })
   }
 
+  // ========= HE. taskchute-ticker-summary title sweep (iter2179) =========
+  const tcHE = read(here, `${root}/src/components/workspace/taskchute-view.tsx`)
+  if (!tcHE.includes('iter2179') || !tcHE.includes('title={`合計 ${ticker.totalEstimateMin} 分')) {
+    findings.push({
+      level: 'error',
+      source: 'HE.taskchute-ticker-title',
+      message: '[HE] iter2179 taskchute-ticker-summary title 同期 が消えている',
+    })
+  }
+
   // ========= HD. dep-readiness-chip title sweep (iter2177) =========
   const depHD = read(here, `${root}/src/components/workspace/item-dependencies-panel.tsx`)
   if (
