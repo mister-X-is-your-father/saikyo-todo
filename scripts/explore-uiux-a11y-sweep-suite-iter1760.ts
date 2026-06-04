@@ -740,6 +740,26 @@ async function main() {
     })
   }
 
+  // ========= FF. 5 sub-page main landmark title sweep (iter2077) =========
+  const wfPageFF = read(here, `${root}/src/app/(workspace)/[workspaceId]/workflows/page.tsx`)
+  const tePageFF = read(here, `${root}/src/app/(workspace)/[workspaceId]/time-entries/page.tsx`)
+  const tmpPageFF = read(here, `${root}/src/app/(workspace)/[workspaceId]/templates/page.tsx`)
+  const integPageFF = read(here, `${root}/src/app/(workspace)/[workspaceId]/integrations/page.tsx`)
+  const arcPageFF = read(here, `${root}/src/app/(workspace)/[workspaceId]/archive/page.tsx`)
+  if (
+    !wfPageFF.includes('title="Workflows — 自動化ワークフロー (n8n 風)"') ||
+    !tePageFF.includes('title="稼働入力 — やったこと + 時間を記録"') ||
+    !tmpPageFF.includes('title="Templates — ワークパッケージ定義"') ||
+    !integPageFF.includes('title="API 連携 — 外部 API (Yamory / カスタム REST) → Item 取込"') ||
+    !arcPageFF.includes('title="アーカイブ済 Item 一覧"')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'FF.5-sub-page-mains',
+      message: '[FF] iter2077 5 sub-page main landmark title が消えている',
+    })
+  }
+
   // ========= FE. 3 sub-page main landmark title sweep (iter2075) =========
   const sprintsFE = read(here, `${root}/src/app/(workspace)/[workspaceId]/sprints/page.tsx`)
   const goalsFE = read(here, `${root}/src/app/(workspace)/[workspaceId]/goals/page.tsx`)
