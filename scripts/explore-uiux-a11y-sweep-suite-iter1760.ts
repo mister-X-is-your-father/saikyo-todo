@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CS. inbox-view GTD 分類 group title sweep (iter1947) =========
+  const inboxCS = read(here, `${root}/src/components/workspace/inbox-view.tsx`)
+  if (!inboxCS.includes('title={`GTD 分類 — 2 分以内')) {
+    findings.push({
+      level: 'error',
+      source: 'CS.inbox-gtd',
+      message: '[CS] iter1947 inbox-view GTD 分類 group title が消えている',
+    })
+  }
+
   // ========= CR. inbox-view region title sweep (iter1945) =========
   const inboxCR = read(here, `${root}/src/components/workspace/inbox-view.tsx`)
   if (!inboxCR.includes('title={`Inbox view — ${inbox.length} 件、scheduledFor も期限も未設定')) {
