@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= JW. template-card delete button title sweep (iter2317) =========
+  const tpJW = read(here, `${root}/src/components/template/templates-panel.tsx`)
+  if (!tpJW.includes('iter2317')) {
+    findings.push({
+      level: 'error',
+      source: 'JW.template-card-delete-title',
+      message: '[JW] iter2317 template-card delete button title 2-path sync が消えている',
+    })
+  }
+
   // ========= JV. recovery-plan ol title sweep (iter2315) =========
   const rpJV = read(here, `${root}/src/components/item/recovery-plan-section.tsx`)
   if (
