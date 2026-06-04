@@ -124,6 +124,12 @@ export function PdcaPanel({ workspaceId }: Props) {
                 return `分布 (合計 ${total}): Plan ${counts.plan} (${pct(counts.plan)}%) / Do ${counts.do} (${pct(counts.do)}%) / Check ${counts.check} (${pct(counts.check)}%) / Act ${counts.act} (${pct(counts.act)}%)`
               })()}
               data-testid="pdca-distribution-bar"
+              /* iter1891: visible は 4 色 bar segment のみで合計や個別 % が hover で見えず、
+                 sighted hover で full distribution disclose (quick-add-calibrated iter1889 続編)。 */
+              title={(() => {
+                const pct = (n: number) => rateToPct(n / total)
+                return `分布 (合計 ${total}): Plan ${counts.plan} (${pct(counts.plan)}%) / Do ${counts.do} (${pct(counts.do)}%) / Check ${counts.check} (${pct(counts.check)}%) / Act ${counts.act} (${pct(counts.act)}%)`
+              })()}
             >
               <div
                 className="h-full"
