@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2093 1/1 mode-D sprint-retro title を aria-label と state-dependent 同期] title-aria divergence 修正 sweep の続編。
 - ✅ [playwright-iter2092 1/1 test a11y-sweep-suite に iter2091 wf-trigger entry 追加] 検査軸 169 個 (新 FM 軸)、計約 265 invariant check に拡張。
 - ✅ [playwright-iter2091 1/1 mode-D wf-trigger title を aria-label と 4-path 同期] title-aria divergence 修正、theme-toggle iter1971 と同 pattern。
 - ✅ [playwright-iter2090 1/1 test a11y-sweep-suite に iter2089 goal-status-btns entry 追加] 検査軸 168 個 (新 FL 軸)、計約 264 invariant check、iter2090 突破。
