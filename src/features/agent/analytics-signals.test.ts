@@ -1338,6 +1338,33 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
     }
   })
 
+  it('iter1748: cluster disjoint invariant — pickAchievement ∩ pickConcerning = ∅', () => {
+    // 達成感 cluster (positive polarity = success/info/idle) と 警戒 cluster
+    // (warn/danger/urgent) は tone 設計上 互いに disjoint である invariant。
+    // 将来新軸追加時に 達成感軸が warn 系 tone を持つようなマッピング誤りを自動検出。
+    const items: VelocityFields[] = [
+      { doneAt: TODAY },
+      { doneAt: TODAY },
+      { doneAt: new Date(TODAY.getTime() - MS_PER_DAY) },
+    ]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const cases = [
+      composeAnalyticsSignals({}),
+      composeAnalyticsSignals({ doneToday: 0 }),
+      composeAnalyticsSignals({ doneToday: 2, velocity }),
+      composeAnalyticsSignals({ doneToday: 2, velocity, weeklyReviewDue: 'overdue' }),
+      composeAnalyticsSignals({ streakMilestone: velocity }),
+      composeAnalyticsSignals({ weeklyReviewDue: 'overdue' }),
+      composeAnalyticsSignals({ weeklyReviewDue: 'never-reviewed' }),
+    ]
+    for (const s of cases) {
+      const achievement = pickAchievementSignals(s)
+      const concerning = pickConcerningSignals(s)
+      const overlap = achievement.filter((a) => concerning.includes(a))
+      expect(overlap).toEqual([])
+    }
+  })
+
   it('iter1743: hasAchievementSignals invariant — pickAchievementSignals.length > 0 と等価', () => {
     // 4 軸 × 各 active/null = 16 組合せから代表 6 ケースで invariant 確認
     const items: VelocityFields[] = [{ doneAt: TODAY }]
