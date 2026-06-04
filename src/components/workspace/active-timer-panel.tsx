@@ -323,12 +323,20 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
                   ? 'Picture-in-Picture — 開いています…'
                   : 'Picture-in-Picture — 常に手前表示で別 window 化'
           }
+          /* iter2125: active-timer-pip title は 3-path で aria-label の 4-path
+             (pending state 欠落) と divergent、かつ "Picture-in-Picture —" prefix
+             + em-dash convention 不在で format も divergent → 4-path sync。
+             budget-edit-btn iter2123 / item-edit-set-baseline iter2121 と同
+             title-aria divergence 修正 pattern。icon-only PiP button で sighted
+             hover で full state context disclose。 */
           title={
             !pipSupported
-              ? 'Chrome / Edge で利用可能'
+              ? 'Picture-in-Picture — Chrome / Edge で利用可能'
               : inPip
-                ? 'PiP を閉じる'
-                : '常に手前表示で取り出す'
+                ? 'Picture-in-Picture — 閉じてページに戻す'
+                : pipPending
+                  ? 'Picture-in-Picture — 開いています…'
+                  : 'Picture-in-Picture — 常に手前表示で別 window 化'
           }
           data-testid="active-timer-pip"
         >
