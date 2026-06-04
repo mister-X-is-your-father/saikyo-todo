@@ -1054,13 +1054,19 @@ function ItemEditDialogInner({
             onClick={() => onOpenChange(false)}
             data-testid="item-edit-cancel"
             aria-label={`キャンセル — 「${item.title}」の編集を破棄`}
+            // iter1785: visible "キャンセル" のみで sighted は hover で「何の編集を破棄するか」
+            // (= item.title) 即把握できなかった (aria-label は browser tooltip にならない)。
+            // iter1783 risk-board / iter1781 logout と同 pattern を dialog footer button にも展開。
+            title={`キャンセル — 「${item.title}」の編集を破棄`}
           >
             <span aria-hidden="true">キャンセル</span>
           </Button>
           {/* iter1099: save / cancel button の旧 aria-label は visible "保存" / "保存中…" /
               "キャンセル" を末尾持ちで voice control prefix-matching match 不可。
               iter1093-1098 sweep convention に合わせ visible 冒頭固定。
-              empty-title path は visible "保存" が既に prefix ("保存するには...") なので維持。 */}
+              empty-title path は visible "保存" が既に prefix ("保存するには...") なので維持。
+              iter1785: save button も sighted hover で context (target item title + shortcut hint)
+              即把握できなかった。`title={同 aria-label}` 付与で sighted hover で context disclose。 */}
           <Button
             type="button"
             className="min-h-11"
@@ -1070,6 +1076,13 @@ function ItemEditDialogInner({
             data-testid="item-edit-save"
             aria-keyshortcuts="Meta+S Control+S"
             aria-label={
+              !title.trim()
+                ? '保存するにはタイトルを入力してください'
+                : update.isPending
+                  ? `保存中… — 「${item.title}」を保存中`
+                  : `保存 — 「${item.title}」を保存 (Cmd/Ctrl+S でも可、楽観ロックで version が進む)`
+            }
+            title={
               !title.trim()
                 ? '保存するにはタイトルを入力してください'
                 : update.isPending
