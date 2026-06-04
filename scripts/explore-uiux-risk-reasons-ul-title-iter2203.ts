@@ -22,7 +22,7 @@ async function main() {
   )
   if (
     !sr.includes('iter2203') ||
-    !sr.includes('title={`「${entry.item.title}」のリスク理由 ${entry.reasons.length } 件`}')
+    !sr.includes('title={`「${entry.item.title}」のリスク理由 ${entry.reasons.length} 件`}')
   ) {
     findings.push({
       level: 'error',
