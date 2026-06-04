@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BP. quick-add calibrated chip title sweep (iter1889) =========
+  const quickAddBP = read(here, `${root}/src/components/workspace/quick-add.tsx`)
+  if (!quickAddBP.includes('iter1889') || !quickAddBP.includes('校正後')) {
+    findings.push({
+      level: 'error',
+      source: 'BP.quick-add-calibrated',
+      message: '[BP] iter1889 quick-add calibrated chip title が消えている',
+    })
+  }
+
   // ========= BO. quick-add estimate chip title sweep (iter1887) =========
   const quickAddBO = read(here, `${root}/src/components/workspace/quick-add.tsx`)
   if (!quickAddBO.includes('title={`${formatEstimate(preview.estimateMinutes)} — 見積`}')) {
