@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DP. items-board filter group title sweep (iter1993) =========
+  const boardDP = read(here, `${root}/src/components/workspace/items-board.tsx`)
+  if (!boardDP.includes('iter1993')) {
+    findings.push({
+      level: 'error',
+      source: 'DP.filter-group',
+      message: '[DP] iter1993 items-board filter group title が消えている',
+    })
+  }
+
   // ========= DO. items-board view-switcher group title sweep (iter1991) =========
   const boardDO = read(here, `${root}/src/components/workspace/items-board.tsx`)
   if (!boardDO.includes('title={`表示切替 — 現在 ${VIEW_LABEL_JA[view] ?? view}`}')) {
