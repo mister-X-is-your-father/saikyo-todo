@@ -95,6 +95,10 @@ export default async function HomePage() {
                   href={`/${ws.id}`}
                   className="hover:bg-muted focus-visible:ring-ring block rounded-lg border p-4 transition focus-visible:ring-2 focus-visible:outline-none"
                   aria-label={`${ws.name} を開く — slug ${ws.slug} / role ${ws.role}`}
+                  // iter1839: aria-label のみで sighted は hover で workspace slug / role context
+                  // 即把握できず (内側 div は aria-hidden="true")。iter1837 forecast chip と同
+                  // pattern を workspace-link にも展開、`title={同 aria-label}` で hover disclose。
+                  title={`${ws.name} を開く — slug ${ws.slug} / role ${ws.role}`}
                   data-testid={`workspace-link-${ws.id}`}
                 >
                   <div className="flex items-center justify-between" aria-hidden="true">
