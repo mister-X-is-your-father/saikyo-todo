@@ -762,6 +762,21 @@ async function main() {
     })
   }
 
+  // ========= HW. workspace-mode radiogroup title sweep (iter2215) =========
+  const wmHW = read(here, `${root}/src/components/workspace/workspace-mode-selector.tsx`)
+  if (
+    !wmHW.includes('iter2215') ||
+    !wmHW.includes(
+      'title={`workspace の default 作業モード — 現在 ${MODE_OPTIONS.find((o) => o.value === current)?.label ?? current}`}',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HW.workspace-mode-radiogroup-title',
+      message: '[HW] iter2215 workspace-mode radiogroup title 同期 が消えている',
+    })
+  }
+
   // ========= HV. item-decompose-btn title 3-path sweep (iter2213) =========
   const idbHV = read(here, `${root}/src/components/workspace/item-decompose-button.tsx`)
   if (
