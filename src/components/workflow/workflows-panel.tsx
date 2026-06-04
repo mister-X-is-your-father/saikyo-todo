@@ -310,11 +310,15 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
+            {/* iter1740: truncate で長 workflow name 切れ、aria-label 無し、sighted は hover で
+                全 name 見れない。title 付与で sighted hover → 全 wf.name disclose
+                (iter1720-1739 sweep を workflow card にも展開、iter1739 sprints/goals と同 pattern)。 */}
             <CardTitle
               id={`wf-card-heading-${wf.id}`}
               className="truncate text-base"
               role="heading"
               aria-level={3}
+              title={wf.name}
             >
               {wf.name}
             </CardTitle>
