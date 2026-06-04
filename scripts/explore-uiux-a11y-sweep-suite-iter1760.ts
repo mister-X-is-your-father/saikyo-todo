@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CU. active-timer-panel region title sweep (iter1951) =========
+  const atpCU = read(here, `${root}/src/components/workspace/active-timer-panel.tsx`)
+  if (!atpCU.includes('title={`タスクタイマー — 経過 ${formatElapsed(elapsedMs)}')) {
+    findings.push({
+      level: 'error',
+      source: 'CU.active-timer-panel',
+      message: '[CU] iter1951 active-timer-panel region title が消えている',
+    })
+  }
+
   // ========= CT. start-timer-button active title sweep (iter1949) =========
   const stCT = read(here, `${root}/src/components/workspace/start-timer-button.tsx`)
   if (!stCT.includes('title={`「${item.title}」を計測中 — 経過 ${formatElapsed(elapsedFn())}')) {
