@@ -430,6 +430,20 @@ async function main() {
     })
   }
 
+  // ========= M. workspace nav 8 Link title sweep (iter1779) =========
+  const wsNavTitleCount = (
+    workspacePage.match(
+      /title="(Goals|Sprints|PDCA|Templates|Workflows|API 連携|Time Entries|Archive)/g,
+    ) ?? []
+  ).length
+  if (wsNavTitleCount !== 8) {
+    findings.push({
+      level: 'error',
+      source: 'M.workspace-nav',
+      message: `[M] iter1779 workspace nav 8 Link title 件数が ${wsNavTitleCount} (期待 8)`,
+    })
+  }
+
   // ========= K. shared ErrorState retry title (iter1767) =========
   const asyncStates = read(here, `${root}/src/components/shared/async-states.tsx`)
   if (!asyncStates.includes('title={`再試行 — 「${message}」をクリアして再試行`}')) {
