@@ -27,6 +27,11 @@ export function ThemeToggle() {
       className="min-h-11 min-w-11"
       onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
       data-testid="theme-toggle"
+      // iter1763: aria-label は brower tooltip にならないため、icon-only button (Sun/Moon
+      // 切替) で sighted hover 時に何をする button か即把握できなかった。title 付与で
+      // sighted hover → 「ライトテーマに切替」「ダークテーマに切替」 disclose、
+      // aria-label と同 text で SR ↔ sighted 同期。
+      title={resolvedTheme === 'dark' ? 'ライトテーマに切替' : 'ダークテーマに切替'}
     >
       <Sun className="h-4 w-4 dark:hidden" aria-hidden="true" />
       <Moon className="hidden h-4 w-4 dark:block" aria-hidden="true" />
