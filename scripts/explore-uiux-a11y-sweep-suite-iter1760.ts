@@ -740,6 +740,26 @@ async function main() {
     })
   }
 
+  // ========= FY. kanban-edit title aria-sync (em-dash convention) sweep (iter2115) =========
+  const kvFY = read(here, `${root}/src/components/workspace/kanban-view.tsx`)
+  if (
+    !kvFY.includes('iter2115') ||
+    !kvFY.includes('title={`編集 — 「${item.title}」を編集 (✎ アイコン)`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'FY.kanban-edit-title',
+      message: '[FY] iter2115 kanban-edit title em-dash convention 同期 が消えている',
+    })
+  }
+  if (/title=\{`「\$\{item\.title\}」を編集`\}/.test(kvFY)) {
+    findings.push({
+      level: 'error',
+      source: 'FY.kanban-edit-title',
+      message: '[FY] iter2115 kanban-edit 旧 title が残っている',
+    })
+  }
+
   // ========= FX. subtask-outdent + indent title multi-path sweep (iter2113) =========
   const spFX = read(here, `${root}/src/components/workspace/subtasks-panel.tsx`)
   const iter2113CountFX = (spFX.match(/iter2113/g) ?? []).length
