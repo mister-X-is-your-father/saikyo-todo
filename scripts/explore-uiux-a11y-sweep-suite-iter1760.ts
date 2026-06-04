@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= AS. MustBadge title sweep (iter1843) =========
+  const mustBadge = read(here, `${root}/src/components/workspace/must-badge.tsx`)
+  if (!mustBadge.includes('title="MUST タスク"')) {
+    findings.push({
+      level: 'error',
+      source: 'AS.must-badge',
+      message: '[AS] iter1843 MustBadge title が消えている',
+    })
+  }
+
   // ========= AR. StatusBadge title sweep (iter1841) =========
   const statusBadge = read(here, `${root}/src/components/workspace/status-badge.tsx`)
   if (!statusBadge.includes('title={`${cfg.shortLabel} — ステータス ${cfg.label}`}')) {
