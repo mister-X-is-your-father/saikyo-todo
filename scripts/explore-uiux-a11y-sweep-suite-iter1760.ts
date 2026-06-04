@@ -344,6 +344,51 @@ async function main() {
     })
   }
 
+  // ========= J. icon-only button title sweep (iter1763 / 1764 / 1765) =========
+  const themeToggle = read(here, `${root}/src/components/shared/theme-toggle.tsx`)
+  if (
+    !themeToggle.match(
+      /title=\{\s*\n?\s*resolvedTheme === 'dark' \? 'ライトテーマに切替' : 'ダークテーマに切替'\s*\n?\s*\}/,
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'J.icon-only-title',
+      message: '[J] iter1763 theme-toggle conditional title が消えている',
+    })
+  }
+  const notifBell = read(here, `${root}/src/components/workspace/notification-bell.tsx`)
+  if (!notifBell.includes('title={`通知 — 未読 ${unreadCount} 件`}')) {
+    findings.push({
+      level: 'error',
+      source: 'J.icon-only-title',
+      message: '[J] iter1764 notification-bell title が消えている',
+    })
+  }
+  const notifPrefs = read(here, `${root}/src/components/workspace/notification-preferences.tsx`)
+  if (
+    !notifPrefs.match(
+      /title=\{\s*\n?\s*onCount !== null[\s\S]{0,300}'通知設定 — メール通知 4 種を ON\/OFF'\s*\n?\s*\}/,
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'J.icon-only-title',
+      message: '[J] iter1764 notification-preferences title が消えている',
+    })
+  }
+  const calendarView = read(here, `${root}/src/components/schedule/calendar-view.tsx`)
+  if (
+    !calendarView.includes("title={`前日 — ${format(subDays(date, 1), 'M月d日 (eee)')} を表示`}") ||
+    !calendarView.includes("title={`翌日 — ${format(addDays(date, 1), 'M月d日 (eee)')} を表示`}")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'J.icon-only-title',
+      message: '[J] iter1765 calendar-view prev/next title が消えている',
+    })
+  }
+
   // ========= G. WCAG 2.4.1 skip-link =========
   if (
     !rootLayout.includes('href="#main-content"') ||
