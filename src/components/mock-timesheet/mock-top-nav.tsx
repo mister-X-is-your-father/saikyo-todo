@@ -32,6 +32,10 @@ export function MockTopNav({ sessionId }: { sessionId: string }) {
         /* iter1608: 旧 aria-label paren convention `"mock-timesheet (新規入力 / 入力一覧 / ログアウト)"` は
            iter1093-1607 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
         aria-label="mock-timesheet — 新規入力 / 入力一覧 / ログアウト"
+        /* iter2219: mock-timesheet nav の aria-label は browser tooltip にならず sighted は
+           hover で nav 構成 disclose 不可。create-workspace-form iter2217 /
+           workspace-mode-radiogroup iter2215 と同 title=aria-label sync pattern。 */
+        title="mock-timesheet — 新規入力 / 入力一覧 / ログアウト"
         className="flex items-center gap-2"
       >
         {/* iter1757: iter1731 workspace nav 8 link data-testid sweep の mock-timesheet
