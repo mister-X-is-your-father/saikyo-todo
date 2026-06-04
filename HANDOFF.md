@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2024 1/1 test a11y-sweep-suite に iter2023 goal-end entry 追加] 検査軸 135 個 (新 EE 軸)、計約 231 invariant check に拡張。4 date input sweep 完備。
 - ✅ [playwright-iter2023 1/1 mode-D goals-panel goal-end date input に title 付与] goals-panel create form 2 date input sweep 完備、state-dependent hover。
 - ✅ [playwright-iter2022 1/1 test a11y-sweep-suite に iter2021 goal-start entry 追加] 検査軸 134 個 (新 ED 軸)、計約 230 invariant check 突破。
 - ✅ [playwright-iter2021 1/1 mode-D goals-panel goal-start date input に title 付与] sprint-edit/goal-create date input cross-file sweep の続編。
