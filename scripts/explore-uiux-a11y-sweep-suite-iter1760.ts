@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= FI. sprint-activate button title sweep (iter2083) =========
+  const spFI = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (!spFI.includes('iter2083')) {
+    findings.push({
+      level: 'error',
+      source: 'FI.sprint-activate',
+      message: '[FI] iter2083 sprint-activate button title が消えている',
+    })
+  }
+
   // ========= FH. time-entry sync button title sweep (iter2081) =========
   const ttFH = read(here, `${root}/src/components/time-entry/time-entries-table.tsx`)
   if (!ttFH.includes('iter2081')) {
