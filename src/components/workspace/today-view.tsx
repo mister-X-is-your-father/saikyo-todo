@@ -316,7 +316,11 @@ export function TodayView({
                           //「click {title}」 match 不可 (substring 一致のみ)。
                           // iter1093-1155 sweep convention (kanban-title iter1155 と同 pattern)
                           // に揃え visible title 冒頭固定 + em-dash 区切で descriptive 末尾。
+                          // iter1737: truncate で長 title 切れ + aria-label は browser tooltip
+                          // にならず sighted は hover で全文見れなかった。title 付与で
+                          // sighted hover → 全 title disclose (iter1720-1736 sweep を today にも)。
                           aria-label={`${it.title} — 編集`}
+                          title={it.title}
                         >
                           <span aria-hidden="true">{it.title}</span>
                         </button>
