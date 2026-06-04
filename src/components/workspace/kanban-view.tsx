@@ -381,7 +381,12 @@ function KanbanCard({
             // 表すので "編集 —" prefix を冒頭に置いて voice control「click 編集」
             // prefix-match satisfy + title button (`${title} — 編集`) と差別化。
             aria-label={`編集 — 「${item.title}」を編集 (✎ アイコン)`}
-            title={`「${item.title}」を編集`}
+            /* iter2115: kanban-edit title "「title」を編集" は aria-label
+               "編集 — 「title」を編集 (✎ アイコン)" と divergent (visible "編集" prefix
+               + em-dash convention 不在)。subtask-outdent/indent iter2113 / dep-remove
+               iter2111 と同 title-aria divergence 修正 pattern。title と aria-label を
+               揃え (✎ アイコン hint も含め) sighted hover で full context disclose。 */
+            title={`編集 — 「${item.title}」を編集 (✎ アイコン)`}
             // iter1306 (modeM hazard 続き、comment-thread iter1303 / operation-board iter1304 /
             // activity-log iter1305 と同 fix): icon ✎ (text-xs, ~16px) + px-1 + `before:-inset-3`
             // (12px) で 16+24=40px (片軸)、horizontally も 8(✎)+8(px-1)+24=40px で WCAG 2.5.5
