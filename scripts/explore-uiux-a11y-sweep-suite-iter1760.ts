@@ -740,6 +740,22 @@ async function main() {
     })
   }
 
+  // ========= EP. 3 entity create form title sweep (iter2045) =========
+  const spEP = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  const gpEP = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
+  const wfpEP = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
+  if (
+    !spEP.includes('title="Sprint 作成フォーム"') ||
+    !gpEP.includes('title="Goal 作成フォーム"') ||
+    !wfpEP.includes('title="Workflow 作成フォーム"')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'EP.create-forms',
+      message: '[EP] iter2045 3 entity 作成フォーム title が消えている',
+    })
+  }
+
   // ========= EO. integrations source operations group title sweep (iter2043) =========
   const integEO = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
   if (!integEO.includes('iter2043')) {
