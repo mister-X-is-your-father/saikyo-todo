@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CJ. workflow-graph-canvas title sweep (iter1929) =========
+  const wfgCJ = read(here, `${root}/src/components/workflow/workflow-graph-canvas.tsx`)
+  if (!wfgCJ.includes('title={`Workflow graph —')) {
+    findings.push({
+      level: 'error',
+      source: 'CJ.workflow-graph',
+      message: '[CJ] iter1929 workflow-graph-canvas title が消えている',
+    })
+  }
+
   // ========= CI. cycle-check ステータス分布 grid title sweep (iter1927) =========
   const cycleCI = read(here, `${root}/src/components/pdca/cycle-check-stats-card.tsx`)
   if (!cycleCI.includes('title={`ステータス分布 —')) {
