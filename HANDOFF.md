@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2027 1/1 mode-D sprint-create end date input に title 付与] sprints-panel + goals-panel 全 6 date input state-dependent hover 完備。
 - ✅ [playwright-iter2026 1/1 test a11y-sweep-suite に iter2025 sprint-create-start entry 追加] 検査軸 136 個 (新 EF 軸)、計約 232 invariant check に拡張。
 - ✅ [playwright-iter2025 1/1 mode-D sprint-create start date input に title 付与] 5 date input family の続編、sprints-panel create/edit form 全 date input sweep 完備。
 - ✅ [playwright-iter2024 1/1 test a11y-sweep-suite に iter2023 goal-end entry 追加] 検査軸 135 個 (新 EE 軸)、計約 231 invariant check に拡張。4 date input sweep 完備。
