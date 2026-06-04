@@ -139,6 +139,11 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
         /* iter1546: 旧 "タグを選択 / 新規作成" は ' を' 助詞接続で iter1093-1545 sweep の
            em-dash 区切と divergent。assignee-picker PopoverContent (iter1545) と同 pattern。 */
         aria-label="タグ — 選択 / 新規作成"
+        /* iter2251: tag-picker PopoverContent の aria-label "タグ — 選択 / 新規作成" は
+           browser tooltip にならず sighted は hover で popover 用途 (= tag 選択 + 新規作成
+           の 2 操作併設) disclose 不可。picker family の hover disclose pattern を tag に
+           適用、続いて assignee-picker pair で 2 element 完成予定。 */
+        title="タグ — 選択 / 新規作成"
       >
         <Command>
           <CommandInput

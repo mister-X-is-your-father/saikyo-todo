@@ -124,6 +124,10 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
         /* iter1545: 旧 "アサイン (メンバー / AI Agent) を選択" は ' を' 助詞接続。
            iter1093-1544 sweep convention に揃え em-dash 区切。 */
         aria-label="アサイン — メンバー / AI Agent を選択"
+        /* iter2251: assignee-picker PopoverContent も tag-picker と pair で title 付与。
+           picker family 2 element (tag / assignee) PopoverContent title 完成、共通の
+           「選択 popover」 hover disclose pattern を統一。 */
+        title="アサイン — メンバー / AI Agent を選択"
       >
         <Command>
           <CommandInput
