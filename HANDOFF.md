@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2276 1/1 test a11y-sweep-suite に iter2275 today-view 期限 span entry 追加] 検査軸 261 個 (新 JB 軸)、計約 379 invariant check に拡張、cross-view 期限 span title 統一 (MCP path A 経由発見)。
+- ✅ [playwright-iter2275 1/1] today-view 期限 span (item row 内): aria-label "期限 ${ISO}" (literal ISO) を sighted hover で disclose 不可、visible は friendly date のみ → 同 text の title を付与し sync (path B codify scripts/explore-uiux-today-due-title-iter2275.ts)。**MCP path A で today view item row 期限表示探索中に発見**、dashboard-view 同 pattern と pair、cross-view 期限 span title 統一。
 - ✅ [playwright-iter2274 1/1 test a11y-sweep-suite に iter2273 edit-item-must checkbox entry 追加] 検査軸 260 個 (新 JA 軸)、計約 378 invariant check に拡張、prefix 4th letter pass (IZ → JA)、MUST checkbox toggle title pattern 展開 (MCP path A 経由発見)、検査軸 260 milestone 突破。
 - ✅ [playwright-iter2273 1/1] edit-item-must checkbox (ItemEditDialog): aria-label state-dependent 2-path (ON / OFF、副作用 + 切替先 含む) を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-edit-item-must-title-iter2273.ts)。**MCP path A で ItemEditDialog 内 MUST checkbox 探索中に発見**、theme-toggle iter1971 と同 state-dependent toggle title pattern を展開。
 - ✅ [playwright-iter2272 1/1 test a11y-sweep-suite に iter2271 start-timer (idle) full sync entry 追加] 検査軸 259 個 (新 IZ 軸)、計約 377 invariant check に拡張、title-aria divergence (旧 idle 通常 path で title=undefined) 修正 (MCP path A 経由発見)、I 軸 prefix 終端 (IZ) milestone。
