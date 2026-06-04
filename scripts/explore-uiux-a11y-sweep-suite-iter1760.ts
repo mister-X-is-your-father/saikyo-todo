@@ -762,6 +762,16 @@ async function main() {
     })
   }
 
+  // ========= HG. BulkCheckbox title sweep (iter2183) =========
+  const baHG = read(here, `${root}/src/components/workspace/bulk-action-bar.tsx`)
+  if (!baHG.includes('iter2183') || !baHG.includes('title={label}')) {
+    findings.push({
+      level: 'error',
+      source: 'HG.bulk-checkbox-title',
+      message: '[HG] iter2183 BulkCheckbox title 同期 が消えている',
+    })
+  }
+
   // ========= HF. taskchute ol timeline title sweep (iter2181) =========
   const tcHF = read(here, `${root}/src/components/workspace/taskchute-view.tsx`)
   if (
