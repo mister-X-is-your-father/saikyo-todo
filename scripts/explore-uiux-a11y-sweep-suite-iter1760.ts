@@ -762,6 +762,19 @@ async function main() {
     })
   }
 
+  // ========= HZ. interrupt note input title sweep (iter2221) =========
+  const spHZ = read(here, `${root}/src/components/schedule/schedule-item-picker.tsx`)
+  if (
+    !spHZ.includes('iter2221') ||
+    !spHZ.includes("'割込み / 休憩のメモ (任意、空欄で「割込み」 fallback)'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HZ.interrupt-note-input-title',
+      message: '[HZ] iter2221 interrupt note input title 同期 が消えている',
+    })
+  }
+
   // ========= HY. mock-timesheet nav title sweep (iter2219) =========
   const mtHY = read(here, `${root}/src/components/mock-timesheet/mock-top-nav.tsx`)
   if (
