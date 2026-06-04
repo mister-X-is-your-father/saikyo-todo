@@ -133,7 +133,9 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
               data-testid={`archive-row-${item.id}`}
               className="hover:bg-muted/50 border-t"
             >
-              <td className="max-w-[300px] truncate px-3 py-2">
+              {/* iter1738: td truncate で長 title 切れ。`title={item.title}` で sighted は
+                  hover で全 title 開示 (iter1720-1737 sweep を archive にも適用)。 */}
+              <td className="max-w-[300px] truncate px-3 py-2" title={item.title}>
                 {item.isMust && <MustBadge className="mr-1" iconOnly />}
                 {/* iter1300: 旧 aria-label `「${item.title}」を開く (${date} にアーカイブ)` は
                     visible {item.title} を `「」` 内 position 1 に持ち voice control prefix-matching
