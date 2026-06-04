@@ -66,6 +66,14 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
              dropdown を被せて in-dialog filtering を阻害するため "off"。quick-add iter350
              と同 convention。 */
           autoComplete="off"
+          /* iter1961: state-dependent aria-label (空 / 検索中) は SR にのみ伝達、title で
+             sighted hover disclose (teDate iter1955 / teCategory iter1957 と同
+             state-dependent input pattern)。 */
+          title={
+            q.length === 0
+              ? 'task を検索 — タイトルで部分一致'
+              : `task を検索 — 現在のクエリ "${q}" (${q.length} 文字)`
+          }
         />
       </div>
       <div className="max-h-72 overflow-auto">
