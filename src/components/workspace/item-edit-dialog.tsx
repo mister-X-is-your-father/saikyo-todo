@@ -412,6 +412,14 @@ function ItemEditDialogInner({
                   ? `子タスクタブ — 進捗 ${descendantsProgress.pctDone}% (完了 ${descendantsProgress.done} / 全 ${descendantsProgress.total} 件)`
                   : '子タスクタブ'
               }
+              /* iter2011: tab-base/summary iter2007/2009 と pair、子タスク tab の
+                 state-dependent descriptive context (進捗率 / 完了数) を sighted hover で
+                 disclose (6 tab sweep の 3 個目)。 */
+              title={
+                descendantsProgress && descendantsProgress.total > 0
+                  ? `子タスクタブ — 進捗 ${descendantsProgress.pctDone}% (完了 ${descendantsProgress.done} / 全 ${descendantsProgress.total} 件)`
+                  : '子タスクタブ'
+              }
             >
               <span aria-hidden="true">子タスク</span>
               {descendantsProgress && descendantsProgress.total > 0 ? (
