@@ -61,6 +61,9 @@ export function MockSubmitForm() {
       aria-busy={isPending || undefined}
       noValidate
       className="space-y-4"
+      /* iter2063: mock-login iter2061 と pair、mock-timesheet 工数送信 form の用途
+         hover disclose (8 form family の続編)。 */
+      title="Mock Timesheet 工数送信フォーム"
       data-testid="mock-submit-form"
     >
       <div className="space-y-2">
