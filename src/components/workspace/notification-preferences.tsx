@@ -178,6 +178,10 @@ export function NotificationPreferencesButton({ Icon = Settings }: { Icon?: Luci
                     className={`mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded ring-1 ring-inset ${visual.bgClass} ${visual.textClass} ${visual.ringClass}`}
                     role="img"
                     aria-label={`${visual.label}通知`}
+                    /* iter1909: icon-only chip で visible は icon のみ、隣 span に
+                       spec.label (full) は表示されるが icon 上 hover で「{label}通知」 disclose
+                       (item-deps DirectionIcon iter1907 / activity-icon iter1903 同 pattern)。 */
+                    title={`${visual.label}通知`}
                   >
                     <TypeIcon className="size-3" aria-hidden="true" />
                   </span>
