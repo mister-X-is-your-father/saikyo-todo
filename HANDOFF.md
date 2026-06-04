@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2268 1/1 test a11y-sweep-suite に iter2267 参加 Workspace 一覧 entry 追加] 検査軸 257 個 (新 IX 軸)、計約 375 invariant check に拡張、5 entity 一覧 ul family 完成 (MCP path A 経由発見)、375 check milestone 突破。
+- ✅ [playwright-iter2267 1/1] 参加している Workspace 一覧 ul (home page): aria-label "参加している Workspace 一覧" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-workspaces-list-ul-title-iter2267.ts)。**MCP path A で / (home) 探索中に発見**、5 entity 一覧 ul family (sources / workflows / goals / templates / workspaces) 完成。
 - ✅ [playwright-iter2266 1/1 test a11y-sweep-suite に iter2265 sprint-defaults-edit-btn entry 追加] 検査軸 256 個 (新 IW 軸)、計約 374 invariant check に拡張、edit-toggle button family Sprint defaults 補完 (MCP path A 経由発見)。
 - ✅ [playwright-iter2265 1/1] sprint-defaults-edit-btn: aria-label "編集 — Sprint デフォルト 現在 ${dow}曜開始 / ${len} 日 の編集モードを開く" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-sprint-defaults-edit-title-iter2265.ts)。**MCP path A で /sprints 探索中に発見**、budget-edit-btn iter2123 / budget-edit-cancel iter2255 と同 edit-toggle button title pattern を sprint defaults にも展開。
 - ✅ [playwright-iter2264 1/1 test a11y-sweep-suite に iter2263 workspace-mode 3 option entry 追加] 検査軸 255 個 (新 IV 軸)、計約 373 invariant check に拡張、mode-selector radiogroup + 3 option 全 4 element title 完成 (MCP path A 経由発見)。
