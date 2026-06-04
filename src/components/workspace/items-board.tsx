@@ -522,6 +522,11 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
                 aria-live="polite"
                 aria-atomic="true"
                 aria-label={label}
+                /* iter2147: filter-count status の visible "X / Y 件" / "X 件" は短く、
+                   aria-label "現在のフィルタ条件で X 件 (全 Y 件中)" / "Item 全 X 件" の
+                   filter context が sighted hover で disclose されない。dashboard-must-edit
+                   iter2145 / wf-trigger-presets iter2143 と同 title=aria-label sync pattern。 */
+                title={label}
                 data-testid="filter-count"
               >
                 <span aria-hidden="true">
