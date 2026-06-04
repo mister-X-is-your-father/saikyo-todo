@@ -744,6 +744,20 @@ async function main() {
     })
   }
 
+  // ========= BX. activity-log actor chip title sweep (iter1905) =========
+  const activityBX = read(here, `${root}/src/components/workspace/activity-log.tsx`)
+  if (
+    !activityBX.includes(
+      "title={entry.actorType === 'agent' ? 'AI Agent — 実行者' : 'ユーザ — 実行者'}",
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'BX.activity-actor',
+      message: '[BX] iter1905 activity-log actor chip title が消えている',
+    })
+  }
+
   // ========= BW. activity-log action icon title sweep (iter1903) =========
   const activityBW = read(here, `${root}/src/components/workspace/activity-log.tsx`)
   if (!activityBW.includes('title={`${label} — 操作種別`}')) {
