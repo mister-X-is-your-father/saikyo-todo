@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CC. estimate-bias tendency title sweep (iter1915) =========
+  const biasCC = read(here, `${root}/src/components/time-entry/estimate-bias-insight.tsx`)
+  if (!biasCC.includes('title={`${label} — 傾向`}')) {
+    findings.push({
+      level: 'error',
+      source: 'CC.estimate-bias-tendency',
+      message: '[CC] iter1915 estimate-bias tendency title が消えている',
+    })
+  }
+
   // ========= CB. time-entries sync-badge-pending title sweep (iter1913) =========
   const ttCB = read(here, `${root}/src/components/time-entry/time-entries-table.tsx`)
   if (!ttCB.includes('title="pending — 外部同期 未実行"')) {
