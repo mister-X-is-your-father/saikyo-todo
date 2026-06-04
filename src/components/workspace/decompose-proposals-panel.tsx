@@ -651,7 +651,16 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
           aria-busy={disabled || undefined}
           onClick={() => void handleAccept()}
           data-testid={`proposal-${proposal.id}-accept`}
-          title="採用 → 子タスクとして追加"
+          /* iter2109: proposal-accept static title="採用 → 子タスクとして追加" は
+             state-dependent aria-label (proposal.title + 採用処理中… / 採用) と
+             divergent → 2-path sync。proposals-redecompose iter2107 / agent-cancel
+             iter2105 と同 title-aria divergence 修正 pattern。
+             proposal title + state context を sighted hover で disclose。 */
+          title={
+            disabled
+              ? `✓ 採用 — 「${proposal.title}」を採用処理中…`
+              : `✓ 採用 — 「${proposal.title}」を採用して子タスクとして追加`
+          }
           // iter1044: visible "✓ 採用" を aria-label の prefix に固定し WCAG 2.5.3
           // satisfy (旧 aria-label は "を採用して..." で literal "✓ 採用" 連続 substring 無し)。
           aria-label={
@@ -672,7 +681,15 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
           aria-busy={disabled || undefined}
           onClick={() => void handleReject()}
           data-testid={`proposal-${proposal.id}-reject`}
-          title="却下"
+          /* iter2109: proposal-reject static title="却下" は state-dependent aria-label
+             (proposal.title + 却下処理中… / 却下) と divergent → 2-path sync。
+             proposal-accept iter2109 と pair、icon-only X button で sighted hover
+             で proposal title + state context disclose。 */
+          title={
+            disabled
+              ? `却下処理中… — 「${proposal.title}」を却下処理中`
+              : `却下 — 「${proposal.title}」を却下`
+          }
           // iter1217: 旧 aria-label は visible 概念名 "却下" を末尾 "「title」を **却下**" に
           // 持ち voice control prefix-matching「click 却下」 match 不可 (icon-only X、
           // visible text 無、title attribute "却下" は tooltip 専用)。template-item delete
