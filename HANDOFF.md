@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1902 1/1 test a11y-sweep-suite に iter1901 activity-log hint entry 追加] 検査軸 74 個 (新 BV 軸)、計約 170 invariant check に拡張。
 - ✅ [playwright-iter1901 1/1 mode-D activity-log hint chip に title 付与] visible は label のみで「Activity 状態」 context が無く、aria-label と同 text を title に付与し sighted hover で disclose、iter1853 sprint-status / iter1899 import-status と同 status chip family pattern。
 - ✅ [playwright-iter1900 1/1 test a11y-sweep-suite に iter1899 integrations status entry 追加] 検査軸 73 個 (新 BU 軸)、計約 169 invariant check。iter1900 突破 — 71 polish + 71 sweep の双子鏡 commit pattern 安定運用。
 - ✅ [playwright-iter1899 1/1 mode-D integrations ImportStatusBadge に title 付与] visible label のみで「Pull ステータス」 context が無く、aria-label と同 text を title に付与し sighted hover で disclose、iter1853 sprint-status と同 pattern。
