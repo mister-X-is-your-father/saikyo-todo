@@ -740,6 +740,23 @@ async function main() {
     })
   }
 
+  // ========= FT. agent-cancel title 2-path state-dependent 同期 sweep (iter2105) =========
+  const dpFT = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
+  if (!dpFT.includes('iter2105') || !dpFT.includes("'中止 — 実行中の Agent を中止中…'")) {
+    findings.push({
+      level: 'error',
+      source: 'FT.agent-cancel-title',
+      message: '[FT] iter2105 agent-cancel title 2-path state-dependent 同期 が消えている',
+    })
+  }
+  if (/^\s+title="実行中の Agent を中止"$/m.test(dpFT)) {
+    findings.push({
+      level: 'error',
+      source: 'FT.agent-cancel-title',
+      message: '[FT] iter2105 agent-cancel 旧 静的 title が残っている',
+    })
+  }
+
   // ========= FS. src-pull title 3-path state-dependent 同期 sweep (iter2103) =========
   const ipFS = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
   if (
