@@ -740,6 +740,31 @@ async function main() {
     })
   }
 
+  // ========= FU. proposals-redecompose + redecompose-fresh title sweep (iter2107) =========
+  const dpFU = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
+  const iter2107CountFU = (dpFU.match(/iter2107/g) ?? []).length
+  if (iter2107CountFU < 2) {
+    findings.push({
+      level: 'error',
+      source: 'FU.proposals-redecompose-title',
+      message: `[FU] iter2107 marker 不足 (count=${iter2107CountFU}、redecompose + fresh 2 個必要)`,
+    })
+  }
+  if (/^\s+title="既存の提案を残したまま追加で分解"$/m.test(dpFU)) {
+    findings.push({
+      level: 'error',
+      source: 'FU.proposals-redecompose-title',
+      message: '[FU] iter2107 proposals-redecompose 旧 静的 title が残っている',
+    })
+  }
+  if (/^\s+title="既存提案を全て却下してから再分解"$/m.test(dpFU)) {
+    findings.push({
+      level: 'error',
+      source: 'FU.proposals-redecompose-title',
+      message: '[FU] iter2107 proposals-redecompose-fresh 旧 静的 title が残っている',
+    })
+  }
+
   // ========= FT. agent-cancel title 2-path state-dependent 同期 sweep (iter2105) =========
   const dpFT = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
   if (!dpFT.includes('iter2105') || !dpFT.includes("'中止 — 実行中の Agent を中止中…'")) {
