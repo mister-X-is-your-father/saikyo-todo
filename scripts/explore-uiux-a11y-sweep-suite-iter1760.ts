@@ -744,6 +744,15 @@ async function main() {
     })
   }
 
+  // ========= AV. notification-bell unreadBreakdown chip title sweep (iter1849) =========
+  if (!notifBell.includes('title={`${unreadBreakdown} — 未読内訳`}')) {
+    findings.push({
+      level: 'error',
+      source: 'AV.unread-breakdown',
+      message: '[AV] iter1849 unreadBreakdown title が aria-label と一致しない',
+    })
+  }
+
   // ========= AU. notification-bell-hint chip title sweep (iter1847) =========
   if (!notifBell.includes('title={`${hint.label} — 通知 健全性`}')) {
     findings.push({
