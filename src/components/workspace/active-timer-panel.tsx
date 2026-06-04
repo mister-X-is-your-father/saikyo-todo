@@ -212,8 +212,11 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
               /* iter1610: 旧 aria-label `"校正後 ${calibratedMinutes}分 — ..."` は visible "→ ${calibratedMinutes}分"
                  の text 部 を 中位置 (`校正後 **30分**`) に持ち voice control prefix-matching「click 30分」 が
                  strict prefix-match で不可。iter1605 quick-add estimate (iter1553-1604 visible 冒頭 em-dash
-                 sweep) と同 pattern、visible (icon 抜き) 冒頭固定 + em-dash 区切。 */
+                 sweep) と同 pattern、visible (icon 抜き) 冒頭固定 + em-dash 区切。
+                 iter1851: iter1849 unreadBreakdown / iter1847 hint chip と同 pattern を calibrated chip
+                 にも展開、calibration factor / delta context を sighted hover で disclose。 */
               aria-label={`${calibrated.calibratedMinutes}分 — 校正後 ${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正`}
+              title={`${calibrated.calibratedMinutes}分 — 校正後 ${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正`}
             >
               <span aria-hidden="true">→ {calibrated.calibratedMinutes}分</span>
             </span>
