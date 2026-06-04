@@ -67,9 +67,13 @@ export default async function RootLayout({
          * Enter で `#main-content` (各 page の <main>) にスキップ。focus 時のみ可視化、
          * 通常時は sr-only で SR のみが認識。WCAG 2.4.1 Bypass Blocks 対応。
          * 各 page の <main> 要素に `id="main-content"` を付与する必要がある。
+         * iter1728: data-testid 付与で Playwright が `[data-testid="skip-to-main"]` で
+         * 標準 selector 経路で発見可能、WCAG 2.4.1 (Bypass Blocks) の Tab-1 focus / Enter
+         * 押下 → main へジャンプの E2E test を全 page 一律 pattern で書ける。
          */}
         <a
           href="#main-content"
+          data-testid="skip-to-main"
           className="bg-primary text-primary-foreground sr-only z-50 rounded px-3 py-2 text-sm font-medium focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:inline-flex focus:min-h-11 focus:min-w-11 focus:items-center focus:justify-center"
         >
           メインコンテンツへスキップ
