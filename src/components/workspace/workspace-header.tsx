@@ -82,6 +82,10 @@ export function WorkspaceHeader({ title, role, subtitle, pageActions, utility }:
            prefix scan で同 page header / group が異なる prefix を読み上げる不整合。「」 quote を外し
            ${title} literal-prefix で統一 (iter1697 backlog sortable / iter1698 subtask drag 続き)。 */
         aria-label={`${title} — ヘッダー操作 (ページ固有アクション / ユーティリティ)`}
+        /* iter2229: workspace-header ヘッダー操作 group の aria-label は browser tooltip に
+           ならず sighted は hover で operations 構成 disclose 不可。workspace-header iter2227 と
+           pair の header family 2 element 完成。 */
+        title={`${title} — ヘッダー操作 (ページ固有アクション / ユーティリティ)`}
       >
         {pageActions}
         {utility}
