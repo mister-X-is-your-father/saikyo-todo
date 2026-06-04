@@ -528,6 +528,9 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
           >
             {/* iter1106: visible-prefix sweep (iter1093-1105) を decompose-proposal edit
                 buttons にも展開。visible "キャンセル" / "保存" / "保存中…" を冒頭固定。 */}
+            {/* iter1823: iter1789 comment-thread edit-cancel/save と同 pattern を
+                proposal-edit-cancel/save にも展開。proposal title context を sighted hover で
+                disclose。 */}
             <Button
               type="button"
               size="sm"
@@ -537,6 +540,7 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               disabled={update.isPending}
               data-testid={`proposal-${proposal.id}-edit-cancel`}
               aria-label={`キャンセル — 提案「${proposal.title}」の編集を破棄`}
+              title={`キャンセル — 提案「${proposal.title}」の編集を破棄`}
             >
               <span aria-hidden="true">キャンセル</span>
             </Button>
@@ -549,6 +553,11 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
               data-testid={`proposal-${proposal.id}-save`}
               aria-keyshortcuts="Meta+Enter Control+Enter"
               aria-label={
+                update.isPending
+                  ? `保存中… — 提案「${proposal.title}」の編集を保存中`
+                  : `保存 — 提案「${proposal.title}」の編集を保存 (Cmd/Ctrl+Enter でも可)`
+              }
+              title={
                 update.isPending
                   ? `保存中… — 提案「${proposal.title}」の編集を保存中`
                   : `保存 — 提案「${proposal.title}」の編集を保存 (Cmd/Ctrl+Enter でも可)`
