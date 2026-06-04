@@ -381,6 +381,13 @@ function ItemEditDialogInner({
           <TabsList
             className="min-h-14 w-full overflow-x-auto sm:min-h-8 sm:overflow-visible [&>button]:min-w-11 sm:[&>button]:min-w-0"
             aria-label="Item 編集タブ"
+            /* iter2285: ItemEditDialog の TabsList (Item 編集タブ landmark) の aria-label は
+               browser tooltip にならず sighted は hover で「Item 編集 タブ landmark」 disclose
+               不可。MCP path A で ItemEditDialog 探索中に発見、5 個別 tab (基本 / サマリ /
+               コメント / アクティビティ / etc) には既に title あるが parent TabsList 自体は
+               title 欠落。Kanban root iter2281 / Gantt root iter2247 と同 landmark root container
+               title pattern を ItemEditDialog TabsList にも展開。 */
+            title="Item 編集タブ"
           >
             <TabsTrigger
               value="base"
