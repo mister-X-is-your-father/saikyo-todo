@@ -41,6 +41,10 @@ export default async function ArchivePage({ params }: PageProps) {
       tabIndex={-1}
       aria-label="アーカイブ済 Item 一覧"
       className="container mx-auto max-w-5xl space-y-6 p-4 focus-visible:outline-none md:p-6"
+      /* iter2077: 5 sub-page main landmark family の 5 個目 (archive)、8 main landmark
+         family 全完備 (workspace + sprints + goals + pdca + workflows + time-entries +
+         templates + integrations + archive)。 */
+      title="アーカイブ済 Item 一覧"
     >
       <WorkspaceHeader
         title="アーカイブ"

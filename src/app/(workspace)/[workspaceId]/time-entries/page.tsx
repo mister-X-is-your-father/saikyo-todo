@@ -41,6 +41,8 @@ export default async function TimeEntriesPage({ params }: PageProps) {
       tabIndex={-1}
       aria-label="稼働入力 — やったこと + 時間を記録"
       className="container mx-auto max-w-5xl space-y-6 p-4 focus-visible:outline-none md:p-6"
+      /* iter2077: 5 sub-page main landmark family の 2 個目 (time-entries)。 */
+      title="稼働入力 — やったこと + 時間を記録"
     >
       <WorkspaceHeader
         title="稼働入力"
