@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BC. personal-period-view priority dot title sweep (iter1863) =========
+  const periodView = read(here, `${root}/src/components/workspace/personal-period-view.tsx`)
+  if (!periodView.includes('title={`p${it.priority ?? 4}`}')) {
+    findings.push({
+      level: 'error',
+      source: 'BC.period-priority',
+      message: '[BC] iter1863 period priority dot title が消えている',
+    })
+  }
+
   // ========= BB. inbox-health-hint chip title sweep (iter1861) =========
   const inboxView = read(here, `${root}/src/components/workspace/inbox-view.tsx`)
   if (!inboxView.includes('title={`${healthChip.label} — Inbox 健全性`}')) {
