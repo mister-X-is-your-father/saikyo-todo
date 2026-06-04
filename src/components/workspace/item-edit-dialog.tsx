@@ -879,7 +879,15 @@ function ItemEditDialogInner({
               // iter1074: visible "アーカイブ復元" は aria-label "アーカイブから復元"
               // で "から" 挿入で literal substring 不一致 → WCAG 2.5.3 (Label in Name)
               // 違反。visible-prefix 先頭固定 (iter1068/1071-1073 sweep の続編)。
+              // iter1787: aria-label は browser tooltip にならず sighted は hover で
+              // target item.title 即把握できなかった。iter1785 cancel/save と同 pattern
+              // を unarchive にも展開、`title={同 aria-label}` 付与で sighted hover で disclose。
               aria-label={
+                unarchive.isPending
+                  ? `復元中… — 「${item.title}」をアーカイブから復元中`
+                  : `アーカイブ復元 — 「${item.title}」をアーカイブから復元`
+              }
+              title={
                 unarchive.isPending
                   ? `復元中… — 「${item.title}」をアーカイブから復元中`
                   : `アーカイブ復元 — 「${item.title}」をアーカイブから復元`
@@ -912,7 +920,15 @@ function ItemEditDialogInner({
               // を中位置 "「title」を **アーカイブ**" に持ち voice control prefix-matching
               //「click アーカイブ / アーカイブ中…」 match 不可。iter1074 unarchive 同 pattern
               // を archive 側にも展開、visible 冒頭固定 + em-dash 区切で descriptive 末尾。
+              // iter1787: aria-label は browser tooltip にならず sighted は hover で
+              // target item.title / 「後で復元可能」 hint 即把握できなかった。
+              // `title={同 aria-label}` 付与で sighted hover で context disclose。
               aria-label={
+                archive.isPending
+                  ? `アーカイブ中… — 「${item.title}」をアーカイブ中…`
+                  : `アーカイブ — 「${item.title}」をアーカイブ (後で復元可能)`
+              }
+              title={
                 archive.isPending
                   ? `アーカイブ中… — 「${item.title}」をアーカイブ中…`
                   : `アーカイブ — 「${item.title}」をアーカイブ (後で復元可能)`
