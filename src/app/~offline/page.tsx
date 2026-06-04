@@ -57,6 +57,9 @@ export default function OfflinePage() {
           href="/"
           prefetch={false}
           aria-label="ホームに戻る — アプリの起点画面に遷移、オンライン復帰後は最新状態を表示"
+          // iter1805: iter1801 back-link / iter1803 auth cross-link と同 pattern を offline
+          // home-link にも展開、retry-button と pair で offline page UX hover disclosure 完備。
+          title="ホームに戻る — アプリの起点画面に遷移、オンライン復帰後は最新状態を表示"
           data-testid="offline-home-link"
           className={cn(buttonVariants({ variant: 'outline' }), 'h-11 px-4')}
         >

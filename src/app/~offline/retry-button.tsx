@@ -18,6 +18,9 @@ export function OfflineRetryButton() {
          Playwright で offline page の focus order / aria-label / 44x44 tap target / em-dash
          convention を自動 audit する際に標準 selector で発見可能になる。 */
       aria-label="再読み込みして再試行 — ページ全体を読み直して接続を回復"
+      // iter1805: iter1803 auth cross-link / iter1801 back-link と同 pattern を offline
+      // 復帰アクション にも展開、offline page UX hover disclosure 完備。
+      title="再読み込みして再試行 — ページ全体を読み直して接続を回復"
       data-testid="offline-retry-button"
       className="h-11 px-4"
     >
