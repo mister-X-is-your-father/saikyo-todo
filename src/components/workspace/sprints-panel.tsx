@@ -445,6 +445,10 @@ export function SprintsPanel({ workspaceId }: Props) {
           className="space-y-3"
           data-testid="sprints-list"
           aria-label={`Sprint 一覧 — ${list.data.length} 件`}
+          /* iter2193: Sprint 一覧 ul の aria-label "Sprint 一覧 — N 件" は browser tooltip に
+             ならず sighted は hover で件数 context disclose 不可。sources-list iter2191 /
+             workflows-list iter2189 と同 title=aria-label sync pattern (一覧 ul family)。 */
+          title={`Sprint 一覧 — ${list.data.length} 件`}
         >
           {list.data.map((sp) => (
             <SprintCard
