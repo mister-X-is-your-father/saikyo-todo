@@ -211,7 +211,11 @@ export function InboxView({
                tooltip にならず sighted は hover で全 title 見られなかった。title 付与で
                sighted hover → 全 title disclose (iter1720/1733/1734/1735 sweep を inbox にも)。 */
             aria-label={`${it.title} — 編集ダイアログで開く`}
-            title={it.title}
+            /* iter2155: inbox-view item button title は it.title のみで aria-label
+               "${it.title} — 編集ダイアログで開く" の "編集ダイアログで開く" context が
+               sighted hover で disclose されない。today-view iter2153 / personal-period
+               iter2151 と同 title=aria-label sync pattern。 */
+            title={`${it.title} — 編集ダイアログで開く`}
             className="focus-visible:ring-ring flex flex-1 cursor-pointer items-center gap-2 rounded focus-visible:ring-2 focus-visible:outline-none"
           >
             <span
