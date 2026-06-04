@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CK. sprints-panel progressbar title sweep (iter1931) =========
+  const spCK = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (!spCK.includes('title={`Sprint「${sprint.name}」完了率 ${pct}% —')) {
+    findings.push({
+      level: 'error',
+      source: 'CK.sprint-progress',
+      message: '[CK] iter1931 sprints-panel progressbar title が消えている',
+    })
+  }
+
   // ========= CJ. workflow-graph-canvas title sweep (iter1929) =========
   const wfgCJ = read(here, `${root}/src/components/workflow/workflow-graph-canvas.tsx`)
   if (!wfgCJ.includes('title={`Workflow graph —')) {
