@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2146 1/1 test a11y-sweep-suite に iter2145 dashboard-must-edit entry 追加] 検査軸 196 個 (新 GN 軸)、計約 311 invariant check に拡張。既存 B 軸 dashboard MUST title check を新 format に更新 (iter2145 sync 対応)。
+- ✅ [playwright-iter2145 1/1 mode-D dashboard MUST item button title を aria-label と sync] "編集" context を sighted hover で disclose、wf-trigger-presets iter2143 / subtask-group iter2139 と pair。
 - ✅ [playwright-iter2144 1/1 test a11y-sweep-suite に iter2143 wf-trigger-presets-group entry 追加] 検査軸 195 個 (新 GM 軸)、計約 310 invariant check に拡張、検査軸 195 + 310 check 突破。
 - ✅ [playwright-iter2143 1/1 mode-D workflows trigger プリセット group に title 付与] 4 trigger kind + 用途 context hover disclose、wf-node-presets iter2141 / subtask-group iter2139 と pair。
 - ✅ [playwright-iter2142 1/1 test a11y-sweep-suite に iter2141 wf-node-presets-group entry 追加] 検査軸 194 個 (新 GL 軸)、計約 309 invariant check に拡張。
