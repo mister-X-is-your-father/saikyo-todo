@@ -86,7 +86,19 @@ export function ItemCheckbox({
             ? `未完了に戻す — 「${item.title}」を未完了に戻す`
             : `完了にする — 「${item.title}」を完了にする`
       }
-      title={isDone ? '未完了に戻す' : '完了にする'}
+      /* iter2319: item-checkbox の旧 title は 2-path で短文 (isDone ? '未完了に戻す' :
+         '完了にする') のみ、aria-label の state-dependent 3-path (pending / done / todo、
+         item.title 含む) と divergent。pending state も hover で disclose 不可 (toggle 中
+         であることが sighted hover で分からなかった)。両 path とも aria-label と同 text の
+         title に揃え、3-path sync で「どの item の状態切替か + 進行状況」を hover で disclose。
+         start-timer iter2271 と同 title-aria full sync pattern。 */
+      title={
+        toggle.isPending
+          ? `切替中… — 「${item.title}」の完了状態を切替中`
+          : isDone
+            ? `未完了に戻す — 「${item.title}」を未完了に戻す`
+            : `完了にする — 「${item.title}」を完了にする`
+      }
     >
       {isDone && (
         <svg
