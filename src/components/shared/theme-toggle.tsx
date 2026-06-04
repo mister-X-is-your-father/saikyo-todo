@@ -31,7 +31,13 @@ export function ThemeToggle() {
       // 切替) で sighted hover 時に何をする button か即把握できなかった。title 付与で
       // sighted hover → 「ライトテーマに切替」「ダークテーマに切替」 disclose、
       // aria-label と同 text で SR ↔ sighted 同期。
-      title={resolvedTheme === 'dark' ? 'ライトテーマに切替' : 'ダークテーマに切替'}
+      // iter1971: aria-label は iter1603 で em-dash convention 化済だが title は iter1763 旧
+      // ' に' 助詞接続のまま divergent。両 path で aria-label と同 em-dash text に揃え、
+      // SR と sighted hover で同 vocab に統一 (iter1969 comment-input / iter1967 period-goal
+      // と同 SR ↔ sighted disclosure 統一 pattern)。
+      title={
+        resolvedTheme === 'dark' ? 'ライトテーマ — クリックで切替' : 'ダークテーマ — クリックで切替'
+      }
     >
       <Sun className="h-4 w-4 dark:hidden" aria-hidden="true" />
       <Moon className="hidden h-4 w-4 dark:block" aria-hidden="true" />
