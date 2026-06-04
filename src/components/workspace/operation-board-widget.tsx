@@ -368,6 +368,16 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                   ? `昨日 done ${board.doneYesterday.count} 件 — 一覧を閉じる`
                   : `昨日 done ${board.doneYesterday.count} 件 — 一覧を表示`
               }
+              /* iter2311: operation-board-done-yesterday-toggle の aria-label は
+                 state-dependent 2-path (open / closed、count context 含む) で SR には full
+                 context を渡すが browser tooltip にならず sighted は hover で同 context
+                 disclose 不可。activity-detail-toggle iter2293 と同 state-dependent
+                 disclosure title pattern を done-yesterday-toggle にも展開。 */
+              title={
+                showDoneYesterday
+                  ? `昨日 done ${board.doneYesterday.count} 件 — 一覧を閉じる`
+                  : `昨日 done ${board.doneYesterday.count} 件 — 一覧を表示`
+              }
               data-testid="operation-board-done-yesterday-toggle"
             >
               {showDoneYesterday ? (
