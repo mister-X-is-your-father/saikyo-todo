@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2256 1/1 test a11y-sweep-suite に iter2255 budget edit form button family entry 追加] 検査軸 251 個 (新 IR 軸)、計約 369 invariant check に拡張、budget edit form button 3 element (edit-btn / cancel / save) title 完成。
+- ✅ [playwright-iter2255 1/1] budget-panel edit form: cancel + save 2 button の aria-label を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-budget-cancel-save-title-iter2255.ts)、budget-edit-btn iter2123 と pair の budget edit form button family 3 element 完成 (save-btn は pending 2-path sync)。
 - ✅ [playwright-iter2254 1/1 test a11y-sweep-suite に iter2253 proposals-accept-all/reject-all entry 追加] 検査軸 250 個 (新 IQ 軸)、計約 368 invariant check に拡張、bulk proposal action button pair 完成、検査軸 250 milestone 突破。
 - ✅ [playwright-iter2253 1/1] decompose-proposals-panel accept-all / reject-all button: aria-label state-dependent 2-path (pending / idle、list.length 件 context 含む) を sighted hover で disclose 不可 → 同 text の title を 2 button 同時に付与し sync (path B codify scripts/explore-uiux-proposals-accept-reject-title-iter2253.ts)、redecompose / やり直し (iter2107) と同 pattern、bulk proposal action button pair 完成。
 - ✅ [playwright-iter2252 1/1 test a11y-sweep-suite に iter2251 picker family PopoverContent entry 追加] 検査軸 249 個 (新 IP 軸)、計約 367 invariant check に拡張、picker family 2 element (tag / assignee) PopoverContent title pair 完成。
