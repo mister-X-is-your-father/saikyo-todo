@@ -147,6 +147,10 @@ export function ArchivedItemsPanel({ workspaceId }: Props) {
                   className="text-primary focus-visible:ring-ring rounded hover:underline focus-visible:ring-2 focus-visible:outline-none"
                   data-testid={`archive-title-link-${item.id}`}
                   aria-label={`${item.title} — 開く (${fmt(item.archivedAt)} にアーカイブ済み)`}
+                  /* iter1995: visible は item.title のみで「開く」 action context + archive 日付
+                     が無く、sighted hover で disclose (sprint-risk-board iter1783 と同 button
+                     hover context pattern)。 */
+                  title={`${item.title} — 開く (${fmt(item.archivedAt)} にアーカイブ済み)`}
                 >
                   <span aria-hidden="true">{item.title}</span>
                 </Link>
