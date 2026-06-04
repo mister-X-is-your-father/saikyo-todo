@@ -207,6 +207,10 @@ function ActivityRow({
                language divergence で voice control「click user」 / 「click ユーザ」 どちらでも
                不可 → visible を Ja "ユーザ" に揃え、aria を "ユーザ — 実行者" 形式に統一。 */
             aria-label={entry.actorType === 'agent' ? 'AI Agent — 実行者' : 'ユーザ — 実行者'}
+            /* iter1905: agent path は visible "AI" 略記、user path は visible "ユーザ" のみで
+               「実行者」 context が無い、sighted hover で disclose
+               (iter1903 action icon / iter1901 hint chip と同 activity-log file 内 sweep)。 */
+            title={entry.actorType === 'agent' ? 'AI Agent — 実行者' : 'ユーザ — 実行者'}
           >
             <span aria-hidden="true">{entry.actorType === 'agent' ? 'AI' : 'ユーザ'}</span>
           </span>
