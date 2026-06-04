@@ -98,6 +98,10 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
          (voice control OK)、区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
       aria-label={`今日の作戦盤 — 期限超過 ${board.overdue.total} 件 / 今日 MUST ${board.mustToday.count} 件 / 今日予定 ${board.todayScheduled.count} 件`}
       data-testid="operation-board-widget"
+      /* iter1943: region 全体に title を付与し sighted hover で 3 stat (期限超過 / MUST / 予定)
+         integrated summary disclose、estimate-bias 内訳 iter1917 / cycle status iter1927 と同
+         widget summary pattern。 */
+      title={`今日の作戦盤 — 期限超過 ${board.overdue.total} 件 / 今日 MUST ${board.mustToday.count} 件 / 今日予定 ${board.todayScheduled.count} 件`}
     >
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-base" role="heading" aria-level={2}>
