@@ -740,6 +740,19 @@ async function main() {
     })
   }
 
+  // ========= GG. proposal edit form ops group title sweep (iter2131) =========
+  const dpGG = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
+  if (
+    !dpGG.includes('iter2131') ||
+    !dpGG.includes('title={`提案「${proposal.title}」の編集 form 操作 — キャンセル / 保存`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GG.proposal-edit-ops-group-title',
+      message: '[GG] iter2131 proposal edit form ops group title 付与 が消えている',
+    })
+  }
+
   // ========= GF. Sprint デフォルト編集 ops group title 付与 sweep (iter2129) =========
   const spGF = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (
