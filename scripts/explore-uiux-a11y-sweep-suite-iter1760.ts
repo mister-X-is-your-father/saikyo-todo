@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= EX. mock-login form title sweep (iter2061) =========
+  const mlfEX = read(here, `${root}/src/components/mock-timesheet/mock-login-form.tsx`)
+  if (!mlfEX.includes('title="Mock Timesheet ログインフォーム"')) {
+    findings.push({
+      level: 'error',
+      source: 'EX.mock-login-form',
+      message: '[EX] iter2061 mock-login form title が消えている',
+    })
+  }
+
   // ========= EW. 3 edit form title sweep (iter2059) =========
   const spEW = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   const bpEW = read(here, `${root}/src/components/workspace/budget-panel.tsx`)
