@@ -472,6 +472,27 @@ async function main() {
     })
   }
 
+  // ========= Q. ItemEditDialog archive/unarchive title sweep (iter1787) =========
+  if (
+    !itemEditDialog.includes('`復元中… — 「${item.title}」をアーカイブから復元中`') ||
+    !itemEditDialog.includes('`アーカイブ復元 — 「${item.title}」をアーカイブから復元`') ||
+    !itemEditDialog.includes('`アーカイブ中… — 「${item.title}」をアーカイブ中…`') ||
+    !itemEditDialog.includes('`アーカイブ — 「${item.title}」をアーカイブ (後で復元可能)`')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'Q.dialog-archive',
+      message: '[Q] iter1787 ItemEditDialog archive/unarchive conditional path text が消えている',
+    })
+  }
+  if (dialogTitleCount < 5) {
+    findings.push({
+      level: 'error',
+      source: 'Q.dialog-archive',
+      message: `[Q] iter1787 ItemEditDialog title 件数が ${dialogTitleCount} (期待 >= 5: header + cancel + save + archive + unarchive)`,
+    })
+  }
+
   // ========= N. logout button title sweep (iter1781) =========
   // homePage は C 軸で既に読込済 (line 277)
   if (!homePage.includes('title="ログアウト — ログイン画面に戻る"')) {
