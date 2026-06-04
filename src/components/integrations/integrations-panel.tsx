@@ -741,6 +741,9 @@ function ImportStatusBadge({ status }: { status: string }) {
          voice control prefix-matching「click 成功」 が strict prefix-match で不可 (substring 一致のみ)。
          iter1553-1558 status/role Badge family と同 pattern、visible 冒頭固定 + em-dash 区切。 */
       aria-label={`${label} — Pull ステータス`}
+      /* iter1899: visible は label のみで「Pull ステータス」 context が無く、
+         sighted hover で disclose (iter1853 sprint-status Badge と同 pattern、status chip family)。 */
+      title={`${label} — Pull ステータス`}
     >
       <span aria-hidden="true">{label}</span>
     </span>
