@@ -493,6 +493,24 @@ async function main() {
     })
   }
 
+  // ========= R. comment-thread 4 button title sweep (iter1789) =========
+  const commentThread = read(here, `${root}/src/components/workspace/comment-thread.tsx`)
+  if (!commentThread.includes('title="キャンセル — コメントの編集を破棄"')) {
+    findings.push({
+      level: 'error',
+      source: 'R.comment-thread',
+      message: '[R] iter1789 comment-edit-cancel title が消えている',
+    })
+  }
+  const commentTitleCount = (commentThread.match(/\btitle=(\{|")/g) ?? []).length
+  if (commentTitleCount < 4) {
+    findings.push({
+      level: 'error',
+      source: 'R.comment-thread',
+      message: `[R] iter1789 comment-thread title 件数が ${commentTitleCount} (期待 >= 4: cancel + save + edit + delete)`,
+    })
+  }
+
   // ========= N. logout button title sweep (iter1781) =========
   // homePage は C 軸で既に読込済 (line 277)
   if (!homePage.includes('title="ログアウト — ログイン画面に戻る"')) {
