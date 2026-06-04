@@ -762,6 +762,19 @@ async function main() {
     })
   }
 
+  // ========= HL. Sprint 一覧 ul title sweep (iter2193) =========
+  const spHL = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (
+    !spHL.includes('iter2193') ||
+    !spHL.includes('title={`Sprint 一覧 — ${list.data.length} 件`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HL.sprints-list-title',
+      message: '[HL] iter2193 Sprint 一覧 ul title 同期 が消えている',
+    })
+  }
+
   // ========= HK. API 連携 source 一覧 ul title sweep (iter2191) =========
   const ipHK = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
   if (
