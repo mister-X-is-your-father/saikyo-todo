@@ -172,7 +172,18 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
             disabled={!src.enabled || trigger.isPending}
             aria-busy={trigger.isPending || undefined}
             data-testid={`src-pull-${src.id}`}
-            title="手動 pull (sync 実行、30s timeout)"
+            /* iter2103: src-pull static title="手動 pull (sync 実行、30s timeout)" は
+               state-dependent aria-label (3-path: disabled / pending / idle、source name 含む)
+               と divergent → 3-path sync。wf-run-rerun iter2101 / kr-delete iter2099 /
+               sprint-period-edit iter2097 と同 title-aria divergence 修正 pattern。
+               Source name + state context を sighted hover で disclose。 */
+            title={
+              !src.enabled
+                ? `Pull — Source「${src.name}」は無効化中のため Pull 不可`
+                : trigger.isPending
+                  ? `Pull 中… — Source「${src.name}」を Pull 中`
+                  : `Pull — Source「${src.name}」を手動 Pull (sync 実行、30s timeout)`
+            }
             aria-label={
               !src.enabled
                 ? `Pull — Source「${src.name}」は無効化中のため Pull 不可`
