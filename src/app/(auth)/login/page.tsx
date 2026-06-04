@@ -33,6 +33,9 @@ export default function LoginPage() {
           className="text-primary focus-visible:ring-ring relative z-10 inline-flex min-h-11 items-center rounded px-2 py-2 underline underline-offset-4 focus-visible:ring-2 focus-visible:outline-none"
           data-testid="signup-link"
           aria-label="サインアップ — アカウント未作成の方はこちらから新規登録"
+          // iter1803: iter1801 back-link / iter1779 workspace nav と同 pattern を auth cross-link
+          // にも展開、auth UX hover disclosure 完備。
+          title="サインアップ — アカウント未作成の方はこちらから新規登録"
         >
           <span aria-hidden="true">サインアップ</span>
         </Link>

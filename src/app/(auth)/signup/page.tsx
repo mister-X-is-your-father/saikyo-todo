@@ -38,6 +38,8 @@ export default function SignupPage() {
           className="text-primary focus-visible:ring-ring relative z-10 inline-flex min-h-11 items-center rounded px-2 py-2 underline underline-offset-4 focus-visible:ring-2 focus-visible:outline-none"
           data-testid="login-link"
           aria-label="ログイン — 既にアカウントをお持ちの方はこちら"
+          // iter1803: signup-link と pair で auth cross-link family の hover disclosure 完備。
+          title="ログイン — 既にアカウントをお持ちの方はこちら"
         >
           <span aria-hidden="true">ログイン</span>
         </Link>
