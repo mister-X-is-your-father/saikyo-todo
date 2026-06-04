@@ -1437,7 +1437,13 @@ export function DashboardView({ workspaceId }: Props) {
           em-dash 区切と divergent (visible CardTitle "MUST Item 一覧" を冒頭固定で voice
           control prefix-match「click MUST Item 一覧」を維持しつつ em-dash 区切で count
           chip 同 file 内の Dashboard 健全性 chip 群 / StatCard と convention 統一)。 */}
-      <Card role="region" aria-label={`MUST Item 一覧 — ${s.items.length} 件`}>
+      <Card
+        role="region"
+        aria-label={`MUST Item 一覧 — ${s.items.length} 件`}
+        /* iter1953: region 全体に title を付与し sighted hover で MUST count 確認、
+           inbox-region iter1945 / op-board iter1943 と同 region/widget summary pattern。 */
+        title={`MUST Item 一覧 — ${s.items.length} 件`}
+      >
         <CardHeader>
           <CardTitle
             id="dashboard-must-list-heading"
