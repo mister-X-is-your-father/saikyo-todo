@@ -740,6 +740,19 @@ async function main() {
     })
   }
 
+  // ========= GB. item-edit-set-baseline title 3-path sweep (iter2121) =========
+  const iedGB = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
+  if (
+    !iedGB.includes('iter2121') ||
+    !iedGB.includes('記録中… — 「${item.title}」のベースラインを記録中')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GB.item-edit-set-baseline-title',
+      message: '[GB] iter2121 item-edit-set-baseline title 3-path 同期 が消えている',
+    })
+  }
+
   // ========= GA. item-edit-clear-baseline + save-as-template title sweep (iter2119) =========
   const iedGA = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
   const iter2119CountGA = (iedGA.match(/iter2119/g) ?? []).length
