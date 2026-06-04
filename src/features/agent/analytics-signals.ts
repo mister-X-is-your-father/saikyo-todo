@@ -727,6 +727,46 @@ export function formatClusterCountsHeadlineJa(signals: AnalyticsSignals): string
 }
 
 /**
+ * iter1762 ai-automation: cluster 件数 headline を 1 chip (AgentBriefSignal) に変換。
+ * iter1754 formatClusterCountsHeadlineJa (= text) + tone derivation の 1 関数化、
+ * dashboard 上部 / Slack notifier の「今日 1 chip 概要」 を 1 chip で render 可能。
+ *
+ * tone 判定 (= chip 配色):
+ *  - 警戒 > 0 → 'warn'    (= 今日は警戒事項あり、注意喚起)
+ *  - 警戒 = 0 + 達成感 > 0 → 'success' (= 今日は達成のみ、positive day)
+ *  - 両 0 → 'idle'        (= 今日は cluster 軸記録なし、静か)
+ *
+ * 仕様:
+ *  - text: formatClusterCountsHeadlineJa(signals) と同 ('警戒 N / 達成感 M')
+ *  - tone: 上記 3 段階判定
+ *  - signal.text は format regex (iter1757) に従う
+ *
+ * caller pattern (dashboard summary chip):
+ *   const signals = composeAnalyticsSignals({...})
+ *   const chip = clusterCountsToAgentBriefSignal(signals)
+ *   <Chip text={chip.text} tone={chip.tone} />
+ *
+ * 既存 helper との関係:
+ *  - `formatClusterCountsHeadlineJa` (iter1754): text のみ ('警戒 N / 達成感 M')
+ *  - `countConcerningSignals` / `countAchievementSignals` (iter1752): 個別 number
+ *  - 本 helper: text + tone (= 1 chip 完結、配色 + 文言)
+ *  - `pickHighestSeveritySignal` (iter957): 全 signal から最重要 1 chip (詳細 chip 軸)
+ *
+ * 設計意図: dashboard / AI 朝 brief / Slack の「全体状態 1 chip」 が caller の手動 tone
+ * 判定なしで build 可能。tone が 3 段階 (warn/success/idle) に整理されることで、UI 側で
+ * 「警戒 vs 達成 vs 静か」 の 3 状態を 1 chip で示し、軸 1 可視化 + 軸 5 やる気 を両立。
+ */
+export function clusterCountsToAgentBriefSignal(signals: AnalyticsSignals): AgentBriefSignal {
+  const concerning = countConcerningSignals(signals)
+  const achievement = countAchievementSignals(signals)
+  const tone: ChipTone = concerning > 0 ? 'warn' : achievement > 0 ? 'success' : 'idle'
+  return {
+    text: formatClusterCountsHeadlineJa(signals),
+    tone,
+  }
+}
+
+/**
  * iter954 ai-automation: AnalyticsSignals の non-null signal を ChipTone 別に件数集計。
  *
  * 用途: AI 朝 brief / Slack daily digest の冒頭 headline で「全 chip の tone 分布」を

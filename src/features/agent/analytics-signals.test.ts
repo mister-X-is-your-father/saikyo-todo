@@ -11,6 +11,7 @@ import { buildWeeklyCompletionInsight } from '@/features/item/weekly-completion-
 import { computeAgentReliability } from './agent-reliability'
 import {
   analyticsSignalsToArray,
+  clusterCountsToAgentBriefSignal,
   composeAnalyticsSignals,
   countAchievementSignals,
   countAnalyticsSignalsByTone,
@@ -1502,6 +1503,34 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
     for (const s of cases) {
       expect(pickConcerningSignals(s)).toEqual(filterSignalsByMinTone(s, 'warn'))
     }
+  })
+
+  it('iter1762: clusterCountsToAgentBriefSignal — 両 0 → idle tone', () => {
+    const sig = clusterCountsToAgentBriefSignal(composeAnalyticsSignals({}))
+    expect(sig.text).toBe('警戒 0 / 達成感 0')
+    expect(sig.tone).toBe('idle')
+  })
+
+  it('iter1762: clusterCountsToAgentBriefSignal — 達成感のみ → success tone', () => {
+    const sig = clusterCountsToAgentBriefSignal(composeAnalyticsSignals({ doneToday: 2 }))
+    expect(sig.tone).toBe('success')
+    expect(sig.text.startsWith('警戒 0 / 達成感 ')).toBe(true)
+  })
+
+  it('iter1762: clusterCountsToAgentBriefSignal — 警戒あり → warn tone (達成感ありでも警戒優先)', () => {
+    const sig1 = clusterCountsToAgentBriefSignal(
+      composeAnalyticsSignals({ weeklyReviewDue: 'overdue' }),
+    )
+    expect(sig1.tone).toBe('warn')
+    const sig2 = clusterCountsToAgentBriefSignal(
+      composeAnalyticsSignals({ doneToday: 2, weeklyReviewDue: 'overdue' }),
+    )
+    expect(sig2.tone).toBe('warn')
+  })
+
+  it('iter1762: clusterCountsToAgentBriefSignal — text は formatClusterCountsHeadlineJa と同', () => {
+    const s = composeAnalyticsSignals({ doneToday: 2, weeklyReviewDue: 'overdue' })
+    expect(clusterCountsToAgentBriefSignal(s).text).toBe(formatClusterCountsHeadlineJa(s))
   })
 
   it('iter1748: cluster disjoint invariant — pickAchievement ∩ pickConcerning = ∅', () => {
