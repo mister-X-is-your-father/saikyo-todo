@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= IH. item-summary-panel 3 chip title sweep (iter2237) =========
+  const ispIH = read(here, `${root}/src/components/workspace/item-summary-panel.tsx`)
+  if (!ispIH.includes('iter2237') || !ispIH.includes('chip 3 element 同時 title sync')) {
+    findings.push({
+      level: 'error',
+      source: 'IH.item-summary-chips-title',
+      message: '[IH] iter2237 item-summary-panel 3 chip title sync が消えている',
+    })
+  }
+
   // ========= IG. team-context save button title sweep (iter2235) =========
   const tceIG = read(here, `${root}/src/components/workspace/team-context-editor.tsx`)
   if (
