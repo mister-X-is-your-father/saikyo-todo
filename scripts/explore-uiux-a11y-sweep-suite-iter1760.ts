@@ -740,6 +740,27 @@ async function main() {
     })
   }
 
+  // ========= FP. sprint-period-edit title aria-sync sweep (iter2097) =========
+  const spFP = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (
+    !spFP.includes('iter2097') ||
+    !spFP.includes('title={`期間 — Sprint「${sprint.name}」の期間を編集`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'FP.sprint-period-edit-title',
+      message: '[FP] iter2097 sprint-period-edit title aria-sync が消えている',
+    })
+  }
+  // 旧 静的 title="期間を編集" が JSX attribute 行として残っていないこと
+  if (/^\s+title="期間を編集"$/m.test(spFP)) {
+    findings.push({
+      level: 'error',
+      source: 'FP.sprint-period-edit-title',
+      message: '[FP] iter2097 sprint-period-edit 旧 静的 title が残っている',
+    })
+  }
+
   // ========= FO. sprint-premortem title state-dependent 同期 sweep (iter2095) =========
   const spFO = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (
