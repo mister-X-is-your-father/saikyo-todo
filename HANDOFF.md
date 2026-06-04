@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2278 1/1 test a11y-sweep-suite に iter2277 backlog sortable th 5 element entry 追加] 検査軸 262 個 (新 JC 軸)、計約 380 invariant check に拡張、sort feedback cross-modal 統一 (MCP path A 経由発見)、380 check milestone 突破。
+- ✅ [playwright-iter2277 1/1] backlog sortable th 5 element (Status / タイトル / MUST / 期限 / 更新): aria-label "X 列でソート (現在: Y) — Enter / Space で次の状態に切替" を sighted hover で disclose 不可 → 同 text の title を 5 th 同時に付与し sync (path B codify scripts/explore-uiux-backlog-th-sort-title-iter2277.ts)。**MCP path A で Backlog view に test item ある状態で発見**、column-header sort feedback cross-modal (SR + 視覚) 統一。
 - ✅ [playwright-iter2276 1/1 test a11y-sweep-suite に iter2275 today-view 期限 span entry 追加] 検査軸 261 個 (新 JB 軸)、計約 379 invariant check に拡張、cross-view 期限 span title 統一 (MCP path A 経由発見)。
 - ✅ [playwright-iter2275 1/1] today-view 期限 span (item row 内): aria-label "期限 ${ISO}" (literal ISO) を sighted hover で disclose 不可、visible は friendly date のみ → 同 text の title を付与し sync (path B codify scripts/explore-uiux-today-due-title-iter2275.ts)。**MCP path A で today view item row 期限表示探索中に発見**、dashboard-view 同 pattern と pair、cross-view 期限 span title 統一。
 - ✅ [playwright-iter2274 1/1 test a11y-sweep-suite に iter2273 edit-item-must checkbox entry 追加] 検査軸 260 個 (新 JA 軸)、計約 378 invariant check に拡張、prefix 4th letter pass (IZ → JA)、MUST checkbox toggle title pattern 展開 (MCP path A 経由発見)、検査軸 260 milestone 突破。
