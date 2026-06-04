@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BU. integrations ImportStatusBadge title sweep (iter1899) =========
+  const integBU = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
+  if (!integBU.includes('title={`${label} — Pull ステータス`}')) {
+    findings.push({
+      level: 'error',
+      source: 'BU.integrations-status',
+      message: '[BU] iter1899 integrations ImportStatusBadge title が消えている',
+    })
+  }
+
   // ========= BT. integrations Pull count title sweep (iter1897) =========
   const integBT = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
   if (
