@@ -647,6 +647,11 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
         role="group"
         /* iter1582: paren convention を em-dash 区切に統一。 */
         aria-label={`提案「${proposal.title}」の操作 — 採用 / 却下`}
+        /* iter2135: proposal ops group (採用 / 却下) の aria-label は browser tooltip に
+           ならず sighted は hover で proposal title context disclose 不可。
+           comment-ops iter2133 / proposal-edit-ops iter2131 と同 title=aria-label
+           sync pattern。 */
+        title={`提案「${proposal.title}」の操作 — 採用 / 却下`}
       >
         <Button
           size="sm"
