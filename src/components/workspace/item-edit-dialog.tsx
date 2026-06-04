@@ -342,6 +342,10 @@ function ItemEditDialogInner({
               // (Label in Name) 違反。visible-prefix 先頭固定 (iter1068/1071/1072
               // sweep の続編)。
               aria-label="最新を読み込み — 自分の編集内容を破棄してサーバの最新値を読み込み直す"
+              /* iter2079: visible "最新を読み込み" のみで 破壊的 action (自分の編集破棄)
+                 context が無く、sighted hover で disclose (notification 全て既読 iter1807 と
+                 同 destructive action hover context pattern)。 */
+              title="最新を読み込み — 自分の編集内容を破棄してサーバの最新値を読み込み直す"
               onClick={() => {
                 if (
                   !window.confirm(
