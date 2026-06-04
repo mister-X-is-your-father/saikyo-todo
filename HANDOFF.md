@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2282 1/1 test a11y-sweep-suite に iter2281 Kanban board root group entry 追加] 検査軸 264 個 (新 JE 軸)、計約 382 invariant check に拡張、3 view root container title 完成 (Gantt / Kanban / Backlog) (MCP path A 経由発見)。
+- ✅ [playwright-iter2281 1/1] kanban-board root group: aria-label "Kanban ボード — N 列" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-kanban-root-title-iter2281.ts)。**MCP path A で Kanban view 探索中に発見**、Gantt root iter2247 と同 chart/board root container title pattern、3 view root container title 完成。
 - ✅ [playwright-iter2280 1/1 test a11y-sweep-suite に iter2279 backlog-edit button entry 追加] 検査軸 263 個 (新 JD 軸)、計約 381 invariant check に拡張、cross-view edit button title 統一 (MCP path A 経由発見)、iter 2280 milestone 突破。
 - ✅ [playwright-iter2279 1/1] backlog-edit button: aria-label "編集 — 「title」を編集" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-backlog-edit-title-iter2279.ts)。**MCP path A で Backlog view で発見**、today-title-edit iter1737 と同 pattern を backlog-edit にも展開、cross-view edit button title 統一 (today / backlog 2 view 完成)。
 - ✅ [playwright-iter2278 1/1 test a11y-sweep-suite に iter2277 backlog sortable th 5 element entry 追加] 検査軸 262 個 (新 JC 軸)、計約 380 invariant check に拡張、sort feedback cross-modal 統一 (MCP path A 経由発見)、380 check milestone 突破。
