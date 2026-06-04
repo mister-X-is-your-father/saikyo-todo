@@ -740,6 +740,21 @@ async function main() {
     })
   }
 
+  // ========= GM. workflows trigger プリセット group title sweep (iter2143) =========
+  const wfpGM = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
+  if (
+    !wfpGM.includes('iter2143') ||
+    !wfpGM.includes(
+      'title="trigger プリセット — 4 種 manual / cron / item-event / webhook、JSON に 1 click 投入"',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GM.wf-trigger-presets-group-title',
+      message: '[GM] iter2143 wf trigger プリセット group title 付与 が消えている',
+    })
+  }
+
   // ========= GL. workflows node 追加プリセット group title sweep (iter2141) =========
   const wfpGL = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
   if (
