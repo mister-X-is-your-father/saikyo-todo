@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= IS. src-create-btn title 3-path sweep (iter2257) =========
+  const ipIS = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
+  if (!ipIS.includes('iter2257')) {
+    findings.push({
+      level: 'error',
+      source: 'IS.src-create-btn-title',
+      message: '[IS] iter2257 src-create-btn title 3-path sync が消えている',
+    })
+  }
+
   // ========= IR. budget edit form button family title sweep (iter2255) =========
   const bpIR = read(here, `${root}/src/components/workspace/budget-panel.tsx`)
   if (!bpIR.includes('iter2255')) {
