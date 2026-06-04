@@ -90,6 +90,11 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
                (iter1094 goals + iter1501 副 sprint + iter1502 sprint-retro と同 sweep)。 */
             aria-label={`PDCA Cycle 完了率 ${stats.completionRate}% — ${severityLabelJa(sev)}`}
             aria-valuetext={`${stats.completionRate}% — ${severityLabelJa(sev)}`}
+            /* iter2165: PDCA Cycle progressbar の aria-label は browser tooltip にならず
+               sighted は hover で 完了率 + severity context disclose 不可。
+               retro-comparison iter2163 / schedule-picker iter2161 と同 title=aria-label
+               sync pattern (sprint/goal/KR/retro/budget progressbar family の続き)。 */
+            title={`PDCA Cycle 完了率 ${stats.completionRate}% — ${severityLabelJa(sev)}`}
           >
             <div
               className={`h-full ${sevBarCls}`}
