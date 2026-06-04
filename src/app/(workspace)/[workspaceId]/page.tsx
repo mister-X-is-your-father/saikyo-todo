@@ -62,6 +62,9 @@ export default async function WorkspacePage({ params }: PageProps) {
             <nav
               aria-label="ワークスペース内 — Goals / Sprints / PDCA / Templates / Workflows / API / Time / Archive"
               className="flex flex-wrap items-center gap-2"
+              /* iter1963: nav 全体に title を付与し sighted hover で sub-section 一覧 disclose
+                 (個別 nav link は iter1779 で title 付き、nav landmark の summary は title 無)。 */
+              title="ワークスペース内 — Goals / Sprints / PDCA / Templates / Workflows / API / Time / Archive"
             >
               {/* iter1731: 8 nav Link に data-testid 一括付与で Playwright `[data-testid^="nav-"]`
                   で workspace nav 一括発見、各 view 遷移 test を `[data-testid="nav-{section}"]`
