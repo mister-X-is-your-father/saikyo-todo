@@ -396,6 +396,9 @@ function ItemEditDialogInner({
                  ("基本タブ" / "依存タブ" / "コメントタブ" / "アクティビティタブ") の no-space
                  convention と divergent。space 削除で全 6 tab を統一 noun-compound format に。 */
               aria-label="サマリタブ — この案件の進捗 / 依存 / 最終更新を一目で確認"
+              /* iter2009: tab-base iter2007 と pair、サマリ tab の descriptive context を
+                 sighted hover で disclose (6 tab sweep の 2 個目)。 */
+              title="サマリタブ — この案件の進捗 / 依存 / 最終更新を一目で確認"
             >
               <span aria-hidden="true">サマリ</span>
             </TabsTrigger>
