@@ -740,6 +740,18 @@ async function main() {
     })
   }
 
+  // ========= DW. item-edit-dialog tab-base title sweep (iter2007) =========
+  const iedDW = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
+  if (
+    !iedDW.includes('title="基本タブ — タイトル / 状態 / 期限 / MUST / 担当 / Tag / DoD を編集"')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'DW.tab-base',
+      message: '[DW] iter2007 item-edit-dialog tab-base title が消えている',
+    })
+  }
+
   // ========= DV. pdca 集計期間 group title sweep (iter2005) =========
   const pdcaDV = read(here, `${root}/src/components/workspace/pdca-panel.tsx`)
   if (!pdcaDV.includes('title={`集計期間 — 現在 ${days} 日、30 / 90 から選択`}')) {
