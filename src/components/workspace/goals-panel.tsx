@@ -597,6 +597,9 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                  統一。visible 冒頭 "Goal「${title}」" は維持、区切のみ '(現在:' → ' — 現在' に統一、
                  closing ')' は削除。 */
               aria-label={`Goal「${goal.title}」のステータス操作 — 現在 ${goalStatusLabelJa(status)}、完了 / アーカイブ / 再開`}
+              /* iter2035: workflows iter2031 / sprints iter2033 と同 pattern で goal operations
+                 group も Goal 名 + 現在 status + operations 構成 を sighted hover で disclose。 */
+              title={`Goal「${goal.title}」のステータス操作 — 現在 ${goalStatusLabelJa(status)}、完了 / アーカイブ / 再開`}
             >
               {status === 'active' && (
                 <>
