@@ -503,6 +503,10 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     aria-valuetext={`${goalPct}%${health ? ` — ${health.label}` : ''}`}
                     data-testid={`goal-progress-${goal.id}`}
                     data-tier={tier}
+                    /* iter1933: progressbar 色 tier は WCAG 1.4.1 で SR には aria-valuetext で
+                       明示するが sighted hover では不可達、title で tier label disclose
+                       (sprints-panel progressbar iter1931 と pair)。 */
+                    title={`Goal「${goal.title}」全体進捗 ${goalPct}%${health ? ` — ${health.label}` : ''}`}
                   >
                     <div
                       className={`${TIER_BAR_CLASS[tier]} h-full`}
