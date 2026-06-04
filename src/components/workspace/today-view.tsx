@@ -368,6 +368,12 @@ export function TodayView({
                             className="text-red-600 dark:text-red-400"
                             role="img"
                             aria-label={`期限 ${it.dueDate}`}
+                            /* iter2275: today-view 期限 span の aria-label "期限 ${ISO}" は browser
+                               tooltip にならず、visible は friendly date (例: "今日" / "明日") のみで
+                               sighted は hover で literal ISO 日付 disclose 不可。MCP path A で
+                               today-view item row 期限表示探索中に発見、dashboard-view 同 pattern
+                               iter1542 と pair、cross-view 期限 span title 統一。 */
+                            title={`期限 ${it.dueDate}`}
                           >
                             <span aria-hidden="true">
                               期限{' '}
