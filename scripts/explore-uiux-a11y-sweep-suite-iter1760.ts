@@ -762,6 +762,21 @@ async function main() {
     })
   }
 
+  // ========= HS. engineer-trigger group title sweep (iter2207) =========
+  const etHS = read(here, `${root}/src/components/workspace/engineer-trigger-button.tsx`)
+  if (
+    !etHS.includes('iter2207') ||
+    !etHS.includes(
+      'title={`「${item.title}」 — Engineer Agent に投入 (PR 自動起票 toggle / 実装起動)`}',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HS.engineer-trigger-group-title',
+      message: '[HS] iter2207 engineer-trigger group title 同期 が消えている',
+    })
+  }
+
   // ========= HR. heartbeat-button title state-dependent 同期 sweep (iter2205) =========
   const hbHR = read(here, `${root}/src/components/workspace/heartbeat-button.tsx`)
   if (
