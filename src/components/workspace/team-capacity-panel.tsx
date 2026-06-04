@@ -188,6 +188,12 @@ function PanelBody({ workspaceId }: Props) {
               className={TONE_CLASS[today.loadStatus]}
               role="img"
               aria-label={`今日 — ${formatMemberCapacityLoadJa(today)}`}
+              /* iter2309: team-capacity 今日 / 今週 load chip の aria-label "今日/今週 —
+                 ${load text}" は browser tooltip にならず、visible は emoji + 短文 のみで
+                 sighted hover で load + tone context disclose 不可。member-name chip iter1879
+                 と同 file 内 chip title pattern を today/week load chip にも展開、team-capacity
+                 row 3 chip (name / today / week) 全 title 完成。 */
+              title={`今日 — ${formatMemberCapacityLoadJa(today)}`}
             >
               <span className="text-muted-foreground mr-1" aria-hidden="true">
                 今日
@@ -198,6 +204,8 @@ function PanelBody({ workspaceId }: Props) {
               className={TONE_CLASS[week.loadStatus]}
               role="img"
               aria-label={`今週 — ${formatMemberCapacityLoadJa(week)}`}
+              /* iter2309: 今週 chip も today と pair の title sync。 */
+              title={`今週 — ${formatMemberCapacityLoadJa(week)}`}
             >
               <span className="text-muted-foreground mr-1" aria-hidden="true">
                 今週
