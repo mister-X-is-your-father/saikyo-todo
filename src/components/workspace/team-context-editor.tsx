@@ -122,6 +122,18 @@ export function TeamContextEditor({ workspaceId }: Props) {
                   ? '保存中… — チームコンテキストを保存中…'
                   : '保存 — チームコンテキストを保存 (AI プロンプト末尾に inject)'
             }
+            /* iter2235: team-context save button の aria-label は state-dependent 3-path
+               (!dirty / pending / idle) で SR には full context (変更無 / 保存中 / inject 副作用)
+               を渡すが browser tooltip にならず sighted は hover で同 context disclose 不可。
+               iter221 sprint 期間保存 button / iter224 budget 保存 button と同 state-dependent
+               title=aria-label sync pattern、save 系 button family の team-context 1 element 補完。 */
+            title={
+              !dirty
+                ? '保存 — チームコンテキストに変更がないため保存不要'
+                : upd.isPending
+                  ? '保存中… — チームコンテキストを保存中…'
+                  : '保存 — チームコンテキストを保存 (AI プロンプト末尾に inject)'
+            }
           >
             <span aria-hidden="true">{upd.isPending ? '保存中…' : '保存'}</span>
           </Button>
