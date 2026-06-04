@@ -179,6 +179,15 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                       ? `説明 — Workflow の説明 (現在 ${description.length} / 2000 文字、上限近接、Cmd/Ctrl+Enter で作成)`
                       : `説明 — Workflow の説明 (現在 ${description.length} / 2000 文字、Cmd/Ctrl+Enter で作成)`
                 }
+                /* iter1977: wf-name iter1975 と pair、wf-desc も state-dependent aria-label の
+                   sighted hover disclose、workflows-panel 内 2 input/textarea sweep 完備。 */
+                title={
+                  description.length === 0
+                    ? '説明 — Workflow の説明 (任意、最大 2000 文字、Cmd/Ctrl+Enter で作成)'
+                    : description.length > 1900
+                      ? `説明 — Workflow の説明 (現在 ${description.length} / 2000 文字、上限近接、Cmd/Ctrl+Enter で作成)`
+                      : `説明 — Workflow の説明 (現在 ${description.length} / 2000 文字、Cmd/Ctrl+Enter で作成)`
+                }
               />
             </div>
             <div className="flex justify-end">
