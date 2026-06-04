@@ -238,6 +238,17 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                       ? `全て採用 — 保留中の提案 ${list.length} 件を採用中…`
                       : `全て採用 — 保留中の提案 ${list.length} 件をすべて採用`
                   }
+                  /* iter2253: proposals-accept-all の aria-label は state-dependent 2-path
+                     (pending / idle、保留 ${list.length} 件 context 含む) で SR には full
+                     context を渡すが browser tooltip にならず sighted は hover で
+                     同 context disclose 不可。redecompose / やり直し 系 (iter2107) と
+                     同 state-dependent title=aria-label sync pattern を proposals 採用/却下
+                     button pair にも展開。 */
+                  title={
+                    accept.isPending
+                      ? `全て採用 — 保留中の提案 ${list.length} 件を採用中…`
+                      : `全て採用 — 保留中の提案 ${list.length} 件をすべて採用`
+                  }
                 >
                   <span aria-hidden="true">全て採用</span>
                 </Button>
@@ -251,6 +262,12 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                   onClick={() => void handleRejectAll()}
                   data-testid="proposals-reject-all"
                   aria-label={
+                    rejectAll.isPending
+                      ? `全て却下 — 保留中の提案 ${list.length} 件を却下中…`
+                      : `全て却下 — 保留中の提案 ${list.length} 件をすべて却下`
+                  }
+                  /* iter2253: proposals-reject-all も accept-all と pair で title sync。 */
+                  title={
                     rejectAll.isPending
                       ? `全て却下 — 保留中の提案 ${list.length} 件を却下中…`
                       : `全て却下 — 保留中の提案 ${list.length} 件をすべて却下`
