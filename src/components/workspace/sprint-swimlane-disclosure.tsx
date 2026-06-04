@@ -216,6 +216,12 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
                    iter1553-1563 sweep convention + iter1563 同 file 内 population chip と同 pattern、
                    visible 冒頭固定 + em-dash 区切。 */
                 aria-label={`${row.loadSummaryJa} — lane / ${row.conflictsJa}`}
+                /* iter2307: lane chip の aria-label は loadSummary + conflicts context を SR に
+                   渡すが browser tooltip にならず、visible は loadSummaryJa のみで "lane /
+                   conflicts" prefix が sighted hover で disclose 不可。population chip iter1879 と
+                   同 file 内 chip title pattern を lane chip にも展開、swimlane row chip pair
+                   完成。 */
+                title={`${row.loadSummaryJa} — lane / ${row.conflictsJa}`}
               >
                 <span aria-hidden="true">{row.loadSummaryJa}</span>
               </span>
