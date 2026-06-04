@@ -740,6 +740,21 @@ async function main() {
     })
   }
 
+  // ========= EW. 3 edit form title sweep (iter2059) =========
+  const spEW = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  const bpEW = read(here, `${root}/src/components/workspace/budget-panel.tsx`)
+  if (
+    !spEW.includes('title="Sprint デフォルト設定 編集フォーム"') ||
+    !spEW.includes('title={`Sprint「${sprint.name}」期間編集フォーム`}') ||
+    !bpEW.includes('title="AI 月次コスト上限編集フォーム"')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'EW.edit-forms',
+      message: '[EW] iter2059 3 edit form title が消えている',
+    })
+  }
+
   // ========= EV. dashboard 健全性 chip group title sweep (iter2057) =========
   const dvEV = read(here, `${root}/src/components/workspace/dashboard-view.tsx`)
   if (
