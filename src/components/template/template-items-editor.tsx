@@ -113,6 +113,17 @@ export function TemplateItemsEditor({ templateId }: Props) {
             maxLength={500}
             autoComplete="off"
             enterKeyHint="next"
+            /* iter1987: state-dependent aria-label を title で sighted hover disclose、
+               10 state-dependent input family の続編 (goal-title/desc iter1983/1985 と pair)。 */
+            title={
+              title.length === 0
+                ? '子 Item のタイトル (必須、最大 500 文字、Mustache 変数 {{var}} 利用可)'
+                : title.trim() === ''
+                  ? `子 Item のタイトル (現在 ${title.length} / 500 文字、空白のみは不正)`
+                  : title.length > 480
+                    ? `子 Item のタイトル (現在 ${title.length} / 500 文字、上限近接)`
+                    : `子 Item のタイトル (現在 ${title.length} / 500 文字)`
+            }
           />
           <input
             type="number"
