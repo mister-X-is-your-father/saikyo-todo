@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2001 1/1 mode-D team-capacity summary toggle に title 付与] open/閉 state-dependent toggle title disclose、theme-toggle iter1971 と同 pattern。
 - ✅ [playwright-iter2000 1/1 test a11y-sweep-suite に iter1999 bulk-action-bar entry 追加] 検査軸 123 個 (新 DS 軸)、計約 219 invariant check、iter2000 突破。Fire 2 で 130 fix + 130 sweep の双子鏡 pattern を維持。
 - ✅ [playwright-iter1999 1/1 mode-D bulk-action-bar region に title 付与] 4 region/group landmark (op-board / inbox-region / decompose-bulk / bulk-action-bar) 揃って hover summary 完備。
 - ✅ [playwright-iter1998 1/1 test a11y-sweep-suite に iter1997 decompose-bulk entry 追加] 検査軸 122 個 (新 DR 軸)、計約 218 invariant check に拡張。
