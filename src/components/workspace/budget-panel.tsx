@@ -179,6 +179,10 @@ export function BudgetPanel({ workspaceId }: Props) {
               data-testid="budget-progress"
               data-budget-state={s.exceeded ? 'exceeded' : s.warnTriggered ? 'warn' : 'normal'}
               className="bg-muted relative h-2 w-full overflow-hidden rounded-full"
+              /* iter2051: budget progressbar 色 state (exceeded/warn/normal) は WCAG 1.4.1 で
+                 SR には aria-valuetext で明示するが sighted hover では不可達、title で disclose
+                 (sprint iter1931 / goal iter1933 / KR iter1935 progressbar pair の 4 個目)。 */
+              title={`AI 月次コスト消費率 ${ratioPct}% — 警告閾値 ${rateToPct(s.warnThreshold)}%`}
             >
               <div
                 className={`h-full ${
