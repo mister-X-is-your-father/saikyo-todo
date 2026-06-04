@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2050 1/1 test a11y-sweep-suite に iter2049 weekly-region entry 追加] 検査軸 148 個 (新 ER 軸)、計約 244 invariant check に拡張、iter2050 突破。
 - ✅ [playwright-iter2049 1/1 mode-D weekly-insight-widget region に title 付与] 6 region landmark hover summary 完備 (taskchute / op-board / inbox / dashboard MUST / active-timer / weekly-insight)。
 - ✅ [playwright-iter2048 1/1 test a11y-sweep-suite に iter2047 taskchute-region entry 追加] 検査軸 147 個 (新 EQ 軸)、計約 243 invariant check に拡張。
 - ✅ [playwright-iter2047 1/1 mode-D taskchute-view region に title 付与] 5 region landmark hover summary 完備 (taskchute / op-board / inbox / dashboard MUST / active-timer)。
