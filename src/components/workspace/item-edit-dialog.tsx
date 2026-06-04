@@ -805,6 +805,16 @@ function ItemEditDialogInner({
                     ? 'MUST が ON: 絶対落とさない — DoD 必須、クリックで OFF'
                     : 'MUST が OFF: 通常タスク — クリックで ON、DoD 必須化'
                 }
+                /* iter2273: edit-item-must checkbox の aria-label は state-dependent 2-path
+                   (ON / OFF、副作用 + 切替先 含む) で SR には full context を渡すが browser
+                   tooltip にならず sighted は hover で同 context disclose 不可。MCP path A で
+                   ItemEditDialog 内 MUST checkbox 探索中に発見、theme-toggle iter1971 と同
+                   state-dependent toggle title pattern を MUST checkbox にも展開。 */
+                title={
+                  isMust
+                    ? 'MUST が ON: 絶対落とさない — DoD 必須、クリックで OFF'
+                    : 'MUST が OFF: 通常タスク — クリックで ON、DoD 必須化'
+                }
               />
               {/* iter1371: text-red-700 (#b91c1c) は dark card bg 上で <4.5 (WCAG 1.4.3)。
                   dark:text-red-400 で dark でも pass (light は赤 700 維持)。 */}
