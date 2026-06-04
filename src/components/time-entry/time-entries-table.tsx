@@ -149,7 +149,11 @@ export function TimeEntriesTable({
                   // は role 無 div + aria-label のみで SR picked-up divergence。
                   <div
                     className="text-muted-foreground mt-1 max-w-[220px] truncate text-[10px]"
-                    title={e.syncError}
+                    /* iter2175: sync-error title は e.syncError のみで aria-label
+                       "${e.syncError} — 同期エラー" の "同期エラー" label が sighted hover で
+                       disclose されない。pdca-daily-bars iter2173 / pdca-counts-group iter2171 と
+                       同 title=aria-label sync pattern。 */
+                    title={`${e.syncError} — 同期エラー`}
                     role="img"
                     /* iter1566: 旧 aria-label `"同期エラー: ${e.syncError}"` は visible
                        "${e.syncError}" を末尾に持ち voice control prefix-matching が strict
