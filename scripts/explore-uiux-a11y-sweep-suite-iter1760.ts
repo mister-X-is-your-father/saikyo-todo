@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DX. item-edit-dialog tab-summary title sweep (iter2009) =========
+  const iedDX = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
+  if (!iedDX.includes('title="サマリタブ — この案件の進捗 / 依存 / 最終更新を一目で確認"')) {
+    findings.push({
+      level: 'error',
+      source: 'DX.tab-summary',
+      message: '[DX] iter2009 item-edit-dialog tab-summary title が消えている',
+    })
+  }
+
   // ========= DW. item-edit-dialog tab-base title sweep (iter2007) =========
   const iedDW = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
   if (
