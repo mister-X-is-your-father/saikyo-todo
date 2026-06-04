@@ -69,7 +69,7 @@ export function LoginForm() {
           aria-required="true"
           aria-invalid={form.formState.errors.email ? true : undefined}
           aria-describedby={
-            form.formState.errors.email ? 'login-email-hint email-error' : 'login-email-hint'
+            form.formState.errors.email ? 'login-email-hint login-email-error' : 'login-email-hint'
           }
           {...form.register('email')}
         />
@@ -77,7 +77,11 @@ export function LoginForm() {
           サインアップ時に登録したメールアドレス。例: you@example.com
         </p>
         {form.formState.errors.email && (
-          <p id="email-error" className="text-destructive text-xs" role="alert">
+          // iter1715: 旧 id="email-error" は hint id="login-email-hint" と prefix が divergent
+          // (hint は `login-` prefix、error は無 prefix)。signup-form (signup-email-error /
+          // signup-password-error) と convention 揃え、login-form 内 hint/error の prefix を統一
+          // (= 将来 modal embedding 時の id collision に対する defensive namespacing)。
+          <p id="login-email-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.email.message}
           </p>
         )}
@@ -95,7 +99,7 @@ export function LoginForm() {
           aria-invalid={form.formState.errors.password ? true : undefined}
           aria-describedby={
             form.formState.errors.password
-              ? 'login-password-hint password-error'
+              ? 'login-password-hint login-password-error'
               : 'login-password-hint'
           }
           {...form.register('password')}
@@ -107,7 +111,10 @@ export function LoginForm() {
           サインアップ時に設定したパスワード (8 文字以上)。忘れた場合は再サインアップ。
         </p>
         {form.formState.errors.password && (
-          <p id="password-error" className="text-destructive text-xs" role="alert">
+          // iter1715: 旧 id="password-error" は hint id="login-password-hint" と prefix が
+          // divergent。signup-form convention に揃え `login-` prefix で統一 (= defensive
+          // namespacing / future modal embedding 時の id collision 防止)。
+          <p id="login-password-error" className="text-destructive text-xs" role="alert">
             {form.formState.errors.password.message}
           </p>
         )}

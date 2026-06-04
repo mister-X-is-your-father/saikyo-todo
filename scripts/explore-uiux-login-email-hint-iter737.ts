@@ -32,8 +32,9 @@ async function main(): Promise<void> {
       lf,
     )
   // 2. aria-describedby が常に login-email-hint を含む
+  //    iter1715: error id を `email-error` → `login-email-error` に prefix 統一したので regex 追従。
   const hasDescribedBy =
-    /aria-describedby=\{\s*\n?\s*form\.formState\.errors\.email\s*\?\s*['"]login-email-hint email-error['"]\s*:\s*['"]login-email-hint['"]/.test(
+    /aria-describedby=\{\s*\n?\s*form\.formState\.errors\.email\s*\n?\s*\?\s*['"]login-email-hint login-email-error['"]\s*\n?\s*:\s*['"]login-email-hint['"]/.test(
       lf,
     )
   // 3. iter737 説明 comment 存在
