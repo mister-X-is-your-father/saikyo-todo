@@ -280,7 +280,11 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
                     // にならず sighted は hover で全文見れなかった。title 付与で sighted
                     // hover → 全 title disclose (today-view iter1737 と同 pattern)。
                     aria-label={`${it.title} — 編集`}
-                    title={it.title}
+                    /* iter2151: personal-period item button title は item.title のみで
+                       aria-label "${it.title} — 編集" の "編集" context が sighted hover で
+                       disclose されない。op-board-buttons iter2149 / dashboard-must-edit
+                       iter2145 と同 title=aria-label sync pattern。 */
+                    title={`${it.title} — 編集`}
                   >
                     <span aria-hidden="true">{it.title}</span>
                   </button>
