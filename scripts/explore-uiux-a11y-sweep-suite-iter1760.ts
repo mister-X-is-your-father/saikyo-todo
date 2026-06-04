@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= EM. quick-add input title sweep (iter2039) =========
+  const qaEM = read(here, `${root}/src/components/workspace/quick-add.tsx`)
+  if (!qaEM.includes('iter2039')) {
+    findings.push({
+      level: 'error',
+      source: 'EM.quick-add-input',
+      message: '[EM] iter2039 quick-add input title が消えている',
+    })
+  }
+
   // ========= EL. comment-thread edit operations group title sweep (iter2037) =========
   const ctEL = read(here, `${root}/src/components/workspace/comment-thread.tsx`)
   if (!ctEL.includes('iter2037')) {
