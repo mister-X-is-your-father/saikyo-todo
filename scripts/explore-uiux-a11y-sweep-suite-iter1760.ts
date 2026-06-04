@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CW. create-time-entry teDate title sweep (iter1955) =========
+  const cteCW = read(here, `${root}/src/components/time-entry/create-time-entry-form.tsx`)
+  if (!cteCW.includes('iter1955')) {
+    findings.push({
+      level: 'error',
+      source: 'CW.te-date',
+      message: '[CW] iter1955 create-time-entry teDate title が消えている',
+    })
+  }
+
   // ========= CV. dashboard MUST Item 一覧 region title sweep (iter1953) =========
   const dvCV = read(here, `${root}/src/components/workspace/dashboard-view.tsx`)
   if (!dvCV.includes('title={`MUST Item 一覧 — ${s.items.length} 件`}')) {
