@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CB. time-entries sync-badge-pending title sweep (iter1913) =========
+  const ttCB = read(here, `${root}/src/components/time-entry/time-entries-table.tsx`)
+  if (!ttCB.includes('title="pending — 外部同期 未実行"')) {
+    findings.push({
+      level: 'error',
+      source: 'CB.sync-badge-pending',
+      message: '[CB] iter1913 sync-badge-pending title が消えている',
+    })
+  }
+
   // ========= CA. template-items dueOffset title sweep (iter1911) =========
   const tmplCA = read(here, `${root}/src/components/template/template-items-editor.tsx`)
   if (!tmplCA.includes('title={`+${it.dueOffsetDays} 日 — 期日 offset`}')) {
