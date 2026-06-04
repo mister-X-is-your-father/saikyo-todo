@@ -179,7 +179,16 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
       </div>
       {/* iter1640: 旧 `${entity} 一覧 ${N} 件` space-separator は iter1093-1633 sweep の
           em-dash 区切と divergent (iter1633 dashboard MUST list と同 pattern)。 */}
-      <ul className="space-y-1" aria-label={`Sprint Swimlane lane 一覧 — ${rows.length} 件`}>
+      <ul
+        className="space-y-1"
+        aria-label={`Sprint Swimlane lane 一覧 — ${rows.length} 件`}
+        /* iter2305: Sprint Swimlane lane 一覧 ul の aria-label "Sprint Swimlane lane 一覧 —
+           N 件" は browser tooltip にならず sighted は hover で「lane 一覧 + N 件」 disclose
+           不可。iter2291 Activity 履歴 ul と同 一覧 ul family title pattern を sprint swimlane
+           lane ul にも展開、7 entity 一覧 ul family 完成 (sources / workflows / goals /
+           templates / workspaces / activity-log / sprint-swimlane-lanes)。 */
+        title={`Sprint Swimlane lane 一覧 — ${rows.length} 件`}
+      >
         {rows.map((row) => (
           <li
             key={row.laneKey ?? '__unassigned__'}
