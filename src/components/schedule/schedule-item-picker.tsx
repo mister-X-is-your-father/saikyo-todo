@@ -150,6 +150,15 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
                   ? '割込み / 休憩のメモ (任意、空欄で「割込み」 fallback)'
                   : `割込み / 休憩のメモ (現在 ${interruptNote.length} 文字)`
               }
+              /* iter2221: interrupt note input の state-dependent aria-label (empty /
+                 active 2-path、文字数 含む) は browser tooltip にならず sighted は hover で
+                 input 用途 + 文字数 context disclose 不可。mock-top-nav iter2219 /
+                 create-workspace-form iter2217 と同 title=aria-label sync pattern。 */
+              title={
+                interruptNote.length === 0
+                  ? '割込み / 休憩のメモ (任意、空欄で「割込み」 fallback)'
+                  : `割込み / 休憩のメモ (現在 ${interruptNote.length} 文字)`
+              }
             />
             <Button
               type="button"
