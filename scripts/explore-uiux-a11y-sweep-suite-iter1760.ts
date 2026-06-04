@@ -762,6 +762,19 @@ async function main() {
     })
   }
 
+  // ========= HV. item-decompose-btn title 3-path sweep (iter2213) =========
+  const idbHV = read(here, `${root}/src/components/workspace/item-decompose-button.tsx`)
+  if (
+    !idbHV.includes('iter2213') ||
+    !idbHV.includes('AI 分解 — 「${item.title}」は完了済のため AI 分解不可')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HV.item-decompose-btn-title',
+      message: '[HV] iter2213 item-decompose-btn title 3-path 同期 が消えている',
+    })
+  }
+
   // ========= HU. engineer-trigger-btn title sweep (iter2211) =========
   const etHU = read(here, `${root}/src/components/workspace/engineer-trigger-button.tsx`)
   if (
