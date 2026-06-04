@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1874 1/1 test a11y-sweep-suite に iter1873 backlog DragHandle entry 追加] 検査軸 60 個 (新 BH 軸)、計約 156 invariant check に拡張。
 - ✅ [playwright-iter1873 1/1 mode-D backlog DragHandle に title 付与] ≡ 単体では sighted も「ドラッグハンドル」と即把握できない、aria-label と同 text を title に付与し hover で意図 disclose。
 - ✅ [playwright-iter1872 1/1 test a11y-sweep-suite に iter1871 backlog estimate entry 追加] 検査軸 59 個 (新 BG 軸)、計約 155 invariant check に拡張。
 - ✅ [playwright-iter1871 1/1 mode-D backlog estimate-summary chip に title 付与] ⏱ + estimateSummary 表示の chip は visible が「Backlog 見積サマリ」 context を持たず、sighted hover で chip の意味 disclose。
