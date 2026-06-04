@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= EE. goals-panel goal-end date input title sweep (iter2023) =========
+  const gpEE = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
+  if (!gpEE.includes('iter2023')) {
+    findings.push({
+      level: 'error',
+      source: 'EE.goal-end',
+      message: '[EE] iter2023 goal-end date input title が消えている',
+    })
+  }
+
   // ========= ED. goals-panel goal-start date input title sweep (iter2021) =========
   const gpED = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
   if (!gpED.includes('iter2021')) {
