@@ -633,6 +633,15 @@ async function main() {
 
   // ========= AF. goal-toggle title sweep (iter1817) =========
   const goalsPanelAF = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
+  // AG. kr-add-btn title (iter1819) — 同 file
+  if (!goalsPanelAF.includes("'KR 追加 — Key Result をこの Goal に追加'")) {
+    findings.push({
+      level: 'error',
+      source: 'AG.kr-add',
+      message: '[AG] iter1819 kr-add-btn default title が消えている',
+    })
+  }
+  // AF. goal-toggle title check 続き
   if (
     !goalsPanelAF.includes(
       "title={`${goal.title} — Goal「${goal.title}」の KR ${open ? '一覧を閉じる' : '一覧を開く'}`}",
