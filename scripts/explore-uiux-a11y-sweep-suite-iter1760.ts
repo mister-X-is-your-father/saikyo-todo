@@ -762,6 +762,19 @@ async function main() {
     })
   }
 
+  // ========= HT. engineer-auto-pr checkbox title sweep (iter2209) =========
+  const etHT = read(here, `${root}/src/components/workspace/engineer-trigger-button.tsx`)
+  if (
+    !etHT.includes('iter2209') ||
+    !etHT.includes("'PR 自動起票が ON: Engineer 起動時に Draft PR も作成される — クリックで OFF'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HT.engineer-auto-pr-title',
+      message: '[HT] iter2209 engineer-auto-pr checkbox title 同期 が消えている',
+    })
+  }
+
   // ========= HS. engineer-trigger group title sweep (iter2207) =========
   const etHS = read(here, `${root}/src/components/workspace/engineer-trigger-button.tsx`)
   if (
