@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= AQ. home workspace-link Link title sweep (iter1839) =========
+  // homePage は N 軸で既に読込済 (line 277)
+  if (!homePage.includes('title={`${ws.name} を開く — slug ${ws.slug} / role ${ws.role}`}')) {
+    findings.push({
+      level: 'error',
+      source: 'AQ.workspace-link',
+      message: '[AQ] iter1839 home workspace-link title が消えている',
+    })
+  }
+
   // ========= AP. operation-board-forecast chip title sweep (iter1837) =========
   const opBoard = read(here, `${root}/src/components/workspace/operation-board-widget.tsx`)
   if (!opBoard.includes('title={`今日完了予測 ${formatTodayForecastJa(forecast)}`}')) {
