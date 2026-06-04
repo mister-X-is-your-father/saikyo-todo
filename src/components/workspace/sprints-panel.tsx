@@ -761,6 +761,16 @@ function SprintCard({
                     className="min-h-11 text-xs"
                     enterKeyHint="send"
                     data-testid={`sprint-edit-end-${sprint.id}`}
+                    /* iter2019: sprint-edit-start iter2017 と pair、sprint-edit-end も
+                       state-dependent aria-label の sighted hover disclose、
+                       sprints-panel edit form 2 date input sweep 完備。 */
+                    title={
+                      editEnd === ''
+                        ? '終了 — Sprint 終了日 (必須、開始日以降)'
+                        : isInvalidDateRange(editStart, editEnd)
+                          ? `終了 — Sprint 終了日 (現在: ${editEnd} (${dayOfWeekJa(editEnd)})、開始日 ${editStart} より前で不正)`
+                          : `終了 — Sprint 終了日 (現在: ${editEnd} (${dayOfWeekJa(editEnd)}))`
+                    }
                   />
                 </div>
               </div>
