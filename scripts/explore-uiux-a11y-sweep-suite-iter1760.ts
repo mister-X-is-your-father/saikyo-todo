@@ -766,6 +766,21 @@ async function main() {
     })
   }
 
+  // ========= IF. FocusQuickAddButton title sweep (iter2233) =========
+  const fqIF = read(here, `${root}/src/components/workspace/focus-quick-add-button.tsx`)
+  if (
+    !fqIF.includes('iter2233') ||
+    !fqIF.includes(
+      'title="クイック追加にフォーカス (キー: q) — quick-add input にフォーカスして即タスク入力"',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'IF.focus-quick-add-title',
+      message: '[IF] iter2233 FocusQuickAddButton title 同期 が消えている',
+    })
+  }
+
   // ========= IE. item-research-button title sweep (iter2231) =========
   const rbIE = read(here, `${root}/src/components/workspace/item-research-button.tsx`)
   if (
