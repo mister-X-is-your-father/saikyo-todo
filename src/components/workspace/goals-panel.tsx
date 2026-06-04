@@ -177,6 +177,18 @@ export function GoalsPanel({ workspaceId }: Props) {
                           ? `Objective — Goal Objective (現在 ${title.length} / 200 文字、上限近接)`
                           : `Objective — Goal Objective (現在 ${title.length} / 200 文字)`
                   }
+                  /* iter1983: state-dependent aria-label を title で sighted hover disclose、
+                     sprint-name iter1979 / sprint-goal iter1981 と pair、8 state-dependent input
+                     family の続編 (goals-panel goal-title)。 */
+                  title={
+                    title.length === 0
+                      ? 'Objective — Goal Objective (必須、最大 200 文字、なに / なぜを 1 行で)'
+                      : title.trim() === ''
+                        ? `Objective — Goal Objective (現在 ${title.length} / 200 文字、空白のみは不正)`
+                        : title.length > 180
+                          ? `Objective — Goal Objective (現在 ${title.length} / 200 文字、上限近接)`
+                          : `Objective — Goal Objective (現在 ${title.length} / 200 文字)`
+                  }
                 />
               </div>
               <div className="space-y-1">
