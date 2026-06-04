@@ -239,6 +239,9 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
                     className={`inline-block h-2 w-2 shrink-0 rounded-full ${priorityClass(it.priority)}`}
                     role="img"
                     aria-label={priorityLabel(it.priority)}
+                    /* iter1863: today-view priority dot (title=`p${priority}`) と統一、
+                       period view も priority hover disclose。short title で `p1/2/3/4`。 */
+                    title={`p${it.priority ?? 4}`}
                   />
                   <button
                     type="button"
