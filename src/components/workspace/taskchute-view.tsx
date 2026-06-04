@@ -177,6 +177,11 @@ export function TaskChuteView({ workspaceId, items }: Props) {
         <ol
           className="divide-border divide-y"
           aria-label={`今日の task を時刻昇順で並べた 1 列 timeline — ${ordered.length} 件`}
+          /* iter2181: taskchute ol timeline の aria-label "今日の task を時刻昇順… N 件" は
+             browser tooltip にならず sighted は hover で件数 context disclose 不可。
+             taskchute-ticker iter2179 / dep-readiness-chip iter2177 と同 title=aria-label
+             sync pattern。 */
+          title={`今日の task を時刻昇順で並べた 1 列 timeline — ${ordered.length} 件`}
         >
           {ordered.map(({ item, timeLabel }) => (
             <li
