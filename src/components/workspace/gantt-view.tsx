@@ -685,6 +685,11 @@ export function GanttView({
                     className="ml-1 shrink-0 text-xs text-red-600 dark:text-red-400"
                     role="img"
                     aria-label="MUST タスク"
+                    /* iter1877: MustBadge (iter1843) と同 vocab で title 付与、Gantt 行内
+                       inline "MUST" 表示も sighted hover で context disclose
+                       (today/inbox/period/taskchute/palette/kanban/backlog/today-dueTime
+                       title sweep の続編)。 */
+                    title="MUST タスク"
                   >
                     <span aria-hidden="true">MUST</span>
                   </span>
