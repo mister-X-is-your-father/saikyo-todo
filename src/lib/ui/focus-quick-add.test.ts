@@ -123,6 +123,38 @@ describe('focusElementById (iter1625 — 任意 id 版)', () => {
     expect(focusSpy).toHaveBeenCalledOnce()
   })
 
+  it('iter1726: prefers-reduced-motion: reduce → behavior:"auto" (instant scroll、WCAG 2.3.3)', () => {
+    const el = document.createElement('input')
+    el.id = 'reduced-motion-target'
+    defineScrollIntoView(el)
+    document.body.appendChild(el)
+    const scrollSpy = vi.spyOn(el, 'scrollIntoView')
+
+    // window.matchMedia をモックして reduced-motion=reduce を返す
+    const originalMatchMedia = window.matchMedia
+    ;(window as Window & { matchMedia: (q: string) => MediaQueryList }).matchMedia = (
+      query: string,
+    ): MediaQueryList =>
+      ({
+        matches: query === '(prefers-reduced-motion: reduce)',
+        media: query,
+        addListener: () => {},
+        removeListener: () => {},
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        dispatchEvent: () => true,
+        onchange: null,
+      }) as unknown as MediaQueryList
+
+    try {
+      expect(focusElementById('reduced-motion-target')).toBe(true)
+      expect(scrollSpy).toHaveBeenCalledWith({ behavior: 'auto', block: 'center' })
+    } finally {
+      ;(window as Window & { matchMedia: typeof originalMatchMedia }).matchMedia =
+        originalMatchMedia
+    }
+  })
+
   it('同じ id を持つ複数 element がある時、最初の 1 件だけ focus + scrollIntoView する (document.getElementById 仕様)', () => {
     // HTML 仕様 : 同 id が複数あっても getElementById は最初の 1 件のみ返す。
     // 本 helper は generic で、複数 element 対応は呼び出し側の責務外。

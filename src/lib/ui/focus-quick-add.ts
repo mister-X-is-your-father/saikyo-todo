@@ -26,7 +26,17 @@ export function focusElementById(id: string): boolean {
   const el = document.getElementById(id) as HTMLElement | null
   if (!el) return false
   el.focus()
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  // iter1726: WCAG 2.3.3 (Animation from Interactions) 対応。globals.css line 144 で
+  // CSS `scroll-behavior: auto !important` を @media (prefers-reduced-motion: reduce)
+  // に適用済だが、JS `scrollIntoView({ behavior: 'smooth' })` は CSS scroll-behavior を
+  // override するため reduced-motion でも smooth scroll が発火する。JS 側でも prefers-
+  // reduced-motion を check して `behavior: 'auto'` (instant) に fall back、前庭障害
+  // ユーザの不快/めまいを防ぐ。defensive: window 不在 (SSR) / jsdom matchMedia 未実装
+  // でも optional chain で safe (= 'smooth' default 維持、test 影響無)。
+  const prefersReducedMotion =
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
+  el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' })
   return true
 }
 
