@@ -15,6 +15,7 @@ import {
   groupItemsByTone,
   pickHighestSeverityTone,
   pickTopItemsByTone,
+  someItemHasMinTone,
   sortItemsByTone,
 } from './chip-tone'
 
@@ -430,5 +431,63 @@ describe('filterItemsByMinTone (iter1698 — 閾値以上の items を凝集)', 
     const original = [...items]
     filterItemsByMinTone(items, getTone, 'warn')
     expect(items).toEqual(original)
+  })
+})
+
+describe('someItemHasMinTone (iter1759 — 閾値以上 item があるか short-circuit boolean)', () => {
+  type Item = { id: string; tone: ChipTone }
+  const getTone = (it: Item) => it.tone
+
+  it('minTone=warn → danger / urgent / warn が 1 個でもあれば true', () => {
+    expect(someItemHasMinTone([{ id: 'a', tone: 'danger' as ChipTone }], getTone, 'warn')).toBe(
+      true,
+    )
+    expect(someItemHasMinTone([{ id: 'a', tone: 'urgent' as ChipTone }], getTone, 'warn')).toBe(
+      true,
+    )
+    expect(someItemHasMinTone([{ id: 'a', tone: 'warn' as ChipTone }], getTone, 'warn')).toBe(true)
+  })
+
+  it('minTone=warn → info / idle / success のみ → false', () => {
+    const items: Item[] = [
+      { id: 'a', tone: 'info' },
+      { id: 'b', tone: 'idle' },
+      { id: 'c', tone: 'success' },
+    ]
+    expect(someItemHasMinTone(items, getTone, 'warn')).toBe(false)
+  })
+
+  it('空配列 → false', () => {
+    expect(someItemHasMinTone<Item>([], getTone, 'warn')).toBe(false)
+  })
+
+  it('filterItemsByMinTone(...).length > 0 と等価 invariant', () => {
+    const items: Item[] = [
+      { id: 'a', tone: 'success' },
+      { id: 'b', tone: 'warn' },
+      { id: 'c', tone: 'danger' },
+      { id: 'd', tone: 'info' },
+    ]
+    for (const t of ['success', 'idle', 'info', 'warn', 'urgent', 'danger'] as ChipTone[]) {
+      expect(someItemHasMinTone(items, getTone, t)).toBe(
+        filterItemsByMinTone(items, getTone, t).length > 0,
+      )
+    }
+  })
+
+  it('short-circuit 動作 — match で getTone 呼び出し早期打切り', () => {
+    const calls: string[] = []
+    const items: Item[] = [
+      { id: 'a', tone: 'danger' },
+      { id: 'b', tone: 'success' },
+      { id: 'c', tone: 'idle' },
+    ]
+    const trackedGetTone = (it: Item) => {
+      calls.push(it.id)
+      return it.tone
+    }
+    someItemHasMinTone(items, trackedGetTone, 'warn')
+    // 'a' (danger) で match、'b'/'c' は呼ばれない
+    expect(calls).toEqual(['a'])
   })
 })

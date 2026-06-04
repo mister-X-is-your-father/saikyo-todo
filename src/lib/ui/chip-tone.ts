@@ -385,3 +385,33 @@ export function filterItemsByMinTone<T>(
   const minRank = TONE_ATTENTION_RANK[minTone]
   return items.filter((it) => TONE_ATTENTION_RANK[getTone(it)] >= minRank)
 }
+
+/**
+ * iter1759 ai-automation: 任意 items に「`minTone` 以上の tone を持つ item が 1 個以上あるか」
+ * を short-circuit boolean で返す pure helper。`filterItemsByMinTone(items, getTone, minTone).length > 0`
+ * の short-circuit 最適化版 (= 配列構築コスト不要、最初の match で early return)。
+ *
+ * 仕様:
+ *  - 1 個でも minTone 以上の item があれば true、なければ false
+ *  - 入力 items を mutate しない
+ *  - getTone は match するまで呼ばれる (= worst case items.length 回、best case 1 回)
+ *  - 空配列入力 → false (= 「該当 item なし」)
+ *
+ * 用途:
+ *  - UI gate (= 「警戒 chip section を render するかどうか」)
+ *  - Slack notifier 「警戒 paragraph を post するかどうか」 gate
+ *  - dashboard badge enabled/disabled 判定
+ *
+ * 既存 helper との関係:
+ *  - `filterItemsByMinTone`: 全 match items を配列で返す (= 表示用)
+ *  - 本 helper: 1 個以上あるか boolean (= gate 用、配列不要で perf 軽い)
+ *  - `countItemsByTone`: tone 別 件数 (= 分布集計、本 helper より重い)
+ */
+export function someItemHasMinTone<T>(
+  items: ReadonlyArray<T>,
+  getTone: (item: T) => ChipTone,
+  minTone: ChipTone,
+): boolean {
+  const minRank = TONE_ATTENTION_RANK[minTone]
+  return items.some((it) => TONE_ATTENTION_RANK[getTone(it)] >= minRank)
+}
