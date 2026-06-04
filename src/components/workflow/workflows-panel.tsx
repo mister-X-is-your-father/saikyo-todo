@@ -661,6 +661,11 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
               /* iter1593: 旧 aria-label paren convention `"node 追加プリセット (X 種、graph JSON に skeleton を 1 click 投入)"` は
                  iter1093-1592 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
               aria-label={`node 追加プリセット — ${NODE_PRESETS.length} 種、graph JSON に skeleton を 1 click 投入`}
+              /* iter2141: node 追加プリセット group の aria-label は browser tooltip にならず
+                 sighted は hover で preset count + 用途 context disclose 不可。
+                 subtask-group iter2139 / budget-edit-ops iter2137 と同 title=aria-label
+                 sync pattern。 */
+              title={`node 追加プリセット — ${NODE_PRESETS.length} 種、graph JSON に skeleton を 1 click 投入`}
             >
               {NODE_PRESETS.map((preset) => (
                 <Button
