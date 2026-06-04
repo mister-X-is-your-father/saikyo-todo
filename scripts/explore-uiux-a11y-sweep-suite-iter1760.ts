@@ -740,6 +740,18 @@ async function main() {
     })
   }
 
+  // ========= FG. item-edit reload button title sweep (iter2079) =========
+  const iedFG = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
+  if (
+    !iedFG.includes('title="最新を読み込み — 自分の編集内容を破棄してサーバの最新値を読み込み直す"')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'FG.item-edit-reload',
+      message: '[FG] iter2079 item-edit reload button title が消えている',
+    })
+  }
+
   // ========= FF. 5 sub-page main landmark title sweep (iter2077) =========
   const wfPageFF = read(here, `${root}/src/app/(workspace)/[workspaceId]/workflows/page.tsx`)
   const tePageFF = read(here, `${root}/src/app/(workspace)/[workspaceId]/time-entries/page.tsx`)
