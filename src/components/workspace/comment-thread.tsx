@@ -261,7 +261,10 @@ function CommentItem({
               data-testid={`comment-edit-cancel-${comment.id}`}
               // iter1104: visible-prefix sweep (iter1093-1103) を comment-* button にも展開
               // 旧 aria-label は visible 末尾持ちで voice control prefix-matching match 不可
+              // iter1789: aria-label は browser tooltip にならず sighted は hover で context 即把握できず。
+              // iter1785 ItemEditDialog cancel/save と同 pattern を comment-thread にも展開。
               aria-label="キャンセル — コメントの編集を破棄"
+              title="キャンセル — コメントの編集を破棄"
             >
               <span aria-hidden="true">キャンセル</span>
             </Button>
@@ -278,7 +281,15 @@ function CommentItem({
               // 入力してください" は visible "保存" を中位置 "コメントを **保存** するには…"
               // に持ち voice control prefix-matching「click 保存」 match 不可
               // (pending / default は iter1104 で既に visible-prefix 化、not-trim 漏れ)。
+              // iter1789: 同 pattern で sighted hover に conditional 3 path context を disclose。
               aria-label={
+                !body.trim()
+                  ? '保存 — コメントを保存するには本文を入力してください'
+                  : update.isPending
+                    ? '保存中… — コメントの編集を保存中'
+                    : '保存 — コメントの編集を保存 (Cmd/Ctrl+Enter でも可)'
+              }
+              title={
                 !body.trim()
                   ? '保存 — コメントを保存するには本文を入力してください'
                   : update.isPending
@@ -317,6 +328,9 @@ function CommentItem({
                 aria-busy={softDelete.isPending || undefined}
                 data-testid={`comment-edit-${comment.id}`}
                 aria-label={`編集 — コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を編集`}
+                // iter1789: visible "編集" のみで sighted は hover で comment body preview 即把握できず。
+                // edit/cancel/save と同 pattern で comment-edit にも title 付与。
+                title={`編集 — コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を編集`}
               >
                 <span aria-hidden="true">編集</span>
               </button>
@@ -328,6 +342,13 @@ function CommentItem({
                 aria-busy={softDelete.isPending || undefined}
                 data-testid={`comment-delete-${comment.id}`}
                 aria-label={
+                  softDelete.isPending
+                    ? `削除中… — コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を削除中`
+                    : `削除 — コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を削除`
+                }
+                // iter1789: visible "削除" のみで sighted は hover で comment body preview 即把握できず。
+                // conditional 2 path 各々 title で sighted hover で comment preview disclose。
+                title={
                   softDelete.isPending
                     ? `削除中… — コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を削除中`
                     : `削除 — コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」を削除`
