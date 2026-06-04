@@ -681,6 +681,12 @@ function SprintCard({
                   className="text-muted-foreground flex items-center justify-between text-xs"
                   role="group"
                   aria-label={`Sprint「${sprint.name}」期間進捗 経過 ${elapsedDays} / ${totalDays} 日 (${elapsedPct}%)、残 ${remainingDays} 日`}
+                  /* iter2127: Sprint 期間進捗 role="group" の aria-label "経過 N / M 日 (pct%)、残 K 日"
+                     は browser tooltip にならず、sighted は visible 2 span "経過 N / M 日 (pct%)" +
+                     "残 K 日" を別個に読むしかなく integrated context (Sprint name + 経過/残 1 行) が
+                     hover で disclose されない。active-timer-pip iter2125 / budget-edit-btn iter2123 と
+                     同 title=aria-label sync pattern。 */
+                  title={`Sprint「${sprint.name}」期間進捗 経過 ${elapsedDays} / ${totalDays} 日 (${elapsedPct}%)、残 ${remainingDays} 日`}
                 >
                   <span aria-hidden="true">
                     経過 {elapsedDays} / {totalDays} 日 ({elapsedPct}%)
