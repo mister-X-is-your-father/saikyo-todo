@@ -744,6 +744,20 @@ async function main() {
     })
   }
 
+  // ========= DA. workspace nav landmark title sweep (iter1963) =========
+  const wsDA = read(here, `${root}/src/app/(workspace)/[workspaceId]/page.tsx`)
+  if (
+    !wsDA.includes(
+      'title="ワークスペース内 — Goals / Sprints / PDCA / Templates / Workflows / API / Time / Archive"',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'DA.workspace-nav',
+      message: '[DA] iter1963 workspace nav landmark title が消えている',
+    })
+  }
+
   // ========= CZ. schedule-item-picker search title sweep (iter1961) =========
   const sipCZ = read(here, `${root}/src/components/schedule/schedule-item-picker.tsx`)
   if (!sipCZ.includes('iter1961')) {
