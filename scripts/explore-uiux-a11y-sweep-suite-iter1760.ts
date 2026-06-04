@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BG. backlog estimate-summary chip title sweep (iter1871) =========
+  const backlogView = read(here, `${root}/src/components/workspace/backlog-view.tsx`)
+  if (!backlogView.includes('title={`${estimateSummary} — Backlog 見積サマリ`}')) {
+    findings.push({
+      level: 'error',
+      source: 'BG.backlog-estimate',
+      message: '[BG] iter1871 backlog estimate-summary chip title が消えている',
+    })
+  }
+
   // ========= BF. kanban child-count chip title sweep (iter1869) =========
   const kanbanView = read(here, `${root}/src/components/workspace/kanban-view.tsx`)
   if (!kanbanView.includes('title={`子タスク ${childCount} 件`}')) {
