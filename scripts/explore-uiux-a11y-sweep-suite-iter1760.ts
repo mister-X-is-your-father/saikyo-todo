@@ -744,6 +744,15 @@ async function main() {
     })
   }
 
+  // ========= AZ. wf-run-status Badge title sweep (iter1857) =========
+  if (!wfPanel.includes('title={`${label} — 実行ステータス`}')) {
+    findings.push({
+      level: 'error',
+      source: 'AZ.wf-run-status',
+      message: '[AZ] iter1857 wf-run-status Badge title が消えている',
+    })
+  }
+
   // ========= AY. goal-status Badge title sweep (iter1855) =========
   if (
     !goalsPanelAF.includes(
