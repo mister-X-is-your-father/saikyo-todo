@@ -760,6 +760,16 @@ async function main() {
     })
   }
 
+  // ========= GT. backlog-title button title sweep (iter2157) =========
+  const bvGT = read(here, `${root}/src/components/workspace/backlog-view.tsx`)
+  if (!bvGT.includes('iter2157') || !bvGT.includes('title={`${String(getValue())} — 編集`}')) {
+    findings.push({
+      level: 'error',
+      source: 'GT.backlog-title-btn',
+      message: '[GT] iter2157 backlog-title button title 付与 が消えている',
+    })
+  }
+
   // ========= GS. inbox-view item button title sweep (iter2155) =========
   const ivGS = read(here, `${root}/src/components/workspace/inbox-view.tsx`)
   if (
