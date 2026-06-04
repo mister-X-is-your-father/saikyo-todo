@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BN. subtasks-panel step 番号 title sweep (iter1885) =========
+  const subtasksBN = read(here, `${root}/src/components/workspace/subtasks-panel.tsx`)
+  if (!subtasksBN.includes('title={`${index + 1} 番目 — 深さ ${depth + 1}`}')) {
+    findings.push({
+      level: 'error',
+      source: 'BN.subtasks-step',
+      message: '[BN] iter1885 subtasks step 番号 title が消えている',
+    })
+  }
+
   // ========= BM. subtasks-panel child-count title sweep (iter1883) =========
   const subtasksBM = read(here, `${root}/src/components/workspace/subtasks-panel.tsx`)
   if (
