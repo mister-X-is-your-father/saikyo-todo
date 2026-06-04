@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2246 1/1 test a11y-sweep-suite に iter2245 weekly-time-trend-chip entry 追加] 検査軸 246 個 (新 IM 軸)、計約 364 invariant check に拡張、time-entry chip 2 element pair 完成。
+- ✅ [playwright-iter2245 1/1] weekly-time-trend-chip: aria-label (= summary.trendLine = direction + delta text) を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-weekly-trend-chip-title-iter2245.ts)、daily-streak-chip と pair の time-entry chip 2 element 完成。
 - ✅ [playwright-iter2244 1/1 test a11y-sweep-suite に iter2243 subtasks-panel 2 ol entry 追加] 検査軸 245 個 (新 IL 軸)、計約 363 invariant check に拡張、subtask family ol 階層 (root + nested) title 一致。
 - ✅ [playwright-iter2243 1/1] subtasks-panel: 2 ol element (top-level / nested) の aria-label を sighted hover で disclose 不可 → 同 text の title を 2 ol 同時に付与し sync (path B codify scripts/explore-uiux-subtasks-ol-title-iter2243.ts)、subtask group iter2139 と同 pattern を ol 階層 root + nested に展開。
 - ✅ [playwright-iter2242 1/1 test a11y-sweep-suite に iter2241 goals-panel KR add form entry 追加] 検査軸 244 個 (新 IK 軸)、計約 362 invariant check に拡張、create-form family title pattern が KR add form にも展開。
