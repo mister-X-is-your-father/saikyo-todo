@@ -135,7 +135,10 @@ export function MockLoginForm() {
             login-form / signup-form の convention (Unicode '…') に合わせ統一。 */}
         <span aria-hidden="true">{isPending ? '認証中…' : 'ログイン'}</span>
       </Button>
-      <p className="text-muted-foreground text-xs">
+      {/* iter1758: seed credential <p> に data-testid 付与で Playwright が dev login flow
+          test で「seed credentials が表示されている」 を 1 selector で verify 可能 (iter1717
+          mock-login-form / mock-login-submit data-testid と pair で mock-timesheet 全 selectable)。 */}
+      <p className="text-muted-foreground text-xs" data-testid="mock-login-seed">
         開発用: <code>ops@example.com</code> / <code>password1234</code>
       </p>
     </form>
