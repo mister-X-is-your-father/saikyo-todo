@@ -81,6 +81,9 @@ export function WorkflowsPanel({ workspaceId }: Props) {
       className="space-y-6"
       data-testid="workflows-panel"
       aria-label="Workflow 一覧と新規作成"
+      /* iter2069: section 全体に title を付与し sighted hover で section 用途 disclose、
+         team-capacity section iter2053 と同 section landmark hover summary pattern。 */
+      title="Workflow 一覧と新規作成"
     >
       <Card role="region" aria-labelledby="workflows-new-heading">
         <CardHeader>

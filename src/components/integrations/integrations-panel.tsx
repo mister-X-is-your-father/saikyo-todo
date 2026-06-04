@@ -43,6 +43,8 @@ export function IntegrationsPanel({ workspaceId }: Props) {
       className="space-y-6"
       data-testid="integrations-panel"
       aria-label="API 連携 source 一覧と新規作成"
+      /* iter2069: section 全体に title を付与 (2 section landmark pair、workflows-panel と pair)。 */
+      title="API 連携 source 一覧と新規作成"
     >
       <CreateSourceForm workspaceId={workspaceId} />
       {list.isLoading ? (
