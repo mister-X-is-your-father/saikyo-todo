@@ -740,6 +740,23 @@ async function main() {
     })
   }
 
+  // ========= FQ. kr-delete title state-dependent 同期 sweep (iter2099) =========
+  const gpFQ = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
+  if (!gpFQ.includes('iter2099') || !gpFQ.includes('削除中… — KR「${kr.title}」を削除中')) {
+    findings.push({
+      level: 'error',
+      source: 'FQ.kr-delete-title',
+      message: '[FQ] iter2099 kr-delete title state-dependent 同期 が消えている',
+    })
+  }
+  if (/^\s+title="KR を削除 \(soft delete\)"$/m.test(gpFQ)) {
+    findings.push({
+      level: 'error',
+      source: 'FQ.kr-delete-title',
+      message: '[FQ] iter2099 kr-delete 旧 静的 title が残っている',
+    })
+  }
+
   // ========= FP. sprint-period-edit title aria-sync sweep (iter2097) =========
   const spFP = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (
