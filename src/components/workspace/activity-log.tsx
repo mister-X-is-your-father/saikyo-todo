@@ -117,6 +117,10 @@ export function ActivityLog({ itemId }: { itemId: string }) {
                  が strict prefix-match で不可。iter1093-1556 sweep convention で
                  visible 冒頭固定 + em-dash 区切。 */
               aria-label={`${hint.label} — Activity 状態`}
+              /* iter1901: visible は label のみで「Activity 状態」 context が無い、
+                 sighted hover で disclose (iter1853 sprint-status / iter1899 import-status と同
+                 status chip family pattern)。 */
+              title={`${hint.label} — Activity 状態`}
             >
               <span aria-hidden="true">{hint.label}</span>
             </span>
