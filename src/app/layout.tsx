@@ -78,8 +78,13 @@ export default async function RootLayout({
         >
           メインコンテンツへスキップ
         </a>
+        {/* iter1729: noscript alert div に data-testid 付与で Playwright が標準 selector で
+            発見可能、`page.locator('[data-testid="noscript-warning"]')` を `--javascript-disabled`
+            test fixture で「JS 無 → warning 表示」 を確認可能。role="alert" の SR 即時 announce
+            は不変、visible textContent / className も不変。 */}
         <noscript>
           <div
+            data-testid="noscript-warning"
             className="bg-destructive text-destructive-foreground p-4 text-center text-sm"
             role="alert"
           >
