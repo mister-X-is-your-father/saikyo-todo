@@ -344,6 +344,11 @@ function SubtaskTreeNode({
                 className="ml-4 space-y-1 border-l-2 border-slate-300 pl-3 dark:border-slate-700"
                 data-testid={`subtask-children-${item.id}`}
                 aria-label={`「${item.title}」の子タスク ${grandchildren.length} 件`}
+                /* iter2243: subtask 子タスク ol の aria-label "「title」の子タスク N 件" は
+                   browser tooltip にならず sighted は hover で parent title + count context
+                   disclose 不可。subtask group iter2139 と同 title=aria-label sync pattern を
+                   nested ol にも展開、subtask family の ol 階層 (root + nested) で title 一致。 */
+                title={`「${item.title}」の子タスク ${grandchildren.length} 件`}
               >
                 {grandchildren.map((g, gIdx) => (
                   <SubtaskTreeNode
@@ -593,6 +598,9 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
                 data-testid="subtasks-list"
                 /* iter1586: paren convention を em-dash 区切に統一 (iter1093-1585 sweep)。 */
                 aria-label={`子タスク 全 ${children.length} 件 — 子孫含め ${totalDescendants} 件`}
+                /* iter2243: subtask top-level ol も nested ol と pair で title 付与、
+                   total count + descendants count context を sighted hover で disclose。 */
+                title={`子タスク 全 ${children.length} 件 — 子孫含め ${totalDescendants} 件`}
               >
                 {children.map((c, idx) => (
                   <SubtaskTreeNode
