@@ -52,6 +52,11 @@ export function CreateWorkspaceForm() {
       noValidate
       aria-busy={isPending || undefined}
       aria-label="Workspace 作成フォーム"
+      /* iter2217: create-workspace-form の aria-label "Workspace 作成フォーム" は browser
+         tooltip にならず sighted は hover で form 用途 disclose 不可。
+         workspace-mode-radiogroup iter2215 / item-decompose-btn iter2213 と同
+         title=aria-label sync pattern。 */
+      title="Workspace 作成フォーム"
       data-testid="create-workspace-form"
       className="space-y-4"
     >
