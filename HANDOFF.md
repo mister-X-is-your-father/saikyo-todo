@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2126 1/1 test a11y-sweep-suite に iter2125 active-timer-pip entry 追加] 検査軸 186 個 (新 GD 軸)、計約 301 invariant check に拡張、検査軸 186 + 300 check 突破。
+- ✅ [playwright-iter2125 1/1 mode-D active-timer-pip title を aria-label と 4-path sync] 3-path → 4-path 同期 (pending 追加、"Picture-in-Picture —" prefix + em-dash convention 統一)、budget-edit-btn iter2123 / item-edit-set-baseline iter2121 と pair。
 - ✅ [playwright-iter2124 1/1 test a11y-sweep-suite に iter2123 budget-edit-btn entry 追加] 検査軸 185 個 (新 GC 軸)、計約 299 invariant check に拡張、検査軸 185 突破。
 - ✅ [playwright-iter2123 1/1 mode-D budget-edit-btn に title 付与し aria-label と sync] aria-label のみで title 無いケースの disclose 拡張、item-edit-set-baseline iter2121 / clear-baseline iter2119 と pair。
 - ✅ [playwright-iter2122 1/1 test a11y-sweep-suite に iter2121 item-edit-set-baseline entry 追加] 検査軸 184 個 (新 GB 軸)、計約 298 invariant check に拡張。
