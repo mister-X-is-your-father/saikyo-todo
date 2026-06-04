@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CR. inbox-view region title sweep (iter1945) =========
+  const inboxCR = read(here, `${root}/src/components/workspace/inbox-view.tsx`)
+  if (!inboxCR.includes('title={`Inbox view — ${inbox.length} 件、scheduledFor も期限も未設定')) {
+    findings.push({
+      level: 'error',
+      source: 'CR.inbox-region',
+      message: '[CR] iter1945 inbox-view region title が消えている',
+    })
+  }
+
   // ========= CQ. operation-board-widget Card title sweep (iter1943) =========
   const opCQ = read(here, `${root}/src/components/workspace/operation-board-widget.tsx`)
   if (!opCQ.includes('title={`今日の作戦盤 — 期限超過')) {
