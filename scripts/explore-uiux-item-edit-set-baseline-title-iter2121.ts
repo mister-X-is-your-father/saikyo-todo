@@ -1,0 +1,83 @@
+/**
+ * Phase 6.15 loop iter2121: item-edit-set-baseline button title を state-dependent aria-label と
+ * 3-path sync (clear-baseline iter2119 / gantt-summary iter2117 と同 title-aria divergence 修正)。
+ */
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+interface Finding {
+  level: 'error' | 'warning' | 'info'
+  source: string
+  message: string
+}
+
+async function main() {
+  const findings: Finding[] = []
+  const here = dirname(fileURLToPath(import.meta.url))
+
+  const ied = readFileSync(
+    resolve(here, '../src/components/workspace/item-edit-dialog.tsx'),
+    'utf8',
+  )
+  if (
+    !ied.includes('iter2121') ||
+    !ied.includes('記録中… — 「${item.title}」のベースラインを記録中')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'a11y',
+      message: 'item-edit-set-baseline title が state-dependent aria-label と 3-path divergent',
+    })
+  }
+  // 旧 title 残っていないこと (2-path、pending 不在)
+  if (/title=\{\s*\n?\s*item\.baselineStartDate\s*\n?\s*\?\s*\/\//.test(ied)) {
+    findings.push({
+      level: 'error',
+      source: 'a11y',
+      message: 'item-edit-set-baseline 旧 2-path title が残っている',
+    })
+  }
+  if (!ied.includes('iter2119')) {
+    findings.push({
+      level: 'error',
+      source: 'a11y',
+      message: 'iter2119 item-edit-clear-baseline + template title 同期 が消えている',
+    })
+  }
+
+  const today = readFileSync(resolve(here, '../src/components/workspace/today-view.tsx'), 'utf8')
+  if (!today.includes('title={`${it.dueTime.slice(0, 5)} — 期限時刻`}')) {
+    findings.push({
+      level: 'error',
+      source: 'a11y',
+      message: 'iter1875 today dueTime title が消えている',
+    })
+  }
+
+  const mustBadge = readFileSync(
+    resolve(here, '../src/components/workspace/must-badge.tsx'),
+    'utf8',
+  )
+  if (!mustBadge.includes('title="MUST タスク"')) {
+    findings.push({
+      level: 'error',
+      source: 'a11y',
+      message: 'iter1843 MustBadge title が消えている',
+    })
+  }
+
+  console.log('=== Findings ===')
+  if (findings.length === 0) {
+    console.log('(なし) — item-edit-set-baseline title 3-path 同期、iter2119-1843 invariant 不変')
+  } else {
+    for (const f of findings) console.log(`  [${f.level}/${f.source}] ${f.message}`)
+  }
+  console.log(`\nTotal: ${findings.length}`)
+  process.exit(findings.length > 0 ? 1 : 0)
+}
+
+main().catch((e) => {
+  console.error(e)
+  process.exit(1)
+})

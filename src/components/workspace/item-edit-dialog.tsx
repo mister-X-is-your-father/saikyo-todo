@@ -991,12 +991,17 @@ function ItemEditDialogInner({
                 }
               }}
               data-testid="item-edit-set-baseline"
+              /* iter2121: item-edit-set-baseline title は 2-path (baseline 有/無、
+                 pending 不在) で aria-label の 3-path (pending / 更新 / 記録、item.title
+                 + state 含む) と divergent → 3-path sync。clear-baseline iter2119 /
+                 gantt-summary iter2117 と同 title-aria divergence 修正 pattern。
+                 pending state の disclose を追加。 */
               title={
-                item.baselineStartDate
-                  ? // iter268 basics: title は hover 用なので friendly 表示。aria-label
-                    // 側 (SR) は ISO のままで日付の precision を保つ。
-                    `現在の baseline: ${formatFriendlyDate(item.baselineStartDate, new Date())} → ${formatFriendlyDate(item.baselineEndDate!, new Date())}`
-                  : 'startDate / dueDate を当初計画として保存'
+                setBaseline.isPending
+                  ? `記録中… — 「${item.title}」のベースラインを記録中`
+                  : item.baselineStartDate
+                    ? `ベースライン更新 — 「${item.title}」のベースラインを現在の startDate / dueDate に更新 (旧 baseline: ${formatFriendlyDate(item.baselineStartDate, new Date())} → ${formatFriendlyDate(item.baselineEndDate!, new Date())})`
+                    : `ベースライン記録 — 「${item.title}」の startDate / dueDate を当初計画 (baseline) として保存`
               }
               // iter1039: visible "ベースライン記録" / "ベースライン更新" を aria-label
               // の prefix に固定し WCAG 2.5.3 satisfy (旧 aria-label は「を現在の
