@@ -128,7 +128,13 @@ export function TimeEntriesTable({
                 <time dateTime={e.workDate}>{e.workDate}</time>
               </td>
               <td className="py-2">{categoryLabel(e.category)}</td>
-              <td className="max-w-[320px] truncate py-2">{e.description || '—'}</td>
+              {/* iter1733: iter1720 mock-entries 同 pattern。truncate で 320px 超は visual ellipsis
+                  だが title 属性無で sighted は hover で全文を見れない。`title={e.description || ''}` で
+                  description が non-empty なら hover tooltip、empty (= visible "—") なら tooltip 非表示。
+                  SR は no-op (既に full text 読む)。 */}
+              <td className="max-w-[320px] truncate py-2" title={e.description || ''}>
+                {e.description || '—'}
+              </td>
               <td className="py-2 text-right">{formatMinutesJa(e.durationMinutes)}</td>
               <td className="py-2">
                 <SyncBadge status={e.syncStatus} />
