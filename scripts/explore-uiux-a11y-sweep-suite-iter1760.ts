@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BZ. notification-preferences icon title sweep (iter1909) =========
+  const notifBZ = read(here, `${root}/src/components/workspace/notification-preferences.tsx`)
+  if (!notifBZ.includes('title={`${visual.label}通知`}')) {
+    findings.push({
+      level: 'error',
+      source: 'BZ.notif-pref-icon',
+      message: '[BZ] iter1909 notification-preferences icon title が消えている',
+    })
+  }
+
   // ========= BY. item-deps DirectionIcon wrapper title sweep (iter1907) =========
   const depsBY = read(here, `${root}/src/components/workspace/item-dependencies-panel.tsx`)
   if (!depsBY.includes('<span title={srLabel}')) {
