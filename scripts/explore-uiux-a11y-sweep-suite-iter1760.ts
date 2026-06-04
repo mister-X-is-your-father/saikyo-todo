@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DT. team-capacity summary toggle title sweep (iter2001) =========
+  const tcDT = read(here, `${root}/src/components/workspace/team-capacity-panel.tsx`)
+  if (!tcDT.includes('iter2001')) {
+    findings.push({
+      level: 'error',
+      source: 'DT.team-cap-summary',
+      message: '[DT] iter2001 team-capacity summary toggle title が消えている',
+    })
+  }
+
   // ========= DS. bulk-action-bar region title sweep (iter1999) =========
   const bbDS = read(here, `${root}/src/components/workspace/bulk-action-bar.tsx`)
   if (!bbDS.includes('title={`一括操作 — ${count} 件選択中`}')) {
