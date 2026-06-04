@@ -1043,8 +1043,10 @@ function RunStatusBadge({ status }: { status: string }) {
       role="img"
       /* iter1558: 旧 aria-label `"実行ステータス: ${label}"` は visible "${label}" を末尾に持ち
          voice control prefix-matching「click 成功」 が strict prefix-match で不可 (substring 一致のみ)。
-         iter1553-1557 status/role Badge family と同 pattern、visible 冒頭固定 + em-dash 区切。 */
+         iter1553-1557 status/role Badge family と同 pattern、visible 冒頭固定 + em-dash 区切。
+         iter1857: iter1853 sprint-status / iter1855 goal-status と同 pattern を wf-run-status にも展開。 */
       aria-label={`${label} — 実行ステータス`}
+      title={`${label} — 実行ステータス`}
     >
       <span aria-hidden="true">{label}</span>
     </span>
