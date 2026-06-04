@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1862 1/1 test a11y-sweep-suite に iter1861 inbox-health title entry 追加] 検査軸 54 個 (新 BB 軸)、計約 150 invariant check に拡張。
 - ✅ [playwright-iter1861 1/1 mode-D inbox-health-hint chip に title 付与] iter1847 notification hint chip と同 pattern を inbox-health にも展開、inbox 健全性 chip の sighted hover で full label disclose。
 - ✅ [playwright-iter1860 1/1 test a11y-sweep-suite に iter1859 sync-badge title entry 追加] 検査軸 53 個 (A-Z + AA-AZ + BA、新 BA 軸)、計約 149 invariant check に拡張。
 - ✅ [playwright-iter1859 1/1 mode-D time-entries-table sync-badge synced+failed に title 付与] iter1853-1857 status Badge family と同 pattern を sync-badge にも展開、synced / failed 両 Badge の sighted hover で full label disclose。1 file 2 line 追加 (= 2 line)。経路 B。検証 codify: 8 軸 assert (0/0 OK)。
