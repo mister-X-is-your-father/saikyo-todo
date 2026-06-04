@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= JT. operation-board done-yesterday-toggle title sweep (iter2311) =========
+  const obwJT = read(here, `${root}/src/components/workspace/operation-board-widget.tsx`)
+  if (!obwJT.includes('iter2311')) {
+    findings.push({
+      level: 'error',
+      source: 'JT.done-yesterday-toggle-title',
+      message: '[JT] iter2311 done-yesterday-toggle title 2-path sync が消えている',
+    })
+  }
+
   // ========= JS. team-capacity 今日 / 今週 chip title sweep (iter2309) =========
   const tcpJS = read(here, `${root}/src/components/workspace/team-capacity-panel.tsx`)
   if (
