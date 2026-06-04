@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= ES. budget-panel progressbar title sweep (iter2051) =========
+  const bpES = read(here, `${root}/src/components/workspace/budget-panel.tsx`)
+  if (!bpES.includes('iter2051')) {
+    findings.push({
+      level: 'error',
+      source: 'ES.budget-progress',
+      message: '[ES] iter2051 budget-panel progressbar title が消えている',
+    })
+  }
+
   // ========= ER. weekly-insight-widget region title sweep (iter2049) =========
   const weeklyER = read(here, `${root}/src/components/workspace/weekly-insight-widget.tsx`)
   if (!weeklyER.includes('iter2049')) {
