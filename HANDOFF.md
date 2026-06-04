@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2018 1/1 test a11y-sweep-suite に iter2017 sprint-edit-start entry 追加] 検査軸 132 個 (新 EB 軸)、計約 228 invariant check に拡張。
 - ✅ [playwright-iter2017 1/1 mode-D sprint-edit-start date input に title 付与] state-dependent aria-label (空 / 不正 / 通常) を title で sighted hover disclose。
 - ✅ [playwright-iter2016 1/1 test a11y-sweep-suite に iter2015 tab-comments/activity entry 追加] 検査軸 131 個 (新 EA 軸、D → E 軸 prefix シフト)、計約 227 invariant check に拡張。
 - ✅ [playwright-iter2015 1/1 mode-D item-edit-dialog tab-comments + tab-activity に title 付与] 6 tab sweep 完備 (base / summary / subtasks / dependencies / comments / activity)、6 tab 全 title disclose 完成。
