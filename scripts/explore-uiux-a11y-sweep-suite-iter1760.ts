@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CL. goals-panel progressbar title sweep (iter1933) =========
+  const gpCL = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
+  if (!gpCL.includes('title={`Goal「${goal.title}」全体進捗 ${goalPct}%')) {
+    findings.push({
+      level: 'error',
+      source: 'CL.goal-progress',
+      message: '[CL] iter1933 goals-panel progressbar title が消えている',
+    })
+  }
+
   // ========= CK. sprints-panel progressbar title sweep (iter1931) =========
   const spCK = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (!spCK.includes('title={`Sprint「${sprint.name}」完了率 ${pct}% —')) {
