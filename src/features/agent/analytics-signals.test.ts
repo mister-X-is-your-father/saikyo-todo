@@ -1415,6 +1415,33 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
     }
   })
 
+  it('iter1753: cluster sum invariant — countAchievement + countConcerning <= 全 signal 数', () => {
+    // 達成感 cluster + 警戒 cluster の合計は analyticsSignalsToArray の全体数 を超えない。
+    // 「info / idle / success の非 cluster 軸 (= dominantRole 等)」 が存在するため
+    // 厳密 = ではなく <=、これが invariant。iter1748 disjoint と組合せて
+    // 「cluster は互いに重ならず、かつ全体の部分集合」 を gate。
+    const items: VelocityFields[] = [
+      { doneAt: TODAY },
+      { doneAt: TODAY },
+      { doneAt: new Date(TODAY.getTime() - MS_PER_DAY) },
+    ]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const cases = [
+      composeAnalyticsSignals({}),
+      composeAnalyticsSignals({ doneToday: 2 }),
+      composeAnalyticsSignals({ velocity }),
+      composeAnalyticsSignals({ weeklyReviewDue: 'overdue' }),
+      composeAnalyticsSignals({ doneToday: 2, velocity, weeklyReviewDue: 'overdue' }),
+      composeAnalyticsSignals({ streakMilestone: velocity, weeklyReviewDue: 'never-reviewed' }),
+    ]
+    for (const s of cases) {
+      const total = analyticsSignalsToArray(s).length
+      const ach = countAchievementSignals(s)
+      const con = countConcerningSignals(s)
+      expect(ach + con).toBeLessThanOrEqual(total)
+    }
+  })
+
   it('iter1748: cluster disjoint invariant — pickAchievement ∩ pickConcerning = ∅', () => {
     // 達成感 cluster (positive polarity = success/info/idle) と 警戒 cluster
     // (warn/danger/urgent) は tone 設計上 互いに disjoint である invariant。
