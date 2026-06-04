@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CX. create-time-entry teCategory title sweep (iter1957) =========
+  const cteCX = read(here, `${root}/src/components/time-entry/create-time-entry-form.tsx`)
+  if (!cteCX.includes('iter1957')) {
+    findings.push({
+      level: 'error',
+      source: 'CX.te-category',
+      message: '[CX] iter1957 create-time-entry teCategory title が消えている',
+    })
+  }
+
   // ========= CW. create-time-entry teDate title sweep (iter1955) =========
   const cteCW = read(here, `${root}/src/components/time-entry/create-time-entry-form.tsx`)
   if (!cteCW.includes('iter1955')) {
