@@ -263,6 +263,11 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
             /* iter1591: colon convention を em-dash 区切に統一 (iter1093-1590 sweep)。
                visible "前 Sprint 比 ${trendLabel}" は元から冒頭 prefix、区切のみ ':' → ' —' に統一。 */
             aria-label={`前 Sprint 比 ${trendLabel(cmp.trend)} — 完了率 ${cmp.completionDelta > 0 ? '+' : ''}${cmp.completionDelta}pt / 納品 ${cmp.doneDelta > 0 ? '+' : ''}${cmp.doneDelta} 件`}
+            /* iter2163: retro-comparison group の aria-label は browser tooltip にならず
+               sighted は hover で integrated trend summary (1 行 完了率 pt + 納品 件) disclose
+               不可。schedule-picker iter2161 / template-items-list iter2159 と同
+               title=aria-label sync pattern。 */
+            title={`前 Sprint 比 ${trendLabel(cmp.trend)} — 完了率 ${cmp.completionDelta > 0 ? '+' : ''}${cmp.completionDelta}pt / 納品 ${cmp.doneDelta > 0 ? '+' : ''}${cmp.doneDelta} 件`}
           >
             {trendIcon(cmp.trend)}
             <span className="font-medium" aria-hidden="true">
