@@ -156,7 +156,13 @@ async function main() {
       'operation-board',
     ],
     [`${root}/src/components/workspace/taskchute-view.tsx`, 'title={item.title}', 'taskchute'],
-    [`${root}/src/components/workspace/inbox-view.tsx`, 'title={it.title}', 'inbox'],
+    // iter2155: inbox-view item button title を `title={it.title}` から
+    // `title={`${it.title} — 編集ダイアログで開く`}` に変更し aria-label と sync。
+    [
+      `${root}/src/components/workspace/inbox-view.tsx`,
+      'title={`${it.title} — 編集ダイアログで開く`}',
+      'inbox',
+    ],
     // iter2153: today-view item button title を `title={it.title}` から
     // `title={`${it.title} — 編集`}` に変更し aria-label と sync。
     [`${root}/src/components/workspace/today-view.tsx`, 'title={`${it.title} — 編集`}', 'today'],
@@ -751,6 +757,19 @@ async function main() {
       level: 'error',
       source: 'AB.sprint-goal-create',
       message: '[AB] iter1809 goal-create conditional path text が消えている',
+    })
+  }
+
+  // ========= GS. inbox-view item button title sweep (iter2155) =========
+  const ivGS = read(here, `${root}/src/components/workspace/inbox-view.tsx`)
+  if (
+    !ivGS.includes('iter2155') ||
+    !ivGS.includes('title={`${it.title} — 編集ダイアログで開く`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GS.inbox-item-title',
+      message: '[GS] iter2155 inbox-view item button title 同期 が消えている',
     })
   }
 
