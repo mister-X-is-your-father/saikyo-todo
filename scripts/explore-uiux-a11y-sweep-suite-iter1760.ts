@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= DC. personal-period goal textarea title sweep (iter1967) =========
+  const periodDC = read(here, `${root}/src/components/workspace/personal-period-view.tsx`)
+  if (!periodDC.includes('iter1967') || !periodDC.includes('ゴール (任意、最大 2000 文字')) {
+    findings.push({
+      level: 'error',
+      source: 'DC.period-goal',
+      message: '[DC] iter1967 period goal textarea title が消えている',
+    })
+  }
+
   // ========= DB. workspace main landmark title sweep (iter1965) =========
   const wsDB = read(here, `${root}/src/app/(workspace)/[workspaceId]/page.tsx`)
   if (
