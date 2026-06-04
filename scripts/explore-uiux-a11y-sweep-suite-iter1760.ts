@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= DE. theme-toggle title em-dash 同期 sweep (iter1971) =========
+  const ttDE = read(here, `${root}/src/components/shared/theme-toggle.tsx`)
+  if (!ttDE.includes("'ライトテーマ — クリックで切替' : 'ダークテーマ — クリックで切替'")) {
+    findings.push({
+      level: 'error',
+      source: 'DE.theme-toggle-title',
+      message: '[DE] iter1971 theme-toggle title が aria-label と divergent',
+    })
+  }
+
   // ========= DD. comment-thread input title sweep (iter1969) =========
   const ctDD = read(here, `${root}/src/components/workspace/comment-thread.tsx`)
   if (!ctDD.includes('iter1969')) {
