@@ -106,7 +106,12 @@ export function ErrorState({
           // を末尾に持ち voice control prefix-matching「click 再試行」 match 不可。
           // iter1093-1150 sweep convention に揃え visible "再試行" 冒頭固定 +
           // em-dash 区切で error message を descriptive 末尾保持。
+          // iter1767: aria-label は browser tooltip にならないため、sighted は hover で
+          // エラー再試行の context を即把握できなかった。title 付与で同 text の disclosure
+          // (iter1763-1765 icon-only button family 同 pattern を共通 ErrorState retry button にも展開、
+          // 1 共通 component 修正で全 caller の retry UX 一括改善)。
           aria-label={`再試行 — 「${message}」をクリアして再試行`}
+          title={`再試行 — 「${message}」をクリアして再試行`}
         >
           <span aria-hidden="true">再試行</span>
         </Button>
