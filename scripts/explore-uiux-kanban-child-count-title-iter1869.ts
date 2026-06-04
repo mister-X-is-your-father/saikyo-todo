@@ -1,0 +1,108 @@
+/**
+ * Phase 6.15 loop iter1869: kanban-view child-count chip に title 付与
+ * (palette/taskchute/period/inbox priority dot title sweep の続編)。
+ */
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+interface Finding {
+  level: 'error' | 'warning' | 'info'
+  source: string
+  message: string
+}
+
+async function main() {
+  const findings: Finding[] = []
+  const here = dirname(fileURLToPath(import.meta.url))
+
+  const kanban = readFileSync(resolve(here, '../src/components/workspace/kanban-view.tsx'), 'utf8')
+
+  if (!kanban.includes('title={`子タスク ${childCount} 件`}')) {
+    findings.push({
+      level: 'error',
+      source: 'a11y',
+      message: 'kanban child-count chip title が無い',
+    })
+  }
+
+  const palette = readFileSync(
+    resolve(here, '../src/components/shared/command-palette.tsx'),
+    'utf8',
+  )
+  if (!palette.includes('title={`p${item.priority ?? 4}`}')) {
+    findings.push({
+      level: 'error',
+      source: 'a11y',
+      message: 'iter1867 palette priority dot title が消えている',
+    })
+  }
+
+  const taskchute = readFileSync(
+    resolve(here, '../src/components/workspace/taskchute-view.tsx'),
+    'utf8',
+  )
+  if (!taskchute.includes('title={`P${item.priority ?? 4}`}')) {
+    findings.push({
+      level: 'error',
+      source: 'a11y',
+      message: 'iter1865 taskchute priority chip title が消えている',
+    })
+  }
+
+  const period = readFileSync(
+    resolve(here, '../src/components/workspace/personal-period-view.tsx'),
+    'utf8',
+  )
+  if (!period.includes('title={`p${it.priority ?? 4}`}')) {
+    findings.push({
+      level: 'error',
+      source: 'a11y',
+      message: 'iter1863 period priority dot title が消えている',
+    })
+  }
+
+  const inbox = readFileSync(resolve(here, '../src/components/workspace/inbox-view.tsx'), 'utf8')
+  if (!inbox.includes('title={`${healthChip.label} — Inbox 健全性`}')) {
+    findings.push({
+      level: 'error',
+      source: 'a11y',
+      message: 'iter1861 inbox-health-hint title が消えている',
+    })
+  }
+
+  const mustBadge = readFileSync(
+    resolve(here, '../src/components/workspace/must-badge.tsx'),
+    'utf8',
+  )
+  if (!mustBadge.includes('title="MUST タスク"')) {
+    findings.push({
+      level: 'error',
+      source: 'a11y',
+      message: 'iter1843 MustBadge title が消えている',
+    })
+  }
+
+  const board = readFileSync(resolve(here, '../src/components/workspace/items-board.tsx'), 'utf8')
+  if (!board.includes('title="Today — 今日のタスク優先順、scheduledFor=今日 + 期限近接"')) {
+    findings.push({
+      level: 'error',
+      source: 'a11y',
+      message: 'iter1777 view-switcher Today title が消えている',
+    })
+  }
+
+  console.log('=== Findings ===')
+  if (findings.length === 0) {
+    console.log('(なし) — kanban child-count title 付与、iter1867-1777 invariant 不変')
+  } else {
+    for (const f of findings) console.log(`  [${f.level}/${f.source}] ${f.message}`)
+  }
+  console.log(`\nTotal: ${findings.length}`)
+  process.exit(findings.length > 0 ? 1 : 0)
+}
+
+main().catch((e) => {
+  console.error(e)
+  process.exit(1)
+})

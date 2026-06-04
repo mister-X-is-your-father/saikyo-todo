@@ -422,11 +422,15 @@ function KanbanCard({
           // iter1059: role 無 span + aria-label を `role="img"` で
           // authoritative 化 (iter1023/1049-1058 同 pattern、role=img sweep
           // 12 弾目)。Kanban card 内の子タスク count chip。
+          // iter1869: 視覚 chip text は `子 N 件` で省略形、aria-label の
+          // `子タスク N 件` と divergent。sighted hover で full ja text disclose
+          // (iter1867 palette priority dot title 付与 sweep の続き)。
           <span
             className="text-foreground bg-muted inline-flex items-center rounded-full px-2 py-0.5 text-[10px]"
             data-testid={`kanban-child-count-${item.id}`}
             role="img"
             aria-label={`子タスク ${childCount} 件`}
+            title={`子タスク ${childCount} 件`}
           >
             <span aria-hidden="true">子 {childCount} 件</span>
           </span>
