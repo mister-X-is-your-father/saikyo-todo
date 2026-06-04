@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1990 1/1 test a11y-sweep-suite に iter1989 template-due entry 追加] 検査軸 118 個 (新 DN 軸)、計約 214 invariant check に拡張。
 - ✅ [playwright-iter1989 1/1 mode-D template-items dueOffset input に title 付与] 11 state-dependent input family の続編、template-items 2 input sweep 完備。
 - ✅ [playwright-iter1988 1/1 test a11y-sweep-suite に iter1987 template-title entry 追加] 検査軸 117 個 (新 DM 軸)、計約 213 invariant check に拡張。
 - ✅ [playwright-iter1987 1/1 mode-D template-items 子 Item タイトル input に title 付与] 10 state-dependent input family の続編。
