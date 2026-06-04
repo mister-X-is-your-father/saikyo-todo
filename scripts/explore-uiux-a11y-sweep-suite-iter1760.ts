@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CE. top-items 合計 chip title sweep (iter1919) =========
+  const topCE = read(here, `${root}/src/components/time-entry/top-items-by-time-chip.tsx`)
+  if (!topCE.includes('title={`${label} — 合計`}')) {
+    findings.push({
+      level: 'error',
+      source: 'CE.top-items-total',
+      message: '[CE] iter1919 top-items 合計 chip title が消えている',
+    })
+  }
+
   // ========= CD. estimate-bias 内訳 grid title sweep (iter1917) =========
   const biasCD = read(here, `${root}/src/components/time-entry/estimate-bias-insight.tsx`)
   if (!biasCD.includes('title={`見積バイアス内訳 —')) {
