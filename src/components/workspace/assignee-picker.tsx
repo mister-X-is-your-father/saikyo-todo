@@ -96,6 +96,11 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
               ? '未アサイン — アサインを選択 (現在未アサイン)'
               : `${selectedLabels.join(', ')} — アサインを選択 (現在 ${selectedLabels.length} 件)`
           }
+          // iter1743: 多 assignee 時 inner span truncate で long member 名 list 切れ、
+          // aria-label は browser tooltip にならず sighted は hover で全 member 見れず。
+          // title 付与で sighted hover → 全 member list disclose (iter1720-1742 sweep を
+          // assignee-picker にも展開、多選択 list の visibility 改善)。
+          title={selectedLabels.length > 0 ? selectedLabels.join(', ') : undefined}
           aria-expanded={open}
           aria-haspopup="listbox"
         >
