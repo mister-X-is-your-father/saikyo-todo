@@ -461,6 +461,22 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
                   })()
                 : '全 Sprint — Sprint で絞り込み未設定 (稼働中 / 未割当 / 個別 sprint)'
             }
+            /* iter1941: filter-sprint select も filter-status iter1939 と同 state-dependent
+               filter pattern、aria-label と同 text を title に付与し sighted hover で disclose。 */
+            title={
+              sprintFilter
+                ? (() => {
+                    const visible =
+                      sprintFilter === 'active'
+                        ? '稼働中の Sprint'
+                        : sprintFilter === 'none'
+                          ? '未割当のみ'
+                          : ((sprintsList.data ?? []).find((sp) => sp.id === sprintFilter)?.name ??
+                            sprintFilter)
+                    return `${visible} — Sprint で絞り込み中 (現在: ${visible})。「全 Sprint」で解除`
+                  })()
+                : '全 Sprint — Sprint で絞り込み未設定 (稼働中 / 未割当 / 個別 sprint)'
+            }
           >
             <option value="">全 Sprint</option>
             <optgroup label="ショートカット">
