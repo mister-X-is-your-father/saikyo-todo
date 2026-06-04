@@ -34,6 +34,7 @@ import {
   pickHighestSeverityConcerningSignal,
   pickHighestSeveritySignal,
   pickTopSignalsBySeverity,
+  pickWorstConcerningSignals,
 } from './analytics-signals'
 import { computeCostMonthProjection } from './cost-month-projection'
 import { computeMonthlyCostTrend, type CostMonthEntry } from './cost-monthly-trend'
@@ -1592,6 +1593,35 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
           chipToneAttentionRank(a.tone),
         )
       }
+    }
+  })
+
+  it('iter1767: pickWorstConcerningSignals — 警戒なし → 空配列', () => {
+    expect(pickWorstConcerningSignals(composeAnalyticsSignals({}), 3)).toEqual([])
+    expect(pickWorstConcerningSignals(composeAnalyticsSignals({ doneToday: 2 }), 3)).toEqual([])
+  })
+
+  it('iter1767: pickWorstConcerningSignals — n=0 → 空配列 (defensive)', () => {
+    const s = composeAnalyticsSignals({ weeklyReviewDue: 'overdue' })
+    expect(pickWorstConcerningSignals(s, 0)).toEqual([])
+    expect(pickWorstConcerningSignals(s, -1)).toEqual([])
+  })
+
+  it('iter1767: pickWorstConcerningSignals — n=1 は pickHighestSeverityConcerningSignal と等価', () => {
+    const s = composeAnalyticsSignals({ weeklyReviewDue: 'overdue' })
+    const top1 = pickWorstConcerningSignals(s, 1)
+    const single = pickHighestSeverityConcerningSignal(s)
+    expect(top1[0] ?? null).toBe(single)
+  })
+
+  it('iter1767: pickWorstConcerningSignals — n >= 警戒数 → 全件 (severity 順)', () => {
+    const s = composeAnalyticsSignals({ weeklyReviewDue: 'overdue' })
+    const all = pickConcerningSignals(s)
+    const top10 = pickWorstConcerningSignals(s, 10)
+    expect(top10.length).toBe(all.length)
+    // 全 tone が警戒 (warn/danger/urgent)
+    for (const sig of top10) {
+      expect(['warn', 'danger', 'urgent']).toContain(sig.tone)
     }
   })
 

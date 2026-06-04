@@ -618,6 +618,40 @@ export function pickHighestSeverityConcerningSignal(
 }
 
 /**
+ * iter1767 ai-automation: 警戒 cluster の中で 上位 N 件の最 severe signals を抽出。
+ * iter1764 pickHighestSeverityConcerningSignal (= 1 件) の N 件版、AI 朝 brief
+ * 「Top 3 警告」 / Slack daily digest 「優先警告 top N」 headline 用。
+ *
+ * 仕様:
+ *  - tone severity rank 降順 (danger → urgent → warn) で N 件返す
+ *  - 警戒 signal 0 件 → 空配列 (= caller の null guard 不要)
+ *  - n <= 0 → 空配列 (defensive)
+ *  - n >= 警戒 signal 数 → 全件 (= severity 順並べ)
+ *  - 同 rank 複数 → pickConcerningSignals の表示順 (= analyticsSignalsToArray
+ *    の domain 順 = concerningRole 先頭) を保持 (stable sort)
+ *
+ * 用途:
+ *  - AI 朝 brief headline (= 'Top 3 警告: PM 50% / コスト超過 / 期限達成率低')
+ *  - Slack daily digest top alert chip 列
+ *  - dashboard 「優先警告」 N chip 並列 render
+ *
+ * 既存 helper との関係:
+ *  - `pickHighestSeverityConcerningSignal` (iter1764): 単一最 severe (= N=1 版)
+ *  - `pickTopSignalsBySeverity` (iter1424): 全 signal から top N (= 達成感 signal も含む)
+ *  - `pickConcerningSignals` (iter1744): 警戒 subset 全件 (= 件数制限なし、domain 順)
+ *  - 本 helper: 警戒 subset の top N (= severity 順、N 件制限、警告以外混入なし)
+ *
+ * 設計意図: `pickTopSignalsBySeverity` は達成感 signal も返すケースがある (達成感のみの
+ * 日)。本 helper は「警告 chip 列」 を確実に warning のみで埋める。
+ */
+export function pickWorstConcerningSignals(
+  signals: AnalyticsSignals,
+  n: number,
+): AgentBriefSignal[] {
+  return pickTopItemsByTone(pickConcerningSignals(signals), (s) => s.tone, n)
+}
+
+/**
  * iter1745 ai-automation: 警戒 cluster を「警戒: ...」 prefix 付き 1 行 ja-JP text に
  * 整形する compose helper。`formatAchievementSignalsLineJa` (iter1725) と対称的な
  * concerning 版、Slack daily digest「今日の警告」 section 用。
