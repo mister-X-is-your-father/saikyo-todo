@@ -1533,6 +1533,33 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
     expect(clusterCountsToAgentBriefSignal(s).text).toBe(formatClusterCountsHeadlineJa(s))
   })
 
+  it('iter1763: clusterCountsToAgentBriefSignal tone derivation invariant', () => {
+    // tone は has*Signals predicate と決定論的に対応する invariant を gate:
+    //   hasConcerning → 'warn' (どんなに達成感があっても警戒優先)
+    //   !hasConcerning && hasAchievement → 'success'
+    //   !hasConcerning && !hasAchievement → 'idle'
+    // tone は cluster state を 3 状態に整理する contract、将来 tone 判定 logic 改修時の
+    // semantic 乖離を検出。
+    const items: VelocityFields[] = [{ doneAt: TODAY }]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const cases = [
+      composeAnalyticsSignals({}),
+      composeAnalyticsSignals({ doneToday: 2 }),
+      composeAnalyticsSignals({ velocity }),
+      composeAnalyticsSignals({ doneToday: 2, velocity }),
+      composeAnalyticsSignals({ weeklyReviewDue: 'overdue' }),
+      composeAnalyticsSignals({ doneToday: 2, weeklyReviewDue: 'overdue' }),
+      composeAnalyticsSignals({ weeklyReviewDue: 'never-reviewed' }),
+    ]
+    for (const s of cases) {
+      const sig = clusterCountsToAgentBriefSignal(s)
+      const hasCon = hasConcerningSignals(s)
+      const hasAch = hasAchievementSignals(s)
+      const expectedTone = hasCon ? 'warn' : hasAch ? 'success' : 'idle'
+      expect(sig.tone).toBe(expectedTone)
+    }
+  })
+
   it('iter1748: cluster disjoint invariant — pickAchievement ∩ pickConcerning = ∅', () => {
     // 達成感 cluster (positive polarity = success/info/idle) と 警戒 cluster
     // (warn/danger/urgent) は tone 設計上 互いに disjoint である invariant。
