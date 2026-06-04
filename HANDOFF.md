@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2232 1/1 test a11y-sweep-suite に iter2231 item-research-btn entry 追加] 検査軸 239 個 (新 IE 軸)、計約 357 invariant check に拡張、AI action 系 button 3 element sync 完成 (decompose / engineer / research)。
 - ✅ [playwright-iter2231 1/1] item-research-button: aria-label state-dependent 3-path (done / pending / idle) を sighted hover で disclose 不可 → 同 text の title 3-path を付与し sync (path B codify scripts/explore-uiux-item-research-btn-title-iter2231.ts)、AI action 系 button 3 element 完成 (decompose / engineer / research)。
 - ✅ [playwright-iter2230 1/1 test a11y-sweep-suite に iter2229 workspace-header-ops-group entry 追加] 検査軸 238 個 (新 ID 軸)、計約 356 invariant check に拡張、header family 2 element 完成。
 - ✅ [playwright-iter2229 1/1 mode-D workspace-header ヘッダー操作 group に title 付与] operations 構成 context hover disclose、workspace-header iter2227 と pair の header family 2 element 完成。
