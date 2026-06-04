@@ -163,6 +163,8 @@ export function CommandPalette({ commands, items, onSelectItem }: CommandPalette
                     className={`mr-2 inline-block h-2 w-2 shrink-0 rounded-full ${priorityClass(item.priority)}`}
                     role="img"
                     aria-label={priorityLabel(item.priority)}
+                    /* iter1867: today/inbox/period/taskchute priority dot と統一、palette にも title。 */
+                    title={`p${item.priority ?? 4}`}
                   />
                   <StatusBadge
                     status={item.status}
