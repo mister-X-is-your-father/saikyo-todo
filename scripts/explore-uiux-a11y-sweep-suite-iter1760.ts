@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= EU. sprint-retro-widget progressbar title sweep (iter2055) =========
+  const retroEU = read(here, `${root}/src/components/sprint/sprint-retro-widget.tsx`)
+  if (!retroEU.includes('iter2055')) {
+    findings.push({
+      level: 'error',
+      source: 'EU.retro-progress',
+      message: '[EU] iter2055 sprint-retro progressbar title が消えている',
+    })
+  }
+
   // ========= ET. team-capacity section title sweep (iter2053) =========
   const tcET = read(here, `${root}/src/components/workspace/team-capacity-panel.tsx`)
   if (!tcET.includes('title="チームメンバー余裕時間 一覧"')) {
