@@ -762,6 +762,19 @@ async function main() {
     })
   }
 
+  // ========= GW. retro-comparison group title sweep (iter2163) =========
+  const srGW = read(here, `${root}/src/components/sprint/sprint-retro-widget.tsx`)
+  if (
+    !srGW.includes('iter2163') ||
+    !srGW.includes('title={`前 Sprint 比 ${trendLabel(cmp.trend)} — 完了率')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GW.retro-comparison-title',
+      message: '[GW] iter2163 retro-comparison group title 付与 が消えている',
+    })
+  }
+
   // ========= GV. schedule-picker title sweep (iter2161) =========
   const spGV = read(here, `${root}/src/components/schedule/schedule-item-picker.tsx`)
   const iter2161CountGV = (spGV.match(/iter2161/g) ?? []).length
