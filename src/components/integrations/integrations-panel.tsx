@@ -658,6 +658,19 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     ? '作成中… — Source を作成中'
                     : '作成 — External Source を新規作成'
               }
+              /* iter2257: src-create-btn の aria-label は state-dependent 3-path (!name.trim() /
+                 pending / idle) で SR には full context を渡すが browser tooltip にならず
+                 sighted は hover で同 context disclose 不可。MCP path A 探索で発見、
+                 budget-edit-cancel/save iter2255 と同 state-dependent title pattern を
+                 source create button にも展開。iter1809 sprint/goal create と同 pattern の
+                 create button family を Source にも完成。 */
+              title={
+                !name.trim()
+                  ? '作成 — Source を作成するには名前を入力してください'
+                  : create.isPending
+                    ? '作成中… — Source を作成中'
+                    : '作成 — External Source を新規作成'
+              }
             >
               <span aria-hidden="true">{create.isPending ? '作成中…' : '作成'}</span>
             </Button>
