@@ -27,6 +27,10 @@ export function WorkspaceHeader({ title, role, subtitle, pageActions, utility }:
          が strict prefix-match で不可。iter1553-1562 status/role Badge family + iter1556
          workspace-role Badge と同 file 内 pattern、visible 冒頭固定 + em-dash 区切。 */
       aria-label={`${title} — Workspace`}
+      /* iter2227: header landmark の aria-label "${title} — Workspace" は browser tooltip に
+         ならず sighted は hover で "Workspace" context disclose 不可。op-board-itemrow iter2225 /
+         proposal-title-btn iter2223 と同 title=aria-label sync pattern。 */
+      title={`${title} — Workspace`}
     >
       <div className="min-w-0">
         <div className="flex items-center gap-2">
