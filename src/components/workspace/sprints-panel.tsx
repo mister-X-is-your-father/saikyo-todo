@@ -348,6 +348,14 @@ export function SprintsPanel({ workspaceId }: Props) {
                       ? '作成中… — Sprint を作成中'
                       : '作成 — Sprint を新規作成'
                 }
+                // iter1809: iter1799 create-workspace と同 pattern を Sprint/Goal create button にも展開。
+                title={
+                  !name.trim()
+                    ? '作成 — Sprint を作成するには名前を入力してください'
+                    : createMut.isPending
+                      ? '作成中… — Sprint を作成中'
+                      : '作成 — Sprint を新規作成'
+                }
               >
                 <span aria-hidden="true">{createMut.isPending ? '作成中…' : '作成'}</span>
               </Button>

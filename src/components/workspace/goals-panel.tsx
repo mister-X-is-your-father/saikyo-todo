@@ -288,6 +288,15 @@ export function GoalsPanel({ workspaceId }: Props) {
                       ? '作成中… — Goal を作成中'
                       : '作成 — Goal を新規作成'
                 }
+                // iter1809: iter1799 create-workspace / sprint-create と pair で Sprint/Goal/Workspace
+                // creation button family の hover disclosure 完備。
+                title={
+                  !title.trim()
+                    ? '作成 — Goal を作成するにはタイトルを入力してください'
+                    : createMut.isPending
+                      ? '作成中… — Goal を作成中'
+                      : '作成 — Goal を新規作成'
+                }
               >
                 <span aria-hidden="true">{createMut.isPending ? '作成中…' : '作成'}</span>
               </Button>
