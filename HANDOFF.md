@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2166 1/1 test a11y-sweep-suite に iter2165 pdca-progressbar entry 追加] 検査軸 206 個 (新 GX 軸)、計約 323 invariant check に拡張。
+- ✅ [playwright-iter2165 1/1 mode-D PDCA Cycle progressbar に title 付与し aria-label と sync] 完了率 + severity context hover disclose、progressbar family 6 個目、retro-comparison iter2163 / schedule-picker iter2161 と pair。
 - ✅ [playwright-iter2164 1/1 test a11y-sweep-suite に iter2163 retro-comparison entry 追加] 検査軸 205 個 (新 GW 軸)、計約 322 invariant check に拡張、検査軸 205 突破。
 - ✅ [playwright-iter2163 1/1 mode-D retro-comparison group に title 付与し aria-label と sync] integrated trend summary hover disclose、schedule-picker iter2161 / template-items-list iter2159 と pair。
 - ✅ [playwright-iter2162 1/1 test a11y-sweep-suite に iter2161 schedule-picker entry 追加] 検査軸 204 個 (新 GV 軸)、計約 321 invariant check に拡張、既存 B 軸 schedule-item-picker title check も新 format に更新 (iter2161 sync 対応)。
