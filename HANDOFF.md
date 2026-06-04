@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1985 1/1 mode-D goals-panel goal-desc textarea に title 付与] 9 state-dependent input family の構成、goals-panel 内 2 input/textarea sweep 完備。
 - ✅ [playwright-iter1984 1/1 test a11y-sweep-suite に iter1983 goal-title entry 追加] 検査軸 115 個 (新 DK 軸)、計約 211 invariant check に拡張。
 - ✅ [playwright-iter1983 1/1 mode-D goals-panel goal-title input に title 付与] 8 state-dependent input family の続編。
 - ✅ [playwright-iter1982 1/1 test a11y-sweep-suite に iter1981 sprint-goal entry 追加] 検査軸 114 個 (新 DJ 軸)、計約 210 invariant check に拡張。
