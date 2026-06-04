@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2083 1/1 mode-D sprint-activate button に title 付与] state-dependent action button、Sprint name + state hover disclose。
 - ✅ [playwright-iter2082 1/1 test a11y-sweep-suite に iter2081 sync-btn entry 追加] 検査軸 164 個 (新 FH 軸)、計約 260 invariant check 突破。
 - ✅ [playwright-iter2081 1/1 mode-D time-entry sync button に title 付与] state-dependent button title disclose、item-edit reload iter2079 と同 pattern。
 - ✅ [playwright-iter2080 1/1 test a11y-sweep-suite に iter2079 item-edit-reload entry 追加] 検査軸 163 個 (新 FG 軸)、計約 259 invariant check、iter2080 突破。
