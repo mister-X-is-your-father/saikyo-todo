@@ -231,6 +231,9 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
            に統一、closing ')' は削除。iter1573 operation-board / iter1575 taskchute / iter1576
            active-timer region と同 pattern。 */
         aria-label={`表示切替 — 現在 ${VIEW_LABEL_JA[view] ?? view}`}
+        /* iter1991: group 全体に title を付与し sighted hover で現在 view disclose
+           (個別 button は iter1777 で title 付き、group landmark の summary は title 無)。 */
+        title={`表示切替 — 現在 ${VIEW_LABEL_JA[view] ?? view}`}
       >
         {/* iter1777: 9 view-switcher button (Today/Inbox/Kanban/Backlog/Gantt/Dashboard/
             日次/週次/月次) は visible text のみ + aria-label で descriptive context を SR に
