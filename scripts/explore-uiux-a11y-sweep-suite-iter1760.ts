@@ -740,6 +740,19 @@ async function main() {
     })
   }
 
+  // ========= EQ. taskchute-view region title sweep (iter2047) =========
+  const tcEQ = read(here, `${root}/src/components/workspace/taskchute-view.tsx`)
+  if (
+    !tcEQ.includes('iter2047') ||
+    !tcEQ.includes('title={`TaskChute mode — 今日の 1 列 timeline')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'EQ.taskchute-region',
+      message: '[EQ] iter2047 taskchute-view region title が消えている',
+    })
+  }
+
   // ========= EP. 3 entity create form title sweep (iter2045) =========
   const spEP = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   const gpEP = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
