@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= AR. StatusBadge title sweep (iter1841) =========
+  const statusBadge = read(here, `${root}/src/components/workspace/status-badge.tsx`)
+  if (!statusBadge.includes('title={`${cfg.shortLabel} — ステータス ${cfg.label}`}')) {
+    findings.push({
+      level: 'error',
+      source: 'AR.status-badge',
+      message: '[AR] iter1841 StatusBadge title が消えている',
+    })
+  }
+
   // ========= AQ. home workspace-link Link title sweep (iter1839) =========
   // homePage は N 軸で既に読込済 (line 277)
   if (!homePage.includes('title={`${ws.name} を開く — slug ${ws.slug} / role ${ws.role}`}')) {
