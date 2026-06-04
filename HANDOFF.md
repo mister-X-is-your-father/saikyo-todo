@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1869 1/1 mode-D kanban-view child-count chip に title 付与] visible `子 N 件` (省略) と aria-label `子タスク N 件` (full) の divergent を sighted hover で full text disclose。palette/taskchute/period/inbox priority dot title sweep の続編。
 - ✅ [playwright-iter1868 1/1 test a11y-sweep-suite に iter1867 palette priority entry 追加] 検査軸 57 個 (新 BE 軸)、計約 153 invariant check に拡張。
 - ✅ [playwright-iter1867 1/1 mode-D command-palette priority dot に title 付与] today/inbox/period/taskchute と統一、palette にも title=`p${priority}`。priority dot family 全 view 完備。
 - ✅ [playwright-iter1866 1/1 test a11y-sweep-suite に iter1865 taskchute priority entry 追加] 検査軸 56 個 (新 BD 軸)、計約 152 invariant check に拡張。
