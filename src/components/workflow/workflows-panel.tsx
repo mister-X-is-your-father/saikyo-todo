@@ -326,7 +326,12 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
               trigger: {triggerKind} · nodes: {nodeCount} · {wf.enabled ? '有効' : '無効'}
             </p>
             {wf.description && (
-              <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">{wf.description}</p>
+              // iter1769: wf.description は line-clamp-2 で 2 行超切れ、title 無で sighted は
+              // hover で全 description 見れず。title 付与で iter1755 sprints/goals / iter1756
+              // decompose と同 line-clamp + title pattern を workflows にも展開。
+              <p className="text-muted-foreground mt-1 line-clamp-2 text-xs" title={wf.description}>
+                {wf.description}
+              </p>
             )}
           </div>
         </div>
