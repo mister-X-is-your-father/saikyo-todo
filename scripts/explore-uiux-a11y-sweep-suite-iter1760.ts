@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= IT. Template 作成フォーム title sweep (iter2259) =========
+  const tpIT = read(here, `${root}/src/components/template/templates-panel.tsx`)
+  if (!tpIT.includes('iter2259') || !tpIT.includes('title="Template 作成フォーム"')) {
+    findings.push({
+      level: 'error',
+      source: 'IT.template-create-form-title',
+      message: '[IT] iter2259 Template 作成フォーム title sync が消えている',
+    })
+  }
+
   // ========= IS. src-create-btn title 3-path sweep (iter2257) =========
   const ipIS = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
   if (!ipIS.includes('iter2257')) {
