@@ -195,6 +195,11 @@ export function WeeklyInsightWidget({ items, now }: Props) {
             .map((d) => `${d.day} 今週${d.current} / 前週${d.prev}`)
             .join(', ')}`}
           data-testid="weekly-insight-by-day"
+          /* iter1893: visible bar height は数値感覚的だが具体数 (今週X/前週Y) は hover で disclose、
+             pdca-distribution iter1891 と同 pattern (data 透明性、stacked chart の数値 detail)。 */
+          title={`曜日別完了件数 — 今週 vs 前週 — ${insight.byDay
+            .map((d) => `${d.day} 今週${d.current} / 前週${d.prev}`)
+            .join(', ')}`}
         >
           {insight.byDay.map((d) => {
             const currHeight = (d.current / peak) * 100
