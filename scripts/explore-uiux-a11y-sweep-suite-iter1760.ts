@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CY. calendar-view date nav group title sweep (iter1959) =========
+  const calCY = read(here, `${root}/src/components/schedule/calendar-view.tsx`)
+  if (!calCY.includes('title={`カレンダー日付ナビゲーション —')) {
+    findings.push({
+      level: 'error',
+      source: 'CY.calendar-nav',
+      message: '[CY] iter1959 calendar-view nav group title が消えている',
+    })
+  }
+
   // ========= CX. create-time-entry teCategory title sweep (iter1957) =========
   const cteCX = read(here, `${root}/src/components/time-entry/create-time-entry-form.tsx`)
   if (!cteCX.includes('iter1957')) {
