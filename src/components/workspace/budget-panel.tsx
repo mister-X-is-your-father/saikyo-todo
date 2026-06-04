@@ -229,6 +229,8 @@ export function BudgetPanel({ workspaceId }: Props) {
             noValidate
             aria-busy={update.isPending || undefined}
             aria-label="AI 月次コスト上限編集フォーム"
+            /* iter2059: budget edit form の用途 hover disclose、4 form family の 3 個目。 */
+            title="AI 月次コスト上限編集フォーム"
             data-testid="budget-edit-form"
             onSubmit={(e) => {
               e.preventDefault()

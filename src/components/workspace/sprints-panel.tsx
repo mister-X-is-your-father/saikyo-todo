@@ -695,6 +695,8 @@ function SprintCard({
               className="space-y-2 rounded border border-dashed p-2"
               noValidate
               aria-label={`Sprint「${sprint.name}」期間編集フォーム`}
+              /* iter2059: edit form の用途 hover disclose、4 form family の 2 個目。 */
+              title={`Sprint「${sprint.name}」期間編集フォーム`}
               aria-busy={update.isPending || undefined}
               onSubmit={async (e) => {
                 e.preventDefault()
@@ -1117,6 +1119,9 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
             noValidate
             aria-label="Sprint デフォルト設定 編集フォーム"
             aria-busy={upd.isPending || undefined}
+            /* iter2059: 3 entity create form family iter2045 と pair、Sprint デフォルト編集
+               form の用途を sighted hover で disclose (4 form family の 1 個目、edit form)。 */
+            title="Sprint デフォルト設定 編集フォーム"
             onSubmit={(e) => {
               e.preventDefault()
               void save()
