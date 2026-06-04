@@ -740,6 +740,19 @@ async function main() {
     })
   }
 
+  // ========= EA. item-edit-dialog tab-comments + tab-activity title sweep (iter2015) =========
+  const iedEA = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
+  if (
+    !iedEA.includes('title="コメントタブ — 議論履歴 + @メンション + AI Plan 投下"') ||
+    !iedEA.includes('title="アクティビティタブ — 編集履歴 (audit_log) を時系列表示"')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'EA.tabs-comments-activity',
+      message: '[EA] iter2015 item-edit-dialog tab-comments/activity title が消えている',
+    })
+  }
+
   // ========= DZ. item-edit-dialog tab-dependencies title sweep (iter2013) =========
   const iedDZ = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
   if (!iedDZ.includes('iter2013')) {
