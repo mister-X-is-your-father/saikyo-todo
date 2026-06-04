@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CZ. schedule-item-picker search title sweep (iter1961) =========
+  const sipCZ = read(here, `${root}/src/components/schedule/schedule-item-picker.tsx`)
+  if (!sipCZ.includes('iter1961')) {
+    findings.push({
+      level: 'error',
+      source: 'CZ.picker-search',
+      message: '[CZ] iter1961 schedule-item-picker search title が消えている',
+    })
+  }
+
   // ========= CY. calendar-view date nav group title sweep (iter1959) =========
   const calCY = read(here, `${root}/src/components/schedule/calendar-view.tsx`)
   if (!calCY.includes('title={`カレンダー日付ナビゲーション —')) {
