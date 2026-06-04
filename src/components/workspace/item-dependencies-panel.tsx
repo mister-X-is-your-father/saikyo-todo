@@ -349,7 +349,9 @@ function Section({
                 aria-label={srLabel}
               />
               <StatusBadge status={ref.status} className="text-[10px]" iconOnly />
-              <span className="flex-1 truncate">
+              {/* iter1751: dependency ref title span は truncate で長 title 切れ、title 付与で
+                  sighted hover → 全文 disclose (iter1720-1750 sweep の item-dependencies 展開)。 */}
+              <span className="flex-1 truncate" title={ref.title}>
                 {ref.isMust && <MustBadge className="mr-1" iconOnly />}
                 {ref.title}
               </span>

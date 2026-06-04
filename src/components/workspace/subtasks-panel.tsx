@@ -196,7 +196,13 @@ function SubtaskTreeNode({
         className="text-[10px]"
         data-testid={`subtask-status-${item.id}`}
       />
-      <span className={`flex-1 truncate ${isDone ? 'text-muted-foreground line-through' : ''}`}>
+      {/* iter1751: subtask title span は truncate で長 title 切れ、sighted は hover で全 title
+          見れず (parent button 等の aria-label なし)。title 付与で sighted hover → 全 disclose
+          (iter1720-1750 sweep を subtasks-panel にも展開)。 */}
+      <span
+        className={`flex-1 truncate ${isDone ? 'text-muted-foreground line-through' : ''}`}
+        title={item.title}
+      >
         {item.title}
       </span>
       {hasChildren && (
