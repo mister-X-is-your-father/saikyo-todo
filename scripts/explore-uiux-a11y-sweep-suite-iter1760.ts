@@ -762,6 +762,21 @@ async function main() {
     })
   }
 
+  // ========= HO. FocusFormCta title sweep (iter2199) =========
+  const fcHO = read(here, `${root}/src/components/shared/focus-form-cta.tsx`)
+  if (
+    !fcHO.includes('iter2199') ||
+    !fcHO.includes(
+      'title={`作成フォームへ — ${entityName} 作成フォームの『${fieldName}』入力欄にフォーカス`}',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HO.focus-form-cta-title',
+      message: '[HO] iter2199 FocusFormCta title 同期 が消えている',
+    })
+  }
+
   // ========= HN. StatCard role=group title sweep (iter2197) =========
   const dvHN = read(here, `${root}/src/components/workspace/dashboard-view.tsx`)
   if (!dvHN.includes('iter2197') || !dvHN.includes('title={ariaLabel}')) {
