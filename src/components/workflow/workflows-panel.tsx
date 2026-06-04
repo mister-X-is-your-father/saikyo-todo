@@ -274,6 +274,11 @@ export function WorkflowsPanel({ workspaceId }: Props) {
           className="space-y-3"
           data-testid="workflows-list"
           aria-label={`Workflow 一覧 — ${list.data!.length} 件`}
+          /* iter2189: Workflow 一覧 ul の aria-label "Workflow 一覧 — N 件" は browser
+             tooltip にならず sighted は hover で件数 context disclose 不可。
+             active-timer-ops iter2187 / BulkHeaderCheckbox iter2185 と同 title=aria-label
+             sync pattern。 */
+          title={`Workflow 一覧 — ${list.data!.length} 件`}
         >
           {list.data!.map((wf) => (
             <li key={wf.id}>
