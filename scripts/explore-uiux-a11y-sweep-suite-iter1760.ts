@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= FD. home header landmark title sweep (iter2073) =========
+  const homeFD = read(here, `${root}/src/app/page.tsx`)
+  if (!homeFD.includes('title="最強TODO ホーム"')) {
+    findings.push({
+      level: 'error',
+      source: 'FD.home-header',
+      message: '[FD] iter2073 home header landmark title が消えている',
+    })
+  }
+
   // ========= FC. keybindings-help-modal DialogContent title sweep (iter2071) =========
   const kbFC = read(here, `${root}/src/components/shared/keybindings-help-modal.tsx`)
   if (!kbFC.includes('title="キーボードショートカット一覧"')) {
