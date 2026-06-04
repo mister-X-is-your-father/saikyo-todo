@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1860 1/1 test a11y-sweep-suite に iter1859 sync-badge title entry 追加] 検査軸 53 個 (A-Z + AA-AZ + BA、新 BA 軸)、計約 149 invariant check に拡張。
 - ✅ [playwright-iter1859 1/1 mode-D time-entries-table sync-badge synced+failed に title 付与] iter1853-1857 status Badge family と同 pattern を sync-badge にも展開、synced / failed 両 Badge の sighted hover で full label disclose。1 file 2 line 追加 (= 2 line)。経路 B。検証 codify: 8 軸 assert (0/0 OK)。
 - ✅ [playwright-iter1858 1/1 test a11y-sweep-suite に iter1857 wf-run-status title entry 追加] 検査軸 52 個 (A-Z + AA-AZ、新 AZ 軸)、計約 148 invariant check に拡張。
 - ✅ [playwright-iter1857 1/1 mode-D wf-run-status Badge に title 付与] iter1853 sprint-status / iter1855 goal-status と同 pattern を wf-run-status にも展開、status Badge family (StatusBadge / sprint / goal / wf-run) 全 hover disclosure 完備。1 file 1 line 追加 + 1 line comment 追加 (= 2 line)。経路 B。検証 codify: `scripts/explore-uiux-wf-run-status-title-iter1857.ts` で 8 軸 assert (0/0 OK)。
