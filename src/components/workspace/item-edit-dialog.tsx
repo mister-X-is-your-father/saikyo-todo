@@ -382,6 +382,10 @@ function ItemEditDialogInner({
               value="base"
               data-testid="tab-base"
               aria-label="基本タブ — タイトル / 状態 / 期限 / MUST / 担当 / Tag / DoD を編集"
+              /* iter2007: tab trigger visible "基本" のみで descriptive context (Tag / DoD 等
+                 編集対象) が無く、sighted hover で disclose (sub-section nav iter1779 と同
+                 hover context pattern)。 */
+              title="基本タブ — タイトル / 状態 / 期限 / MUST / 担当 / Tag / DoD を編集"
             >
               <span aria-hidden="true">基本</span>
             </TabsTrigger>
