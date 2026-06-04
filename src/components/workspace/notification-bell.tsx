@@ -212,7 +212,16 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
             // iter1043: visible "全て既読" を aria-label の prefix に固定し WCAG 2.5.3
             // satisfy (旧 aria-label は "すべて既読にする" / "未読… 既読化中" で
             // literal "全て既読" 連続 substring 無し、voice control match 不可)。
+            // iter1807: visible "全て既読" のみで sighted は hover で未読件数 context 即把握できず。
+            // iter1789 comment-thread / iter1791 submit と同 pattern を mark-all-read に展開。
             aria-label={
+              unreadCount === 0
+                ? '全て既読 — 未読通知がないため既読化不要'
+                : markAllRead.isPending
+                  ? `全て既読 — 未読 ${unreadCount} 件を既読化中…`
+                  : `全て既読 — 未読 ${unreadCount} 件をすべて既読にする`
+            }
+            title={
               unreadCount === 0
                 ? '全て既読 — 未読通知がないため既読化不要'
                 : markAllRead.isPending
