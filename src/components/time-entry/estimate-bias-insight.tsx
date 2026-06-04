@@ -187,6 +187,10 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
           /* iter1591: 旧 aria-label paren convention `"見積バイアス内訳 (見積内 X / ±10% 以内 Y / 超過 Z)"` は
              iter1093-1590 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
           aria-label={`見積バイアス内訳 — 見積内 ${report.underCount} 件 / ±10% 以内 ${report.onCount} 件 / 超過 ${report.overCount} 件`}
+          /* iter1917: 3 cell grid 並列表示は visible で個別読めるが integrated summary は
+             表示されず、aria-label の 1 行 summary を sighted hover で disclose
+             (pdca-leadtime iter1895 / pdca-distribution iter1891 と同 chart 透明性 pattern)。 */
+          title={`見積バイアス内訳 — 見積内 ${report.underCount} 件 / ±10% 以内 ${report.onCount} 件 / 超過 ${report.overCount} 件`}
         >
           <div aria-hidden="true">
             <div>見積内 (under)</div>
