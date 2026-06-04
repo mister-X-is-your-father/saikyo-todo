@@ -799,6 +799,11 @@ function SprintCard({
                 role="group"
                 /* iter1585: paren convention を em-dash 区切に統一 (iter1093-1584 sweep)。 */
                 aria-label={`Sprint「${sprint.name}」の期間編集 form 操作 — キャンセル / 保存`}
+                /* iter2041: sprint-period edit form operations group も 4 entity operations
+                   family iter2031-2037 と同 pattern (5 entity operations group family、
+                   sprint operations / sprint-period edit operations / workflows / goals /
+                   comment-edit)。 */
+                title={`Sprint「${sprint.name}」の期間編集 form 操作 — キャンセル / 保存`}
               >
                 <Button
                   type="button"
