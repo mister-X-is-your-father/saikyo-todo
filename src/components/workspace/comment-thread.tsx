@@ -270,6 +270,18 @@ function CommentItem({
             aria-invalid={(body.length > 0 && body.trim() === '') || undefined}
             maxLength={10_000}
             data-testid={`comment-edit-input-${comment.id}`}
+            /* iter1973: state-dependent aria-label (空 / 空白のみ / 上限近接 / 通常) は SR のみ伝達、
+               title で sighted hover disclose (iter1969 comment-input / iter1967 period-goal と pair、
+               comment-thread 内 2 textarea sweep 完備)。 */
+            title={
+              body.length === 0
+                ? 'コメント編集 (必須、最大 10000 文字、Cmd/Ctrl+Enter で保存、Esc で編集破棄)'
+                : body.trim() === ''
+                  ? `コメント編集 (現在 ${body.length} / 10000 文字、空白のみは不正)`
+                  : body.length > 9500
+                    ? `コメント編集 (現在 ${body.length} / 10000 文字、上限近接、Cmd/Ctrl+Enter で保存、Esc で編集破棄)`
+                    : `コメント編集 (現在 ${body.length} / 10000 文字、Cmd/Ctrl+Enter で保存、Esc で編集破棄)`
+            }
           />
           <div
             className="flex justify-end gap-2"
