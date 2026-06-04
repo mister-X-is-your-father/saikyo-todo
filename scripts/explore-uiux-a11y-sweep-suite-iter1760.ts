@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= JF. kanban-title button title sweep (iter2283) =========
+  const kvJF = read(here, `${root}/src/components/workspace/kanban-view.tsx`)
+  if (!kvJF.includes('iter2283') || !kvJF.includes('title={`${item.title} — 編集`}')) {
+    findings.push({
+      level: 'error',
+      source: 'JF.kanban-title-edit-title',
+      message: '[JF] iter2283 kanban-title button title sync が消えている',
+    })
+  }
+
   // ========= JE. Kanban board root group title sweep (iter2281) =========
   const kvJE = read(here, `${root}/src/components/workspace/kanban-view.tsx`)
   if (
