@@ -766,6 +766,19 @@ async function main() {
     })
   }
 
+  // ========= JR. Sprint Swimlane lane chip title sweep (iter2307) =========
+  const ssdJR = read(here, `${root}/src/components/workspace/sprint-swimlane-disclosure.tsx`)
+  if (
+    !ssdJR.includes('iter2307') ||
+    !ssdJR.includes('title={`${row.loadSummaryJa} — lane / ${row.conflictsJa}`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'JR.swimlane-lane-chip-title',
+      message: '[JR] iter2307 Sprint Swimlane lane chip title sync が消えている',
+    })
+  }
+
   // ========= JQ. Sprint Swimlane lane 一覧 ul title sweep (iter2305) =========
   const ssdJQ = read(here, `${root}/src/components/workspace/sprint-swimlane-disclosure.tsx`)
   if (
