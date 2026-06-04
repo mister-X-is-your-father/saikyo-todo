@@ -158,7 +158,13 @@ async function main() {
     [`${root}/src/components/workspace/taskchute-view.tsx`, 'title={item.title}', 'taskchute'],
     [`${root}/src/components/workspace/inbox-view.tsx`, 'title={it.title}', 'inbox'],
     [`${root}/src/components/workspace/today-view.tsx`, 'title={it.title}', 'today'],
-    [`${root}/src/components/workspace/personal-period-view.tsx`, 'title={it.title}', 'period'],
+    // iter2151: personal-period item button title を `title={it.title}` から
+    // `title={`${it.title} — 編集`}` に変更し aria-label と sync。
+    [
+      `${root}/src/components/workspace/personal-period-view.tsx`,
+      'title={`${it.title} — 編集`}',
+      'period',
+    ],
     [
       `${root}/src/components/workspace/archived-items-panel.tsx`,
       'title={item.title}',
@@ -743,6 +749,16 @@ async function main() {
       level: 'error',
       source: 'AB.sprint-goal-create',
       message: '[AB] iter1809 goal-create conditional path text が消えている',
+    })
+  }
+
+  // ========= GQ. personal-period item button title sweep (iter2151) =========
+  const pvGQ = read(here, `${root}/src/components/workspace/personal-period-view.tsx`)
+  if (!pvGQ.includes('iter2151') || !pvGQ.includes('title={`${it.title} — 編集`}')) {
+    findings.push({
+      level: 'error',
+      source: 'GQ.personal-period-item-title',
+      message: '[GQ] iter2151 personal-period item button title 同期 が消えている',
     })
   }
 
