@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2208 1/1 test a11y-sweep-suite に iter2207 engineer-trigger-group entry 追加] 検査軸 227 個 (新 HS 軸)、計約 345 invariant check に拡張。
+- ✅ [playwright-iter2207 1/1 mode-D engineer-trigger group に title 付与し aria-label と sync] item.title + Engineer Agent 用途 hover disclose、heartbeat-button iter2205 / risk-reasons iter2203 と pair。
 - ✅ [playwright-iter2206 1/1 test a11y-sweep-suite に iter2205 heartbeat-button entry 追加] 検査軸 226 個 (新 HR 軸)、計約 344 invariant check に拡張。
 - ✅ [playwright-iter2205 1/1 mode-D heartbeat-button title を state-dependent aria-label と 2-path sync] 旧 静的 title を state-dependent 2-path (pending / idle) に置換、risk-reasons iter2203 / keybinding-combo iter2201 と pair。
 - ✅ [playwright-iter2204 1/1 test a11y-sweep-suite に iter2203 risk-reasons-ul entry 追加] 検査軸 225 個 (新 HQ 軸)、計約 342 invariant check に拡張、検査軸 225 突破。
