@@ -196,6 +196,10 @@ export function SprintsPanel({ workspaceId }: Props) {
             noValidate
             aria-label="Sprint 作成フォーム"
             aria-busy={createMut.isPending || undefined}
+            /* iter2045: create form 全体に title を付与し sighted hover で form 用途 disclose
+               (operations group iter2031-2043 と同 landmark hover pattern を form にも展開、
+               3 entity create form family の 1 個目)。 */
+            title="Sprint 作成フォーム"
             onSubmit={(e) => {
               e.preventDefault()
               void handleCreate()

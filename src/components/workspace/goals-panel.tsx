@@ -140,6 +140,8 @@ export function GoalsPanel({ workspaceId }: Props) {
             className="space-y-3"
             noValidate
             aria-label="Goal 作成フォーム"
+            /* iter2045: create form 全体に title を付与 (3 entity create form family の 2 個目)。 */
+            title="Goal 作成フォーム"
             aria-busy={createMut.isPending || undefined}
             onSubmit={(e) => {
               e.preventDefault()

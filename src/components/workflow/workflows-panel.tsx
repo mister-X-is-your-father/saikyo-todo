@@ -93,6 +93,8 @@ export function WorkflowsPanel({ workspaceId }: Props) {
             className="space-y-3"
             noValidate
             aria-label="Workflow 作成フォーム"
+            /* iter2045: create form 全体に title を付与 (3 entity create form family の 3 個目で完備)。 */
+            title="Workflow 作成フォーム"
             aria-busy={create.isPending || undefined}
             data-testid="create-workflow-form"
             onSubmit={(e) => {
