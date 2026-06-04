@@ -497,10 +497,13 @@ export function hasAchievementSignals(signals: AnalyticsSignals): boolean {
  *  - 本 helper: 警戒系 (severity 軸) 抽出 (= negative polarity / concerning)
  *  - `filterSignalsByMinTone('warn')`: 同等の semantics、本 helper は名前で意図明確化
  */
+// iter1750 refactor: 手書き `(s) => s.tone === 'warn' || 'danger' || 'urgent'` filter を
+// iter1699 着地 `filterSignalsByMinTone(signals, 'warn')` 経由に委譲。tone 集合
+// {warn, danger, urgent} 定義の二重持ち (本 helper + iter1747 hasConcerningSignals) を
+// iter1699 generic primitive に集約、新 tone 階層追加時の追従漏れ防止。表示順 / 0 件→空配列
+// 等価性は `filterItemsByMinTone` 経路で保証 (iter1744 docstring も同 semantics と明記済)。
 export function pickConcerningSignals(signals: AnalyticsSignals): AgentBriefSignal[] {
-  return analyticsSignalsToArray(signals).filter(
-    (s) => s.tone === 'warn' || s.tone === 'danger' || s.tone === 'urgent',
-  )
+  return filterSignalsByMinTone(signals, 'warn')
 }
 
 /**
@@ -526,10 +529,13 @@ export function pickConcerningSignals(signals: AnalyticsSignals): AgentBriefSign
  * UI / Slack notifier の「警戒セクション render 判定」 で `if (length > 0)` 比較より
  * semantic 明確 (= 「警戒があるか」 が読み手に直接伝わる)。
  */
+// iter1750 refactor: 手書き `.some(tone === warn/danger/urgent)` を
+// `pickConcerningSignals(signals).length > 0` 経由に統一。tone 集合定義の二重持ちを排除、
+// filterSignalsByMinTone (iter1699 primitive) → pickConcerningSignals (iter1744) →
+// 本 helper の単一委譲 chain で「警戒 cluster」 semantic を 1 module に集約。
+// invariant test (iter1747 累計 113 件 PASS) が等価性を継続 gate。
 export function hasConcerningSignals(signals: AnalyticsSignals): boolean {
-  return analyticsSignalsToArray(signals).some(
-    (s) => s.tone === 'warn' || s.tone === 'danger' || s.tone === 'urgent',
-  )
+  return pickConcerningSignals(signals).length > 0
 }
 
 /**
