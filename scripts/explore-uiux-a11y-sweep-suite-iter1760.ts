@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DO. items-board view-switcher group title sweep (iter1991) =========
+  const boardDO = read(here, `${root}/src/components/workspace/items-board.tsx`)
+  if (!boardDO.includes('title={`表示切替 — 現在 ${VIEW_LABEL_JA[view] ?? view}`}')) {
+    findings.push({
+      level: 'error',
+      source: 'DO.view-switcher-group',
+      message: '[DO] iter1991 items-board view-switcher group title が消えている',
+    })
+  }
+
   // ========= DN. template-items dueOffset input title sweep (iter1989) =========
   const tmplDN = read(here, `${root}/src/components/template/template-items-editor.tsx`)
   if (!tmplDN.includes('iter1989')) {
