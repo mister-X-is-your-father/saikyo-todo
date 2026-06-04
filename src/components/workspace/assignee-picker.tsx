@@ -100,7 +100,17 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
           // aria-label は browser tooltip にならず sighted は hover で全 member 見れず。
           // title 付与で sighted hover → 全 member list disclose (iter1720-1742 sweep を
           // assignee-picker にも展開、多選択 list の visibility 改善)。
-          title={selectedLabels.length > 0 ? selectedLabels.join(', ') : undefined}
+          // iter2301: iter1743 は non-empty 時のみ title (= 全 list) で empty 時は title=undefined。
+          // empty 時の aria-label "未アサイン — アサインを選択 (現在未アサイン)" の "アサインを
+          // 選択" 操作 hint が sighted hover で disclose 不可だった (iter1743 design 当時は
+          // この hint 未追加だった)。両 path とも aria-label と同 text の title に揃え、
+          // empty 時は select hint、non-empty 時は full list を hover disclose。MCP path A で
+          // ItemEditDialog 探索中に発見。
+          title={
+            selectedLabels.length === 0
+              ? '未アサイン — アサインを選択 (現在未アサイン)'
+              : `${selectedLabels.join(', ')} — アサインを選択 (現在 ${selectedLabels.length} 件)`
+          }
           aria-expanded={open}
           aria-haspopup="listbox"
         >
