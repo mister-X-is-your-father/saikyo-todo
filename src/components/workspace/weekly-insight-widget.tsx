@@ -235,6 +235,10 @@ export function WeeklyInsightWidget({ items, now }: Props) {
             className="space-y-1"
             /* iter1588: paren convention を em-dash 区切に統一 (iter1093-1587 sweep)。 */
             aria-label={`今週の特筆事項 ${insight.anomalies.length} 件 — 集中日 / 過小日 / 期限超過 spike`}
+            /* iter2169: weekly-insight anomalies ul の aria-label は browser tooltip にならず
+               sighted は hover で件数 + 3 kind context disclose 不可。comment-list iter2167 /
+               template-items-list iter2159 と同 title=aria-label sync pattern。 */
+            title={`今週の特筆事項 ${insight.anomalies.length} 件 — 集中日 / 過小日 / 期限超過 spike`}
             data-testid="weekly-insight-anomalies"
           >
             {insight.anomalies.map((a) => {
