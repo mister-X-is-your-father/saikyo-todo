@@ -766,6 +766,19 @@ async function main() {
     })
   }
 
+  // ========= JS. team-capacity 今日 / 今週 chip title sweep (iter2309) =========
+  const tcpJS = read(here, `${root}/src/components/workspace/team-capacity-panel.tsx`)
+  if (
+    !tcpJS.includes('iter2309') ||
+    !tcpJS.includes('title={`今日 — ${formatMemberCapacityLoadJa(today)}`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'JS.team-capacity-load-chip-title',
+      message: '[JS] iter2309 team-capacity load chip title sync が消えている',
+    })
+  }
+
   // ========= JR. Sprint Swimlane lane chip title sweep (iter2307) =========
   const ssdJR = read(here, `${root}/src/components/workspace/sprint-swimlane-disclosure.tsx`)
   if (
