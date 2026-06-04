@@ -123,6 +123,10 @@ function KbdRow({ kb }: { kb: Keybinding }) {
            strict prefix-match で不可 (substring 一致のみ)。iter1093-1551 sweep convention で
            visible 冒頭固定 + em-dash 区切。 */
         aria-label={`${kb.combo} — ショートカット`}
+        /* iter2201: keybinding-combo dt の aria-label は browser tooltip にならず sighted は
+           hover で "ショートカット" label context disclose 不可。FocusFormCta iter2199 /
+           StatCard iter2197 と同 title=aria-label sync pattern。 */
+        title={`${kb.combo} — ショートカット`}
       >
         {parts.map((p, i) => (
           <kbd
