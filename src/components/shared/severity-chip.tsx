@@ -80,6 +80,12 @@ export function SeverityChip({
           'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
         )}
         aria-label={ariaLabel ?? label}
+        // iter1761: SeverityChip の visible inner span は truncate font-medium で長 label
+        // 切れ、aria-label は browser tooltip にならず sighted は hover で全 label 見れず。
+        // title 付与で sighted hover → 全 label disclose (ariaLabel が完全 SR text を持つので
+        // visible relative の label が title に最適、共通 chip component なので全 caller で
+        // 一括効果)。
+        title={ariaLabel ?? label}
         data-testid={testId}
         data-severity={severity}
       >
@@ -96,6 +102,8 @@ export function SeverityChip({
       role="img"
       className={baseCls}
       aria-label={ariaLabel ?? label}
+      // iter1761: static chip (onClick 無) でも sighted hover で長 label 切れの全文 disclose。
+      title={ariaLabel ?? label}
       data-testid={testId}
       data-severity={severity}
     >
