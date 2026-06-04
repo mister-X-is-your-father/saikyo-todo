@@ -1466,6 +1466,26 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
     )
   })
 
+  it('iter1757: formatClusterCountsHeadlineJa format contract — "^警戒 \\d+ / 達成感 \\d+$" regex に従う', () => {
+    // headline 出力が caller (Slack notifier / AI brief / regex 抽出) が依存する
+    // 固定 format に従う invariant。'警戒 N / 達成感 M' の N/M が必ず非負整数で出る、
+    // separator が必ず ' / ' (前後 space 付き) である、prefix/suffix の余分な装飾が
+    // 入らない (future 改修で emoji 等を hardcode しないため) を gate。
+    const headlineRegex = /^警戒 \d+ \/ 達成感 \d+$/
+    const items: VelocityFields[] = [{ doneAt: TODAY }]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const cases = [
+      composeAnalyticsSignals({}),
+      composeAnalyticsSignals({ doneToday: 2 }),
+      composeAnalyticsSignals({ weeklyReviewDue: 'overdue' }),
+      composeAnalyticsSignals({ doneToday: 2, velocity, weeklyReviewDue: 'overdue' }),
+    ]
+    for (const s of cases) {
+      const out = formatClusterCountsHeadlineJa(s)
+      expect(out).toMatch(headlineRegex)
+    }
+  })
+
   it('iter1748: cluster disjoint invariant — pickAchievement ∩ pickConcerning = ∅', () => {
     // 達成感 cluster (positive polarity = success/info/idle) と 警戒 cluster
     // (warn/danger/urgent) は tone 設計上 互いに disjoint である invariant。
