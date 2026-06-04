@@ -515,11 +515,15 @@ function SprintCard({
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
+              {/* iter1739: truncate で長 sprint name 切れ + CardTitle は aria-label 無し
+                  (textContent が SR label)、sighted は hover で全 name 見れなかった。
+                  title 付与で sighted hover → 全 sprint name disclose (iter1720-1738 sweep)。 */}
               <CardTitle
                 id={`sprint-card-heading-${sprint.id}`}
                 className="truncate text-base"
                 role="heading"
                 aria-level={3}
+                title={sprint.name}
               >
                 {sprint.name}
               </CardTitle>

@@ -439,11 +439,15 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
               )}
             </button>
             <div className="min-w-0 flex-1">
+              {/* iter1739: truncate で長 goal title 切れ + CardTitle aria-label 無し、
+                  sighted は hover で全 title 見れなかった。title 付与で sighted hover →
+                  全 goal title disclose (iter1720-1738 sweep を goals card にも)。 */}
               <CardTitle
                 id={`goal-card-heading-${goal.id}`}
                 className="truncate text-base"
                 role="heading"
                 aria-level={3}
+                title={goal.title}
               >
                 {goal.title}
               </CardTitle>
