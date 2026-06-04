@@ -744,6 +744,19 @@ async function main() {
     })
   }
 
+  // ========= AY. goal-status Badge title sweep (iter1855) =========
+  if (
+    !goalsPanelAF.includes(
+      'title={`${goalStatusLabelJa(status)} — Goal「${goal.title}」のステータス`}',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'AY.goal-status',
+      message: '[AY] iter1855 goal-status Badge title が消えている',
+    })
+  }
+
   // ========= AX. sprint-status Badge title sweep (iter1853) =========
   if (
     !sprintsPanel.includes(
