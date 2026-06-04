@@ -343,11 +343,15 @@ function Section({
               data-testid={`dep-${ref.id}`}
               data-direction={direction}
             >
-              <DirectionIcon
-                className={`h-4 w-4 shrink-0 ${iconClass}`}
-                role="img"
-                aria-label={srLabel}
-              />
+              {/* iter1907: 矢印 icon-only で sighted は方向が分かるが「前提タスク」/
+                  「依存先タスク」 等 specific srLabel は disclose されず、hover で disclose
+                  (iter1905 activity actor / iter1903 activity icon と同 status chip pattern)。
+                  Lucide icon の title prop は内部 <title> 要素になり SR が aria-label と
+                  二重 announce する恐れあるため、wrapper span に title 付与で sighted hover
+                  のみ disclose。 */}
+              <span title={srLabel} className="inline-flex shrink-0">
+                <DirectionIcon className={`h-4 w-4 ${iconClass}`} role="img" aria-label={srLabel} />
+              </span>
               <StatusBadge status={ref.status} className="text-[10px]" iconOnly />
               {/* iter1751: dependency ref title span は truncate で長 title 切れ、title 付与で
                   sighted hover → 全文 disclose (iter1720-1750 sweep の item-dependencies 展開)。 */}
