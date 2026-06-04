@@ -117,6 +117,9 @@ export function WeeklyInsightWidget({ items, now }: Props) {
       aria-label={`週次 Insight — ${hint.label} — ${deltaLabel}。${bestDayLabel}${worstDayAriaPart}`}
       data-weekly-insight-hint={hint.label}
       data-testid="weekly-insight-widget"
+      /* iter2049: region 全体に title を付与し sighted hover で hint + delta + bestDay
+         integrated summary disclose (6 region landmark hover summary、taskchute iter2047 同)。 */
+      title={`週次 Insight — ${hint.label} — ${deltaLabel}。${bestDayLabel}${worstDayAriaPart}`}
     >
       <CardHeader className="pb-2">
         <CardTitle
