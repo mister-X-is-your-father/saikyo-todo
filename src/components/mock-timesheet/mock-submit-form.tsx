@@ -195,6 +195,13 @@ export function MockSubmitForm() {
             ? '送信中… — mock-timesheet 工数送信処理を実行中'
             : '送信 — 工数を送信 (mock-timesheet 入力フォーム)'
         }
+        // iter1797: iter1795 auth submit / iter1797 mock-login と同 pattern を mock-submit にも
+        // 展開、mock-timesheet submit family sighted hover disclosure 完備。
+        title={
+          isPending
+            ? '送信中… — mock-timesheet 工数送信処理を実行中'
+            : '送信 — 工数を送信 (mock-timesheet 入力フォーム)'
+        }
       >
         {/* iter1081: visible は ASCII '...' だったが aria-label は U+2026 '…' を使っていて
             literal substring 不一致 = WCAG 2.5.3 違反 + voice control「click 送信中…」 matching 不可。

@@ -129,6 +129,13 @@ export function MockLoginForm() {
             ? '認証中… — mock-timesheet 認証処理を実行中'
             : 'ログイン — mock-timesheet email + password で認証'
         }
+        // iter1797: iter1795 login-submit / signup-submit と pair で mock-login submit にも
+        // conditional title 付与、auth submit family sighted hover disclosure 完備。
+        title={
+          isPending
+            ? '認証中… — mock-timesheet 認証処理を実行中'
+            : 'ログイン — mock-timesheet email + password で認証'
+        }
       >
         {/* iter1078: visible は ASCII '...' だったが aria-label は U+2026 '…' を使っていて
             literal substring 不一致 = WCAG 2.5.3 違反 + voice control「click 認証中…」 matching 不可。
