@@ -66,9 +66,10 @@ async function main(): Promise<void> {
   }
 
   // 3. iter559 invariant: logout-btn aria-label 維持
+  //    iter1724: em-dash visible-prefix convention に migration、regex 追従。
   const page = readFileSync(resolve(process.cwd(), 'src/app/page.tsx'), 'utf8')
   if (
-    /aria-label="ログアウトしてログイン画面に戻る"/.test(page) &&
+    /aria-label="ログアウト — ログイン画面に戻る"/.test(page) &&
     /data-testid="logout-btn"/.test(page)
   ) {
     findings.push({

@@ -38,13 +38,18 @@ export default async function HomePage() {
             redirect('/login')
           }}
         >
+          {/* iter1724: 旧 aria-label "ログアウトしてログイン画面に戻る" は visible "ログアウト" を
+              prefix として持つ (voice control prefix-matching OK) が、iter1093-1722 sweep の
+              em-dash visible-prefix convention `<visible> — <descriptive>` と divergent
+              (mock-top-nav 等は既に em-dash 形式)。区切のみ更新で codebase convention 統一、
+              visible / 機能は不変、voice control prefix-match も維持。 */}
           <Button
             type="submit"
             variant="ghost"
             size="sm"
             className="min-h-11"
             data-testid="logout-btn"
-            aria-label="ログアウトしてログイン画面に戻る"
+            aria-label="ログアウト — ログイン画面に戻る"
           >
             <span aria-hidden="true">ログアウト</span>
           </Button>

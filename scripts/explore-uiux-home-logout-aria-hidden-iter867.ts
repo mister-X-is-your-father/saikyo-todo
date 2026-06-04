@@ -40,7 +40,8 @@ async function main(): Promise<void> {
   }
 
   // 2. aria-label 維持
-  if (/aria-label="ログアウトしてログイン画面に戻る"/.test(home)) {
+  //    iter1724: em-dash visible-prefix convention に migration、regex 追従。
+  if (/aria-label="ログアウト — ログイン画面に戻る"/.test(home)) {
     findings.push({
       level: 'info',
       message: `home page logout aria-label 維持 OK`,

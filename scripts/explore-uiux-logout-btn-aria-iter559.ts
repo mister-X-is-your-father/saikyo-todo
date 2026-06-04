@@ -32,7 +32,8 @@ async function main(): Promise<void> {
   // 1. logout-btn aria-label + data-testid + min-h-11
   if (
     /data-testid="logout-btn"/.test(page) &&
-    /aria-label="ログアウトしてログイン画面に戻る"/.test(page) &&
+    // iter1724: em-dash visible-prefix convention に migration、regex 追従。
+    /aria-label="ログアウト — ログイン画面に戻る"/.test(page) &&
     /className="min-h-11"/.test(page)
   ) {
     findings.push({
