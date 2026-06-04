@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2310 1/1 test a11y-sweep-suite に iter2309 team-capacity 今日 / 今週 chip entry 追加] 検査軸 278 個 (新 JS 軸)、計約 396 invariant check に拡張、team-capacity row 3 chip (name / today / week) 全 title 完成、iter 2310 milestone 突破。
+- ✅ [playwright-iter2309 1/1] team-capacity-panel 今日 + 今週 load chip 2 element: aria-label "今日/今週 — ${load text}" を sighted hover で disclose 不可 → 同 text の title を 2 chip 同時に付与し sync (path B codify scripts/explore-uiux-team-capacity-load-title-iter2309.ts)、member-name chip iter1879 と同 file 内 chip title pattern を展開。
 - ✅ [playwright-iter2308 1/1 test a11y-sweep-suite に iter2307 Sprint Swimlane lane chip entry 追加] 検査軸 277 個 (新 JR 軸)、計約 395 invariant check に拡張、swimlane row chip family (population + lane) 完成、395 check milestone 突破。
 - ✅ [playwright-iter2307 1/1] Sprint Swimlane lane chip (loadSummary chip): aria-label "${loadSummaryJa} — lane / ${conflictsJa}" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-swimlane-lane-chip-title-iter2307.ts)、population chip iter1879 と pair の swimlane row chip family 完成。
 - ✅ [playwright-iter2306 1/1 test a11y-sweep-suite に iter2305 Sprint Swimlane lane 一覧 ul entry 追加] 検査軸 276 個 (新 JQ 軸)、計約 394 invariant check に拡張、7 entity 一覧 ul family 完成。
