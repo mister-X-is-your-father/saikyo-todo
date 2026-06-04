@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BK. swimlane population title sweep (iter1879) =========
+  const swimlaneBK = read(here, `${root}/src/components/workspace/sprint-swimlane-disclosure.tsx`)
+  if (!swimlaneBK.includes('title={`${populationLabel} — Sprint 全体`}')) {
+    findings.push({
+      level: 'error',
+      source: 'BK.swimlane-population',
+      message: '[BK] iter1879 swimlane population title が消えている',
+    })
+  }
+
   // ========= BJ. gantt-view inline MUST chip title sweep (iter1877) =========
   const ganttViewBJ = read(here, `${root}/src/components/workspace/gantt-view.tsx`)
   if (!ganttViewBJ.includes('iter1877') || !ganttViewBJ.includes('title="MUST タスク"')) {
