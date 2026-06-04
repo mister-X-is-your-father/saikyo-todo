@@ -220,9 +220,11 @@ async function main() {
       'dashboard MUST',
     ],
     [`${root}/src/components/workspace/dashboard-view.tsx`, 'title={item.dod}', 'dashboard DoD'],
+    // iter2223: proposal title button の title を `title={proposal.title}` から
+    // `title={`${proposal.title} — 提案を編集 (MUST?)`}` に変更し aria-label と sync。
     [
       `${root}/src/components/workspace/decompose-proposals-panel.tsx`,
-      'title={proposal.title}',
+      "title={`${proposal.title} — 提案を編集${proposal.isMust ? ' (MUST)' : ''}`}",
       'decompose proposal',
     ],
     [
@@ -759,6 +761,19 @@ async function main() {
       level: 'error',
       source: 'AB.sprint-goal-create',
       message: '[AB] iter1809 goal-create conditional path text が消えている',
+    })
+  }
+
+  // ========= IA. proposal title button title sweep (iter2223) =========
+  const dpIA = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
+  if (
+    !dpIA.includes('iter2223') ||
+    !dpIA.includes("title={`${proposal.title} — 提案を編集${proposal.isMust ? ' (MUST)' : ''}`}")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'IA.proposal-title-btn-title',
+      message: '[IA] iter2223 proposal title button title 同期 が消えている',
     })
   }
 
