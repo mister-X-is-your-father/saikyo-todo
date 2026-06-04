@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= FA. External Source 作成フォーム title sweep (iter2067) =========
+  const integFA = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
+  if (!integFA.includes('title="External Source 作成フォーム"')) {
+    findings.push({
+      level: 'error',
+      source: 'FA.src-create-form',
+      message: '[FA] iter2067 External Source 作成フォーム title が消えている',
+    })
+  }
+
   // ========= EZ. create-time-entry form title sweep (iter2065) =========
   const cteEZ = read(here, `${root}/src/components/time-entry/create-time-entry-form.tsx`)
   if (!cteEZ.includes('title="稼働記録 作成フォーム"')) {
