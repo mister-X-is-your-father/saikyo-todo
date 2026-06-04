@@ -762,6 +762,16 @@ async function main() {
     })
   }
 
+  // ========= HC. time-entries sync-error div title sweep (iter2175) =========
+  const ttHC = read(here, `${root}/src/components/time-entry/time-entries-table.tsx`)
+  if (!ttHC.includes('iter2175') || !ttHC.includes('title={`${e.syncError} — 同期エラー`}')) {
+    findings.push({
+      level: 'error',
+      source: 'HC.sync-error-title',
+      message: '[HC] iter2175 sync-error div title 同期 が消えている',
+    })
+  }
+
   // ========= HB. pdca daily-bars list title sweep (iter2173) =========
   const ppHB = read(here, `${root}/src/components/workspace/pdca-panel.tsx`)
   if (
