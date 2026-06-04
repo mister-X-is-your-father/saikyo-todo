@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1887 1/1 mode-D quick-add estimate chip に title 付与] 🕐 + 数値のみで「見積」 context が visible に無く、aria-label と同 text を title に付与し sighted hover で disclose。
 - ✅ [playwright-iter1886 1/1 test a11y-sweep-suite に iter1885 subtasks step 番号 entry 追加] 検査軸 66 個 (新 BN 軸)、計約 162 invariant check に拡張。
 - ✅ [playwright-iter1885 1/1 mode-D subtasks-panel step 番号 chip に title 付与] 番号 chip visible {index+1} のみで「N 番目 — 深さ M」 context が無く、aria-label と同 text を title に付与し sighted hover で disclose。
 - ✅ [playwright-iter1884 1/1 test a11y-sweep-suite に iter1883 subtasks child-count entry 追加] 検査軸 65 個 (新 BM 軸)、計約 161 invariant check に拡張。
