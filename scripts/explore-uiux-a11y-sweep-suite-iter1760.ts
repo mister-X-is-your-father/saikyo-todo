@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= IM. weekly-time-trend-chip title sweep (iter2245) =========
+  const tibIM = read(here, `${root}/src/components/time-entry/top-items-by-time-chip.tsx`)
+  if (!tibIM.includes('iter2245') || !tibIM.includes('title={summary.trendLine}')) {
+    findings.push({
+      level: 'error',
+      source: 'IM.weekly-trend-chip-title',
+      message: '[IM] iter2245 weekly-time-trend-chip title sync が消えている',
+    })
+  }
+
   // ========= IL. subtasks-panel 2 ol title sweep (iter2243) =========
   const spIL = read(here, `${root}/src/components/workspace/subtasks-panel.tsx`)
   if (!spIL.includes('iter2243')) {
