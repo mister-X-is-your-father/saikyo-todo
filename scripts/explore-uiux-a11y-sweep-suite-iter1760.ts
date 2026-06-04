@@ -546,6 +546,29 @@ async function main() {
     })
   }
 
+  // ========= T. active-timer pause/resume/stop title sweep (iter1793) =========
+  const activeTimer = read(here, `${root}/src/components/workspace/active-timer-panel.tsx`)
+  if (
+    !activeTimer.includes('title="一時停止 — タイマーを一時停止"') ||
+    !activeTimer.includes('title="再開 — タイマーを再開"')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'T.active-timer',
+      message: '[T] iter1793 active-timer pause/resume title が消えている',
+    })
+  }
+  if (
+    !activeTimer.includes("'停止 — タイマーを停止して稼働記録に保存'") ||
+    !activeTimer.includes("'停止 — タイマーを停止して稼働記録を作成中…'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'T.active-timer',
+      message: '[T] iter1793 active-timer stop conditional 2 path text が消えている',
+    })
+  }
+
   // ========= N. logout button title sweep (iter1781) =========
   // homePage は C 軸で既に読込済 (line 277)
   if (!homePage.includes('title="ログアウト — ログイン画面に戻る"')) {
