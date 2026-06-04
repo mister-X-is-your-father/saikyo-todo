@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= JJ. Activity 履歴 ul title sweep (iter2291) =========
+  const alJJ = read(here, `${root}/src/components/workspace/activity-log.tsx`)
+  if (!alJJ.includes('iter2291') || !alJJ.includes('title={`Activity 履歴 — ${data.length} 件`}')) {
+    findings.push({
+      level: 'error',
+      source: 'JJ.activity-log-ul-title',
+      message: '[JJ] iter2291 Activity 履歴 ul title sync が消えている',
+    })
+  }
+
   // ========= JI. 案件サマリ region root title sweep (iter2289) =========
   const ispJI = read(here, `${root}/src/components/workspace/item-summary-panel.tsx`)
   if (!ispJI.includes('iter2289') || !ispJI.includes('title={`案件サマリ${')) {
