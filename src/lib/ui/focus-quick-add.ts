@@ -14,6 +14,8 @@
  * 集約する補完 refactor。
  */
 
+import { prefersReducedMotion } from './prefers-reduced-motion'
+
 /**
  * 任意の id を持つ HTMLElement を focus + scrollIntoView する pure DOM helper。
  *
@@ -31,12 +33,14 @@ export function focusElementById(id: string): boolean {
   // に適用済だが、JS `scrollIntoView({ behavior: 'smooth' })` は CSS scroll-behavior を
   // override するため reduced-motion でも smooth scroll が発火する。JS 側でも prefers-
   // reduced-motion を check して `behavior: 'auto'` (instant) に fall back、前庭障害
-  // ユーザの不快/めまいを防ぐ。defensive: window 不在 (SSR) / jsdom matchMedia 未実装
-  // でも optional chain で safe (= 'smooth' default 維持、test 影響無)。
-  const prefersReducedMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
-  el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' })
+  // ユーザの不快/めまいを防ぐ。
+  // iter1732: prefers-reduced-motion 判定を `prefersReducedMotion()` helper に集約
+  // (gantt-view scrollToToday 同 pattern と DRY、jsdom matchMedia 未実装でも optional
+  // chain で safe = 'smooth' default 維持、test 影響無)。
+  el.scrollIntoView({
+    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+    block: 'center',
+  })
   return true
 }
 

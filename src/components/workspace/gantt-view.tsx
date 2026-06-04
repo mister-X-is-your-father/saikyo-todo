@@ -28,6 +28,7 @@ import { parseAsBoolean, parseAsString, parseAsStringLiteral, useQueryState } fr
 import { toast } from 'sonner'
 
 import { isAppError } from '@/lib/errors'
+import { prefersReducedMotion } from '@/lib/ui/prefers-reduced-motion'
 
 import { computeBarDragShift, computeSnappedDragPx } from '@/features/gantt/bar-drag'
 import {
@@ -204,10 +205,8 @@ export function GanttView({
     // JS scrollTo({ behavior: 'smooth' }) を override しないため、JS 側で明示 check が
     // 必要。reduced-motion ユーザは smooth scroll を回避し instant に fall back、
     // 前庭障害ユーザの不快/めまいを防ぐ (iter1726 focusElementById と同パターン)。
-    const prefersReducedMotion =
-      typeof window !== 'undefined' &&
-      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
-    const effectiveBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : behavior
+    // iter1732: 判定を `prefersReducedMotion()` helper に集約 (DRY、focus-quick-add 同 caller)。
+    const effectiveBehavior: ScrollBehavior = prefersReducedMotion() ? 'auto' : behavior
     el.scrollTo({ left: Math.max(0, target), behavior: effectiveBehavior })
   }
 
