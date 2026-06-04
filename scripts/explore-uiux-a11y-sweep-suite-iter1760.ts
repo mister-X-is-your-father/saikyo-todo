@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CA. template-items dueOffset title sweep (iter1911) =========
+  const tmplCA = read(here, `${root}/src/components/template/template-items-editor.tsx`)
+  if (!tmplCA.includes('title={`+${it.dueOffsetDays} 日 — 期日 offset`}')) {
+    findings.push({
+      level: 'error',
+      source: 'CA.template-due-offset',
+      message: '[CA] iter1911 template-items dueOffset title が消えている',
+    })
+  }
+
   // ========= BZ. notification-preferences icon title sweep (iter1909) =========
   const notifBZ = read(here, `${root}/src/components/workspace/notification-preferences.tsx`)
   if (!notifBZ.includes('title={`${visual.label}通知`}')) {
