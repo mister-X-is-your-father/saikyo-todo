@@ -700,6 +700,20 @@ function ItemEditDialogInner({
                         ? `${visible} — Sprint「${current.name}」に割当中 (変更で別 Sprint へ移動)`
                         : '未割当 — Sprint 未割当 (選択で稼働中 / 計画中 Sprint に割当)'
                   })()}
+                  /* iter2287: edit-item-sprint select の aria-label は state-dependent 3-path
+                     (pending / 割当中 / 未割当) で SR には full context (current name + 副作用)
+                     を渡すが browser tooltip にならず sighted は hover で同 context disclose
+                     不可。MCP path A で ItemEditDialog 探索中に発見、edit-item-kr と pair で
+                     2 select の title 同時補完。 */
+                  title={(() => {
+                    const current = (sprintsList.data ?? []).find((s) => s.id === item.sprintId)
+                    const visible = current?.name ?? '未割当'
+                    return assignSprint.isPending
+                      ? `${visible} — Sprint 割当を更新中…`
+                      : current
+                        ? `${visible} — Sprint「${current.name}」に割当中 (変更で別 Sprint へ移動)`
+                        : '未割当 — Sprint 未割当 (選択で稼働中 / 計画中 Sprint に割当)'
+                  })()}
                 >
                   <option value="">未割当</option>
                   {(() => {
@@ -748,6 +762,16 @@ function ItemEditDialogInner({
                   // 「Key Result「**title**」」「Key Result **未割当**」に持ち voice control
                   // prefix-matching「click {title} / 未割当」 match 不可。pending も visible 不含。
                   aria-label={(() => {
+                    const current = (krsList.data ?? []).find((k) => k.id === item.keyResultId)
+                    const visible = current?.title ?? '未割当'
+                    return assignKr.isPending
+                      ? `${visible} — Key Result 割当を更新中…`
+                      : current
+                        ? `${visible} — Key Result「${current.title}」(Goal「${current.goalTitle}」) に割当中 (変更で別 KR へ移動)`
+                        : '未割当 — Key Result 未割当 (選択で稼働中 Goal の KR に割当)'
+                  })()}
+                  /* iter2287: edit-item-kr も sprint と pair の state-dependent 3-path title sync。 */
+                  title={(() => {
                     const current = (krsList.data ?? []).find((k) => k.id === item.keyResultId)
                     const visible = current?.title ?? '未割当'
                     return assignKr.isPending
