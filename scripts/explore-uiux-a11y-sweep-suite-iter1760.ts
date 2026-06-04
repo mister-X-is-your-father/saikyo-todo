@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= AL. subtask-drag title sweep (iter1829) =========
+  const subtasksPanel = read(here, `${root}/src/components/workspace/subtasks-panel.tsx`)
+  if (!subtasksPanel.includes('title={`${item.title} — ドラッグで並び替え`}')) {
+    findings.push({
+      level: 'error',
+      source: 'AL.subtask-drag',
+      message: '[AL] iter1829 subtask-drag title が消えている',
+    })
+  }
+
   // ========= AK. bulk-action-bar title sweep (iter1827) =========
   const bulkBar = read(here, `${root}/src/components/workspace/bulk-action-bar.tsx`)
   if (
