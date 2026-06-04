@@ -740,6 +740,21 @@ async function main() {
     })
   }
 
+  // ========= GE. Sprint 期間進捗 group title 付与 sweep (iter2127) =========
+  const spGE = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (
+    !spGE.includes('iter2127') ||
+    !spGE.includes(
+      'title={`Sprint「${sprint.name}」期間進捗 経過 ${elapsedDays} / ${totalDays} 日 (${elapsedPct}%)、残 ${remainingDays} 日`}',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GE.sprint-period-progress-title',
+      message: '[GE] iter2127 Sprint 期間進捗 group title 付与 が消えている',
+    })
+  }
+
   // ========= GD. active-timer-pip title 4-path sweep (iter2125) =========
   const atpGD = read(here, `${root}/src/components/workspace/active-timer-panel.tsx`)
   if (!atpGD.includes('iter2125') || !atpGD.includes("'Picture-in-Picture — 開いています…'")) {
