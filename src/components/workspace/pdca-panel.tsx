@@ -181,6 +181,10 @@ export function PdcaPanel({ workspaceId }: Props) {
           className="grid grid-cols-3 gap-2"
           role="img"
           aria-label={`Lead time 内訳 — 平均 ${leadTimeDays.avg} 日 / 中央値 ${leadTimeDays.p50} 日 / P95 ${leadTimeDays.p95} 日`}
+          /* iter1895: 3 stat 並列表示は visible で個別読めるが summary は読まれず、
+             aria-label の integrated readout を sighted hover で disclose
+             (pdca-distribution iter1891 / weekly-by-day iter1893 と同 chart 透明性 pattern)。 */
+          title={`Lead time 内訳 — 平均 ${leadTimeDays.avg} 日 / 中央値 ${leadTimeDays.p50} 日 / P95 ${leadTimeDays.p95} 日`}
         >
           <LeadStat label="平均" value={leadTimeDays.avg} unit="日" />
           <LeadStat label="中央値" value={leadTimeDays.p50} unit="日" />
