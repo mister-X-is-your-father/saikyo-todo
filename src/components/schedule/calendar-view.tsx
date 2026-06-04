@@ -167,12 +167,16 @@ export function CalendarView({ workspaceId }: Props) {
              iter1093-1587 sweep の em-dash 区切と divergent。区切のみ '(現在:' → ' — 現在' に統一、closing ')' は削除。 */
           aria-label={`カレンダー日付ナビゲーション — 現在 ${format(date, 'yyyy年M月d日 (eee)')}、前日 / 翌日 / 今日`}
         >
+          {/* iter1765: ChevronLeft icon-only button、aria-label は browser tooltip にならず
+              sighted は hover で「前日」 と即把握できなかった。title 付与で同期 (iter1763
+              theme-toggle / iter1764 notification と同 icon-only pattern)。 */}
           <Button
             variant="outline"
             size="icon"
             className="min-h-11 min-w-11"
             onClick={() => setDate((d) => subDays(d, 1))}
             aria-label={`前日 — ${format(subDays(date, 1), 'M月d日 (eee)')} を表示`}
+            title={`前日 — ${format(subDays(date, 1), 'M月d日 (eee)')} を表示`}
             data-testid="calendar-prev-btn"
           >
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
@@ -180,12 +184,14 @@ export function CalendarView({ workspaceId }: Props) {
           <h2 aria-live="polite" aria-atomic="true" className="text-base font-semibold">
             {format(date, 'yyyy年 M月 d日 (eee)')}
           </h2>
+          {/* iter1765: 翌日 navigation button も同 pattern。 */}
           <Button
             variant="outline"
             size="icon"
             className="min-h-11 min-w-11"
             onClick={() => setDate((d) => addDays(d, 1))}
             aria-label={`翌日 — ${format(addDays(date, 1), 'M月d日 (eee)')} を表示`}
+            title={`翌日 — ${format(addDays(date, 1), 'M月d日 (eee)')} を表示`}
             data-testid="calendar-next-btn"
           >
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
