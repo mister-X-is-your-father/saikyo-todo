@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2088 1/1 test a11y-sweep-suite に iter2087 sprint-cancel entry 追加] 検査軸 167 個 (新 FK 軸)、計約 263 invariant check に拡張。
 - ✅ [playwright-iter2087 1/1 mode-D sprint-cancel button に title 付与] sprint status transition button family 5 個目、全 transition button hover context 完備。
 - ✅ [playwright-iter2086 1/1 test a11y-sweep-suite に iter2085 sprint-status-btns entry 追加] 検査軸 166 個 (新 FJ 軸)、計約 262 invariant check に拡張。
 - ✅ [playwright-iter2085 1/1 mode-D sprint-complete + sprint-replan button に title 付与] sprint status transition button family の続編。
