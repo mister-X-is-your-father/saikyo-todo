@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2318 1/1 test a11y-sweep-suite に iter2317 template-card delete button entry 追加] 検査軸 282 個 (新 JW 軸)、計約 400 invariant check に拡張、検査軸 282 + 400 check 大台到達 milestone 突破 (MCP path A 経由発見)。
+- ✅ [playwright-iter2317 1/1] template-card delete button (icon-only Trash2): aria-label state-dependent 2-path (pending / idle、template.name 含む) を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-template-card-delete-title-iter2317.ts)。**MCP path A で /templates 探索中に発見**、proposals-accept/reject iter2253 / wf-delete iter1815 と同 state-dependent delete button title pattern。
 - ✅ [playwright-iter2316 1/1 test a11y-sweep-suite に iter2315 recovery-plan ol entry 追加] 検査軸 281 個 (新 JV 軸)、計約 399 invariant check に拡張、8 entity 一覧 ul/ol family 完成 (+ recovery actions)。
 - ✅ [playwright-iter2315 1/1] recovery-plan-section 救済 action ol: aria-label "救済 action N 件" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-recovery-plan-ol-title-iter2315.ts)、Activity 履歴 iter2291 / swimlane lane 一覧 iter2305 と同 list family pattern、8 entity 一覧 ul/ol family 完成。
 - ✅ [playwright-iter2314 1/1 test a11y-sweep-suite に iter2313 src-url input entry 追加] 検査軸 280 個 (新 JU 軸)、計約 398 invariant check に拡張、API endpoint 入力 form hint disclosure 強化 (MCP path A 経由発見)、検査軸 280 milestone 突破。
