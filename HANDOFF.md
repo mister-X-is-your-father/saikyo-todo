@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2033 1/1 mode-D sprints-panel operations group に title 付与] workflows-panel iter2031 と同 pattern、Sprint 名 + status + operations 構成 hover disclose。
 - ✅ [playwright-iter2032 1/1 test a11y-sweep-suite に iter2031 wf-operations-group entry 追加] 検査軸 139 個 (新 EI 軸)、計約 235 invariant check に拡張。
 - ✅ [playwright-iter2031 1/1 mode-D workflows-panel operations group に title 付与] group 全体に title を付与し sighted hover で Workflow 名 + enabled state + operations 構成 disclose。
 - ✅ [playwright-iter2030 1/1 test a11y-sweep-suite に iter2029 template-add-btn entry 追加] 検査軸 138 個 (新 EH 軸)、計約 234 invariant check に拡張、iter2030 突破。
