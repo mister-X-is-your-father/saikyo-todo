@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= EG. sprint-create endDate input title sweep (iter2027) =========
+  const spEG = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (!spEG.includes('iter2027')) {
+    findings.push({
+      level: 'error',
+      source: 'EG.sprint-create-end',
+      message: '[EG] iter2027 sprint-create endDate title が消えている',
+    })
+  }
+
   // ========= EF. sprint-create startDate input title sweep (iter2025) =========
   const spEF = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (!spEF.includes('iter2025')) {
