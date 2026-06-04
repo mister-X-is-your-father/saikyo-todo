@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2254 1/1 test a11y-sweep-suite に iter2253 proposals-accept-all/reject-all entry 追加] 検査軸 250 個 (新 IQ 軸)、計約 368 invariant check に拡張、bulk proposal action button pair 完成、検査軸 250 milestone 突破。
+- ✅ [playwright-iter2253 1/1] decompose-proposals-panel accept-all / reject-all button: aria-label state-dependent 2-path (pending / idle、list.length 件 context 含む) を sighted hover で disclose 不可 → 同 text の title を 2 button 同時に付与し sync (path B codify scripts/explore-uiux-proposals-accept-reject-title-iter2253.ts)、redecompose / やり直し (iter2107) と同 pattern、bulk proposal action button pair 完成。
 - ✅ [playwright-iter2252 1/1 test a11y-sweep-suite に iter2251 picker family PopoverContent entry 追加] 検査軸 249 個 (新 IP 軸)、計約 367 invariant check に拡張、picker family 2 element (tag / assignee) PopoverContent title pair 完成。
 - ✅ [playwright-iter2251 1/1] tag-picker / assignee-picker PopoverContent: aria-label "タグ — 選択 / 新規作成" / "アサイン — メンバー / AI Agent を選択" を sighted hover で disclose 不可 → 同 text の title を 2 picker 同時に付与し sync (path B codify scripts/explore-uiux-pickers-popover-title-iter2251.ts)、picker family 2 element PopoverContent title 統一。
 - ✅ [playwright-iter2250 1/1 test a11y-sweep-suite に iter2249 today-view header chips entry 追加] 検査軸 248 個 (新 IO 軸)、計約 366 invariant check に拡張、today-header chip 2 element pair 完成 (streak / doneToday)。
