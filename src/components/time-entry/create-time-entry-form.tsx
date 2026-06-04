@@ -186,6 +186,8 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
           // (1 char) は aria-label 末尾の "…" と substring 一致するが prefix では無いため、
           // visible は短すぎて pure prefix 化が冗長 (記録中… のような visible は無い) — substring 維持。
           aria-label={create.isPending ? '稼働記録を作成中…' : '記録 — 稼働記録を作成'}
+          // iter1799: iter1795-1797 auth/mock submit と同 pattern を create-time-entry にも展開。
+          title={create.isPending ? '稼働記録を作成中…' : '記録 — 稼働記録を作成'}
           className="h-11 px-4"
         >
           {/* iter1090: visible は ASCII '...' (U+002E×3) で aria-label は U+2026 '…' を使い
