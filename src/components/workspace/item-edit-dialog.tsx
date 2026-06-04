@@ -1038,7 +1038,17 @@ function ItemEditDialogInner({
                 }
               }}
               data-testid="item-edit-clear-baseline"
-              title="baseline 列を NULL に戻す"
+              /* iter2119: item-edit-clear-baseline static title="baseline 列を NULL に戻す"
+                 は state-dependent aria-label (pending / idle 2-path、item.title + baseline
+                 期間 含む) と divergent → 2-path sync。gantt-summary 3 chip iter2117 /
+                 kanban-edit iter2115 と同 title-aria divergence 修正 pattern。
+                 destructive action (baseline クリア) で item.title + state context を
+                 sighted hover で disclose 価値大。 */
+              title={
+                clearBaseline.isPending
+                  ? `クリア中… — 「${item.title}」のベースラインをクリア中`
+                  : `baseline クリア — 「${item.title}」のベースライン (${item.baselineStartDate} → ${item.baselineEndDate}) をクリア`
+              }
               // iter1039: visible "baseline クリア" を aria-label の prefix に
               // 固定し WCAG 2.5.3 satisfy (旧 aria-label は "ベースライン (...) をクリア"
               // で literal "baseline クリア" substring 不一致)。
@@ -1076,7 +1086,13 @@ function ItemEditDialogInner({
                 }
               }}
               data-testid="item-edit-save-as-template"
-              title="この Item と全ての子孫 (subtask) を Template として保存 (再利用可)"
+              /* iter2119: item-edit-save-as-template も clear-baseline と pair で
+                 state-dependent aria-label と 2-path sync (item.title + state)。 */
+              title={
+                createTemplateFromItem.isPending
+                  ? `保存中… — 「${item.title}」を Template に保存中`
+                  : `Template として保存 — 「${item.title}」と全ての子孫 (subtask) を Template として保存 (再利用可)`
+              }
               // iter1302: 旧 aria-label 2 path とも visible "Template として保存" / "保存中…"
               // を中位置 ("「title」を **Template に保存中…**" / "「title」と全ての子孫 (subtask) を
               // **Template として保存**") に持ち voice control prefix-matching
