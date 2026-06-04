@@ -189,6 +189,22 @@ signal」 を 1 関数で集約する pattern が確立済 (28 iter substrate)�
   `composeAnalyticsSignals(input)` → `AnalyticsSignals` →
   `analyticsSignalsToArray(signals)` で順序整列 + null 除去 →
   `formatAnalyticsSignalsLineJa(signals)` で 1 行 ja text
+- **cluster API (iter1722-1767 で確立、達成感 + 警戒 対称 8 関数 + 4 combine + 4 invariant)**:
+  - 4 軸 trio (各 cluster): `pickXxxSignals` (array) / `hasXxxSignals` (boolean) /
+    `countXxxSignals` (number) / `formatXxxSignalsLineJa` (text)、`Xxx = Achievement | Concerning`
+  - 4 combine helper: `formatClusterSummaryLinesJa` (詳細 2 行) /
+    `formatClusterCountsHeadlineJa` (件数 1 行) /
+    `clusterCountsToAgentBriefSignal` (1 chip text+tone) /
+    `pickHighestSeverityConcerningSignal` (main alert chip)
+  - 警戒 subset top picker: `pickWorstConcerningSignals(signals, n)` (top N 警告)
+  - 4 invariant gate: disjoint (∩=∅) / 部分集合性 (sum<=全体) / format regex /
+    pickConcerning === filterMinTone('warn')
+  - Slack notifier / AI 朝 brief / dashboard 全 caller pattern を 1 関数 chain で build 可能
+- **chip-tone primitive triplet (rank/compare/isMin)** (iter1761-1765):
+  - `chipToneAttentionRank(tone)` (= number)、`compareChipTones(a,b)` (sort comparator)、
+    `isMinTone(tone, minTone)` (boolean gate)、`filterItemsByMinTone(items,...)` (subset 配列)、
+    `someItemHasMinTone(items,...)` (short-circuit boolean)
+  - 委譲 chain 集約: rank → isMinTone → filter / some (= 1 関数集約)
 - **duration 表記**: `src/lib/format-duration.ts` の `formatMinutesJa`
   (ja-throughout `'1時間30分'` / `'45分'` / `'0分'`)。en の `formatMinutes`
   は内部 logic 用に残置、UI / chip / SR text は ja 採用
