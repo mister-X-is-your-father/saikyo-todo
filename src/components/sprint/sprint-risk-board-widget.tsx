@@ -121,6 +121,14 @@ export function SprintRiskBoardWidget<T extends RiskBoardItemFields>({
                         aria-label={`${entry.item.title} を開く — risk score ${entry.riskScore}${
                           entry.reasons.length > 0 ? ` / 理由 ${entry.reasons.length} 件` : ''
                         }`}
+                        // iter1783: button は aria-label で risk score / 理由件数 context を SR 提供だが
+                        // sighted は button hover で context 即把握できなかった (inner truncate span の
+                        // title={item.title} は span 上 hover でしか出ない)。`title={同 aria-label}` 付与で
+                        // sighted hover で risk context disclose、iter1777 view-switcher / iter1779
+                        // workspace nav / iter1781 logout と同 pattern を risk-board button にも展開。
+                        title={`${entry.item.title} を開く — risk score ${entry.riskScore}${
+                          entry.reasons.length > 0 ? ` / 理由 ${entry.reasons.length} 件` : ''
+                        }`}
                       >
                         {inner}
                       </button>
