@@ -740,6 +740,26 @@ async function main() {
     })
   }
 
+  // ========= FS. src-pull title 3-path state-dependent 同期 sweep (iter2103) =========
+  const ipFS = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
+  if (
+    !ipFS.includes('iter2103') ||
+    !ipFS.includes('Pull — Source「${src.name}」は無効化中のため Pull 不可')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'FS.src-pull-title',
+      message: '[FS] iter2103 src-pull title 3-path state-dependent 同期 が消えている',
+    })
+  }
+  if (/^\s+title="手動 pull \(sync 実行、30s timeout\)"$/m.test(ipFS)) {
+    findings.push({
+      level: 'error',
+      source: 'FS.src-pull-title',
+      message: '[FS] iter2103 src-pull 旧 静的 title が残っている',
+    })
+  }
+
   // ========= FR. wf-run-rerun title state-dependent 同期 sweep (iter2101) =========
   const wfpFR = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
   if (!wfpFR.includes('iter2101') || !wfpFR.includes('再 — 実行 ${r.id.slice(0, 8)} を再実行中…')) {
