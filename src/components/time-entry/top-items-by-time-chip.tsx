@@ -125,6 +125,11 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
             role="status"
             aria-live="polite"
             aria-label={summary.trendLine}
+            /* iter2245: weekly-time-trend-chip の aria-label (= summary.trendLine = direction +
+               delta text) は browser tooltip にならず、visible は toneGlyph + trendLine 短文の
+               みで sighted hover で trend chip の direction + delta context を full disclose 不可。
+               daily-streak-chip (同 file 隣) は既に title 付きで pair sync。 */
+            title={summary.trendLine}
           >
             <span aria-hidden="true" className="font-mono">
               {toneGlyph}
