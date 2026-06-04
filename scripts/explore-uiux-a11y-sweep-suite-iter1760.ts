@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= EO. integrations source operations group title sweep (iter2043) =========
+  const integEO = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
+  if (!integEO.includes('iter2043')) {
+    findings.push({
+      level: 'error',
+      source: 'EO.src-operations-group',
+      message: '[EO] iter2043 integrations source operations group title が消えている',
+    })
+  }
+
   // ========= EN. sprint-period edit form group title sweep (iter2041) =========
   const spEN = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (!spEN.includes('iter2041')) {
