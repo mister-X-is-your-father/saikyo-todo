@@ -215,6 +215,16 @@ export function GoalsPanel({ workspaceId }: Props) {
                         : `開始 — Goal 開始日 (現在: ${startDate})`
                   }
                   className="min-h-11"
+                  /* iter2021: state-dependent aria-label (空 / 不正 / 通常) を title で
+                     sighted hover disclose、sprint-edit-start/end iter2017/2019 と同 file-cross
+                     pattern (goals-panel create form date input)。 */
+                  title={
+                    startDate === ''
+                      ? '開始 — Goal 開始日 (必須、終了日以前)'
+                      : isInvalidDateRange(startDate, endDate)
+                        ? `開始 — Goal 開始日 (現在: ${startDate}、終了日 ${endDate} より後で不正)`
+                        : `開始 — Goal 開始日 (現在: ${startDate})`
+                  }
                 />
               </div>
               <div className="space-y-1">
