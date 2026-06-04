@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2240 1/1 test a11y-sweep-suite に iter2239 template-card title disclosure entry 追加] 検査軸 243 個 (新 IJ 軸)、計約 361 invariant check に拡張、list-item disclosure title pattern を template-card にも展開。
+- ✅ [playwright-iter2239 1/1] template-card title disclosure button: aria-label state-dependent (expand / collapse、template.name + kind + scheduleCron 含む) を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-template-card-disclosure-title-iter2239.ts)、proposal-title-btn iter2223 / op-board-itemrow iter2225 と同 list-item disclosure pattern。
 - ✅ [playwright-iter2238 1/1 test a11y-sweep-suite に iter2237 item-summary 3 chip entry 追加] 検査軸 242 個 (新 IH 軸)、計約 360 invariant check に拡張、ItemEditDialog サマリタブ status chip family 完成、360 check milestone 突破。
 - ✅ [playwright-iter2237 1/1] item-summary-panel: 3 status chip (progress / dependency / latest-activity) の aria-label を sighted hover で disclose 不可 → 同 text の title を 3 chip 同時に付与し sync (path B codify scripts/explore-uiux-item-summary-chips-title-iter2237.ts)、ItemEditDialog サマリタブ内 status chip family 3 element 完成。
 - ✅ [playwright-iter2236 1/1 test a11y-sweep-suite に iter2235 team-context save button entry 追加] 検査軸 241 個 (新 IG 軸)、計約 359 invariant check に拡張、save 系 button family の team-context 1 element 補完。
