@@ -79,6 +79,9 @@ export function BulkActionBar({ workspaceId }: Props) {
       /* iter1579: 旧 aria-label paren convention `"一括操作 (X 件選択中)"` は iter1093-1578 sweep の
          em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
       aria-label={`一括操作 — ${count} 件選択中`}
+      /* iter1999: region 全体に title を付与し sighted hover で 選択数 disclose、
+         iter1997 decompose-proposals bulk group と同 region/group summary pattern。 */
+      title={`一括操作 — ${count} 件選択中`}
     >
       <span
         className="text-sm font-medium"
