@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= FH. time-entry sync button title sweep (iter2081) =========
+  const ttFH = read(here, `${root}/src/components/time-entry/time-entries-table.tsx`)
+  if (!ttFH.includes('iter2081')) {
+    findings.push({
+      level: 'error',
+      source: 'FH.sync-btn',
+      message: '[FH] iter2081 time-entry sync button title が消えている',
+    })
+  }
+
   // ========= FG. item-edit reload button title sweep (iter2079) =========
   const iedFG = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
   if (
