@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1876 1/1 test a11y-sweep-suite に iter1875 today dueTime entry 追加] 検査軸 61 個 (新 BI 軸)、計約 157 invariant check に拡張。
 - ✅ [playwright-iter1875 1/1 mode-D today-view dueTime chip に title 付与] HH:MM 単体では「期限時刻」 context が無く sighted hover で意味不明、aria-label と同 text を title に付与し context disclose。
 - ✅ [playwright-iter1874 1/1 test a11y-sweep-suite に iter1873 backlog DragHandle entry 追加] 検査軸 60 個 (新 BH 軸)、計約 156 invariant check に拡張。
 - ✅ [playwright-iter1873 1/1 mode-D backlog DragHandle に title 付与] ≡ 単体では sighted も「ドラッグハンドル」と即把握できない、aria-label と同 text を title に付与し hover で意図 disclose。
