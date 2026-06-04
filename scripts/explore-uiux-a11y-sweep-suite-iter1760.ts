@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= ER. weekly-insight-widget region title sweep (iter2049) =========
+  const weeklyER = read(here, `${root}/src/components/workspace/weekly-insight-widget.tsx`)
+  if (!weeklyER.includes('iter2049')) {
+    findings.push({
+      level: 'error',
+      source: 'ER.weekly-region',
+      message: '[ER] iter2049 weekly-insight-widget region title が消えている',
+    })
+  }
+
   // ========= EQ. taskchute-view region title sweep (iter2047) =========
   const tcEQ = read(here, `${root}/src/components/workspace/taskchute-view.tsx`)
   if (
