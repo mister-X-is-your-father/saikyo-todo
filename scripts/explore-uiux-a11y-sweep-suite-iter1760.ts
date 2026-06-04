@@ -762,6 +762,19 @@ async function main() {
     })
   }
 
+  // ========= HQ. risk-reasons ul title sweep (iter2203) =========
+  const srHQ = read(here, `${root}/src/components/sprint/sprint-risk-board-widget.tsx`)
+  if (
+    !srHQ.includes('iter2203') ||
+    !srHQ.includes('title={`「${entry.item.title}」のリスク理由 ${entry.reasons.length} 件`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HQ.risk-reasons-ul-title',
+      message: '[HQ] iter2203 risk-reasons ul title 同期 が消えている',
+    })
+  }
+
   // ========= HP. keybinding-combo dt title sweep (iter2201) =========
   const khHP = read(here, `${root}/src/components/shared/keybindings-help-modal.tsx`)
   if (!khHP.includes('iter2201') || !khHP.includes('title={`${kb.combo} — ショートカット`}')) {
