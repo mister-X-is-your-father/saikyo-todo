@@ -744,6 +744,20 @@ async function main() {
     })
   }
 
+  // ========= BT. integrations Pull count title sweep (iter1897) =========
+  const integBT = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
+  if (
+    !integBT.includes(
+      'title={`fetched ${r.fetchedCount} / created ${r.createdCount} / updated ${r.updatedCount}`}',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'BT.integrations-pull',
+      message: '[BT] iter1897 integrations Pull count title が消えている',
+    })
+  }
+
   // ========= BS. pdca Lead time grid title sweep (iter1895) =========
   const pdcaBS = read(here, `${root}/src/components/workspace/pdca-panel.tsx`)
   if (!pdcaBS.includes('iter1895') || !pdcaBS.includes('title={`Lead time 内訳')) {
