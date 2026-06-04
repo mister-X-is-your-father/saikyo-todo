@@ -310,6 +310,10 @@ function StatusChip({
          iter1093-1568 sweep convention で visible 冒頭固定 + em-dash 区切。 */
       aria-label={`${label} ${count} 件 — ${toneLabel}`}
       data-testid={`retro-status-chip-${label}`}
+      /* iter1923: visible は label + count のみで tone (完了/注意/中立/通常) は色のみ
+         で意味伝達、sighted hover で tone label 明示 disclose
+         (iter1915 estimate-bias-tendency / iter1919 top-items 合計 と同 chip pattern)。 */
+      title={`${label} ${count} 件 — ${toneLabel}`}
     >
       <span aria-hidden="true">{label}</span>
       <span className="font-semibold tabular-nums" aria-hidden="true">
