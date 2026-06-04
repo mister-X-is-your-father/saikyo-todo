@@ -68,7 +68,15 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
         // iter447: ul に aria-label を付与し SR の list navigation で
         // 「コメント一覧 N 件」 が context として伝わるように (iter427 / iter428 /
         // iter438 と同 pattern 8 件目)。
-        <ul className="space-y-3" aria-label={`コメント一覧 — ${comments!.length} 件`}>
+        <ul
+          className="space-y-3"
+          aria-label={`コメント一覧 — ${comments!.length} 件`}
+          /* iter2167: コメント一覧 ul の aria-label は browser tooltip にならず sighted は
+             hover で件数 context disclose 不可。pdca-progressbar iter2165 /
+             retro-comparison iter2163 / template-items-list iter2159 と同 title=aria-label
+             sync pattern。 */
+          title={`コメント一覧 — ${comments!.length} 件`}
+        >
           {comments!.map((c) => (
             <CommentItem
               key={c.id}
