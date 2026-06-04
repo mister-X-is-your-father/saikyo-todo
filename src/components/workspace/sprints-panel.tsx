@@ -554,8 +554,11 @@ function SprintCard({
               /* iter1553: 旧 aria-label `"Sprint「${sprint.name}」のステータス: ${status}"` は visible
                  "${status}" を末尾に持ち voice control prefix-matching「click 進行中」 が strict
                  prefix-match で不可 (substring 一致のみ)。iter1093-1552 sweep convention で
-                 visible 冒頭固定 + em-dash 区切。 */
+                 visible 冒頭固定 + em-dash 区切。
+                 iter1853: iter1841 StatusBadge / iter1851 calibrated と同 pattern で title 付与、
+                 sprint name context を sighted hover で disclose。 */
               aria-label={`${sprintStatusLabelJa(status)} — Sprint「${sprint.name}」のステータス`}
+              title={`${sprintStatusLabelJa(status)} — Sprint「${sprint.name}」のステータス`}
             >
               <span aria-hidden="true">{sprintStatusLabelJa(status)}</span>
             </Badge>
