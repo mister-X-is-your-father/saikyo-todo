@@ -157,7 +157,14 @@ function PanelBody({ workspaceId }: Props) {
                 voice control prefix-matching「click {name}」 が strict prefix-match で不可
                 (substring 一致のみ)。iter1553-1556 status/role Badge family と同 pattern、
                 visible 冒頭固定 + em-dash 区切。 */}
-            <div className="font-medium" role="img" aria-label={`${name} — member`}>
+            {/* iter1881: visible は name のみで「member」 context が無く、
+                sighted hover で disclose (swimlane-population / gantt-must title sweep 続編)。 */}
+            <div
+              className="font-medium"
+              role="img"
+              aria-label={`${name} — member`}
+              title={`${name} — member`}
+            >
               <span aria-hidden="true">{name}</span>
             </div>
             {/* iter1570: 旧 `今日: ${loadJa}` / `今週: ${loadJa}` は ':' colon 区切で iter1093-1569
