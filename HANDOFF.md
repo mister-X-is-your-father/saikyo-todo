@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2120 1/1 test a11y-sweep-suite に iter2119 item-edit-clear-baseline+template entry 追加] 検査軸 183 個 (新 GA 軸)、計約 297 invariant check に拡張、検査軸 183 突破 (FZ → GA、prefix 2nd letter pass)。
+- ✅ [playwright-iter2119 1/1 mode-D item-edit-clear-baseline + save-as-template title を aria-label と 2-path sync] 2 destructive/saving action button title-aria 同期 (item.title + state)、gantt-summary iter2117 / kanban-edit iter2115 と pair。
 - ✅ [playwright-iter2118 1/1 test a11y-sweep-suite に iter2117 gantt-summary-chips entry 追加] 検査軸 182 個 (新 FZ 軸)、計約 294 invariant check に拡張。
 - ✅ [playwright-iter2117 1/1 mode-D gantt-summary-critical/baseline/slip 3 chip title を aria-label と count + em-dash 統一] 3 chip title-aria 同期 (count 含む)、kanban-edit iter2115 / subtask-outdent/indent iter2113 と pair。
 - ✅ [playwright-iter2116 1/1 test a11y-sweep-suite に iter2115 kanban-edit entry 追加] 検査軸 181 個 (新 FY 軸)、計約 290 invariant check に拡張、検査軸 181 突破。
