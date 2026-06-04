@@ -242,6 +242,10 @@ export function TemplateItemsEditor({ templateId }: Props) {
         <ul
           className="divide-y text-sm"
           aria-label={`Template 子 Item 一覧 — ${items.data!.length} 件`}
+          /* iter2159: Template 子 Item 一覧 ul の aria-label は browser tooltip にならず
+             sighted は hover で件数 context disclose 不可。backlog-title iter2157 /
+             inbox-item iter2155 と同 title=aria-label sync pattern。 */
+          title={`Template 子 Item 一覧 — ${items.data!.length} 件`}
         >
           {items.data!.map((it) => (
             <li
