@@ -220,7 +220,12 @@ export function TemplateItemsEditor({ templateId }: Props) {
               // で unique 化 (iter1020/1021 同 sweep)。
               data-testid={`template-item-row-${it.id}`}
             >
-              <span className="flex-1 truncate">{it.title}</span>
+              {/* iter1741: template-item title span は truncate で長 title 切れ、aria-label 無し
+                  (textContent が SR label)、sighted は hover で全 title 見れず。title 付与で
+                  sighted hover → 全 title disclose (iter1720-1740 sweep を template-item にも)。 */}
+              <span className="flex-1 truncate" title={it.title}>
+                {it.title}
+              </span>
               {it.isMust ? <MustBadge /> : null}
               {it.dueOffsetDays != null ? (
                 // iter1066: role 無 span + aria-label を `role="img"` で

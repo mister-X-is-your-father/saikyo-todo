@@ -126,11 +126,15 @@ function SourceCard({ workspaceId, src }: { workspaceId: string; src: ExternalSo
       aria-labelledby={`src-card-heading-${src.id}`}
     >
       <CardHeader className="pb-2">
+        {/* iter1741: truncate で長 src name 切れ、aria-label 無し、sighted hover で全 name
+            見れず。title 付与で sighted hover → 全 src.name disclose (iter1740 workflow CardTitle
+            と同 pattern を integrations にも、5 entity card 完成: item/sprint/goal/workflow/source)。 */}
         <CardTitle
           id={`src-card-heading-${src.id}`}
           className="truncate text-base"
           role="heading"
           aria-level={3}
+          title={src.name}
         >
           {src.name}
         </CardTitle>
