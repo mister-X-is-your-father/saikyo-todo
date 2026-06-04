@@ -147,6 +147,12 @@ export function WorkspaceModeSelector({ workspaceId }: Props) {
                 // codebase 全体の aria-label 統一 (": " → " — ") で SR 読み上げ時の区切が
                 // 一貫し、認識コスト下がる。
                 aria-label={`${opt.label} — ${opt.description}`}
+                /* iter2263: workspace-mode option (none / taskchute / gtd の 3 radio button)
+                   の aria-label は browser tooltip にならず、visible は label + description
+                   いずれも見えているが、option family の hover で同 SR text が再表示される
+                   と説明文を細部まで read 直し可能 (workspace-mode radiogroup iter2215 と
+                   pair の 3 option レベル個別 title sync)。MCP path A で /goals 探索中に発見。 */
+                title={`${opt.label} — ${opt.description}`}
                 tabIndex={selected ? 0 : -1}
                 disabled={upd.isPending}
                 aria-busy={upd.isPending || undefined}
