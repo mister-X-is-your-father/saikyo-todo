@@ -766,6 +766,27 @@ async function main() {
     })
   }
 
+  // ========= IP. picker family PopoverContent title sweep (iter2251) =========
+  const tpIP = read(here, `${root}/src/components/workspace/tag-picker.tsx`)
+  if (!tpIP.includes('iter2251') || !tpIP.includes('title="タグ — 選択 / 新規作成"')) {
+    findings.push({
+      level: 'error',
+      source: 'IP.tag-picker-popover-title',
+      message: '[IP] iter2251 tag-picker PopoverContent title sync が消えている',
+    })
+  }
+  const apIP = read(here, `${root}/src/components/workspace/assignee-picker.tsx`)
+  if (
+    !apIP.includes('iter2251') ||
+    !apIP.includes('title="アサイン — メンバー / AI Agent を選択"')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'IP.assignee-picker-popover-title',
+      message: '[IP] iter2251 assignee-picker PopoverContent title sync が消えている',
+    })
+  }
+
   // ========= IO. today-view header chips title sweep (iter2249) =========
   const tvIO = read(here, `${root}/src/components/workspace/today-view.tsx`)
   if (!tvIO.includes('iter2249')) {
