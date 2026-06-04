@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1905 1/1 mode-D activity-log actor chip に title 付与] agent path "AI" 略記 / user path "ユーザ" は visible のみ「実行者」 context 無し、aria-label と同 text を title に付与し sighted hover で disclose。
 - ✅ [playwright-iter1904 1/1 test a11y-sweep-suite に iter1903 activity-log icon entry 追加] 検査軸 75 個 (新 BW 軸)、計約 171 invariant check に拡張。
 - ✅ [playwright-iter1903 1/1 mode-D activity-log action icon chip に title 付与] icon-only chip は visible に label 文字無、icon 上 hover で「{label} — 操作種別」 disclose。
 - ✅ [playwright-iter1902 1/1 test a11y-sweep-suite に iter1901 activity-log hint entry 追加] 検査軸 74 個 (新 BV 軸)、計約 170 invariant check に拡張。
