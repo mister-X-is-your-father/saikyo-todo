@@ -44,6 +44,11 @@ export function FocusQuickAddButton({ testId }: Props) {
       data-testid={testId}
       aria-keyshortcuts="q"
       aria-label="クイック追加にフォーカス (キー: q) — quick-add input にフォーカスして即タスク入力"
+      /* iter2233: FocusQuickAddButton の aria-label は browser tooltip にならず sighted は
+         hover で「キー: q shortcut + quick-add input focus 用途」 disclose 不可。FocusFormCta
+         iter2199 と同 title=aria-label sync pattern、empty-state CTA pair 2 element 完成
+         (focus-quick-add / focus-form-cta)。3 caller (today/inbox/items-board) で一括効果。 */
+      title="クイック追加にフォーカス (キー: q) — quick-add input にフォーカスして即タスク入力"
       onClick={focusQuickAdd}
     >
       <span aria-hidden="true">クイック追加にフォーカス (キー: q)</span>
