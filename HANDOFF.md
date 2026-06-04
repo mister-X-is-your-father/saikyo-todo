@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2071 1/1 mode-D keybindings-help-modal DialogContent に title 付与] dialog landmark hover summary、section pattern を dialog に展開。
 - ✅ [playwright-iter2070 1/1 test a11y-sweep-suite に iter2069 section-titles entry 追加] 検査軸 158 個 (新 FB 軸)、計約 254 invariant check、iter2070 突破。
 - ✅ [playwright-iter2069 1/1 mode-D workflows/integrations section に title 付与] 3 section landmark family 完成 (team-capacity / workflows / integrations)。
 - ✅ [playwright-iter2068 1/1 test a11y-sweep-suite に iter2067 src-create-form entry 追加] 検査軸 157 個 (新 FA 軸、E → F 軸 prefix シフト)、計約 253 invariant check に拡張。
