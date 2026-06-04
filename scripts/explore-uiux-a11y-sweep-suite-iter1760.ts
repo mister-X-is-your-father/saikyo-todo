@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= IL. subtasks-panel 2 ol title sweep (iter2243) =========
+  const spIL = read(here, `${root}/src/components/workspace/subtasks-panel.tsx`)
+  if (!spIL.includes('iter2243')) {
+    findings.push({
+      level: 'error',
+      source: 'IL.subtasks-ol-title',
+      message: '[IL] iter2243 subtasks-panel 2 ol title sync が消えている',
+    })
+  }
+
   // ========= IK. goals-panel KR add form title sweep (iter2241) =========
   const gpIK = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
   if (
