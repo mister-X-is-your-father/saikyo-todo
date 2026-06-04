@@ -130,7 +130,13 @@ export function StartTimerButton({ item, size = 'default' }: Props) {
       onClick={handleClick}
       data-testid={`start-timer-${item.id}`}
       aria-label={accessibleLabel}
-      title={otherActive ? fullHint : undefined}
+      /* iter2271: start-timer (idle 通常 path) は旧 title が otherActive 時のみ fullHint で、
+         normal idle (= 別 Item で計測なし) では title=undefined → sighted hover で何も出ず。
+         aria-label の accessibleLabel は両 path とも full context だが SR にしか届かなかった。
+         MCP path A で ItemEditDialog 内 start-timer button 探索中に発見、両 path とも
+         accessibleLabel と同 text の title を付与し sync (iter1949 active-timer / iter2107
+         redecompose と同 title-aria full sync pattern)。 */
+      title={accessibleLabel}
     >
       <Timer className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
       <span aria-hidden="true">{visibleLabel}</span>
