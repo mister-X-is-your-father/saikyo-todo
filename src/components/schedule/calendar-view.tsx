@@ -204,7 +204,11 @@ export function CalendarView({ workspaceId }: Props) {
             // iter1146: 旧 aria-label `表示日を今日 (...) にリセット` は visible "今日" を
             // 中位置に持ち voice control prefix-matching「click 今日」 match 不可。
             // iter1093-1145 sweep convention に揃え visible 冒頭 + em-dash 区切で descriptive 残す。
+            // iter1775: visible "今日" のみで hover で target 日付 (今日の M月d日) が見えず、
+            // aria-label は browser tooltip にならない。title 付与で iter1765 prev/next と
+            // 同 pattern を today button にも展開、nav 3 button family の hover disclosure 完備。
             aria-label={`今日 — 表示日を今日 (${format(new Date(), 'M月d日 (eee)')}) にリセット`}
+            title={`今日 — 表示日を今日 (${format(new Date(), 'M月d日 (eee)')}) にリセット`}
             data-testid="calendar-today-btn"
           >
             <span aria-hidden="true">今日</span>
