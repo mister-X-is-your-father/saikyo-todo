@@ -253,6 +253,17 @@ function ActivityRow({
               ? `詳細を閉じる — 「${label}」の差分 (before / after) を閉じる`
               : `詳細を見る — 「${label}」の差分 (before / after) を見る`
           }
+          /* iter2293: activity-detail-toggle の aria-label は state-dependent 2-path (open /
+             closed、label context 含む) で SR には full context を渡すが browser tooltip に
+             ならず sighted は hover で同 context disclose 不可。MCP path A で アクティビティ
+             タブで発見、subtask-outdent/indent iter2113 と同 state-dependent toggle title
+             pattern を activity-detail-toggle にも展開、template-card iter2239 と同 disclosure
+             button title 完成。 */
+          title={
+            open
+              ? `詳細を閉じる — 「${label}」の差分 (before / after) を閉じる`
+              : `詳細を見る — 「${label}」の差分 (before / after) を見る`
+          }
           data-testid={`activity-detail-toggle-${entry.id}`}
         >
           <span aria-hidden="true">{open ? '詳細を閉じる' : '詳細を見る'}</span>
