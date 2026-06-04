@@ -631,6 +631,25 @@ async function main() {
     })
   }
 
+  // ========= Y. auth cross-link title sweep (iter1803) =========
+  // signup-link (login page) + login-link (signup page) に title 付与
+  const loginPage = read(here, `${root}/src/app/(auth)/login/page.tsx`)
+  const signupPageY = read(here, `${root}/src/app/(auth)/signup/page.tsx`)
+  if (!loginPage.includes('title="サインアップ — アカウント未作成の方はこちらから新規登録"')) {
+    findings.push({
+      level: 'error',
+      source: 'Y.auth-cross',
+      message: '[Y] iter1803 login/page signup-link title が消えている',
+    })
+  }
+  if (!signupPageY.includes('title="ログイン — 既にアカウントをお持ちの方はこちら"')) {
+    findings.push({
+      level: 'error',
+      source: 'Y.auth-cross',
+      message: '[Y] iter1803 signup/page login-link title が消えている',
+    })
+  }
+
   // ========= X. back-link title sweep (iter1801) =========
   // 8 sub-page (goals/sprints/pdca/templates/workflows/integrations/time-entries/archive) +
   // workspace home back-to-workspaces 計 9 Link に title 付与
