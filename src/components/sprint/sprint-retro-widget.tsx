@@ -111,6 +111,10 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
                punctuation 体系一致 (sibling Sprint / Goal / KR progressbar とも整合)。 */
             aria-label={`Sprint Retro 完了率 ${summary.completionRate}% — ${completionRateSeverityLabelJa(sev)}`}
             aria-valuetext={`${summary.completionRate}% — ${completionRateSeverityLabelJa(sev)}`}
+            /* iter2055: budget iter2051 / sprint iter1931 / goal iter1933 / KR iter1935 と同
+               progressbar title pattern (5 progressbar family の最後)、sighted hover で
+               completionRate + severity disclose。 */
+            title={`Sprint Retro 完了率 ${summary.completionRate}% — ${completionRateSeverityLabelJa(sev)}`}
           >
             <div
               className={
