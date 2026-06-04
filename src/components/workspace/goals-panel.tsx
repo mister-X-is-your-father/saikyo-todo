@@ -279,6 +279,16 @@ export function GoalsPanel({ workspaceId }: Props) {
                       ? `説明 — Goal の説明 (現在 ${description.length} / 2000 文字、上限近接、Cmd/Ctrl+Enter で作成)`
                       : `説明 — Goal の説明 (現在 ${description.length} / 2000 文字、Cmd/Ctrl+Enter で作成)`
                 }
+                /* iter1985: goal-title iter1983 と pair、goal-desc も state-dependent
+                   aria-label の sighted hover disclose、goals-panel 内 2 input/textarea sweep
+                   完備 (9 state-dependent input family の構成)。 */
+                title={
+                  description.length === 0
+                    ? '説明 — Goal の説明 (任意、最大 2000 文字、Objective の補足や背景、Cmd/Ctrl+Enter で作成)'
+                    : description.length > 1900
+                      ? `説明 — Goal の説明 (現在 ${description.length} / 2000 文字、上限近接、Cmd/Ctrl+Enter で作成)`
+                      : `説明 — Goal の説明 (現在 ${description.length} / 2000 文字、Cmd/Ctrl+Enter で作成)`
+                }
               />
             </div>
             <div className="flex justify-end">
