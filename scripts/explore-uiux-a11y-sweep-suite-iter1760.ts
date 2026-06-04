@@ -762,6 +762,19 @@ async function main() {
     })
   }
 
+  // ========= HD. dep-readiness-chip title sweep (iter2177) =========
+  const depHD = read(here, `${root}/src/components/workspace/item-dependencies-panel.tsx`)
+  if (
+    !depHD.includes('iter2177') ||
+    !depHD.includes('title={`${readinessSummary} — 依存サマリ (${readinessVisual.toneLabel})`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HD.dep-readiness-chip-title',
+      message: '[HD] iter2177 dep-readiness-chip title 同期 が消えている',
+    })
+  }
+
   // ========= HC. time-entries sync-error div title sweep (iter2175) =========
   const ttHC = read(here, `${root}/src/components/time-entry/time-entries-table.tsx`)
   if (!ttHC.includes('iter2175') || !ttHC.includes('title={`${e.syncError} — 同期エラー`}')) {
