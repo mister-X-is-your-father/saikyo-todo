@@ -744,6 +744,20 @@ async function main() {
     })
   }
 
+  // ========= AJ. sprint-swimlane summary title sweep (iter1825) =========
+  const swimlane = read(here, `${root}/src/components/workspace/sprint-swimlane-disclosure.tsx`)
+  if (
+    !swimlane.includes(
+      '`担当者ビュー (swim-lane Gantt) を開く — Sprint「${sprintName}」の担当者 swim-lane Gantt を開く`',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'AJ.swimlane',
+      message: '[AJ] iter1825 sprint-swimlane summary open path text が消えている',
+    })
+  }
+
   // ========= AI. proposal-edit footer title sweep (iter1823) =========
   const decomposePanel = read(
     here,
