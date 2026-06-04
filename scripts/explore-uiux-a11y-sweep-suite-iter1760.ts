@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CF. sprint-retro 計画vs納品 grid title sweep (iter1921) =========
+  const retroCF = read(here, `${root}/src/components/sprint/sprint-retro-widget.tsx`)
+  if (!retroCF.includes('title={`計画 vs 納品 —')) {
+    findings.push({
+      level: 'error',
+      source: 'CF.sprint-retro-grid',
+      message: '[CF] iter1921 sprint-retro 計画vs納品 grid title が消えている',
+    })
+  }
+
   // ========= CE. top-items 合計 chip title sweep (iter1919) =========
   const topCE = read(here, `${root}/src/components/time-entry/top-items-by-time-chip.tsx`)
   if (!topCE.includes('title={`${label} — 合計`}')) {
