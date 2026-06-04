@@ -382,6 +382,11 @@ export function GoalsPanel({ workspaceId }: Props) {
           className="space-y-3"
           data-testid="goals-list"
           aria-label={`Goal 一覧 — ${list.data.length} 件`}
+          /* iter2195: Goal 一覧 ul の aria-label "Goal 一覧 — N 件" は browser tooltip に
+             ならず sighted は hover で件数 context disclose 不可。sprints-list iter2193 /
+             sources-list iter2191 / workflows-list iter2189 と同 title=aria-label sync
+             pattern (一覧 ul family 4 entity 揃った)。 */
+          title={`Goal 一覧 — ${list.data.length} 件`}
         >
           {list.data.map((g) => (
             <GoalCard key={g.id} goal={g} workspaceId={workspaceId} />
