@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2230 1/1 test a11y-sweep-suite に iter2229 workspace-header-ops-group entry 追加] 検査軸 238 個 (新 ID 軸)、計約 356 invariant check に拡張、header family 2 element 完成。
+- ✅ [playwright-iter2229 1/1 mode-D workspace-header ヘッダー操作 group に title 付与] operations 構成 context hover disclose、workspace-header iter2227 と pair の header family 2 element 完成。
 - ✅ [playwright-iter2228 1/1 test a11y-sweep-suite に iter2227 workspace-header entry 追加] 検査軸 237 個 (新 IC 軸)、計約 355 invariant check に拡張。
 - ✅ [playwright-iter2227 1/1 mode-D workspace-header に title 付与し aria-label と sync] "Workspace" landmark context hover disclose、op-board-itemrow iter2225 / proposal-title-btn iter2223 と pair。
 - ✅ [playwright-iter2226 1/1 test a11y-sweep-suite に iter2225 op-board-itemrow entry 追加] 検査軸 236 個 (新 IB 軸)、計約 354 invariant check に拡張、既存 B 軸 operation-board title check を新 format に更新 (iter2225 sync 対応)。
