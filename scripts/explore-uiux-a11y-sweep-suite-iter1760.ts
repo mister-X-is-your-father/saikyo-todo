@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DU. period-goal save button title sweep (iter2003) =========
+  const periodDU = read(here, `${root}/src/components/workspace/personal-period-view.tsx`)
+  if (!periodDU.includes('iter2003')) {
+    findings.push({
+      level: 'error',
+      source: 'DU.period-goal-save',
+      message: '[DU] iter2003 period-goal save button title が消えている',
+    })
+  }
+
   // ========= DT. team-capacity summary toggle title sweep (iter2001) =========
   const tcDT = read(here, `${root}/src/components/workspace/team-capacity-panel.tsx`)
   if (!tcDT.includes('iter2001')) {
