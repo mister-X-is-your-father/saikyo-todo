@@ -74,7 +74,15 @@ export function RecoveryPlanSection({ item, heavyAssignees = [], today, classNam
       <p className="text-muted-foreground text-xs">
         この overdue MUST item は落とせない。具体 action 上位 3 つ (data-driven、AI 不使用)。
       </p>
-      <ol className="space-y-2" aria-label={`救済 action ${plan.actions.length} 件`}>
+      <ol
+        className="space-y-2"
+        aria-label={`救済 action ${plan.actions.length} 件`}
+        /* iter2315: 救済 action ol の aria-label "救済 action N 件" は browser tooltip にならず
+           sighted は hover で count context disclose 不可。Activity 履歴 ul iter2291 / swimlane
+           lane 一覧 ul iter2305 と同 一覧 list family title pattern を recovery plan ol にも
+           展開、8 entity 一覧 ul/ol family 完成 (+ recovery actions)。 */
+        title={`救済 action ${plan.actions.length} 件`}
+      >
         {plan.actions.map((action) => {
           const label = recoveryActionKindLabelJa(action.kind)
           return (
