@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= JG. ItemEditDialog TabsList title sweep (iter2285) =========
+  const edJG = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
+  if (!edJG.includes('iter2285') || !edJG.includes('title="Item 編集タブ"')) {
+    findings.push({
+      level: 'error',
+      source: 'JG.item-edit-tabs-title',
+      message: '[JG] iter2285 ItemEditDialog TabsList title sync が消えている',
+    })
+  }
+
   // ========= JF. kanban-title button title sweep (iter2283) =========
   const kvJF = read(here, `${root}/src/components/workspace/kanban-view.tsx`)
   if (!kvJF.includes('iter2283') || !kvJF.includes('title={`${item.title} — 編集`}')) {
