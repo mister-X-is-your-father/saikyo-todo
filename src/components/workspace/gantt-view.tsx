@@ -344,7 +344,11 @@ export function GanttView({
           <span
             data-testid="gantt-summary-critical"
             className="text-red-600 dark:text-red-400"
-            title="critical path 上の item (= project 全体期間に直接影響、遅延すると全体遅延)"
+            /* iter2117: gantt-summary-critical static title (count 不在、説明のみ) は
+               aria-label "critical path ${count} 件 — ..." と divergent → sync。
+               kanban-edit iter2115 / subtask-outdent/indent iter2113 と同 title-aria
+               divergence 修正 pattern。count + 説明 context を sighted hover で disclose。 */
+            title={`critical path ${criticalCount} 件 — project 全体期間に直接影響、遅延すると全体遅延`}
             role="img"
             /* iter1583: paren convention を em-dash 区切に統一 (iter1093-1582 sweep)。 */
             aria-label={`critical path ${criticalCount} 件 — project 全体期間に直接影響、遅延すると全体遅延`}
@@ -357,7 +361,8 @@ export function GanttView({
         {baselineCount > 0 && (
           <span
             data-testid="gantt-summary-baseline"
-            title="baseline = 計画策定時に固定した開始/終了日 (実績との遅延差分計測の基準)"
+            /* iter2117: gantt-summary-baseline も同 pattern で aria-label と sync (count 含む)。 */
+            title={`baseline ${baselineCount} 件 — 計画策定時に固定した開始/終了日、実績との遅延差分計測の基準`}
             role="img"
             /* iter1583: paren convention を em-dash 区切に統一 (iter1093-1582 sweep)。 */
             aria-label={`baseline ${baselineCount} 件 — 計画策定時に固定した開始/終了日、実績との遅延差分計測の基準`}
@@ -371,7 +376,9 @@ export function GanttView({
           <span
             data-testid="gantt-summary-slip"
             className="text-amber-600 dark:text-amber-400"
-            title={`baseline より遅れている item の合計遅延日数`}
+            /* iter2117: gantt-summary-slip も同 pattern で aria-label と sync
+               (count + 計 N 日 含む)、critical / baseline と同 sweep 3 個目。 */
+            title={`遅延 ${slipItemCount} 件 — baseline より遅れている item、計 ${totalSlipDays} 日`}
             role="img"
             /* iter1583: paren convention を em-dash 区切に統一 (iter1093-1582 sweep)。 */
             aria-label={`遅延 ${slipItemCount} 件 — baseline より遅れている item、計 ${totalSlipDays} 日`}
