@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2234 1/1 test a11y-sweep-suite に iter2233 FocusQuickAddButton entry 追加] 検査軸 240 個 (新 IF 軸)、計約 358 invariant check に拡張、empty-state CTA pair 2 element 完成 (focus-quick-add / focus-form-cta)、検査軸 240 milestone 突破。
+- ✅ [playwright-iter2233 1/1] FocusQuickAddButton: aria-label "クイック追加にフォーカス (キー: q) — quick-add input にフォーカスして即タスク入力" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-focus-quick-add-title-iter2233.ts)、FocusFormCta iter2199 と pair の empty-state CTA 2 element 完成、3 caller (today/inbox/items-board) で一括効果。
 - ✅ [playwright-iter2232 1/1 test a11y-sweep-suite に iter2231 item-research-btn entry 追加] 検査軸 239 個 (新 IE 軸)、計約 357 invariant check に拡張、AI action 系 button 3 element sync 完成 (decompose / engineer / research)。
 - ✅ [playwright-iter2231 1/1] item-research-button: aria-label state-dependent 3-path (done / pending / idle) を sighted hover で disclose 不可 → 同 text の title 3-path を付与し sync (path B codify scripts/explore-uiux-item-research-btn-title-iter2231.ts)、AI action 系 button 3 element 完成 (decompose / engineer / research)。
 - ✅ [playwright-iter2230 1/1 test a11y-sweep-suite に iter2229 workspace-header-ops-group entry 追加] 検査軸 238 個 (新 ID 軸)、計約 356 invariant check に拡張、header family 2 element 完成。
