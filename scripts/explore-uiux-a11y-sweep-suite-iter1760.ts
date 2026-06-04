@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BV. activity-log hint title sweep (iter1901) =========
+  const activityBV = read(here, `${root}/src/components/workspace/activity-log.tsx`)
+  if (!activityBV.includes('title={`${hint.label} — Activity 状態`}')) {
+    findings.push({
+      level: 'error',
+      source: 'BV.activity-hint',
+      message: '[BV] iter1901 activity-log hint title が消えている',
+    })
+  }
+
   // ========= BU. integrations ImportStatusBadge title sweep (iter1899) =========
   const integBU = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
   if (!integBU.includes('title={`${label} — Pull ステータス`}')) {
