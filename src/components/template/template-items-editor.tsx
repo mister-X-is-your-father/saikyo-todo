@@ -238,6 +238,10 @@ export function TemplateItemsEditor({ templateId }: Props) {
                      voice control prefix-matching「click +N日」 が strict prefix-match で不可。
                      iter1093-1573 sweep convention で visible 冒頭固定 + em-dash 区切。 */
                   aria-label={`+${it.dueOffsetDays} 日 — 期日 offset`}
+                  /* iter1911: visible は +N日 のみで「期日 offset」 context が無い、
+                     sighted hover で disclose (notif-pref icon iter1909 / activity-actor
+                     iter1905 と同 chip context pattern)。 */
+                  title={`+${it.dueOffsetDays} 日 — 期日 offset`}
                 >
                   <span aria-hidden="true">+{it.dueOffsetDays}日</span>
                 </span>
