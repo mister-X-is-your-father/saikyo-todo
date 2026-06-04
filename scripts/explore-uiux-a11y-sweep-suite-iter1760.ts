@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= EK. goals-panel operations group title sweep (iter2035) =========
+  const gpEK = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
+  if (!gpEK.includes('iter2035')) {
+    findings.push({
+      level: 'error',
+      source: 'EK.goal-operations-group',
+      message: '[EK] iter2035 goals-panel operations group title が消えている',
+    })
+  }
+
   // ========= EJ. sprints-panel operations group title sweep (iter2033) =========
   const spEJ = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (!spEJ.includes('iter2033')) {
