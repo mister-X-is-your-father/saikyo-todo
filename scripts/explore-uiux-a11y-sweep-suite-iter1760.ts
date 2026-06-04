@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= JB. today-view 期限 span title sweep (iter2275) =========
+  const tvJB = read(here, `${root}/src/components/workspace/today-view.tsx`)
+  if (!tvJB.includes('iter2275') || !tvJB.includes('title={`期限 ${it.dueDate}`}')) {
+    findings.push({
+      level: 'error',
+      source: 'JB.today-due-title',
+      message: '[JB] iter2275 today-view 期限 span title sync が消えている',
+    })
+  }
+
   // ========= JA. edit-item-must checkbox title sweep (iter2273) =========
   const edJA = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
   if (!edJA.includes('iter2273')) {
