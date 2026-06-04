@@ -744,6 +744,17 @@ async function main() {
     })
   }
 
+  // ========= BH. backlog DragHandle title sweep (iter1873) =========
+  // (backlog-view 全 polish 検査をここに集約)
+  const backlogView2 = read(here, `${root}/src/components/workspace/backlog-view.tsx`)
+  if (!backlogView2.includes('title="ドラッグで並び替え"')) {
+    findings.push({
+      level: 'error',
+      source: 'BH.backlog-drag-handle',
+      message: '[BH] iter1873 backlog DragHandle title が消えている',
+    })
+  }
+
   // ========= BG. backlog estimate-summary chip title sweep (iter1871) =========
   const backlogView = read(here, `${root}/src/components/workspace/backlog-view.tsx`)
   if (!backlogView.includes('title={`${estimateSummary} — Backlog 見積サマリ`}')) {
