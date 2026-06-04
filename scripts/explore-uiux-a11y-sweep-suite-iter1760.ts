@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= EF. sprint-create startDate input title sweep (iter2025) =========
+  const spEF = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (!spEF.includes('iter2025')) {
+    findings.push({
+      level: 'error',
+      source: 'EF.sprint-create-start',
+      message: '[EF] iter2025 sprint-create startDate title が消えている',
+    })
+  }
+
   // ========= EE. goals-panel goal-end date input title sweep (iter2023) =========
   const gpEE = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
   if (!gpEE.includes('iter2023')) {
