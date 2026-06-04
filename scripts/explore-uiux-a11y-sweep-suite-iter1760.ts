@@ -744,6 +744,19 @@ async function main() {
     })
   }
 
+  // ========= AK. bulk-action-bar title sweep (iter1827) =========
+  const bulkBar = read(here, `${root}/src/components/workspace/bulk-action-bar.tsx`)
+  if (
+    !bulkBar.includes('title="解除 — 選択を全て解除"') ||
+    !bulkBar.includes('`削除 — 選択 ${count} 件を削除 (soft delete: ゴミ箱で 30 日保持)`')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'AK.bulk-action',
+      message: '[AK] iter1827 bulk-action-bar title が消えている',
+    })
+  }
+
   // ========= AJ. sprint-swimlane summary title sweep (iter1825) =========
   const swimlane = read(here, `${root}/src/components/workspace/sprint-swimlane-disclosure.tsx`)
   if (
