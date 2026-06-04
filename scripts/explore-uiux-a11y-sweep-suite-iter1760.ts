@@ -740,6 +740,22 @@ async function main() {
     })
   }
 
+  // ========= FE. 3 sub-page main landmark title sweep (iter2075) =========
+  const sprintsFE = read(here, `${root}/src/app/(workspace)/[workspaceId]/sprints/page.tsx`)
+  const goalsFE = read(here, `${root}/src/app/(workspace)/[workspaceId]/goals/page.tsx`)
+  const pdcaFE = read(here, `${root}/src/app/(workspace)/[workspaceId]/pdca/page.tsx`)
+  if (
+    !sprintsFE.includes('title="Sprint — 計画 → 稼働 → 完了"') ||
+    !goalsFE.includes('title="OKR / Goals — Objective + Key Results"') ||
+    !pdcaFE.includes('title="PDCA — Plan / Do / Check / Act + Lead time"')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'FE.sub-page-mains',
+      message: '[FE] iter2075 3 sub-page main landmark title が消えている',
+    })
+  }
+
   // ========= FD. home header landmark title sweep (iter2073) =========
   const homeFD = read(here, `${root}/src/app/page.tsx`)
   if (!homeFD.includes('title="最強TODO ホーム"')) {
