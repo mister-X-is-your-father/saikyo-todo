@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BB. inbox-health-hint chip title sweep (iter1861) =========
+  const inboxView = read(here, `${root}/src/components/workspace/inbox-view.tsx`)
+  if (!inboxView.includes('title={`${healthChip.label} — Inbox 健全性`}')) {
+    findings.push({
+      level: 'error',
+      source: 'BB.inbox-health',
+      message: '[BB] iter1861 inbox-health-hint title が消えている',
+    })
+  }
+
   // ========= BA. time-entries sync-badge title sweep (iter1859) =========
   const teTable = read(here, `${root}/src/components/time-entry/time-entries-table.tsx`)
   if (
