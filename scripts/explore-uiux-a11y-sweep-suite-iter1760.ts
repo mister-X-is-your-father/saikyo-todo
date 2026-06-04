@@ -740,6 +740,17 @@ async function main() {
     })
   }
 
+  // ========= FL. goal-complete + goal-archive button title sweep (iter2089) =========
+  const gpFL = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
+  const iter2089CountFL = (gpFL.match(/iter2089/g) ?? []).length
+  if (iter2089CountFL < 2) {
+    findings.push({
+      level: 'error',
+      source: 'FL.goal-status-btns',
+      message: `[FL] iter2089 goal-complete + goal-archive title が消えている (count=${iter2089CountFL})`,
+    })
+  }
+
   // ========= FK. sprint-cancel button title sweep (iter2087) =========
   const spFK = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (!spFK.includes('iter2087')) {
