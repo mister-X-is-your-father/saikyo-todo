@@ -333,6 +333,17 @@ async function main() {
     })
   }
 
+  // ========= I. shared SeverityChip title (iter1761) =========
+  const severityChip = read(here, `${root}/src/components/shared/severity-chip.tsx`)
+  const severityTitleCount = (severityChip.match(/title=\{ariaLabel \?\? label\}/g) ?? []).length
+  if (severityTitleCount !== 2) {
+    findings.push({
+      level: 'error',
+      source: 'I.severity-chip',
+      message: `[I] iter1761 SeverityChip title 件数が ${severityTitleCount} (期待 2: button + static)`,
+    })
+  }
+
   // ========= G. WCAG 2.4.1 skip-link =========
   if (
     !rootLayout.includes('href="#main-content"') ||
