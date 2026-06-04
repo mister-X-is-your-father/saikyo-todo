@@ -232,6 +232,12 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
            active-timer region と同 pattern。 */
         aria-label={`表示切替 — 現在 ${VIEW_LABEL_JA[view] ?? view}`}
       >
+        {/* iter1777: 9 view-switcher button (Today/Inbox/Kanban/Backlog/Gantt/Dashboard/
+            日次/週次/月次) は visible text のみ + aria-label で descriptive context を SR に
+            提供するが、sighted は hover で各 view が何をする画面か即把握できなかった
+            (aria-label は browser tooltip にならない)。`title={同 aria-label}` 付与で
+            sighted hover で descriptive context disclose、iter1763-1775 icon-only title family と
+            同 pattern を view-switcher 9 button にも展開、view 選択 UX の sighted ↔ SR 同期。 */}
         <Button
           variant={view === 'today' ? 'default' : 'outline'}
           size="sm"
@@ -240,6 +246,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           data-testid="view-today-btn"
           aria-pressed={view === 'today'}
           aria-label="Today — 今日のタスク優先順、scheduledFor=今日 + 期限近接"
+          title="Today — 今日のタスク優先順、scheduledFor=今日 + 期限近接"
         >
           <span aria-hidden="true">Today</span>
         </Button>
@@ -251,6 +258,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           data-testid="view-inbox-btn"
           aria-pressed={view === 'inbox'}
           aria-label="Inbox — 未整理 / 未トリアージのタスク一覧"
+          title="Inbox — 未整理 / 未トリアージのタスク一覧"
         >
           <span aria-hidden="true">Inbox</span>
         </Button>
@@ -262,6 +270,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           data-testid="view-kanban-btn"
           aria-pressed={view === 'kanban'}
           aria-label="Kanban — status 別カラムで Item を可視化、DnD で status 移動"
+          title="Kanban — status 別カラムで Item を可視化、DnD で status 移動"
         >
           <span aria-hidden="true">Kanban</span>
         </Button>
@@ -273,6 +282,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           data-testid="view-backlog-btn"
           aria-pressed={view === 'backlog'}
           aria-label="Backlog — Item 一覧テーブル、列ヘッダ click で sort、DnD で並び替え"
+          title="Backlog — Item 一覧テーブル、列ヘッダ click で sort、DnD で並び替え"
         >
           <span aria-hidden="true">Backlog</span>
         </Button>
@@ -284,6 +294,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           data-testid="view-gantt-btn"
           aria-pressed={view === 'gantt'}
           aria-label="Gantt — Item の期間 bar チャート、依存線 / critical path / 遅延を可視化"
+          title="Gantt — Item の期間 bar チャート、依存線 / critical path / 遅延を可視化"
         >
           <span aria-hidden="true">Gantt</span>
         </Button>
@@ -295,6 +306,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           data-testid="view-dashboard-btn"
           aria-pressed={view === 'dashboard'}
           aria-label="Dashboard — PDCA / 進捗 / 健全性 widget の集約画面"
+          title="Dashboard — PDCA / 進捗 / 健全性 widget の集約画面"
         >
           <span aria-hidden="true">Dashboard</span>
         </Button>
@@ -306,6 +318,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           data-testid="view-daily-btn"
           aria-pressed={view === 'daily'}
           aria-label="日次レビュー画面 — 個人 期間 = 今日"
+          title="日次レビュー画面 — 個人 期間 = 今日"
         >
           <span aria-hidden="true">日次</span>
         </Button>
@@ -317,6 +330,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           data-testid="view-weekly-btn"
           aria-pressed={view === 'weekly'}
           aria-label="週次レビュー画面 — 個人 期間 = 今週"
+          title="週次レビュー画面 — 個人 期間 = 今週"
         >
           <span aria-hidden="true">週次</span>
         </Button>
@@ -328,6 +342,7 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
           data-testid="view-monthly-btn"
           aria-pressed={view === 'monthly'}
           aria-label="月次レビュー画面 — 個人 期間 = 今月"
+          title="月次レビュー画面 — 個人 期間 = 今月"
         >
           <span aria-hidden="true">月次</span>
         </Button>
