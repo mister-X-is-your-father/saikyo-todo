@@ -740,6 +740,21 @@ async function main() {
     })
   }
 
+  // ========= GH. comment ops group title sweep (iter2133) =========
+  const ctGH = read(here, `${root}/src/components/workspace/comment-thread.tsx`)
+  if (
+    !ctGH.includes('iter2133') ||
+    !ctGH.includes(
+      "title={`コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」の操作 — 編集 / 削除、自分の投稿のみ`}",
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GH.comment-ops-group-title',
+      message: '[GH] iter2133 comment ops group title 付与 が消えている',
+    })
+  }
+
   // ========= GG. proposal edit form ops group title sweep (iter2131) =========
   const dpGG = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
   if (
