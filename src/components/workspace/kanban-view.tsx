@@ -191,6 +191,12 @@ export function KanbanView({ workspaceId, items }: Props) {
           /* iter1576: 旧 aria-label paren convention `"Kanban ボード (X 列)"` は iter1093-1575
              sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
           aria-label={`Kanban ボード — ${statuses.length} 列`}
+          /* iter2281: kanban-board root group の aria-label "Kanban ボード — N 列" は browser
+             tooltip にならず sighted は hover で「Kanban 全体構造 + 列数」 disclose 不可。
+             MCP path A で Kanban view 探索中に発見、Gantt root iter2247 と同 chart/board root
+             container title pattern を Kanban にも展開、3 view root container title 完成
+             (Gantt / Kanban / Backlog table)。 */
+          title={`Kanban ボード — ${statuses.length} 列`}
         >
           {statuses.map((s) => (
             <KanbanColumn
