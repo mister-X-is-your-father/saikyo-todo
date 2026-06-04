@@ -865,7 +865,11 @@ function SprintCard({
                 variant="outline"
                 onClick={() => setEditing(true)}
                 data-testid={`sprint-period-edit-btn-${sprint.id}`}
-                title="期間を編集"
+                /* iter2097: sprint-period-edit static title="期間を編集" は aria-label
+                   `期間 — Sprint「${sprint.name}」の期間を編集` と divergent。
+                   sprint-retro iter2093 / sprint-premortem iter2095 と同 title-aria
+                   divergence 修正 pattern で sync (Sprint name + 用途 context disclose)。 */
+                title={`期間 — Sprint「${sprint.name}」の期間を編集`}
                 // iter1150: 旧 aria-label `Sprint「name」の期間を編集` は visible "期間"
                 // を末尾近く "の**期間**を編集" 中位置に持ち voice control prefix-matching
                 //「click 期間」 match 不可。iter1093-1149 sweep convention に揃え
