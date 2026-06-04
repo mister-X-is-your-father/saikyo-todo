@@ -555,7 +555,12 @@ function SprintCard({
         </CardHeader>
         <CardContent className="space-y-2">
           {sprint.goal && (
-            <p className="text-muted-foreground line-clamp-2 text-xs">{sprint.goal}</p>
+            // iter1755: sprint.goal は line-clamp-2 で 2 行超は切れる、sighted hover で全文
+            // 見れず。title 付与で sighted hover → 全 goal disclose (iter1720-1754 sweep
+            // を line-clamp にも展開、truncate と同 disclosure pattern を適用)。
+            <p className="text-muted-foreground line-clamp-2 text-xs" title={sprint.goal}>
+              {sprint.goal}
+            </p>
           )}
           {showProgress && (
             <div className="space-y-2">

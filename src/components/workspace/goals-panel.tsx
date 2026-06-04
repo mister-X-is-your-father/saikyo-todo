@@ -516,7 +516,12 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
             </Badge>
           </div>
           {goal.description && (
-            <p className="text-muted-foreground mt-2 line-clamp-3 pl-7 text-xs">
+            // iter1755: goal.description は line-clamp-3 で 3 行超は切れる、sighted hover で
+            // 全文見れず。title 付与で sighted hover → 全 description disclose (sprint goal と pair)。
+            <p
+              className="text-muted-foreground mt-2 line-clamp-3 pl-7 text-xs"
+              title={goal.description}
+            >
               {goal.description}
             </p>
           )}
