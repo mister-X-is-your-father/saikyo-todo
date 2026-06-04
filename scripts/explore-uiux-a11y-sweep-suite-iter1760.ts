@@ -740,6 +740,19 @@ async function main() {
     })
   }
 
+  // ========= GI. proposal ops group title sweep (iter2135) =========
+  const dpGI = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
+  if (
+    !dpGI.includes('iter2135') ||
+    !dpGI.includes('title={`提案「${proposal.title}」の操作 — 採用 / 却下`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GI.proposal-ops-group-title',
+      message: '[GI] iter2135 proposal ops group title 付与 が消えている',
+    })
+  }
+
   // ========= GH. comment ops group title sweep (iter2133) =========
   const ctGH = read(here, `${root}/src/components/workspace/comment-thread.tsx`)
   if (
