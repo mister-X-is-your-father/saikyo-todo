@@ -170,6 +170,10 @@ export function SignupForm() {
         aria-label={
           isPending ? '作成中… — サインアップ処理を実行中' : 'サインアップ — アカウントを作成'
         }
+        // iter1795: visible "サインアップ" / "作成中…" のみで sighted は hover で
+        // action context (= "アカウントを作成") 即把握できなかった。
+        // iter1795 login-submit と pair で auth submit button family の hover disclosure 完備。
+        title={isPending ? '作成中… — サインアップ処理を実行中' : 'サインアップ — アカウントを作成'}
       >
         <span aria-hidden="true">{isPending ? '作成中…' : 'サインアップ'}</span>
       </Button>

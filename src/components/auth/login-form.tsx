@@ -137,6 +137,12 @@ export function LoginForm() {
         aria-label={
           isPending ? 'ログイン中… — 認証処理を実行中' : 'ログイン — メール + パスワードで認証'
         }
+        // iter1795: visible "ログイン" / "ログイン中…" のみで sighted は hover で
+        // 認証 mechanism context (= "メール + パスワードで認証") 即把握できなかった。
+        // iter1791 comment-post / iter1793 active-timer と同 pattern を auth submit にも展開。
+        title={
+          isPending ? 'ログイン中… — 認証処理を実行中' : 'ログイン — メール + パスワードで認証'
+        }
       >
         <span aria-hidden="true">{isPending ? 'ログイン中…' : 'ログイン'}</span>
       </Button>
