@@ -25,6 +25,7 @@ import {
   formatClusterCountsHeadlineJa,
   formatClusterSummaryLinesJa,
   formatConcerningSignalsLineJa,
+  formatTopAlertHeadlineJa,
   formatTopSignalsLineJa,
   groupSignalsByTone,
   hasAchievementSignals,
@@ -1594,6 +1595,32 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
         )
       }
     }
+  })
+
+  it('iter1769: formatTopAlertHeadlineJa — 警戒なし → "警告なし" sentinel', () => {
+    expect(formatTopAlertHeadlineJa(composeAnalyticsSignals({}), 3)).toBe('警告なし')
+    expect(formatTopAlertHeadlineJa(composeAnalyticsSignals({ doneToday: 2 }), 3)).toBe('警告なし')
+  })
+
+  it('iter1769: formatTopAlertHeadlineJa — n=0 → "警告なし" (defensive)', () => {
+    const s = composeAnalyticsSignals({ weeklyReviewDue: 'overdue' })
+    expect(formatTopAlertHeadlineJa(s, 0)).toBe('警告なし')
+  })
+
+  it('iter1769: formatTopAlertHeadlineJa — 警戒あり → "Top N 警告: ..." prefix + text', () => {
+    const s = composeAnalyticsSignals({ weeklyReviewDue: 'overdue' })
+    const out = formatTopAlertHeadlineJa(s, 3)
+    expect(out.startsWith('Top ')).toBe(true)
+    expect(out).toContain(' 警告: ')
+    expect(out).toContain(s.weeklyReviewDue!.text)
+  })
+
+  it('iter1769: formatTopAlertHeadlineJa — N は 実件数 (n より少ない場合 truncated)', () => {
+    // weeklyReviewDue 1 軸だけ警戒、n=3 を指定 → 実件数 1 が出る
+    const s = composeAnalyticsSignals({ weeklyReviewDue: 'overdue' })
+    const all = pickConcerningSignals(s)
+    const headline = formatTopAlertHeadlineJa(s, 3)
+    expect(headline).toBe(`Top ${all.length} 警告: ` + all.map((sig) => sig.text).join(' / '))
   })
 
   it('iter1767: pickWorstConcerningSignals — 警戒なし → 空配列', () => {

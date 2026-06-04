@@ -652,6 +652,38 @@ export function pickWorstConcerningSignals(
 }
 
 /**
+ * iter1769 ai-automation: 警戒 top N を「Top N 警告: ...」 1 行 headline ja-JP に整形。
+ * iter1767 pickWorstConcerningSignals (= N 件 subset) を text composing、AI 朝 brief
+ * /Slack daily digest top alert headline / dashboard summary 上部 1 行用。
+ *
+ * 仕様:
+ *  - 警戒 0 件 → '警告なし' sentinel (= peace of mind feedback)
+ *  - n <= 0 → '警告なし' (defensive、空配列扱い)
+ *  - 1+ → 'Top N 警告: ' + text を ' / ' 連結 (N は 実件数)
+ *  - 順序: severity 降順 (pickWorstConcerningSignals と同)
+ *
+ * caller pattern (AI 朝 brief headline):
+ *   const signals = composeAnalyticsSignals({...})
+ *   const headline = formatTopAlertHeadlineJa(signals, 3)
+ *   // → 'Top 3 警告: PM 要調査 (50%) / コスト超過 (+80%) / 期限達成率 低 (45%)'
+ *   slack.post(`今日の状況\n${headline}\n${formatClusterSummaryLinesJa(signals)}`)
+ *
+ * 既存 helper との関係:
+ *  - `pickWorstConcerningSignals` (iter1767): top N subset 配列 (= chip 個別 render)
+ *  - `formatConcerningSignalsLineJa` (iter1745): 警戒 全件 1 行 ('警戒: ...')
+ *  - `formatClusterCountsHeadlineJa` (iter1754): 件数 1 行 ('警戒 N / 達成感 M')
+ *  - 本 helper: top N 警告だけ 1 行 (= 詳細 vs 件数の中間、上位だけ抜粋 headline)
+ *
+ * 設計意図: formatConcerningSignalsLineJa は全件で長くなりがち、本 helper は top N で
+ * compact 化 (= Slack channel header / AI brief 冒頭の attention 集中)。
+ */
+export function formatTopAlertHeadlineJa(signals: AnalyticsSignals, n: number): string {
+  const top = pickWorstConcerningSignals(signals, n)
+  if (top.length === 0) return '警告なし'
+  return `Top ${top.length} 警告: ` + top.map((s) => s.text).join(' / ')
+}
+
+/**
  * iter1745 ai-automation: 警戒 cluster を「警戒: ...」 prefix 付き 1 行 ja-JP text に
  * 整形する compose helper。`formatAchievementSignalsLineJa` (iter1725) と対称的な
  * concerning 版、Slack daily digest「今日の警告」 section 用。
