@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2288 1/1 test a11y-sweep-suite に iter2287 edit-item-sprint/kr select entry 追加] 検査軸 267 個 (新 JH 軸)、計約 385 invariant check に拡張、ItemEditDialog 内 assignment select pair (Sprint / KR) 完成 (MCP path A 経由発見)、385 check milestone 突破。
+- ✅ [playwright-iter2287 1/1] ItemEditDialog 2 assignment select (edit-item-sprint / edit-item-kr): aria-label state-dependent 3-path (pending / 割当中 / 未割当) を sighted hover で disclose 不可 → 同 text の title を 2 select 同時に付与し sync (path B codify scripts/explore-uiux-edit-item-sprint-kr-title-iter2287.ts)。**MCP path A で ItemEditDialog 探索中に発見**、選択中の Sprint / KR が hover で識別可能化。
 - ✅ [playwright-iter2286 1/1 test a11y-sweep-suite に iter2285 ItemEditDialog TabsList entry 追加] 検査軸 266 個 (新 JG 軸)、計約 384 invariant check に拡張、landmark root container title pattern (Kanban / Gantt / TabsList) 4 element 完成 (MCP path A 経由発見)。
 - ✅ [playwright-iter2285 1/1] ItemEditDialog TabsList (Item 編集タブ landmark): aria-label "Item 編集タブ" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-item-edit-tabs-title-iter2285.ts)。**MCP path A で ItemEditDialog 探索中に発見**、Kanban root iter2281 / Gantt root iter2247 と同 landmark root container title pattern を ItemEditDialog TabsList にも展開。
 - ✅ [playwright-iter2284 1/1 test a11y-sweep-suite に iter2283 kanban-title button entry 追加] 検査軸 265 個 (新 JF 軸)、計約 383 invariant check に拡張、3 view edit entry button title 完成 (today-title / backlog-edit / kanban-title) (MCP path A 経由発見)、検査軸 265 milestone 突破。
