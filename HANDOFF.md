@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1882 1/1 test a11y-sweep-suite に iter1881 team-capacity name entry 追加] 検査軸 64 個 (新 BL 軸)、計約 160 invariant check に拡張。
 - ✅ [playwright-iter1881 1/1 mode-D team-capacity member name に title 付与] visible {name} のみで「member」 context が無く、aria-label と同 text を title に付与し sighted hover で disclose。
 - ✅ [playwright-iter1880 1/1 test a11y-sweep-suite に iter1879 swimlane population entry 追加] 検査軸 63 個 (新 BK 軸)、計約 159 invariant check に拡張。
 - ✅ [playwright-iter1879 1/1 mode-D sprint-swimlane population div に title 付与] populationLabel のみ表示で「Sprint 全体」 context が visible に無い、aria-label と同 text を title に付与し sighted hover で disclose。
