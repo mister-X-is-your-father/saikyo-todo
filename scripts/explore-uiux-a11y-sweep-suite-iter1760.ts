@@ -766,6 +766,19 @@ async function main() {
     })
   }
 
+  // ========= JV. recovery-plan ol title sweep (iter2315) =========
+  const rpJV = read(here, `${root}/src/components/item/recovery-plan-section.tsx`)
+  if (
+    !rpJV.includes('iter2315') ||
+    !rpJV.includes('title={`救済 action ${plan.actions.length} 件`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'JV.recovery-plan-ol-title',
+      message: '[JV] iter2315 recovery-plan ol title sync が消えている',
+    })
+  }
+
   // ========= JU. src-url input title sweep (iter2313) =========
   const ipJU = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
   if (!ipJU.includes('iter2313')) {
