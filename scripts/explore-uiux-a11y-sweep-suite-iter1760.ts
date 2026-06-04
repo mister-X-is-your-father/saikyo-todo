@@ -740,6 +740,19 @@ async function main() {
     })
   }
 
+  // ========= FM. wf-trigger title 4-path 同期 sweep (iter2091) =========
+  const wfpFM = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
+  if (
+    !wfpFM.includes('iter2091') ||
+    !wfpFM.includes('実行 — Workflow「${wf.name}」は無効化中のため実行不可')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'FM.wf-trigger-title',
+      message: '[FM] iter2091 wf-trigger title 4-path 同期 が消えている',
+    })
+  }
+
   // ========= FL. goal-complete + goal-archive button title sweep (iter2089) =========
   const gpFL = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
   const iter2089CountFL = (gpFL.match(/iter2089/g) ?? []).length
