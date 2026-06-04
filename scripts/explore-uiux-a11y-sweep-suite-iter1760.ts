@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BR. weekly-insight by-day grid title sweep (iter1893) =========
+  const weeklyBR = read(here, `${root}/src/components/workspace/weekly-insight-widget.tsx`)
+  if (!weeklyBR.includes('iter1893') || !weeklyBR.includes('title={`曜日別完了件数')) {
+    findings.push({
+      level: 'error',
+      source: 'BR.weekly-by-day',
+      message: '[BR] iter1893 weekly by-day grid title が消えている',
+    })
+  }
+
   // ========= BQ. pdca distribution bar title sweep (iter1891) =========
   const pdcaBQ = read(here, `${root}/src/components/workspace/pdca-panel.tsx`)
   if (!pdcaBQ.includes('iter1891')) {
