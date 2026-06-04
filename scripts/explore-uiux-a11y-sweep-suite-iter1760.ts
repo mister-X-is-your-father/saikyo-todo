@@ -762,6 +762,21 @@ async function main() {
     })
   }
 
+  // ========= HA. PDCA 4 段階の集計 group title sweep (iter2171) =========
+  const ppHA = read(here, `${root}/src/components/workspace/pdca-panel.tsx`)
+  if (
+    !ppHA.includes('iter2171') ||
+    !ppHA.includes(
+      'title={`PDCA 4 段階の集計 — Plan ${counts.plan} / Do ${counts.do} / Check ${counts.check} / Act ${counts.act} 件`}',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HA.pdca-counts-group-title',
+      message: '[HA] iter2171 PDCA 4 段階の集計 group title 付与 が消えている',
+    })
+  }
+
   // ========= GZ. weekly-insight anomalies ul title sweep (iter2169) =========
   const wiGZ = read(here, `${root}/src/components/workspace/weekly-insight-widget.tsx`)
   if (
