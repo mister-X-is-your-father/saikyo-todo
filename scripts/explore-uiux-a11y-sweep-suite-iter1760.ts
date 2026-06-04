@@ -740,6 +740,19 @@ async function main() {
     })
   }
 
+  // ========= GK. subtask group title sweep (iter2139) =========
+  const spGK = read(here, `${root}/src/components/workspace/subtasks-panel.tsx`)
+  if (
+    !spGK.includes('iter2139') ||
+    !spGK.includes('title={`グループ「${item.title}」 — 子タスク ${grandchildren.length} 件`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GK.subtask-group-title',
+      message: '[GK] iter2139 subtask group title 付与 が消えている',
+    })
+  }
+
   // ========= GJ. budget edit ops group title sweep (iter2137) =========
   const bpGJ = read(here, `${root}/src/components/workspace/budget-panel.tsx`)
   if (
