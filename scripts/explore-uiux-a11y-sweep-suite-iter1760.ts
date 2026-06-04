@@ -762,6 +762,19 @@ async function main() {
     })
   }
 
+  // ========= HJ. workflows ul list title sweep (iter2189) =========
+  const wfpHJ = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
+  if (
+    !wfpHJ.includes('iter2189') ||
+    !wfpHJ.includes('title={`Workflow 一覧 — ${list.data!.length} 件`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HJ.workflows-list-title',
+      message: '[HJ] iter2189 workflows ul list title 同期 が消えている',
+    })
+  }
+
   // ========= HI. active-timer ops group title sweep (iter2187) =========
   const atpHI = read(here, `${root}/src/components/workspace/active-timer-panel.tsx`)
   if (
