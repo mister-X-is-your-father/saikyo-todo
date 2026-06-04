@@ -213,7 +213,10 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
              divergent。live region announce text の `:` を ` — ` em-dash に統一。 */
           aria-label={`解析結果 — ${previewSummary}`}
         >
-          <span className="truncate font-mono" aria-hidden="true">
+          {/* iter1752: quick-add preview の title span は truncate で長 preview.title 切れ、
+              parent role="status" aria-label "解析結果 — X" は browser tooltip にならず sighted
+              は hover で全 preview title 見れず。title 付与で sighted hover → 全文 disclose。 */}
+          <span className="truncate font-mono" aria-hidden="true" title={preview.title}>
             → {preview.title}
           </span>
           {preview.scheduledFor && (
