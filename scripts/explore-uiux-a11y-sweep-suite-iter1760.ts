@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= JI. 案件サマリ region root title sweep (iter2289) =========
+  const ispJI = read(here, `${root}/src/components/workspace/item-summary-panel.tsx`)
+  if (!ispJI.includes('iter2289') || !ispJI.includes('title={`案件サマリ${')) {
+    findings.push({
+      level: 'error',
+      source: 'JI.item-summary-region-title',
+      message: '[JI] iter2289 案件サマリ region root title sync が消えている',
+    })
+  }
+
   // ========= JH. edit-item-sprint / kr select title sweep (iter2287) =========
   const edJH = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
   if (!edJH.includes('iter2287')) {
