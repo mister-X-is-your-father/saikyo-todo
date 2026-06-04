@@ -125,6 +125,10 @@ export function WorkflowGraphCanvas({ graph, className, testId }: Props) {
          iter1093-1597 sweep の em-dash 区切と divergent。区切のみ ':' / '(' → ' — ' に統一、
          closing ')' は削除。 */
       aria-label={`Workflow graph — ${graph.nodes.length} nodes — ${nodeTypeSummary}、${graph.edges.length} edges`}
+      /* iter1929: graph canvas は visual で node/edge は見えるが count summary は
+         visible に無く、sighted hover で integrated summary disclose
+         (iter1925 cycle Lead time grid / iter1921 sprint-retro grid と同 chart 透明性 pattern)。 */
+      title={`Workflow graph — ${graph.nodes.length} nodes — ${nodeTypeSummary}、${graph.edges.length} edges`}
     >
       <ReactFlow {...props}>
         <Background gap={16} size={1} />
