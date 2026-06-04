@@ -111,6 +111,10 @@ export function TaskChuteView({ workspaceId, items }: Props) {
       /* iter1575: 旧 aria-label paren convention `"TaskChute mode (...)"` は iter1093-1574 sweep の
          em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
       aria-label={`TaskChute mode — 今日の 1 列 timeline ${ordered.length} 件、合計 ${ticker.totalEstimateMin} 分 / 残 ${ticker.remainingEstimateMin} 分`}
+      /* iter2047: region 全体に title を付与し sighted hover で 1 列 timeline 件数 + 合計 +
+         残時間 integrated summary disclose、op-board iter1943 / inbox-region iter1945 と同
+         region/widget summary pattern。 */
+      title={`TaskChute mode — 今日の 1 列 timeline ${ordered.length} 件、合計 ${ticker.totalEstimateMin} 分 / 残 ${ticker.remainingEstimateMin} 分`}
     >
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-1.5 text-base" role="heading" aria-level={2}>
