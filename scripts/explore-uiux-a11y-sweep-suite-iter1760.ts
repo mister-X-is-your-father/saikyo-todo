@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DK. goals-panel goal-title input title sweep (iter1983) =========
+  const gpDK = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
+  if (!gpDK.includes('iter1983')) {
+    findings.push({
+      level: 'error',
+      source: 'DK.goal-title',
+      message: '[DK] iter1983 goals-panel goal-title input title が消えている',
+    })
+  }
+
   // ========= DJ. sprints-panel sprint-goal textarea title sweep (iter1981) =========
   const spDJ = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (!spDJ.includes('iter1981')) {
