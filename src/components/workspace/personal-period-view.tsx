@@ -205,6 +205,16 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
                     ? `保存中… — ${periodLabelJa(period)}ゴールを保存中`
                     : `ゴール保存 — ${periodLabelJa(period)}ゴールを保存`
               }
+              /* iter2003: state-dependent aria-label (変更なし / 保存中 / 保存) を title で
+                 sighted hover disclose、period-goal textarea iter1967 と pair、
+                 personal-period-view 内 2 input/button sweep 完備。 */
+              title={
+                !dirty
+                  ? `ゴール保存 — ${periodLabelJa(period)}ゴールに変更がないため保存不要`
+                  : upsertGoal.isPending
+                    ? `保存中… — ${periodLabelJa(period)}ゴールを保存中`
+                    : `ゴール保存 — ${periodLabelJa(period)}ゴールを保存`
+              }
             >
               <span aria-hidden="true">{upsertGoal.isPending ? '保存中…' : 'ゴール保存'}</span>
             </Button>
