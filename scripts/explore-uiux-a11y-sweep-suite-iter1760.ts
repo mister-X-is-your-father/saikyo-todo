@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CQ. operation-board-widget Card title sweep (iter1943) =========
+  const opCQ = read(here, `${root}/src/components/workspace/operation-board-widget.tsx`)
+  if (!opCQ.includes('title={`今日の作戦盤 — 期限超過')) {
+    findings.push({
+      level: 'error',
+      source: 'CQ.op-board-region',
+      message: '[CQ] iter1943 operation-board-widget Card title が消えている',
+    })
+  }
+
   // ========= CP. items-board filter-sprint title sweep (iter1941) =========
   const boardCP = read(here, `${root}/src/components/workspace/items-board.tsx`)
   if (!boardCP.includes('iter1941') || !boardCP.includes('「全 Sprint」で解除')) {
