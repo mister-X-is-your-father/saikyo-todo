@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= EB. sprint-edit-start date input title sweep (iter2017) =========
+  const spEB = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (!spEB.includes('iter2017')) {
+    findings.push({
+      level: 'error',
+      source: 'EB.sprint-edit-start',
+      message: '[EB] iter2017 sprint-edit-start date input title が消えている',
+    })
+  }
+
   // ========= EA. item-edit-dialog tab-comments + tab-activity title sweep (iter2015) =========
   const iedEA = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
   if (
