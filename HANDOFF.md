@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2052 1/1 test a11y-sweep-suite に iter2051 budget-progress entry 追加] 検査軸 149 個 (新 ES 軸)、計約 245 invariant check に拡張。
 - ✅ [playwright-iter2051 1/1 mode-D budget-panel progressbar に title 付与] 4 progressbar family 完備 (sprint/goal/KR/budget)、color state を SR + sighted で同期 (WCAG 1.4.1)。
 - ✅ [playwright-iter2050 1/1 test a11y-sweep-suite に iter2049 weekly-region entry 追加] 検査軸 148 個 (新 ER 軸)、計約 244 invariant check に拡張、iter2050 突破。
 - ✅ [playwright-iter2049 1/1 mode-D weekly-insight-widget region に title 付与] 6 region landmark hover summary 完備 (taskchute / op-board / inbox / dashboard MUST / active-timer / weekly-insight)。
