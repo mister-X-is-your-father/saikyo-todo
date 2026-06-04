@@ -593,9 +593,7 @@ export function countConcerningSignals(signals: AnalyticsSignals): number {
  * channel で「何が悪い / 何が良い」 を一目で区別可能 (= 軸 1 可視化)。
  */
 export function formatConcerningSignalsLineJa(signals: AnalyticsSignals): string {
-  const arr = pickConcerningSignals(signals)
-  if (arr.length === 0) return '警戒: なし'
-  return '警戒: ' + arr.map((s) => s.text).join(' / ')
+  return buildClusterLineJa('警戒: ', '警戒: なし', pickConcerningSignals(signals))
 }
 
 /**
@@ -627,9 +625,21 @@ export function formatConcerningSignalsLineJa(signals: AnalyticsSignals): string
  * 軸 3 / 4 (警告) に埋もれない UX を作る。
  */
 export function formatAchievementSignalsLineJa(signals: AnalyticsSignals): string {
-  const arr = pickAchievementSignals(signals)
-  if (arr.length === 0) return '達成感: 記録なし'
-  return '達成感: ' + arr.map((s) => s.text).join(' / ')
+  return buildClusterLineJa('達成感: ', '達成感: 記録なし', pickAchievementSignals(signals))
+}
+
+// iter1755 refactor: cluster 別 1 行 ja-JP text の共通 pattern (prefix + signals.text を ' / ' で
+// 連結、empty は sentinel) を 1 private helper に抽出。formatConcerning (iter1745) +
+// formatAchievement (iter1725) の手書き 4 行 × 2 件を 2 行 × 2 件 + 共通 4 行に圧縮、
+// 「cluster line format」 意図を 1 関数に集約 (= 新 cluster 追加時の追従漏れ防止 / 1 関数で
+// format 仕様 (separator / sentinel pattern) を 1 view で読める)。
+function buildClusterLineJa(
+  prefix: string,
+  emptySentinel: string,
+  signals: AgentBriefSignal[],
+): string {
+  if (signals.length === 0) return emptySentinel
+  return prefix + signals.map((s) => s.text).join(' / ')
 }
 
 /**
