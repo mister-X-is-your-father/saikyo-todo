@@ -766,6 +766,19 @@ async function main() {
     })
   }
 
+  // ========= JX. item-checkbox title full sync sweep (iter2319) =========
+  const icJX = read(here, `${root}/src/components/workspace/item-checkbox.tsx`)
+  if (
+    !icJX.includes('iter2319') ||
+    icJX.includes("title={isDone ? '未完了に戻す' : '完了にする'}")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'JX.item-checkbox-title',
+      message: '[JX] iter2319 item-checkbox title 3-path full sync が消えている',
+    })
+  }
+
   // ========= JW. template-card delete button title sweep (iter2317) =========
   const tpJW = read(here, `${root}/src/components/template/templates-panel.tsx`)
   if (!tpJW.includes('iter2317')) {
