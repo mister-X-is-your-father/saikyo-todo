@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= AP. operation-board-forecast chip title sweep (iter1837) =========
+  const opBoard = read(here, `${root}/src/components/workspace/operation-board-widget.tsx`)
+  if (!opBoard.includes('title={`今日完了予測 ${formatTodayForecastJa(forecast)}`}')) {
+    findings.push({
+      level: 'error',
+      source: 'AP.forecast-chip',
+      message: '[AP] iter1837 operation-board-forecast title が消えている',
+    })
+  }
+
   // ========= AO. WorkspaceHeader role Badge title sweep (iter1835) =========
   const wsHeader = read(here, `${root}/src/components/workspace/workspace-header.tsx`)
   if (!wsHeader.includes('title={`${role} — あなたの workspace role`}')) {
