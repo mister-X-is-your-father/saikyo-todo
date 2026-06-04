@@ -631,6 +631,30 @@ async function main() {
     })
   }
 
+  // ========= W. creation form submit title sweep (iter1799) =========
+  const createWs = read(here, `${root}/src/components/workspace/create-workspace-form.tsx`)
+  if (
+    !createWs.includes(
+      "title={isPending ? '作成中… — Workspace を作成中' : '作成 — Workspace を新規作成'}",
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'W.create-submit',
+      message: '[W] iter1799 create-workspace-submit title が消えている',
+    })
+  }
+  const createTe = read(here, `${root}/src/components/time-entry/create-time-entry-form.tsx`)
+  if (
+    !createTe.includes("title={create.isPending ? '稼働記録を作成中…' : '記録 — 稼働記録を作成'}")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'W.create-submit',
+      message: '[W] iter1799 create-time-entry-submit title が消えている',
+    })
+  }
+
   // ========= N. logout button title sweep (iter1781) =========
   // homePage は C 軸で既に読込済 (line 277)
   if (!homePage.includes('title="ログアウト — ログイン画面に戻る"')) {
