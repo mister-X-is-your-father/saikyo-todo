@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BL. team-capacity member name title sweep (iter1881) =========
+  const teamCapBL = read(here, `${root}/src/components/workspace/team-capacity-panel.tsx`)
+  if (!teamCapBL.includes('title={`${name} — member`}')) {
+    findings.push({
+      level: 'error',
+      source: 'BL.team-capacity-name',
+      message: '[BL] iter1881 team-capacity member name title が消えている',
+    })
+  }
+
   // ========= BK. swimlane population title sweep (iter1879) =========
   const swimlaneBK = read(here, `${root}/src/components/workspace/sprint-swimlane-disclosure.tsx`)
   if (!swimlaneBK.includes('title={`${populationLabel} — Sprint 全体`}')) {
