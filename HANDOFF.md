@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2110 1/1 test a11y-sweep-suite に iter2109 proposal-accept/reject entry 追加] 検査軸 178 個 (新 FV 軸)、計約 283 invariant check に拡張。
+- ✅ [playwright-iter2109 1/1 mode-D proposal-accept + proposal-reject title を aria-label と sync] 2 button title-aria 同期 (proposal title + state)、proposals-redecompose iter2107 / agent-cancel iter2105 と pair。
 - ✅ [playwright-iter2108 1/1 test a11y-sweep-suite に iter2107 proposals-redecompose entry 追加] 検査軸 177 個 (新 FU 軸)、計約 280 invariant check に拡張、検査軸 177 突破。
 - ✅ [playwright-iter2107 1/1 mode-D proposals-redecompose + redecompose-fresh title を aria-label と sync] 2 button title-aria 同期 (件数 + 追加分解 / やり直し)、agent-cancel iter2105 / src-pull iter2103 / wf-run-rerun iter2101 と pair。
 - ✅ [playwright-iter2106 1/1 test a11y-sweep-suite に iter2105 agent-cancel entry 追加] 検査軸 176 個 (新 FT 軸)、計約 277 invariant check に拡張。
