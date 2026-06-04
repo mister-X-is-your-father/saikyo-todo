@@ -762,6 +762,19 @@ async function main() {
     })
   }
 
+  // ========= HM. Goal 一覧 ul title sweep (iter2195) =========
+  const gpHM = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
+  if (
+    !gpHM.includes('iter2195') ||
+    !gpHM.includes('title={`Goal 一覧 — ${list.data.length} 件`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HM.goals-list-title',
+      message: '[HM] iter2195 Goal 一覧 ul title 同期 が消えている',
+    })
+  }
+
   // ========= HL. Sprint 一覧 ul title sweep (iter2193) =========
   const spHL = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (
