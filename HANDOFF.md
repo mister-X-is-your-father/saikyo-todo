@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1864 1/1 test a11y-sweep-suite に iter1863 period priority dot entry 追加] 検査軸 55 個 (新 BC 軸)、計約 151 invariant check に拡張。
 - ✅ [playwright-iter1863 1/1 mode-D personal-period-view priority dot に title 付与] today-view priority dot (title=`p${priority}`) と統一、period-view priority dot にも title 付与。
 - ✅ [playwright-iter1862 1/1 test a11y-sweep-suite に iter1861 inbox-health title entry 追加] 検査軸 54 個 (新 BB 軸)、計約 150 invariant check に拡張。
 - ✅ [playwright-iter1861 1/1 mode-D inbox-health-hint chip に title 付与] iter1847 notification hint chip と同 pattern を inbox-health にも展開、inbox 健全性 chip の sighted hover で full label disclose。
