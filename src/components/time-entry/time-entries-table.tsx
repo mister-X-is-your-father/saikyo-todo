@@ -185,6 +185,16 @@ export function TimeEntriesTable({
                           ? `再Sync — 「${e.description || '(無題)'}」(${e.workDate}) を再 Sync`
                           : `Sync — 「${e.description || '(無題)'}」(${e.workDate}) を Sync`
                     }
+                    /* iter2081: state-dependent aria-label (pending / failed / normal) を
+                       title で sighted hover disclose (item-edit reload iter2079 と同 hover
+                       context pattern)。 */
+                    title={
+                      sync.isPending
+                        ? `Sync 中… — 「${e.description || '(無題)'}」(${e.workDate}) を Sync 中`
+                        : e.syncStatus === 'failed'
+                          ? `再Sync — 「${e.description || '(無題)'}」(${e.workDate}) を再 Sync`
+                          : `Sync — 「${e.description || '(無題)'}」(${e.workDate}) を Sync`
+                    }
                   >
                     <span aria-hidden="true">{e.syncStatus === 'failed' ? '再Sync' : 'Sync'}</span>
                   </Button>
