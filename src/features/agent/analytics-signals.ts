@@ -449,6 +449,22 @@ export function pickAchievementSignals(signals: AnalyticsSignals): AgentBriefSig
 }
 
 /**
+ * iter1752 ai-automation: 達成感 cluster の active signal 数。
+ * `pickAchievementSignals(signals).length` の薄い wrapper。
+ *
+ * 用途:
+ *  - UI badge 数 (= 「今日の達成感 3 件」 NavBar badge)
+ *  - Slack daily digest headline 数 (= 「✨ 達成感 3 / ⚠ 警戒 2」)
+ *  - dashboard summary chip area の「達成感セクション件数」
+ *
+ * `hasAchievementSignals` (iter1742) は boolean、本 helper は number。
+ * 「ある or ない」 だけ知りたい時は has 版、件数を表示したい時は本 helper。
+ */
+export function countAchievementSignals(signals: AnalyticsSignals): number {
+  return pickAchievementSignals(signals).length
+}
+
+/**
  * iter1742 ai-automation: 達成感 cluster に 1 軸以上 active signal があるかの predicate。
  *
  * `pickAchievementSignals(signals).length > 0` の薄い wrapper、UI / Slack notifier
@@ -536,6 +552,24 @@ export function pickConcerningSignals(signals: AnalyticsSignals): AgentBriefSign
 // invariant test (iter1747 累計 113 件 PASS) が等価性を継続 gate。
 export function hasConcerningSignals(signals: AnalyticsSignals): boolean {
   return pickConcerningSignals(signals).length > 0
+}
+
+/**
+ * iter1752 ai-automation: 警戒 cluster の active signal 数。
+ * iter1752 `countAchievementSignals` の対称 concerning 版、`pickConcerningSignals(signals).length`
+ * の薄い wrapper。
+ *
+ * 用途:
+ *  - UI badge 数 (= 「警戒 3 件」 alert NavBar badge)
+ *  - Slack daily digest headline 数 (= 「✨ 達成感 3 / ⚠ 警戒 2」)
+ *  - dashboard 警戒セクションの件数 (header / chip 上部)
+ *
+ * `hasConcerningSignals` (iter1747) は boolean、本 helper は number。
+ * cluster 対称 API: pick (array) / has (boolean) / count (number) / formatLineJa (text)
+ * の 4 関数 trio が両 cluster で完全対称化。
+ */
+export function countConcerningSignals(signals: AnalyticsSignals): number {
+  return pickConcerningSignals(signals).length
 }
 
 /**

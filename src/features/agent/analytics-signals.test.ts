@@ -12,7 +12,9 @@ import { computeAgentReliability } from './agent-reliability'
 import {
   analyticsSignalsToArray,
   composeAnalyticsSignals,
+  countAchievementSignals,
   countAnalyticsSignalsByTone,
+  countConcerningSignals,
   filterSignalsByMinTone,
   formatAchievementSignalsLineJa,
   formatAnalyticsSignalsLineJa,
@@ -1382,6 +1384,35 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
     expect(lines[0]!.startsWith('警戒: ')).toBe(true)
     expect(lines[0]).not.toBe('警戒: なし')
     expect(lines[1]).toBe('達成感: 記録なし')
+  })
+
+  it('iter1752: countAchievementSignals — 全 null → 0', () => {
+    expect(countAchievementSignals(composeAnalyticsSignals({}))).toBe(0)
+  })
+
+  it('iter1752: countAchievementSignals — 1 軸 active → 1', () => {
+    expect(countAchievementSignals(composeAnalyticsSignals({ doneToday: 2 }))).toBe(1)
+  })
+
+  it('iter1752: countConcerningSignals — 全 null → 0', () => {
+    expect(countConcerningSignals(composeAnalyticsSignals({}))).toBe(0)
+  })
+
+  it('iter1752: countConcerningSignals — weeklyReviewDue overdue → 1', () => {
+    expect(countConcerningSignals(composeAnalyticsSignals({ weeklyReviewDue: 'overdue' }))).toBe(1)
+  })
+
+  it('iter1752: count*Signals invariant — pick*Signals.length と等価', () => {
+    const cases = [
+      composeAnalyticsSignals({}),
+      composeAnalyticsSignals({ doneToday: 2 }),
+      composeAnalyticsSignals({ weeklyReviewDue: 'overdue' }),
+      composeAnalyticsSignals({ doneToday: 2, weeklyReviewDue: 'overdue' }),
+    ]
+    for (const s of cases) {
+      expect(countAchievementSignals(s)).toBe(pickAchievementSignals(s).length)
+      expect(countConcerningSignals(s)).toBe(pickConcerningSignals(s).length)
+    }
   })
 
   it('iter1748: cluster disjoint invariant — pickAchievement ∩ pickConcerning = ∅', () => {
