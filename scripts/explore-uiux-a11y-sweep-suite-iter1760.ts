@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= EZ. create-time-entry form title sweep (iter2065) =========
+  const cteEZ = read(here, `${root}/src/components/time-entry/create-time-entry-form.tsx`)
+  if (!cteEZ.includes('title="稼働記録 作成フォーム"')) {
+    findings.push({
+      level: 'error',
+      source: 'EZ.cte-form',
+      message: '[EZ] iter2065 create-time-entry form title が消えている',
+    })
+  }
+
   // ========= EY. mock-submit form title sweep (iter2063) =========
   const msfEY = read(here, `${root}/src/components/mock-timesheet/mock-submit-form.tsx`)
   if (!msfEY.includes('title="Mock Timesheet 工数送信フォーム"')) {
