@@ -549,6 +549,11 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
             role="group"
             /* iter1582: paren convention を em-dash 区切に統一。 */
             aria-label={`提案「${proposal.title}」の編集 form 操作 — キャンセル / 保存`}
+            /* iter2131: proposal edit form ops group の aria-label は browser tooltip に
+               ならず sighted は hover で proposal title context disclose されない。
+               sprint-defaults-ops iter2129 / sprint-period-progress iter2127 と同
+               title=aria-label sync pattern。 */
+            title={`提案「${proposal.title}」の編集 form 操作 — キャンセル / 保存`}
           >
             {/* iter1106: visible-prefix sweep (iter1093-1105) を decompose-proposal edit
                 buttons にも展開。visible "キャンセル" / "保存" / "保存中…" を冒頭固定。 */}
