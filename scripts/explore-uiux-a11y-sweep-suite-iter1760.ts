@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BY. item-deps DirectionIcon wrapper title sweep (iter1907) =========
+  const depsBY = read(here, `${root}/src/components/workspace/item-dependencies-panel.tsx`)
+  if (!depsBY.includes('<span title={srLabel}')) {
+    findings.push({
+      level: 'error',
+      source: 'BY.deps-direction',
+      message: '[BY] iter1907 item-deps DirectionIcon wrapper title が消えている',
+    })
+  }
+
   // ========= BX. activity-log actor chip title sweep (iter1905) =========
   const activityBX = read(here, `${root}/src/components/workspace/activity-log.tsx`)
   if (
