@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DQ. archived-items-panel item link title sweep (iter1995) =========
+  const arcDQ = read(here, `${root}/src/components/workspace/archived-items-panel.tsx`)
+  if (!arcDQ.includes('iter1995')) {
+    findings.push({
+      level: 'error',
+      source: 'DQ.archive-link',
+      message: '[DQ] iter1995 archived-items-panel item link title が消えている',
+    })
+  }
+
   // ========= DP. items-board filter group title sweep (iter1993) =========
   const boardDP = read(here, `${root}/src/components/workspace/items-board.tsx`)
   if (!boardDP.includes('iter1993')) {
