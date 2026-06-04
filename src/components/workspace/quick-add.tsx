@@ -232,6 +232,13 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
           /* iter1601: 旧 aria-label `"解析結果: X"` の colon は iter1093-1600 sweep の em-dash 区切と
              divergent。live region announce text の `:` を ` — ` em-dash に統一。 */
           aria-label={`解析結果 — ${previewSummary}`}
+          /* iter2269: QuickAdd preview の parent role="status" aria-label "解析結果 — X" は
+             browser tooltip にならず sighted は hover で「解析結果」 prefix + 完全 summary
+             disclose 不可。inner span は preview.title だけを truncate hover で出すが、
+             prefix「解析結果 — 」 + chip list 全集約 (予定 / 優先度 / タグ / MUST 等) は
+             parent aria-label にしかない。MCP path A で today view で test item create 直後
+             の preview region 探索中に発見、live region 系 aria-label の title pair 補完。 */
+          title={`解析結果 — ${previewSummary}`}
         >
           {/* iter1752: quick-add preview の title span は truncate で長 preview.title 切れ、
               parent role="status" aria-label "解析結果 — X" は browser tooltip にならず sighted
