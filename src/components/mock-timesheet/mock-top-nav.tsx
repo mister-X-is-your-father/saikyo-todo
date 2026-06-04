@@ -34,13 +34,25 @@ export function MockTopNav({ sessionId }: { sessionId: string }) {
         aria-label="mock-timesheet — 新規入力 / 入力一覧 / ログアウト"
         className="flex items-center gap-2"
       >
+        {/* iter1757: iter1731 workspace nav 8 link data-testid sweep の mock-timesheet
+            counterpart。Playwright で `[data-testid^="mock-nav-"]` で mock-timesheet nav 一括
+            発見、`[data-testid="mock-nav-new"]` / `[data-testid="mock-nav-entries"]` で
+            individual 遷移、auth-flow tests を 1 selector pattern で書ける。 */}
         <Button variant={isNew ? 'default' : 'outline'} size="sm" className="min-h-11" asChild>
-          <Link href="/mock-timesheet/new" aria-current={isNew ? 'page' : undefined}>
+          <Link
+            href="/mock-timesheet/new"
+            aria-current={isNew ? 'page' : undefined}
+            data-testid="mock-nav-new"
+          >
             新規入力
           </Link>
         </Button>
         <Button variant={isEntries ? 'default' : 'outline'} size="sm" className="min-h-11" asChild>
-          <Link href="/mock-timesheet/entries" aria-current={isEntries ? 'page' : undefined}>
+          <Link
+            href="/mock-timesheet/entries"
+            aria-current={isEntries ? 'page' : undefined}
+            data-testid="mock-nav-entries"
+          >
             入力一覧
           </Link>
         </Button>
