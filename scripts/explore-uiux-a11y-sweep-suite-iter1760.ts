@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= IV. workspace-mode 3 option button title sweep (iter2263) =========
+  const msIV = read(here, `${root}/src/components/workspace/workspace-mode-selector.tsx`)
+  if (!msIV.includes('iter2263') || !msIV.includes('title={`${opt.label} — ${opt.description}`}')) {
+    findings.push({
+      level: 'error',
+      source: 'IV.workspace-mode-option-title',
+      message: '[IV] iter2263 workspace-mode option title sync が消えている',
+    })
+  }
+
   // ========= IU. Template 一覧 ul title sweep (iter2261) =========
   const tpIU = read(here, `${root}/src/components/template/templates-panel.tsx`)
   if (
