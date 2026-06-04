@@ -740,6 +740,19 @@ async function main() {
     })
   }
 
+  // ========= GF. Sprint デフォルト編集 ops group title 付与 sweep (iter2129) =========
+  const spGF = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (
+    !spGF.includes('iter2129') ||
+    !spGF.includes('title="Sprint デフォルト編集の操作 — キャンセル / 保存"')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GF.sprint-defaults-ops-group-title',
+      message: '[GF] iter2129 Sprint デフォルト編集 ops group title 付与 が消えている',
+    })
+  }
+
   // ========= GE. Sprint 期間進捗 group title 付与 sweep (iter2127) =========
   const spGE = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (
