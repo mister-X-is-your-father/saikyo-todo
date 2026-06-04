@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CD. estimate-bias 内訳 grid title sweep (iter1917) =========
+  const biasCD = read(here, `${root}/src/components/time-entry/estimate-bias-insight.tsx`)
+  if (!biasCD.includes('title={`見積バイアス内訳 —')) {
+    findings.push({
+      level: 'error',
+      source: 'CD.estimate-bias-grid',
+      message: '[CD] iter1917 estimate-bias 内訳 grid title が消えている',
+    })
+  }
+
   // ========= CC. estimate-bias tendency title sweep (iter1915) =========
   const biasCC = read(here, `${root}/src/components/time-entry/estimate-bias-insight.tsx`)
   if (!biasCC.includes('title={`${label} — 傾向`}')) {
