@@ -153,6 +153,17 @@ export function TemplateItemsEditor({ templateId }: Props) {
                   Number(dueOffset) > 365)) ||
               undefined
             }
+            /* iter1989: state-dependent aria-label (空 / 範囲外 / 通常) を title で sighted
+               hover disclose、template-items タイトル input iter1987 と pair、template-items
+               2 input sweep 完備 (11 state-dependent input family の続編)。 */
+            title={(() => {
+              if (dueOffset === '')
+                return '期日 offset (任意、日数 — 展開日 + N 日後を期日に設定、0-365)'
+              const n = Number(dueOffset)
+              if (Number.isNaN(n) || n < 0 || n > 365)
+                return `期日 offset (有効範囲 0-365、現在値「${dueOffset}」 は範囲外)`
+              return `期日 offset (現在 ${n} 日 — 展開日から ${n} 日後を期日に設定)`
+            })()}
           />
         </div>
         <label className="flex min-h-11 items-center gap-1 text-sm">
