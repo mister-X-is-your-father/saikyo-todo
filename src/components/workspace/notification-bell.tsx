@@ -194,9 +194,11 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                 role="img"
                 /* iter1565: 旧 `未読内訳: ${unreadBreakdown}` は ':' colon 区切で visible
                    "${unreadBreakdown}" を末尾に持ち voice control prefix-matching 不可。
-                   iter1561 同 file 内 hint chip と同 pattern、visible 冒頭固定 + em-dash 区切。 */
+                   iter1561 同 file 内 hint chip と同 pattern、visible 冒頭固定 + em-dash 区切。
+                   iter1849: title={unreadBreakdown} は aria-label より context 不足 (`未読内訳` 失念)。
+                   iter1847 hint chip / iter1843 MustBadge と同 pattern で title を aria-label 一致 ↑。 */
                 aria-label={`${unreadBreakdown} — 未読内訳`}
-                title={unreadBreakdown}
+                title={`${unreadBreakdown} — 未読内訳`}
               >
                 <span aria-hidden="true">{unreadBreakdown}</span>
               </span>
