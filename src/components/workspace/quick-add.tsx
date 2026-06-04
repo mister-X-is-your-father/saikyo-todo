@@ -306,6 +306,10 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
                  中位置に持ち voice control prefix-matching「click 30分」 が strict prefix-match で不可。
                  iter1610 active-timer calibrated と同 pattern、visible (icon 抜き) 冒頭固定 + em-dash 区切。 */
               aria-label={`${formatEstimate(calibrated.calibratedMinutes)} — 校正後 ${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正`}
+              /* iter1889: visible は → 校正値 のみで delta / 中央値 factor が無い、
+                 sighted hover で full factor disclose (active-timer-calibrated iter1851 と同 pattern、
+                 quick-add 内も対称化、quick-add-estimate iter1887 と pair)。 */
+              title={`${formatEstimate(calibrated.calibratedMinutes)} — 校正後 ${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正`}
             >
               <span aria-hidden="true">→ {formatEstimate(calibrated.calibratedMinutes)}</span>
             </span>
