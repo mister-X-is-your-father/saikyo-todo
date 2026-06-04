@@ -62,6 +62,10 @@ export function StartTimerButton({ item, size = 'default' }: Props) {
         data-testid={`start-timer-active-${item.id}`}
         role="img"
         aria-label={`「${item.title}」を計測中 — 経過 ${formatElapsed(elapsedFn())}、右下 panel で停止`}
+        /* iter1949: visible は icon + 経過時間 + "計測中" 短文のみで item.title context が
+           無い、sighted hover で full label disclose (inbox-region iter1945 と同 region/widget
+           summary pattern)。 */
+        title={`「${item.title}」を計測中 — 経過 ${formatElapsed(elapsedFn())}、右下 panel で停止`}
       >
         <Timer className="h-3.5 w-3.5 text-amber-500" aria-hidden="true" />
         <span className="font-mono tabular-nums" aria-hidden="true">
