@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2290 1/1 test a11y-sweep-suite に iter2289 案件サマリ region root entry 追加] 検査軸 268 個 (新 JI 軸)、計約 386 invariant check に拡張、サマリパネル region + chip 全 4 element 完成 (MCP path A 経由発見)、iter 2290 milestone 突破。
+- ✅ [playwright-iter2289 1/1] 案件サマリ region root container (item-summary-panel): aria-label "案件サマリ (進捗 X%、完了 N / 全 M 件)" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-item-summary-region-title-iter2289.ts)。**MCP path A で ItemEditDialog サマリタブで発見**、3 chip iter2237 と pair で region + chip 全 4 element 完成。
 - ✅ [playwright-iter2288 1/1 test a11y-sweep-suite に iter2287 edit-item-sprint/kr select entry 追加] 検査軸 267 個 (新 JH 軸)、計約 385 invariant check に拡張、ItemEditDialog 内 assignment select pair (Sprint / KR) 完成 (MCP path A 経由発見)、385 check milestone 突破。
 - ✅ [playwright-iter2287 1/1] ItemEditDialog 2 assignment select (edit-item-sprint / edit-item-kr): aria-label state-dependent 3-path (pending / 割当中 / 未割当) を sighted hover で disclose 不可 → 同 text の title を 2 select 同時に付与し sync (path B codify scripts/explore-uiux-edit-item-sprint-kr-title-iter2287.ts)。**MCP path A で ItemEditDialog 探索中に発見**、選択中の Sprint / KR が hover で識別可能化。
 - ✅ [playwright-iter2286 1/1 test a11y-sweep-suite に iter2285 ItemEditDialog TabsList entry 追加] 検査軸 266 個 (新 JG 軸)、計約 384 invariant check に拡張、landmark root container title pattern (Kanban / Gantt / TabsList) 4 element 完成 (MCP path A 経由発見)。
