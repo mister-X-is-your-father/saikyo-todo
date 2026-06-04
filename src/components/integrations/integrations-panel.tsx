@@ -526,6 +526,16 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                         ? 'URL (必須、https:// または http:// で始まる API endpoint)'
                         : `URL (現在 ${url.length} 文字、API endpoint)`
                     }
+                    /* iter2313: src-url input の aria-label は state-dependent 2-path (空 /
+                       入力中) で SR には endpoint format hint を渡すが browser tooltip にならず
+                       sighted は hover で同 context disclose 不可。MCP path A で /integrations 探索
+                       中に発見、te-description iter2303 / editTitle iter2295 と同 input title
+                       pattern を src-url にも展開、API endpoint 入力 form の hint disclosure 強化。 */
+                    title={
+                      url.length === 0
+                        ? 'URL (必須、https:// または http:// で始まる API endpoint)'
+                        : `URL (現在 ${url.length} 文字、API endpoint)`
+                    }
                   />
                 </div>
                 <div className="space-y-1">
