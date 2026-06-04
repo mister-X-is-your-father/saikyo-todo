@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2304 1/1 test a11y-sweep-suite に iter2303 te-description/teMinutes input entry 追加] 検査軸 275 個 (新 JP 軸)、計約 393 invariant check に拡張、time-entry create form 2 input title sync 完成 (MCP path A 経由発見)、検査軸 275 milestone 突破。
+- ✅ [playwright-iter2303 1/1] time-entry create form 2 input (作業内容 / 分): aria-label state-dependent multi-path (4-path / 3-path) を sighted hover で disclose 不可 → 同 text の title を 2 input 同時に付与し sync (path B codify scripts/explore-uiux-te-description-minutes-title-iter2303.ts)。**MCP path A で /time-entries 探索中に発見**、ItemEditDialog editTitle iter2295 と同 input title pattern を time-entry input にも展開、h/m parsed display を hover でも disclose。
 - ✅ [playwright-iter2302 1/1 test a11y-sweep-suite に iter2301 pickers trigger empty path entry 追加] 検査軸 274 個 (新 JO 軸)、計約 392 invariant check に拡張、picker family trigger button 両 path (empty + non-empty) 完成 (MCP path A 経由発見)。
 - ✅ [playwright-iter2301 1/1] assignee-picker / tag-picker trigger empty path title: iter1743/1744 で non-empty のみ title だったが empty 時 aria-label の select hint disclose 不可 → 両 path とも aria-label と同 text の title に揃え sync (path B codify scripts/explore-uiux-pickers-trigger-empty-title-iter2301.ts)。**MCP path A で ItemEditDialog 内 picker trigger 探索中に発見**、picker family trigger button 両 path 完成。
 - ✅ [playwright-iter2300 1/1 test a11y-sweep-suite に iter2299 editStart/editDue date input entry 追加] 検査軸 273 個 (新 JN 軸)、計約 391 invariant check に拡張、ItemEditDialog 基本 input 4 element 完成 (title / description / start / due) (MCP path A 経由発見)、iter 2300 milestone 突破。
