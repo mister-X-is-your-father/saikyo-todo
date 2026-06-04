@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DN. template-items dueOffset input title sweep (iter1989) =========
+  const tmplDN = read(here, `${root}/src/components/template/template-items-editor.tsx`)
+  if (!tmplDN.includes('iter1989')) {
+    findings.push({
+      level: 'error',
+      source: 'DN.template-due-input',
+      message: '[DN] iter1989 template-items dueOffset input title が消えている',
+    })
+  }
+
   // ========= DM. template-items 子 Item タイトル input title sweep (iter1987) =========
   const tmplDM = read(here, `${root}/src/components/template/template-items-editor.tsx`)
   if (!tmplDM.includes('iter1987')) {
