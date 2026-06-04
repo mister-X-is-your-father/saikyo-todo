@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2258 1/1 test a11y-sweep-suite に iter2257 src-create-btn 3-path entry 追加] 検査軸 252 個 (新 IS 軸)、計約 370 invariant check に拡張、create button family Source 1 element 追加 (MCP path A 経由発見)、370 check milestone 突破。
+- ✅ [playwright-iter2257 1/1] integrations-panel src-create-btn (External Source 作成 button): aria-label state-dependent 3-path (!name.trim() / pending / idle) を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-src-create-btn-title-iter2257.ts)。**MCP path A で /integrations 画面探索中に発見**、iter1809 sprint/goal create と同 pattern の create button family を Source にも完成。
 - ✅ [playwright-iter2256 1/1 test a11y-sweep-suite に iter2255 budget edit form button family entry 追加] 検査軸 251 個 (新 IR 軸)、計約 369 invariant check に拡張、budget edit form button 3 element (edit-btn / cancel / save) title 完成。
 - ✅ [playwright-iter2255 1/1] budget-panel edit form: cancel + save 2 button の aria-label を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-budget-cancel-save-title-iter2255.ts)、budget-edit-btn iter2123 と pair の budget edit form button family 3 element 完成 (save-btn は pending 2-path sync)。
 - ✅ [playwright-iter2254 1/1 test a11y-sweep-suite に iter2253 proposals-accept-all/reject-all entry 追加] 検査軸 250 個 (新 IQ 軸)、計約 368 invariant check に拡張、bulk proposal action button pair 完成、検査軸 250 milestone 突破。
