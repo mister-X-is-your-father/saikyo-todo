@@ -95,6 +95,17 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
                   .map((t) => t.name)
                   .join(', ')} — タグを選択 (現在 ${selectedLabels.length} 件)`
           }
+          // iter1744: assignee-picker iter1743 と同 pattern。多 tag 時 inner truncate で
+          // tag list 切れ、aria-label は browser tooltip にならず sighted は hover で全 tag
+          // 見れず。title 付与で sighted hover → 全 tag list disclose (空時 undefined)。
+          title={
+            selectedLabels.length > 0
+              ? selectedLabels
+                  .filter((t): t is NonNullable<typeof t> => Boolean(t))
+                  .map((t) => t.name)
+                  .join(', ')
+              : undefined
+          }
           aria-expanded={open}
           aria-haspopup="listbox"
         >
