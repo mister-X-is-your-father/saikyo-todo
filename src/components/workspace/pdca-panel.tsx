@@ -260,6 +260,10 @@ function DailyBars({
         /* iter1584: 旧 aria-label paren convention `"日次完了 throughput (X 日分)"` は iter1093-1583
            sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
         aria-label={`日次完了 throughput — ${data.length} 日分`}
+        /* iter2173: pdca daily-bars list の aria-label は browser tooltip にならず
+           sighted は hover で 日数 context disclose 不可。pdca-counts-group iter2171 /
+           weekly-anomalies iter2169 と同 title=aria-label sync pattern。 */
+        title={`日次完了 throughput — ${data.length} 日分`}
         data-testid="pdca-daily-bars"
       >
         {data.map((d) => {
