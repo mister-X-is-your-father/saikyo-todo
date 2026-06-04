@@ -740,6 +740,19 @@ async function main() {
     })
   }
 
+  // ========= FO. sprint-premortem title state-dependent 同期 sweep (iter2095) =========
+  const spFO = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (
+    !spFO.includes('iter2095') ||
+    !spFO.includes('Pre-mortem 生成中… — Sprint「${sprint.name}」の Pre-mortem を生成中')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'FO.sprint-premortem-title',
+      message: '[FO] iter2095 sprint-premortem title state-dependent 同期 が消えている',
+    })
+  }
+
   // ========= FN. sprint-retro title state-dependent 同期 sweep (iter2093) =========
   const spFN = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (
