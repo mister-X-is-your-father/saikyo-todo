@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DL. goals-panel goal-desc textarea title sweep (iter1985) =========
+  const gpDL = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
+  if (!gpDL.includes('iter1985')) {
+    findings.push({
+      level: 'error',
+      source: 'DL.goal-desc',
+      message: '[DL] iter1985 goals-panel goal-desc textarea title が消えている',
+    })
+  }
+
   // ========= DK. goals-panel goal-title input title sweep (iter1983) =========
   const gpDK = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
   if (!gpDK.includes('iter1983')) {
