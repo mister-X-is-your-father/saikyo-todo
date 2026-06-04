@@ -619,6 +619,14 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                         ? `完了 — Goal「${goal.title}」のステータスを更新中…`
                         : `完了 — Goal「${goal.title}」を完了`
                     }
+                    /* iter2089: sprint status transition iter2083-2087 と同 pattern を
+                       goal status transition (goal-complete) にも展開、Goal name +
+                       state context hover disclose。 */
+                    title={
+                      update.isPending
+                        ? `完了 — Goal「${goal.title}」のステータスを更新中…`
+                        : `完了 — Goal「${goal.title}」を完了`
+                    }
                   >
                     <span aria-hidden="true">完了</span>
                   </Button>
@@ -632,6 +640,12 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     aria-busy={update.isPending || undefined}
                     data-testid={`goal-archive-${goal.id}`}
                     aria-label={
+                      update.isPending
+                        ? `アーカイブ — Goal「${goal.title}」のステータスを更新中…`
+                        : `アーカイブ — Goal「${goal.title}」をアーカイブ`
+                    }
+                    /* iter2089: goal-archive button title (goal status transition family)。 */
+                    title={
                       update.isPending
                         ? `アーカイブ — Goal「${goal.title}」のステータスを更新中…`
                         : `アーカイブ — Goal「${goal.title}」をアーカイブ`
