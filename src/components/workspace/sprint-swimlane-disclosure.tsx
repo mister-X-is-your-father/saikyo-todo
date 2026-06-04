@@ -60,7 +60,15 @@ export function SprintSwimlaneDisclosure({
         // iter1042: visible "担当者ビュー (swim-lane Gantt)" を aria-label の prefix に
         // 固定し WCAG 2.5.3 satisfy (旧 aria-label には "ビュー" が無く literal
         // substring 不一致だった)。
+        // iter1825: visible "担当者ビュー (swim-lane Gantt)" のみで sighted は hover で
+        // open/close 状態 + sprintName context 即把握できなかった。iter1817 goal-toggle と同
+        // pattern を sprint-swimlane summary にも展開、title={同 aria-label} で disclose。
         aria-label={
+          open
+            ? `担当者ビュー (swim-lane Gantt) を閉じる — Sprint「${sprintName}」の担当者 swim-lane Gantt を閉じる`
+            : `担当者ビュー (swim-lane Gantt) を開く — Sprint「${sprintName}」の担当者 swim-lane Gantt を開く`
+        }
+        title={
           open
             ? `担当者ビュー (swim-lane Gantt) を閉じる — Sprint「${sprintName}」の担当者 swim-lane Gantt を閉じる`
             : `担当者ビュー (swim-lane Gantt) を開く — Sprint「${sprintName}」の担当者 swim-lane Gantt を開く`
