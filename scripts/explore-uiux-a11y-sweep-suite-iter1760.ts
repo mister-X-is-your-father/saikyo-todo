@@ -261,9 +261,11 @@ async function main() {
       'title={item.title}',
       'ItemEditDialog',
     ],
+    // iter2161: schedule-item-picker item button title を `title={it.title}` から
+    // `title={`${it.title} — item を選択${it.isMust ? ' (MUST)' : ''}`}` に変更し aria-label と sync。
     [
       `${root}/src/components/schedule/schedule-item-picker.tsx`,
-      'title={it.title}',
+      "title={`${it.title} — item を選択${it.isMust ? ' (MUST)' : ''}`}",
       'schedule-item-picker',
     ],
     [
@@ -757,6 +759,27 @@ async function main() {
       level: 'error',
       source: 'AB.sprint-goal-create',
       message: '[AB] iter1809 goal-create conditional path text が消えている',
+    })
+  }
+
+  // ========= GV. schedule-picker title sweep (iter2161) =========
+  const spGV = read(here, `${root}/src/components/schedule/schedule-item-picker.tsx`)
+  const iter2161CountGV = (spGV.match(/iter2161/g) ?? []).length
+  if (iter2161CountGV < 2) {
+    findings.push({
+      level: 'error',
+      source: 'GV.schedule-picker-title',
+      message: `[GV] iter2161 marker 不足 (count=${iter2161CountGV}、ul + button 2 個必要)`,
+    })
+  }
+  if (
+    !spGV.includes('title={`検索結果 — ${filtered.length} 件`}') ||
+    !spGV.includes("title={`${it.title} — item を選択${it.isMust ? ' (MUST)' : ''}`}")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GV.schedule-picker-title',
+      message: '[GV] iter2161 schedule-picker title 同期 が消えている',
     })
   }
 
