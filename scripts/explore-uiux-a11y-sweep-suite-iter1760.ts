@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= IW. sprint-defaults-edit-btn title sweep (iter2265) =========
+  const spIW = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (!spIW.includes('iter2265')) {
+    findings.push({
+      level: 'error',
+      source: 'IW.sprint-defaults-edit-title',
+      message: '[IW] iter2265 sprint-defaults-edit-btn title sync が消えている',
+    })
+  }
+
   // ========= IV. workspace-mode 3 option button title sweep (iter2263) =========
   const msIV = read(here, `${root}/src/components/workspace/workspace-mode-selector.tsx`)
   if (!msIV.includes('iter2263') || !msIV.includes('title={`${opt.label} — ${opt.description}`}')) {
