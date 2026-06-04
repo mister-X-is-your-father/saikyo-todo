@@ -631,6 +631,19 @@ async function main() {
     })
   }
 
+  // ========= AA. notification-bell mark-all-read title sweep (iter1807) =========
+  if (
+    !notifBell.includes("'全て既読 — 未読通知がないため既読化不要'") ||
+    !notifBell.includes('`全て既読 — 未読 ${unreadCount} 件を既読化中…`') ||
+    !notifBell.includes('`全て既読 — 未読 ${unreadCount} 件をすべて既読にする`')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'AA.mark-all-read',
+      message: '[AA] iter1807 mark-all-read conditional 3 path text が消えている',
+    })
+  }
+
   // ========= Z. offline page title sweep (iter1805) =========
   const retryBtn = read(here, `${root}/src/app/~offline/retry-button.tsx`)
   if (!retryBtn.includes('title="再読み込みして再試行 — ページ全体を読み直して接続を回復"')) {
