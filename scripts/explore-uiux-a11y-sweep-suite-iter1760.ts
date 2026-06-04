@@ -762,6 +762,19 @@ async function main() {
     })
   }
 
+  // ========= HY. mock-timesheet nav title sweep (iter2219) =========
+  const mtHY = read(here, `${root}/src/components/mock-timesheet/mock-top-nav.tsx`)
+  if (
+    !mtHY.includes('iter2219') ||
+    !mtHY.includes('title="mock-timesheet — 新規入力 / 入力一覧 / ログアウト"')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HY.mock-top-nav-title',
+      message: '[HY] iter2219 mock-timesheet nav title 同期 が消えている',
+    })
+  }
+
   // ========= HX. create-workspace-form title sweep (iter2217) =========
   const cwfHX = read(here, `${root}/src/components/workspace/create-workspace-form.tsx`)
   if (!cwfHX.includes('iter2217') || !cwfHX.includes('title="Workspace 作成フォーム"')) {
