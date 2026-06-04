@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2224 1/1 test a11y-sweep-suite に iter2223 proposal-title-btn entry 追加] 検査軸 235 個 (新 IA 軸)、計約 353 invariant check に拡張、prefix 4th letter pass (HZ → IA)、既存 B 軸 decompose proposal title check を新 format に更新 (iter2223 sync 対応)。
+- ✅ [playwright-iter2223 1/1 mode-D proposal title button title を aria-label と sync] "提案を編集" + MUST hint context hover disclose、interrupt-note iter2221 / mock-top-nav iter2219 と pair。
 - ✅ [playwright-iter2222 1/1 test a11y-sweep-suite に iter2221 interrupt-note-input entry 追加] 検査軸 234 個 (新 HZ 軸)、計約 352 invariant check に拡張。
 - ✅ [playwright-iter2221 1/1 mode-D interrupt note input に title 付与し aria-label と sync] state-dependent (empty / active、文字数) context hover disclose、mock-top-nav iter2219 / create-workspace-form iter2217 と pair。
 - ✅ [playwright-iter2220 1/1 test a11y-sweep-suite に iter2219 mock-top-nav entry 追加] 検査軸 233 個 (新 HY 軸)、計約 351 invariant check に拡張、iter 2220 milestone。
