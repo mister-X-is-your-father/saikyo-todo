@@ -974,6 +974,15 @@ function KeyResultList({
                   ? 'KR 追加 — Key Result を追加中…'
                   : 'KR 追加 — Key Result をこの Goal に追加'
             }
+            // iter1819: visible "KR 追加" のみで sighted は hover で Key Result 略語の
+            // expand context 即把握できなかった。iter1817 goal-toggle と同 pattern で title 付与。
+            title={
+              !krTitle.trim()
+                ? 'KR 追加 — Key Result を追加するにはタイトルを入力してください'
+                : create.isPending
+                  ? 'KR 追加 — Key Result を追加中…'
+                  : 'KR 追加 — Key Result をこの Goal に追加'
+            }
           >
             <Plus className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             <span aria-hidden="true">KR 追加</span>
