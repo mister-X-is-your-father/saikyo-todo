@@ -142,6 +142,10 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
           /* iter1574: 旧 aria-label paren convention `"ステータス分布 (...)"` は iter1093-1573
              sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
           aria-label={`ステータス分布 — 完了 ${stats.done} 件 / 未完了 ${stats.inProgressOrTodo} 件 / cancelled ${stats.cancelled} 件`}
+          /* iter1927: 3 cell grid (完了 / 未完了 / cancelled) 並列表示は visible で個別読めるが
+             integrated summary は表示されず、aria-label の 1 行 summary を sighted hover で
+             disclose (iter1925 cycle Lead time grid と同 file 内 sweep)。 */
+          title={`ステータス分布 — 完了 ${stats.done} 件 / 未完了 ${stats.inProgressOrTodo} 件 / cancelled ${stats.cancelled} 件`}
         >
           <div aria-hidden="true">
             <dt className="text-muted-foreground">完了</dt>
