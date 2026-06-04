@@ -256,6 +256,11 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
            iter1579 goal operations と同 pattern で em-dash 区切に統一。
            visible 冒頭 "タスクタイマー" は維持、closing ')' は削除。 */
         aria-label={`タスクタイマーの操作 — 現在 ${running ? '計測中' : '一時停止中'}、一時停止 / 再開 / Picture-in-Picture / 停止`}
+        /* iter2187: タスクタイマーの操作 group の aria-label (state-dependent: 計測中 /
+           一時停止中) は browser tooltip にならず sighted は hover で state + 操作構成
+           context disclose 不可。BulkHeaderCheckbox iter2185 / taskchute-timeline iter2181 と
+           同 title=aria-label sync pattern。 */
+        title={`タスクタイマーの操作 — 現在 ${running ? '計測中' : '一時停止中'}、一時停止 / 再開 / Picture-in-Picture / 停止`}
       >
         {/* iter1024: icon-only buttons (Pause / Play / PictureInPicture2) は size="sm" +
             `min-h-11` で高さ 44px は満たすが、幅は icon 12px + padding = 36px で
