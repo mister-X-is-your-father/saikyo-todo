@@ -42,7 +42,11 @@ export default async function HomePage() {
               prefix として持つ (voice control prefix-matching OK) が、iter1093-1722 sweep の
               em-dash visible-prefix convention `<visible> — <descriptive>` と divergent
               (mock-top-nav 等は既に em-dash 形式)。区切のみ更新で codebase convention 統一、
-              visible / 機能は不変、voice control prefix-match も維持。 */}
+              visible / 機能は不変、voice control prefix-match も維持。
+              iter1781: visible text "ログアウト" のみで sighted は hover で遷移先 (= aria-label
+              の "ログイン画面に戻る") 即把握できなかった (aria-label は browser tooltip にならない)。
+              iter1777 view-switcher / iter1779 workspace nav と同 pattern を home page logout
+              button にも展開、`title={同 aria-label}` 付与で sighted hover で遷移先 disclose。 */}
           <Button
             type="submit"
             variant="ghost"
@@ -50,6 +54,7 @@ export default async function HomePage() {
             className="min-h-11"
             data-testid="logout-btn"
             aria-label="ログアウト — ログイン画面に戻る"
+            title="ログアウト — ログイン画面に戻る"
           >
             <span aria-hidden="true">ログアウト</span>
           </Button>

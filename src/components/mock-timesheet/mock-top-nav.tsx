@@ -67,13 +67,19 @@ export function MockTopNav({ sessionId }: { sessionId: string }) {
         <form action={mockLogoutAction} aria-label="ログアウト操作">
           {/* iter1095: 旧 aria-label "mock-timesheet session をログアウト" は visible "ログアウト"
               を末尾に持つ → voice control prefix-matching で「click ログアウト」 match 不可。
-              iter1093/1094 sweep convention に合わせ visible 冒頭固定。 */}
+              iter1093/1094 sweep convention に合わせ visible 冒頭固定。
+              iter1781: visible text "ログアウト" のみで sighted は hover で遷移先 (= aria-label
+              の "mock-timesheet session を終了") 即把握できなかった (aria-label は browser
+              tooltip にならない)。iter1777 view-switcher / iter1779 workspace nav と同 pattern
+              を mock-timesheet logout button にも展開、`title={同 aria-label}` 付与で
+              sighted hover で session 終了 context disclose。 */}
           <Button
             variant="ghost"
             size="sm"
             className="min-h-11"
             type="submit"
             aria-label="ログアウト — mock-timesheet session を終了"
+            title="ログアウト — mock-timesheet session を終了"
           >
             <span aria-hidden="true">ログアウト</span>
           </Button>
