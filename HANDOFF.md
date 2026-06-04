@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1917 1/1 mode-D estimate-bias 内訳 grid に title 付与] 3 cell grid (見積内 / ±10%以内 / 超過) 並列表示は visible で個別読めるが integrated summary は表示されず、aria-label の 1 行 summary を sighted hover で disclose。
 - ✅ [playwright-iter1916 1/1 test a11y-sweep-suite に iter1915 estimate-bias tendency entry 追加] 検査軸 81 個 (新 CC 軸)、計約 177 invariant check に拡張。
 - ✅ [playwright-iter1915 1/1 mode-D estimate-bias tendency chip に title 付与] visible は label のみで「傾向」 context が無く、aria-label と同 text を title に付与し sighted hover で disclose。
 - ✅ [playwright-iter1914 1/1 test a11y-sweep-suite に iter1913 sync-badge-pending entry 追加] 検査軸 80 個 (新 CB 軸)、計約 176 invariant check に拡張。
