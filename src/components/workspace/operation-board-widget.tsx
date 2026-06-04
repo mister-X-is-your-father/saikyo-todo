@@ -195,8 +195,13 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                         className="hover:bg-muted/60 focus-visible:ring-ring flex min-h-11 w-full items-center gap-1 truncate rounded px-1 py-0.5 text-left focus-visible:ring-2 focus-visible:outline-none"
                         /* iter1493: iter1093-1151 sweep の em-dash visible-prefix convention に
                            合わせ () 区切から em-dash 区切に。visible-prefix ${it.title} は無変更、
-                           voice control prefix-matching「click {title}」維持。 */
+                           voice control prefix-matching「click {title}」維持。
+                           iter1746: quick-wins button も truncate で long title 切れ、aria-label は
+                           browser tooltip にならず sighted hover で全 title 見れず → title 付与
+                           (iter1734 ItemRow / focus-blocks button と pair で operation-board 全 button
+                           で sighted hover disclosure 完成)。 */
                         aria-label={`${it.title} を開く — 見積 ${it.estimateMin}分`}
+                        title={it.title}
                       >
                         <span
                           className="text-muted-foreground text-[10px] tabular-nums"
@@ -229,8 +234,11 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                         type="button"
                         onClick={() => openItem(it.id)}
                         className="hover:bg-muted/60 focus-visible:ring-ring flex min-h-11 w-full items-center gap-1 truncate rounded px-1 py-0.5 text-left focus-visible:ring-2 focus-visible:outline-none"
-                        /* iter1493: 同上 (quick-wins と pair で em-dash 統一)。 */
+                        /* iter1493: 同上 (quick-wins と pair で em-dash 統一)。
+                           iter1746: 同 file quick-wins button と pair で title 追加、
+                           operation-board 全 button で sighted hover disclosure 完成。 */
                         aria-label={`${it.title} を開く — 集中 ${it.estimateMin}分`}
+                        title={it.title}
                       >
                         <span
                           className="text-muted-foreground text-[10px] tabular-nums"
