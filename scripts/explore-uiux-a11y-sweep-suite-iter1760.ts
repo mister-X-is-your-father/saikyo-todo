@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DV. pdca 集計期間 group title sweep (iter2005) =========
+  const pdcaDV = read(here, `${root}/src/components/workspace/pdca-panel.tsx`)
+  if (!pdcaDV.includes('title={`集計期間 — 現在 ${days} 日、30 / 90 から選択`}')) {
+    findings.push({
+      level: 'error',
+      source: 'DV.pdca-period-group',
+      message: '[DV] iter2005 pdca 集計期間 group title が消えている',
+    })
+  }
+
   // ========= DU. period-goal save button title sweep (iter2003) =========
   const periodDU = read(here, `${root}/src/components/workspace/personal-period-view.tsx`)
   if (!periodDU.includes('iter2003')) {
