@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1891 1/1 mode-D pdca distribution bar に title 付与] stacked 4 色 bar segment は visible 単体では個別 % / 合計 / 内訳数が見えず、aria-label と同 text を title に付与し sighted hover で full distribution disclose。
 - ✅ [playwright-iter1890 1/1 test a11y-sweep-suite に iter1889 quick-add calibrated entry 追加] 検査軸 68 個 (新 BP 軸)、計約 164 invariant check に拡張。
 - ✅ [playwright-iter1889 1/1 mode-D quick-add calibrated chip に title 付与] visible は "→ 校正値" のみで delta / 中央値 factor 補正 context が無く、aria-label と同 text を title に付与し sighted hover で full factor disclose。
 - ✅ [playwright-iter1888 1/1 test a11y-sweep-suite に iter1887 quick-add estimate entry 追加] 検査軸 67 個 (新 BO 軸)、計約 163 invariant check に拡張。
