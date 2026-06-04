@@ -1166,6 +1166,12 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
               // em-dash 区切に統一。'(' → ' ' (空白)、'現在:' → '現在'、')' → ' ' (空白) で
               // descriptive 維持。
               aria-label={`編集 — Sprint デフォルト 現在 ${DOW_JA[cur.startDow]}曜開始 / ${cur.lengthDays} 日 の編集モードを開く`}
+              /* iter2265: sprint-defaults-edit-btn の aria-label は current 設定値 (DOW + 日数)
+                 を context として埋めるが browser tooltip にならず sighted は hover で同 context
+                 disclose 不可。MCP path A で /sprints 探索中に発見、budget-edit-btn iter2123 /
+                 budget-edit-cancel iter2255 と同 edit-toggle button title pattern を sprint
+                 デフォルト編集 button にも展開。 */
+              title={`編集 — Sprint デフォルト 現在 ${DOW_JA[cur.startDow]}曜開始 / ${cur.lengthDays} 日 の編集モードを開く`}
             >
               <span aria-hidden="true">編集</span>
             </Button>
