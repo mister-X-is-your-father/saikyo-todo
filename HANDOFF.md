@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2314 1/1 test a11y-sweep-suite に iter2313 src-url input entry 追加] 検査軸 280 個 (新 JU 軸)、計約 398 invariant check に拡張、API endpoint 入力 form hint disclosure 強化 (MCP path A 経由発見)、検査軸 280 milestone 突破。
+- ✅ [playwright-iter2313 1/1] src-url input (integrations-panel): aria-label state-dependent 2-path (空 / 入力中) を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-src-url-input-title-iter2313.ts)。**MCP path A で /integrations 探索中に発見**、te-description iter2303 / editTitle iter2295 と同 input title pattern。
 - ✅ [playwright-iter2312 1/1 test a11y-sweep-suite に iter2311 done-yesterday-toggle entry 追加] 検査軸 279 個 (新 JT 軸)、計約 397 invariant check に拡張、operation-board disclosure button family 補完。
 - ✅ [playwright-iter2311 1/1] operation-board-done-yesterday-toggle: aria-label state-dependent 2-path (open / closed、count context 含む) を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-done-yesterday-toggle-title-iter2311.ts)、activity-detail-toggle iter2293 と同 disclosure title pattern。
 - ✅ [playwright-iter2310 1/1 test a11y-sweep-suite に iter2309 team-capacity 今日 / 今週 chip entry 追加] 検査軸 278 個 (新 JS 軸)、計約 396 invariant check に拡張、team-capacity row 3 chip (name / today / week) 全 title 完成、iter 2310 milestone 突破。
