@@ -307,6 +307,10 @@ export function BacklogView({ workspaceId, items }: Props) {
              で不可 (substring 一致のみ)。iter1553-1563 status/role/health/傾向 chip family と同
              pattern、visible 冒頭固定 + em-dash 区切。 */
           aria-label={`${estimateSummary} — Backlog 見積サマリ`}
+          /* iter1871: visible は ⏱ + estimateSummary のみで「Backlog 見積サマリ」
+             context が消えている。sighted hover で chip 意味 disclose
+             (iter1867-1869 title 付与 sweep 続編)。 */
+          title={`${estimateSummary} — Backlog 見積サマリ`}
         >
           <span aria-hidden="true">⏱</span>
           <span aria-hidden="true">{estimateSummary}</span>
