@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1975 1/1 mode-D workflows-panel wf-name input に title 付与] state-dependent aria-label を title で sighted hover disclose、4 textarea/input pattern (period-goal / comment-input / comment-edit / wf-name) family の構成。
 - ✅ [playwright-iter1974 1/1 test a11y-sweep-suite に iter1973 comment-edit entry 追加] 検査軸 110 個 (新 DF 軸)、計約 206 invariant check に拡張、検査軸 110 突破。
 - ✅ [playwright-iter1973 1/1 mode-D comment-thread edit textarea に title 付与] state-dependent aria-label を title で sighted hover disclose、iter1969 comment-input と pair。
 - ✅ [playwright-iter1972 1/1 test a11y-sweep-suite に iter1971 theme-toggle entry 追加 + J axis 旧文言 regex 更新] 検査軸 109 個 (新 DE 軸)、計約 205 invariant check に拡張。J axis (iter1763) は新 em-dash text 用に更新。
