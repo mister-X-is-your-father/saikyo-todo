@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1951 1/1 mode-D active-timer-panel region に title 付与] region 全体に title を付与し sighted hover で 経過時間 + 状態 (計測中/一時停止中) integrated summary disclose。
 - ✅ [playwright-iter1950 1/1 test a11y-sweep-suite に iter1949 start-timer entry 追加] 検査軸 98 個 (新 CT 軸)、計約 194 invariant check に拡張、iter1950 突破。
 - ✅ [playwright-iter1949 1/1 mode-D start-timer-button active state に title 付与] visible は icon + 経過時間 + "計測中" 短文のみで item.title context が無い、aria-label と同 text を title に付与し sighted hover で full label disclose。
 - ✅ [playwright-iter1948 1/1 test a11y-sweep-suite に iter1947 inbox GTD entry 追加] 検査軸 97 個 (新 CS 軸)、計約 193 invariant check に拡張。
