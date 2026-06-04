@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= AT. comment-thread AI Agent badge title sweep (iter1845) =========
+  // commentThread は R 軸で既に読込済
+  if (!commentThread.includes('title="AI Agent による投稿"')) {
+    findings.push({
+      level: 'error',
+      source: 'AT.ai-badge',
+      message: '[AT] iter1845 comment-thread AI Agent badge title が消えている',
+    })
+  }
+
   // ========= AS. MustBadge title sweep (iter1843) =========
   const mustBadge = read(here, `${root}/src/components/workspace/must-badge.tsx`)
   if (!mustBadge.includes('title="MUST タスク"')) {
