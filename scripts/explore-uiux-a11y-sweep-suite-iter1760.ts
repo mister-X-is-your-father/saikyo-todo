@@ -631,6 +631,27 @@ async function main() {
     })
   }
 
+  // ========= Z. offline page title sweep (iter1805) =========
+  const retryBtn = read(here, `${root}/src/app/~offline/retry-button.tsx`)
+  if (!retryBtn.includes('title="再読み込みして再試行 — ページ全体を読み直して接続を回復"')) {
+    findings.push({
+      level: 'error',
+      source: 'Z.offline-title',
+      message: '[Z] iter1805 offline retry-button title が消えている',
+    })
+  }
+  if (
+    !offlinePage.includes(
+      'title="ホームに戻る — アプリの起点画面に遷移、オンライン復帰後は最新状態を表示"',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'Z.offline-title',
+      message: '[Z] iter1805 offline-home-link title が消えている',
+    })
+  }
+
   // ========= Y. auth cross-link title sweep (iter1803) =========
   // signup-link (login page) + login-link (signup page) に title 付与
   const loginPage = read(here, `${root}/src/app/(auth)/login/page.tsx`)
