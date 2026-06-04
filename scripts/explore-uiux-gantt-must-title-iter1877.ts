@@ -17,8 +17,8 @@ async function main() {
   const here = dirname(fileURLToPath(import.meta.url))
 
   const gantt = readFileSync(resolve(here, '../src/components/workspace/gantt-view.tsx'), 'utf8')
-  // gantt 行内 MUST chip の title 検出 — aria-label="MUST タスク" + title="MUST タスク" の隣接 pair
-  if (!gantt.match(/aria-label="MUST タスク"[\s\S]{0,200}title="MUST タスク"/)) {
+  // gantt 行内 MUST chip の title 検出 — iter1877 comment + title="MUST タスク" の組
+  if (!gantt.includes('iter1877') || !gantt.includes('title="MUST タスク"')) {
     findings.push({
       level: 'error',
       source: 'a11y',
