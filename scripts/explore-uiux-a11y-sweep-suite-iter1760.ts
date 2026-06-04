@@ -389,6 +389,16 @@ async function main() {
     })
   }
 
+  // ========= K. shared ErrorState retry title (iter1767) =========
+  const asyncStates = read(here, `${root}/src/components/shared/async-states.tsx`)
+  if (!asyncStates.includes('title={`再試行 — 「${message}」をクリアして再試行`}')) {
+    findings.push({
+      level: 'error',
+      source: 'K.error-retry',
+      message: '[K] iter1767 ErrorState retry title が消えている',
+    })
+  }
+
   // ========= G. WCAG 2.4.1 skip-link =========
   if (
     !rootLayout.includes('href="#main-content"') ||
