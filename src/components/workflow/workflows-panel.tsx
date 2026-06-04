@@ -977,7 +977,16 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
                   ? `再 — 実行 ${r.id.slice(0, 8)} を再実行中…`
                   : `再 — 実行 ${r.id.slice(0, 8)} を同じ input で再実行`
               }
-              title={`同じ input で再実行 (${formatRunTime(r)})`}
+              /* iter2101: wf-run-rerun static title (run time のみ) は state-dependent
+                 aria-label (再実行中… / 同じ input で再実行 + run id) と divergent。
+                 kr-delete iter2099 / sprint-period-edit iter2097 / sprint-premortem
+                 iter2095 / sprint-retro iter2093 と同 title-aria divergence 修正 pattern。
+                 run id + state + 実行時刻 context を sighted hover で disclose。 */
+              title={
+                trigger.isPending
+                  ? `再 — 実行 ${r.id.slice(0, 8)} を再実行中…`
+                  : `再 — 実行 ${r.id.slice(0, 8)} を同じ input で再実行 (${formatRunTime(r)})`
+              }
               data-testid={`wf-run-rerun-${r.id}`}
             >
               <Play className="h-3 w-3" aria-hidden="true" />
