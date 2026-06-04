@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1911 1/1 mode-D template-items dueOffset chip に title 付与] visible は +N日 のみで「期日 offset」 context が無く、aria-label と同 text を title に付与し sighted hover で disclose。
 - ✅ [playwright-iter1910 1/1 test a11y-sweep-suite に iter1909 notification-preferences entry 追加] 検査軸 78 個 (新 BZ 軸)、計約 174 invariant check に拡張。
 - ✅ [playwright-iter1909 1/1 mode-D notification-preferences icon chip に title 付与] icon-only chip で visible は icon のみ、icon 上 hover で「{label}通知」 disclose。
 - ✅ [playwright-iter1908 1/1 test a11y-sweep-suite に iter1907 item-deps direction entry 追加] 検査軸 77 個 (新 BY 軸)、計約 173 invariant check に拡張。
