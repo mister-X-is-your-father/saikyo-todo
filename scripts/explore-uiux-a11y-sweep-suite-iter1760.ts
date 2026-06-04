@@ -762,6 +762,21 @@ async function main() {
     })
   }
 
+  // ========= HI. active-timer ops group title sweep (iter2187) =========
+  const atpHI = read(here, `${root}/src/components/workspace/active-timer-panel.tsx`)
+  if (
+    !atpHI.includes('iter2187') ||
+    !atpHI.includes(
+      "title={`タスクタイマーの操作 — 現在 ${running ? '計測中' : '一時停止中'}、一時停止 / 再開 / Picture-in-Picture / 停止`}",
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HI.active-timer-ops-group-title',
+      message: '[HI] iter2187 active-timer ops group title 同期 が消えている',
+    })
+  }
+
   // ========= HH. BulkHeaderCheckbox title sweep (iter2185) =========
   const baHH = read(here, `${root}/src/components/workspace/bulk-action-bar.tsx`)
   if (
