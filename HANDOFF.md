@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2270 1/1 test a11y-sweep-suite に iter2269 QuickAdd preview parent entry 追加] 検査軸 258 個 (新 IY 軸)、計約 376 invariant check に拡張、live region 系 aria-label の title pair 補完 (MCP path A 経由発見)、iter 2270 milestone 突破。
+- ✅ [playwright-iter2269 1/1] QuickAdd preview parent role="status": aria-label "解析結果 — \${previewSummary}" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-quickadd-preview-title-iter2269.ts)。**MCP path A で today view で test item create 直後の preview region で発見**、live region 系 aria-label の title pair 補完。
 - ✅ [playwright-iter2268 1/1 test a11y-sweep-suite に iter2267 参加 Workspace 一覧 entry 追加] 検査軸 257 個 (新 IX 軸)、計約 375 invariant check に拡張、5 entity 一覧 ul family 完成 (MCP path A 経由発見)、375 check milestone 突破。
 - ✅ [playwright-iter2267 1/1] 参加している Workspace 一覧 ul (home page): aria-label "参加している Workspace 一覧" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-workspaces-list-ul-title-iter2267.ts)。**MCP path A で / (home) 探索中に発見**、5 entity 一覧 ul family (sources / workflows / goals / templates / workspaces) 完成。
 - ✅ [playwright-iter2266 1/1 test a11y-sweep-suite に iter2265 sprint-defaults-edit-btn entry 追加] 検査軸 256 個 (新 IW 軸)、計約 374 invariant check に拡張、edit-toggle button family Sprint defaults 補完 (MCP path A 経由発見)。
