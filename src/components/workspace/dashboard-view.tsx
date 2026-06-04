@@ -1597,6 +1597,11 @@ function StatCard({
       className={`rounded-lg border p-4 ${toneCls}`}
       role="group"
       aria-label={ariaLabel}
+      /* iter2197: StatCard role="group" の aria-label は browser tooltip にならず
+         sighted は hover で integrated stat context (label + value + tone meaning)
+         disclose 不可。Goal 一覧 iter2195 / Sprint 一覧 iter2193 と同 title=aria-label
+         sync pattern。 */
+      title={ariaLabel}
       data-testid={testId ?? `stat-card-${tone}`}
     >
       <div className="text-foreground/80 text-xs" aria-hidden="true">
