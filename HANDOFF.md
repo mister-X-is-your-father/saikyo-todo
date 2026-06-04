@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2264 1/1 test a11y-sweep-suite に iter2263 workspace-mode 3 option entry 追加] 検査軸 255 個 (新 IV 軸)、計約 373 invariant check に拡張、mode-selector radiogroup + 3 option 全 4 element title 完成 (MCP path A 経由発見)。
+- ✅ [playwright-iter2263 1/1] workspace-mode-selector 3 radio button option (none / taskchute / gtd): aria-label "${opt.label} — ${opt.description}" を sighted hover で disclose 不可 → 同 text の title を 3 option 同時に付与し sync (path B codify scripts/explore-uiux-mode-option-title-iter2263.ts)。**MCP path A で /goals 探索中に発見**、radiogroup iter2215 と pair で 3 option レベル個別 title 補完、mode-selector 全 4 element 完成。
 - ✅ [playwright-iter2262 1/1 test a11y-sweep-suite に iter2261 Template 一覧 ul entry 追加] 検査軸 254 個 (新 IU 軸)、計約 372 invariant check に拡張、一覧 ul family 4 entity (sources / workflows / goals / templates) 完成 (MCP path A 経由発見)。
 - ✅ [playwright-iter2261 1/1] Template 一覧 ul: aria-label "Template 一覧 — N 件" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-template-list-ul-title-iter2261.ts)。**MCP path A で /templates 探索中に発見**、sources-list iter2191 / workflows-list iter2189 / Goal 一覧 iter2195 と pair の 一覧 ul family 4 entity 完成。
 - ✅ [playwright-iter2260 1/1 test a11y-sweep-suite に iter2259 Template 作成フォーム entry 追加] 検査軸 253 個 (新 IT 軸)、計約 371 invariant check に拡張、create-form family 3 entity (Goal / Sprint / Template) 完成 (MCP path A 経由発見)。
