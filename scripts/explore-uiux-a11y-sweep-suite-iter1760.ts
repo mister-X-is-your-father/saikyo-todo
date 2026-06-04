@@ -766,6 +766,19 @@ async function main() {
     })
   }
 
+  // ========= JE. Kanban board root group title sweep (iter2281) =========
+  const kvJE = read(here, `${root}/src/components/workspace/kanban-view.tsx`)
+  if (
+    !kvJE.includes('iter2281') ||
+    !kvJE.includes('title={`Kanban ボード — ${statuses.length} 列`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'JE.kanban-root-title',
+      message: '[JE] iter2281 Kanban board root group title sync が消えている',
+    })
+  }
+
   // ========= JD. backlog-edit button title sweep (iter2279) =========
   const bvJD = read(here, `${root}/src/components/workspace/backlog-view.tsx`)
   if (!bvJD.includes('iter2279')) {
