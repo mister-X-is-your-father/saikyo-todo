@@ -762,6 +762,21 @@ async function main() {
     })
   }
 
+  // ========= GZ. weekly-insight anomalies ul title sweep (iter2169) =========
+  const wiGZ = read(here, `${root}/src/components/workspace/weekly-insight-widget.tsx`)
+  if (
+    !wiGZ.includes('iter2169') ||
+    !wiGZ.includes(
+      'title={`今週の特筆事項 ${insight.anomalies.length} 件 — 集中日 / 過小日 / 期限超過 spike`}',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GZ.weekly-anomalies-title',
+      message: '[GZ] iter2169 weekly-insight anomalies ul title 付与 が消えている',
+    })
+  }
+
   // ========= GY. コメント一覧 ul title sweep (iter2167) =========
   const ctGY = read(here, `${root}/src/components/workspace/comment-thread.tsx`)
   if (
