@@ -921,6 +921,13 @@ function SprintCard({
                       ? `完了 — Sprint「${sprint.name}」のステータスを変更中…`
                       : `完了 — Sprint「${sprint.name}」を完了`
                   }
+                  /* iter2085: sprint-activate iter2083 と pair、sprint-complete button も
+                     state-dependent button hover (Sprint name + state context disclose)。 */
+                  title={
+                    changing
+                      ? `完了 — Sprint「${sprint.name}」のステータスを変更中…`
+                      : `完了 — Sprint「${sprint.name}」を完了`
+                  }
                 >
                   <CheckCircle className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                   <span aria-hidden="true">完了</span>
@@ -939,6 +946,12 @@ function SprintCard({
                   // status('planning') 遷移なので "replan")。
                   data-testid={`sprint-replan-${sprint.id}`}
                   aria-label={
+                    changing
+                      ? `計画に戻す — Sprint「${sprint.name}」のステータスを変更中…`
+                      : `計画に戻す — Sprint「${sprint.name}」を計画に戻す`
+                  }
+                  /* iter2085: sprint-replan も state-dependent button hover。 */
+                  title={
                     changing
                       ? `計画に戻す — Sprint「${sprint.name}」のステータスを変更中…`
                       : `計画に戻す — Sprint「${sprint.name}」を計画に戻す`
