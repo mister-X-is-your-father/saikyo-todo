@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BS. pdca Lead time grid title sweep (iter1895) =========
+  const pdcaBS = read(here, `${root}/src/components/workspace/pdca-panel.tsx`)
+  if (!pdcaBS.includes('iter1895') || !pdcaBS.includes('title={`Lead time 内訳')) {
+    findings.push({
+      level: 'error',
+      source: 'BS.pdca-leadtime',
+      message: '[BS] iter1895 pdca Lead time grid title が消えている',
+    })
+  }
+
   // ========= BR. weekly-insight by-day grid title sweep (iter1893) =========
   const weeklyBR = read(here, `${root}/src/components/workspace/weekly-insight-widget.tsx`)
   if (!weeklyBR.includes('iter1893') || !weeklyBR.includes('title={`曜日別完了件数')) {
