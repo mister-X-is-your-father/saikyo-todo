@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2160 1/1 test a11y-sweep-suite に iter2159 template-items-list entry 追加] 検査軸 203 個 (新 GU 軸)、計約 319 invariant check に拡張。
+- ✅ [playwright-iter2159 1/1 mode-D Template 子 Item 一覧 ul に title 付与し aria-label と sync] 件数 context hover disclose、backlog-title iter2157 / inbox-item iter2155 と pair。
 - ✅ [playwright-iter2158 1/1 test a11y-sweep-suite に iter2157 backlog-title-btn entry 追加] 検査軸 202 個 (新 GT 軸)、計約 318 invariant check に拡張。
 - ✅ [playwright-iter2157 1/1 mode-D backlog-title button に title 付与し aria-label と sync] "編集" context hover disclose、inbox-view iter2155 / today-view iter2153 / personal-period iter2151 と pair。
 - ✅ [playwright-iter2156 1/1 test a11y-sweep-suite に iter2155 inbox-item entry 追加] 検査軸 201 個 (新 GS 軸)、計約 317 invariant check に拡張、既存 B 軸 inbox title check も新 format に更新 (iter2155 sync 対応)。
