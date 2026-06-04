@@ -132,9 +132,13 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                      で `aria-atomic="true"` 付与。forecast chip は estimate / remaining 値が
                      items / 時刻に応じて変化、ARIA 1.2 implicit true の browser/SR 実装
                      inconsistency による partial announce (= 「3h」 だけ読み上げ
-                     「今日完了予測」 prefix が失われる) を解消、SR 読み上げ context を維持。 */
+                     「今日完了予測」 prefix が失われる) を解消、SR 読み上げ context を維持。
+                     iter1837: aria-label は browser tooltip にならず sighted は hover で forecast
+                     context (今日完了予測 + 合計時間 + 残時間 + 余裕/超過) 即把握できなかった。
+                     title 付与で sighted hover で disclose (iter1817 goal-toggle 同 pattern)。 */
                   aria-atomic="true"
                   aria-label={`今日完了予測 ${formatTodayForecastJa(forecast)}`}
+                  title={`今日完了予測 ${formatTodayForecastJa(forecast)}`}
                 >
                   <Timer className="h-3.5 w-3.5" aria-hidden="true" />
                   <span className="font-medium tabular-nums" aria-hidden="true">
