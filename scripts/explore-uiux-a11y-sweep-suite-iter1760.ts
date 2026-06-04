@@ -631,6 +631,30 @@ async function main() {
     })
   }
 
+  // ========= AC. template-create + wf-create title sweep (iter1811) =========
+  const templatePanel = read(here, `${root}/src/components/template/templates-panel.tsx`)
+  const wfPanel = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
+  if (
+    !templatePanel.includes("'作成 — Template を新規作成 (Cmd/Ctrl+Enter でも可)'") ||
+    !templatePanel.includes("'作成 — Template を作成中…'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'AC.template-wf-create',
+      message: '[AC] iter1811 template-create conditional path text が消えている',
+    })
+  }
+  if (
+    !wfPanel.includes("'作成 — Workflow を新規作成 (Cmd/Ctrl+Enter でも可)'") ||
+    !wfPanel.includes("'作成中… — Workflow を作成中'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'AC.template-wf-create',
+      message: '[AC] iter1811 wf-create conditional path text が消えている',
+    })
+  }
+
   // ========= AB. sprint-create + goal-create title sweep (iter1809) =========
   const sprintsPanel = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   const goalsPanel = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
