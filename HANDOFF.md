@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2248 1/1 test a11y-sweep-suite に iter2247 Gantt root container entry 追加] 検査軸 247 個 (新 IN 軸)、計約 365 invariant check に拡張、Gantt root container title 補完。
+- ✅ [playwright-iter2247 1/1] gantt-view root container: aria-label "Gantt チャート — Item N 件 × 期間 D 日" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-gantt-root-title-iter2247.ts)、Gantt project summary (banner) iter2117 と pair の Gantt root container 補完。
 - ✅ [playwright-iter2246 1/1 test a11y-sweep-suite に iter2245 weekly-time-trend-chip entry 追加] 検査軸 246 個 (新 IM 軸)、計約 364 invariant check に拡張、time-entry chip 2 element pair 完成。
 - ✅ [playwright-iter2245 1/1] weekly-time-trend-chip: aria-label (= summary.trendLine = direction + delta text) を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-weekly-trend-chip-title-iter2245.ts)、daily-streak-chip と pair の time-entry chip 2 element 完成。
 - ✅ [playwright-iter2244 1/1 test a11y-sweep-suite に iter2243 subtasks-panel 2 ol entry 追加] 検査軸 245 個 (新 IL 軸)、計約 363 invariant check に拡張、subtask family ol 階層 (root + nested) title 一致。
