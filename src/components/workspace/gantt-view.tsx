@@ -199,7 +199,16 @@ export function GanttView({
     const el = scrollRef.current
     if (!el || todayX === null) return
     const target = LABEL_COL_PX + todayX - el.clientWidth / 2
-    el.scrollTo({ left: Math.max(0, target), behavior })
+    // iter1727: WCAG 2.3.3 (Animation from Interactions) 対応。globals.css の CSS
+    // `scroll-behavior: auto !important` @media (prefers-reduced-motion: reduce) は
+    // JS scrollTo({ behavior: 'smooth' }) を override しないため、JS 側で明示 check が
+    // 必要。reduced-motion ユーザは smooth scroll を回避し instant に fall back、
+    // 前庭障害ユーザの不快/めまいを防ぐ (iter1726 focusElementById と同パターン)。
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
+    const effectiveBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : behavior
+    el.scrollTo({ left: Math.max(0, target), behavior: effectiveBehavior })
   }
 
   const dragEnabled = Boolean(workspaceId)
