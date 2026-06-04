@@ -762,6 +762,26 @@ async function main() {
     })
   }
 
+  // ========= HR. heartbeat-button title state-dependent 同期 sweep (iter2205) =========
+  const hbHR = read(here, `${root}/src/components/workspace/heartbeat-button.tsx`)
+  if (
+    !hbHR.includes('iter2205') ||
+    !hbHR.includes("'スキャン中… — Heartbeat MUST スキャン実行中'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HR.heartbeat-button-title',
+      message: '[HR] iter2205 heartbeat-button title state-dependent 同期 が消えている',
+    })
+  }
+  if (hbHR.includes('title="MUST item を 7d / 3d / 1d / overdue 段階でスキャンして通知を作成"')) {
+    findings.push({
+      level: 'error',
+      source: 'HR.heartbeat-button-title',
+      message: '[HR] iter2205 heartbeat-button 旧 静的 title が残っている',
+    })
+  }
+
   // ========= HQ. risk-reasons ul title sweep (iter2203) =========
   const srHQ = read(here, `${root}/src/components/sprint/sprint-risk-board-widget.tsx`)
   if (
