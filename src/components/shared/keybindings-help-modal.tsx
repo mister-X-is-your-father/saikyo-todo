@@ -52,6 +52,9 @@ export function KeybindingsHelpModal({ open, onOpenChange }: Props) {
         className="sm:max-w-lg"
         data-testid="keybindings-help-modal"
         aria-label="キーボードショートカット一覧"
+        /* iter2071: dialog content に title を付与し sighted hover で dialog 用途 disclose
+           (3 section landmark iter2053-2069 と同 hover summary pattern を dialog にも展開)。 */
+        title="キーボードショートカット一覧"
         onOpenAutoFocus={() => {
           const active = document.activeElement
           openerRef.current =
