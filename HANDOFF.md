@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2057 1/1 mode-D dashboard 健全性 chip group に title 付与] 8 group landmark family 完成 (view-switcher / filter / decompose-bulk / bulk-action-bar / pdca-period / wf-operations / sprint-operations / dashboard 健全性)。
 - ✅ [playwright-iter2056 1/1 test a11y-sweep-suite に iter2055 retro-progress entry 追加] 検査軸 151 個 (新 EU 軸)、計約 247 invariant check に拡張。
 - ✅ [playwright-iter2055 1/1 mode-D sprint-retro-widget progressbar に title 付与] 5 progressbar family 完成形 (sprint/goal/KR/budget + Sprint Retro)、completionRate + severity hover disclose。
 - ✅ [playwright-iter2054 1/1 test a11y-sweep-suite に iter2053 team-cap-section entry 追加] 検査軸 150 個 (新 ET 軸)、計約 246 invariant check、検査軸 150 突破。
