@@ -298,7 +298,14 @@ function ItemEditDialogInner({
       >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span className="truncate">{item.title}</span>
+            {/* iter1754: ItemEditDialog title span は truncate で長 item.title 切れ、
+                DialogTitle 自体は aria-label 無 (textContent が SR label)、sighted は
+                hover で全 title 見れず。title 付与で sighted hover → 全文 disclose
+                (iter1720-1753 sweep を ItemEditDialog header にも展開、modal の
+                user identification 即把握向上)。 */}
+            <span className="truncate" title={item.title}>
+              {item.title}
+            </span>
             {item.isMust && <MustBadge />}
           </DialogTitle>
           <DialogDescription>
