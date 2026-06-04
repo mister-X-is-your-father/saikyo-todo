@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1920 1/1 test a11y-sweep-suite に iter1919 top-items 合計 entry 追加] 検査軸 83 個 (新 CE 軸)、計約 179 invariant check に拡張。
 - ✅ [playwright-iter1919 1/1 mode-D top-items-by-time 合計 chip に title 付与] 各 row の合計時間 chip は visible が "30分" 等のみで「合計」 context が無い、aria-label と同 text を title に付与し sighted hover で disclose。
 - ✅ [playwright-iter1918 1/1 test a11y-sweep-suite に iter1917 estimate-bias 内訳 entry 追加] 検査軸 82 個 (新 CD 軸)、計約 178 invariant check に拡張。
 - ✅ [playwright-iter1917 1/1 mode-D estimate-bias 内訳 grid に title 付与] 3 cell grid (見積内 / ±10%以内 / 超過) 並列表示は visible で個別読めるが integrated summary は表示されず、aria-label の 1 行 summary を sighted hover で disclose。
