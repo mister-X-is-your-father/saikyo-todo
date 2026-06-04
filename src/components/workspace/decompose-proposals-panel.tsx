@@ -205,6 +205,10 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
             /* iter1582: paren convention `"AI 分解提案の bulk 操作 (...)"` を iter1578-1581
                operations group sweep に合わせ em-dash 区切に統一。 */
             aria-label={`AI 分解提案の bulk 操作 — 全て採用 / 全て却下 / 再分解、保留中 ${list.length} 件`}
+            /* iter1997: group 全体に title を付与し sighted hover で bulk 操作 + 保留件数
+             integrated summary disclose (view-switcher group iter1991 / filter group iter1993
+             と同 group landmark summary pattern)。 */
+            title={`AI 分解提案の bulk 操作 — 全て採用 / 全て却下 / 再分解、保留中 ${list.length} 件`}
           >
             {list.length > 0 && (
               <>
