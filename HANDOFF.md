@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2218 1/1 test a11y-sweep-suite に iter2217 create-workspace-form entry 追加] 検査軸 232 個 (新 HX 軸)、計約 350 invariant check に拡張、350 check 突破。
+- ✅ [playwright-iter2217 1/1 mode-D create-workspace-form に title 付与し aria-label と sync] form 用途 hover disclose、workspace-mode-radiogroup iter2215 / item-decompose-btn iter2213 と pair。
 - ✅ [playwright-iter2216 1/1 test a11y-sweep-suite に iter2215 workspace-mode-radiogroup entry 追加] 検査軸 231 個 (新 HW 軸)、計約 349 invariant check に拡張。
 - ✅ [playwright-iter2215 1/1 mode-D workspace-mode radiogroup に title 付与し aria-label と sync] current mode context hover disclose、item-decompose-btn iter2213 / engineer-trigger-group iter2207 と pair。
 - ✅ [playwright-iter2214 1/1 test a11y-sweep-suite に iter2213 item-decompose-btn entry 追加] 検査軸 230 個 (新 HV 軸)、計約 348 invariant check に拡張、検査軸 230 突破。
