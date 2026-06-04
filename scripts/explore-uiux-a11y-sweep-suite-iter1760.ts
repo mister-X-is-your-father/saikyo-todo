@@ -740,6 +740,21 @@ async function main() {
     })
   }
 
+  // ========= GL. workflows node 追加プリセット group title sweep (iter2141) =========
+  const wfpGL = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
+  if (
+    !wfpGL.includes('iter2141') ||
+    !wfpGL.includes(
+      'title={`node 追加プリセット — ${NODE_PRESETS.length} 種、graph JSON に skeleton を 1 click 投入`}',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GL.wf-node-presets-group-title',
+      message: '[GL] iter2141 wf node 追加プリセット group title 付与 が消えている',
+    })
+  }
+
   // ========= GK. subtask group title sweep (iter2139) =========
   const spGK = read(here, `${root}/src/components/workspace/subtasks-panel.tsx`)
   if (
