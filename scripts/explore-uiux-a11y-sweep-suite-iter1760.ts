@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= FC. keybindings-help-modal DialogContent title sweep (iter2071) =========
+  const kbFC = read(here, `${root}/src/components/shared/keybindings-help-modal.tsx`)
+  if (!kbFC.includes('title="キーボードショートカット一覧"')) {
+    findings.push({
+      level: 'error',
+      source: 'FC.keybindings-dialog',
+      message: '[FC] iter2071 keybindings-help-modal DialogContent title が消えている',
+    })
+  }
+
   // ========= FB. workflows/integrations section title sweep (iter2069) =========
   const wfpFB = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
   const integFB = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
