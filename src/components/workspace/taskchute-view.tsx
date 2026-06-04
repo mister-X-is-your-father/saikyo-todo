@@ -229,6 +229,9 @@ export function TaskChuteView({ workspaceId, items }: Props) {
                 className={`inline-flex shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${priorityClass(item.priority)}`}
                 role="img"
                 aria-label={priorityLabel(item.priority)}
+                /* iter1865: today/inbox/period priority dot と統一、taskchute chip にも
+                   title=`P${priority}` 付与で sighted hover 統一。 */
+                title={`P${item.priority ?? 4}`}
               >
                 <span aria-hidden="true">P{item.priority ?? 4}</span>
               </span>
