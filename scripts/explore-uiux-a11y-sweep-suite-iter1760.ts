@@ -631,6 +631,36 @@ async function main() {
     })
   }
 
+  // ========= X. back-link title sweep (iter1801) =========
+  // 8 sub-page (goals/sprints/pdca/templates/workflows/integrations/time-entries/archive) +
+  // workspace home back-to-workspaces 計 9 Link に title 付与
+  for (const sub of [
+    'goals',
+    'sprints',
+    'pdca',
+    'templates',
+    'workflows',
+    'integrations',
+    'time-entries',
+    'archive',
+  ]) {
+    const src = read(here, `${root}/src/app/(workspace)/[workspaceId]/${sub}/page.tsx`)
+    if (!src.includes('title="Workspace dashboard に戻る"')) {
+      findings.push({
+        level: 'error',
+        source: 'X.back-link',
+        message: `[X] iter1801 ${sub} sub-page back-to-Workspace title が消えている`,
+      })
+    }
+  }
+  if (!workspacePage.includes('title="一覧 — Workspace 一覧へ戻る"')) {
+    findings.push({
+      level: 'error',
+      source: 'X.back-link',
+      message: '[X] iter1801 workspace home back-to-workspaces title が消えている',
+    })
+  }
+
   // ========= W. creation form submit title sweep (iter1799) =========
   const createWs = read(here, `${root}/src/components/workspace/create-workspace-form.tsx`)
   if (
