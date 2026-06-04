@@ -746,6 +746,16 @@ async function main() {
     })
   }
 
+  // ========= GO. filter-count status title sweep (iter2147) =========
+  const ibGO = read(here, `${root}/src/components/workspace/items-board.tsx`)
+  if (!ibGO.includes('iter2147') || !ibGO.includes('title={label}')) {
+    findings.push({
+      level: 'error',
+      source: 'GO.filter-count-title',
+      message: '[GO] iter2147 filter-count status title 同期 が消えている',
+    })
+  }
+
   // ========= GN. dashboard MUST item button title sweep (iter2145) =========
   const dvGN = read(here, `${root}/src/components/workspace/dashboard-view.tsx`)
   if (!dvGN.includes('iter2145') || !dvGN.includes('title={`${item.title} — MUST item を編集`}')) {
