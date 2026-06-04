@@ -367,6 +367,9 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
           className="space-y-3"
           noValidate
           aria-label="External Source 作成フォーム"
+          /* iter2067: External Source create form の用途 hover disclose、10 form family
+             完成 (3 create + 3 edit + mock-login + mock-submit + cte + src-create)。 */
+          title="External Source 作成フォーム"
           aria-busy={create.isPending || undefined}
           onSubmit={(e) => {
             e.preventDefault()
