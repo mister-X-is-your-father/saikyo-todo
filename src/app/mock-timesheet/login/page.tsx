@@ -13,7 +13,7 @@ export default function MockLoginPage() {
     <main
       id="main-content"
       tabIndex={-1}
-      aria-labelledby="mock-timesheet-heading"
+      aria-labelledby="mock-login-heading"
       aria-describedby="mock-timesheet-description"
       className="mx-auto max-w-md space-y-6 p-6 focus-visible:outline-none"
     >
@@ -26,8 +26,16 @@ export default function MockLoginPage() {
         </p>
       </header>
       {/* iter1089: /new (h2 新規送信) / /entries (h2 送信済み一覧) と heading hierarchy を揃える。
-          h1 "Mock Timesheet" は app 名、h2 でこのページの intent (ログイン) を明示。 */}
-      <h2 className="text-lg font-semibold">ログイン</h2>
+          h1 "Mock Timesheet" は app 名、h2 でこのページの intent (ログイン) を明示。
+          iter1719: 旧 main aria-labelledby `mock-timesheet-heading` (h1 app 名) は /new
+          (`mock-new-heading` 経由 "新規送信")、/entries (`mock-entries-heading` 経由 "送信済み
+          一覧") と divergent。main が「今このページで何ができるか」 (page intent) で命名されず
+          app 名のみで SR landmark 一覧で /login が「Mock Timesheet」 と /new と区別不能だった。
+          h2 に id="mock-login-heading" を付与、main aria-labelledby を新 id に切替で「ログイン」
+          を main 名とし、sibling pages convention に揃える。 */}
+      <h2 id="mock-login-heading" className="text-lg font-semibold">
+        ログイン
+      </h2>
       <MockLoginForm />
     </main>
   )
