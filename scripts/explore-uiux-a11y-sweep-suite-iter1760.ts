@@ -740,6 +740,20 @@ async function main() {
     })
   }
 
+  // ========= FB. workflows/integrations section title sweep (iter2069) =========
+  const wfpFB = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
+  const integFB = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
+  if (
+    !wfpFB.includes('title="Workflow 一覧と新規作成"') ||
+    !integFB.includes('title="API 連携 source 一覧と新規作成"')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'FB.section-titles',
+      message: '[FB] iter2069 workflows/integrations section title が消えている',
+    })
+  }
+
   // ========= FA. External Source 作成フォーム title sweep (iter2067) =========
   const integFA = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
   if (!integFA.includes('title="External Source 作成フォーム"')) {
