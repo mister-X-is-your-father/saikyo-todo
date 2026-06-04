@@ -740,6 +740,23 @@ async function main() {
     })
   }
 
+  // ========= FW. dep-remove title 2-path state-dependent 同期 sweep (iter2111) =========
+  const depFW = read(here, `${root}/src/components/workspace/item-dependencies-panel.tsx`)
+  if (!depFW.includes('iter2111') || !depFW.includes('解除 — 依存「${ref.title}」を解除中…')) {
+    findings.push({
+      level: 'error',
+      source: 'FW.dep-remove-title',
+      message: '[FW] iter2111 dep-remove title 2-path state-dependent 同期 が消えている',
+    })
+  }
+  if (/title=\{`依存「\$\{ref\.title\}」を解除`\}/.test(depFW)) {
+    findings.push({
+      level: 'error',
+      source: 'FW.dep-remove-title',
+      message: '[FW] iter2111 dep-remove 旧 静的 title が残っている',
+    })
+  }
+
   // ========= FV. proposal-accept + proposal-reject title sweep (iter2109) =========
   const dpFV = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
   const iter2109CountFV = (dpFV.match(/iter2109/g) ?? []).length
