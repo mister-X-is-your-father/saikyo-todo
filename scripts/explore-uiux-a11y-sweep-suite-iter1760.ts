@@ -762,6 +762,16 @@ async function main() {
     })
   }
 
+  // ========= HX. create-workspace-form title sweep (iter2217) =========
+  const cwfHX = read(here, `${root}/src/components/workspace/create-workspace-form.tsx`)
+  if (!cwfHX.includes('iter2217') || !cwfHX.includes('title="Workspace 作成フォーム"')) {
+    findings.push({
+      level: 'error',
+      source: 'HX.create-workspace-form-title',
+      message: '[HX] iter2217 create-workspace-form title 同期 が消えている',
+    })
+  }
+
   // ========= HW. workspace-mode radiogroup title sweep (iter2215) =========
   const wmHW = read(here, `${root}/src/components/workspace/workspace-mode-selector.tsx`)
   if (
