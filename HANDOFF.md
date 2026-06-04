@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2202 1/1 test a11y-sweep-suite に iter2201 keybinding-combo entry 追加] 検査軸 224 個 (新 HP 軸)、計約 341 invariant check に拡張。
+- ✅ [playwright-iter2201 1/1 mode-D keybinding-combo dt に title 付与し aria-label と sync] "ショートカット" label context hover disclose、FocusFormCta iter2199 / StatCard iter2197 と pair。
 - ✅ [playwright-iter2200 1/1 test a11y-sweep-suite に iter2199 focus-form-cta entry 追加] 検査軸 223 個 (新 HO 軸)、計約 340 invariant check に拡張、iter 2200 + 340 check milestone 突破。
 - ✅ [playwright-iter2199 1/1 mode-D FocusFormCta に title 付与し aria-label と sync] entityName + fieldName context hover disclose、StatCard iter2197 / Goal 一覧 iter2195 と pair。
 - ✅ [playwright-iter2198 1/1 test a11y-sweep-suite に iter2197 stat-card entry 追加] 検査軸 222 個 (新 HN 軸)、計約 339 invariant check に拡張。
