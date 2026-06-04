@@ -145,7 +145,10 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
               // iter1071: 旧 aria-label "割込み / 休憩として追加" は visible
               // "割込みとして追加" に対して "/ 休憩" が挿入され literal substring
               // 不一致 → WCAG 2.5.3 違反。visible-prefix を先頭に固定。
+              // iter1833: iter1831 archive-restore と同 pattern を schedule-picker
+              // 2 button (interrupt-add / cancel) にも展開、schedule-picker hover disclosure 完備。
               aria-label={`割込みとして追加 — 割込み / 休憩として追加${interruptNote ? ` (メモ: ${interruptNote})` : ''}`}
+              title={`割込みとして追加 — 割込み / 休憩として追加${interruptNote ? ` (メモ: ${interruptNote})` : ''}`}
             >
               <span aria-hidden="true">割込みとして追加</span>
             </Button>
@@ -160,7 +163,9 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
           onClick={onCancel}
           data-testid="schedule-picker-cancel"
           // iter1107: visible "キャンセル" を aria-label 冒頭固定 (iter1093-1106 sweep convention)。
+          // iter1833: iter1789 cancel と同 pattern を schedule-picker cancel にも展開。
           aria-label="キャンセル — task pick を破棄"
+          title="キャンセル — task pick を破棄"
         >
           <span aria-hidden="true">キャンセル</span>
         </Button>
