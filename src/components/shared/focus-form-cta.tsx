@@ -77,6 +77,10 @@ export function FocusFormCta({ targetId, testId }: Props) {
       className={EMPTY_CTA_BUTTON_CLASS}
       data-testid={testId}
       aria-label={`作成フォームへ — ${entityName} 作成フォームの『${fieldName}』入力欄にフォーカス`}
+      /* iter2199: FocusFormCta の aria-label は browser tooltip にならず sighted は hover で
+         entityName + fieldName context disclose 不可。StatCard iter2197 / Goal 一覧 iter2195 と
+         同 title=aria-label sync pattern。empty CTA で field disclose 価値大。 */
+      title={`作成フォームへ — ${entityName} 作成フォームの『${fieldName}』入力欄にフォーカス`}
       onClick={() => focusElementById(targetId)}
     >
       <span aria-hidden="true">作成フォームへ</span>
