@@ -766,6 +766,19 @@ async function main() {
     })
   }
 
+  // ========= JQ. Sprint Swimlane lane 一覧 ul title sweep (iter2305) =========
+  const ssdJQ = read(here, `${root}/src/components/workspace/sprint-swimlane-disclosure.tsx`)
+  if (
+    !ssdJQ.includes('iter2305') ||
+    !ssdJQ.includes('title={`Sprint Swimlane lane 一覧 — ${rows.length} 件`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'JQ.swimlane-lane-ul-title',
+      message: '[JQ] iter2305 Sprint Swimlane lane 一覧 ul title sync が消えている',
+    })
+  }
+
   // ========= JP. te-description / teMinutes input title sweep (iter2303) =========
   const teJP = read(here, `${root}/src/components/time-entry/create-time-entry-form.tsx`)
   if (!teJP.includes('iter2303')) {
