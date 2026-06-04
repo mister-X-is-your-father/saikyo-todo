@@ -214,6 +214,16 @@ export function TemplateItemsEditor({ templateId }: Props) {
                 ? '+ 追加 — 子 Item を追加中…'
                 : '+ 追加 — 子 Item を Template に追加'
           }
+          /* iter2029: state-dependent aria-label (空 / 追加中 / 通常) を title で
+             sighted hover disclose、sprint-create-btn / goal-create-btn iter1809 と同
+             create button family pattern。 */
+          title={
+            !title.trim()
+              ? '+ 追加 — 子 Item を追加するにはタイトルを入力してください'
+              : addMut.isPending
+                ? '+ 追加 — 子 Item を追加中…'
+                : '+ 追加 — 子 Item を Template に追加'
+          }
         >
           <span aria-hidden="true">+ 追加</span>
         </Button>
