@@ -178,6 +178,11 @@ async function main() {
     ],
     [`${root}/src/components/workflow/workflows-panel.tsx`, 'title={wf.name}', 'workflows'],
     [
+      `${root}/src/components/workflow/workflows-panel.tsx`,
+      'title={wf.description}',
+      'workflows description',
+    ],
+    [
       `${root}/src/components/integrations/integrations-panel.tsx`,
       'title={src.name}',
       'integrations',
