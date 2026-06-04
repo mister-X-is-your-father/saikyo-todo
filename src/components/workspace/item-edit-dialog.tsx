@@ -446,6 +446,14 @@ function ItemEditDialogInner({
                   ? `依存タブ — 未完了の前提 ${depsReadiness.openBlockedByCount} 件`
                   : '依存タブ'
               }
+              /* iter2013: tab-subtasks iter2011 と pair、依存 tab の state-dependent
+                 descriptive context (未完了前提件数) を sighted hover で disclose (6 tab sweep
+                 の 4 個目)。 */
+              title={
+                depsReadiness?.isBlocked
+                  ? `依存タブ — 未完了の前提 ${depsReadiness.openBlockedByCount} 件`
+                  : '依存タブ'
+              }
             >
               <span aria-hidden="true">依存</span>
               {depsReadiness && depsReadiness.isBlocked ? (
