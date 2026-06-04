@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2322 1/1 test a11y-sweep-suite に iter2321 item-plan-generate-button entry 追加] 検査軸 284 個 (新 JY 軸)、計約 402 invariant check に拡張、AI action button family 4 element (decompose / research / engineer / plan-generate) 完成。
+- ✅ [playwright-iter2321 1/1] item-plan-generate-button: aria-label state-dependent 2-path (pending / idle、item.title + AI 担当 副作用 含む) を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-item-plan-generate-title-iter2321.ts)、AI action button family 4 element 完成。
 - ✅ [playwright-iter2320 1/1 test a11y-sweep-suite に iter2319 item-checkbox title full sync entry 追加] 検査軸 283 個 (新 JX 軸)、計約 401 invariant check に拡張、item-checkbox pending state も hover disclose、iter 2320 milestone 突破。
 - ✅ [playwright-iter2319 1/1] item-checkbox: 旧 title 2-path 短文 (isDone ? '未完了' : '完了') が aria-label state-dependent 3-path (pending / done / todo、item.title 含む) と divergent → 両 path とも aria-label と同 text に揃え 3-path full sync (path B codify scripts/explore-uiux-item-checkbox-title-iter2319.ts)、start-timer iter2271 と同 title-aria full sync pattern、pending state も sighted hover で disclose。
 - ✅ [playwright-iter2318 1/1 test a11y-sweep-suite に iter2317 template-card delete button entry 追加] 検査軸 282 個 (新 JW 軸)、計約 400 invariant check に拡張、検査軸 282 + 400 check 大台到達 milestone 突破 (MCP path A 経由発見)。
