@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2030 1/1 test a11y-sweep-suite に iter2029 template-add-btn entry 追加] 検査軸 138 個 (新 EH 軸)、計約 234 invariant check に拡張、iter2030 突破。
 - ✅ [playwright-iter2029 1/1 mode-D template-items + 追加 button に title 付与] state-dependent button title disclose、sprint-create/goal-create iter1809 と同 family。
 - ✅ [playwright-iter2028 1/1 test a11y-sweep-suite に iter2027 sprint-create-end entry 追加] 検査軸 137 個 (新 EG 軸)、計約 233 invariant check に拡張、6 date input family 完備。
 - ✅ [playwright-iter2027 1/1 mode-D sprint-create end date input に title 付与] sprints-panel + goals-panel 全 6 date input state-dependent hover 完備。
