@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= JN. editStart / editDue date input title sweep (iter2299) =========
+  const edJN = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
+  if (!edJN.includes('iter2299')) {
+    findings.push({
+      level: 'error',
+      source: 'JN.edit-start-due-date-title',
+      message: '[JN] iter2299 editStart / editDue date input title 3-path sync が消えている',
+    })
+  }
+
   // ========= JM. editDescription textarea title sweep (iter2297) =========
   const edJM = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
   if (!edJM.includes('iter2297')) {
