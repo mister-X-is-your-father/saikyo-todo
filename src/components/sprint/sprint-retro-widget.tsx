@@ -140,6 +140,10 @@ export function SprintRetroWidget({ items, prevItems, sprintEndISO, className }:
           /* iter1585: 旧 aria-label paren convention `"計画 vs 納品 (計画 X / 納品 Y / 差分 Z)"` は
              iter1093-1584 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
           aria-label={`計画 vs 納品 — 計画 ${planned} 件 / 納品 ${delivered} 件 / 差分 ${delta > 0 ? '+' : ''}${delta} 件`}
+          /* iter1921: 3 cell grid 並列表示は visible で個別読めるが integrated summary は
+             表示されず、aria-label の 1 行 summary を sighted hover で disclose
+             (estimate-bias 内訳 iter1917 / pdca-leadtime iter1895 と同 chart 透明性 pattern)。 */
+          title={`計画 vs 納品 — 計画 ${planned} 件 / 納品 ${delivered} 件 / 差分 ${delta > 0 ? '+' : ''}${delta} 件`}
         >
           <div aria-hidden="true">
             <dt className="text-muted-foreground">計画</dt>
