@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= EI. workflows-panel operations group title sweep (iter2031) =========
+  const wfpEI = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
+  if (!wfpEI.includes('iter2031')) {
+    findings.push({
+      level: 'error',
+      source: 'EI.wf-operations-group',
+      message: '[EI] iter2031 workflows-panel operations group title が消えている',
+    })
+  }
+
   // ========= EH. template + 追加 button title sweep (iter2029) =========
   const tmplEH = read(here, `${root}/src/components/template/template-items-editor.tsx`)
   if (!tmplEH.includes('iter2029')) {
