@@ -140,6 +140,11 @@ export function SprintRiskBoardWidget<T extends RiskBoardItemFields>({
                         className="flex flex-wrap gap-1 pl-1.5"
                         role="list"
                         aria-label={`「${entry.item.title}」のリスク理由 ${entry.reasons.length} 件`}
+                        /* iter2203: risk-reasons ul の aria-label は browser tooltip にならず
+                           sighted は hover で item.title + 理由件数 context disclose 不可。
+                           keybinding-combo iter2201 / FocusFormCta iter2199 と同 title=aria-label
+                           sync pattern。 */
+                        title={`「${entry.item.title}」のリスク理由 ${entry.reasons.length} 件`}
                         data-testid={`risk-reasons-${entry.item.id}`}
                       >
                         {entry.reasons.map((reason, i) => (
