@@ -70,6 +70,13 @@ export function TeamCapacityPanel({ workspaceId }: Props) {
               : 'チームメンバー 余裕時間 (今日 / 今週) — 開く'
           }
           data-testid="team-capacity-summary-toggle"
+          /* iter2001: open/閉 state-dependent aria-label を title で sighted hover disclose
+             (theme-toggle iter1971 と同 state-dependent toggle pattern)。 */
+          title={
+            open
+              ? 'チームメンバー 余裕時間 (今日 / 今週) — 閉じる'
+              : 'チームメンバー 余裕時間 (今日 / 今週) — 開く'
+          }
         >
           <Users className="h-4 w-4" aria-hidden="true" />
           <span aria-hidden="true">チームメンバー 余裕時間 (今日 / 今週)</span>
