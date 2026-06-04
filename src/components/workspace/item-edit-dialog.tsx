@@ -602,6 +602,21 @@ function ItemEditDialogInner({
                         ? `タイトル (現在 ${title.length} / 500 文字、上限近接)`
                         : `タイトル (現在 ${title.length} / 500 文字)`
                 }
+                /* iter2295: editTitle input の aria-label は state-dependent 4-path (空 / 空白
+                   のみ / 上限近接 / 通常) で SR には full context (validation + 文字数) を渡すが
+                   browser tooltip にならず sighted は hover で同 context disclose 不可。MCP
+                   path A で ItemEditDialog 基本タブで発見、edit-item-sprint/kr iter2287 と
+                   同 state-dependent title pattern を title input にも展開、ItemEditDialog の
+                   primary input title 補完。 */
+                title={
+                  title.length === 0
+                    ? 'タイトル (必須、最大 500 文字)'
+                    : title.trim() === ''
+                      ? `タイトル (現在 ${title.length} / 500 文字、空白のみは不正)`
+                      : title.length > 480
+                        ? `タイトル (現在 ${title.length} / 500 文字、上限近接)`
+                        : `タイトル (現在 ${title.length} / 500 文字)`
+                }
               />
             </div>
             <div className="space-y-1.5">
