@@ -894,6 +894,13 @@ function SprintCard({
                     ? `稼働開始 — Sprint「${sprint.name}」のステータスを変更中…`
                     : `稼働開始 — Sprint「${sprint.name}」を稼働開始`
                 }
+                /* iter2083: state-dependent action button (稼働開始) を sighted hover で
+                   Sprint name context disclose (sync-btn iter2081 と同 button hover pattern)。 */
+                title={
+                  changing
+                    ? `稼働開始 — Sprint「${sprint.name}」のステータスを変更中…`
+                    : `稼働開始 — Sprint「${sprint.name}」を稼働開始`
+                }
               >
                 <Play className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                 <span aria-hidden="true">稼働開始</span>
