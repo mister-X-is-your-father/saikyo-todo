@@ -283,7 +283,15 @@ export function TemplatesPanel({ workspaceId }: Props) {
           action={<FocusFormCta targetId="tmpl-name" testId="templates-empty-create" />}
         />
       ) : (
-        <ul className="space-y-3" aria-label={`Template 一覧 — ${list.data!.length} 件`}>
+        <ul
+          className="space-y-3"
+          aria-label={`Template 一覧 — ${list.data!.length} 件`}
+          /* iter2261: Template 一覧 ul の aria-label "Template 一覧 — N 件" は browser tooltip
+             にならず sighted は hover で count context disclose 不可。sources-list iter2191 /
+             workflows-list iter2189 / Goal 一覧 iter2195 と同 title=aria-label sync pattern
+             (一覧 ul family) を Template list にも展開、MCP path A で /templates 探索中に発見。 */
+          title={`Template 一覧 — ${list.data!.length} 件`}
+        >
           {list.data!.map((t) => (
             <li key={t.id}>
               <Card
