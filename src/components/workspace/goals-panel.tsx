@@ -844,6 +844,9 @@ function KeyResultList({
                         : `${pct}%`
                   }
                   data-testid={`kr-progress-${kr.id}`}
+                  /* iter1935: KR progressbar も sighted hover で KR title context disclose、
+                     goals-panel iter1933 / sprints-panel iter1931 progressbar pair の 3 個目。 */
+                  title={`KR「${kr.title}」進捗 ${pct}%`}
                 >
                   <div
                     className="bg-primary h-full"
