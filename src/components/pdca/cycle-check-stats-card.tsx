@@ -111,6 +111,10 @@ export function CycleCheckStatsCard({ items, cycleStartedAt, cycleEndedAt, class
             /* iter1574: 旧 aria-label paren convention `"Lead time 統計 (...)"` は iter1093-1573
                sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
             aria-label={`Lead time 統計 — 平均 ${stats.leadTimeAvgHours}h / 中央 ${stats.leadTimeMedianHours ?? '不明'}h / 期間 ${stats.cycleDurationDays}d`}
+            /* iter1925: 3 cell grid 並列表示は visible で個別読めるが integrated summary は
+               表示されず、aria-label の 1 行 summary を sighted hover で disclose
+               (sprint-retro 計画vs納品 iter1921 / pdca-leadtime iter1895 と同 chart 透明性 pattern)。 */
+            title={`Lead time 統計 — 平均 ${stats.leadTimeAvgHours}h / 中央 ${stats.leadTimeMedianHours ?? '不明'}h / 期間 ${stats.cycleDurationDays}d`}
           >
             <div aria-hidden="true">
               <dt className="text-muted-foreground">平均 lead</dt>
