@@ -471,6 +471,8 @@ function ItemEditDialogInner({
               value="comments"
               data-testid="tab-comments"
               aria-label="コメントタブ — 議論履歴 + @メンション + AI Plan 投下"
+              /* iter2015: 6 tab sweep の 5 個目、コメント tab の context disclose。 */
+              title="コメントタブ — 議論履歴 + @メンション + AI Plan 投下"
             >
               <span aria-hidden="true">コメント</span>
             </TabsTrigger>
@@ -478,6 +480,8 @@ function ItemEditDialogInner({
               value="activity"
               data-testid="tab-activity"
               aria-label="アクティビティタブ — 編集履歴 (audit_log) を時系列表示"
+              /* iter2015: 6 tab sweep の 6 個目、アクティビティ tab の context disclose。 */
+              title="アクティビティタブ — 編集履歴 (audit_log) を時系列表示"
             >
               <span aria-hidden="true">アクティビティ</span>
             </TabsTrigger>
