@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BO. quick-add estimate chip title sweep (iter1887) =========
+  const quickAddBO = read(here, `${root}/src/components/workspace/quick-add.tsx`)
+  if (!quickAddBO.includes('title={`${formatEstimate(preview.estimateMinutes)} — 見積`}')) {
+    findings.push({
+      level: 'error',
+      source: 'BO.quick-add-estimate',
+      message: '[BO] iter1887 quick-add estimate chip title が消えている',
+    })
+  }
+
   // ========= BN. subtasks-panel step 番号 title sweep (iter1885) =========
   const subtasksBN = read(here, `${root}/src/components/workspace/subtasks-panel.tsx`)
   if (!subtasksBN.includes('title={`${index + 1} 番目 — 深さ ${depth + 1}`}')) {
