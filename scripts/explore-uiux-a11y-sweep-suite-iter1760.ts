@@ -631,6 +631,20 @@ async function main() {
     })
   }
 
+  // ========= AF. goal-toggle title sweep (iter1817) =========
+  const goalsPanelAF = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
+  if (
+    !goalsPanelAF.includes(
+      "title={`${goal.title} — Goal「${goal.title}」の KR ${open ? '一覧を閉じる' : '一覧を開く'}`}",
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'AF.goal-toggle',
+      message: '[AF] iter1817 goal-toggle title が消えている',
+    })
+  }
+
   // ========= AE. src-* actions title sweep (iter1815) =========
   const integrationsPanel = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
   for (const t of [
