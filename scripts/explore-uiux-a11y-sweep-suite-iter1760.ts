@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= JD. backlog-edit button title sweep (iter2279) =========
+  const bvJD = read(here, `${root}/src/components/workspace/backlog-view.tsx`)
+  if (!bvJD.includes('iter2279')) {
+    findings.push({
+      level: 'error',
+      source: 'JD.backlog-edit-title',
+      message: '[JD] iter2279 backlog-edit button title sync が消えている',
+    })
+  }
+
   // ========= JC. backlog sortable th title sweep (iter2277) =========
   const bvJC = read(here, `${root}/src/components/workspace/backlog-view.tsx`)
   if (!bvJC.includes('iter2277')) {
