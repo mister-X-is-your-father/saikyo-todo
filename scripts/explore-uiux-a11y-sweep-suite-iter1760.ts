@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= JA. edit-item-must checkbox title sweep (iter2273) =========
+  const edJA = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
+  if (!edJA.includes('iter2273')) {
+    findings.push({
+      level: 'error',
+      source: 'JA.edit-item-must-title',
+      message: '[JA] iter2273 edit-item-must title 2-path sync が消えている',
+    })
+  }
+
   // ========= IZ. start-timer-button (idle) title full sync sweep (iter2271) =========
   const stbIZ = read(here, `${root}/src/components/workspace/start-timer-button.tsx`)
   if (
