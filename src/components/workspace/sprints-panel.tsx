@@ -721,6 +721,16 @@ function SprintCard({
                     className="min-h-11 text-xs"
                     enterKeyHint="next"
                     data-testid={`sprint-edit-start-${sprint.id}`}
+                    /* iter2017: state-dependent aria-label (空 / 不正 / 通常) を title で
+                       sighted hover disclose、sprint-name iter1979 / sprint-goal iter1981 と
+                       同 file 内 sweep の続編 (sprints-panel edit form date input)。 */
+                    title={
+                      editStart === ''
+                        ? '開始 — Sprint 開始日 (必須、終了日以前)'
+                        : isInvalidDateRange(editStart, editEnd)
+                          ? `開始 — Sprint 開始日 (現在: ${editStart} (${dayOfWeekJa(editStart)})、終了日 ${editEnd} より後で不正)`
+                          : `開始 — Sprint 開始日 (現在: ${editStart} (${dayOfWeekJa(editStart)}))`
+                    }
                   />
                 </div>
                 <div>
