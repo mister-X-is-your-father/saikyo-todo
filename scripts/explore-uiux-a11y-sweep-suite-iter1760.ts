@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= IQ. proposals-accept-all / reject-all title sweep (iter2253) =========
+  const dpIQ = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
+  if (!dpIQ.includes('iter2253')) {
+    findings.push({
+      level: 'error',
+      source: 'IQ.proposals-accept-reject-title',
+      message: '[IQ] iter2253 proposals-accept-all / reject-all title 2-path sync が消えている',
+    })
+  }
+
   // ========= IP. picker family PopoverContent title sweep (iter2251) =========
   const tpIP = read(here, `${root}/src/components/workspace/tag-picker.tsx`)
   if (!tpIP.includes('iter2251') || !tpIP.includes('title="タグ — 選択 / 新規作成"')) {
