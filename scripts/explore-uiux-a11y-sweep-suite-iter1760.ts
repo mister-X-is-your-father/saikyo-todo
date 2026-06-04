@@ -740,6 +740,31 @@ async function main() {
     })
   }
 
+  // ========= FX. subtask-outdent + indent title multi-path sweep (iter2113) =========
+  const spFX = read(here, `${root}/src/components/workspace/subtasks-panel.tsx`)
+  const iter2113CountFX = (spFX.match(/iter2113/g) ?? []).length
+  if (iter2113CountFX < 2) {
+    findings.push({
+      level: 'error',
+      source: 'FX.subtask-outdent-indent-title',
+      message: `[FX] iter2113 marker 不足 (count=${iter2113CountFX}、outdent + indent 2 個必要)`,
+    })
+  }
+  if (/^\s+title="アウトデント \(Alt\+←\)"$/m.test(spFX)) {
+    findings.push({
+      level: 'error',
+      source: 'FX.subtask-outdent-indent-title',
+      message: '[FX] iter2113 subtask-outdent 旧 静的 title が残っている',
+    })
+  }
+  if (/^\s+title="インデント \(Alt\+→\)"$/m.test(spFX)) {
+    findings.push({
+      level: 'error',
+      source: 'FX.subtask-outdent-indent-title',
+      message: '[FX] iter2113 subtask-indent 旧 静的 title が残っている',
+    })
+  }
+
   // ========= FW. dep-remove title 2-path state-dependent 同期 sweep (iter2111) =========
   const depFW = read(here, `${root}/src/components/workspace/item-dependencies-panel.tsx`)
   if (!depFW.includes('iter2111') || !depFW.includes('解除 — 依存「${ref.title}」を解除中…')) {
