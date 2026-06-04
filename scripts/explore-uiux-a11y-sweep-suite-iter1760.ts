@@ -744,6 +744,19 @@ async function main() {
     })
   }
 
+  // ========= AH. notification-item title sweep (iter1821) =========
+  if (
+    !notifBell.includes(
+      "title={`${formatNotificationBody(n)} — ${n.readAt ? '既読' : '未読'}${visual.label}通知 — ${formatRelativeTime(n.createdAt)}`}",
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'AH.notification-item',
+      message: '[AH] iter1821 notification-item title が消えている',
+    })
+  }
+
   // ========= AA. notification-bell mark-all-read title sweep (iter1807) =========
   if (
     !notifBell.includes("'全て既読 — 未読通知がないため既読化不要'") ||
