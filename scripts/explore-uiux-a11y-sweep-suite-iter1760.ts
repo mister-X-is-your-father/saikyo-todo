@@ -631,6 +631,30 @@ async function main() {
     })
   }
 
+  // ========= AB. sprint-create + goal-create title sweep (iter1809) =========
+  const sprintsPanel = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  const goalsPanel = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
+  if (
+    !sprintsPanel.includes("'作成 — Sprint を新規作成'") ||
+    !sprintsPanel.includes("'作成中… — Sprint を作成中'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'AB.sprint-goal-create',
+      message: '[AB] iter1809 sprint-create conditional path text が消えている',
+    })
+  }
+  if (
+    !goalsPanel.includes("'作成 — Goal を新規作成'") ||
+    !goalsPanel.includes("'作成中… — Goal を作成中'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'AB.sprint-goal-create',
+      message: '[AB] iter1809 goal-create conditional path text が消えている',
+    })
+  }
+
   // ========= AA. notification-bell mark-all-read title sweep (iter1807) =========
   if (
     !notifBell.includes("'全て既読 — 未読通知がないため既読化不要'") ||
