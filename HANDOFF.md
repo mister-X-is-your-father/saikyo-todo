@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1960 1/1 test a11y-sweep-suite に iter1959 calendar nav entry 追加] 検査軸 103 個 (新 CY 軸)、計約 199 invariant check に拡張。
 - ✅ [playwright-iter1959 1/1 mode-D calendar-view date nav group に title 付与] group 全体に title を付与し sighted hover で現在日付 + navigation 構成 disclose。
 - ✅ [playwright-iter1958 1/1 test a11y-sweep-suite に iter1957 teCategory entry 追加] 検査軸 102 個 (新 CX 軸)、計約 198 invariant check に拡張。
 - ✅ [playwright-iter1957 1/1 mode-D create-time-entry teCategory に title 付与] category select の現在値を sighted hover で disclose、state-dependent input pair の続編。
