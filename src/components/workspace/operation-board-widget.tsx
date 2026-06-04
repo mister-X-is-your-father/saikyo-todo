@@ -209,7 +209,11 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                            (iter1734 ItemRow / focus-blocks button と pair で operation-board 全 button
                            で sighted hover disclosure 完成)。 */
                         aria-label={`${it.title} を開く — 見積 ${it.estimateMin}分`}
-                        title={it.title}
+                        /* iter2149: op-board quick-wins button title は item.title のみで
+                           aria-label "${title} を開く — 見積 X分" の "を開く" + 見積 context が
+                           sighted hover で disclose されない。filter-count iter2147 /
+                           dashboard-must-edit iter2145 と同 title=aria-label sync pattern。 */
+                        title={`${it.title} を開く — 見積 ${it.estimateMin}分`}
                       >
                         <span
                           className="text-muted-foreground text-[10px] tabular-nums"
@@ -246,7 +250,9 @@ export function OperationBoardWidget({ items, today: todayProp }: Props) {
                            iter1746: 同 file quick-wins button と pair で title 追加、
                            operation-board 全 button で sighted hover disclosure 完成。 */
                         aria-label={`${it.title} を開く — 集中 ${it.estimateMin}分`}
-                        title={it.title}
+                        /* iter2149: op-board focus-blocks button title も quick-wins と pair で
+                           title=aria-label sync (集中時間 context disclose)。 */
+                        title={`${it.title} を開く — 集中 ${it.estimateMin}分`}
                       >
                         <span
                           className="text-muted-foreground text-[10px] tabular-nums"
