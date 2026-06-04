@@ -766,6 +766,20 @@ async function main() {
     })
   }
 
+  // ========= IG. team-context save button title sweep (iter2235) =========
+  const tceIG = read(here, `${root}/src/components/workspace/team-context-editor.tsx`)
+  if (
+    !tceIG.includes('iter2235') ||
+    !tceIG.includes('保存 — チームコンテキストに変更がないため保存不要') ||
+    !tceIG.includes('保存中… — チームコンテキストを保存中…')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'IG.team-context-save-title',
+      message: '[IG] iter2235 team-context save button title 3-path sync が消えている',
+    })
+  }
+
   // ========= IF. FocusQuickAddButton title sweep (iter2233) =========
   const fqIF = read(here, `${root}/src/components/workspace/focus-quick-add-button.tsx`)
   if (
