@@ -359,17 +359,13 @@ async function main() {
     })
   }
 
-  // ========= J. icon-only button title sweep (iter1763 / 1764 / 1765) =========
+  // ========= J. icon-only button title sweep (iter1763 / 1764 / 1765, iter1971 で em-dash 化) =========
   const themeToggle = read(here, `${root}/src/components/shared/theme-toggle.tsx`)
-  if (
-    !themeToggle.match(
-      /title=\{\s*\n?\s*resolvedTheme === 'dark' \? 'ライトテーマに切替' : 'ダークテーマに切替'\s*\n?\s*\}/,
-    )
-  ) {
+  if (!themeToggle.includes("'ライトテーマ — クリックで切替' : 'ダークテーマ — クリックで切替'")) {
     findings.push({
       level: 'error',
       source: 'J.icon-only-title',
-      message: '[J] iter1763 theme-toggle conditional title が消えている',
+      message: '[J] iter1763/1971 theme-toggle conditional title が消えている',
     })
   }
   const notifBell = read(here, `${root}/src/components/workspace/notification-bell.tsx`)
