@@ -80,6 +80,14 @@ export function EngineerTriggerButton({ item }: Props) {
               ? 'PR 自動起票が ON: Engineer 起動時に Draft PR も作成される — クリックで OFF'
               : 'PR 自動起票が OFF: Engineer 起動時は commit のみ、PR は人間が後で push — クリックで ON'
           }
+          /* iter2209: engineer-auto-pr checkbox の state-dependent aria-label (ON / OFF
+             2-path) は browser tooltip にならず sighted は hover で full state context
+             disclose 不可。engineer-trigger-group iter2207 と pair の engineer family title 同期。 */
+          title={
+            autoPr
+              ? 'PR 自動起票が ON: Engineer 起動時に Draft PR も作成される — クリックで OFF'
+              : 'PR 自動起票が OFF: Engineer 起動時は commit のみ、PR は人間が後で push — クリックで ON'
+          }
         />
         <span className="text-muted-foreground" aria-hidden="true">
           PR 自動起票
