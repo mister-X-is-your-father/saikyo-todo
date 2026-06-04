@@ -306,6 +306,11 @@ export function GanttView({
       /* iter1578: 旧 aria-label paren convention `"Gantt チャート (Item X 件 × 期間 Y 日)"` は
          iter1093-1577 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
       aria-label={`Gantt チャート — Item ${withDates.length} 件 × 期間 ${totalSpanDays} 日`}
+      /* iter2247: Gantt chart 全体 container の aria-label は browser tooltip にならず
+         sighted は hover で「Item 数 + 期間 日数」 disclose 不可。Gantt project summary
+         (banner) iter2117 は既に title 付きだが parent container 自体は title 欠落。
+         Kanban iter2117 系列の root container title pattern を Gantt にも展開。 */
+      title={`Gantt チャート — Item ${withDates.length} 件 × 期間 ${totalSpanDays} 日`}
     >
       {/* Project summary banner (Phase 6.15 iter 46 — TeamGantt/GanttPRO 風) */}
       <div
