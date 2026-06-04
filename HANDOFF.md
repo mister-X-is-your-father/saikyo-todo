@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2007 1/1 mode-D item-edit-dialog tab-base に title 付与] 6 tab sweep の 1 個目、sub-section nav iter1779 と同 hover context pattern。
 - ✅ [playwright-iter2006 1/1 test a11y-sweep-suite に iter2005 pdca-period-group entry 追加] 検査軸 126 個 (新 DV 軸)、計約 222 invariant check に拡張。
 - ✅ [playwright-iter2005 1/1 mode-D pdca 集計期間 group に title 付与] 5 group landmark hover summary 完備 (view-switcher / filter / decompose-bulk / bulk-action-bar / pdca-period)。
 - ✅ [playwright-iter2004 1/1 test a11y-sweep-suite に iter2003 period-save entry 追加] 検査軸 125 個 (新 DU 軸)、計約 221 invariant check に拡張。
