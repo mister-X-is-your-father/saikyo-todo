@@ -49,6 +49,9 @@ export function WorkspaceHeader({ title, role, subtitle, pageActions, utility }:
                prefix scan が strict prefix-match で不可 (substring 一致のみ)。iter1553/1554/1555
                status Badge family と同 pattern、visible 冒頭固定 + em-dash 区切。 */
             aria-label={`${role} — あなたの workspace role`}
+            // iter1835: Badge は aria-label のみで sighted は hover で role context 即把握できず。
+            // iter1817 goal-toggle と同 pattern で title 付与。
+            title={`${role} — あなたの workspace role`}
           >
             <span aria-hidden="true">{role}</span>
           </Badge>
