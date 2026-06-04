@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= FK. sprint-cancel button title sweep (iter2087) =========
+  const spFK = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (!spFK.includes('iter2087')) {
+    findings.push({
+      level: 'error',
+      source: 'FK.sprint-cancel',
+      message: '[FK] iter2087 sprint-cancel button title が消えている',
+    })
+  }
+
   // ========= FJ. sprint-complete + sprint-replan button title sweep (iter2085) =========
   const spFJ = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   const iter2085CountFJ = (spFJ.match(/iter2085/g) ?? []).length
