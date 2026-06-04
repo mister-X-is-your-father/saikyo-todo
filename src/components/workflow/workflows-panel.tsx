@@ -390,11 +390,6 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             disabled={!wf.enabled || trigger.isPending}
             aria-busy={trigger.isPending || undefined}
             data-testid={`wf-run-${wf.id}`}
-            title={
-              nodeCount === 0
-                ? 'node が無い workflow は実行不可'
-                : '手動で sync 実行 (各 node 10-60s timeout)'
-            }
             // iter1116: wf-trigger / wf-edit / wf-toggle / wf-runs-toggle の旧 aria-label は visible
             // "実行"/"実行中…"/"編集"/"無効化"/"有効化"/"履歴" を末尾持ちで voice control prefix-matching
             // match 不可。iter1093-1115 sweep convention に合わせ visible 冒頭固定。
@@ -402,6 +397,19 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
             // 漏れていた (visible "実行" を末尾 "実行不可" に持ち prefix-match 不可)。
             // visible "実行" 冒頭固定 + em-dash 区切で descriptive 末尾保持。
             aria-label={
+              !wf.enabled
+                ? `実行 — Workflow「${wf.name}」は無効化中のため実行不可`
+                : nodeCount === 0
+                  ? `実行 — Workflow「${wf.name}」は node が無いため実行不可`
+                  : trigger.isPending
+                    ? `実行中… — Workflow「${wf.name}」を実行中`
+                    : `実行 — Workflow「${wf.name}」を手動で sync 実行 (各 node 10-60s timeout)`
+            }
+            /* iter2091: 旧 title は 2-path (nodeCount===0 / else) で aria-label の 4-path
+               (disabled / no-node / pending / normal) と divergent、Workflow name context も
+               欠落。aria-label と同 4-path text に揃え SR ↔ sighted hover vocab 一致
+               (theme-toggle iter1971 と同 title-aria divergence 修正 pattern)。 */
+            title={
               !wf.enabled
                 ? `実行 — Workflow「${wf.name}」は無効化中のため実行不可`
                 : nodeCount === 0
