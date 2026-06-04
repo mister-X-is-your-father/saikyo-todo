@@ -264,7 +264,11 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
             // 一時停止" は voice control「click 一時停止」 prefix-match 不可 ("タイマーを"
             // が先頭)。BulkCheckbox iter1220 と同 sweep を active-timer pause / resume / pip
             // にも展開、概念名を冒頭固定 + em-dash 区切で descriptive 末尾保持。
+            // iter1793: icon-only Pause/Resume は aria-label のみで sighted は hover で
+            // 何の操作 (一時停止 / 再開) か即把握できなかった。iter1791 submit / iter1763
+            // theme-toggle icon-only と同 pattern で title 付与。
             aria-label="一時停止 — タイマーを一時停止"
+            title="一時停止 — タイマーを一時停止"
             data-testid="active-timer-pause"
           >
             <Pause className="h-3.5 w-3.5" aria-hidden="true" />
@@ -278,7 +282,9 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
             onClick={resume}
             // iter1222: pause button と同 sweep — visible text 無 icon-only で概念名 "再開"
             // を冒頭固定。
+            // iter1793: pause と pair で title 付与 (iter1763 icon-only family と同 pattern)。
             aria-label="再開 — タイマーを再開"
+            title="再開 — タイマーを再開"
             data-testid="active-timer-resume"
           >
             <Play className="h-3.5 w-3.5" aria-hidden="true" />
@@ -333,6 +339,13 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
           disabled={create.isPending}
           aria-busy={create.isPending || undefined}
           aria-label={
+            create.isPending
+              ? '停止 — タイマーを停止して稼働記録を作成中…'
+              : '停止 — タイマーを停止して稼働記録に保存'
+          }
+          // iter1793: visible "停止" のみで sighted は hover で「稼働記録に保存」 effect
+          // 即把握できなかった。iter1791 submit と同 pattern で conditional 2 path title。
+          title={
             create.isPending
               ? '停止 — タイマーを停止して稼働記録を作成中…'
               : '停止 — タイマーを停止して稼働記録に保存'
