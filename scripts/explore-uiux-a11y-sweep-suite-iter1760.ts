@@ -744,6 +744,19 @@ async function main() {
     })
   }
 
+  // ========= AW. active-timer-estimate-calibrated chip title sweep (iter1851) =========
+  if (
+    !activeTimer.includes(
+      "title={`${calibrated.calibratedMinutes}分 — 校正後 ${calibrated.deltaMinutes > 0 ? '+' : ''}${calibrated.deltaMinutes}分、中央値 ${calibrationFactor?.toFixed(2)}× 補正`}",
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'AW.calibrated',
+      message: '[AW] iter1851 calibrated chip title が消えている',
+    })
+  }
+
   // ========= AV. notification-bell unreadBreakdown chip title sweep (iter1849) =========
   if (!notifBell.includes('title={`${unreadBreakdown} — 未読内訳`}')) {
     findings.push({
