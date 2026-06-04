@@ -52,6 +52,12 @@ export function SignupForm() {
       aria-busy={isPending || undefined}
       noValidate
       className="space-y-4"
+      // iter1725: 既に Button に `data-testid="signup-submit"` を持つが form-level data-testid は
+      // 未設定。iter1717 mock-login-form pattern (form + button pair) を signup-form にも適用、
+      // auth flow 全体で `[data-testid$="-form"]` / `[data-testid$="-submit"]` の 2 pattern で
+      // discover 可能 (login-form / signup-form / mock-login-form / mock-submit-form 全 form
+      // 一括発見、submit button 一括発見)。
+      data-testid="signup-form"
     >
       <div className="space-y-2">
         <Label htmlFor="displayName">表示名</Label>

@@ -51,6 +51,12 @@ export function LoginForm() {
       aria-busy={isPending || undefined}
       noValidate
       className="space-y-4"
+      // iter1725: 既に Button に `data-testid="login-submit"` を持つが form-level data-testid は
+      // 未設定で、Playwright で auth form 群を `[data-testid$="-form"]` で一括発見できなかった。
+      // iter1717 mock-login-form (form mock-login-form + button mock-login-submit) と対称な
+      // form/button pair を auth form にも適用、auth flow 全体で `[data-testid$="-form"]`
+      // (form 一括) / `[data-testid$="-submit"]` (submit button 一括) の 2 pattern で discover 可能。
+      data-testid="login-form"
     >
       <div className="space-y-2">
         <Label htmlFor="email">メールアドレス</Label>
