@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2081 1/1 mode-D time-entry sync button に title 付与] state-dependent button title disclose、item-edit reload iter2079 と同 pattern。
 - ✅ [playwright-iter2080 1/1 test a11y-sweep-suite に iter2079 item-edit-reload entry 追加] 検査軸 163 個 (新 FG 軸)、計約 259 invariant check、iter2080 突破。
 - ✅ [playwright-iter2079 1/1 mode-D item-edit reload button に title 付与] 破壊的 action context (自分の編集破棄) hover で予告、destructive action awareness pattern。
 - ✅ [playwright-iter2078 1/1 test a11y-sweep-suite に iter2077 5-sub-page-mains entry 追加] 検査軸 162 個 (新 FF 軸)、計約 258 invariant check に拡張 (9 main landmark family 完成)。
