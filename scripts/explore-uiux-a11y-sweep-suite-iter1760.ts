@@ -762,6 +762,19 @@ async function main() {
     })
   }
 
+  // ========= HU. engineer-trigger-btn title sweep (iter2211) =========
+  const etHU = read(here, `${root}/src/components/workspace/engineer-trigger-button.tsx`)
+  if (
+    !etHU.includes('iter2211') ||
+    !etHU.includes('起動中… — Engineer Agent に「${item.title}」を投入中')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HU.engineer-trigger-btn-title',
+      message: '[HU] iter2211 engineer-trigger-btn title 同期 が消えている',
+    })
+  }
+
   // ========= HT. engineer-auto-pr checkbox title sweep (iter2209) =========
   const etHT = read(here, `${root}/src/components/workspace/engineer-trigger-button.tsx`)
   if (
