@@ -1506,7 +1506,11 @@ export function DashboardView({ workspaceId }: Props) {
                         // にならず sighted は hover で全 title 見れず。title 付与で
                         // dashboard MUST list 全 row hover disclosure (iter1720-1746 sweep)。
                         aria-label={`${item.title} — MUST item を編集`}
-                        title={item.title}
+                        /* iter2145: dashboard MUST item button title は item.title のみで
+                           aria-label "${item.title} — MUST item を編集" の "編集" context が
+                           sighted hover で disclose されない。wf-trigger-presets iter2143 /
+                           subtask-group iter2139 と同 title=aria-label sync pattern。 */
+                        title={`${item.title} — MUST item を編集`}
                       >
                         <span aria-hidden="true">{item.title}</span>
                       </button>
