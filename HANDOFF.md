@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2316 1/1 test a11y-sweep-suite に iter2315 recovery-plan ol entry 追加] 検査軸 281 個 (新 JV 軸)、計約 399 invariant check に拡張、8 entity 一覧 ul/ol family 完成 (+ recovery actions)。
+- ✅ [playwright-iter2315 1/1] recovery-plan-section 救済 action ol: aria-label "救済 action N 件" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-recovery-plan-ol-title-iter2315.ts)、Activity 履歴 iter2291 / swimlane lane 一覧 iter2305 と同 list family pattern、8 entity 一覧 ul/ol family 完成。
 - ✅ [playwright-iter2314 1/1 test a11y-sweep-suite に iter2313 src-url input entry 追加] 検査軸 280 個 (新 JU 軸)、計約 398 invariant check に拡張、API endpoint 入力 form hint disclosure 強化 (MCP path A 経由発見)、検査軸 280 milestone 突破。
 - ✅ [playwright-iter2313 1/1] src-url input (integrations-panel): aria-label state-dependent 2-path (空 / 入力中) を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-src-url-input-title-iter2313.ts)。**MCP path A で /integrations 探索中に発見**、te-description iter2303 / editTitle iter2295 と同 input title pattern。
 - ✅ [playwright-iter2312 1/1 test a11y-sweep-suite に iter2311 done-yesterday-toggle entry 追加] 検査軸 279 個 (新 JT 軸)、計約 397 invariant check に拡張、operation-board disclosure button family 補完。
