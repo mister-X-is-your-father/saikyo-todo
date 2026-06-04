@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2286 1/1 test a11y-sweep-suite に iter2285 ItemEditDialog TabsList entry 追加] 検査軸 266 個 (新 JG 軸)、計約 384 invariant check に拡張、landmark root container title pattern (Kanban / Gantt / TabsList) 4 element 完成 (MCP path A 経由発見)。
+- ✅ [playwright-iter2285 1/1] ItemEditDialog TabsList (Item 編集タブ landmark): aria-label "Item 編集タブ" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-item-edit-tabs-title-iter2285.ts)。**MCP path A で ItemEditDialog 探索中に発見**、Kanban root iter2281 / Gantt root iter2247 と同 landmark root container title pattern を ItemEditDialog TabsList にも展開。
 - ✅ [playwright-iter2284 1/1 test a11y-sweep-suite に iter2283 kanban-title button entry 追加] 検査軸 265 個 (新 JF 軸)、計約 383 invariant check に拡張、3 view edit entry button title 完成 (today-title / backlog-edit / kanban-title) (MCP path A 経由発見)、検査軸 265 milestone 突破。
 - ✅ [playwright-iter2283 1/1] kanban-title button (item title click → ItemEditDialog 起動): aria-label "${item.title} — 編集" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-kanban-title-edit-title-iter2283.ts)。**MCP path A で Kanban view で発見**、backlog-edit iter2279 と同 pattern、3 view edit entry button title 完成。
 - ✅ [playwright-iter2282 1/1 test a11y-sweep-suite に iter2281 Kanban board root group entry 追加] 検査軸 264 個 (新 JE 軸)、計約 382 invariant check に拡張、3 view root container title 完成 (Gantt / Kanban / Backlog) (MCP path A 経由発見)。
