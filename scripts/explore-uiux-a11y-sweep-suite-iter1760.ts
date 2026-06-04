@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DZ. item-edit-dialog tab-dependencies title sweep (iter2013) =========
+  const iedDZ = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
+  if (!iedDZ.includes('iter2013')) {
+    findings.push({
+      level: 'error',
+      source: 'DZ.tab-deps',
+      message: '[DZ] iter2013 item-edit-dialog tab-dependencies title が消えている',
+    })
+  }
+
   // ========= DY. item-edit-dialog tab-subtasks title sweep (iter2011) =========
   const iedDY = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
   if (!iedDY.includes('iter2011')) {
