@@ -593,6 +593,40 @@ export function formatAchievementSignalsLineJa(signals: AnalyticsSignals): strin
 }
 
 /**
+ * iter1749 ai-automation: 警戒 + 達成感 cluster の 2 行 summary を 1 関数で build。
+ * `formatConcerningSignalsLineJa` (iter1745) + `formatAchievementSignalsLineJa` (iter1725) を
+ * `\n` 連結する 1-call helper、Slack daily digest body / AI 朝 brief plain text の
+ * 「警戒 → 達成感」 2 paragraph 構造を最小 boilerplate で実現。
+ *
+ * 仕様:
+ *  - 1 行目: 警戒 cluster ('警戒: ...' or '警戒: なし')
+ *  - 2 行目: 達成感 cluster ('達成感: ...' or '達成感: 記録なし')
+ *  - 連結 separator: '\n' (= plain text の paragraph break)
+ *  - 順序: 警戒 → 達成感 (= 重要 / 警告系を先頭で読者の attention を引き、達成感で締める
+ *    Slack notification UX。軸 4 漏れ防止 が 軸 5 やる気 より優先される severity 設計)
+ *
+ * caller pattern (Slack daily digest plain text body):
+ *   const signals = composeAnalyticsSignals({...})
+ *   slack.post(`今日の状況\n${formatClusterSummaryLinesJa(signals)}`)
+ *   // → 今日の状況
+ *   //   警戒: 期限超過 3 件 / 連絡待ち 1 件停滞中
+ *   //   達成感: 7 日連続 🥈 シルバー / 完了 12 件
+ *
+ * 既存 helper との関係:
+ *  - `formatConcerningSignalsLineJa` (iter1745): 警戒 1 行のみ
+ *  - `formatAchievementSignalsLineJa` (iter1725): 達成感 1 行のみ
+ *  - `formatAnalyticsSignalsLineJa` (iter816): 全軸 1 行 (cluster 区別なし)
+ *  - 本 helper: 警戒 + 達成感 を 2 行 (cluster 区別 + paragraph break)
+ *
+ * 設計意図: caller が 2 関数を `\n` で繋ぐ boilerplate を 1 関数に集約。Slack notifier
+ * の本文 build を `formatClusterSummaryLinesJa(signals)` 1 行で済ませる。順序は
+ * severity 設計 (警戒 → 達成感) に従い caller 側で再変換しなくて済む。
+ */
+export function formatClusterSummaryLinesJa(signals: AnalyticsSignals): string {
+  return formatConcerningSignalsLineJa(signals) + '\n' + formatAchievementSignalsLineJa(signals)
+}
+
+/**
  * iter954 ai-automation: AnalyticsSignals の non-null signal を ChipTone 別に件数集計。
  *
  * 用途: AI 朝 brief / Slack daily digest の冒頭 headline で「全 chip の tone 分布」を

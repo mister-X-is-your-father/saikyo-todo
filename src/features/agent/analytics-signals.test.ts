@@ -17,6 +17,7 @@ import {
   formatAchievementSignalsLineJa,
   formatAnalyticsSignalsLineJa,
   formatAnalyticsSignalsToneSummaryJa,
+  formatClusterSummaryLinesJa,
   formatConcerningSignalsLineJa,
   formatTopSignalsLineJa,
   groupSignalsByTone,
@@ -1336,6 +1337,28 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
       const hasArray = pickConcerningSignals(s).length > 0
       expect(hasFlag).toBe(hasArray)
     }
+  })
+
+  it('iter1749: formatClusterSummaryLinesJa — 全 null → "警戒: なし\\n達成感: 記録なし" sentinel', () => {
+    const s = composeAnalyticsSignals({})
+    expect(formatClusterSummaryLinesJa(s)).toBe('警戒: なし\n達成感: 記録なし')
+  })
+
+  it('iter1749: formatClusterSummaryLinesJa — 警戒 + 達成感 両 active → 2 行', () => {
+    const s = composeAnalyticsSignals({ doneToday: 2, weeklyReviewDue: 'overdue' })
+    const out = formatClusterSummaryLinesJa(s)
+    const lines = out.split('\n')
+    expect(lines.length).toBe(2)
+    expect(lines[0]!.startsWith('警戒: ')).toBe(true)
+    expect(lines[0]).not.toBe('警戒: なし')
+    expect(lines[1]!.startsWith('達成感: ')).toBe(true)
+    expect(lines[1]).not.toBe('達成感: 記録なし')
+  })
+
+  it('iter1749: formatClusterSummaryLinesJa — 順序は 警戒 → 達成感 (severity 上位先)', () => {
+    const s = composeAnalyticsSignals({ doneToday: 2, weeklyReviewDue: 'overdue' })
+    const out = formatClusterSummaryLinesJa(s)
+    expect(out).toBe(formatConcerningSignalsLineJa(s) + '\n' + formatAchievementSignalsLineJa(s))
   })
 
   it('iter1748: cluster disjoint invariant — pickAchievement ∩ pickConcerning = ∅', () => {
