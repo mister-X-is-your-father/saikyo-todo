@@ -370,6 +370,17 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
               .filter(Boolean)
               .join(' + ') || '絞り込みなし'
           }`}
+          /* iter1993: filter group 全体に title を付与し sighted hover で現在 filter state
+             integrated summary disclose (view-switcher group iter1991 と pair)。 */
+          title={`Item の絞り込み — MUST / ステータス / Sprint、現在 ${
+            [
+              must ? 'MUST のみ' : null,
+              statusFilter ? `ステータス=${statusFilter}` : null,
+              sprintFilter ? `Sprint=${sprintFilter}` : null,
+            ]
+              .filter(Boolean)
+              .join(' + ') || '絞り込みなし'
+          }`}
         >
           <label htmlFor="filter-must" className="flex min-h-11 items-center gap-1">
             <input
