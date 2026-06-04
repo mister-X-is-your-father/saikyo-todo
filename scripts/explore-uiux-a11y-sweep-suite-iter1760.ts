@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= JY. item-plan-generate-button title sweep (iter2321) =========
+  const pgJY = read(here, `${root}/src/components/workspace/item-plan-generate-button.tsx`)
+  if (!pgJY.includes('iter2321')) {
+    findings.push({
+      level: 'error',
+      source: 'JY.item-plan-generate-title',
+      message: '[JY] iter2321 item-plan-generate-button title 2-path sync が消えている',
+    })
+  }
+
   // ========= JX. item-checkbox title full sync sweep (iter2319) =========
   const icJX = read(here, `${root}/src/components/workspace/item-checkbox.tsx`)
   if (
