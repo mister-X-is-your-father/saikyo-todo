@@ -157,7 +157,9 @@ async function main() {
     ],
     [`${root}/src/components/workspace/taskchute-view.tsx`, 'title={item.title}', 'taskchute'],
     [`${root}/src/components/workspace/inbox-view.tsx`, 'title={it.title}', 'inbox'],
-    [`${root}/src/components/workspace/today-view.tsx`, 'title={it.title}', 'today'],
+    // iter2153: today-view item button title を `title={it.title}` から
+    // `title={`${it.title} — 編集`}` に変更し aria-label と sync。
+    [`${root}/src/components/workspace/today-view.tsx`, 'title={`${it.title} — 編集`}', 'today'],
     // iter2151: personal-period item button title を `title={it.title}` から
     // `title={`${it.title} — 編集`}` に変更し aria-label と sync。
     [
@@ -749,6 +751,16 @@ async function main() {
       level: 'error',
       source: 'AB.sprint-goal-create',
       message: '[AB] iter1809 goal-create conditional path text が消えている',
+    })
+  }
+
+  // ========= GR. today-view item button title sweep (iter2153) =========
+  const tvGR = read(here, `${root}/src/components/workspace/today-view.tsx`)
+  if (!tvGR.includes('iter2153') || !tvGR.includes('title={`${it.title} — 編集`}')) {
+    findings.push({
+      level: 'error',
+      source: 'GR.today-item-title',
+      message: '[GR] iter2153 today-view item button title 同期 が消えている',
     })
   }
 
