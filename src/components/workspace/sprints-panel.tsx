@@ -309,6 +309,16 @@ export function SprintsPanel({ workspaceId }: Props) {
                         : `終了 — Sprint 終了日 (現在: ${endDate})`
                   }
                   className="min-h-11"
+                  /* iter2027: sprint-create-start iter2025 と pair、sprints-panel create form
+                     2 date input sweep 完備、sprints-panel + goals-panel 全 6 date input
+                     state-dependent hover 完備。 */
+                  title={
+                    endDate === ''
+                      ? '終了 — Sprint 終了日 (必須、開始日以降)'
+                      : isInvalidDateRange(startDate, endDate)
+                        ? `終了 — Sprint 終了日 (現在: ${endDate}、開始日 ${startDate} より前で不正)`
+                        : `終了 — Sprint 終了日 (現在: ${endDate})`
+                  }
                 />
               </div>
             </div>
