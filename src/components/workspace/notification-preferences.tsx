@@ -115,8 +115,15 @@ export function NotificationPreferencesButton({ Icon = Settings }: { Icon?: Luci
           size="icon"
           /* iter1505: iter1093-1504 em-dash sweep に追従し () → em-dash 区切に。
              icon-only button (Bell-like icon は aria-hidden) なので accessible name =
-             aria-label の値、voice control「click 通知設定」 prefix match 維持。 */
+             aria-label の値、voice control「click 通知設定」 prefix match 維持。
+             iter1764: icon-only button で aria-label は browser tooltip にならず sighted は
+             hover で即把握できなかった。title 付与で aria-label と同 text disclosure。 */
           aria-label={
+            onCount !== null
+              ? `通知設定 — メール通知 ${onCount}/${TOGGLES.length} 種 ON`
+              : '通知設定 — メール通知 4 種を ON/OFF'
+          }
+          title={
             onCount !== null
               ? `通知設定 — メール通知 ${onCount}/${TOGGLES.length} 種 ON`
               : '通知設定 — メール通知 4 種を ON/OFF'

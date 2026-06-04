@@ -129,8 +129,11 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
           size="icon"
           /* iter1497: iter1093-1496 em-dash sweep に合わせ () → em-dash 区切。
              icon-only button (Bell + badge は aria-hidden) なので accessible name は
-             aria-label の値、voice control「click 通知」 prefix match 維持。 */
+             aria-label の値、voice control「click 通知」 prefix match 維持。
+             iter1764: aria-label は browser tooltip にならず sighted hover で何の button か
+             即把握できなかった。title 付与で aria-label と同 text disclosure。 */
           aria-label={`通知 — 未読 ${unreadCount} 件`}
+          title={`通知 — 未読 ${unreadCount} 件`}
           aria-expanded={open}
           aria-haspopup="dialog"
           className="relative min-h-11 min-w-11"
