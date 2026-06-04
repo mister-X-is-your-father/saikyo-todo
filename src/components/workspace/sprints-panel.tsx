@@ -232,6 +232,18 @@ export function SprintsPanel({ workspaceId }: Props) {
                           ? `名前 — Sprint 名前 (現在 ${name.length} / 100 文字、上限近接)`
                           : `名前 — Sprint 名前 (現在 ${name.length} / 100 文字)`
                   }
+                  /* iter1979: state-dependent aria-label を title で sighted hover disclose、
+                     iter1975/1977 workflows-panel name/desc / iter1969/1973 comment-thread /
+                     iter1967 period-goal と同 state-dependent input pattern (6 input family)。 */
+                  title={
+                    name.length === 0
+                      ? '名前 — Sprint 名前 (必須、最大 100 文字)'
+                      : name.trim() === ''
+                        ? `名前 — Sprint 名前 (現在 ${name.length} / 100 文字、空白のみは不正)`
+                        : name.length > 90
+                          ? `名前 — Sprint 名前 (現在 ${name.length} / 100 文字、上限近接)`
+                          : `名前 — Sprint 名前 (現在 ${name.length} / 100 文字)`
+                  }
                 />
               </div>
               <div className="space-y-1">
