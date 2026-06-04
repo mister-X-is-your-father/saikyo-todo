@@ -179,6 +179,10 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
          iter1093-1575 sweep の em-dash 区切に統一。visible "タスクタイマー" は元から冒頭
          prefix (voice control OK)、区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
       aria-label={`タスクタイマー — 経過 ${formatElapsed(elapsedMs)}${running ? ' 計測中' : ' 一時停止中'}`}
+      /* iter1951: region 全体に title を付与し sighted hover で 経過時間 + 状態 (計測中/
+         一時停止中) integrated summary disclose (start-timer iter1949 / inbox-region iter1945
+         と同 region/widget summary pattern)。 */
+      title={`タスクタイマー — 経過 ${formatElapsed(elapsedMs)}${running ? ' 計測中' : ' 一時停止中'}`}
     >
       <div className="min-w-0 flex-1">
         <div className="text-muted-foreground text-[10px]">
