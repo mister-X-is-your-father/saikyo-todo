@@ -36,6 +36,7 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
            の natural-reading convention に揃え、SR 読み上げ pattern を sibling
            Badge family と統一。 */
         aria-label="synced — 外部同期 完了"
+        title="synced — 外部同期 完了"
         data-testid="sync-badge-synced"
       >
         <span aria-hidden="true">synced</span>
@@ -50,6 +51,7 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
         role="img"
         /* iter1701: 同 file 同 sweep。 */
         aria-label="failed — 外部同期 失敗"
+        title="failed — 外部同期 失敗"
         data-testid="sync-badge-failed"
       >
         <span aria-hidden="true">failed</span>
