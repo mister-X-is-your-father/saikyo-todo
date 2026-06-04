@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BE. command-palette priority dot title sweep (iter1867) =========
+  const cmdPalette = read(here, `${root}/src/components/shared/command-palette.tsx`)
+  if (!cmdPalette.includes('title={`p${item.priority ?? 4}`}')) {
+    findings.push({
+      level: 'error',
+      source: 'BE.palette-priority',
+      message: '[BE] iter1867 palette priority dot title が消えている',
+    })
+  }
+
   // ========= BD. taskchute priority chip title sweep (iter1865) =========
   const taskchuteView = read(here, `${root}/src/components/workspace/taskchute-view.tsx`)
   if (!taskchuteView.includes('title={`P${item.priority ?? 4}`}')) {
