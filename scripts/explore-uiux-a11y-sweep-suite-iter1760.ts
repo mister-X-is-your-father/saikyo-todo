@@ -454,6 +454,24 @@ async function main() {
     })
   }
 
+  // ========= P. ItemEditDialog footer cancel + save title sweep (iter1785) =========
+  const itemEditDialog = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
+  if (!itemEditDialog.includes('title={`キャンセル — 「${item.title}」の編集を破棄`}')) {
+    findings.push({
+      level: 'error',
+      source: 'P.dialog-footer',
+      message: '[P] iter1785 ItemEditDialog cancel button title が消えている',
+    })
+  }
+  const dialogTitleCount = (itemEditDialog.match(/\btitle=\{/g) ?? []).length
+  if (dialogTitleCount < 3) {
+    findings.push({
+      level: 'error',
+      source: 'P.dialog-footer',
+      message: `[P] iter1785 ItemEditDialog title 件数が ${dialogTitleCount} (期待 >= 3: header + cancel + save)`,
+    })
+  }
+
   // ========= N. logout button title sweep (iter1781) =========
   // homePage は C 軸で既に読込済 (line 277)
   if (!homePage.includes('title="ログアウト — ログイン画面に戻る"')) {
