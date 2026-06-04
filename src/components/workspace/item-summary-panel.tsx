@@ -81,6 +81,17 @@ export function ItemSummaryPanel({ workspaceId, item }: Props) {
             })`
           : ''
       }`}
+      /* iter2289: 案件サマリ region root の aria-label "案件サマリ (進捗 X%、完了 N / 全 M
+         件)" は browser tooltip にならず sighted は hover で region 用途 + 進捗集約 disclose
+         不可。MCP path A で ItemEditDialog サマリタブで発見、3 chip iter2237 と pair の
+         region root container title 補完、サマリパネル landmark 完全 hover 対応化。 */
+      title={`案件サマリ${
+        progress
+          ? ` (進捗 ${progress.pctDone}%、完了 ${progress.done} / 全 ${progress.total} 件${
+              progress.blocked > 0 ? `、blocked ${progress.blocked} 件` : ''
+            })`
+          : ''
+      }`}
     >
       {/* iter1375: 3 stat box の tint (slate/amber/emerald-50) は light 固定色で dark に
           追従せず、dark では theme-aware な text-muted-foreground (明色) が light bg に乗り
