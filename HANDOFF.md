@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2180 1/1 test a11y-sweep-suite に iter2179 taskchute-ticker entry 追加] 検査軸 213 個 (新 HE 軸)、計約 330 invariant check に拡張、検査軸 213 + 330 check 突破。
+- ✅ [playwright-iter2179 1/1 mode-D taskchute-ticker-summary に title 付与し aria-label と sync] integrated h+m → 分 unit readout disclose、dep-readiness-chip iter2177 / sync-error iter2175 と pair。
 - ✅ [playwright-iter2178 1/1 test a11y-sweep-suite に iter2177 dep-readiness-chip entry 追加] 検査軸 212 個 (新 HD 軸)、計約 329 invariant check に拡張。
 - ✅ [playwright-iter2177 1/1 mode-D dep-readiness-chip に title 付与し aria-label と sync] tone label hover disclose、sync-error iter2175 / pdca-daily-bars iter2173 と pair。
 - ✅ [playwright-iter2176 1/1 test a11y-sweep-suite に iter2175 sync-error entry 追加] 検査軸 211 個 (新 HC 軸)、計約 328 invariant check に拡張。
