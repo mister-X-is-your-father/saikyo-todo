@@ -701,6 +701,10 @@ function SourceImportHistory({ sourceId }: { sourceId: string }) {
             className="text-muted-foreground ml-auto tabular-nums"
             role="img"
             aria-label={`fetched ${r.fetchedCount} / created ${r.createdCount} / updated ${r.updatedCount}`}
+            /* iter1897: visible は f=N/c=N/u=N の略記で fetched/created/updated と意味
+               1:1 対応するが認知 1 step 介在、sighted hover で full word disclose
+               (subtasks-childcount iter1883 / kanban-child-count iter1869 と同 略記 chip pattern)。 */
+            title={`fetched ${r.fetchedCount} / created ${r.createdCount} / updated ${r.updatedCount}`}
           >
             <span aria-hidden="true">
               f={r.fetchedCount} / c={r.createdCount} / u={r.updatedCount}
