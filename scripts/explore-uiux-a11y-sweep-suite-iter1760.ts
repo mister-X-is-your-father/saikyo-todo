@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DF. comment-thread edit textarea title sweep (iter1973) =========
+  const ctDF = read(here, `${root}/src/components/workspace/comment-thread.tsx`)
+  if (!ctDF.includes('iter1973')) {
+    findings.push({
+      level: 'error',
+      source: 'DF.comment-edit',
+      message: '[DF] iter1973 comment-thread edit textarea title が消えている',
+    })
+  }
+
   // ========= DE. theme-toggle title em-dash 同期 sweep (iter1971) =========
   const ttDE = read(here, `${root}/src/components/shared/theme-toggle.tsx`)
   if (!ttDE.includes("'ライトテーマ — クリックで切替' : 'ダークテーマ — クリックで切替'")) {
