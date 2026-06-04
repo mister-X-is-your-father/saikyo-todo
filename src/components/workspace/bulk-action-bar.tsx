@@ -214,6 +214,14 @@ export function BulkHeaderCheckbox({ rowIds }: { rowIds: string[] }) {
           ? `全解除 — 現ページ ${rowIds.length} 行をすべて選択中、クリックで全解除`
           : `全選択 — 現ページ ${rowIds.length} 行をすべて一括操作の対象にする`
       }
+      /* iter2185: BulkHeaderCheckbox の aria-label (state-dependent 2-path、行数 含む) は
+         browser tooltip にならず sighted は hover で 行数 + state context disclose 不可。
+         BulkCheckbox iter2183 と pair の bulk family title 同期。 */
+      title={
+        allSelected
+          ? `全解除 — 現ページ ${rowIds.length} 行をすべて選択中、クリックで全解除`
+          : `全選択 — 現ページ ${rowIds.length} 行をすべて一括操作の対象にする`
+      }
       checked={allSelected}
       onChange={(e) => {
         if (e.target.checked) setMany(rowIds)
