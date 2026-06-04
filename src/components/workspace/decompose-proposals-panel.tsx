@@ -145,9 +145,13 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                 : `AI 分解の提案 (${list.length})`}
           </div>
           {isAgentRunning ? (
+            // iter1756: AI 分解 streaming text は line-clamp-3 で 3 行超切れ、sighted は
+            // hover で全 streaming 進捗見れず。title 付与で hover → 全 thinking text disclose
+            // (iter1755 line-clamp sweep の decompose-proposals 展開)。
             <p
               className="text-muted-foreground mt-0.5 line-clamp-3 text-xs italic"
               data-testid="agent-streaming-text"
+              title={progress.streamingText || '思考中…'}
             >
               {progress.streamingText || '思考中…'}
             </p>
@@ -589,7 +593,13 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
           </span>
         </div>
         {proposal.description && (
-          <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs">
+          // iter1756: proposal.description は line-clamp-2 で 2 行超切れ、title 付与で
+          // sighted hover で全 description disclose (streaming text と pair で decompose-proposals
+          // 内 line-clamp 全網羅、iter1748 proposal title button title と組み合わせて全 disclose)。
+          <p
+            className="text-muted-foreground mt-0.5 line-clamp-2 text-xs"
+            title={proposal.description}
+          >
             {proposal.description}
           </p>
         )}
