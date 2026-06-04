@@ -667,6 +667,43 @@ export function formatClusterSummaryLinesJa(signals: AnalyticsSignals): string {
 }
 
 /**
+ * iter1754 ai-automation: cluster 別 active 数を 1 行 headline ja-JP に整形。
+ * iter1752 countAchievement / countConcerningSignals を「警戒 N / 達成感 M」 形式に composing。
+ *
+ * 用途:
+ *  - AI 朝 brief 冒頭 headline (= '警戒 2 / 達成感 3')
+ *  - Slack daily digest channel header
+ *  - dashboard summary chip area「cluster 件数」 1 行
+ *
+ * 仕様:
+ *  - 両 0 → '警戒 0 / 達成感 0' (= 件数を明示、'記録なし' sentinel ではない)
+ *    → 「今日は cluster 軸も静か」 を明示的に示す
+ *  - 順序: 警戒 → 達成感 (= formatClusterSummaryLinesJa と同 severity 設計)
+ *  - separator: ' / ' (= formatAnalyticsSignalsLineJa と同記号)
+ *
+ * caller pattern (AI 朝 brief headline):
+ *   const signals = composeAnalyticsSignals({...})
+ *   const headline = formatClusterCountsHeadlineJa(signals)
+ *   // → '警戒 2 / 達成感 3'
+ *   slack.post(`今日の状況: ${headline}\n${formatClusterSummaryLinesJa(signals)}`)
+ *
+ * 既存 helper との関係:
+ *  - `countAchievementSignals` / `countConcerningSignals` (iter1752): 個別 number
+ *  - `formatAnalyticsSignalsToneSummaryJa` (iter954): tone 別件数 ('緊急 1 / 注意 2')
+ *  - 本 helper: cluster 別件数 ('警戒 2 / 達成感 3'、tone 細粒度より高 abstraction)
+ *  - `formatClusterSummaryLinesJa` (iter1749): cluster 詳細 2 行 (本 helper は 1 行 headline)
+ *
+ * 設計意図: 「今日全体を 1 行で把握」 をさらに圧縮した headline。formatToneSummary は
+ * 5 段階 tone vocab (緊急/要対応/注意/...) で長くなるが、cluster 軸 2 件だけの本 helper は
+ * **常に 2 数値の固定 format** で channel header / UI badge 上部に最適。
+ */
+export function formatClusterCountsHeadlineJa(signals: AnalyticsSignals): string {
+  const concerning = countConcerningSignals(signals)
+  const achievement = countAchievementSignals(signals)
+  return `警戒 ${concerning} / 達成感 ${achievement}`
+}
+
+/**
  * iter954 ai-automation: AnalyticsSignals の non-null signal を ChipTone 別に件数集計。
  *
  * 用途: AI 朝 brief / Slack daily digest の冒頭 headline で「全 chip の tone 分布」を

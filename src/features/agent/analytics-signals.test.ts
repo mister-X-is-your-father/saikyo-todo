@@ -19,6 +19,7 @@ import {
   formatAchievementSignalsLineJa,
   formatAnalyticsSignalsLineJa,
   formatAnalyticsSignalsToneSummaryJa,
+  formatClusterCountsHeadlineJa,
   formatClusterSummaryLinesJa,
   formatConcerningSignalsLineJa,
   formatTopSignalsLineJa,
@@ -1440,6 +1441,29 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
       const con = countConcerningSignals(s)
       expect(ach + con).toBeLessThanOrEqual(total)
     }
+  })
+
+  it('iter1754: formatClusterCountsHeadlineJa — 両 0 → "警戒 0 / 達成感 0"', () => {
+    expect(formatClusterCountsHeadlineJa(composeAnalyticsSignals({}))).toBe('警戒 0 / 達成感 0')
+  })
+
+  it('iter1754: formatClusterCountsHeadlineJa — 達成感のみ → "警戒 0 / 達成感 1"', () => {
+    expect(formatClusterCountsHeadlineJa(composeAnalyticsSignals({ doneToday: 2 }))).toBe(
+      '警戒 0 / 達成感 1',
+    )
+  })
+
+  it('iter1754: formatClusterCountsHeadlineJa — 警戒のみ → "警戒 1 / 達成感 0"', () => {
+    expect(
+      formatClusterCountsHeadlineJa(composeAnalyticsSignals({ weeklyReviewDue: 'overdue' })),
+    ).toBe('警戒 1 / 達成感 0')
+  })
+
+  it('iter1754: formatClusterCountsHeadlineJa — 両 active → "警戒 N / 達成感 M"', () => {
+    const s = composeAnalyticsSignals({ doneToday: 2, weeklyReviewDue: 'overdue' })
+    expect(formatClusterCountsHeadlineJa(s)).toBe(
+      `警戒 ${countConcerningSignals(s)} / 達成感 ${countAchievementSignals(s)}`,
+    )
   })
 
   it('iter1748: cluster disjoint invariant — pickAchievement ∩ pickConcerning = ∅', () => {
