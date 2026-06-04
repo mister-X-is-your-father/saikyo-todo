@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BF. kanban child-count chip title sweep (iter1869) =========
+  const kanbanView = read(here, `${root}/src/components/workspace/kanban-view.tsx`)
+  if (!kanbanView.includes('title={`子タスク ${childCount} 件`}')) {
+    findings.push({
+      level: 'error',
+      source: 'BF.kanban-child-count',
+      message: '[BF] iter1869 kanban child-count chip title が消えている',
+    })
+  }
+
   // ========= BE. command-palette priority dot title sweep (iter1867) =========
   const cmdPalette = read(here, `${root}/src/components/shared/command-palette.tsx`)
   if (!cmdPalette.includes('title={`p${item.priority ?? 4}`}')) {
