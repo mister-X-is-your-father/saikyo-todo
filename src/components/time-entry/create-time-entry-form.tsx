@@ -84,6 +84,17 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
             if (workDate === today) return `日付 (現在: ${workDate}、今日)`
             return `日付 (現在: ${workDate}、過去日付)`
           })()}
+          /* iter1955: state-dependent aria-label (空 / 未来 / 今日 / 過去) は SR にのみ伝達、
+             sighted は date picker visible のみで現在 state context が無い、title で disclose
+             (filter-status iter1939 / filter-sprint iter1941 と同 state-dependent input pattern)。 */
+          title={(() => {
+            const today = new Date().toISOString().slice(0, 10)
+            if (workDate === '') return '日付 (必須、今日まで指定可、未来日付は不正)'
+            if (workDate > today)
+              return `日付 (現在: ${workDate}、今日 ${today} より後の未来日付で不正)`
+            if (workDate === today) return `日付 (現在: ${workDate}、今日)`
+            return `日付 (現在: ${workDate}、過去日付)`
+          })()}
         />
       </div>
       <div className="space-y-1">
