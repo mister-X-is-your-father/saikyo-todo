@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CV. dashboard MUST Item 一覧 region title sweep (iter1953) =========
+  const dvCV = read(here, `${root}/src/components/workspace/dashboard-view.tsx`)
+  if (!dvCV.includes('title={`MUST Item 一覧 — ${s.items.length} 件`}')) {
+    findings.push({
+      level: 'error',
+      source: 'CV.dashboard-must-region',
+      message: '[CV] iter1953 dashboard MUST 一覧 region title が消えている',
+    })
+  }
+
   // ========= CU. active-timer-panel region title sweep (iter1951) =========
   const atpCU = read(here, `${root}/src/components/workspace/active-timer-panel.tsx`)
   if (!atpCU.includes('title={`タスクタイマー — 経過 ${formatElapsed(elapsedMs)}')) {
