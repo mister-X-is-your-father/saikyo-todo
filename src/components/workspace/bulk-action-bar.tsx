@@ -108,6 +108,13 @@ export function BulkActionBar({ workspaceId }: Props) {
               ? `${s.label} に変更中… — 選択 ${count} 件のステータスを変更中`
               : `${s.label} に変更 — 選択 ${count} 件を「${s.label}」に変更`
           }
+          // iter1827: bulk-action-bar 3 button (status/delete/clear) の hover disclosure
+          // (iter1789 comment-thread / iter1791 submit と同 pattern)。
+          title={
+            bulkStatus.isPending
+              ? `${s.label} に変更中… — 選択 ${count} 件のステータスを変更中`
+              : `${s.label} に変更 — 選択 ${count} 件を「${s.label}」に変更`
+          }
         >
           <span aria-hidden="true">{s.label} に</span>
         </Button>
@@ -127,6 +134,11 @@ export function BulkActionBar({ workspaceId }: Props) {
             ? `削除中… — 選択 ${count} 件を削除中 (soft delete: ゴミ箱で 30 日保持)`
             : `削除 — 選択 ${count} 件を削除 (soft delete: ゴミ箱で 30 日保持)`
         }
+        title={
+          bulkDelete.isPending
+            ? `削除中… — 選択 ${count} 件を削除中 (soft delete: ゴミ箱で 30 日保持)`
+            : `削除 — 選択 ${count} 件を削除 (soft delete: ゴミ箱で 30 日保持)`
+        }
       >
         <span aria-hidden="true">削除</span>
       </Button>
@@ -137,6 +149,7 @@ export function BulkActionBar({ workspaceId }: Props) {
         onClick={() => clear()}
         data-testid="bulk-clear"
         aria-label="解除 — 選択を全て解除"
+        title="解除 — 選択を全て解除"
       >
         <span aria-hidden="true">解除</span>
       </Button>
