@@ -116,6 +116,12 @@ export function CreateTimeEntryForm({ workspaceId }: { workspaceId: string }) {
             const visible = TIME_ENTRY_CATEGORIES.find((c) => c.key === category)?.label ?? category
             return `${visible} — カテゴリ (現在: ${visible})`
           })()}
+          /* iter1957: teDate iter1955 と pair、category select の現在値を sighted hover で
+             disclose (state-dependent input title pattern)。 */
+          title={(() => {
+            const visible = TIME_ENTRY_CATEGORIES.find((c) => c.key === category)?.label ?? category
+            return `${visible} — カテゴリ (現在: ${visible})`
+          })()}
         >
           {TIME_ENTRY_CATEGORIES.map((c) => (
             <option key={c.key} value={c.key}>
