@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= EY. mock-submit form title sweep (iter2063) =========
+  const msfEY = read(here, `${root}/src/components/mock-timesheet/mock-submit-form.tsx`)
+  if (!msfEY.includes('title="Mock Timesheet 工数送信フォーム"')) {
+    findings.push({
+      level: 'error',
+      source: 'EY.mock-submit-form',
+      message: '[EY] iter2063 mock-submit form title が消えている',
+    })
+  }
+
   // ========= EX. mock-login form title sweep (iter2061) =========
   const mlfEX = read(here, `${root}/src/components/mock-timesheet/mock-login-form.tsx`)
   if (!mlfEX.includes('title="Mock Timesheet ログインフォーム"')) {
