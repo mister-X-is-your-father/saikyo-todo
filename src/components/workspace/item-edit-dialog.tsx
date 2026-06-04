@@ -641,6 +641,19 @@ function ItemEditDialogInner({
                       ? `説明 (現在 ${description.length} / 10000 文字、上限近接)`
                       : `説明 (現在 ${description.length} / 10000 文字)`
                 }
+                /* iter2297: editDescription textarea の aria-label は state-dependent 3-path
+                   (空 / 上限近接 / 通常) で SR には full context を渡すが browser tooltip
+                   にならず sighted は hover で同 context (Markdown 可 / 複数行可 / 文字数) は
+                   disclose 不可。MCP path A で ItemEditDialog 基本タブで発見、editTitle
+                   iter2295 と pair の primary input 2 element (title + description) title
+                   完成。 */
+                title={
+                  description.length === 0
+                    ? '説明 (任意、最大 10000 文字、Markdown 可、複数行入力可)'
+                    : description.length > 9500
+                      ? `説明 (現在 ${description.length} / 10000 文字、上限近接)`
+                      : `説明 (現在 ${description.length} / 10000 文字)`
+                }
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
