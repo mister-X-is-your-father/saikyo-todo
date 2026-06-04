@@ -569,6 +569,37 @@ async function main() {
     })
   }
 
+  // ========= U. auth submit button title sweep (iter1795) =========
+  if (
+    !loginForm.includes("'ログイン — メール + パスワードで認証'") ||
+    !loginForm.includes("'ログイン中… — 認証処理を実行中'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'U.auth-submit',
+      message: '[U] iter1795 login-submit conditional 2 path text が消えている',
+    })
+  }
+  if (
+    !signupForm.includes("'サインアップ — アカウントを作成'") ||
+    !signupForm.includes("'作成中… — サインアップ処理を実行中'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'U.auth-submit',
+      message: '[U] iter1795 signup-submit conditional 2 path text が消えている',
+    })
+  }
+  const loginTitleCount = (loginForm.match(/\btitle=\{/g) ?? []).length
+  const signupTitleCount = (signupForm.match(/\btitle=\{/g) ?? []).length
+  if (loginTitleCount < 1 || signupTitleCount < 1) {
+    findings.push({
+      level: 'error',
+      source: 'U.auth-submit',
+      message: `[U] iter1795 auth form title 件数 login=${loginTitleCount} signup=${signupTitleCount} (各 >=1 期待)`,
+    })
+  }
+
   // ========= N. logout button title sweep (iter1781) =========
   // homePage は C 軸で既に読込済 (line 277)
   if (!homePage.includes('title="ログアウト — ログイン画面に戻る"')) {
