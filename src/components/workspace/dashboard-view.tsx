@@ -1501,7 +1501,10 @@ export function DashboardView({ workspaceId }: Props) {
                         <span aria-hidden="true">{item.title}</span>
                       </button>
                       {item.dod ? (
-                        <span className="text-muted-foreground truncate text-xs">
+                        // iter1753: DoD span は truncate で長 dod 切れ、sighted は hover で
+                        // 全文見れず。title 付与で sighted hover → 全 dod disclose
+                        // (iter1747 dashboard MUST title sweep の DoD 補完)。
+                        <span className="text-muted-foreground truncate text-xs" title={item.dod}>
                           DoD: {item.dod}
                         </span>
                       ) : null}
