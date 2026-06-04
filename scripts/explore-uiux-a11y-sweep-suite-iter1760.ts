@@ -444,6 +444,23 @@ async function main() {
     })
   }
 
+  // ========= N. logout button title sweep (iter1781) =========
+  // homePage は C 軸で既に読込済 (line 277)
+  if (!homePage.includes('title="ログアウト — ログイン画面に戻る"')) {
+    findings.push({
+      level: 'error',
+      source: 'N.logout-title',
+      message: '[N] iter1781 home page logout title が消えている',
+    })
+  }
+  if (!mockTopNav.includes('title="ログアウト — mock-timesheet session を終了"')) {
+    findings.push({
+      level: 'error',
+      source: 'N.logout-title',
+      message: '[N] iter1781 mock-top-nav logout title が消えている',
+    })
+  }
+
   // ========= K. shared ErrorState retry title (iter1767) =========
   const asyncStates = read(here, `${root}/src/components/shared/async-states.tsx`)
   if (!asyncStates.includes('title={`再試行 — 「${message}」をクリアして再試行`}')) {
