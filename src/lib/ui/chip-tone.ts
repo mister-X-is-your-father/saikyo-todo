@@ -406,13 +406,17 @@ export function groupItemsByTone<T>(
  *  - `groupItemsByTone`: tone 別 分配 (= 6 軸 grouping)
  *  - 本 helper: 閾値以上 filter (= 1 軸 threshold filter、件数制限なし)
  */
+// iter1765 refactor: 手書き TONE_ATTENTION_RANK[...] >= minRank 比較を iter1761 着地
+// `isMinTone(tone, minTone)` 経由に統一。tone rank 比較 logic を 1 関数 (isMinTone) に集約、
+// 数値比較 boilerplate を排除 + semantic「閾値以上の tone か」 を読みやすく。
+// minRank 事前計算は性能上の差が無視可 (Record lookup × N items)、iter1759 invariant test
+// (= someItemHasMinTone === filterItemsByMinTone.length > 0) が継続 gate。
 export function filterItemsByMinTone<T>(
   items: ReadonlyArray<T>,
   getTone: (item: T) => ChipTone,
   minTone: ChipTone,
 ): T[] {
-  const minRank = TONE_ATTENTION_RANK[minTone]
-  return items.filter((it) => TONE_ATTENTION_RANK[getTone(it)] >= minRank)
+  return items.filter((it) => isMinTone(getTone(it), minTone))
 }
 
 /**
@@ -436,11 +440,13 @@ export function filterItemsByMinTone<T>(
  *  - 本 helper: 1 個以上あるか boolean (= gate 用、配列不要で perf 軽い)
  *  - `countItemsByTone`: tone 別 件数 (= 分布集計、本 helper より重い)
  */
+// iter1765 refactor: 手書き rank 比較を iter1761 isMinTone primitive に統一 (filterItemsByMinTone
+// と同 pattern)。short-circuit some semantics は不変、iter1759 invariant test
+// (someItemHasMinTone === filterItemsByMinTone.length > 0 / iter1761 isMinTone 等価性) 継続 gate。
 export function someItemHasMinTone<T>(
   items: ReadonlyArray<T>,
   getTone: (item: T) => ChipTone,
   minTone: ChipTone,
 ): boolean {
-  const minRank = TONE_ATTENTION_RANK[minTone]
-  return items.some((it) => TONE_ATTENTION_RANK[getTone(it)] >= minRank)
+  return items.some((it) => isMinTone(getTone(it), minTone))
 }
