@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= IC. workspace-header title sweep (iter2227) =========
+  const whIC = read(here, `${root}/src/components/workspace/workspace-header.tsx`)
+  if (!whIC.includes('iter2227') || !whIC.includes('title={`${title} — Workspace`}')) {
+    findings.push({
+      level: 'error',
+      source: 'IC.workspace-header-title',
+      message: '[IC] iter2227 workspace-header title 同期 が消えている',
+    })
+  }
+
   // ========= IB. op-board ItemRow title sweep (iter2225) =========
   const opIB = read(here, `${root}/src/components/workspace/operation-board-widget.tsx`)
   if (!opIB.includes('iter2225') || !opIB.includes('title={ariaLabel}')) {
