@@ -288,6 +288,9 @@ function CommentItem({
             role="group"
             /* iter1584: paren convention を em-dash 区切に統一 (iter1093-1583 sweep)。 */
             aria-label={`コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」の編集操作 — キャンセル / 保存`}
+            /* iter2037: comment edit operations group も workflows/sprints/goals operations
+               group iter2031-2035 と同 pattern で hover disclose、4 entity operations family。 */
+            title={`コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」の編集操作 — キャンセル / 保存`}
           >
             <Button
               type="button"
