@@ -129,6 +129,18 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                         ? `名前 — Workflow 名前 (現在 ${name.length} / 200 文字、上限近接)`
                         : `名前 — Workflow 名前 (現在 ${name.length} / 200 文字)`
                 }
+                /* iter1975: state-dependent aria-label (空 / 空白のみ / 上限近接 / 通常) は
+                   SR のみ伝達、title で sighted hover disclose (iter1969/1973 comment-thread /
+                   iter1967 period-goal と同 state-dependent input pattern)。 */
+                title={
+                  name.length === 0
+                    ? '名前 — Workflow 名前 (必須、最大 200 文字、何を自動化するか分かる名前)'
+                    : name.trim() === ''
+                      ? `名前 — Workflow 名前 (現在 ${name.length} / 200 文字、空白のみは不正)`
+                      : name.length > 180
+                        ? `名前 — Workflow 名前 (現在 ${name.length} / 200 文字、上限近接)`
+                        : `名前 — Workflow 名前 (現在 ${name.length} / 200 文字)`
+                }
               />
             </div>
             <div className="space-y-1">
