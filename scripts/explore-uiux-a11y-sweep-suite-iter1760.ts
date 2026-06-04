@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= EC. sprint-edit-end date input title sweep (iter2019) =========
+  const spEC = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (!spEC.includes('iter2019')) {
+    findings.push({
+      level: 'error',
+      source: 'EC.sprint-edit-end',
+      message: '[EC] iter2019 sprint-edit-end date input title が消えている',
+    })
+  }
+
   // ========= EB. sprint-edit-start date input title sweep (iter2017) =========
   const spEB = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (!spEB.includes('iter2017')) {
