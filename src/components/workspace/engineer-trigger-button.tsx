@@ -114,6 +114,16 @@ export function EngineerTriggerButton({ item }: Props) {
             ? `起動中… — Engineer Agent に「${item.title}」を投入中`
             : `Engineer に実装させる — Engineer Agent に「${item.title}」を投入${autoPr ? ' (PR 自動起票)' : ''}`
         }
+        /* iter2211: engineer-trigger-btn の state-dependent aria-label (pending /
+           idle + autoPr 4-path effective) は browser tooltip にならず sighted は
+           hover で full state + autoPr context disclose 不可。
+           engineer-auto-pr iter2209 / engineer-trigger-group iter2207 と pair の
+           engineer family title 同期 3 element 完成。 */
+        title={
+          trigger.isPending
+            ? `起動中… — Engineer Agent に「${item.title}」を投入中`
+            : `Engineer に実装させる — Engineer Agent に「${item.title}」を投入${autoPr ? ' (PR 自動起票)' : ''}`
+        }
       >
         {trigger.isPending ? (
           <span aria-hidden="true">起動中…</span>
