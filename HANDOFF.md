@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2041 1/1 mode-D sprint-period edit form group に title 付与] 5 entity operations group family の続編。
 - ✅ [playwright-iter2040 1/1 test a11y-sweep-suite に iter2039 quick-add input entry 追加] 検査軸 143 個 (新 EM 軸)、計約 239 invariant check に拡張、iter2040 突破。
 - ✅ [playwright-iter2039 1/1 mode-D quick-add input に title 付与] 12 state-dependent input family の続編、state-dependent input pattern。
 - ✅ [playwright-iter2038 1/1 test a11y-sweep-suite に iter2037 comment-edit-group entry 追加] 検査軸 142 個 (新 EL 軸)、計約 238 invariant check に拡張。
