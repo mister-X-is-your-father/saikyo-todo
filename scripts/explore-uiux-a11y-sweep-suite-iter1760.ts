@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= IJ. template-card title disclosure button title sweep (iter2239) =========
+  const tpIJ = read(here, `${root}/src/components/template/templates-panel.tsx`)
+  if (!tpIJ.includes('iter2239') || !tpIJ.includes('title={`${t.name} — Template「${t.name}」')) {
+    findings.push({
+      level: 'error',
+      source: 'IJ.template-card-disclosure-title',
+      message: '[IJ] iter2239 template-card title disclosure button title sync が消えている',
+    })
+  }
+
   // ========= IH. item-summary-panel 3 chip title sweep (iter2237) =========
   const ispIH = read(here, `${root}/src/components/workspace/item-summary-panel.tsx`)
   if (!ispIH.includes('iter2237') || !ispIH.includes('chip 3 element 同時 title sync')) {
