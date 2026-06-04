@@ -631,6 +631,32 @@ async function main() {
     })
   }
 
+  // ========= AD. wf-* actions title sweep (iter1813) =========
+  const wfPanelAD = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
+  // wf-edit static
+  if (!wfPanelAD.includes('title={`編集 — Workflow「${wf.name}」の graph / trigger を編集`}')) {
+    findings.push({
+      level: 'error',
+      source: 'AD.wf-actions',
+      message: '[AD] iter1813 wf-edit title が消えている',
+    })
+  }
+  // wf-toggle / wf-runs-toggle / wf-delete conditional の sample text 維持
+  for (const t of [
+    '`無効化 — Workflow「${wf.name}」を無効化`',
+    '`有効化 — Workflow「${wf.name}」を有効化`',
+    '`履歴 — Workflow「${wf.name}」の実行履歴 (直近 5 件) を表示`',
+    '`削除 — Workflow「${wf.name}」を削除`',
+  ]) {
+    if (!wfPanelAD.includes(t)) {
+      findings.push({
+        level: 'error',
+        source: 'AD.wf-actions',
+        message: `[AD] iter1813 wf-* conditional path text ${t} が消えている`,
+      })
+    }
+  }
+
   // ========= AC. template-create + wf-create title sweep (iter1811) =========
   const templatePanel = read(here, `${root}/src/components/template/templates-panel.tsx`)
   const wfPanel = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
