@@ -66,8 +66,17 @@ const KIND_PALETTE: Record<ScheduleKind, { bg: string; border: string; text: str
 }
 
 function EventBlock({ event }: EventProps<ScheduleEvent>) {
+  // iter1773: title 行は truncate で長 event.title 切れ、react-big-calendar wrapper の
+  // accessible name 経路 (tab/select) のみで sighted は hover で全 title 見れず。
+  // 親 div の title 属性で sighted hover で event.title + 時刻 disclose (iter1769
+  // workflows-panel / iter1771 schedule-item-picker と同 truncate + title pattern を
+  // calendar event block にも展開、line-clamp + title sweep の timeline 補完)。
+  const fullLabel = `${event.title} — ${format(event.start, 'HH:mm')}–${format(event.end, 'HH:mm')}`
   return (
-    <div className="flex h-full flex-col overflow-hidden text-[11px] leading-tight">
+    <div
+      className="flex h-full flex-col overflow-hidden text-[11px] leading-tight"
+      title={fullLabel}
+    >
       <div className="truncate font-medium">{event.title}</div>
       <div className="truncate opacity-70">
         {format(event.start, 'HH:mm')} – {format(event.end, 'HH:mm')}
