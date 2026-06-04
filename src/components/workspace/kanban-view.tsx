@@ -358,6 +358,12 @@ function KanbanCard({
             // (substring 一致のみ)。iter1093-1154 sweep convention に揃え visible title
             // 冒頭固定 + em-dash 区切で descriptive 末尾保持。
             aria-label={`${item.title} — 編集`}
+            /* iter2283: kanban-title button (item title click → ItemEditDialog 起動) の
+               aria-label "${item.title} — 編集" は browser tooltip にならず sighted は hover
+               で「title + edit context」 disclose 不可。MCP path A で Kanban view で発見、
+               backlog-edit iter2279 と同 pattern を kanban-title にも展開、3 view edit entry
+               (today-title / backlog-edit / kanban-title) title 完成。 */
+            title={`${item.title} — 編集`}
             className={
               'hover:text-primary focus-visible:ring-ring rounded text-left font-medium break-words hover:underline focus-visible:ring-2 focus-visible:outline-none ' +
               (item.doneAt ? 'text-muted-foreground line-through' : '')
