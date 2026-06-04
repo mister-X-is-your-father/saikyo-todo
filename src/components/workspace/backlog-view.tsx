@@ -369,6 +369,17 @@ export function BacklogView({ workspaceId, items }: Props) {
                             ? `${headerName} 列でソート (現在: ${sortLabel}) — Enter / Space で次の状態に切替`
                             : undefined
                         }
+                        /* iter2277: backlog sortable th の aria-label "X 列でソート (現在: Y) —
+                           Enter / Space で次の状態に切替" は browser tooltip にならず sighted は
+                           hover で現在 sort 状態 + 切替 hint disclose 不可。MCP path A で Backlog
+                           view に test item ある状態で発見、5 sortable th (Status / タイトル / MUST /
+                           期限 / 更新) 全 同時 title 同期、column-header sort feedback の
+                           cross-modal 統一。 */
+                        title={
+                          h.column.getCanSort()
+                            ? `${headerName} 列でソート (現在: ${sortLabel}) — Enter / Space で次の状態に切替`
+                            : undefined
+                        }
                         style={{ width: h.getSize() }}
                         onClick={sortHandler}
                         onKeyDown={
