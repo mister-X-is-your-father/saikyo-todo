@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2140 1/1 test a11y-sweep-suite に iter2139 subtask-group entry 追加] 検査軸 193 個 (新 GK 軸)、計約 308 invariant check に拡張。
+- ✅ [playwright-iter2139 1/1 mode-D subtask group に title 付与し aria-label と sync] child count context hover disclose、budget-edit-ops iter2137 / proposal-ops iter2135 / comment-ops iter2133 と pair。
 - ✅ [playwright-iter2138 1/1 test a11y-sweep-suite に iter2137 budget-edit-ops-group entry 追加] 検査軸 192 個 (新 GJ 軸)、計約 307 invariant check に拡張。
 - ✅ [playwright-iter2137 1/1 mode-D budget edit ops group に title 付与し aria-label と sync] ops disclose、proposal-ops iter2135 / comment-ops iter2133 と pair。
 - ✅ [playwright-iter2136 1/1 test a11y-sweep-suite に iter2135 proposal-ops-group entry 追加] 検査軸 191 個 (新 GI 軸)、計約 306 invariant check に拡張。
