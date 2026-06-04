@@ -766,6 +766,20 @@ async function main() {
     })
   }
 
+  // ========= IZ. start-timer-button (idle) title full sync sweep (iter2271) =========
+  const stbIZ = read(here, `${root}/src/components/workspace/start-timer-button.tsx`)
+  if (
+    !stbIZ.includes('iter2271') ||
+    !stbIZ.includes('title={accessibleLabel}') ||
+    stbIZ.includes('title={otherActive ? fullHint : undefined}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'IZ.start-timer-title',
+      message: '[IZ] iter2271 start-timer-button (idle) title full sync が消えている',
+    })
+  }
+
   // ========= IY. QuickAdd preview parent role=status title sweep (iter2269) =========
   const qaIY = read(here, `${root}/src/components/workspace/quick-add.tsx`)
   if (!qaIY.includes('iter2269') || !qaIY.includes('title={`解析結果 — ${previewSummary}`}')) {
