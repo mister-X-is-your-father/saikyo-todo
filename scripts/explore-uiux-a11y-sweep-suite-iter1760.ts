@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= IX. 参加している Workspace 一覧 ul title sweep (iter2267) =========
+  const homeIX = read(here, `${root}/src/app/page.tsx`)
+  if (!homeIX.includes('iter2267') || !homeIX.includes('title="参加している Workspace 一覧"')) {
+    findings.push({
+      level: 'error',
+      source: 'IX.workspaces-list-ul-title',
+      message: '[IX] iter2267 参加している Workspace 一覧 ul title sync が消えている',
+    })
+  }
+
   // ========= IW. sprint-defaults-edit-btn title sweep (iter2265) =========
   const spIW = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (!spIW.includes('iter2265')) {
