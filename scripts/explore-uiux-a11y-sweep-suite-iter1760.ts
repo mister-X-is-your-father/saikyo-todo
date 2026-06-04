@@ -444,6 +444,16 @@ async function main() {
     })
   }
 
+  // ========= O. sprint-risk-board topRisk button title sweep (iter1783) =========
+  const riskBoard = read(here, `${root}/src/components/sprint/sprint-risk-board-widget.tsx`)
+  if (!riskBoard.includes('title={`${entry.item.title} を開く — risk score ${entry.riskScore}${')) {
+    findings.push({
+      level: 'error',
+      source: 'O.risk-board-title',
+      message: '[O] iter1783 sprint-risk-board topRisk button title が消えている',
+    })
+  }
+
   // ========= N. logout button title sweep (iter1781) =========
   // homePage は C 軸で既に読込済 (line 277)
   if (!homePage.includes('title="ログアウト — ログイン画面に戻る"')) {
