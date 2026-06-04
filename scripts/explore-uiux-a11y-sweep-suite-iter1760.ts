@@ -740,6 +740,18 @@ async function main() {
     })
   }
 
+  // ========= EV. dashboard 健全性 chip group title sweep (iter2057) =========
+  const dvEV = read(here, `${root}/src/components/workspace/dashboard-view.tsx`)
+  if (
+    !dvEV.includes('title="Dashboard 健全性 chip 群 — urgency / velocity / momentum / due-coverage')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'EV.dashboard-chip-group',
+      message: '[EV] iter2057 dashboard 健全性 chip group title が消えている',
+    })
+  }
+
   // ========= EU. sprint-retro-widget progressbar title sweep (iter2055) =========
   const retroEU = read(here, `${root}/src/components/sprint/sprint-retro-widget.tsx`)
   if (!retroEU.includes('iter2055')) {
