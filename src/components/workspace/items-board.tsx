@@ -379,6 +379,10 @@ export function ItemsBoard({ workspaceId, currentUserId }: Props) {
                  区切と divergent。active path は既に em-dash convention。両 path で visible
                  "MUST のみ" 冒頭は維持 (voice control)。 */
               aria-label={must ? 'MUST のみ表示中 — クリックで解除' : 'MUST のみ — 表示に絞り込む'}
+              /* iter1937: checkbox visible label は隣 span "MUST のみ" のみで現在 state +
+                 action context 不明、sighted hover で active/inactive 状態 + 操作意図 disclose
+                 (sprint/goal/KR progressbar iter1931-1935 と同 a11y title pattern)。 */
+              title={must ? 'MUST のみ表示中 — クリックで解除' : 'MUST のみ — 表示に絞り込む'}
             />
             <span aria-hidden="true">MUST のみ</span>
           </label>
