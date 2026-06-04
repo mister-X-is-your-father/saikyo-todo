@@ -309,6 +309,11 @@ export function BudgetPanel({ workspaceId }: Props) {
               /* iter1606: 旧 aria-label paren convention `"AI 月次コスト上限編集の操作 (キャンセル / 保存)"` は
                  iter1093-1605 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
               aria-label="AI 月次コスト上限編集の操作 — キャンセル / 保存"
+              /* iter2137: budget edit ops group の aria-label は browser tooltip にならず
+                 sighted は hover で context disclose 不可。proposal-ops iter2135 /
+                 comment-ops iter2133 / proposal-edit-ops iter2131 と同 title=aria-label
+                 sync pattern。 */
+              title="AI 月次コスト上限編集の操作 — キャンセル / 保存"
             >
               {/* iter1102: budget-edit-cancel / budget-save-btn の旧 aria-label は visible
                   "キャンセル" / "保存" / "保存中…" を末尾持ち、voice control prefix-matching
