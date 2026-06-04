@@ -40,6 +40,10 @@ export function MustBadge({ className, iconOnly = false, 'data-testid': dataTest
       className={`inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700 ring-1 ring-red-200 ring-inset dark:bg-red-950/40 dark:text-red-300 dark:ring-red-900/50 ${className ?? ''}`}
       role="img"
       aria-label="MUST タスク"
+      // iter1843: iter1841 StatusBadge と同 pattern を MustBadge にも展開、共通 component 1 修正で
+      // 全 caller (Today / Inbox / Backlog / Dashboard / Period / Subtasks 等) の sighted hover で
+      // "MUST タスク" disclose、iconOnly path も含めて統一。
+      title="MUST タスク"
       data-testid={dataTestid}
     >
       <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
