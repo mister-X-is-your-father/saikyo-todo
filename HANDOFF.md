@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1997 1/1 mode-D decompose-proposals bulk group に title 付与] group landmark の summary hover disclose、view-switcher/filter group と同 pattern。
 - ✅ [playwright-iter1996 1/1 test a11y-sweep-suite に iter1995 archive-link entry 追加] 検査軸 121 個 (新 DQ 軸)、計約 217 invariant check に拡張。
 - ✅ [playwright-iter1995 1/1 mode-D archived-items-panel item link に title 付与] visible は item.title のみで「開く」 action + archive 日付が無く hover で disclose。
 - ✅ [playwright-iter1994 1/1 test a11y-sweep-suite に iter1993 filter group entry 追加] 検査軸 120 個 (新 DP 軸)、計約 216 invariant check に拡張、検査軸 120 突破。
