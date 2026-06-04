@@ -150,9 +150,11 @@ async function main() {
       "title={e.description || ''}",
       'time-entries description',
     ],
+    // iter2225: op-board ItemRow title を `title={item.title}` から `title={ariaLabel}` に変更し
+    // aria-label と sync (statePrefix + 期限 + 編集ダイアログで開く context を sighted hover に disclose)。
     [
       `${root}/src/components/workspace/operation-board-widget.tsx`,
-      'title={item.title}',
+      'title={ariaLabel}',
       'operation-board',
     ],
     [`${root}/src/components/workspace/taskchute-view.tsx`, 'title={item.title}', 'taskchute'],
@@ -761,6 +763,16 @@ async function main() {
       level: 'error',
       source: 'AB.sprint-goal-create',
       message: '[AB] iter1809 goal-create conditional path text が消えている',
+    })
+  }
+
+  // ========= IB. op-board ItemRow title sweep (iter2225) =========
+  const opIB = read(here, `${root}/src/components/workspace/operation-board-widget.tsx`)
+  if (!opIB.includes('iter2225') || !opIB.includes('title={ariaLabel}')) {
+    findings.push({
+      level: 'error',
+      source: 'IB.op-board-itemrow-title',
+      message: '[IB] iter2225 op-board ItemRow title 同期 が消えている',
     })
   }
 
