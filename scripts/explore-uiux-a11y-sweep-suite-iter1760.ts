@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DJ. sprints-panel sprint-goal textarea title sweep (iter1981) =========
+  const spDJ = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (!spDJ.includes('iter1981')) {
+    findings.push({
+      level: 'error',
+      source: 'DJ.sprint-goal',
+      message: '[DJ] iter1981 sprints-panel sprint-goal textarea title が消えている',
+    })
+  }
+
   // ========= DI. sprints-panel sprint-name input title sweep (iter1979) =========
   const spDI = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (!spDI.includes('iter1979')) {
