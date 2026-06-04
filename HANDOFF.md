@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1967 1/1 mode-D personal-period goal textarea に title 付与] state-dependent aria-label (空 / 上限近接 / 通常) を title で sighted hover disclose。
 - ✅ [playwright-iter1966 1/1 test a11y-sweep-suite に iter1965 workspace main entry 追加] 検査軸 106 個 (新 DB 軸)、計約 202 invariant check に拡張 (landmark family 完備)。
 - ✅ [playwright-iter1965 1/1 mode-D workspace main landmark に title 付与] main landmark hover で main view 構成 disclose、nav iter1963 と pair で landmark family の hover summary 完備。
 - ✅ [playwright-iter1964 1/1 test a11y-sweep-suite に iter1963 workspace nav entry 追加] 検査軸 105 個 (新 DA 軸、C → D 軸 prefix シフト)、計約 201 invariant check に拡張。
