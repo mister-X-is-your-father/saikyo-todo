@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2242 1/1 test a11y-sweep-suite に iter2241 goals-panel KR add form entry 追加] 検査軸 244 個 (新 IK 軸)、計約 362 invariant check に拡張、create-form family title pattern が KR add form にも展開。
+- ✅ [playwright-iter2241 1/1] goals-panel KR (Key Result) 追加 form: aria-label "Goal「\${goalTitle}」の Key Result 追加フォーム" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-goals-kr-add-form-title-iter2241.ts)、Goal 作成フォーム title iter2045 と同 create-form family pattern。
 - ✅ [playwright-iter2240 1/1 test a11y-sweep-suite に iter2239 template-card title disclosure entry 追加] 検査軸 243 個 (新 IJ 軸)、計約 361 invariant check に拡張、list-item disclosure title pattern を template-card にも展開。
 - ✅ [playwright-iter2239 1/1] template-card title disclosure button: aria-label state-dependent (expand / collapse、template.name + kind + scheduleCron 含む) を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-template-card-disclosure-title-iter2239.ts)、proposal-title-btn iter2223 / op-board-itemrow iter2225 と同 list-item disclosure pattern。
 - ✅ [playwright-iter2238 1/1 test a11y-sweep-suite に iter2237 item-summary 3 chip entry 追加] 検査軸 242 個 (新 IH 軸)、計約 360 invariant check に拡張、ItemEditDialog サマリタブ status chip family 完成、360 check milestone 突破。
