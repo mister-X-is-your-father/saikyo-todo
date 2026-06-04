@@ -190,6 +190,9 @@ function SubtaskTreeNode({
         /* iter1590: paren convention を em-dash 区切に統一 (iter1093-1589 sweep)。 */
         aria-label={`${index + 1} 番目 — 深さ ${depth + 1}`}
         data-testid={`subtask-step-${item.id}`}
+        /* iter1885: visible は番号 {index+1} のみで「N 番目 — 深さ M」 context が無く、
+           sighted hover で disclose (iter1883 child-count title sweep の同 file 続編)。 */
+        title={`${index + 1} 番目 — 深さ ${depth + 1}`}
       >
         <span aria-hidden="true">{index + 1}</span>
       </span>
