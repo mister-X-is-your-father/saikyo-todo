@@ -762,6 +762,16 @@ async function main() {
     })
   }
 
+  // ========= HP. keybinding-combo dt title sweep (iter2201) =========
+  const khHP = read(here, `${root}/src/components/shared/keybindings-help-modal.tsx`)
+  if (!khHP.includes('iter2201') || !khHP.includes('title={`${kb.combo} — ショートカット`}')) {
+    findings.push({
+      level: 'error',
+      source: 'HP.keybinding-combo-title',
+      message: '[HP] iter2201 keybinding-combo dt title 同期 が消えている',
+    })
+  }
+
   // ========= HO. FocusFormCta title sweep (iter2199) =========
   const fcHO = read(here, `${root}/src/components/shared/focus-form-cta.tsx`)
   if (
