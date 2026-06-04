@@ -403,6 +403,17 @@ async function main() {
       message: '[J] iter1765 calendar-view prev/next title が消えている',
     })
   }
+  if (
+    !calendarView.includes(
+      "title={`今日 — 表示日を今日 (${format(new Date(), 'M月d日 (eee)')}) にリセット`}",
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'J.icon-only-title',
+      message: '[J] iter1775 calendar-view today title が消えている',
+    })
+  }
 
   // ========= K. shared ErrorState retry title (iter1767) =========
   const asyncStates = read(here, `${root}/src/components/shared/async-states.tsx`)
