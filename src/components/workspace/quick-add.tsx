@@ -285,6 +285,9 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
                  (substring 一致のみ)。iter1553-1604 visible 冒頭 em-dash sweep に合わせ visible
                  (icon 抜きの text 部) 冒頭固定 + em-dash 区切。 */
               aria-label={`${formatEstimate(preview.estimateMinutes)} — 見積`}
+              /* iter1887: 🕐 icon + 数値のみで「見積」 context が visible に無く、
+                 sighted hover で disclose (subtasks step/childcount title sweep 続編)。 */
+              title={`${formatEstimate(preview.estimateMinutes)} — 見積`}
             >
               <span aria-hidden="true">🕐 {formatEstimate(preview.estimateMinutes)}</span>
             </span>
