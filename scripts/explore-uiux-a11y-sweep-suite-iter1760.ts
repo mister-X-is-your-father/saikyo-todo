@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= CO. items-board filter-status title sweep (iter1939) =========
+  const boardCO = read(here, `${root}/src/components/workspace/items-board.tsx`)
+  if (!boardCO.includes('iter1939') || !boardCO.includes('「全ステータス」で解除')) {
+    findings.push({
+      level: 'error',
+      source: 'CO.filter-status',
+      message: '[CO] iter1939 items-board filter-status title が消えている',
+    })
+  }
+
   // ========= CN. items-board filter-must title sweep (iter1937) =========
   const boardCN = read(here, `${root}/src/components/workspace/items-board.tsx`)
   if (
