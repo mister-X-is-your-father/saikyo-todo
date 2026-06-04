@@ -68,6 +68,17 @@ export function ItemDecomposeButton({ workspaceId, item }: Props) {
             ? `分解中… — 「${item.title}」を AI 分解中…`
             : `AI 分解 — 「${item.title}」を AI 分解 (子タスクを 3〜5 件作成)`
       }
+      /* iter2213: item-decompose-btn の state-dependent aria-label (3-path: done /
+         pending / idle、item.title 含む) は browser tooltip にならず sighted は hover で
+         item.title + state context disclose 不可。engineer-trigger-btn iter2211 /
+         heartbeat-button iter2205 と同 title=aria-label sync pattern。 */
+      title={
+        item.status === 'done'
+          ? `AI 分解 — 「${item.title}」は完了済のため AI 分解不可`
+          : decompose.isPending
+            ? `分解中… — 「${item.title}」を AI 分解中…`
+            : `AI 分解 — 「${item.title}」を AI 分解 (子タスクを 3〜5 件作成)`
+      }
     >
       <span aria-hidden="true">{decompose.isPending ? '分解中…' : 'AI 分解'}</span>
     </Button>
