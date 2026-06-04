@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2044 1/1 test a11y-sweep-suite に iter2043 src-operations-group entry 追加] 検査軸 145 個 (新 EO 軸)、計約 241 invariant check に拡張。
 - ✅ [playwright-iter2043 1/1 mode-D integrations source operations group に title 付与] 6 entity operations group family 完成形 (sprint/sprint-period-edit/workflows/goals/comment-edit/src)。
 - ✅ [playwright-iter2042 1/1 test a11y-sweep-suite に iter2041 sprint-period-edit-group entry 追加] 検査軸 144 個 (新 EN 軸)、計約 240 invariant check 突破。
 - ✅ [playwright-iter2041 1/1 mode-D sprint-period edit form group に title 付与] 5 entity operations group family の続編。
