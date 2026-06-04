@@ -1036,11 +1036,19 @@ function SprintCard({
                 aria-busy={premortemPending || undefined}
                 onClick={onRunPremortem}
                 data-testid={`sprint-premortem-${sprint.id}`}
-                title="PM Agent が想定リスクと早期警報を Pre-mortem Doc にまとめる"
                 // iter1038: visible "Pre-mortem 生成" / "Pre-mortem 再生成" を aria-label
                 // の prefix に固定し WCAG 2.5.3 satisfy (旧 "Pre-mortem を生成" は
                 // "を" 挿入で literal "Pre-mortem 生成" substring 不一致)。
                 aria-label={
+                  premortemPending
+                    ? `Pre-mortem 生成中… — Sprint「${sprint.name}」の Pre-mortem を生成中`
+                    : sprint.premortemGeneratedAt
+                      ? `Pre-mortem 再生成 — Sprint「${sprint.name}」の Pre-mortem を再生成 (PM Agent が想定リスクと早期警報を Doc にまとめる)`
+                      : `Pre-mortem 生成 — Sprint「${sprint.name}」の Pre-mortem を生成 (PM Agent が想定リスクと早期警報を Doc にまとめる)`
+                }
+                /* iter2095: sprint-retro iter2093 と pair、sprint-premortem も title-aria
+                   state-dependent 同期 (3-path)、divergence 修正 sweep の続編。 */
+                title={
                   premortemPending
                     ? `Pre-mortem 生成中… — Sprint「${sprint.name}」の Pre-mortem を生成中`
                     : sprint.premortemGeneratedAt
