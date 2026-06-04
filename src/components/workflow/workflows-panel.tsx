@@ -372,6 +372,10 @@ function WorkflowCard({ workspaceId, wf }: { workspaceId: string; wf: Workflow }
           /* iter1581: paren convention の `(現在:` を iter1578-1580 operations group sweep に
              合わせ em-dash 区切に統一。visible 冒頭 "Workflow「${name}」" は維持。 */
           aria-label={`Workflow「${wf.name}」の操作 — 現在 ${wf.enabled ? '有効' : '無効'}、実行 / 編集 / 有効化切替 / 削除`}
+          /* iter2031: group 全体に title を付与し sighted hover で Workflow 名 + 現在 enabled
+             state + operations 構成 disclose (decompose-proposals bulk group iter1997 と同
+             group landmark summary pattern)。 */
+          title={`Workflow「${wf.name}」の操作 — 現在 ${wf.enabled ? '有効' : '無効'}、実行 / 編集 / 有効化切替 / 削除`}
         >
           <Button
             size="sm"
