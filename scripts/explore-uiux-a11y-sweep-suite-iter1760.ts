@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= IO. today-view header chips title sweep (iter2249) =========
+  const tvIO = read(here, `${root}/src/components/workspace/today-view.tsx`)
+  if (!tvIO.includes('iter2249')) {
+    findings.push({
+      level: 'error',
+      source: 'IO.today-header-chips-title',
+      message: '[IO] iter2249 today-view header chips title sync が消えている',
+    })
+  }
+
   // ========= IN. Gantt chart root container title sweep (iter2247) =========
   const gvIN = read(here, `${root}/src/components/workspace/gantt-view.tsx`)
   if (
