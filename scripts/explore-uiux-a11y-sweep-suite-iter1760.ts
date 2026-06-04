@@ -740,6 +740,20 @@ async function main() {
     })
   }
 
+  // ========= DR. decompose-proposals bulk group title sweep (iter1997) =========
+  const decDR = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
+  if (
+    !decDR.includes(
+      'title={`AI 分解提案の bulk 操作 — 全て採用 / 全て却下 / 再分解、保留中 ${list.length} 件`}',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'DR.decompose-bulk',
+      message: '[DR] iter1997 decompose-proposals bulk group title が消えている',
+    })
+  }
+
   // ========= DQ. archived-items-panel item link title sweep (iter1995) =========
   const arcDQ = read(here, `${root}/src/components/workspace/archived-items-panel.tsx`)
   if (!arcDQ.includes('iter1995')) {
