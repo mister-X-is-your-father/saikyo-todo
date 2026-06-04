@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2074 1/1 test a11y-sweep-suite に iter2073 home-header entry 追加] 検査軸 160 個 (新 FD 軸)、計約 256 invariant check、検査軸 160 突破。
 - ✅ [playwright-iter2073 1/1 mode-D ホーム header landmark に title 付与] 3 landmark family (home header + workspace nav + workspace main) で landmark hover summary 完備。
 - ✅ [playwright-iter2072 1/1 test a11y-sweep-suite に iter2071 keybindings-dialog entry 追加] 検査軸 159 個 (新 FC 軸)、計約 255 invariant check に拡張。
 - ✅ [playwright-iter2071 1/1 mode-D keybindings-help-modal DialogContent に title 付与] dialog landmark hover summary、section pattern を dialog に展開。
