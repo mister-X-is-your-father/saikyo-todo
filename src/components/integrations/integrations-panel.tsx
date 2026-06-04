@@ -65,6 +65,10 @@ export function IntegrationsPanel({ workspaceId }: Props) {
           className="space-y-3"
           data-testid="sources-list"
           aria-label={`API 連携 source 一覧 — ${list.data!.length} 件`}
+          /* iter2191: API 連携 source 一覧 ul の aria-label は browser tooltip にならず
+             sighted は hover で件数 context disclose 不可。workflows-list iter2189 /
+             comment-list iter2167 と同 title=aria-label sync pattern (一覧 ul family)。 */
+          title={`API 連携 source 一覧 — ${list.data!.length} 件`}
         >
           {list.data!.map((src) => (
             <li key={src.id}>
