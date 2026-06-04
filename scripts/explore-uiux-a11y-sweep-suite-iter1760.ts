@@ -246,6 +246,11 @@ async function main() {
       'title={it.title}',
       'schedule-item-picker',
     ],
+    [
+      `${root}/src/components/schedule/timeline-lane.tsx`,
+      'title={fullLabel}',
+      'timeline-lane EventBlock',
+    ],
   ] as const
   for (const [path, needle, label] of titleSweepFiles) {
     const src = read(here, path)
