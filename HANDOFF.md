@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2280 1/1 test a11y-sweep-suite に iter2279 backlog-edit button entry 追加] 検査軸 263 個 (新 JD 軸)、計約 381 invariant check に拡張、cross-view edit button title 統一 (MCP path A 経由発見)、iter 2280 milestone 突破。
+- ✅ [playwright-iter2279 1/1] backlog-edit button: aria-label "編集 — 「title」を編集" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-backlog-edit-title-iter2279.ts)。**MCP path A で Backlog view で発見**、today-title-edit iter1737 と同 pattern を backlog-edit にも展開、cross-view edit button title 統一 (today / backlog 2 view 完成)。
 - ✅ [playwright-iter2278 1/1 test a11y-sweep-suite に iter2277 backlog sortable th 5 element entry 追加] 検査軸 262 個 (新 JC 軸)、計約 380 invariant check に拡張、sort feedback cross-modal 統一 (MCP path A 経由発見)、380 check milestone 突破。
 - ✅ [playwright-iter2277 1/1] backlog sortable th 5 element (Status / タイトル / MUST / 期限 / 更新): aria-label "X 列でソート (現在: Y) — Enter / Space で次の状態に切替" を sighted hover で disclose 不可 → 同 text の title を 5 th 同時に付与し sync (path B codify scripts/explore-uiux-backlog-th-sort-title-iter2277.ts)。**MCP path A で Backlog view に test item ある状態で発見**、column-header sort feedback cross-modal (SR + 視覚) 統一。
 - ✅ [playwright-iter2276 1/1 test a11y-sweep-suite に iter2275 today-view 期限 span entry 追加] 検査軸 261 個 (新 JB 軸)、計約 379 invariant check に拡張、cross-view 期限 span title 統一 (MCP path A 経由発見)。
