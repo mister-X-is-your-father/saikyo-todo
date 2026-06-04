@@ -875,7 +875,16 @@ function KeyResultList({
                           ? `削除中… — KR「${kr.title}」を削除中`
                           : `削除 — KR「${kr.title}」を削除 (soft delete)`
                       }
-                      title="KR を削除 (soft delete)"
+                      /* iter2099: kr-delete static title="KR を削除 (soft delete)" は
+                         state-dependent aria-label (削除中… / 削除 — KR「title」を削除) と
+                         divergent。sprint-period-edit iter2097 / sprint-premortem iter2095 /
+                         sprint-retro iter2093 と同 title-aria divergence 修正 pattern。
+                         KR title + state context を sighted hover で disclose。 */
+                      title={
+                        remove.isPending
+                          ? `削除中… — KR「${kr.title}」を削除中`
+                          : `削除 — KR「${kr.title}」を削除 (soft delete)`
+                      }
                       data-testid={`kr-delete-${kr.id}`}
                       // iter506: pseudo で tap target を 44x44 化 (visual ✕ icon size 維持)
                       // iter1307 (modeM hazard 続き、comment-thread iter1303 / operation-board
