@@ -485,6 +485,13 @@ function ItemRow({
       className={`hover:bg-muted/60 focus-visible:ring-ring flex min-h-11 w-full items-center gap-2 truncate rounded px-1 py-0.5 text-left focus-visible:ring-2 focus-visible:outline-none ${cls}`}
       data-testid={`operation-board-row-${item.id}`}
       aria-label={ariaLabel}
+      // iter1734: visible inner <span className="truncate"> で 全 row 共通に title が visual
+      // 切れる。aria-label は SR full text を持つが sighted は hover で browser tooltip 無し
+      // (aria-label は browser tooltip にならない)。title 属性で sighted も hover で全 item
+      // title を disclose 可能 (iter1720 mock-entries / iter1733 time-entries 同 pattern を
+      // operation-board row 共通 component に展開、3 caller: today /上段 quickwins / focusBlocks
+      // 等 多数で一括効果)。
+      title={item.title}
     >
       {showTime && item.dueTime ? (
         <span className="text-foreground/80 text-xs tabular-nums" aria-hidden="true">
