@@ -744,6 +744,19 @@ async function main() {
     })
   }
 
+  // ========= AX. sprint-status Badge title sweep (iter1853) =========
+  if (
+    !sprintsPanel.includes(
+      'title={`${sprintStatusLabelJa(status)} — Sprint「${sprint.name}」のステータス`}',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'AX.sprint-status',
+      message: '[AX] iter1853 sprint-status Badge title が消えている',
+    })
+  }
+
   // ========= AW. active-timer-estimate-calibrated chip title sweep (iter1851) =========
   if (
     !activeTimer.includes(
