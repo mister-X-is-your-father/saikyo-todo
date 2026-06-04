@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= IY. QuickAdd preview parent role=status title sweep (iter2269) =========
+  const qaIY = read(here, `${root}/src/components/workspace/quick-add.tsx`)
+  if (!qaIY.includes('iter2269') || !qaIY.includes('title={`解析結果 — ${previewSummary}`}')) {
+    findings.push({
+      level: 'error',
+      source: 'IY.quickadd-preview-title',
+      message: '[IY] iter2269 QuickAdd preview parent title sync が消えている',
+    })
+  }
+
   // ========= IX. 参加している Workspace 一覧 ul title sweep (iter2267) =========
   const homeIX = read(here, `${root}/src/app/page.tsx`)
   if (!homeIX.includes('iter2267') || !homeIX.includes('title="参加している Workspace 一覧"')) {
