@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2172 1/1 test a11y-sweep-suite に iter2171 pdca-counts-group entry 追加] 検査軸 209 個 (新 HA 軸)、計約 326 invariant check に拡張、prefix 3rd letter pass (GZ → HA)。
+- ✅ [playwright-iter2171 1/1 mode-D PDCA 4 段階の集計 group に title 付与し aria-label と sync] 4 段階件数 hover disclose、weekly-anomalies iter2169 / comment-list iter2167 と pair。
 - ✅ [playwright-iter2170 1/1 test a11y-sweep-suite に iter2169 weekly-anomalies entry 追加] 検査軸 208 個 (新 GZ 軸)、計約 325 invariant check に拡張。
 - ✅ [playwright-iter2169 1/1 mode-D weekly-insight anomalies ul に title 付与] 件数 + 3 kind context hover disclose、comment-list iter2167 / template-items-list iter2159 と pair。
 - ✅ [playwright-iter2168 1/1 test a11y-sweep-suite に iter2167 comment-list entry 追加] 検査軸 207 個 (新 GY 軸)、計約 324 invariant check に拡張。
