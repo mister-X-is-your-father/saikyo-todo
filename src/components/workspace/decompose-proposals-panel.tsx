@@ -572,7 +572,12 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
         // (位置 3 "提案「**title**」") に持ち voice control prefix-matching「click {title}」
         // match 不可。iter1093-1147 sweep convention に揃え visible title 冒頭固定 +
         // em-dash 区切で descriptive 残す。
+        // iter1748: button 内 inner span は truncate で長 proposal.title 切れ、aria-label は
+        // browser tooltip にならず sighted hover で全 title 見れず。title 付与で
+        // sighted hover → 全 proposal title disclose (iter1720-1747 sweep を decompose-proposals
+        // にも展開)。
         aria-label={`${proposal.title} — 提案を編集${proposal.isMust ? ' (MUST)' : ''}`}
+        title={proposal.title}
       >
         <div className="flex items-center gap-1.5">
           {proposal.isMust && <MustBadge />}
