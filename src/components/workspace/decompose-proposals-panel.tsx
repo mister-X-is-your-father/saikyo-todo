@@ -270,7 +270,16 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
               aria-busy={decompose.isPending || undefined}
               onClick={() => void handleRedecompose({ clearExisting: false })}
               data-testid="proposals-redecompose"
-              title="既存の提案を残したまま追加で分解"
+              /* iter2107: proposals-redecompose static title は count + visible label を
+                 含まず aria-label (state-dependent 追加分解 / 再分解 + 保留 ${count}) と
+                 divergent → 2-path sync。agent-cancel iter2105 / src-pull iter2103 /
+                 wf-run-rerun iter2101 と同 title-aria divergence 修正 pattern。
+                 件数 + 用途 context を sighted hover で disclose。 */
+              title={
+                list.length > 0
+                  ? `追加分解 — 既存の保留中 ${list.length} 件を残して追加で AI 分解`
+                  : '再分解 — AI 分解を再実行'
+              }
               // iter1046: visible "追加分解" / "再分解" を aria-label の prefix に
               // 固定し WCAG 2.5.3 satisfy (旧 aria-label は "追加で AI 分解" /
               // "AI 分解を再実行" で literal substring 無し)。
@@ -293,7 +302,9 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
                 aria-busy={decompose.isPending || undefined}
                 onClick={() => void handleRedecompose({ clearExisting: true })}
                 data-testid="proposals-redecompose-fresh"
-                title="既存提案を全て却下してから再分解"
+                /* iter2107: proposals-redecompose-fresh static title も同 pattern で
+                   aria-label と sync (件数 context を sighted hover で disclose)。 */
+                title={`やり直し — 保留中の ${list.length} 件を全て却下してから AI 分解をやり直し`}
                 // iter1122: visible "やり直し" を aria-label 冒頭固定 (iter1093-1121 sweep)。
                 aria-label={`やり直し — 保留中の ${list.length} 件を全て却下してから AI 分解をやり直し`}
               >
