@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2250 1/1 test a11y-sweep-suite に iter2249 today-view header chips entry 追加] 検査軸 248 個 (新 IO 軸)、計約 366 invariant check に拡張、today-header chip 2 element pair 完成 (streak / doneToday)。
+- ✅ [playwright-iter2249 1/1] today-view header chips: 2 chip (streak / doneToday) の aria-label を sighted hover で disclose 不可 → 同 text の title を 2 chip 同時に付与し sync (path B codify scripts/explore-uiux-today-header-chips-title-iter2249.ts)、today-header chip 2 element pair 完成。
 - ✅ [playwright-iter2248 1/1 test a11y-sweep-suite に iter2247 Gantt root container entry 追加] 検査軸 247 個 (新 IN 軸)、計約 365 invariant check に拡張、Gantt root container title 補完。
 - ✅ [playwright-iter2247 1/1] gantt-view root container: aria-label "Gantt チャート — Item N 件 × 期間 D 日" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-gantt-root-title-iter2247.ts)、Gantt project summary (banner) iter2117 と pair の Gantt root container 補完。
 - ✅ [playwright-iter2246 1/1 test a11y-sweep-suite に iter2245 weekly-time-trend-chip entry 追加] 検査軸 246 個 (新 IM 軸)、計約 364 invariant check に拡張、time-entry chip 2 element pair 完成。
