@@ -744,6 +744,19 @@ async function main() {
     })
   }
 
+  // ========= BA. time-entries sync-badge title sweep (iter1859) =========
+  const teTable = read(here, `${root}/src/components/time-entry/time-entries-table.tsx`)
+  if (
+    !teTable.includes('title="synced — 外部同期 完了"') ||
+    !teTable.includes('title="failed — 外部同期 失敗"')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'BA.sync-badges',
+      message: '[BA] iter1859 sync-badge synced/failed title が消えている',
+    })
+  }
+
   // ========= AZ. wf-run-status Badge title sweep (iter1857) =========
   if (!wfPanel.includes('title={`${label} — 実行ステータス`}')) {
     findings.push({
