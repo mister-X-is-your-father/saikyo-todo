@@ -1361,6 +1361,29 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
     expect(out).toBe(formatConcerningSignalsLineJa(s) + '\n' + formatAchievementSignalsLineJa(s))
   })
 
+  it('iter1751: formatClusterSummaryLinesJa — 達成感のみ active → "警戒: なし\\n達成感: ..."', () => {
+    // 警戒が完全に空でも sentinel ('警戒: なし') が必ず先頭行に出る保証。
+    // Slack notifier の 2 paragraph 構造が片寄り入力で崩れない gate。
+    const s = composeAnalyticsSignals({ doneToday: 2 })
+    const out = formatClusterSummaryLinesJa(s)
+    const lines = out.split('\n')
+    expect(lines.length).toBe(2)
+    expect(lines[0]).toBe('警戒: なし')
+    expect(lines[1]!.startsWith('達成感: ')).toBe(true)
+    expect(lines[1]).not.toBe('達成感: 記録なし')
+  })
+
+  it('iter1751: formatClusterSummaryLinesJa — 警戒のみ active → "警戒: ...\\n達成感: 記録なし"', () => {
+    // 達成感が完全に空でも sentinel ('達成感: 記録なし') が必ず後行に出る保証。
+    const s = composeAnalyticsSignals({ weeklyReviewDue: 'overdue' })
+    const out = formatClusterSummaryLinesJa(s)
+    const lines = out.split('\n')
+    expect(lines.length).toBe(2)
+    expect(lines[0]!.startsWith('警戒: ')).toBe(true)
+    expect(lines[0]).not.toBe('警戒: なし')
+    expect(lines[1]).toBe('達成感: 記録なし')
+  })
+
   it('iter1748: cluster disjoint invariant — pickAchievement ∩ pickConcerning = ∅', () => {
     // 達成感 cluster (positive polarity = success/info/idle) と 警戒 cluster
     // (warn/danger/urgent) は tone 設計上 互いに disjoint である invariant。
