@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BD. taskchute priority chip title sweep (iter1865) =========
+  const taskchuteView = read(here, `${root}/src/components/workspace/taskchute-view.tsx`)
+  if (!taskchuteView.includes('title={`P${item.priority ?? 4}`}')) {
+    findings.push({
+      level: 'error',
+      source: 'BD.taskchute-priority',
+      message: '[BD] iter1865 taskchute priority chip title が消えている',
+    })
+  }
+
   // ========= BC. personal-period-view priority dot title sweep (iter1863) =========
   const periodView = read(here, `${root}/src/components/workspace/personal-period-view.tsx`)
   if (!periodView.includes('title={`p${it.priority ?? 4}`}')) {
