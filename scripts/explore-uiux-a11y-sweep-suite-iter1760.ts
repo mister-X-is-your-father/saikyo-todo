@@ -740,6 +740,19 @@ async function main() {
     })
   }
 
+  // ========= GC. budget-edit-btn title 付与 sweep (iter2123) =========
+  const bpGC = read(here, `${root}/src/components/workspace/budget-panel.tsx`)
+  if (
+    !bpGC.includes('iter2123') ||
+    !bpGC.includes('title="上限を変更 — AI 月次コスト上限と警告閾値の編集モードを開く"')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GC.budget-edit-btn-title',
+      message: '[GC] iter2123 budget-edit-btn title 付与 が消えている',
+    })
+  }
+
   // ========= GB. item-edit-set-baseline title 3-path sweep (iter2121) =========
   const iedGB = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
   if (
