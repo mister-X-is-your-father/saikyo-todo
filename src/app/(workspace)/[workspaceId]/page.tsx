@@ -161,6 +161,7 @@ export default async function WorkspacePage({ params }: PageProps) {
                 <Link
                   href="/"
                   aria-label="一覧 — Workspace 一覧へ戻る"
+                  title="一覧 — Workspace 一覧へ戻る"
                   data-testid="back-to-workspaces"
                 >
                   <span aria-hidden="true">← 一覧</span>

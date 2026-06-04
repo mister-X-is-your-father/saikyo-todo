@@ -48,7 +48,11 @@ export default async function WorkflowsPage({ params }: PageProps) {
         subtitle={`自動化ワークフロー (n8n 風) · ${user.email ?? ''}`}
         pageActions={
           <Button variant="outline" asChild size="sm" className="min-h-11">
-            <Link href={`/${workspaceId}`} aria-label="Workspace dashboard に戻る">
+            <Link
+              href={`/${workspaceId}`}
+              aria-label="Workspace dashboard に戻る"
+              title="Workspace dashboard に戻る"
+            >
               <span aria-hidden="true">← Workspace</span>
             </Link>
           </Button>
