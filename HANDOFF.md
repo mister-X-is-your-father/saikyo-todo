@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2260 1/1 test a11y-sweep-suite に iter2259 Template 作成フォーム entry 追加] 検査軸 253 個 (新 IT 軸)、計約 371 invariant check に拡張、create-form family 3 entity (Goal / Sprint / Template) 完成 (MCP path A 経由発見)。
+- ✅ [playwright-iter2259 1/1] Template 作成フォーム form: aria-label "Template 作成フォーム" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-template-create-form-title-iter2259.ts)。**MCP path A で /templates 画面探索中に発見**、Goal 作成フォーム iter2045 / Sprint 作成フォーム iter2043 と pair、create-form family 3 entity 完成。
 - ✅ [playwright-iter2258 1/1 test a11y-sweep-suite に iter2257 src-create-btn 3-path entry 追加] 検査軸 252 個 (新 IS 軸)、計約 370 invariant check に拡張、create button family Source 1 element 追加 (MCP path A 経由発見)、370 check milestone 突破。
 - ✅ [playwright-iter2257 1/1] integrations-panel src-create-btn (External Source 作成 button): aria-label state-dependent 3-path (!name.trim() / pending / idle) を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-src-create-btn-title-iter2257.ts)。**MCP path A で /integrations 画面探索中に発見**、iter1809 sprint/goal create と同 pattern の create button family を Source にも完成。
 - ✅ [playwright-iter2256 1/1 test a11y-sweep-suite に iter2255 budget edit form button family entry 追加] 検査軸 251 個 (新 IR 軸)、計約 369 invariant check に拡張、budget edit form button 3 element (edit-btn / cancel / save) title 完成。
