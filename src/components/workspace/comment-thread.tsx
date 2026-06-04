@@ -127,7 +127,17 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
             // で "投稿中…" は別語)。default / not-trim path も visible "投稿" 中位置で
             // voice control prefix-matching「click 投稿」 match 不可。iter1093-1167 sweep
             // convention に揃え visible 冒頭固定 + em-dash 区切で descriptive 末尾。
+            // iter1791: aria-label は browser tooltip にならず sighted は hover で context
+            // (shortcut hint / @user mention notification) 即把握できなかった。
+            // iter1789 cancel/save/edit/delete と同 pattern を comment-post にも展開。
             aria-label={
+              !body.trim()
+                ? '投稿 — コメントを投稿するには本文を入力してください'
+                : create.isPending
+                  ? '送信中… — コメントを投稿中…'
+                  : '投稿 — コメントを投稿 (Cmd/Ctrl+Enter でも可、@user で言及・通知)'
+            }
+            title={
               !body.trim()
                 ? '投稿 — コメントを投稿するには本文を入力してください'
                 : create.isPending

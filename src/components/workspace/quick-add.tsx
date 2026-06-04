@@ -194,6 +194,18 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
                   ? `「${preview.title}」を作成中…`
                   : `作成 — 「${preview.title}」を作成 (Enter でも可)`
           }
+          // iter1791: visible "作成" のみで sighted は hover で context (preview.title / MUST 警告 / shortcut hint)
+          // 即把握できなかった。iter1789 comment-thread / iter1785-1787 ItemEditDialog footer と同 pattern を
+          // quick-add submit にも展開、conditional 4 path 各々 title で sighted hover で context disclose。
+          title={
+            !preview?.title
+              ? '作成 — タスクを作成するにはタイトルを入力してください (Enter でも可)'
+              : preview.isMust
+                ? '作成 — MUST タスクは編集ダイアログから DoD を入力して作成してください'
+                : create.isPending
+                  ? `「${preview.title}」を作成中…`
+                  : `作成 — 「${preview.title}」を作成 (Enter でも可)`
+          }
         >
           {/* iter1090: visible は ASCII '...' (U+002E×3) で aria-label は U+2026 '…' を使い
               literal substring 不一致 = WCAG 2.5.3 違反 + voice control 不可。
