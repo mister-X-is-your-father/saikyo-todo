@@ -382,7 +382,16 @@ function Section({
                     ? `解除 — 依存「${ref.title}」を解除中…`
                     : `解除 — 依存「${ref.title}」を解除`
                 }
-                title={`依存「${ref.title}」を解除`}
+                /* iter2111: dep-remove title (静的 template) は state-dependent
+                   aria-label (解除中… / 解除 2-path) と divergent → 2-path sync。
+                   proposal-accept/reject iter2109 / proposals-redecompose iter2107 と
+                   同 title-aria divergence 修正 pattern。state context を sighted
+                   hover で disclose。 */
+                title={
+                  removing
+                    ? `解除 — 依存「${ref.title}」を解除中…`
+                    : `解除 — 依存「${ref.title}」を解除`
+                }
               >
                 <span aria-hidden="true">解除</span>
               </Button>
