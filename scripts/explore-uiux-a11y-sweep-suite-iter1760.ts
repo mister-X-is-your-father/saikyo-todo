@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BW. activity-log action icon title sweep (iter1903) =========
+  const activityBW = read(here, `${root}/src/components/workspace/activity-log.tsx`)
+  if (!activityBW.includes('title={`${label} — 操作種別`}')) {
+    findings.push({
+      level: 'error',
+      source: 'BW.activity-icon',
+      message: '[BW] iter1903 activity-log action icon title が消えている',
+    })
+  }
+
   // ========= BV. activity-log hint title sweep (iter1901) =========
   const activityBV = read(here, `${root}/src/components/workspace/activity-log.tsx`)
   if (!activityBV.includes('title={`${hint.label} — Activity 状態`}')) {
