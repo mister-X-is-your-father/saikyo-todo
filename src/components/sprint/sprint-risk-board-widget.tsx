@@ -191,7 +191,12 @@ export function SprintRiskBoardWidget<T extends RiskBoardItemFields>({
                     className="border-b last:border-0"
                     data-testid={`risk-load-row-${load.id}`}
                   >
-                    <td className="truncate py-1">{load.name}</td>
+                    {/* iter1745: assigneeLoad td も truncate で長 name 切れ、title 無で
+                        sighted hover で全 name 見れず。title 付与で iter1720-1744 sweep の
+                        sprint-risk-board 補完 (line 91 topRisk title 既あり、本 td 追加で完備)。 */}
+                    <td className="truncate py-1" title={load.name}>
+                      {load.name}
+                    </td>
                     <td className="py-1 text-right tabular-nums">{load.itemCount}</td>
                     <td className="py-1 text-right tabular-nums">
                       {load.mustCount > 0 ? (
