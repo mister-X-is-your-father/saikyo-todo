@@ -766,6 +766,19 @@ async function main() {
     })
   }
 
+  // ========= IK. goals-panel KR add form title sweep (iter2241) =========
+  const gpIK = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
+  if (
+    !gpIK.includes('iter2241') ||
+    !gpIK.includes('title={`Goal「${goalTitle}」の Key Result 追加フォーム`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'IK.goals-kr-add-form-title',
+      message: '[IK] iter2241 goals-panel KR add form title sync が消えている',
+    })
+  }
+
   // ========= IJ. template-card title disclosure button title sweep (iter2239) =========
   const tpIJ = read(here, `${root}/src/components/template/templates-panel.tsx`)
   if (!tpIJ.includes('iter2239') || !tpIJ.includes('title={`${t.name} — Template「${t.name}」')) {
