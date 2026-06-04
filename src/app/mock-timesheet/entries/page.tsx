@@ -77,7 +77,14 @@ export default async function MockEntriesPage() {
                     <time dateTime={e.workDate}>{e.workDate}</time>
                   </td>
                   <td className="py-2">{categoryLabel(e.category)}</td>
-                  <td className="max-w-[280px] truncate py-2">{e.description}</td>
+                  {/* iter1720: 旧 td は truncate で 280px 超は visual 切れるが sighted users は
+                      hover しても全文を見れない (title 属性無し → browser tooltip 無し)。SR は
+                      DOM テキスト全部読むが、sighted は切れた部分を見れず content 把握困難。
+                      `title={e.description}` で hover → browser tooltip で全文 disclose、
+                      SR には no-op (既に full text 読む)、visible 表示は不変 (`truncate`)。 */}
+                  <td className="max-w-[280px] truncate py-2" title={e.description}>
+                    {e.description}
+                  </td>
                   <td className="py-2 text-right">{Number(e.hoursDecimal).toFixed(2)}</td>
                   <td className="py-2 text-xs">
                     <time dateTime={submittedIso}>
