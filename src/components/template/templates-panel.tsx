@@ -306,6 +306,12 @@ export function TemplatesPanel({ workspaceId }: Props) {
                     // template-card delete iter1218 と同 sweep を template-card title button
                     // にも展開。visible {name} を冒頭固定 + em-dash 区切で descriptive 末尾保持。
                     aria-label={`${t.name} — Template「${t.name}」(${t.kind}${t.scheduleCron ? ` · ${t.scheduleCron}` : ''}) の詳細を${expandedId === t.id ? '閉じる' : '開く'}`}
+                    /* iter2239: template-card title disclosure button の aria-label は
+                       state-dependent (expand / collapse、template.name + kind + cron 含む) で
+                       SR には full context を渡すが browser tooltip にならず sighted は hover で
+                       同 context disclose 不可。proposal-title-btn iter2223 / op-board-itemrow
+                       iter2225 と同 list-item disclosure title=aria-label sync pattern。 */
+                    title={`${t.name} — Template「${t.name}」(${t.kind}${t.scheduleCron ? ` · ${t.scheduleCron}` : ''}) の詳細を${expandedId === t.id ? '閉じる' : '開く'}`}
                   >
                     <CardTitle
                       id={`template-card-heading-${t.id}`}
