@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= JU. src-url input title sweep (iter2313) =========
+  const ipJU = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
+  if (!ipJU.includes('iter2313')) {
+    findings.push({
+      level: 'error',
+      source: 'JU.src-url-input-title',
+      message: '[JU] iter2313 src-url input title sync が消えている',
+    })
+  }
+
   // ========= JT. operation-board done-yesterday-toggle title sweep (iter2311) =========
   const obwJT = read(here, `${root}/src/components/workspace/operation-board-widget.tsx`)
   if (!obwJT.includes('iter2311')) {
