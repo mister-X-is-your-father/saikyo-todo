@@ -511,6 +511,41 @@ async function main() {
     })
   }
 
+  // ========= S. submit buttons title sweep (iter1791) =========
+  // comment-post (3 path) + quick-add-submit (4 path) — sighted hover disclosure
+  if (
+    !commentThread.includes("'投稿 — コメントを投稿 (Cmd/Ctrl+Enter でも可、@user で言及・通知)'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'S.submit-buttons',
+      message: '[S] iter1791 comment-post default path text が消えている',
+    })
+  }
+  if (commentTitleCount < 5) {
+    findings.push({
+      level: 'error',
+      source: 'S.submit-buttons',
+      message: `[S] iter1791 comment-thread title 件数が ${commentTitleCount} (期待 >= 5 含む post)`,
+    })
+  }
+  const quickAdd = read(here, `${root}/src/components/workspace/quick-add.tsx`)
+  if (!quickAdd.includes('`作成 — 「${preview.title}」を作成 (Enter でも可)`')) {
+    findings.push({
+      level: 'error',
+      source: 'S.submit-buttons',
+      message: '[S] iter1791 quick-add-submit default path text が消えている',
+    })
+  }
+  const quickAddTitleCount = (quickAdd.match(/\btitle=(\{|")/g) ?? []).length
+  if (quickAddTitleCount < 2) {
+    findings.push({
+      level: 'error',
+      source: 'S.submit-buttons',
+      message: `[S] iter1791 quick-add title 件数が ${quickAddTitleCount} (期待 >= 2: preview + submit)`,
+    })
+  }
+
   // ========= N. logout button title sweep (iter1781) =========
   // homePage は C 軸で既に読込済 (line 277)
   if (!homePage.includes('title="ログアウト — ログイン画面に戻る"')) {
