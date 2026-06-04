@@ -56,6 +56,7 @@ import {
   formatToneCountsJa,
   groupItemsByTone,
   pickTopItemsByTone,
+  someItemHasMinTone,
 } from '@/lib/ui/chip-tone'
 
 import {
@@ -556,13 +557,14 @@ export function pickConcerningSignals(signals: AnalyticsSignals): AgentBriefSign
  * UI / Slack notifier の「警戒セクション render 判定」 で `if (length > 0)` 比較より
  * semantic 明確 (= 「警戒があるか」 が読み手に直接伝わる)。
  */
-// iter1750 refactor: 手書き `.some(tone === warn/danger/urgent)` を
-// `pickConcerningSignals(signals).length > 0` 経由に統一。tone 集合定義の二重持ちを排除、
-// filterSignalsByMinTone (iter1699 primitive) → pickConcerningSignals (iter1744) →
-// 本 helper の単一委譲 chain で「警戒 cluster」 semantic を 1 module に集約。
-// invariant test (iter1747 累計 113 件 PASS) が等価性を継続 gate。
+// iter1760 refactor: iter1750 で着地した `pickConcerningSignals(...).length > 0` 委譲 chain を、
+// iter1759 で chip-tone primitive に追加した `someItemHasMinTone` (= short-circuit boolean)
+// 経由に切替。filter 配列 build を回避 (= 最初の警戒 match で early return)、warm path の
+// hot signal (= 23 軸中の警戒 1 件目で打切り) で構造的 perf 改善 + semantic「any 警戒あり」
+// を 1 関数呼び出しで明示。invariant test (iter1747 has === pick.length>0 / iter1758
+// pickConcerning === filterMinTone(s,'warn')) で意味的等価性を gate 継続。
 export function hasConcerningSignals(signals: AnalyticsSignals): boolean {
-  return pickConcerningSignals(signals).length > 0
+  return someItemHasMinTone(analyticsSignalsToArray(signals), (s) => s.tone, 'warn')
 }
 
 /**
