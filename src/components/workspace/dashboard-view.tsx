@@ -1492,7 +1492,11 @@ export function DashboardView({ workspaceId }: Props) {
                         // prefix-matching「click {title}」 match 不可。iter1093-1148 sweep
                         // convention に揃え visible title 冒頭固定 + em-dash 区切で
                         // descriptive 末尾保持 (MUST tag は文脈情報として末尾)。
+                        // iter1747: truncate で長 title 切れ + aria-label は browser tooltip
+                        // にならず sighted は hover で全 title 見れず。title 付与で
+                        // dashboard MUST list 全 row hover disclosure (iter1720-1746 sweep)。
                         aria-label={`${item.title} — MUST item を編集`}
+                        title={item.title}
                       >
                         <span aria-hidden="true">{item.title}</span>
                       </button>
