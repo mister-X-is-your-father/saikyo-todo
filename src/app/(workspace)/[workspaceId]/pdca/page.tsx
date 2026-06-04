@@ -41,6 +41,8 @@ export default async function PdcaPage({ params }: PageProps) {
       tabIndex={-1}
       aria-label="PDCA — Plan / Do / Check / Act + Lead time"
       className="container mx-auto max-w-5xl space-y-6 p-4 focus-visible:outline-none md:p-6"
+      /* iter2075: 4 landmark family の 3 個目。 */
+      title="PDCA — Plan / Do / Check / Act + Lead time"
     >
       <WorkspaceHeader
         title="PDCA"

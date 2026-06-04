@@ -41,6 +41,8 @@ export default async function GoalsPage({ params }: PageProps) {
       tabIndex={-1}
       aria-label="OKR / Goals — Objective + Key Results"
       className="container mx-auto max-w-5xl space-y-6 p-4 focus-visible:outline-none md:p-6"
+      /* iter2075: 4 landmark family の 2 個目。 */
+      title="OKR / Goals — Objective + Key Results"
     >
       <WorkspaceHeader
         title="OKR / Goals"

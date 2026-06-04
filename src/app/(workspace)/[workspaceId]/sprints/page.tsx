@@ -41,6 +41,9 @@ export default async function SprintsPage({ params }: PageProps) {
       tabIndex={-1}
       aria-label="Sprint — 計画 → 稼働 → 完了"
       className="container mx-auto max-w-5xl space-y-6 p-4 focus-visible:outline-none md:p-6"
+      /* iter2075: sub-page main landmark hover で page 用途 disclose、workspace-main
+         iter1965 と同 landmark hover summary pattern (4 landmark family の 1 個目)。 */
+      title="Sprint — 計画 → 稼働 → 完了"
     >
       <WorkspaceHeader
         title="Sprint"
