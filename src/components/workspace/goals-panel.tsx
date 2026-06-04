@@ -439,6 +439,10 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
               // goal-toggle にも展開。visible {title} を冒頭固定 + em-dash 区切で
               // descriptive 末尾 (KR 一覧開閉 hint) 保持。
               aria-label={`${goal.title} — Goal「${goal.title}」の KR ${open ? '一覧を閉じる' : '一覧を開く'}`}
+              // iter1817: icon-only Chevron で visible text 無、aria-label は browser tooltip
+              // にならず sighted は hover で KR 開閉 context 即把握できなかった。iter1813 wf-actions /
+              // iter1815 src-actions と同 pattern を goal-toggle にも展開。
+              title={`${goal.title} — Goal「${goal.title}」の KR ${open ? '一覧を閉じる' : '一覧を開く'}`}
               data-testid={`goal-toggle-${goal.id}`}
             >
               {open ? (
