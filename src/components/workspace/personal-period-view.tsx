@@ -174,6 +174,16 @@ export function PersonalPeriodView({ workspaceId, items, period }: Props) {
                   : `${periodLabelJa(period)}ゴール (現在 ${draft.length} / 2000 文字、Cmd/Ctrl+Enter で保存)`
             }
             data-testid={`period-goal-textarea-${period}`}
+            /* iter1967: state-dependent aria-label (空 / 上限近接 / 通常) は SR のみ伝達、
+               title で sighted hover disclose (teDate iter1955 / teCategory iter1957 /
+               picker-search iter1961 と同 state-dependent input pattern)。 */
+            title={
+              draft.length === 0
+                ? `${periodLabelJa(period)}ゴール (任意、最大 2000 文字、この${periodLabelJa(period)}で達成したいこと、Cmd/Ctrl+Enter で保存)`
+                : draft.length > 1900
+                  ? `${periodLabelJa(period)}ゴール (現在 ${draft.length} / 2000 文字、上限近接、Cmd/Ctrl+Enter で保存)`
+                  : `${periodLabelJa(period)}ゴール (現在 ${draft.length} / 2000 文字、Cmd/Ctrl+Enter で保存)`
+            }
           />
           <div className="flex justify-end">
             <Button
