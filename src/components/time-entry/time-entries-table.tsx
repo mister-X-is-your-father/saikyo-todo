@@ -65,6 +65,9 @@ function SyncBadge({ status }: { status: TimeEntry['syncStatus'] }) {
       role="img"
       /* iter1701: 同 file 同 sweep。 */
       aria-label="pending — 外部同期 未実行"
+      /* iter1913: synced (iter1701) / failed (iter1701) は title 付きだが pending のみ
+         sweep からこぼれていた。3 badge symmetry を sighted hover で disclose 統一。 */
+      title="pending — 外部同期 未実行"
       data-testid="sync-badge-pending"
     >
       <span aria-hidden="true">pending</span>
