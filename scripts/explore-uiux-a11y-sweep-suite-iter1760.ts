@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= EJ. sprints-panel operations group title sweep (iter2033) =========
+  const spEJ = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (!spEJ.includes('iter2033')) {
+    findings.push({
+      level: 'error',
+      source: 'EJ.sprint-operations-group',
+      message: '[EJ] iter2033 sprints-panel operations group title が消えている',
+    })
+  }
+
   // ========= EI. workflows-panel operations group title sweep (iter2031) =========
   const wfpEI = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
   if (!wfpEI.includes('iter2031')) {
