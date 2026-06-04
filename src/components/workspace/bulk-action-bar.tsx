@@ -183,6 +183,11 @@ export function BulkCheckbox({ itemId, itemTitle }: { itemId: string; itemTitle?
     <input
       type="checkbox"
       aria-label={label}
+      /* iter2183: BulkCheckbox の aria-label "action — 「itemTitle」を action" は browser
+         tooltip にならず sighted は hover で itemTitle + action context disclose 不可。
+         taskchute-timeline iter2181 / taskchute-ticker iter2179 と同 title=aria-label
+         sync pattern。 */
+      title={label}
       checked={checked}
       onChange={() => toggle(itemId)}
       onClick={(e) => e.stopPropagation()}
