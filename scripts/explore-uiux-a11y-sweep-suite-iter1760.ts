@@ -744,6 +744,20 @@ async function main() {
     })
   }
 
+  // ========= AM. archive-restore title sweep (iter1831) =========
+  const archivePanel = read(here, `${root}/src/components/workspace/archived-items-panel.tsx`)
+  if (
+    !archivePanel.includes(
+      '`復元 — 「${item.title}」を復元 (${fmt(item.archivedAt)} にアーカイブ)`',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'AM.archive-restore',
+      message: '[AM] iter1831 archive-restore default path text が消えている',
+    })
+  }
+
   // ========= AL. subtask-drag title sweep (iter1829) =========
   const subtasksPanel = read(here, `${root}/src/components/workspace/subtasks-panel.tsx`)
   if (!subtasksPanel.includes('title={`${item.title} — ドラッグで並び替え`}')) {
