@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2272 1/1 test a11y-sweep-suite に iter2271 start-timer (idle) full sync entry 追加] 検査軸 259 個 (新 IZ 軸)、計約 377 invariant check に拡張、title-aria divergence (旧 idle 通常 path で title=undefined) 修正 (MCP path A 経由発見)、I 軸 prefix 終端 (IZ) milestone。
+- ✅ [playwright-iter2271 1/1] start-timer-button (idle 通常 path): 旧 title が otherActive 時のみ fullHint で、normal idle で title=undefined → sighted hover で何も出ず。aria-label の accessibleLabel ("${visibleLabel} — ${fullHint}") を両 path とも title でも同 sync (path B codify scripts/explore-uiux-start-timer-title-iter2271.ts)。**MCP path A で ItemEditDialog 内 start-timer 探索中に発見**、iter1949 active-timer / iter2107 redecompose と同 title-aria full sync pattern。
 - ✅ [playwright-iter2270 1/1 test a11y-sweep-suite に iter2269 QuickAdd preview parent entry 追加] 検査軸 258 個 (新 IY 軸)、計約 376 invariant check に拡張、live region 系 aria-label の title pair 補完 (MCP path A 経由発見)、iter 2270 milestone 突破。
 - ✅ [playwright-iter2269 1/1] QuickAdd preview parent role="status": aria-label "解析結果 — \${previewSummary}" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-quickadd-preview-title-iter2269.ts)。**MCP path A で today view で test item create 直後の preview region で発見**、live region 系 aria-label の title pair 補完。
 - ✅ [playwright-iter2268 1/1 test a11y-sweep-suite に iter2267 参加 Workspace 一覧 entry 追加] 検査軸 257 個 (新 IX 軸)、計約 375 invariant check に拡張、5 entity 一覧 ul family 完成 (MCP path A 経由発見)、375 check milestone 突破。
