@@ -766,6 +766,27 @@ async function main() {
     })
   }
 
+  // ========= JO. pickers trigger empty path title sweep (iter2301) =========
+  const apJO = read(here, `${root}/src/components/workspace/assignee-picker.tsx`)
+  if (
+    !apJO.includes('iter2301') ||
+    !apJO.includes("'未アサイン — アサインを選択 (現在未アサイン)'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'JO.assignee-picker-empty-title',
+      message: '[JO] iter2301 assignee-picker trigger empty title が消えている',
+    })
+  }
+  const tpJO = read(here, `${root}/src/components/workspace/tag-picker.tsx`)
+  if (!tpJO.includes('iter2301') || !tpJO.includes("'タグなし — タグを選択 (現在なし)'")) {
+    findings.push({
+      level: 'error',
+      source: 'JO.tag-picker-empty-title',
+      message: '[JO] iter2301 tag-picker trigger empty title が消えている',
+    })
+  }
+
   // ========= JN. editStart / editDue date input title sweep (iter2299) =========
   const edJN = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
   if (!edJN.includes('iter2299')) {
