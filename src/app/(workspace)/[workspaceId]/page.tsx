@@ -51,6 +51,9 @@ export default async function WorkspacePage({ params }: PageProps) {
       tabIndex={-1}
       aria-label="Workspace dashboard — Today / Inbox / Kanban / Backlog / Gantt / Dashboard"
       className="container mx-auto max-w-5xl space-y-6 p-4 focus-visible:outline-none md:p-6"
+      /* iter1965: main landmark に title を付与し sighted hover で main view 構成 disclose
+         (workspace nav iter1963 と pair、landmark family の hover summary 完備)。 */
+      title="Workspace dashboard — Today / Inbox / Kanban / Backlog / Gantt / Dashboard"
     >
       <WorkspaceHeader
         title={displayName}
