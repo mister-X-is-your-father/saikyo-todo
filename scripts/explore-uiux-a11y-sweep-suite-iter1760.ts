@@ -762,6 +762,19 @@ async function main() {
     })
   }
 
+  // ========= GX. PDCA Cycle progressbar title sweep (iter2165) =========
+  const ccGX = read(here, `${root}/src/components/pdca/cycle-check-stats-card.tsx`)
+  if (
+    !ccGX.includes('iter2165') ||
+    !ccGX.includes('title={`PDCA Cycle 完了率 ${stats.completionRate}% — ${severityLabelJa(sev)}`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GX.pdca-progressbar-title',
+      message: '[GX] iter2165 PDCA Cycle progressbar title 付与 が消えている',
+    })
+  }
+
   // ========= GW. retro-comparison group title sweep (iter2163) =========
   const srGW = read(here, `${root}/src/components/sprint/sprint-retro-widget.tsx`)
   if (
