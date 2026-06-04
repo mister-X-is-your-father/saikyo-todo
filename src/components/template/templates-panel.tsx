@@ -226,6 +226,14 @@ export function TemplatesPanel({ workspaceId }: Props) {
                     ? '作成 — Template を作成中…'
                     : '作成 — Template を新規作成 (Cmd/Ctrl+Enter でも可)'
               }
+              // iter1811: iter1809 sprint/goal create と同 pattern を Template/Workflow create にも展開。
+              title={
+                !name.trim()
+                  ? '作成 — Template を作成するには名前を入力してください'
+                  : createMut.isPending
+                    ? '作成 — Template を作成中…'
+                    : '作成 — Template を新規作成 (Cmd/Ctrl+Enter でも可)'
+              }
             >
               <span aria-hidden="true">作成</span>
             </Button>

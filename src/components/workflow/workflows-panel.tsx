@@ -190,6 +190,14 @@ export function WorkflowsPanel({ workspaceId }: Props) {
                       ? '作成中… — Workflow を作成中'
                       : '作成 — Workflow を新規作成 (Cmd/Ctrl+Enter でも可)'
                 }
+                // iter1811: iter1809 sprint/goal / template と pair で creation 5 entity 全 hover disclosure 完備。
+                title={
+                  !name.trim()
+                    ? '作成 — Workflow を作成するには名前を入力してください'
+                    : create.isPending
+                      ? '作成中… — Workflow を作成中'
+                      : '作成 — Workflow を新規作成 (Cmd/Ctrl+Enter でも可)'
+                }
               >
                 <span aria-hidden="true">{create.isPending ? '作成中…' : '作成'}</span>
               </Button>
