@@ -144,6 +144,10 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
            で不可 (substring 一致のみ)。iter1553-1568 status/role/health/傾向/summary chip family と
            同 pattern、visible 冒頭固定 + em-dash 区切。 */
         aria-label={`${readinessSummary} — 依存サマリ (${readinessVisual.toneLabel})`}
+        /* iter2177: dep-readiness-chip の aria-label は browser tooltip にならず sighted は
+           hover で 依存サマリ tone label disclose 不可。sync-error iter2175 / pdca-daily-bars
+           iter2173 と同 title=aria-label sync pattern。 */
+        title={`${readinessSummary} — 依存サマリ (${readinessVisual.toneLabel})`}
         data-testid="dep-readiness-chip"
         data-blocked={readiness.isBlocked}
         data-tone={readinessVisual.tone}
