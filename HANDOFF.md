@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1937 1/1 mode-D items-board filter-must checkbox に title 付与] checkbox visible label は隣 span "MUST のみ" のみで現在 state + action context 不明、aria-label と同 text を title に付与し sighted hover で active/inactive 状態 + 操作意図 disclose。
 - ✅ [playwright-iter1936 1/1 test a11y-sweep-suite に iter1935 KR progressbar entry 追加] 検査軸 91 個 (新 CM 軸)、計約 187 invariant check に拡張 (3 progressbar family 完備)。
 - ✅ [playwright-iter1935 1/1 mode-D goals-panel KR progressbar に title 付与] 3 progressbar family (Sprint iter1931 / Goal iter1933 / KR iter1935) すべて pair 完備、sighted hover で KR title context disclose。
 - ✅ [playwright-iter1934 1/1 test a11y-sweep-suite に iter1933 goal progressbar entry 追加] 検査軸 90 個 (新 CL 軸)、計約 186 invariant check に拡張。
