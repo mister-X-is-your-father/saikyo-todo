@@ -740,6 +740,35 @@ async function main() {
     })
   }
 
+  // ========= GA. item-edit-clear-baseline + save-as-template title sweep (iter2119) =========
+  const iedGA = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
+  const iter2119CountGA = (iedGA.match(/iter2119/g) ?? []).length
+  if (iter2119CountGA < 2) {
+    findings.push({
+      level: 'error',
+      source: 'GA.item-edit-clear-baseline-template-title',
+      message: `[GA] iter2119 marker 不足 (count=${iter2119CountGA}、clear-baseline + save-as-template 2 個必要)`,
+    })
+  }
+  if (/^\s+title="baseline 列を NULL に戻す"$/m.test(iedGA)) {
+    findings.push({
+      level: 'error',
+      source: 'GA.item-edit-clear-baseline-template-title',
+      message: '[GA] iter2119 item-edit-clear-baseline 旧 静的 title が残っている',
+    })
+  }
+  if (
+    /^\s+title="この Item と全ての子孫 \(subtask\) を Template として保存 \(再利用可\)"$/m.test(
+      iedGA,
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GA.item-edit-clear-baseline-template-title',
+      message: '[GA] iter2119 item-edit-save-as-template 旧 静的 title が残っている',
+    })
+  }
+
   // ========= FZ. gantt-summary 3 chip title sweep (iter2117) =========
   const gvFZ = read(here, `${root}/src/components/workspace/gantt-view.tsx`)
   const iter2117CountFZ = (gvFZ.match(/iter2117/g) ?? []).length
