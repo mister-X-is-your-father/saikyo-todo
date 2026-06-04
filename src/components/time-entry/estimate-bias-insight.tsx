@@ -150,6 +150,10 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
                control prefix-matching「click 過大」 が strict prefix-match で不可 (substring 一致のみ)。
                iter1553-1561 status/role/health Badge family と同 pattern、visible 冒頭固定 + em-dash 区切。 */
             aria-label={`${label} — 傾向`}
+            /* iter1915: visible は label のみで「傾向」 context が無い、
+               sighted hover で disclose (iter1901 activity-hint / iter1899 import-status と同
+               status chip family pattern)。 */
+            title={`${label} — 傾向`}
           >
             <span aria-hidden="true">{label}</span>
           </span>
