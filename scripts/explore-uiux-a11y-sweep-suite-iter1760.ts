@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= EL. comment-thread edit operations group title sweep (iter2037) =========
+  const ctEL = read(here, `${root}/src/components/workspace/comment-thread.tsx`)
+  if (!ctEL.includes('iter2037')) {
+    findings.push({
+      level: 'error',
+      source: 'EL.comment-edit-group',
+      message: '[EL] iter2037 comment-thread edit operations group title が消えている',
+    })
+  }
+
   // ========= EK. goals-panel operations group title sweep (iter2035) =========
   const gpEK = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
   if (!gpEK.includes('iter2035')) {
