@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= DD. comment-thread input title sweep (iter1969) =========
+  const ctDD = read(here, `${root}/src/components/workspace/comment-thread.tsx`)
+  if (!ctDD.includes('iter1969')) {
+    findings.push({
+      level: 'error',
+      source: 'DD.comment-input',
+      message: '[DD] iter1969 comment-thread input title が消えている',
+    })
+  }
+
   // ========= DC. personal-period goal textarea title sweep (iter1967) =========
   const periodDC = read(here, `${root}/src/components/workspace/personal-period-view.tsx`)
   if (!periodDC.includes('iter1967') || !periodDC.includes('ゴール (任意、最大 2000 文字')) {
