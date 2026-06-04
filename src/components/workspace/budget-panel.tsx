@@ -217,6 +217,12 @@ export function BudgetPanel({ workspaceId }: Props) {
               // substring 不一致 → WCAG 2.5.3 (Label in Name) 違反。visible-prefix
               // を先頭固定 (iter1068/1071-1075 sweep)。
               aria-label="上限を変更 — AI 月次コスト上限と警告閾値の編集モードを開く"
+              /* iter2123: budget-edit-btn は aria-label に context (AI 月次コスト上限と
+                 警告閾値の編集モードを開く) を持つが title 無で sighted は hover で
+                 visible "上限を変更" を超えた context が disclose されない。
+                 item-edit-set-baseline iter2121 / clear-baseline iter2119 と同
+                 title=aria-label sync pattern。 */
+              title="上限を変更 — AI 月次コスト上限と警告閾値の編集モードを開く"
             >
               <span aria-hidden="true">上限を変更</span>
             </Button>
