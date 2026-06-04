@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2062 1/1 test a11y-sweep-suite に iter2061 mock-login-form entry 追加] 検査軸 154 個 (新 EX 軸)、計約 250 invariant check 突破。
 - ✅ [playwright-iter2061 1/1 mode-D mock-timesheet ログイン form に title 付与] 7 form family の続編 (3 create + 3 edit + mock-login)。
 - ✅ [playwright-iter2060 1/1 test a11y-sweep-suite に iter2059 edit-forms entry 追加] 検査軸 153 個 (新 EW 軸)、計約 249 invariant check、iter2060 突破。
 - ✅ [playwright-iter2059 1/1 mode-D 3 edit form (Sprint デフォルト/期間編集/Budget 上限) に title 付与] 6 form family 完成 (3 create + 3 edit)。
