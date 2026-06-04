@@ -984,6 +984,13 @@ function SprintCard({
                     ? `中止 — Sprint「${sprint.name}」を中止中…`
                     : `中止 — Sprint「${sprint.name}」を中止`
                 }
+                /* iter2087: sprint status transition button family 5 個目 (cancel)、
+                   sprint-activate iter2083 / sprint-complete + sprint-replan iter2085 と pair。 */
+                title={
+                  changing
+                    ? `中止 — Sprint「${sprint.name}」を中止中…`
+                    : `中止 — Sprint「${sprint.name}」を中止`
+                }
               >
                 <X className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                 <span aria-hidden="true">中止</span>
