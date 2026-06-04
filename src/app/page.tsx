@@ -27,7 +27,13 @@ export default async function HomePage() {
       tabIndex={-1}
       className="container mx-auto max-w-3xl space-y-8 p-6 focus-visible:outline-none"
     >
-      <header className="flex items-center justify-between" aria-label="最強TODO ホーム">
+      <header
+        className="flex items-center justify-between"
+        aria-label="最強TODO ホーム"
+        /* iter2073: ホーム header landmark の hover で site context disclose (workspace nav
+           iter1963 / main iter1965 と同 landmark hover summary pattern)。 */
+        title="最強TODO ホーム"
+      >
         <h1 className="text-3xl font-bold">最強TODO</h1>
         <form
           aria-label="ログアウト"
