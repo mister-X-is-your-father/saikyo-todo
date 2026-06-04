@@ -105,6 +105,17 @@ export function CommentThread({ itemId, workspaceId, currentUserId }: Props) {
                   ? `コメント本文 (現在 ${body.length} / 10000 文字、上限近接、Cmd/Ctrl+Enter で投稿)`
                   : `コメント本文 (現在 ${body.length} / 10000 文字、Cmd/Ctrl+Enter で投稿)`
           }
+          /* iter1969: state-dependent aria-label (空 / 空白のみ / 上限近接 / 通常) は SR のみ伝達、
+             title で sighted hover disclose (period-goal iter1967 と同 textarea pattern)。 */
+          title={
+            body.length === 0
+              ? 'コメント本文 (必須、最大 10000 文字、@user で言及・通知、Cmd/Ctrl+Enter で投稿)'
+              : body.trim() === ''
+                ? `コメント本文 (現在 ${body.length} / 10000 文字、空白のみは不正)`
+                : body.length > 9500
+                  ? `コメント本文 (現在 ${body.length} / 10000 文字、上限近接、Cmd/Ctrl+Enter で投稿)`
+                  : `コメント本文 (現在 ${body.length} / 10000 文字、Cmd/Ctrl+Enter で投稿)`
+          }
           maxLength={10_000}
           required
           aria-required="true"
