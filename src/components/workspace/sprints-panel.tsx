@@ -271,6 +271,16 @@ export function SprintsPanel({ workspaceId }: Props) {
                         : `開始 — Sprint 開始日 (現在: ${startDate})`
                   }
                   className="min-h-11"
+                  /* iter2025: sprint-edit-start/end iter2017/2019 と pair、sprint-create
+                     form の sprint-start も state-dependent aria-label の sighted hover
+                     disclose (sprints-panel create + edit form 全 date input sweep 完備)。 */
+                  title={
+                    startDate === ''
+                      ? '開始 — Sprint 開始日 (必須、終了日以前)'
+                      : isInvalidDateRange(startDate, endDate)
+                        ? `開始 — Sprint 開始日 (現在: ${startDate}、終了日 ${endDate} より後で不正)`
+                        : `開始 — Sprint 開始日 (現在: ${startDate})`
+                  }
                 />
               </div>
               <div className="space-y-1">
