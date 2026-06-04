@@ -203,6 +203,10 @@ function CommentItem({
               className="bg-primary/10 text-primary ml-2 rounded px-1.5 py-0.5 text-[10px]"
               role="img"
               aria-label="AI Agent による投稿"
+              // iter1845: visible "AI" 略語のみで sighted は hover で full label
+              // "AI Agent による投稿" 即把握できなかった。iter1841 StatusBadge / iter1843 MustBadge
+              // と同 pattern で role="img" badge に title 付与。
+              title="AI Agent による投稿"
             >
               <span aria-hidden="true">AI</span>
             </span>
