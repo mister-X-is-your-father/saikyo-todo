@@ -760,6 +760,19 @@ async function main() {
     })
   }
 
+  // ========= GU. Template 子 Item 一覧 ul title sweep (iter2159) =========
+  const tiGU = read(here, `${root}/src/components/template/template-items-editor.tsx`)
+  if (
+    !tiGU.includes('iter2159') ||
+    !tiGU.includes('title={`Template 子 Item 一覧 — ${items.data!.length} 件`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GU.template-items-list-title',
+      message: '[GU] iter2159 Template 子 Item 一覧 ul title 付与 が消えている',
+    })
+  }
+
   // ========= GT. backlog-title button title sweep (iter2157) =========
   const bvGT = read(here, `${root}/src/components/workspace/backlog-view.tsx`)
   if (!bvGT.includes('iter2157') || !bvGT.includes('title={`${String(getValue())} — 編集`}')) {
