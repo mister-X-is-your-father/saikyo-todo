@@ -1486,6 +1486,24 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
     }
   })
 
+  it('iter1758: pickConcerningSignals === filterSignalsByMinTone(signals, "warn") 等価 invariant', () => {
+    // iter1750 refactor で pickConcerningSignals → filterSignalsByMinTone(s, 'warn') 委譲
+    // 統一化、両者の出力 (= 配列要素 + 順序) が完全一致する invariant を gate。
+    // 委譲 chain が将来 再独立 (= 別 logic 実装) した時の二重実装乖離を検出。
+    const items: VelocityFields[] = [{ doneAt: TODAY }]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const cases = [
+      composeAnalyticsSignals({}),
+      composeAnalyticsSignals({ doneToday: 2 }),
+      composeAnalyticsSignals({ weeklyReviewDue: 'overdue' }),
+      composeAnalyticsSignals({ doneToday: 2, velocity, weeklyReviewDue: 'overdue' }),
+      composeAnalyticsSignals({ weeklyReviewDue: 'never-reviewed' }),
+    ]
+    for (const s of cases) {
+      expect(pickConcerningSignals(s)).toEqual(filterSignalsByMinTone(s, 'warn'))
+    }
+  })
+
   it('iter1748: cluster disjoint invariant — pickAchievement ∩ pickConcerning = ∅', () => {
     // 達成感 cluster (positive polarity = success/info/idle) と 警戒 cluster
     // (warn/danger/urgent) は tone 設計上 互いに disjoint である invariant。
