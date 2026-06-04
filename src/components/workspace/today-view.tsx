@@ -320,7 +320,11 @@ export function TodayView({
                           // にならず sighted は hover で全文見れなかった。title 付与で
                           // sighted hover → 全 title disclose (iter1720-1736 sweep を today にも)。
                           aria-label={`${it.title} — 編集`}
-                          title={it.title}
+                          /* iter2153: today-view item button title は it.title のみで
+                             aria-label "${it.title} — 編集" の "編集" context が sighted
+                             hover で disclose されない。personal-period iter2151 /
+                             dashboard-must-edit iter2145 と同 title=aria-label sync pattern。 */
+                          title={`${it.title} — 編集`}
                         >
                           <span aria-hidden="true">{it.title}</span>
                         </button>
