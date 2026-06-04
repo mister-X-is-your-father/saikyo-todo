@@ -244,6 +244,16 @@ export function GoalsPanel({ workspaceId }: Props) {
                   // Label "終了" を中位置 "Goal **終了**日 (...)" に持ち voice control
                   // prefix-matching「click 終了」 match 不可 (substring 一致のみ)。
                   // goal-start と同 sweep を goal-end にも展開。
+                  /* iter2023: goal-start iter2021 と pair、goal-end も state-dependent
+                     aria-label の sighted hover disclose、goals-panel create form 2 date input
+                     sweep 完備。 */
+                  title={
+                    endDate === ''
+                      ? '終了 — Goal 終了日 (必須、開始日以降)'
+                      : isInvalidDateRange(startDate, endDate)
+                        ? `終了 — Goal 終了日 (現在: ${endDate}、開始日 ${startDate} より前で不正)`
+                        : `終了 — Goal 終了日 (現在: ${endDate})`
+                  }
                   aria-label={
                     endDate === ''
                       ? '終了 — Goal 終了日 (必須、開始日以降)'
