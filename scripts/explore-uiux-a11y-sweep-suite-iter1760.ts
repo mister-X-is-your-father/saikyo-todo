@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BI. today-view dueTime chip title sweep (iter1875) =========
+  const todayViewBI = read(here, `${root}/src/components/workspace/today-view.tsx`)
+  if (!todayViewBI.includes('title={`${it.dueTime.slice(0, 5)} — 期限時刻`}')) {
+    findings.push({
+      level: 'error',
+      source: 'BI.today-due-time',
+      message: '[BI] iter1875 today-view dueTime chip title が消えている',
+    })
+  }
+
   // ========= BH. backlog DragHandle title sweep (iter1873) =========
   // (backlog-view 全 polish 検査をここに集約)
   const backlogView2 = read(here, `${root}/src/components/workspace/backlog-view.tsx`)
