@@ -95,6 +95,11 @@ export function ScheduleItemPicker({ items, onPick, onCancel, allowInterrupt }: 
                   //「click {title}」 match 不可。iter1093-1146 sweep convention に揃え
                   // visible title 冒頭固定 + em-dash 区切で descriptive 残す。
                   aria-label={`${it.title} — item を選択${it.isMust ? ' (MUST)' : ''}`}
+                  // iter1771: inner span は truncate + aria-hidden で長 title 切れ、aria-label
+                  // は browser tooltip にならず sighted は hover で全 title 即把握できず。
+                  // title 付与で全 title disclose、iter1740 workflows-panel CardTitle / iter1769
+                  // workflows description と同 truncate + title pattern を picker button にも展開。
+                  title={it.title}
                 >
                   <span className="truncate" aria-hidden="true">
                     {it.title}
