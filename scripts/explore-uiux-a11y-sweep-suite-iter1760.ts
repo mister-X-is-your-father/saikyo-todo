@@ -744,6 +744,16 @@ async function main() {
     })
   }
 
+  // ========= BQ. pdca distribution bar title sweep (iter1891) =========
+  const pdcaBQ = read(here, `${root}/src/components/workspace/pdca-panel.tsx`)
+  if (!pdcaBQ.includes('iter1891')) {
+    findings.push({
+      level: 'error',
+      source: 'BQ.pdca-distribution',
+      message: '[BQ] iter1891 pdca distribution bar title が消えている',
+    })
+  }
+
   // ========= BP. quick-add calibrated chip title sweep (iter1889) =========
   const quickAddBP = read(here, `${root}/src/components/workspace/quick-add.tsx`)
   if (!quickAddBP.includes('iter1889') || !quickAddBP.includes('校正後')) {
