@@ -30,7 +30,11 @@ export function WorkspaceHeader({ title, role, subtitle, pageActions, utility }:
     >
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <h1 className="truncate text-2xl font-bold">{title}</h1>
+          {/* iter1749: 長 workspace title 切れ + h1 aria-label 無し → sighted hover で全 title
+              見れず。title 付与で hover disclose (iter1720-1748 sweep を workspace-header にも)。 */}
+          <h1 className="truncate text-2xl font-bold" title={title}>
+            {title}
+          </h1>
           {/* iter1051: shadcn Badge は `<span>` レンダリングで role 無し、aria-label の
               SR picked-up が browser/SR で divergence。`role="img"` で authoritative 化
               (iter1023 / 1049 / 1050 と同 pattern、shadcn Badge は ...props spread で
@@ -55,7 +59,11 @@ export function WorkspaceHeader({ title, role, subtitle, pageActions, utility }:
             なる divergence (visible 内容と aria-label semantic 不一致)。subtitle 構造は
             page 依存固定で「常に email」 ではないため固定 prefix 化が誤り。aria-label 撤回
             で SR は visible text を直接読む元 behavior に restore。 */}
-        <p className="text-muted-foreground mt-1 truncate text-xs">{subtitle}</p>
+        {/* iter1749: subtitle も truncate、長 email (`<context> · <email>` 形式) は切れる、
+            title で hover で全 subtitle disclose。 */}
+        <p className="text-muted-foreground mt-1 truncate text-xs" title={subtitle}>
+          {subtitle}
+        </p>
       </div>
       <div
         className="flex flex-wrap items-center gap-2"
