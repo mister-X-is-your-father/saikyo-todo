@@ -1595,6 +1595,29 @@ describe('formatAchievementSignalsLineJa (iter1725 — 達成感 cluster plain t
     }
   })
 
+  it('iter1766: pickHighestSeverityConcerningSignal tone invariant — 戻り値は常に warn/danger/urgent', () => {
+    // 警戒 cluster 限定 pick の戻り値が常に「警戒 tone (warn/danger/urgent)」 のみ
+    // (= success/info/idle は絶対に返らない) の invariant。
+    // pickConcerningSignals は警戒 tone subset を返すので tautological だが、
+    // future 改修で「警戒 cluster 定義に positive 軸が紛れる」 regression を test gate。
+    const items: VelocityFields[] = [{ doneAt: TODAY }]
+    const velocity = computeVelocity(items, {}, TODAY)
+    const cases = [
+      composeAnalyticsSignals({}),
+      composeAnalyticsSignals({ doneToday: 2 }),
+      composeAnalyticsSignals({ velocity }),
+      composeAnalyticsSignals({ doneToday: 2, velocity, weeklyReviewDue: 'overdue' }),
+      composeAnalyticsSignals({ weeklyReviewDue: 'overdue' }),
+      composeAnalyticsSignals({ weeklyReviewDue: 'never-reviewed' }),
+    ]
+    for (const s of cases) {
+      const sig = pickHighestSeverityConcerningSignal(s)
+      if (sig !== null) {
+        expect(['warn', 'danger', 'urgent']).toContain(sig.tone)
+      }
+    }
+  })
+
   it('iter1748: cluster disjoint invariant — pickAchievement ∩ pickConcerning = ∅', () => {
     // 達成感 cluster (positive polarity = success/info/idle) と 警戒 cluster
     // (warn/danger/urgent) は tone 設計上 互いに disjoint である invariant。
