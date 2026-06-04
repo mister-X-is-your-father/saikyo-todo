@@ -72,7 +72,14 @@ export default async function MockEntriesPage() {
               const submittedIso = new Date(e.submittedAt).toISOString()
               return (
                 <tr key={e.id} className="border-b align-top" data-testid={`mock-entry-${e.id}`}>
-                  <td className="py-2 font-mono text-xs">{e.id.slice(0, 8)}</td>
+                  {/* iter1721: 旧 <td> は ID column を data cell として扱うが、ID は各 row の
+                      unique row identifier。<th scope="row"> に変えると SR は他 column 読み上げ時
+                      にも row header (= ID) を context として announce、WCAG 1.3.1 (Info and
+                      Relationships) の正しい table structure になる。`font-normal` で <th> default
+                      bold を打ち消し既存 visual を維持。 */}
+                  <th scope="row" className="py-2 text-left font-mono text-xs font-normal">
+                    {e.id.slice(0, 8)}
+                  </th>
                   <td className="py-2">
                     <time dateTime={e.workDate}>{e.workDate}</time>
                   </td>
