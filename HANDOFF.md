@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2200 1/1 test a11y-sweep-suite に iter2199 focus-form-cta entry 追加] 検査軸 223 個 (新 HO 軸)、計約 340 invariant check に拡張、iter 2200 + 340 check milestone 突破。
+- ✅ [playwright-iter2199 1/1 mode-D FocusFormCta に title 付与し aria-label と sync] entityName + fieldName context hover disclose、StatCard iter2197 / Goal 一覧 iter2195 と pair。
 - ✅ [playwright-iter2198 1/1 test a11y-sweep-suite に iter2197 stat-card entry 追加] 検査軸 222 個 (新 HN 軸)、計約 339 invariant check に拡張。
 - ✅ [playwright-iter2197 1/1 mode-D StatCard role="group" に title 付与し aria-label と sync] integrated stat context hover disclose、Goal 一覧 iter2195 / Sprint 一覧 iter2193 と pair。
 - ✅ [playwright-iter2196 1/1 test a11y-sweep-suite に iter2195 goals-list entry 追加] 検査軸 221 個 (新 HM 軸)、計約 338 invariant check に拡張、一覧 ul family 4 entity 揃った (Sprint/Goal/Workflow/Source)。
