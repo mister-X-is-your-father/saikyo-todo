@@ -166,6 +166,9 @@ export function CalendarView({ workspaceId }: Props) {
           /* iter1588: 旧 aria-label paren convention `"カレンダー日付ナビゲーション (現在: X、前日 / 翌日 / 今日)"` は
              iter1093-1587 sweep の em-dash 区切と divergent。区切のみ '(現在:' → ' — 現在' に統一、closing ')' は削除。 */
           aria-label={`カレンダー日付ナビゲーション — 現在 ${format(date, 'yyyy年M月d日 (eee)')}、前日 / 翌日 / 今日`}
+          /* iter1959: group 全体に title を付与し sighted hover で現在日付 + navigation 構成
+             disclose (op-board iter1943 / inbox-region iter1945 と同 region/group summary pattern)。 */
+          title={`カレンダー日付ナビゲーション — 現在 ${format(date, 'yyyy年M月d日 (eee)')}、前日 / 翌日 / 今日`}
         >
           {/* iter1765: ChevronLeft icon-only button、aria-label は browser tooltip にならず
               sighted は hover で「前日」 と即把握できなかった。title 付与で同期 (iter1763
