@@ -766,6 +766,21 @@ async function main() {
     })
   }
 
+  // ========= IN. Gantt chart root container title sweep (iter2247) =========
+  const gvIN = read(here, `${root}/src/components/workspace/gantt-view.tsx`)
+  if (
+    !gvIN.includes('iter2247') ||
+    !gvIN.includes(
+      'title={`Gantt チャート — Item ${withDates.length} 件 × 期間 ${totalSpanDays} 日`}',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'IN.gantt-root-title',
+      message: '[IN] iter2247 Gantt chart root container title sync が消えている',
+    })
+  }
+
   // ========= IM. weekly-time-trend-chip title sweep (iter2245) =========
   const tibIM = read(here, `${root}/src/components/time-entry/top-items-by-time-chip.tsx`)
   if (!tibIM.includes('iter2245') || !tibIM.includes('title={summary.trendLine}')) {
