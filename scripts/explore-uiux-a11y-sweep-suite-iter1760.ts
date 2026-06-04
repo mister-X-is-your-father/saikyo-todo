@@ -762,6 +762,19 @@ async function main() {
     })
   }
 
+  // ========= GY. コメント一覧 ul title sweep (iter2167) =========
+  const ctGY = read(here, `${root}/src/components/workspace/comment-thread.tsx`)
+  if (
+    !ctGY.includes('iter2167') ||
+    !ctGY.includes('title={`コメント一覧 — ${comments!.length} 件`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GY.comment-list-title',
+      message: '[GY] iter2167 コメント一覧 ul title 付与 が消えている',
+    })
+  }
+
   // ========= GX. PDCA Cycle progressbar title sweep (iter2165) =========
   const ccGX = read(here, `${root}/src/components/pdca/cycle-check-stats-card.tsx`)
   if (
