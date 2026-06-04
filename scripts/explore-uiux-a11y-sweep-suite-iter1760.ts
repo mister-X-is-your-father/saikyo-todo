@@ -762,6 +762,19 @@ async function main() {
     })
   }
 
+  // ========= HF. taskchute ol timeline title sweep (iter2181) =========
+  const tcHF = read(here, `${root}/src/components/workspace/taskchute-view.tsx`)
+  if (
+    !tcHF.includes('iter2181') ||
+    !tcHF.includes('title={`今日の task を時刻昇順で並べた 1 列 timeline — ${ordered.length} 件`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HF.taskchute-timeline-title',
+      message: '[HF] iter2181 taskchute ol timeline title 同期 が消えている',
+    })
+  }
+
   // ========= HE. taskchute-ticker-summary title sweep (iter2179) =========
   const tcHE = read(here, `${root}/src/components/workspace/taskchute-view.tsx`)
   if (!tcHE.includes('iter2179') || !tcHE.includes('title={`合計 ${ticker.totalEstimateMin} 分')) {
