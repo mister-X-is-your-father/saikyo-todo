@@ -71,22 +71,25 @@ async function main(): Promise<void> {
   }
 
   // 4. sessionId SR contextualize (sr-only / aria-hidden / font-mono の 3 span)
-  if (!/<span className="sr-only">現在の session ID: <\/span>/.test(src)) {
+  //    iter1722: visible truncate + title 化で sr-only に full sessionId を入れ、
+  //    aria-hidden span 内に visible 用 nested font-mono span (8 char + ellipsis) を
+  //    持つ構造に変更。regex を新構造に追従。
+  if (!/<span className="sr-only">現在の session ID: \{sessionId\}<\/span>/.test(src)) {
     findings.push({
       level: 'warning',
-      message: `${target}: sessionId の sr-only label span が無い`,
+      message: `${target}: sessionId の sr-only label span (full sessionId 含む) が無い`,
     })
   }
-  if (!/<span aria-hidden="true">ログイン中: <\/span>/.test(src)) {
+  if (!/<span aria-hidden="true">[\s\S]*?ログイン中: [\s\S]*?<\/span>/.test(src)) {
     findings.push({
       level: 'warning',
       message: `${target}: sessionId の aria-hidden visual prefix span が無い`,
     })
   }
-  if (!/<span className="font-mono">\{sessionId\}<\/span>/.test(src)) {
+  if (!/<span className="font-mono">\{sessionId\.slice\(0, 8\)\}…<\/span>/.test(src)) {
     findings.push({
       level: 'warning',
-      message: `${target}: sessionId の font-mono span が無い`,
+      message: `${target}: sessionId の font-mono truncate span (iter1722 8 char + ellipsis) が無い`,
     })
   }
 

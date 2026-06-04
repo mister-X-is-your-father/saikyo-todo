@@ -17,10 +17,15 @@ export function MockTopNav({ sessionId }: { sessionId: string }) {
     <header className="flex items-center justify-between border-b pb-3">
       <div>
         <h1 className="text-xl font-bold">Mock Timesheet</h1>
-        <p className="text-muted-foreground text-xs">
-          <span className="sr-only">現在の session ID: </span>
-          <span aria-hidden="true">ログイン中: </span>
-          <span className="font-mono">{sessionId}</span>
+        {/* iter1722: 旧 visible は full UUID (例: "ログイン中: 8a3f4b6c-1234-5678-9abc-def012345678")
+            で sighted には長すぎて scan しにくい。SR は sr-only で full UUID を読むので情報量は
+            維持しつつ、visible を 8 char truncate + horizontal-ellipsis、`title` 属性で hover →
+            全 UUID 開示可能に。SR と sighted で情報量等価、visible は scan しやすく。 */}
+        <p className="text-muted-foreground text-xs" title={sessionId}>
+          <span className="sr-only">現在の session ID: {sessionId}</span>
+          <span aria-hidden="true">
+            ログイン中: <span className="font-mono">{sessionId.slice(0, 8)}…</span>
+          </span>
         </p>
       </div>
       <nav
