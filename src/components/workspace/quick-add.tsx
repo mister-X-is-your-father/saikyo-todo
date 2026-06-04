@@ -145,6 +145,14 @@ export function QuickAdd({ workspaceId }: { workspaceId: string }) {
               ? `クイック追加 — タスクをすばやく作成 (現在 ${text.length} / 500 文字、上限近接、Enter で確定)`
               : 'クイック追加 — タスクをすばやく作成 (Enter で確定、自然言語で日時・優先度・タグ・見積時間を指定可)'
           }
+          /* iter2039: state-dependent aria-label (上限近接 / 通常) を title で sighted hover
+             disclose、period-goal iter1967 / comment-input iter1969 と同 state-dependent
+             textarea/input pattern。 */
+          title={
+            text.length > 480
+              ? `クイック追加 — タスクをすばやく作成 (現在 ${text.length} / 500 文字、上限近接、Enter で確定)`
+              : 'クイック追加 — タスクをすばやく作成 (Enter で確定、自然言語で日時・優先度・タグ・見積時間を指定可)'
+          }
           /* iter1637: 旧 `aria-describedby="quick-add-preview quick-add-hint"` は
              quick-add-preview ID が `{preview && preview.title}` 条件下でのみ render される
              ため、空 input 時 (page load 直後) に `getElementById('quick-add-preview')` が
