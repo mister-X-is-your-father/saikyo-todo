@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= ET. team-capacity section title sweep (iter2053) =========
+  const tcET = read(here, `${root}/src/components/workspace/team-capacity-panel.tsx`)
+  if (!tcET.includes('title="チームメンバー余裕時間 一覧"')) {
+    findings.push({
+      level: 'error',
+      source: 'ET.team-cap-section',
+      message: '[ET] iter2053 team-capacity section title が消えている',
+    })
+  }
+
   // ========= ES. budget-panel progressbar title sweep (iter2051) =========
   const bpES = read(here, `${root}/src/components/workspace/budget-panel.tsx`)
   if (!bpES.includes('iter2051')) {
