@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter1897 1/1 mode-D integrations Pull count chip に title 付与] visible は f=N/c=N/u=N の略記、aria-label と同 text を title に付与し sighted hover で full word fetched/created/updated disclose。
 - ✅ [playwright-iter1896 1/1 test a11y-sweep-suite に iter1895 pdca Lead time entry 追加] 検査軸 71 個 (新 BS 軸)、計約 167 invariant check に拡張。
 - ✅ [playwright-iter1895 1/1 mode-D pdca Lead time stat grid に title 付与] 3 stat 並列表示は visible で個別読めるが integrated summary は読まれず、aria-label と同 text を title に付与し sighted hover で 1 行 summary disclose。
 - ✅ [playwright-iter1894 1/1 test a11y-sweep-suite に iter1893 weekly by-day entry 追加] 検査軸 70 個 (新 BR 軸)、計約 166 invariant check に拡張。
