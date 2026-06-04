@@ -762,6 +762,19 @@ async function main() {
     })
   }
 
+  // ========= HK. API 連携 source 一覧 ul title sweep (iter2191) =========
+  const ipHK = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
+  if (
+    !ipHK.includes('iter2191') ||
+    !ipHK.includes('title={`API 連携 source 一覧 — ${list.data!.length} 件`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'HK.sources-list-title',
+      message: '[HK] iter2191 API 連携 source 一覧 ul title 同期 が消えている',
+    })
+  }
+
   // ========= HJ. workflows ul list title sweep (iter2189) =========
   const wfpHJ = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
   if (
