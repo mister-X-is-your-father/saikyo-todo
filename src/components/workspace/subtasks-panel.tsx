@@ -251,7 +251,18 @@ function SubtaskTreeNode({
               ? `アウトデント — 「${item.title}」を移動中…`
               : `アウトデント — 「${item.title}」を 1 段アウトデント (Alt+←)`
         }
-        title="アウトデント (Alt+←)"
+        /* iter2113: subtask-outdent static title="アウトデント (Alt+←)" は
+           state-dependent aria-label (3-path: !canOutdent / pending / idle、item.title 含む)
+           と divergent → 3-path sync。dep-remove iter2111 / proposal-accept/reject
+           iter2109 と同 title-aria divergence 修正 pattern。item.title + state context
+           を sighted hover で disclose。 */
+        title={
+          !canOutdent
+            ? `アウトデント — 「${item.title}」は root のためアウトデント不可`
+            : movePending
+              ? `アウトデント — 「${item.title}」を移動中…`
+              : `アウトデント — 「${item.title}」を 1 段アウトデント (Alt+←)`
+        }
       >
         <ArrowLeftFromLine className="h-3.5 w-3.5" aria-hidden="true" />
       </button>
@@ -278,7 +289,18 @@ function SubtaskTreeNode({
               ? `インデント — 「${item.title}」を移動中…`
               : `インデント — 「${item.title}」を 1 段インデント (Alt+→)`
         }
-        title="インデント (Alt+→)"
+        /* iter2113: subtask-indent も outdent と pair で title-aria 4-path sync
+           (深さ超過 / 前 sibling 無 / pending / idle、item.title 含む)、icon-only
+           button で sighted hover で full context disclose。 */
+        title={
+          !canIndent
+            ? depth + 1 >= MAX_TREE_DEPTH
+              ? `インデント — 深さ ${MAX_TREE_DEPTH} を超えるためインデント不可`
+              : `インデント — 「${item.title}」の前に sibling が無いためインデント不可`
+            : movePending
+              ? `インデント — 「${item.title}」を移動中…`
+              : `インデント — 「${item.title}」を 1 段インデント (Alt+→)`
+        }
       >
         <ArrowRightFromLine className="h-3.5 w-3.5" aria-hidden="true" />
       </button>
