@@ -740,6 +740,16 @@ async function main() {
     })
   }
 
+  // ========= DY. item-edit-dialog tab-subtasks title sweep (iter2011) =========
+  const iedDY = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
+  if (!iedDY.includes('iter2011')) {
+    findings.push({
+      level: 'error',
+      source: 'DY.tab-subtasks',
+      message: '[DY] iter2011 item-edit-dialog tab-subtasks title が消えている',
+    })
+  }
+
   // ========= DX. item-edit-dialog tab-summary title sweep (iter2009) =========
   const iedDX = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
   if (!iedDX.includes('title="サマリタブ — この案件の進捗 / 依存 / 最終更新を一目で確認"')) {
