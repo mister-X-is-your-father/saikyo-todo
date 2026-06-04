@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2300 1/1 test a11y-sweep-suite に iter2299 editStart/editDue date input entry 追加] 検査軸 273 個 (新 JN 軸)、計約 391 invariant check に拡張、ItemEditDialog 基本 input 4 element 完成 (title / description / start / due) (MCP path A 経由発見)、iter 2300 milestone 突破。
+- ✅ [playwright-iter2299 1/1] editStart + editDue date input (ItemEditDialog 基本タブ): aria-label state-dependent 3-path (空 / 不正 / 通常) を sighted hover で disclose 不可 → 同 text の title を 2 date input 同時に付与し sync (path B codify scripts/explore-uiux-edit-start-due-date-title-iter2299.ts)。**MCP path A で ItemEditDialog 基本タブで発見**、editTitle iter2295 / editDescription iter2297 と同 input title pattern を date input にも展開、ItemEditDialog 基本 input 4 element 完成。
 - ✅ [playwright-iter2298 1/1 test a11y-sweep-suite に iter2297 editDescription textarea entry 追加] 検査軸 272 個 (新 JM 軸)、計約 390 invariant check に拡張、primary input 2 element (title + description) 完成、390 check milestone 突破 (MCP path A 経由発見)。
 - ✅ [playwright-iter2297 1/1] editDescription textarea (ItemEditDialog 基本タブ): aria-label state-dependent 3-path (空 / 上限近接 / 通常) を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-edit-description-textarea-title-iter2297.ts)。**MCP path A で ItemEditDialog 基本タブで発見**、editTitle iter2295 と pair の primary input 2 element 完成。
 - ✅ [playwright-iter2296 1/1 test a11y-sweep-suite に iter2295 editTitle input entry 追加] 検査軸 271 個 (新 JL 軸)、計約 389 invariant check に拡張、ItemEditDialog primary input title 補完 (MCP path A 経由発見)。
