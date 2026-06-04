@@ -350,6 +350,11 @@ function CommentItem({
               role="group"
               /* iter1584: paren convention を em-dash 区切に統一 (iter1093-1583 sweep)。 */
               aria-label={`コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」の操作 — 編集 / 削除、自分の投稿のみ`}
+              /* iter2133: comment ops group (編集 / 削除) の aria-label は browser tooltip に
+                 ならず sighted は hover で comment body preview context disclose 不可。
+                 proposal-edit-ops iter2131 / sprint-defaults-ops iter2129 と同
+                 title=aria-label sync pattern。 */
+              title={`コメント「${comment.body.slice(0, 30)}${comment.body.length > 30 ? '…' : ''}」の操作 — 編集 / 削除、自分の投稿のみ`}
             >
               {/* iter1303 mobile audit (iPhone SE 320px): boundingBox 24x16 — 高さ 16px は
                   `before:-inset-3` (12px) で expand しても 16+24=40 で WCAG 2.5.5 (44x44) 未達
