@@ -63,6 +63,10 @@ export function PdcaPanel({ workspaceId }: Props) {
             /* iter1582: 旧 aria-label paren convention `"集計期間 (現在: X 日、30 / 90 から選択)"` は
                iter1093-1581 sweep の em-dash 区切と divergent。区切のみ '(現在:' → ' — 現在' に統一、closing ')' は削除。 */
             aria-label={`集計期間 — 現在 ${days} 日、30 / 90 から選択`}
+            /* iter2005: group 全体に title を付与し sighted hover で現在 days disclose、
+               items-board view-switcher iter1991 / filter group iter1993 と同 group landmark
+               summary pattern。 */
+            title={`集計期間 — 現在 ${days} 日、30 / 90 から選択`}
           >
             <Button
               size="sm"
