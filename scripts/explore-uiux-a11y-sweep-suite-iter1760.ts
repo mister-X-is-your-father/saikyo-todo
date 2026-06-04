@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= JM. editDescription textarea title sweep (iter2297) =========
+  const edJM = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
+  if (!edJM.includes('iter2297')) {
+    findings.push({
+      level: 'error',
+      source: 'JM.edit-description-textarea-title',
+      message: '[JM] iter2297 editDescription textarea title 3-path sync が消えている',
+    })
+  }
+
   // ========= JL. editTitle input title sweep (iter2295) =========
   const edJL = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
   if (!edJL.includes('iter2295')) {
