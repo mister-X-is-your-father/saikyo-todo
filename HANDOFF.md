@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2100 1/1 test a11y-sweep-suite に iter2099 kr-delete entry 追加] 検査軸 173 個 (新 FQ 軸)、計約 271 invariant check に拡張、検査軸 173 突破。
+- ✅ [playwright-iter2099 1/1 mode-D kr-delete title を aria-label と state-dependent 同期] 2-path title-aria 同期、sprint-period-edit iter2097 / sprint-premortem iter2095 / sprint-retro iter2093 と pair。
 - ✅ [playwright-iter2098 1/1 test a11y-sweep-suite に iter2097 sprint-period-edit entry 追加] 検査軸 172 個 (新 FP 軸)、計約 269 invariant check に拡張。
 - ✅ [playwright-iter2097 1/1 mode-D sprint-period-edit title を aria-label と sync] title-aria divergence 修正 (sprint-retro iter2093 / sprint-premortem iter2095 と同 pattern)、Sprint name + 用途 context disclose。
 - ✅ [playwright-iter2096 1/1 test a11y-sweep-suite に iter2095 sprint-premortem entry 追加] 検査軸 171 個 (新 FO 軸)、計約 267 invariant check に拡張。
