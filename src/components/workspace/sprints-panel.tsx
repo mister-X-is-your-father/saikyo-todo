@@ -1245,6 +1245,11 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
               /* iter1607: 旧 aria-label paren convention `"Sprint デフォルト編集の操作 (キャンセル / 保存)"` は
                  iter1093-1606 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
               aria-label="Sprint デフォルト編集の操作 — キャンセル / 保存"
+              /* iter2129: Sprint デフォルト編集 form operations group の aria-label は
+                 browser tooltip にならず sighted は hover で context disclose されない。
+                 sprint-period-progress iter2127 / budget-edit-btn iter2123 と同
+                 title=aria-label sync pattern。 */
+              title="Sprint デフォルト編集の操作 — キャンセル / 保存"
             >
               <Button
                 type="button"
