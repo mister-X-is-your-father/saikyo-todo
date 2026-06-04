@@ -740,6 +740,31 @@ async function main() {
     })
   }
 
+  // ========= FV. proposal-accept + proposal-reject title sweep (iter2109) =========
+  const dpFV = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
+  const iter2109CountFV = (dpFV.match(/iter2109/g) ?? []).length
+  if (iter2109CountFV < 2) {
+    findings.push({
+      level: 'error',
+      source: 'FV.proposal-accept-reject-title',
+      message: `[FV] iter2109 marker 不足 (count=${iter2109CountFV}、accept + reject 2 個必要)`,
+    })
+  }
+  if (/^\s+title="採用 → 子タスクとして追加"$/m.test(dpFV)) {
+    findings.push({
+      level: 'error',
+      source: 'FV.proposal-accept-reject-title',
+      message: '[FV] iter2109 proposal-accept 旧 静的 title が残っている',
+    })
+  }
+  if (/^\s+title="却下"$/m.test(dpFV)) {
+    findings.push({
+      level: 'error',
+      source: 'FV.proposal-accept-reject-title',
+      message: '[FV] iter2109 proposal-reject 旧 静的 title が残っている',
+    })
+  }
+
   // ========= FU. proposals-redecompose + redecompose-fresh title sweep (iter2107) =========
   const dpFU = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
   const iter2107CountFU = (dpFU.match(/iter2107/g) ?? []).length
