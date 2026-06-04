@@ -740,6 +740,23 @@ async function main() {
     })
   }
 
+  // ========= FR. wf-run-rerun title state-dependent 同期 sweep (iter2101) =========
+  const wfpFR = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
+  if (!wfpFR.includes('iter2101') || !wfpFR.includes('再 — 実行 ${r.id.slice(0, 8)} を再実行中…')) {
+    findings.push({
+      level: 'error',
+      source: 'FR.wf-run-rerun-title',
+      message: '[FR] iter2101 wf-run-rerun title state-dependent 同期 が消えている',
+    })
+  }
+  if (/title=\{`同じ input で再実行 \(\$\{formatRunTime\(r\)\}\)`\}/.test(wfpFR)) {
+    findings.push({
+      level: 'error',
+      source: 'FR.wf-run-rerun-title',
+      message: '[FR] iter2101 wf-run-rerun 旧 静的 title が残っている',
+    })
+  }
+
   // ========= FQ. kr-delete title state-dependent 同期 sweep (iter2099) =========
   const gpFQ = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
   if (!gpFQ.includes('iter2099') || !gpFQ.includes('削除中… — KR「${kr.title}」を削除中')) {
