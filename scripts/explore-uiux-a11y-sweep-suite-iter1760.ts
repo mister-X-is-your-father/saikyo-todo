@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= JH. edit-item-sprint / kr select title sweep (iter2287) =========
+  const edJH = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
+  if (!edJH.includes('iter2287')) {
+    findings.push({
+      level: 'error',
+      source: 'JH.edit-item-sprint-kr-title',
+      message: '[JH] iter2287 edit-item-sprint / kr select title sync が消えている',
+    })
+  }
+
   // ========= JG. ItemEditDialog TabsList title sweep (iter2285) =========
   const edJG = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
   if (!edJG.includes('iter2285') || !edJG.includes('title="Item 編集タブ"')) {
