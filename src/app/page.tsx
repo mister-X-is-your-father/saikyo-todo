@@ -88,7 +88,16 @@ export default async function HomePage() {
               Workspace
             </h2>
           </div>
-          <ul className="space-y-2" aria-label="参加している Workspace 一覧">
+          <ul
+            className="space-y-2"
+            aria-label="参加している Workspace 一覧"
+            /* iter2267: 参加している Workspace 一覧 ul の aria-label は browser tooltip に
+               ならず sighted は hover で「Workspace 一覧」 context disclose 不可。MCP path A で
+               / 画面 (home / Workspaces 一覧画面) 探索中に発見、Template 一覧 iter2261 /
+               sources-list iter2191 / Goal 一覧 iter2195 と同 一覧 ul family title pattern を
+               最 上位 Workspace home 画面にも展開、5 entity 一覧 ul family 完成。 */
+            title="参加している Workspace 一覧"
+          >
             {workspaces.map((ws) => (
               <li key={ws.id}>
                 {/* iter1498: iter1093-1497 em-dash sweep に追従し () → em-dash 区切に
