@@ -740,6 +740,19 @@ async function main() {
     })
   }
 
+  // ========= GJ. budget edit ops group title sweep (iter2137) =========
+  const bpGJ = read(here, `${root}/src/components/workspace/budget-panel.tsx`)
+  if (
+    !bpGJ.includes('iter2137') ||
+    !bpGJ.includes('title="AI 月次コスト上限編集の操作 — キャンセル / 保存"')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'GJ.budget-edit-ops-group-title',
+      message: '[GJ] iter2137 budget edit ops group title 付与 が消えている',
+    })
+  }
+
   // ========= GI. proposal ops group title sweep (iter2135) =========
   const dpGI = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
   if (
