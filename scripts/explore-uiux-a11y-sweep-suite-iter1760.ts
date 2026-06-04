@@ -241,6 +241,11 @@ async function main() {
       'title={item.title}',
       'ItemEditDialog',
     ],
+    [
+      `${root}/src/components/schedule/schedule-item-picker.tsx`,
+      'title={it.title}',
+      'schedule-item-picker',
+    ],
   ] as const
   for (const [path, needle, label] of titleSweepFiles) {
     const src = read(here, path)
