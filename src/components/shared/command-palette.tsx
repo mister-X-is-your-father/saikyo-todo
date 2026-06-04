@@ -152,6 +152,12 @@ export function CommandPalette({ commands, items, onSelectItem }: CommandPalette
                     onSelectItem?.(item)
                   }}
                   data-testid={`palette-item-${item.id}`}
+                  // iter1750: inner span truncate で長 item.title 切れ、CommandItem 自体は
+                  // aria-label 持つが browser tooltip にならず sighted は hover で全 title
+                  // 見れず。title 付与で sighted hover → 全 title disclose
+                  // (iter1720-1749 sweep を Cmd+K command palette にも展開、検索結果 list で
+                  // 全 task title の即把握向上)。
+                  title={item.title}
                 >
                   <span
                     className={`mr-2 inline-block h-2 w-2 shrink-0 rounded-full ${priorityClass(item.priority)}`}
