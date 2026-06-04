@@ -766,6 +766,19 @@ async function main() {
     })
   }
 
+  // ========= IU. Template 一覧 ul title sweep (iter2261) =========
+  const tpIU = read(here, `${root}/src/components/template/templates-panel.tsx`)
+  if (
+    !tpIU.includes('iter2261') ||
+    !tpIU.includes('title={`Template 一覧 — ${list.data!.length} 件`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'IU.template-list-ul-title',
+      message: '[IU] iter2261 Template 一覧 ul title sync が消えている',
+    })
+  }
+
   // ========= IT. Template 作成フォーム title sweep (iter2259) =========
   const tpIT = read(here, `${root}/src/components/template/templates-panel.tsx`)
   if (!tpIT.includes('iter2259') || !tpIT.includes('title="Template 作成フォーム"')) {
