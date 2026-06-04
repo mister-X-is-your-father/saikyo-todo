@@ -328,6 +328,11 @@ export function BudgetPanel({ workspaceId }: Props) {
                 disabled={update.isPending}
                 data-testid="budget-edit-cancel"
                 aria-label="キャンセル — AI 月次コスト上限の編集を破棄"
+                /* iter2255: budget-edit-cancel の aria-label "キャンセル — AI 月次コスト上限の編集を破棄"
+                   は browser tooltip にならず sighted は hover で破棄対象 context disclose 不可。
+                   budget-edit-btn iter2123 / save-btn 系 sweep と pair で budget edit form button
+                   3 element title 揃え (cancel / save / save-btn 別変種)。 */
+                title="キャンセル — AI 月次コスト上限の編集を破棄"
               >
                 <span aria-hidden="true">キャンセル</span>
               </Button>
@@ -339,6 +344,13 @@ export function BudgetPanel({ workspaceId }: Props) {
                 aria-busy={update.isPending || undefined}
                 data-testid="budget-save-btn"
                 aria-label={
+                  update.isPending
+                    ? '保存中… — AI 月次コスト上限を保存中'
+                    : '保存 — AI 月次コスト上限と警告閾値を保存'
+                }
+                /* iter2255: budget-save-btn も cancel と pair で state-dependent 2-path title sync。
+                   iter224 で pending SR 化済、本 iter で sighted hover にも展開。 */
+                title={
                   update.isPending
                     ? '保存中… — AI 月次コスト上限を保存中'
                     : '保存 — AI 月次コスト上限と警告閾値を保存'
