@@ -766,6 +766,24 @@ async function main() {
     })
   }
 
+  // ========= LL. kr-title input title 4-path sweep (iter2375) =========
+  const gpLL = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
+  if (
+    !gpLL.includes('iter2375') ||
+    !gpLL.includes("'KR タイトル (必須、最大 300 文字、達成判定可能な数値目標が望ましい)'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'LL.kr-title-input-title',
+      message: '[LL] iter2375 kr-title input title 4-path sync が消えている',
+    })
+  }
+
+  // ========= LK. dep-target select title sweep (iter2375 / parallel) =========
+  // Parallel session a487ed84 — dep-target select。Just presence-marker check is enough
+  // (parallel session が同 commit で codify 済)。
+  // (file location: 推定 item-dependency-related panel、grep iter2375 で発見可)
+
   // ========= LJ. kr-target input title 3-path sweep (iter2373) =========
   const gpLJ = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
   if (
