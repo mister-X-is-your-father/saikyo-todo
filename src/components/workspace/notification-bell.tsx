@@ -306,6 +306,13 @@ export function NotificationBell({ workspaceId, currentUserId, initialUnreadCoun
                              iter1093-1571 sweep の em-dash 区切と divergent。visible "${relative}" は
                              既に冒頭、区切のみ '(' → ' — ' に統一。 */
                           aria-label={`${formatRelativeTime(n.createdAt)} — ${n.createdAt instanceof Date ? n.createdAt.toISOString() : new Date(n.createdAt).toISOString()}`}
+                          /* iter2377: <time> の aria-label は visible "${relative}" + ISO 絶対時刻
+                             を SR に渡すが browser tooltip にならず sighted は hover で正確な
+                             ISO 時刻 (= "5分前" の実際の時点) 把握不可。dashboard <time>
+                             cross-view pattern と同 time element title sync を notification-bell
+                             にも展開、通知 list の relative time + absolute time 両方を hover
+                             でも sighted disclose、debug / 履歴追跡時の正確時刻確認補完。 */
+                          title={`${formatRelativeTime(n.createdAt)} — ${n.createdAt instanceof Date ? n.createdAt.toISOString() : new Date(n.createdAt).toISOString()}`}
                         >
                           <span aria-hidden="true">{formatRelativeTime(n.createdAt)}</span>
                         </time>
