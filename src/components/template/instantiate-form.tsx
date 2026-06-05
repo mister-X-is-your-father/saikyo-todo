@@ -212,6 +212,20 @@ export function InstantiateForm({ workspaceId, template }: Props) {
             ? `展開中… — Template「${template.name}」を即実行中`
             : `即実行 (Instantiate) — Template「${template.name}」をワークパッケージとして展開`
         }
+        /* iter2427: instantiate submit button の aria-label は state-dependent 2-path
+           (pending / idle、template.name 含む) で SR に full instantiate context (=
+           "ワークパッケージとして展開" の副作用 mental model + 対象 template 識別子)
+           を渡すが browser tooltip にならず sighted は hover で同 context 把握不可。
+           visible は "即実行 (Instantiate)" / "展開中…" のみで「ワークパッケージとして
+           展開」 副作用 + 対象 template 識別子は disclose されない。tmpl-name iter2365 /
+           Goal/Sprint create button iter1809 と同 state-dependent submit button title
+           pattern を instantiate submit にも展開、instantiate form の override + var +
+           submit 全 hover disclose 完備。 */
+        title={
+          mut.isPending
+            ? `展開中… — Template「${template.name}」を即実行中`
+            : `即実行 (Instantiate) — Template「${template.name}」をワークパッケージとして展開`
+        }
       >
         {/* iter1083: visible は ASCII '...' だったが aria-label は U+2026 '…' を使っていて
             literal substring 不一致 = WCAG 2.5.3 違反 + voice control「click 展開中…」 matching 不可。
