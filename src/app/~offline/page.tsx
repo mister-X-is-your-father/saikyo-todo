@@ -41,9 +41,15 @@ export default function OfflinePage() {
         最強TODO はオフラインでもアプリ自体は表示されますが、 Item の作成 /
         同期にはオンライン接続が必要です。
       </p>
+      {/* iter2323: role="group" の aria-label "復帰アクション" は SR には 2 button group 用途を
+          disclose するが browser tooltip にならず sighted は hover で同 context 把握不可。
+          engineer-trigger group iter2207 / workspace-header ops group iter2229 と同 role="group"
+          title sync pattern を offline page にも展開、retry-button + home-link の 2 復帰選択肢
+          が「復帰アクション」 group として hover でも disclose、offline UX page-level a11y 完備。 */}
       <div
         role="group"
         aria-label="復帰アクション"
+        title="復帰アクション"
         className="flex flex-wrap items-center justify-center gap-2 pt-2"
       >
         <OfflineRetryButton />
