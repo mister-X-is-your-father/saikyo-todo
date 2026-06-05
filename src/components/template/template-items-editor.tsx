@@ -203,6 +203,20 @@ export function TemplateItemsEditor({ templateId }: Props) {
                   ? `DoD (現在 ${dod.length} 文字、空白のみは不正、MUST item には完了条件が必須)`
                   : `DoD (現在 ${dod.length} 文字、Definition of Done)`
             }
+            /* iter2381: template-items DoD textarea の aria-label は state-dependent
+               3-path (空 / 空白のみ MUST 不正 / 通常、文字数 + 副作用含む) で SR には
+               full context を渡すが browser tooltip にならず sighted は hover で MUST
+               item の完了条件 hint / 空白のみ警告 / 文字数 の disclose 不可。
+               edit-item-dod iter2355 と同 DoD textarea title-aria sync pattern を
+               template-items DoD にも展開、DoD textarea 2 element family 完成
+               (edit-item / template-items)。 */
+            title={
+              dod.length === 0
+                ? 'DoD (Definition of Done) — MUST item の完了条件 (必須、何があれば完了とみなすか)'
+                : dod.trim() === ''
+                  ? `DoD (現在 ${dod.length} 文字、空白のみは不正、MUST item には完了条件が必須)`
+                  : `DoD (現在 ${dod.length} 文字、Definition of Done)`
+            }
             required
             aria-required="true"
             aria-invalid={(dod.length > 0 && dod.trim() === '') || undefined}
