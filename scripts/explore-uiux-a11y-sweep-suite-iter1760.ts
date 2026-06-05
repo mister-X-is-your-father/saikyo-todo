@@ -766,6 +766,31 @@ async function main() {
     })
   }
 
+  // ========= KU. operation-board Section ul title sweep (iter2357 / parallel) =========
+  const obKU = read(here, `${root}/src/components/workspace/operation-board-widget.tsx`)
+  if (!obKU.includes('iter2357')) {
+    findings.push({
+      level: 'error',
+      source: 'KU.operation-board-section-ul-title',
+      message: '[KU] iter2357 operation-board Section ul title sync が消えている',
+    })
+  }
+
+  // ========= KT. wf-editor-graph textarea title 3-path sweep (iter2357) =========
+  const wfKT = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
+  if (
+    !wfKT.includes('iter2357') ||
+    !wfKT.includes(
+      "'graph JSON (workflow の node 定義を JSON で記述、上のプリセット button で skeleton 追加可)'",
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'KT.wf-editor-graph-title',
+      message: '[KT] iter2357 wf-editor-graph textarea title 3-path sync が消えている',
+    })
+  }
+
   // ========= KS. edit-item-dod input title 3-path sweep (iter2355) =========
   const edKS = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
   if (
