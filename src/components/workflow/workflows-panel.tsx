@@ -866,6 +866,13 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
             onClick={() => onOpenChange(false)}
             data-testid={`wf-editor-cancel-${wf.id}`}
             aria-label={`キャンセル — Workflow「${wf.name}」の編集を破棄`}
+            /* iter2415: wf-editor cancel + 隣 save 両 button の aria-label は SR に full
+               context (workflow.name 含む dynamic 破棄 / 保存 action) を渡すが browser
+               tooltip にならず sighted は hover で disclose 不可。sprint-defaults cancel/save
+               iter2363 / sprint-period cancel/save iter2351 / goal status transition iter2365 と
+               同 pair button title pattern を wf-editor cancel/save にも展開、Workflow
+               editor dialog の cancel/save 2 button family 完成。 */
+            title={`キャンセル — Workflow「${wf.name}」の編集を破棄`}
           >
             <span aria-hidden="true">キャンセル</span>
           </Button>
@@ -877,6 +884,12 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
             onClick={() => void handleSave()}
             data-testid={`wf-editor-save-${wf.id}`}
             aria-label={
+              saving
+                ? `保存中… — Workflow「${wf.name}」の編集を保存中`
+                : `保存 — Workflow「${wf.name}」の graph / trigger を保存`
+            }
+            /* iter2415: state-dependent 2-path (pending / idle) も title sync。 */
+            title={
               saving
                 ? `保存中… — Workflow「${wf.name}」の編集を保存中`
                 : `保存 — Workflow「${wf.name}」の graph / trigger を保存`
