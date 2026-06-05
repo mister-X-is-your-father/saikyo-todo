@@ -171,6 +171,16 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
                     aria-label={
                       checked ? `${label} — アサイン中 (クリックで解除)` : `${label} — アサインする`
                     }
+                    /* iter2335: aria-label state-dependent 2-path (checked / unchecked、user
+                       表示名 含む) は SR に full context を渡すが browser tooltip にならず
+                       sighted は hover で同 context (= "クリックで解除" の toggle 効果) 即把握
+                       不可。tag-picker option / item-decompose-btn iter2213 と同 state-dependent
+                       option title pattern、CommandItem の visible は "{label}" のみ + CheckIcon
+                       opacity 0/100 切替なので checked 状態 + toggle action の hover disclose
+                       不在は keyboard-only user の操作探索に直接効く。 */
+                    title={
+                      checked ? `${label} — アサイン中 (クリックで解除)` : `${label} — アサインする`
+                    }
                   >
                     <CheckIcon
                       className={cn('mr-2 size-4', checked ? 'opacity-100' : 'opacity-0')}
