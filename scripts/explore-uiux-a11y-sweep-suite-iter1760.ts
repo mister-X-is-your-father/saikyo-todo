@@ -766,6 +766,29 @@ async function main() {
     })
   }
 
+  // ========= LN. dep-add-btn title 3-path sweep (iter2377) =========
+  const ddLN = read(here, `${root}/src/components/workspace/item-dependencies-panel.tsx`)
+  if (
+    !ddLN.includes('iter2377') ||
+    !ddLN.includes("'追加 — 依存を追加するには対象 Item を選択してください'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'LN.dep-add-btn-title',
+      message: '[LN] iter2377 dep-add-btn title 3-path sync が消えている',
+    })
+  }
+
+  // ========= LM. notification-bell <time> title sweep (iter2377 / parallel) =========
+  const nbLM = read(here, `${root}/src/components/workspace/notification-bell.tsx`)
+  if (!nbLM.includes('iter2377')) {
+    findings.push({
+      level: 'error',
+      source: 'LM.notification-bell-time-title',
+      message: '[LM] iter2377 notification-bell <time> title sync が消えている',
+    })
+  }
+
   // ========= LL. kr-title input title 4-path sweep (iter2375) =========
   const gpLL = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
   if (
