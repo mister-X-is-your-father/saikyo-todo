@@ -470,8 +470,15 @@ function ItemList({
   // iter727: Section 親は role="group" + aria-labelledby を持つが、SR の list
   // shortcut で ul に直行されると label が解離するため、ul 自身に件数込み
   // aria-label を持たせる (iter720-725 と同 pattern)。
+  /* iter2357: aria-label (= 親 Section title + 件数 + 並び順 context、props 経由で
+     "期限超過 X 件" / "今日の MUST X 件" / "今日の予定 X 件" / "昨日 done X 件" の
+     4 list pattern) を sighted hover で disclose 不可。Sprint swim-lane lane ul iter2305 /
+     KR list ul iter2329 / AI 分解提案 ul iter2331 / Activity 履歴 ul iter2291 と同
+     list family title sync pattern を operation-board の generic Section ul にも展開、
+     1 fix で 4 caller (overdue / mustToday / todayScheduled / doneYesterday) 一括効果、
+     operation-board widget の list 件数 hover 確認補完。 */
   return (
-    <ul className="space-y-0.5" aria-label={ariaLabel}>
+    <ul className="space-y-0.5" aria-label={ariaLabel} title={ariaLabel}>
       {items.map((it) => (
         <li key={it.id}>
           <ItemRow item={it} onClick={onClick} tone={tone} muted={muted} showTime={showTime} />
