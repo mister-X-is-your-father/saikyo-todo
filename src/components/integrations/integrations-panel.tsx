@@ -656,6 +656,19 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                         ? 'items path (任意、JSON dot-path、省略で response root を items 配列とみなす — 例: data.items)'
                         : `items path (現在 ${itemsPath.length} 文字、JSON dot-path)`
                     }
+                    /* iter2403: REST source の 4 JSON dot-path input (items / due / id / title)
+                       は aria-label に state-dependent 2-path の JSON dot-path 説明 + 例 を
+                       渡すが browser tooltip にならず sighted は hover で同 context 把握不可。
+                       visible は Label + placeholder のみで「JSON dot-path」 という format
+                       mental model + 各 path の役割は disclose されない。src-url iter2313 /
+                       src-token iter2397 / src-project-ids iter2399 と同 integrations input
+                       title-aria sync pattern を 4 path input にも展開、REST source path 設定
+                       form の hover disclose 完備。 */
+                    title={
+                      itemsPath.length === 0
+                        ? 'items path (任意、JSON dot-path、省略で response root を items 配列とみなす — 例: data.items)'
+                        : `items path (現在 ${itemsPath.length} 文字、JSON dot-path)`
+                    }
                   />
                 </div>
                 <div className="space-y-1">
@@ -670,6 +683,12 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     spellCheck={false}
                     enterKeyHint="next"
                     aria-label={
+                      duePath.length === 0
+                        ? 'due path (任意、各 item から期日を取り出す JSON dot-path — 例: due_date)'
+                        : `due path (現在 ${duePath.length} 文字、JSON dot-path)`
+                    }
+                    /* iter2403: 同 form 4 path input title sync sweep。 */
+                    title={
                       duePath.length === 0
                         ? 'due path (任意、各 item から期日を取り出す JSON dot-path — 例: due_date)'
                         : `due path (現在 ${duePath.length} 文字、JSON dot-path)`
@@ -694,6 +713,12 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                         ? 'id path (必須、各 item の一意 ID を取り出す JSON dot-path — 例: id)'
                         : `id path (現在 ${idPath.length} 文字、JSON dot-path)`
                     }
+                    /* iter2403: 同 form 4 path input title sync sweep。 */
+                    title={
+                      idPath.length === 0
+                        ? 'id path (必須、各 item の一意 ID を取り出す JSON dot-path — 例: id)'
+                        : `id path (現在 ${idPath.length} 文字、JSON dot-path)`
+                    }
                   />
                 </div>
                 <div className="space-y-1">
@@ -710,6 +735,12 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                     spellCheck={false}
                     enterKeyHint="send"
                     aria-label={
+                      titlePath.length === 0
+                        ? 'title path (必須、各 item のタイトルを取り出す JSON dot-path — 例: title または name)'
+                        : `title path (現在 ${titlePath.length} 文字、JSON dot-path)`
+                    }
+                    /* iter2403: 同 form 4 path input title sync sweep。 */
+                    title={
                       titlePath.length === 0
                         ? 'title path (必須、各 item のタイトルを取り出す JSON dot-path — 例: title または name)'
                         : `title path (現在 ${titlePath.length} 文字、JSON dot-path)`
