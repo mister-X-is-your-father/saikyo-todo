@@ -766,6 +766,31 @@ async function main() {
     })
   }
 
+  // ========= LR. template-items DoD textarea title 3-path sweep (iter2381) =========
+  const tiLR = read(here, `${root}/src/components/template/template-items-editor.tsx`)
+  if (
+    !tiLR.includes('iter2381') ||
+    !tiLR.includes(
+      "'DoD (Definition of Done) — MUST item の完了条件 (必須、何があれば完了とみなすか)'",
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'LR.template-items-dod-textarea-title',
+      message: '[LR] iter2381 template-items DoD textarea title 3-path sync が消えている',
+    })
+  }
+
+  // ========= LQ. team-context-textarea title sweep (iter2381 / parallel) =========
+  const tcLQ = read(here, `${root}/src/components/workspace/team-context-editor.tsx`)
+  if (!tcLQ.includes('iter2381')) {
+    findings.push({
+      level: 'error',
+      source: 'LQ.team-context-textarea-title',
+      message: '[LQ] iter2381 team-context-textarea title sync が消えている',
+    })
+  }
+
   // ========= LP. subtasks-progress-summary title sweep (iter2379) =========
   const stLP = read(here, `${root}/src/components/workspace/subtasks-panel.tsx`)
   if (!stLP.includes('iter2379')) {
