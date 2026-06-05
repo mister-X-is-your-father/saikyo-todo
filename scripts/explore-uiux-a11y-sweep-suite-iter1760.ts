@@ -766,6 +766,31 @@ async function main() {
     })
   }
 
+  // ========= KW. wf-editor-trigger textarea title 3-path sweep (iter2359) =========
+  const wfKW = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
+  if (
+    !wfKW.includes('iter2359') ||
+    !wfKW.includes(
+      "'trigger JSON (manual / cron / item-event / webhook の 4 種、上のプリセット button で template 挿入可)'",
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'KW.wf-editor-trigger-title',
+      message: '[KW] iter2359 wf-editor-trigger textarea title 3-path sync が消えている',
+    })
+  }
+
+  // ========= KV. sprint-swimlane row bar chart container title sweep (iter2359 / parallel) =========
+  const slKV = read(here, `${root}/src/components/workspace/sprint-swimlane-disclosure.tsx`)
+  if (!slKV.includes('iter2359')) {
+    findings.push({
+      level: 'error',
+      source: 'KV.sprint-swimlane-bar-chart-title',
+      message: '[KV] iter2359 sprint-swimlane bar chart container title sync が消えている',
+    })
+  }
+
   // ========= KU. operation-board Section ul title sweep (iter2357 / parallel) =========
   const obKU = read(here, `${root}/src/components/workspace/operation-board-widget.tsx`)
   if (!obKU.includes('iter2357')) {
