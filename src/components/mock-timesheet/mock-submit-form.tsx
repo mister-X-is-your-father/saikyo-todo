@@ -105,6 +105,17 @@ export function MockSubmitForm() {
               form.watch('category')
             return `${visible} — カテゴリ (現在: ${visible})`
           })()}
+          /* iter2369: mock-timesheet tsCategory select の aria-label は category-dependent
+             IIFE で SR には visible label + 現在 category を渡すが select 自体には browser
+             tooltip にならず sighted は hover で同 context disclose 不可。teCategory iter1191
+             / src-kind iter2361 / edit-item-sprint iter2287 と同 select title-aria sync
+             pattern を mock-timesheet にも展開、mock UI demo の category 選択 UX 補完。 */
+          title={(() => {
+            const visible =
+              TIME_ENTRY_CATEGORIES.find((c) => c.key === form.watch('category'))?.label ??
+              form.watch('category')
+            return `${visible} — カテゴリ (現在: ${visible})`
+          })()}
           {...form.register('category')}
           className="min-h-11 w-full rounded border px-3 py-2 text-sm"
         >
