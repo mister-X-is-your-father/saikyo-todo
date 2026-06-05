@@ -214,6 +214,19 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
                           ? `${label} — AI Agent アサイン中 (クリックで解除)`
                           : `${label} — AI Agent をアサイン`
                       }
+                      /* iter2341: aria-label state-dependent 2-path (checked / unchecked、AI Agent
+                         role label 含む) は SR に full context を渡すが browser tooltip にならず
+                         sighted は hover で同 context (= AI Agent 種別 + 現状態 + クリック効果)
+                         即把握不可。assignee-picker user CommandItem iter2335 / tag-picker option
+                         iter2339 と同 state-dependent option title pattern を AI agent CommandItem
+                         にも展開、CheckIcon opacity + BotIcon (常時表示) で AI Agent 識別性は確保
+                         するが toggle 効果 ("クリックで解除") は非可視のため hover disclose 必要、
+                         assignee-picker 内 user / AI agent 2 option family 完成。 */
+                      title={
+                        checked
+                          ? `${label} — AI Agent アサイン中 (クリックで解除)`
+                          : `${label} — AI Agent をアサイン`
+                      }
                     >
                       <CheckIcon
                         className={cn('mr-2 size-4', checked ? 'opacity-100' : 'opacity-0')}
