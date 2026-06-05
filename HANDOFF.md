@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2324 1/1 test a11y-sweep-suite に iter2323 gantt-show-deps-toggle entry 追加] 検査軸 285 個 (新 JZ 軸)、計約 403 invariant check に拡張、Gantt 操作 bar 依存線 toggle disclosure 補完。
+- ✅ [playwright-iter2323 1/1] gantt-show-deps-toggle checkbox: aria-label state-dependent 2-path (showDeps ? '依存線を表示中 — クリックで非表示' : '依存線 — クリックで表示') を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-gantt-show-deps-toggle-title-iter2323.ts)、done-yesterday-toggle iter2311 / activity-detail-toggle iter2293 と同 disclosure toggle title pattern、Gantt 操作 bar 着地。
 - ✅ [playwright-iter2322 1/1 test a11y-sweep-suite に iter2321 item-plan-generate-button entry 追加] 検査軸 284 個 (新 JY 軸)、計約 402 invariant check に拡張、AI action button family 4 element (decompose / research / engineer / plan-generate) 完成。
 - ✅ [playwright-iter2321 1/1] item-plan-generate-button: aria-label state-dependent 2-path (pending / idle、item.title + AI 担当 副作用 含む) を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-item-plan-generate-title-iter2321.ts)、AI action button family 4 element 完成。
 - ✅ [playwright-iter2320 1/1 test a11y-sweep-suite に iter2319 item-checkbox title full sync entry 追加] 検査軸 283 個 (新 JX 軸)、計約 401 invariant check に拡張、item-checkbox pending state も hover disclose、iter 2320 milestone 突破。
