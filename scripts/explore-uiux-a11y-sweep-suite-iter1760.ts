@@ -766,6 +766,29 @@ async function main() {
     })
   }
 
+  // ========= KM. proposal 編集 form title sweep (iter2347) =========
+  const dpKM = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
+  if (
+    !dpKM.includes('iter2347') ||
+    !dpKM.includes('title={`提案「${proposal.title}」の編集フォーム`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'KM.proposal-edit-form-title',
+      message: '[KM] iter2347 proposal edit form title sync が消えている',
+    })
+  }
+
+  // ========= KL. command-palette CommandInput title sweep (iter2345 / parallel) =========
+  const cpKL = read(here, `${root}/src/components/shared/command-palette.tsx`)
+  if (!cpKL.includes('iter2345') || !cpKL.includes('? でタスクを fuzzy 検索')) {
+    findings.push({
+      level: 'error',
+      source: 'KL.command-palette-input-title',
+      message: '[KL] iter2345 command-palette CommandInput title sync が消えている',
+    })
+  }
+
   // ========= KK. budget-warn-input title 3-path sweep (iter2345) =========
   const bpKK = read(here, `${root}/src/components/workspace/budget-panel.tsx`)
   if (
