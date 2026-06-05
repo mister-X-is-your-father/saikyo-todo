@@ -256,6 +256,19 @@ export function TemplatesPanel({ workspaceId }: Props) {
                       ? 'cron 式 (任意、5 フィールド標準 cron 形式 — 例: 「0 9 * * 1」 で毎週月曜 09:00)'
                       : `cron 式 (現在 ${scheduleCron.length} 文字、5 フィールド標準形式)`
                   }
+                  /* iter2433: tmpl-cron IMEInput の aria-label は state-dependent 2-path
+                     (empty hint + 5 フィールド規約 + 例 / valued 文字数) で SR に full
+                     cron syntax mental model を渡すが browser tooltip にならず sighted は
+                     hover で同 context (= 5 フィールド規約 + 具体例) 把握不可。visible は
+                     placeholder "0 9 * * 1  (毎週月曜 09:00)" のみで「5 フィールド標準形式」
+                     という規約名は visible に出ない。tmpl-name iter2365 / tmpl-kind iter2409 /
+                     tmpl-desc iter2411 と pair で Template create form の recurring 関連
+                     全 input (name + kind + desc + cron) 全 hover disclose 完備。 */
+                  title={
+                    scheduleCron.length === 0
+                      ? 'cron 式 (任意、5 フィールド標準 cron 形式 — 例: 「0 9 * * 1」 で毎週月曜 09:00)'
+                      : `cron 式 (現在 ${scheduleCron.length} 文字、5 フィールド標準形式)`
+                  }
                 />
               </div>
             ) : null}
