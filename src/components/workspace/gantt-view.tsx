@@ -434,6 +434,12 @@ export function GanttView({
             /* iter1602: inactive path `'依存線を表示する'` は active path (`'依存線を表示中 — クリックで非表示'`)
                の em-dash convention と divergent。両 path で visible "依存線" prefix 維持 + em-dash 区切に統一。 */
             aria-label={showDeps ? '依存線を表示中 — クリックで非表示' : '依存線 — クリックで表示'}
+            /* iter2323: gantt-show-deps-toggle の aria-label は state-dependent 2-path
+               (showDeps ? "表示中 — クリックで非表示" : "クリックで表示") で SR には toggle 状態 +
+               next action を渡すが checkbox 自体には browser tooltip にならず sighted は hover で
+               同 context disclose 不可。done-yesterday-toggle iter2311 / activity-detail-toggle
+               iter2293 と同 disclosure toggle title pattern を gantt 依存線 toggle にも展開。 */
+            title={showDeps ? '依存線を表示中 — クリックで非表示' : '依存線 — クリックで表示'}
           />
           <span aria-hidden="true">依存線</span>
         </label>
