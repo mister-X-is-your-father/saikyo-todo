@@ -766,6 +766,21 @@ async function main() {
     })
   }
 
+  // ========= JZ. gantt-show-deps-toggle checkbox title sweep (iter2323) =========
+  const gvJZ = read(here, `${root}/src/components/workspace/gantt-view.tsx`)
+  if (
+    !gvJZ.includes('iter2323') ||
+    !gvJZ.includes(
+      "title={showDeps ? '依存線を表示中 — クリックで非表示' : '依存線 — クリックで表示'}",
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'JZ.gantt-show-deps-toggle-title',
+      message: '[JZ] iter2323 gantt-show-deps-toggle title 2-path sync が消えている',
+    })
+  }
+
   // ========= JY. item-plan-generate-button title sweep (iter2321) =========
   const pgJY = read(here, `${root}/src/components/workspace/item-plan-generate-button.tsx`)
   if (!pgJY.includes('iter2321')) {
