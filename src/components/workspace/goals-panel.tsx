@@ -757,10 +757,19 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                 disabled={decompose.isPending || status !== 'active'}
                 aria-busy={decompose.isPending || undefined}
                 data-testid={`goal-decompose-${goal.id}`}
+                /* iter2435: 旧 title 2-path (active vs not、Sprint name 含まず + 説明文短縮版)
+                   は aria-label state-dependent 3-path (status / pending / idle、goal.title 含む
+                   + full context) と divergent。SR と sighted hover で異なる text が読まれ
+                   convention 統一性 / 説明一貫性が損なわれていた。goals-panel achieved buttons
+                   iter2365 / proposals-redecompose iter2107 と同 title-aria divergence 修正 pattern
+                   で 3-path full sync、goal.title + 5〜10 件 副作用 mental model を hover でも
+                   sighted disclose。 */
                 title={
                   status !== 'active'
-                    ? 'active な Goal のみ分解可能'
-                    : 'AI が Goal + KR + チームコンテキストから 5〜10 件の Item を作成'
+                    ? `AI 分解 — Goal「${goal.title}」は active でないため AI 分解不可`
+                    : decompose.isPending
+                      ? `AI 分解中… — Goal「${goal.title}」を AI 分解中…`
+                      : `AI 分解 — Goal「${goal.title}」を AI 分解 (5〜10 件の Item を作成)`
                 }
                 // iter1186: 旧 aria-label 3 path とも visible "AI 分解" / "AI 分解中…" を
                 // 中位置「Goal「**title**」を **AI 分解** ...」に持ち voice control
