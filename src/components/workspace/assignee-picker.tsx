@@ -146,6 +146,14 @@ export function AssigneePicker({ workspaceId, value, onChange, disabled }: Props
                iter1093-1548 sweep の em-dash 区切と divergent。iter1545 PopoverContent と同 surface 内で
                aria-label convention 統一。 */
             aria-label="アサイン候補 — workspace メンバー / AI Agent を検索"
+            /* iter2351: CommandInput aria-label は SR に input 用途 (= workspace メンバー +
+               AI Agent dual-source 検索) を渡すが browser tooltip にならず sighted は hover で
+               同 context 把握不可。visible は placeholder "メンバー / AI を検索…" のみで
+               candidate set が workspace 単位 (= 別 workspace の人はヒットしない) という
+               scope mental model は hover 非可視。command-palette CommandInput iter2345 /
+               tag-picker CommandInput iter2349 と同 picker input title pattern、3 picker
+               input family (command-palette + tag-picker + assignee-picker) 完成。 */
+            title="アサイン候補 — workspace メンバー / AI Agent を検索"
           />
           <CommandList>
             <CommandEmpty>
