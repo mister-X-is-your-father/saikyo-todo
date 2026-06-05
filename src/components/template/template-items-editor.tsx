@@ -330,6 +330,19 @@ export function TemplateItemsEditor({ templateId }: Props) {
                     ? `削除中… — Template item「${it.title}」を削除中`
                     : `削除 — Template item「${it.title}」を削除`
                 }
+                /* iter2421: template item delete (icon-only Trash2) の aria-label は
+                   state-dependent 2-path (pending / idle、it.title 含む) で SR に full
+                   削除 action context を渡すが icon-only button (visible text 無、
+                   既存 title 無) のため sighted は hover で同 context (= 何の item を
+                   削除するか、pending 状態) 把握不可。proposals-accept/reject iter2253 /
+                   wf-delete iter1815 / template-card delete iter2317 と同 state-dependent
+                   icon-only delete button title pattern を template item delete にも展開、
+                   Template editor 内 item 削除 button の hover disclose 完備。 */
+                title={
+                  removeMut.isPending
+                    ? `削除中… — Template item「${it.title}」を削除中`
+                    : `削除 — Template item「${it.title}」を削除`
+                }
               >
                 <Trash2 className="h-4 w-4 text-red-500" aria-hidden="true" />
               </Button>
