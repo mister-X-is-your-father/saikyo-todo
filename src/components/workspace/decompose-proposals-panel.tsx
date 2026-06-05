@@ -526,6 +526,18 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
                   ? 'MUST が ON: 絶対落とさない — DoD 必須、クリックで OFF'
                   : 'MUST が OFF: 通常タスク — クリックで ON、DoD 必須化'
               }
+              /* iter2335: proposal MUST checkbox の aria-label は state-dependent 2-path
+                 (isMust ? "ON: 絶対落とさない — DoD 必須、クリックで OFF" : "OFF: 通常
+                 タスク — クリックで ON、DoD 必須化") で SR には toggle 状態 + next action +
+                 副作用 (DoD 必須化) を渡すが checkbox 自体には browser tooltip にならず
+                 sighted は hover で同 context disclose 不可。edit-item-must iter2273 / gantt
+                 show-deps iter2323 と同 state-dependent checkbox title pattern を proposal
+                 MUST にも展開。 */
+              title={
+                isMust
+                  ? 'MUST が ON: 絶対落とさない — DoD 必須、クリックで OFF'
+                  : 'MUST が OFF: 通常タスク — クリックで ON、DoD 必須化'
+              }
             />
             {/* iter1371: item-edit-dialog と同型。dark card bg で text-red-700 は <4.5。 */}
             <span className="font-medium text-red-700 dark:text-red-400" aria-hidden="true">
