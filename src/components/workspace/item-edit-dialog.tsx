@@ -935,6 +935,20 @@ function ItemEditDialogInner({
                         ? `DoD (現在 ${dod.length} 文字、空白のみは MUST 保存に不正)`
                         : `DoD (現在 ${dod.length} 文字、Definition of Done)`
                   }
+                  /* iter2355: edit-item-dod input の aria-label は state-dependent 3-path
+                     (空 / 空白のみ MUST 不正 / 通常、文字数 + 副作用含む) で SR には full
+                     context を渡すが browser tooltip にならず sighted は hover で MUST
+                     保存条件 / 空白のみ警告 / 文字数 の disclose 不可。editTitle iter2295 /
+                     editDescription iter2297 と同 ItemEditDialog input title-aria sync
+                     pattern を DoD input にも展開、primary input 3 element (title /
+                     description / dod) family 完成。 */
+                  title={
+                    dod.length === 0
+                      ? 'DoD 完了条件 (MUST item は必須、空欄では保存・done 遷移不可)'
+                      : isMust && dod.trim() === ''
+                        ? `DoD (現在 ${dod.length} 文字、空白のみは MUST 保存に不正)`
+                        : `DoD (現在 ${dod.length} 文字、Definition of Done)`
+                  }
                 />
                 <p
                   id="editDod-hint"
