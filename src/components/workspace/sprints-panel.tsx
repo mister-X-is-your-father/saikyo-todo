@@ -1258,6 +1258,17 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                     ? `期間 (日) — Sprint 期間 (日数) の有効範囲は 1-90、現在値 ${length} は範囲外`
                     : `期間 (日) — Sprint 期間 (日数、1-90、現在: ${length} 日)`
                 }
+                /* iter2353: sprint-defaults-length input の aria-label は state-dependent
+                   2-path (invalid / valid、現在値含む) で SR には full validation context
+                   を渡すが browser tooltip にならず sighted は hover で 範囲外警告 / 範囲
+                   規定 disclose 不可。budget-limit-input iter2333 / budget-warn-input
+                   iter2345 と同 input title-aria sync pattern を sprint defaults length
+                   にも展開、Sprint デフォルト設定 form の validation hint 補完。 */
+                title={
+                  length < 1 || length > 90
+                    ? `期間 (日) — Sprint 期間 (日数) の有効範囲は 1-90、現在値 ${length} は範囲外`
+                    : `期間 (日) — Sprint 期間 (日数、1-90、現在: ${length} 日)`
+                }
                 aria-invalid={length < 1 || length > 90 || undefined}
                 inputMode="numeric"
                 enterKeyHint="send"
