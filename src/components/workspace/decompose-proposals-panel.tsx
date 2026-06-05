@@ -534,6 +534,24 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
                     ? `説明 — 提案 description (現在 ${description.length} / 10000 文字、上限近接、Cmd/Ctrl+Enter で保存)`
                     : `説明 — 提案 description (現在 ${description.length} / 10000 文字、Cmd/Ctrl+Enter で保存)`
               }
+              /* iter2383: p-desc Textarea の aria-label は state-dependent 3-path
+                 (empty / 上限近接 / 通常、文字数含む) で SR に validation context +
+                 Markdown 可 + Cmd/Ctrl+Enter shortcut 渡すが browser tooltip に
+                 ならず sighted は hover で同 context 把握不可。visible は placeholder
+                 も無く Label "説明 (Cmd/Ctrl+Enter で保存)" のみ disclose で
+                 「Markdown 可」 capability や上限 10000 文字 は visible に出ない。
+                 team-context iter2381 / editDescription iter2297 / edit-item-dod iter2355 /
+                 wf-editor-graph iter2357 / wf-editor-trigger iter2359 と同 textarea
+                 title-aria sync pattern を p-desc にも展開、6 textarea title family
+                 拡張 (5 既存 + p-desc)、proposal-title input iter2371 と pair で
+                 提案編集 form 全 textarea/input hover disclose 完備。 */
+              title={
+                description.length === 0
+                  ? '説明 — 提案 description (任意、最大 10000 文字、Markdown 可、Cmd/Ctrl+Enter で保存)'
+                  : description.length > 9500
+                    ? `説明 — 提案 description (現在 ${description.length} / 10000 文字、上限近接、Cmd/Ctrl+Enter で保存)`
+                    : `説明 — 提案 description (現在 ${description.length} / 10000 文字、Cmd/Ctrl+Enter で保存)`
+              }
             />
           </div>
           <label className="flex min-h-11 items-center gap-1.5 text-xs">
