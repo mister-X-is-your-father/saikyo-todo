@@ -417,6 +417,21 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                         : kind
                   return `${visible} — Source 種別 (現在: ${visible})`
                 })()}
+                /* iter2361: src-kind select の aria-label は kind-dependent (custom-rest /
+                   yamory / fallback) で SR には visible label + 詳細 hint を渡すが select
+                   自体には browser tooltip にならず sighted は hover で各 kind の詳細
+                   (= REST 自由設定 vs 専用コネクタの差) disclose 不可。edit-item-sprint
+                   iter2287 / sprint-defaults-dow iter1194 と同 select title-aria sync
+                   pattern を src-kind にも展開、integrations source 種別選択 UX 補完。 */
+                title={(() => {
+                  const visible =
+                    kind === 'custom-rest'
+                      ? 'custom-rest — 汎用 REST API、URL / メソッド / items path を自由設定'
+                      : kind === 'yamory'
+                        ? 'yamory — 脆弱性管理 SaaS の専用コネクタ'
+                        : kind
+                  return `${visible} — Source 種別 (現在: ${visible})`
+                })()}
               >
                 <option value="custom-rest">custom-rest (汎用 REST)</option>
                 <option value="yamory">yamory (脆弱性管理)</option>
