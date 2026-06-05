@@ -84,6 +84,13 @@ export function TemplateItemsEditor({ templateId }: Props) {
         className="space-y-2 rounded-md border p-3"
         noValidate
         aria-label="Template 子 Item 追加フォーム"
+        /* iter2419: template-items add form の aria-label "Template 子 Item 追加フォーム" は
+           SR に form 用途を渡すが browser tooltip にならず sighted は hover で form 用途
+           (= Template 内の子 Item 追加 form、parent template に child を append) 把握不可。
+           Sprint 作成 form iter2045 / Goal 作成 form / proposal 編集 form iter2347 と同
+           form landmark title sync pattern を template-items add form にも展開、Template
+           editor 内 form の hover disclose 補完。 */
+        title="Template 子 Item 追加フォーム"
         aria-busy={addMut.isPending || undefined}
         data-testid="template-items-add-form"
         onSubmit={(e) => {
