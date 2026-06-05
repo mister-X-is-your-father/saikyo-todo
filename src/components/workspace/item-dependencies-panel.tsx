@@ -246,6 +246,19 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
                 ? '依存先 Item — 選択可能な候補がありません (本 Item と循環しない他の Item を作成すると候補に出ます)'
                 : `依存先 Item (候補 ${candidates.length} 件、本 Item と循環しないものに限定)`
             }
+            /* iter2375: dep-target select の aria-label は state-dependent 2-path
+               (候補 0 件 / 候補 N 件) で SR に candidates 状況 + 循環防止 caveat を
+               渡すが native <select> でも aria-label は browser tooltip にならず sighted
+               は hover で同 context (= 0 件時 "他の Item を作成すれば出ます" hint /
+               N 件時 "循環しないものに限定" caveat) 把握不可。option text "Item を選択…"
+               のみ disclose で「依存先 Item」 という設定対象名 + 循環防止規約も hover
+               非可視。dep-kind iter2373 と pair で 依存 setup form の 2 select 全 hover
+               disclose 完備。 */
+            title={
+              candidates.length === 0
+                ? '依存先 Item — 選択可能な候補がありません (本 Item と循環しない他の Item を作成すると候補に出ます)'
+                : `依存先 Item (候補 ${candidates.length} 件、本 Item と循環しないものに限定)`
+            }
           >
             <option value="">Item を選択…</option>
             {candidates.map((c) => {
