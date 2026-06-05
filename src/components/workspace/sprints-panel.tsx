@@ -1224,6 +1224,18 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                   const visible = `${DOW_JA[dow] ?? dow}曜`
                   return `${visible} — Sprint 基本曜日 (現在: ${visible}開始)`
                 })()}
+                /* iter2369: sprint-defaults-dow の aria-label IIFE は SR に 現在 dow + 曜
+                   開始 context を渡すが native <select> でも aria-label は browser tooltip
+                   にならず sighted は hover で同 context (= "{曜}曜 開始" の意味付け) 把握
+                   不可。option text "{曜}曜" のみ disclose で「基本曜日」 という設定対象
+                   名が visible に出ない。gantt-zoom-select iter2361 / src-kind select
+                   iter2361 / edit-item-sprint iter2287 と同 select title-aria sync pattern を
+                   sprint-defaults-dow にも展開、Sprint デフォルト設定 form の 2 input
+                   (dow / length) 全 hover disclose 完備 (length は iter2353 で title 済み)。 */
+                title={(() => {
+                  const visible = `${DOW_JA[dow] ?? dow}曜`
+                  return `${visible} — Sprint 基本曜日 (現在: ${visible}開始)`
+                })()}
                 data-testid="sprint-defaults-dow"
               >
                 {DOW_JA.map((label, i) => (
