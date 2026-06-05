@@ -129,6 +129,21 @@ export function TemplatesPanel({ workspaceId }: Props) {
                           ? `名前 — Template 名前 (現在 ${name.length} / 200 文字、上限近接)`
                           : `名前 — Template 名前 (現在 ${name.length} / 200 文字)`
                   }
+                  /* iter2365: tmpl-name input の aria-label は state-dependent 4-path (空 /
+                     空白のみ / 上限近接 / 通常) で SR には full context (validation + 文字数 +
+                     用途 hint) を渡すが browser tooltip にならず sighted は hover で同 context
+                     disclose 不可。editTitle iter2295 / te-description iter2303 と同 input
+                     title-aria sync pattern を Template 名前 input にも展開、Template create
+                     form の validation hint 補完。 */
+                  title={
+                    name.length === 0
+                      ? '名前 — Template 名前 (必須、最大 200 文字、何を生成するかが分かる名前)'
+                      : name.trim() === ''
+                        ? `名前 — Template 名前 (現在 ${name.length} / 200 文字、空白のみは不正)`
+                        : name.length > 180
+                          ? `名前 — Template 名前 (現在 ${name.length} / 200 文字、上限近接)`
+                          : `名前 — Template 名前 (現在 ${name.length} / 200 文字)`
+                  }
                 />
               </div>
               <div>
