@@ -1300,6 +1300,13 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                 data-testid="sprint-defaults-cancel"
                 // iter1103: visible-prefix sweep (iter1093-1102) を sprint-defaults-cancel/save にも展開
                 aria-label="キャンセル — Sprint デフォルトの編集を破棄"
+                /* iter2363: cancel + 隣 save 両 button の aria-label は SR に full
+                   context (= 破棄 / state-dependent 保存中) 渡すが browser tooltip
+                   にならず sighted は hover で disclose 不可。sprint-period cancel/save
+                   iter2351 と pair の sprint-defaults cancel/save 同型 button pair に
+                   title sync 展開、Sprint 設定 cancel/save button 2 pair (period + defaults)
+                   完成 = 4 button 完成。 */
+                title="キャンセル — Sprint デフォルトの編集を破棄"
               >
                 <span aria-hidden="true">キャンセル</span>
               </Button>
@@ -1311,6 +1318,13 @@ function SprintDefaultsEditor({ workspaceId }: { workspaceId: string }) {
                 aria-busy={upd.isPending || undefined}
                 data-testid="sprint-defaults-save-btn"
                 aria-label={
+                  upd.isPending
+                    ? '保存中… — Sprint デフォルトを保存中'
+                    : '保存 — Sprint デフォルト (基本曜日 / 期間) を保存'
+                }
+                /* iter2363: state-dependent 2-path (pending / idle) も title sync (sprint-period
+                   save iter2351 と同 pattern)、4 button family 完成。 */
+                title={
                   upd.isPending
                     ? '保存中… — Sprint デフォルトを保存中'
                     : '保存 — Sprint デフォルト (基本曜日 / 期間) を保存'
