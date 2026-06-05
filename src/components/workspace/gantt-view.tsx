@@ -464,6 +464,17 @@ export function GanttView({
                 ? '完了済を隠す — 現在は隠している (クリックで表示に戻す)'
                 : '完了済を隠す — 現在は表示中'
             }
+            /* iter2325: gantt-hide-done-toggle の aria-label は state-dependent 2-path
+               (hideDone ? '現在は隠している (クリックで表示に戻す)' : '現在は表示中') で SR には
+               toggle 状態 + next action を渡すが checkbox 自体には browser tooltip にならず
+               sighted は hover で同 context disclose 不可。show-deps-toggle iter2323 と同
+               Gantt 操作 bar toggle title pattern を hide-done toggle にも展開、Gantt 操作 bar
+               2 toggle family 完成 (show-deps / hide-done)。 */
+            title={
+              hideDone
+                ? '完了済を隠す — 現在は隠している (クリックで表示に戻す)'
+                : '完了済を隠す — 現在は表示中'
+            }
           />
           <span aria-hidden="true">完了済を隠す</span>
         </label>
