@@ -616,6 +616,23 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                             : method
                       return `${visible} — HTTP メソッド (現在: ${visible})`
                     })()}
+                    /* iter2401: src-method select の aria-label IIFE は SR に GET/POST の
+                       semantic 差 (= 副作用なし vs body 付き、用途 mental model) を渡すが
+                       native <select> でも aria-label は browser tooltip にならず sighted は
+                       hover で同 method 選択基準 (= 何のために GET / POST か) 把握不可。
+                       option text "GET" / "POST" のみ disclose で method semantic は disclose
+                       されない。src-kind iter2361 / dep-kind iter2373 / KR mode iter2371 と同
+                       select title-aria sync pattern を src-method にも展開、REST source
+                       method 選択基準 (副作用 / body 必要性) を hover で sighted disclose。 */
+                    title={(() => {
+                      const visible =
+                        method === 'GET'
+                          ? 'GET — 副作用なし、URL の query で読取り'
+                          : method === 'POST'
+                            ? 'POST — body 付き送信、subscribe / search 系の API に使う'
+                            : method
+                      return `${visible} — HTTP メソッド (現在: ${visible})`
+                    })()}
                   >
                     <option value="GET">GET</option>
                     <option value="POST">POST</option>
