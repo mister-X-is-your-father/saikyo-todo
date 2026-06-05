@@ -766,6 +766,21 @@ async function main() {
     })
   }
 
+  // ========= KN. tag-picker CommandInput title sweep (iter2349) =========
+  const tpKN = read(here, `${root}/src/components/workspace/tag-picker.tsx`)
+  if (
+    !tpKN.includes('iter2349') ||
+    !tpKN.includes(
+      'title="タグ — Item に紐付けるラベルを検索 or 新規作成 (新規 tag は色がランダム生成)"',
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'KN.tag-picker-input-title',
+      message: '[KN] iter2349 tag-picker CommandInput title sync が消えている',
+    })
+  }
+
   // ========= KM. proposal 編集 form title sweep (iter2347) =========
   const dpKM = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
   if (

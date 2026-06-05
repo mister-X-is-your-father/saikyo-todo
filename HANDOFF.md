@@ -819,6 +819,7 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2350 1/1 test a11y-sweep-suite に iter2349 tag-picker CommandInput entry + handoff §9] 検査軸 299 個 (新 KN 軸)、計約 417 invariant check に拡張、picker input family 2 element 完成 (command-palette KL + tag-picker KN)、assignee-picker CommandInput pending。
 - ✅ [playwright-iter2349 1/1] tag-picker CommandInput: aria-label "タグ — Item に紐付けるラベルを検索 or 新規作成 (新規 tag は色がランダム生成)" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-tag-picker-input-title-iter2349.ts)、command-palette CommandInput iter2345 と同 picker input title pattern、visible は placeholder のみで「色がランダム生成」 caveat 含む dual-mode operator (検索 + 0 件時 新規作成) を hover disclose、picker input family 拡張 (command-palette + tag-picker、assignee-picker は次 iter 候補)。
 - ✅ [playwright-iter2348 1/1 test a11y-sweep-suite に iter2347 proposal edit form + iter2345 command-palette entries + handoff §9] 検査軸 298 個 (新 KL / KM 軸)、計約 416 invariant check に拡張、form / CommandInput title family 拡張。
 - ✅ [playwright-iter2347 1/1] proposal 編集 form: aria-label "提案「${title}」の編集フォーム" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-proposal-edit-form-title-iter2347.ts)、create-workspace-form iter2217 / AI 分解提案 ul iter2331 と同 form/list aria-label title sync pattern、複数 proposal 並ぶ context で誤編集減 (form 対象 hover 確認可能化)。
