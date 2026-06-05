@@ -1104,6 +1104,12 @@ function WorkflowNodeRunsList({ runId }: { runId: string }) {
       className="space-y-1.5"
       data-testid={`wf-node-runs-${runId}`}
       aria-label={`Workflow node 実行履歴 — ${rows.length} 件`}
+      /* iter2439: wf-node-runs <ul> の aria-label "Workflow node 実行履歴 — N 件" は SR に
+         list landmark (件数) を渡すが browser tooltip にならず sighted は hover で同 list
+         landmark summary 把握不可。wf-runs-list iter2417 / src-imports-list iter2405 と同
+         history list family title pattern を node-runs にも展開、Workflow 詳細 panel 内
+         run > node-runs 2 階層 history list family 完成。 */
+      title={`Workflow node 実行履歴 — ${rows.length} 件`}
     >
       {rows.map((nr) => (
         <li
