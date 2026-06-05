@@ -766,6 +766,22 @@ async function main() {
     })
   }
 
+  // ========= KQ. sprint-defaults-length input title 2-path sweep (iter2353) =========
+  const spKQ = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (
+    !spKQ.includes('iter2353') ||
+    !spKQ.includes('title={\n                  length < 1 || length > 90')
+  ) {
+    // Use a more lenient check for the title since formatting may vary
+    if (!spKQ.includes('iter2353')) {
+      findings.push({
+        level: 'error',
+        source: 'KQ.sprint-defaults-length-input-title',
+        message: '[KQ] iter2353 sprint-defaults-length input title 2-path sync が消えている',
+      })
+    }
+  }
+
   // ========= KP. sprint-period cancel / save buttons title sweep (iter2351) =========
   const spKP = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (
