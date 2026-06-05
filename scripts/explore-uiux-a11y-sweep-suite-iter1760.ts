@@ -766,6 +766,19 @@ async function main() {
     })
   }
 
+  // ========= KG. Sprint swim-lane root group title sweep (iter2337) =========
+  const slKG = read(here, `${root}/src/components/workspace/sprint-swimlane-disclosure.tsx`)
+  if (
+    !slKG.includes('iter2337') ||
+    !slKG.includes('title={`Sprint「${sprintName}」 担当者 swim-lane — lane ${rows.length} 件`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'KG.sprint-swimlane-root-group-title',
+      message: '[KG] iter2337 Sprint swim-lane root group title sync が消えている',
+    })
+  }
+
   // ========= KF. proposal MUST checkbox title sweep (iter2335) =========
   const dpKF = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
   if (

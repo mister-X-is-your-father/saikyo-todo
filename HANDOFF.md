@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2338 1/1 test a11y-sweep-suite に iter2337 Sprint swim-lane root group entry + handoff §9] 検査軸 292 個 (新 KG 軸)、計約 410 invariant check に拡張、role="group" title family 拡張 (engineer-trigger / workspace-header / offline-recovery + Sprint swim-lane root)。
+- ✅ [playwright-iter2337 1/1] Sprint swim-lane root group: role="group" aria-label "Sprint「${name}」 担当者 swim-lane — lane N 件" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-sprint-swimlane-root-group-title-iter2337.ts)、engineer-trigger group iter2207 / workspace-header ops group iter2229 / offline 復帰アクション group iter2323 と同 role="group" title sync pattern、Sprint 画面の lane 数 1-glance 把握補完。
 - ✅ [playwright-iter2336 1/1 test a11y-sweep-suite に iter2335 proposal MUST checkbox entry + handoff §9] 検査軸 291 個 (新 KF 軸)、計約 409 invariant check に拡張、AI 分解提案 row の MUST toggle hover disclosure 補完。
 - ✅ [playwright-iter2335 1/1] proposal MUST checkbox: aria-label state-dependent 2-path (isMust ? "MUST が ON: 絶対落とさない — DoD 必須、クリックで OFF" : "MUST が OFF: 通常タスク — クリックで ON、DoD 必須化") を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-proposal-must-checkbox-title-iter2335.ts)、edit-item-must iter2273 / gantt show-deps iter2323 と同 state-dependent checkbox title pattern、AI 分解提案 row MUST toggle 副作用 hover disclose。
 - ✅ [playwright-iter2334 1/1 test a11y-sweep-suite に iter2333 budget-limit-input entry + handoff §9] 検査軸 290 個 (新 KE 軸)、計約 408 invariant check に拡張、AI 月次コスト上限 form の 3-path validation hint を hover で disclose。
