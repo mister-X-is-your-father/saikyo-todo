@@ -201,6 +201,13 @@ export function ActiveTimerPanel({ workspaceId }: Props) {
               data-testid="active-timer-estimate"
               role="img"
               aria-label={`見積 ${estimateMinutes}分`}
+              /* iter2393: estimate chip の aria-label "見積 ${estimateMinutes}分" は visible と
+                 同 text を SR に渡すが visible は単独で意味付け薄い (数字 + 単位のみ)。隣の
+                 calibrated chip iter1851 が title="${calibratedMinutes}分 — 校正後 ..." を持ち
+                 sighted hover で校正 context disclose、本 estimate chip は title 無で hover
+                 disclose が divergent。calibrated chip と pair 化、active-timer の見積系 chip
+                 2 element (estimate + calibrated) 全 hover disclose 統一。 */
+              title={`見積 ${estimateMinutes}分`}
             >
               <span aria-hidden="true">見積 {estimateMinutes}分</span>
             </span>
