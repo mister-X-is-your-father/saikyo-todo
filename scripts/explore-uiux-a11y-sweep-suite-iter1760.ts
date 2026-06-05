@@ -766,6 +766,20 @@ async function main() {
     })
   }
 
+  // ========= LP. subtasks-progress-summary title sweep (iter2379) =========
+  const stLP = read(here, `${root}/src/components/workspace/subtasks-panel.tsx`)
+  if (!stLP.includes('iter2379')) {
+    findings.push({
+      level: 'error',
+      source: 'LP.subtasks-progress-summary-title',
+      message: '[LP] iter2379 subtasks-progress-summary title sync が消えている',
+    })
+  }
+
+  // ========= LO. subtasks-bulk-add-btn title sweep (iter2379 / parallel) =========
+  // parallel session 8925d96f — same iter2379 different element
+  // (check via iter2379 marker in subtasks-panel.tsx, both targets in same file)
+
   // ========= LN. dep-add-btn title 3-path sweep (iter2377) =========
   const ddLN = read(here, `${root}/src/components/workspace/item-dependencies-panel.tsx`)
   if (
