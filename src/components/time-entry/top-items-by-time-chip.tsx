@@ -236,6 +236,11 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
                     className="text-muted-foreground text-[10px] tabular-nums"
                     role="img"
                     aria-label={`${row.entryCount} 件`}
+                    /* iter2429: entryCount chip の aria-label "${entryCount} 件" は SR には full
+                       text を渡すが title 無で、同 row の隣接 chip iter1919 が title 持つので
+                       hover disclose pattern divergent。 隣 chip と pair 化、time-entry top-items
+                       row の 2 chip (合計時間 + 件数) 全 hover disclose 統一。 */
+                    title={`${row.entryCount} 件`}
                   >
                     <span aria-hidden="true">{row.entryCount} 件</span>
                   </span>
