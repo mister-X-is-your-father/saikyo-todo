@@ -203,6 +203,13 @@ export function TaskChuteView({ workspaceId, items }: Props) {
                    strict prefix-match で不可。iter1604 ETA chip と同 pattern、visible 冒頭固定 +
                    em-dash 区切。null path (`'時刻未指定'`) は visible "--:--" のみで text-prefix 無、維持。 */
                 aria-label={timeLabel ? `${timeLabel} — 予定時刻` : '時刻未指定'}
+                /* iter2327: taskchute timeline 各 row の 予定時刻 chip は state-dependent 2-path
+                   (timeLabel 有 → "HH:MM — 予定時刻" / 無 → "時刻未指定") で sighted は
+                   visible "--:--" のみ見え hover で 「時刻未指定」 context disclose 不可、
+                   timeLabel 有でも 末尾 "— 予定時刻" の意味付け disclose 不可。
+                   active-timer-calibrated iter1851 / quick-add-calibrated iter1889 と同 role=img
+                   chip title sync pattern を taskchute time chip にも展開。 */
+                title={timeLabel ? `${timeLabel} — 予定時刻` : '時刻未指定'}
               >
                 {timeLabel ? (
                   <>
