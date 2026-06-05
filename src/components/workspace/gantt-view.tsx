@@ -326,6 +326,21 @@ export function GanttView({
         }${criticalCount > 0 ? ` / critical ${criticalCount} 件` : ''}${
           baselineCount > 0 ? ` / baseline ${baselineCount} 件` : ''
         }${slipItemCount > 0 ? ` / 遅延 ${slipItemCount} 件 計 ${totalSlipDays} 日` : ''}`}
+        /* iter2353: role="group" aria-label は SR に Gantt project summary (= 表示範囲 / Item 数 /
+           CPM 期間 / critical / baseline / 遅延 まで含む multi-metric summary) を渡すが browser
+           tooltip にならず sighted は hover で同 integrated summary 把握不可。inner 3 span は
+           aria-hidden で SR は aria-label のみ参照する設計のため hover でも同 text disclose
+           して visible/hover/SR の 3 path で同 summary に統一する。engineer-trigger group iter2207
+           / offline 復帰アクション group iter2323 / Sprint swim-lane root iter2337 と同 role="group"
+           title sync pattern を Gantt summary にも展開、Gantt 上部 summary banner の 1-glance 把握
+           を hover でも補完。 */
+        title={`Gantt project summary — 表示範囲 ${totalSpanDays} 日 / 表示中 Item ${withDates.length} 件${
+          projectDurationDays !== undefined && projectDurationDays > 0
+            ? ` / CPM 期間 ${projectDurationDays} 日`
+            : ''
+        }${criticalCount > 0 ? ` / critical ${criticalCount} 件` : ''}${
+          baselineCount > 0 ? ` / baseline ${baselineCount} 件` : ''
+        }${slipItemCount > 0 ? ` / 遅延 ${slipItemCount} 件 計 ${totalSlipDays} 日` : ''}`}
       >
         {/* iter917: parent role="group" aria-label が "表示範囲 X 日 / 表示中 Item Y 件
             / CPM 期間 Z 日 / ..." 完全 content を持つため、内側 3 span は visible
