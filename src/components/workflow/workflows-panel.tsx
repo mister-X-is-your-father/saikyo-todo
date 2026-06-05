@@ -961,6 +961,13 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
       /* iter1586: 旧 aria-label paren convention `"直近の実行履歴 X 件 (最新順)"` は iter1093-1585
          sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
       aria-label={`直近の実行履歴 ${runs.length} 件 — 最新順`}
+      /* iter2417: wf-runs-list <ul> の aria-label "直近の実行履歴 N 件 — 最新順" は SR に
+         list landmark (件数 + 並び順) を渡すが browser tooltip にならず sighted は hover で
+         同 list landmark summary 把握不可。src-imports-list iter2405 / Sprint 一覧 ul iter2193 /
+         KR 一覧 ul iter2329 と同 list family title pattern を wf-runs-list にも展開、
+         Workflow 詳細 panel 実行履歴 hover disclose 補完、src-imports + wf-runs で「直近の N件
+         — 最新順」 history list family pattern 2 element 完成。 */
+      title={`直近の実行履歴 ${runs.length} 件 — 最新順`}
     >
       {runs.map((r) => {
         const isOpen = expandedRunId === r.id
