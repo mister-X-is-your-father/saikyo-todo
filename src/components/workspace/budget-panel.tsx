@@ -310,6 +310,19 @@ export function BudgetPanel({ workspaceId }: Props) {
                       ? `警告閾値 (有効範囲は 0-1、現在値「${draftWarn}」は範囲外)`
                       : `警告閾値 (現在: ${rateToPct(Number(draftWarn))}% — 消費率がこの値を超えると UI バーを警告色に切替)`
                 }
+                /* iter2345: budget-warn-input の aria-label は state-dependent 3-path
+                   (empty / invalid / valid) で SR には full validation context を渡すが
+                   browser tooltip にならず sighted は hover で 0..1 範囲規定 / 範囲外警告 /
+                   percent formatted 値 の disclose 不可。budget-limit-input iter2333 と pair
+                   で同 input title-aria 3-path sync pattern を warn input にも展開、budget
+                   edit form の 2 input (limit / warn) validation hint family 完成。 */
+                title={
+                  draftWarn === '' || Number.isNaN(Number(draftWarn))
+                    ? '警告閾値 (0..1、消費率がこの値を超えると UI バーを警告色に切替)'
+                    : Number(draftWarn) < 0 || Number(draftWarn) > 1
+                      ? `警告閾値 (有効範囲は 0-1、現在値「${draftWarn}」は範囲外)`
+                      : `警告閾値 (現在: ${rateToPct(Number(draftWarn))}% — 消費率がこの値を超えると UI バーを警告色に切替)`
+                }
                 aria-invalid={
                   (draftWarn !== '' && (Number(draftWarn) < 0 || Number(draftWarn) > 1)) ||
                   undefined
