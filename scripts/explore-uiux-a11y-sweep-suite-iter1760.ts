@@ -766,6 +766,29 @@ async function main() {
     })
   }
 
+  // ========= KY. src-kind select title sweep (iter2361) =========
+  const ipKY = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
+  if (
+    !ipKY.includes('iter2361') ||
+    !ipKY.includes('`${visible} — Source 種別 (現在: ${visible})`')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'KY.src-kind-select-title',
+      message: '[KY] iter2361 src-kind select title sync が消えている',
+    })
+  }
+
+  // ========= KX. gantt-zoom-select title sweep (iter2361 / parallel) =========
+  const gvKX = read(here, `${root}/src/components/workspace/gantt-view.tsx`)
+  if (!gvKX.includes('iter2361')) {
+    findings.push({
+      level: 'error',
+      source: 'KX.gantt-zoom-select-title',
+      message: '[KX] iter2361 gantt-zoom-select title sync が消えている',
+    })
+  }
+
   // ========= KW. wf-editor-trigger textarea title 3-path sweep (iter2359) =========
   const wfKW = read(here, `${root}/src/components/workflow/workflows-panel.tsx`)
   if (
