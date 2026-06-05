@@ -733,6 +733,17 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                       ? `active に戻す — Goal「${goal.title}」のステータスを更新中…`
                       : `active に戻す — Goal「${goal.title}」を active に戻す`
                   }
+                  /* iter2367: archived 状態 goal の reactivate 単独 button も achieved 状態
+                     2 button (iter2365) と同 state-dependent 2-path title sync 展開、
+                     goal status transition button family 完成 (achieved 2 + archived 1 =
+                     計 3 button 全 hover disclose 完備)。同 aria-label expression を共有
+                     するが render condition (achieved / archived) で別 button インスタンス
+                     のため独立に title 付与必要。 */
+                  title={
+                    update.isPending
+                      ? `active に戻す — Goal「${goal.title}」のステータスを更新中…`
+                      : `active に戻す — Goal「${goal.title}」を active に戻す`
+                  }
                 >
                   <span aria-hidden="true">active に戻す</span>
                 </Button>
