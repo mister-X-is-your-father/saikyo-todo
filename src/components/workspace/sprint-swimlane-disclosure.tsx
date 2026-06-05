@@ -243,6 +243,19 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
                   ? `bar 数 ${row.items.length} 件 (うち競合あり ${conflicted} 件)`
                   : `bar 数 ${row.items.length} 件`
               })()}
+              /* iter2359: role="img" の swimlane row bar chart 全体 aria-label (= bar 数 +
+                 conflict 件数) は SR に full content を渡すが browser tooltip にならず
+                 sighted は hover で同 bar count + conflict summary 把握不可。visible 個別
+                 bar は title で個別 hover hint (item.title + position) 持つが container 全体の
+                 1-glance summary (bar 数 / 競合件数) が hover 非可視。lane chip iter2307 と
+                 同 file 内 chip / bar 用 title pattern を bar chart 全体にも展開、swimlane row の
+                 3 element (lane chip / bar chart container / 個別 bar) 全 hover disclose 完備。 */
+              title={(() => {
+                const conflicted = row.items.filter((it) => it.conflicted).length
+                return conflicted > 0
+                  ? `bar 数 ${row.items.length} 件 (うち競合あり ${conflicted} 件)`
+                  : `bar 数 ${row.items.length} 件`
+              })()}
             >
               {row.items.map((it) => (
                 <span
