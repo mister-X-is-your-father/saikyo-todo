@@ -439,6 +439,12 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
           aria-label={`提案「${proposal.title}」の編集フォーム`}
           aria-busy={update.isPending || undefined}
           data-testid={`proposal-${proposal.id}-edit-form`}
+          /* iter2347: proposal 編集 form の aria-label "提案「${title}」の編集フォーム"
+             は SR には form の用途 + 対象 proposal を渡すが browser tooltip にならず
+             sighted は hover で同 context disclose 不可。create-workspace-form iter2217 /
+             AI 分解提案 ul iter2331 と同 form/list aria-label title sync pattern を
+             proposal edit form にも展開、編集 form の対象 hover disclose。 */
+          title={`提案「${proposal.title}」の編集フォーム`}
           onSubmit={(e) => {
             e.preventDefault()
             void handleSaveEdit()
