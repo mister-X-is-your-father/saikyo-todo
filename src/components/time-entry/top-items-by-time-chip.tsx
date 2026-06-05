@@ -186,6 +186,15 @@ export function TopItemsByTimeChip({ workspaceId }: { workspaceId: string }) {
             /* iter1590: 旧 aria-label paren convention `"直近 X 日 Item 別稼働 top Y 件 (合計時間が多い順)"` は
                iter1093-1589 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
             aria-label={`直近 ${WINDOW_DAYS} 日 Item 別稼働 top ${summary.top.length} 件 — 合計時間が多い順`}
+            /* iter2413: top-items-by-time-chip <ol> の aria-label は SR に list landmark
+               (window 日数 + top N 件 + 並び順) を渡すが browser tooltip にならず sighted は
+               hover で同 list 概要 (= window 期間 + 件数 + 並び順) 把握不可。inner <li>
+               各 row は visible "N. title label 件" だが <ol> 全体が「直近 X 日」 window や
+               「合計時間が多い順」 並び順 mental model を確立する場で、disclose されないと
+               表示順の根拠 ambiguous。src-imports-list iter2405 / recovery-plan ol iter2315 と
+               同 list family title pattern を本 ol にも展開、time-entry 集計 list の hover
+               disclose 補完。 */
+            title={`直近 ${WINDOW_DAYS} 日 Item 別稼働 top ${summary.top.length} 件 — 合計時間が多い順`}
           >
             {summary.top.map((row, idx) => {
               const title = summary.titles.get(row.itemId) ?? '(無題)'
