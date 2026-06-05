@@ -212,6 +212,24 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
                     : pickKind
               return `${visible} — 依存の種類 (現在: ${visible})`
             })()}
+            /* iter2373: dep-kind select の aria-label IIFE は SR に 現在 kind +
+               依存意味 (= 前提条件: 着手 blocker / 関連: 緩い結び付き、ブロックなし) を
+               渡すが native <select> でも aria-label は browser tooltip にならず sighted
+               は hover で同 mental model (= 依存の強さの差) 把握不可。option text
+               "前提条件 (上流)" / "関連" のみ disclose で着手 blocker / 緩い結び付き の
+               実質的な意味は disclose されない。KR 進捗算出モード iter2371 /
+               sprint-defaults-dow iter2369 / gantt-zoom-select iter2361 と同 select
+               title-aria sync pattern を dep-kind にも展開、依存 setup form の選択基準
+               hover disclose 補完。 */
+            title={(() => {
+              const visible =
+                pickKind === 'prerequisite'
+                  ? '前提条件 (上流、これが完了しないと本 Item を着手できない)'
+                  : pickKind === 'related'
+                    ? '関連 (緩い結び付き、進行ブロックではない)'
+                    : pickKind
+              return `${visible} — 依存の種類 (現在: ${visible})`
+            })()}
           >
             <option value="prerequisite">前提条件 (上流)</option>
             <option value="related">関連</option>
