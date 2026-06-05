@@ -830,6 +830,13 @@ function SourceImportHistory({ sourceId }: { sourceId: string }) {
       /* iter1587: 旧 aria-label paren convention `"直近の Pull 履歴 X 件 (最新順)"` は iter1093-1586
          sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
       aria-label={`直近の Pull 履歴 ${imports.length} 件 — 最新順`}
+      /* iter2405: src-imports-list <ul> の aria-label "直近の Pull 履歴 N 件 — 最新順" は
+         SR に list context (件数 + 並び順) を渡すが browser tooltip にならず sighted は
+         hover で同 list landmark summary 把握不可。Sprint 一覧 ul iter2193 / API 連携
+         source 一覧 ul iter2191 / KR 一覧 ul iter2329 と同 list family title pattern を
+         src-imports-list にも展開、operation-board ul iter2357 / Activity 履歴 ul iter2291
+         に続く list family 拡張、Source 詳細 panel の Pull 履歴 hover disclose 補完。 */
+      title={`直近の Pull 履歴 ${imports.length} 件 — 最新順`}
     >
       {imports.map((r) => (
         <li
