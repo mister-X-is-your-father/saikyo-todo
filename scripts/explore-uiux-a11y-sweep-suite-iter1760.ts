@@ -766,6 +766,19 @@ async function main() {
     })
   }
 
+  // ========= KK. budget-warn-input title 3-path sweep (iter2345) =========
+  const bpKK = read(here, `${root}/src/components/workspace/budget-panel.tsx`)
+  if (
+    !bpKK.includes('iter2345') ||
+    !bpKK.includes("'警告閾値 (0..1、消費率がこの値を超えると UI バーを警告色に切替)'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'KK.budget-warn-input-title',
+      message: '[KK] iter2345 budget-warn-input title 3-path sync が消えている',
+    })
+  }
+
   // ========= KJ. tag-create-new CommandItem title sweep (iter2343) =========
   const tpKJ = read(here, `${root}/src/components/workspace/tag-picker.tsx`)
   if (!tpKJ.includes('iter2343') || !tpKJ.includes("'新規 tag'")) {

@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2346 1/1 test a11y-sweep-suite に iter2345 budget-warn-input entry + handoff §9] 検査軸 296 個 (新 KK 軸)、計約 414 invariant check に拡張、budget edit form 2 input (limit / warn) validation hint family 完成。
+- ✅ [playwright-iter2345 1/1] budget-warn-input: aria-label state-dependent 3-path (empty / invalid / valid) を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-budget-warn-input-title-iter2345.ts)、budget-limit-input iter2333 と pair で同 input title-aria 3-path sync pattern、budget edit form の 2 input (limit / warn) validation hint family 完成。
 - ✅ [playwright-iter2344 1/1 test a11y-sweep-suite に iter2343 tag-create-new entry + handoff §9] 検査軸 295 個 (新 KJ 軸)、計約 413 invariant check に拡張、tag-picker 内 option + create-new family 完成、CommandItem title family 拡張 (user / tag / AI agent / tag-create-new = 4 option type)。
 - ✅ [playwright-iter2343 1/1] tag-create-new CommandItem: aria-label query-dependent dynamic text "${query || '新規 tag'} — 「${query}」を新規 tag として作成" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-tag-create-new-title-iter2343.ts)、assignee-picker user iter2335 / tag-picker option iter2339 / assignee-picker agent iter2341 と同 CommandItem title pattern、tag-picker 内 option + create-new family 完成、query 動的内容を hover で確認可能化。
 - ✅ [playwright-iter2342 1/1 test a11y-sweep-suite に iter2341 assignee-picker AI agent entry + handoff §9] 検査軸 294 個 (新 KI 軸)、計約 412 invariant check に拡張、CommandItem 3 option family 完成 (user KF / tag KH / AI agent KI)。
