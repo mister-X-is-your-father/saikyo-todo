@@ -685,6 +685,20 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
                   ? `追加中… — 子タスク ${pendingTitleCount} 件を追加中…`
                   : `${pendingTitleCount} 件追加 — 子タスク ${pendingTitleCount} 件をまとめて追加`
             }
+            /* iter2379: subtasks-bulk-add-btn aria-label は state-dependent 3-path
+               (empty / pending / ready、件数含む) で SR に full validation + bulk count
+               context を渡すが browser tooltip にならず sighted は hover で同 context
+               (= empty 時の hint "改行区切りで入力" / pending 中 / ready 時の件数) 把握
+               不可。visible は "追加中…" / "${count} 件追加" のみで empty 時の guidance
+               hint は visible に出ない。subtasks-panel button family の hover disclose
+               強化 (path B codify scripts/explore-uiux-subtasks-bulk-add-btn-title-iter2379.ts)。 */
+            title={
+              !bulkText.trim()
+                ? '追加 — 子タスクを追加するには改行区切りで入力してください'
+                : create.isPending
+                  ? `追加中… — 子タスク ${pendingTitleCount} 件を追加中…`
+                  : `${pendingTitleCount} 件追加 — 子タスク ${pendingTitleCount} 件をまとめて追加`
+            }
           >
             <span aria-hidden="true">
               {create.isPending ? '追加中…' : `${pendingTitleCount} 件追加`}
