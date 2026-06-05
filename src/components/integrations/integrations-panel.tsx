@@ -871,7 +871,13 @@ function SourceImportHistory({ sourceId }: { sourceId: string }) {
           {r.error && (
             <span
               className="text-destructive line-clamp-1 w-full text-[10px]"
-              title={r.error}
+              /* iter2437: 旧 title={r.error} は aria-label `${r.error} — Pull エラー` と
+                 divergent (title は素 error 文 / aria-label は em-dash で "Pull エラー" suffix
+                 付き context)。SR と sighted hover で異なる text。Pull ステータス chip iter1559
+                 / KR delete iter2099 と同 title-aria divergence 修正 pattern で sync、
+                 "Pull エラー" context suffix を hover でも sighted disclose、SR/sighted
+                 hover text consistency 復元。 */
+              title={`${r.error} — Pull エラー`}
               /* iter1566: 旧 `Pull エラー: ${r.error}` は ':' colon 区切で visible "${r.error}"
                  (= 隣接 aria-hidden span text) を末尾に持ち voice control prefix-matching 不可。
                  iter1553-1565 sweep convention で visible 冒頭固定 + em-dash 区切。 */
