@@ -336,6 +336,12 @@ export function DecomposeProposalsPanel({ workspaceId, parentItemId }: Props) {
         className="space-y-1.5"
         data-testid="proposals-list"
         aria-label={`AI 分解提案 一覧 — ${list.length} 件`}
+        /* iter2331: AI 分解提案 ul の aria-label "AI 分解提案 一覧 — N 件" は visible に
+           counter chip が無く 件数 context が sighted hover で disclose 不可。
+           KR list iter2329 / Activity 履歴 ul iter2291 / swimlane lane ul iter2305 /
+           recovery-plan ol iter2315 と同 list family title pattern を AI 分解提案 list
+           にも展開、10 entity 一覧 ul/ol family へ拡張。 */
+        title={`AI 分解提案 一覧 — ${list.length} 件`}
       >
         {list.map((p) => (
           <ProposalRow
