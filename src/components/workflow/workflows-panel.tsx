@@ -705,6 +705,19 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                     ? `graph JSON (現在 ${graphText.length} 文字、JSON parse error あり)`
                     : `graph JSON (現在 ${graphText.length} 文字、node 定義 JSON)`
               }
+              /* iter2357: wf-editor-graph textarea の aria-label は state-dependent 3-path
+                 (空 / parse-error / 通常、文字数含む) で SR には full context (= プリセット
+                 button hint + JSON parse error 警告) を渡すが browser tooltip にならず
+                 sighted は hover で同 context disclose 不可。editDescription iter2297 /
+                 edit-item-dod iter2355 と同 textarea title-aria 3-path sync pattern を
+                 wf-editor-graph にも展開、workflow editor graph JSON 入力 form hint 補完。 */
+              title={
+                graphText.length === 0
+                  ? 'graph JSON (workflow の node 定義を JSON で記述、上のプリセット button で skeleton 追加可)'
+                  : error?.startsWith('graph JSON 不正')
+                    ? `graph JSON (現在 ${graphText.length} 文字、JSON parse error あり)`
+                    : `graph JSON (現在 ${graphText.length} 文字、node 定義 JSON)`
+              }
               aria-invalid={error?.startsWith('graph JSON 不正') || undefined}
               aria-describedby={error ? `wf-editor-error-${wf.id}` : undefined}
             />
