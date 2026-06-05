@@ -766,6 +766,26 @@ async function main() {
     })
   }
 
+  // ========= LF. mock-timesheet tsCategory select title sweep (iter2369) =========
+  const mfLF = read(here, `${root}/src/components/mock-timesheet/mock-submit-form.tsx`)
+  if (!mfLF.includes('iter2369') || !mfLF.includes('`${visible} — カテゴリ (現在: ${visible})`')) {
+    findings.push({
+      level: 'error',
+      source: 'LF.mock-tsCategory-select-title',
+      message: '[LF] iter2369 mock-timesheet tsCategory select title sync が消えている',
+    })
+  }
+
+  // ========= LE. sprint-defaults-dow select title sweep (iter2369 / parallel) =========
+  const spLE = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (!spLE.includes('iter2369')) {
+    findings.push({
+      level: 'error',
+      source: 'LE.sprint-defaults-dow-title',
+      message: '[LE] iter2369 sprint-defaults-dow select title sync が消えている',
+    })
+  }
+
   // ========= LD. template-items MUST checkbox title sweep (iter2367) =========
   const tiLD = read(here, `${root}/src/components/template/template-items-editor.tsx`)
   if (
