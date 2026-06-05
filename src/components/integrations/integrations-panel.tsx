@@ -544,6 +544,18 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                       ? 'project IDs (必須、1 件以上、カンマ区切り — 例: proj-a, proj-b)'
                       : `project IDs (現在 ${projectIds.length} 文字、カンマ区切り)`
                   }
+                  /* iter2399: src-project-ids IMEInput の aria-label は state-dependent 2-path
+                     (empty hint / valued count) で SR に Yamory project ID リスト
+                     のフォーマット (カンマ区切り) + 例 + 必須要件 を渡すが browser tooltip
+                     にならず sighted は hover で同 context 把握不可。visible は placeholder
+                     "カンマ区切り (例: proj-a, proj-b)" だがエラー時の disclose は弱い。
+                     src-token iter2397 と pair で Yamory connector form 必須 2 input
+                     (token + project IDs) 全 hover disclose 完備。 */
+                  title={
+                    projectIds.length === 0
+                      ? 'project IDs (必須、1 件以上、カンマ区切り — 例: proj-a, proj-b)'
+                      : `project IDs (現在 ${projectIds.length} 文字、カンマ区切り)`
+                  }
                 />
               </div>
             </div>
