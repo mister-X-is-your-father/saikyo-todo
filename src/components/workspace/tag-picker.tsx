@@ -177,6 +177,16 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
                     aria-label={
                       checked ? `${t.name} — タグ付与中 (クリックで解除)` : `${t.name} — タグを付与`
                     }
+                    /* iter2339: aria-label state-dependent 2-path (checked / unchecked、tag 名
+                       含む) は SR に full context を渡すが browser tooltip にならず sighted は
+                       hover で同 context (= "クリックで解除" の toggle 効果) 即把握不可。
+                       assignee-picker user CommandItem iter2335 と同 state-dependent option
+                       title pattern を tag-picker option にも展開、CheckIcon opacity 0/100
+                       切替 + 色 dot で checked 差を補完、tag-picker / assignee-picker
+                       CommandItem 2 option family 完成。 */
+                    title={
+                      checked ? `${t.name} — タグ付与中 (クリックで解除)` : `${t.name} — タグを付与`
+                    }
                   >
                     <CheckIcon
                       className={cn('mr-2 size-4', checked ? 'opacity-100' : 'opacity-0')}
