@@ -766,6 +766,29 @@ async function main() {
     })
   }
 
+  // ========= LH. proposal-title input title 4-path sweep (iter2371) =========
+  const dpLH = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
+  if (
+    !dpLH.includes('iter2371') ||
+    !dpLH.includes("'タイトル — 提案タイトル (必須、最大 500 文字)'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'LH.proposal-title-input-title',
+      message: '[LH] iter2371 proposal-title input title 4-path sync が消えている',
+    })
+  }
+
+  // ========= LG. KR progressMode select title sweep (iter2371 / parallel) =========
+  const gpLG = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
+  if (!gpLG.includes('iter2371')) {
+    findings.push({
+      level: 'error',
+      source: 'LG.kr-progress-mode-select-title',
+      message: '[LG] iter2371 KR progressMode select title sync が消えている',
+    })
+  }
+
   // ========= LF. mock-timesheet tsCategory select title sweep (iter2369) =========
   const mfLF = read(here, `${root}/src/components/mock-timesheet/mock-submit-form.tsx`)
   if (!mfLF.includes('iter2369') || !mfLF.includes('`${visible} — カテゴリ (現在: ${visible})`')) {
