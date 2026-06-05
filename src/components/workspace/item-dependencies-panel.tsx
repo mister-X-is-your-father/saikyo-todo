@@ -296,6 +296,20 @@ export function ItemDependenciesPanel({ workspaceId, item }: Props) {
                   ? '追加中… — 依存を追加中…'
                   : '追加 — 選択した Item を依存先として追加'
             }
+            /* iter2377: dep-add-btn の aria-label は state-dependent 3-path (未選択 /
+               pending / selectable) で SR には full action context + 操作前提 hint を
+               渡すが visible "追加" / "追加中…" のみで sighted hover で 「対象 Item を
+               選択してください」 hint や対象指定の hint が disclose 不可。submit
+               button iter1791 / sprint-period-save iter2351 と同 state-dependent button
+               title pattern を dep-add-btn にも展開、依存 setup form の add button UX
+               補完 (未選択時の操作 hint hover disclose)。 */
+            title={
+              !pickId
+                ? '追加 — 依存を追加するには対象 Item を選択してください'
+                : add.isPending
+                  ? '追加中… — 依存を追加中…'
+                  : '追加 — 選択した Item を依存先として追加'
+            }
           >
             <span aria-hidden="true">{add.isPending ? '追加中…' : '追加'}</span>
           </Button>
