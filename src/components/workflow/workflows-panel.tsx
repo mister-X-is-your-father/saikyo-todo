@@ -1130,6 +1130,13 @@ function WorkflowNodeRunsList({ runId }: { runId: string }) {
               className="overflow-x-auto rounded bg-red-50 px-2 py-1 text-[10px] whitespace-pre-wrap text-red-700 dark:bg-red-950 dark:text-red-300"
               data-testid={`wf-node-run-error-${nr.id}`}
               aria-label={`node ${nr.nodeId} のエラー`}
+              /* iter2441: wf-node-run-error <pre> の aria-label "node {nodeId} のエラー" は SR
+                 に error chip context を渡すが browser tooltip にならず sighted は hover で
+                 同 context (= "node のエラー" の文脈付け、SR と sighted text consistency)
+                 把握不可。visible は error message 全文だが「node {id} のエラー」 という
+                 chip prefix は visible に出ない。src-import error iter2437 と同 error 系 chip
+                 title sync pattern。 */
+              title={`node ${nr.nodeId} のエラー`}
               role="alert"
             >
               {nr.error}
@@ -1144,6 +1151,13 @@ function WorkflowNodeRunsList({ runId }: { runId: string }) {
                    持ち voice control prefix-matching「click output」 が strict prefix-match
                    で不可。iter1093-1542 sweep convention に揃え visible 冒頭固定 + em-dash 区切。 */
                 aria-label={`output (jsonb) — node ${nr.nodeId} の出力を開閉`}
+                /* iter2441: wf-node-run-output <summary> の aria-label は node 別 output
+                   disclosure context (nodeId 含む) を渡すが browser tooltip にならず sighted は
+                   hover で同 disclosure context (= "{nodeId} の出力を開閉") 把握不可。
+                   visible は "output (jsonb)" のみで対象 node 識別子は visible に出ない。
+                   wf-run-toggle iter2431 と同 disclosure toggle title pattern を summary にも
+                   展開、node 別 output disclosure UX 補完。 */
+                title={`output (jsonb) — node ${nr.nodeId} の出力を開閉`}
                 data-testid={`wf-node-run-output-summary-${nr.id}`}
               >
                 output (jsonb)
