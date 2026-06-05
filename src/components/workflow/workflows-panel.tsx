@@ -824,6 +824,19 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                     ? `trigger JSON (現在 ${triggerText.length} 文字、JSON parse error あり)`
                     : `trigger JSON (現在 ${triggerText.length} 文字、起動条件 JSON)`
               }
+              /* iter2359: wf-editor-trigger textarea の aria-label は state-dependent
+                 3-path (空 / parse-error / 通常、文字数含む) で SR には full context
+                 (= 4 種類 trigger hint + JSON parse error 警告) を渡すが browser tooltip
+                 にならず sighted は hover で同 context disclose 不可。wf-editor-graph
+                 iter2357 と pair で workflow editor 2 textarea (graph / trigger) family
+                 完成、editor 内 form hint hover disclose 補完。 */
+              title={
+                triggerText.length === 0
+                  ? 'trigger JSON (manual / cron / item-event / webhook の 4 種、上のプリセット button で template 挿入可)'
+                  : error?.startsWith('trigger JSON 不正')
+                    ? `trigger JSON (現在 ${triggerText.length} 文字、JSON parse error あり)`
+                    : `trigger JSON (現在 ${triggerText.length} 文字、起動条件 JSON)`
+              }
               aria-invalid={error?.startsWith('trigger JSON 不正') || undefined}
               aria-describedby={error ? `wf-editor-error-${wf.id}` : undefined}
             />
