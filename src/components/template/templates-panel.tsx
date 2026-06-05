@@ -168,6 +168,23 @@ export function TemplatesPanel({ workspaceId }: Props) {
                           : kind
                     return `${visible} — Template 種別 (現在: ${visible})`
                   })()}
+                  /* iter2409: tmpl-kind select の aria-label IIFE は SR に template 種別
+                     semantic (= manual: ユーザが button で生成 / recurring: cron で worker 自動
+                     展開) を渡すが native <select> でも aria-label は browser tooltip にならず
+                     sighted は hover で同 kind 選択基準 (= 手動 vs 自動 + cron 要件) 把握不可。
+                     option text のみ disclose で template 種別の運用差 (展開タイミング + 必要
+                     設定) は disclose されない。src-kind iter2361 / dep-kind iter2373 /
+                     KR mode iter2371 / src-method iter2401 と同 select title-aria sync pattern
+                     を tmpl-kind にも展開、Template 種別選択基準を hover で sighted disclose。 */
+                  title={(() => {
+                    const visible =
+                      kind === 'manual'
+                        ? 'manual (手動展開のみ、ユーザが「展開」 button で生成)'
+                        : kind === 'recurring'
+                          ? 'recurring (cron 式に従って worker が自動展開)'
+                          : kind
+                    return `${visible} — Template 種別 (現在: ${visible})`
+                  })()}
                 >
                   <option value="manual">manual (手動展開)</option>
                   <option value="recurring">recurring (cron で自動展開)</option>
