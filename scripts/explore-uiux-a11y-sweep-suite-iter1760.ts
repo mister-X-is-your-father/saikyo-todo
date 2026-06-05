@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= KJ. tag-create-new CommandItem title sweep (iter2343) =========
+  const tpKJ = read(here, `${root}/src/components/workspace/tag-picker.tsx`)
+  if (!tpKJ.includes('iter2343') || !tpKJ.includes("'新規 tag'")) {
+    findings.push({
+      level: 'error',
+      source: 'KJ.tag-create-new-title',
+      message: '[KJ] iter2343 tag-create-new CommandItem title sync が消えている',
+    })
+  }
+
   // ========= KI. assignee-picker AI agent CommandItem title sweep (iter2341) =========
   const apKI = read(here, `${root}/src/components/workspace/assignee-picker.tsx`)
   if (!apKI.includes('iter2341') || !apKI.includes('— AI Agent アサイン中 (クリックで解除)')) {
