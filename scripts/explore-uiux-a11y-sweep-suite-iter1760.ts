@@ -766,6 +766,17 @@ async function main() {
     })
   }
 
+  // ========= KA. gantt-hide-done-toggle checkbox title sweep (iter2325) =========
+  // (J 軸帯を JZ で使い切ったので K 軸帯へ繰り上げ)
+  const gvKA = read(here, `${root}/src/components/workspace/gantt-view.tsx`)
+  if (!gvKA.includes('iter2325') || !gvKA.includes("'完了済を隠す — 現在は表示中'")) {
+    findings.push({
+      level: 'error',
+      source: 'KA.gantt-hide-done-toggle-title',
+      message: '[KA] iter2325 gantt-hide-done-toggle title 2-path sync が消えている',
+    })
+  }
+
   // ========= JZ. gantt-show-deps-toggle checkbox title sweep (iter2323) =========
   const gvJZ = read(here, `${root}/src/components/workspace/gantt-view.tsx`)
   if (
