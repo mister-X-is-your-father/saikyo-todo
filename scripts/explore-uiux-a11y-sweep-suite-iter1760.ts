@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= KH. tag-picker option CommandItem title sweep (iter2339) =========
+  const tpKH = read(here, `${root}/src/components/workspace/tag-picker.tsx`)
+  if (!tpKH.includes('iter2339') || !tpKH.includes('— タグ付与中 (クリックで解除)')) {
+    findings.push({
+      level: 'error',
+      source: 'KH.tag-picker-option-title',
+      message: '[KH] iter2339 tag-picker option title 2-path sync が消えている',
+    })
+  }
+
   // ========= KG. Sprint swim-lane root group title sweep (iter2337) =========
   const slKG = read(here, `${root}/src/components/workspace/sprint-swimlane-disclosure.tsx`)
   if (
