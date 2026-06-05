@@ -766,6 +766,19 @@ async function main() {
     })
   }
 
+  // ========= KB. taskchute timeline 時刻 chip title sweep (iter2327) =========
+  const tcKB = read(here, `${root}/src/components/workspace/taskchute-view.tsx`)
+  if (
+    !tcKB.includes('iter2327') ||
+    !tcKB.includes("timeLabel ? `${timeLabel} — 予定時刻` : '時刻未指定'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'KB.taskchute-time-chip-title',
+      message: '[KB] iter2327 taskchute time chip title 2-path sync が消えている',
+    })
+  }
+
   // ========= KA. gantt-hide-done-toggle checkbox title sweep (iter2325) =========
   // (J 軸帯を JZ で使い切ったので K 軸帯へ繰り上げ)
   const gvKA = read(here, `${root}/src/components/workspace/gantt-view.tsx`)

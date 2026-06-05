@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2328 1/1 test a11y-sweep-suite に iter2327 taskchute time chip entry 追加] 検査軸 287 個 (新 KB 軸)、計約 405 invariant check に拡張、TaskChute mode timeline visual 文脈補完。
+- ✅ [playwright-iter2327 1/1] taskchute timeline 各 row の 予定時刻 chip: aria-label state-dependent 2-path (timeLabel ? "HH:MM — 予定時刻" : "時刻未指定") を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-taskchute-time-chip-title-iter2327.ts)、active-timer-calibrated iter1851 / quick-add-calibrated iter1889 と同 role=img chip title pattern、taskchute mode の "--:--" 意味付け補完。
 - ✅ [playwright-iter2326 1/1 test a11y-sweep-suite に iter2325 gantt-hide-done-toggle entry 追加] 検査軸 286 個 (新 KA 軸、J 軸帯 JZ で使い切り K 軸帯繰り上げ初弾)、計約 404 invariant check に拡張、Gantt 操作 bar 2 toggle (show-deps JZ / hide-done KA) title family 完成。
 - ✅ [playwright-iter2325 1/1] gantt-hide-done-toggle checkbox: aria-label state-dependent 2-path (hideDone ? '完了済を隠す — 現在は隠している (クリックで表示に戻す)' : '完了済を隠す — 現在は表示中') を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-gantt-hide-done-toggle-title-iter2325.ts)、show-deps-toggle iter2323 と同 Gantt 操作 bar toggle title pattern、Gantt 操作 bar 2 toggle family 完成。
 - ✅ [playwright-iter2324 1/1 test a11y-sweep-suite に iter2323 gantt-show-deps-toggle entry 追加] 検査軸 285 個 (新 JZ 軸)、計約 403 invariant check に拡張、Gantt 操作 bar 依存線 toggle disclosure 補完。
