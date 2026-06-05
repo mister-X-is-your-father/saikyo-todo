@@ -481,6 +481,21 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
                       ? `タイトル — 提案タイトル (現在 ${title.length} / 500 文字、上限近接)`
                       : `タイトル — 提案タイトル (現在 ${title.length} / 500 文字)`
               }
+              /* iter2371: proposal-title input の aria-label は state-dependent 4-path
+                 (空 / 空白のみ / 上限近接 / 通常、文字数含む) で SR には full context
+                 (validation + 文字数) を渡すが browser tooltip にならず sighted は hover
+                 で同 context disclose 不可。editTitle iter2295 / tmpl-name iter2365 /
+                 te-description iter2303 と同 input title-aria sync pattern を proposal-
+                 title input にも展開、4-path title input family 拡張 (4 element 完成)。 */
+              title={
+                title.length === 0
+                  ? 'タイトル — 提案タイトル (必須、最大 500 文字)'
+                  : title.trim() === ''
+                    ? `タイトル — 提案タイトル (現在 ${title.length} / 500 文字、空白のみは不正)`
+                    : title.length > 480
+                      ? `タイトル — 提案タイトル (現在 ${title.length} / 500 文字、上限近接)`
+                      : `タイトル — 提案タイトル (現在 ${title.length} / 500 文字)`
+              }
             />
           </div>
           <div className="space-y-1">
