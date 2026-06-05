@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2326 1/1 test a11y-sweep-suite に iter2325 gantt-hide-done-toggle entry 追加] 検査軸 286 個 (新 KA 軸、J 軸帯 JZ で使い切り K 軸帯繰り上げ初弾)、計約 404 invariant check に拡張、Gantt 操作 bar 2 toggle (show-deps JZ / hide-done KA) title family 完成。
+- ✅ [playwright-iter2325 1/1] gantt-hide-done-toggle checkbox: aria-label state-dependent 2-path (hideDone ? '完了済を隠す — 現在は隠している (クリックで表示に戻す)' : '完了済を隠す — 現在は表示中') を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-gantt-hide-done-toggle-title-iter2325.ts)、show-deps-toggle iter2323 と同 Gantt 操作 bar toggle title pattern、Gantt 操作 bar 2 toggle family 完成。
 - ✅ [playwright-iter2324 1/1 test a11y-sweep-suite に iter2323 gantt-show-deps-toggle entry 追加] 検査軸 285 個 (新 JZ 軸)、計約 403 invariant check に拡張、Gantt 操作 bar 依存線 toggle disclosure 補完。
 - ✅ [playwright-iter2323 1/1] gantt-show-deps-toggle checkbox: aria-label state-dependent 2-path (showDeps ? '依存線を表示中 — クリックで非表示' : '依存線 — クリックで表示') を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-gantt-show-deps-toggle-title-iter2323.ts)、done-yesterday-toggle iter2311 / activity-detail-toggle iter2293 と同 disclosure toggle title pattern、Gantt 操作 bar 着地。
 - ✅ [playwright-iter2322 1/1 test a11y-sweep-suite に iter2321 item-plan-generate-button entry 追加] 検査軸 284 個 (新 JY 軸)、計約 402 invariant check に拡張、AI action button family 4 element (decompose / research / engineer / plan-generate) 完成。
