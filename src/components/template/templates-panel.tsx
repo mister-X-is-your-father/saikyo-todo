@@ -223,6 +223,20 @@ export function TemplatesPanel({ workspaceId }: Props) {
                     ? '説明 — Template の説明 (任意、このテンプレートが何を生成するか、Cmd/Ctrl+Enter で作成)'
                     : `説明 — Template の説明 (現在 ${description.length} 文字、Cmd/Ctrl+Enter で作成)`
                 }
+                /* iter2411: tmpl-desc Textarea の aria-label は state-dependent 2-path
+                   (empty hint + 用途説明 / valued 文字数) で SR に full context (用途 +
+                   Cmd/Ctrl+Enter shortcut) を渡すが browser tooltip にならず sighted は
+                   hover で同 context (= "このテンプレートが何を生成するか" の mental model)
+                   把握不可。visible は placeholder "このテンプレートが何を生成するか" は
+                   あるが Cmd/Ctrl+Enter shortcut は disclose されない。team-context iter2381 /
+                   editDescription iter2297 / wf-editor-graph iter2357 / p-desc iter2383 と同
+                   textarea title-aria sync pattern、Template create form 内 name input + kind
+                   select + desc Textarea のうち desc Textarea も hover disclose 完備。 */
+                title={
+                  description.length === 0
+                    ? '説明 — Template の説明 (任意、このテンプレートが何を生成するか、Cmd/Ctrl+Enter で作成)'
+                    : `説明 — Template の説明 (現在 ${description.length} 文字、Cmd/Ctrl+Enter で作成)`
+                }
               />
             </div>
             {kind === 'recurring' ? (
