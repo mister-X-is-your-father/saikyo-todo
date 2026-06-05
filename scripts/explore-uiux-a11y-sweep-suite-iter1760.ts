@@ -766,6 +766,19 @@ async function main() {
     })
   }
 
+  // ========= LB. tmpl-name input title 4-path sweep (iter2365) =========
+  const tpLB = read(here, `${root}/src/components/template/templates-panel.tsx`)
+  if (
+    !tpLB.includes('iter2365') ||
+    !tpLB.includes("'名前 — Template 名前 (必須、最大 200 文字、何を生成するかが分かる名前)'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'LB.tmpl-name-input-title',
+      message: '[LB] iter2365 tmpl-name input title 4-path sync が消えている',
+    })
+  }
+
   // ========= LA. estimate-bias-suggestions ul title sweep (iter2363) =========
   const ebLA = read(here, `${root}/src/components/time-entry/estimate-bias-insight.tsx`)
   if (!ebLA.includes('iter2363')) {
