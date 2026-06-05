@@ -1031,6 +1031,24 @@ function KeyResultList({
                     : mode
               return `${visible} — KR 進捗算出モード (現在: ${visible})`
             })()}
+            /* iter2371: KR 進捗算出モード select の aria-label IIFE は SR に 現在 mode +
+               算出方法 (= 子 Item 完了率 自動算出 / 目標値・単位 手入力) を渡すが
+               native <select> でも aria-label は browser tooltip にならず sighted は
+               hover で同 algorithm 説明 把握不可。option text "items (子 Item 完了率)" /
+               "manual (目標値 / 単位)" のみ disclose で「KR 進捗算出モード」 という
+               設定対象名 + 算出方法の差は disclose されない。sprint-defaults-dow
+               iter2369 / gantt-zoom-select iter2361 / src-kind select iter2361 と同
+               select title-aria sync pattern を KR mode にも展開、Goal 内 KR setup
+               form の hover disclose 補完。 */
+            title={(() => {
+              const visible =
+                mode === 'items'
+                  ? 'items (子 Item 完了率で自動算出)'
+                  : mode === 'manual'
+                    ? 'manual (目標値 / 単位を手入力)'
+                    : mode
+              return `${visible} — KR 進捗算出モード (現在: ${visible})`
+            })()}
           >
             <option value="items">items (子 Item 完了率)</option>
             <option value="manual">manual (目標値 / 単位)</option>
