@@ -132,6 +132,14 @@ export function CommandPalette({ commands, items, onSelectItem }: CommandPalette
            iter1093-1550 sweep の em-dash 区切と divergent。iter1549/1550 CommandInput
            (assignee-picker / tag-picker) と同 pattern。 */
         aria-label="コマンドパレット — コマンド名 or ? でタスクを fuzzy 検索"
+        /* iter2345: CommandInput aria-label は SR に input 用途 (= コマンド検索 + ? prefix で
+           item fuzzy 検索 dual mode) を渡すが browser tooltip にならず sighted は hover で
+           同 context 把握不可。visible は placeholder のみで dual-mode operator (? prefix の
+           item 検索 escape hatch) は disclose されない。tag-picker / assignee-picker
+           CommandInput と同 surface 内で sibling だが両者とも title 未付与で input picker
+           family の title 一括拡張が次 iter 連鎖 (command-palette CommandInput → tag-picker
+           CommandInput → assignee-picker CommandInput)、Cmd+K palette の dual-mode 認知補完。 */
+        title="コマンドパレット — コマンド名 or ? でタスクを fuzzy 検索"
         value={query}
         onValueChange={setQuery}
       />
