@@ -766,6 +766,29 @@ async function main() {
     })
   }
 
+  // ========= KS. edit-item-dod input title 3-path sweep (iter2355) =========
+  const edKS = read(here, `${root}/src/components/workspace/item-edit-dialog.tsx`)
+  if (
+    !edKS.includes('iter2355') ||
+    !edKS.includes("'DoD 完了条件 (MUST item は必須、空欄では保存・done 遷移不可)'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'KS.edit-item-dod-title',
+      message: '[KS] iter2355 edit-item-dod input title 3-path sync が消えている',
+    })
+  }
+
+  // ========= KR. gantt-summary group banner title sweep (iter2353 / parallel) =========
+  const gvKR = read(here, `${root}/src/components/workspace/gantt-view.tsx`)
+  if (!gvKR.includes('iter2353')) {
+    findings.push({
+      level: 'error',
+      source: 'KR.gantt-summary-group-title',
+      message: '[KR] iter2353 gantt-summary group title sync が消えている',
+    })
+  }
+
   // ========= KQ. sprint-defaults-length input title 2-path sweep (iter2353) =========
   const spKQ = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
   if (
