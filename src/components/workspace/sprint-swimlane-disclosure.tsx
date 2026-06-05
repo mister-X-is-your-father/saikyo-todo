@@ -160,6 +160,12 @@ function SwimlaneBody({ workspaceId, sprintId, sprintName, sprintStart, sprintEn
       /* iter1580: 旧 aria-label paren convention `"Sprint「${sprintName}」 担当者 swim-lane (lane X 件)"` は
          iter1093-1579 sweep の em-dash 区切と divergent。区切のみ '(' → ' — ' に統一、closing ')' は削除。 */
       aria-label={`Sprint「${sprintName}」 担当者 swim-lane — lane ${rows.length} 件`}
+      /* iter2337: Sprint swim-lane の root group aria-label "Sprint「${name}」 担当者
+         swim-lane — lane N 件" は visible に counter chip が無く lane 件数 + Sprint 名
+         context が sighted hover で disclose 不可。engineer-trigger group iter2207 /
+         workspace-header ops group iter2229 / offline 復帰アクション group iter2323 と同
+         role="group" title sync pattern を Sprint swim-lane root group にも展開。 */
+      title={`Sprint「${sprintName}」 担当者 swim-lane — lane ${rows.length} 件`}
     >
       {/* iter1053: role 無 div + aria-label の SR picked-up divergence を `role="img"`
           で authoritative 化 (iter1023/1049/1050/1051/1052 同 pattern)。 */}
