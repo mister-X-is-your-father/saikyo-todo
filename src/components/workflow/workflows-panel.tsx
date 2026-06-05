@@ -990,6 +990,19 @@ function WorkflowRunHistory({ workflowId }: { workflowId: string }) {
                     ? `${r.triggerKind} 実行 (${formatRunTime(r)}) — ノード詳細を閉じる`
                     : `${r.triggerKind} 実行 (${formatRunTime(r)}) — ノード詳細を表示`
                 }
+                /* iter2431: wf-run-toggle button の aria-label は state-dependent 2-path
+                   (open / closed、triggerKind + time 含む) で SR に full disclosure context
+                   (= "ノード詳細を閉じる/表示" の次 action) を渡すが browser tooltip にならず
+                   sighted は hover で同 context 把握不可。visible は ChevronDown/Right icon
+                   + RunStatusBadge + 後続 span のみで triggerKind + 詳細時刻 + open/closed 状態 +
+                   next action は disclose されない (Chevron 方向のみ visible cue)。
+                   done-yesterday-toggle iter2311 / activity-detail-toggle iter2293 と同
+                   disclosure toggle title pattern を wf-run-toggle にも展開。 */
+                title={
+                  isOpen
+                    ? `${r.triggerKind} 実行 (${formatRunTime(r)}) — ノード詳細を閉じる`
+                    : `${r.triggerKind} 実行 (${formatRunTime(r)}) — ノード詳細を表示`
+                }
                 data-testid={`wf-run-toggle-${r.id}`}
               >
                 {isOpen ? (
