@@ -225,6 +225,13 @@ export function EstimateBiasInsight({ workspaceId }: { workspaceId: string }) {
                   className="text-muted-foreground space-y-0.5 text-[11px]"
                   /* iter1594: paren convention を em-dash 区切に統一 (iter1093-1593 sweep)。 */
                   aria-label={`典型的な見積分の校正推奨 ${suggestions.length} 件 — calibration ${report.calibrationFactor.toFixed(2)}× 適用`}
+                  /* iter2363: estimate-bias-suggestions ul の aria-label "典型的な見積分の
+                     校正推奨 N 件 — calibration F× 適用" は visible にも counter / factor
+                     表示が無く sighted hover で 件数 + factor disclose 不可。KR list iter2329
+                     / AI 分解提案 iter2331 / operation-board ul iter2357 と同 list family
+                     title pattern を estimate-bias suggestions list にも展開、time-entry
+                     校正 widget visual 文脈補完。 */
+                  title={`典型的な見積分の校正推奨 ${suggestions.length} 件 — calibration ${report.calibrationFactor.toFixed(2)}× 適用`}
                   data-testid="estimate-bias-suggestions"
                 >
                   {suggestions.map((s) => (
