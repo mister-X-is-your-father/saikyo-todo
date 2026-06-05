@@ -766,6 +766,29 @@ async function main() {
     })
   }
 
+  // ========= LD. template-items MUST checkbox title sweep (iter2367) =========
+  const tiLD = read(here, `${root}/src/components/template/template-items-editor.tsx`)
+  if (
+    !tiLD.includes('iter2367') ||
+    !tiLD.includes("'MUST が ON: 絶対落とさない — DoD 必須、クリックで OFF'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'LD.template-items-must-checkbox-title',
+      message: '[LD] iter2367 template-items MUST checkbox title 2-path sync が消えている',
+    })
+  }
+
+  // ========= LC. goals-panel archived reactivate button title sweep (iter2367 / parallel) =========
+  const gpLC = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
+  if (!gpLC.includes('iter2367')) {
+    findings.push({
+      level: 'error',
+      source: 'LC.goal-archived-reactivate-title',
+      message: '[LC] iter2367 goals-panel archived reactivate button title sync が消えている',
+    })
+  }
+
   // ========= LB. tmpl-name input title 4-path sweep (iter2365) =========
   const tpLB = read(here, `${root}/src/components/template/templates-panel.tsx`)
   if (
