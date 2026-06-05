@@ -766,6 +766,31 @@ async function main() {
     })
   }
 
+  // ========= LT. src-name input title 4-path sweep (iter2385) =========
+  const ipLT = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
+  if (
+    !ipLT.includes('iter2385') ||
+    !ipLT.includes(
+      "'名前 — Source 名前 (必須、最大 200 文字、識別しやすい名前 — 例: Yamory チーム A)'",
+    )
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'LT.src-name-input-title',
+      message: '[LT] iter2385 src-name input title 4-path sync が消えている',
+    })
+  }
+
+  // ========= LS. p-desc Textarea title 3-path sweep (iter2383 / parallel) =========
+  const dpLS = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
+  if (!dpLS.includes('iter2383')) {
+    findings.push({
+      level: 'error',
+      source: 'LS.p-desc-textarea-title',
+      message: '[LS] iter2383 p-desc Textarea title 3-path sync が消えている',
+    })
+  }
+
   // ========= LR. template-items DoD textarea title 3-path sweep (iter2381) =========
   const tiLR = read(here, `${root}/src/components/template/template-items-editor.tsx`)
   if (
