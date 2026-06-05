@@ -153,6 +153,13 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
             /* iter1550: 旧 "タグを検索 or 新規作成 (Item に紐付けるラベル、新規 tag は色がランダム生成)" は ' を' 助詞接続で
                iter1093-1549 sweep の em-dash 区切と divergent。iter1549 assignee-picker CommandInput と同 surface 内 pattern。 */
             aria-label="タグ — Item に紐付けるラベルを検索 or 新規作成 (新規 tag は色がランダム生成)"
+            /* iter2349: CommandInput aria-label は SR に input 用途 (= タグ検索 + 候補 0 件
+               時 新規作成 dual-mode + 新規 tag 色 random 注意点) を渡すが browser tooltip に
+               ならず sighted は hover で同 context (= dual-mode operator + 新規生成 副作用)
+               把握不可。visible は placeholder のみで「色がランダム生成」 = 後で edit 可能
+               の caveat も hover 非可視。command-palette CommandInput iter2345 と同 picker
+               input title pattern を tag-picker にも展開、picker input family 拡張中。 */
+            title="タグ — Item に紐付けるラベルを検索 or 新規作成 (新規 tag は色がランダム生成)"
             value={query}
             onValueChange={setQuery}
           />
