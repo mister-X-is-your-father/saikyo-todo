@@ -277,7 +277,13 @@ function DailyBars({
                  ${d.date} は維持 (voice control)、区切のみ em-dash 化。 */
               aria-label={`${d.date} — 完了 ${d.done} 件`}
               className="flex flex-1 flex-col items-center justify-end"
-              title={`${d.date}: ${d.done} 件`}
+              /* iter2443: 旧 title `${d.date}: ${d.done} 件` (colon 区切、"完了" 抜け) は
+                 aria-label `${d.date} — 完了 ${d.done} 件` (em-dash 区切 + "完了" 含む) と
+                 divergent。SR と sighted hover で異なる text + 区切 + "完了" 有無の divergence。
+                 goal-decompose iter2435 / src-import error iter2437 と同 title-aria divergence
+                 修正 pattern で sync、SR/sighted hover text consistency 復元、"完了" semantic
+                 を hover でも sighted disclose。 */
+              title={`${d.date} — 完了 ${d.done} 件`}
             >
               <div
                 className="w-full rounded-sm"
