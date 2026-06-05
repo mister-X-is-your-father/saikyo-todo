@@ -615,6 +615,24 @@ function ProposalRow({ proposal, parentItemId, onAccept, onReject, disabled }: R
                         ? `DoD — 提案 DoD (現在 ${dod.length} / 2000 文字、上限近接)`
                         : `DoD — 提案 DoD (現在 ${dod.length} / 2000 文字)`
                 }
+                /* iter2391: p-dod IMEInput の aria-label は state-dependent 4-path
+                   (empty / 空白のみ / 上限近接 / 通常、文字数含む) で SR に full
+                   validation context (MUST 必須 + 完了条件 mental model + 文字数) を
+                   渡すが browser tooltip にならず sighted は hover で同 context
+                   把握不可。visible は Label "DoD" のみで MUST 必須要件 + 完了条件
+                   mental model は disclose されない。p-title iter2371 / p-desc
+                   iter2383 / proposal MUST iter2335 と pair で提案編集 form の primary
+                   field (title + desc + dod + MUST) 全 hover disclose 完備、提案 row
+                   フォーム 4 element family 完成。 */
+                title={
+                  dod.length === 0
+                    ? 'DoD — 提案 DoD (MUST 必須、最大 2000 文字、完了条件を具体記述)'
+                    : dod.trim() === ''
+                      ? `DoD — 提案 DoD (現在 ${dod.length} / 2000 文字、空白のみは不正)`
+                      : dod.length > 1900
+                        ? `DoD — 提案 DoD (現在 ${dod.length} / 2000 文字、上限近接)`
+                        : `DoD — 提案 DoD (現在 ${dod.length} / 2000 文字)`
+                }
               />
             </div>
           )}
