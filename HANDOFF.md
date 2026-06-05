@@ -819,6 +819,8 @@ ARCHITECTURE.md #U の pg_bigm は Supabase local に無く pg_trgm で代替。
 
 各 iter で 1 画面を探索的操作した結果のメモ。修正済は ✅、保留は ⏳。
 
+- ✅ [playwright-iter2332 1/1 test a11y-sweep-suite に iter2331 AI 分解提案 ul entry + handoff §9] 検査軸 289 個 (新 KD 軸)、計約 407 invariant check に拡張、10 entity 一覧 ul/ol family へ拡張 (AI 分解提案 + KR + Activity / swimlane / recovery-plan + 5 既存)。
+- ✅ [playwright-iter2331 1/1] AI 分解提案 ul: aria-label "AI 分解提案 一覧 — N 件" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-proposals-list-ul-title-iter2331.ts)、KR list iter2329 / Activity 履歴 ul iter2291 / swimlane lane ul iter2305 / recovery-plan ol iter2315 と同 list family title pattern、10 entity 一覧 ul/ol family へ拡張。
 - ✅ [playwright-iter2330 1/1 test a11y-sweep-suite に iter2329 KR list ul entry + handoff §9] 検査軸 288 個 (新 KC 軸)、計約 406 invariant check に拡張、9 entity 一覧 ul/ol family へ拡張 (Activity 履歴 / swimlane lane / recovery-plan + KR + 6 既存)。
 - ✅ [playwright-iter2329 1/1] KR 一覧 ul: aria-label "Key Result 一覧 — N 件" を sighted hover で disclose 不可 → 同 text の title を付与し sync (path B codify scripts/explore-uiux-kr-list-ul-title-iter2329.ts)、Activity 履歴 ul iter2291 / swimlane lane ul iter2305 / recovery-plan ol iter2315 と同 list family title pattern、9 entity 一覧 ul/ol family へ拡張。
 - ✅ [playwright-iter2328 1/1 test a11y-sweep-suite に iter2327 taskchute time chip entry 追加] 検査軸 287 個 (新 KB 軸)、計約 405 invariant check に拡張、TaskChute mode timeline visual 文脈補完。

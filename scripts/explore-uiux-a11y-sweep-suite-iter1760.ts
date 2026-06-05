@@ -766,6 +766,19 @@ async function main() {
     })
   }
 
+  // ========= KD. AI 分解提案 ul title sweep (iter2331) =========
+  const dpKD = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
+  if (
+    !dpKD.includes('iter2331') ||
+    !dpKD.includes('title={`AI 分解提案 一覧 — ${list.length} 件`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'KD.proposals-list-ul-title',
+      message: '[KD] iter2331 AI 分解提案 list ul title sync が消えている',
+    })
+  }
+
   // ========= KC. KR 一覧 ul title sweep (iter2329) =========
   const gpKC = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
   if (
