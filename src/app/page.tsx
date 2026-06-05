@@ -37,6 +37,13 @@ export default async function HomePage() {
         <h1 className="text-3xl font-bold">最強TODO</h1>
         <form
           aria-label="ログアウト"
+          /* iter2395: home page logout form の aria-label "ログアウト" は SR に form 用途を
+             渡すが browser tooltip にならず sighted は hover で form 用途 (= 単一 logout
+             action 用 form、内部 server action 経由で session 破棄 → /login redirect) 把握
+             不可。proposal-edit-form iter2347 / Goal 作成 form iter2045 と同 form landmark
+             title sync pattern を logout form にも展開、auth flow form 群 (login / signup /
+             mock-login + logout) form-level title family 拡張。 */
+          title="ログアウト"
           action={async () => {
             'use server'
             const { logoutAction } = await import('@/features/auth/actions')
