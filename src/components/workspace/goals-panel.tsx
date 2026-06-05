@@ -1072,6 +1072,19 @@ function KeyResultList({
                     ? `目標値 (現在値「${target}」 は数値として不正)`
                     : `目標値 (現在: ${target}${unit ? ` ${unit}` : ''})`
               }
+              /* iter2373: kr-target input の aria-label state-dependent 3-path (空 /
+                 不正 / valid+unit) で SR には full context (validation + 現在値 + unit)
+                 を渡すが browser tooltip にならず sighted は hover で 必須 hint /
+                 数値エラー / unit suffix の disclose 不可。budget-limit-input iter2333 /
+                 budget-warn-input iter2345 と同 numeric input title-aria 3-path sync
+                 pattern を kr-target にも展開、KR manual mode form の hover hint 補完。 */
+              title={
+                target === ''
+                  ? '目標値 (KR を達成判定するための数値、必須、decimal 可)'
+                  : Number.isNaN(Number(target))
+                    ? `目標値 (現在値「${target}」 は数値として不正)`
+                    : `目標値 (現在: ${target}${unit ? ` ${unit}` : ''})`
+              }
               // iter348: 目標値は decimal 入力可 (% / hours など) のため inputMode="decimal"
               // で mobile に小数 keypad を呼出。step=any で arrow キー / spinner で小数入力可。
               inputMode="decimal"
