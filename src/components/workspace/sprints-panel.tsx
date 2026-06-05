@@ -835,6 +835,12 @@ function SprintCard({
                   // iter1103: visible-prefix sweep (iter1093-1102) を sprint-period-cancel/save にも展開
                   // 旧 aria-label は visible "キャンセル"/"保存"/"保存中…" を末尾持ちで prefix-matching match 不可
                   aria-label={`キャンセル — Sprint「${sprint.name}」の期間編集を破棄`}
+                  /* iter2351: sprint-period-cancel の aria-label は Sprint 名 + 編集破棄
+                     副作用を含むが visible "キャンセル" のみで sighted hover で同 context
+                     disclose 不可、save iter2351 と pair で 期間編集 form の 2 button family
+                     完成。sprint-retro iter2093 / sprint-premortem iter2095 と同 sprint
+                     button title pattern を period-cancel にも展開。 */
+                  title={`キャンセル — Sprint「${sprint.name}」の期間編集を破棄`}
                 >
                   <span aria-hidden="true">キャンセル</span>
                 </Button>
@@ -846,6 +852,15 @@ function SprintCard({
                   aria-busy={update.isPending || undefined}
                   data-testid={`sprint-period-save-${sprint.id}`}
                   aria-label={
+                    update.isPending
+                      ? `保存中… — Sprint「${sprint.name}」の期間を保存中`
+                      : `保存 — Sprint「${sprint.name}」の期間を保存`
+                  }
+                  /* iter2351: sprint-period-save の aria-label は state-dependent 2-path
+                     (pending / idle、Sprint 名含む) で visible "保存" / "保存中…" のみ
+                     見え sighted hover で 対象 Sprint 名 disclose 不可、cancel iter2351 と
+                     pair で 期間編集 form 2 button family 完成。 */
+                  title={
                     update.isPending
                       ? `保存中… — Sprint「${sprint.name}」の期間を保存中`
                       : `保存 — Sprint「${sprint.name}」の期間を保存`
