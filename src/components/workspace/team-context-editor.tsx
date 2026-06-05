@@ -96,6 +96,22 @@ export function TeamContextEditor({ workspaceId }: Props) {
                 ? `チームコンテキスト (現在 ${draft.length} / 4000 文字、上限近接、Cmd/Ctrl+Enter で保存)`
                 : `チームコンテキスト (現在 ${draft.length} / 4000 文字、Cmd/Ctrl+Enter で保存)`
           }
+          /* iter2381: team-context-textarea の aria-label は state-dependent 3-path
+             (empty / 上限近接 / 通常、文字数含む) で SR に full validation context (=
+             workspace 全体 + AI prompt 末尾 inject の用途 + Cmd/Ctrl+Enter shortcut) を
+             渡すが browser tooltip にならず sighted は hover で同 context 把握不可。
+             visible は placeholder のみで「workspace 全体」 scope や「AI プロンプト末尾
+             に inject」 副作用 + Cmd/Ctrl+Enter shortcut は disclose されない。
+             editDescription iter2297 / edit-item-dod iter2355 / wf-editor-graph iter2357 と
+             同 textarea title-aria sync pattern を team-context にも展開、5 textarea
+             title family 拡張。 */
+          title={
+            draft.length === 0
+              ? 'チームコンテキスト (workspace 全体、最大 4000 文字、AI プロンプト末尾に inject、Cmd/Ctrl+Enter で保存)'
+              : draft.length > 3800
+                ? `チームコンテキスト (現在 ${draft.length} / 4000 文字、上限近接、Cmd/Ctrl+Enter で保存)`
+                : `チームコンテキスト (現在 ${draft.length} / 4000 文字、Cmd/Ctrl+Enter で保存)`
+          }
           data-testid="team-context-textarea"
         />
         <div className="text-muted-foreground flex items-center justify-between text-[11px]">
