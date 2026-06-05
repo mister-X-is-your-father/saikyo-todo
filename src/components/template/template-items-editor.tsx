@@ -176,6 +176,17 @@ export function TemplateItemsEditor({ templateId }: Props) {
                 ? 'MUST が ON: 絶対落とさない — DoD 必須、クリックで OFF'
                 : 'MUST が OFF: 通常タスク — クリックで ON、DoD 必須化'
             }
+            /* iter2367: template-items MUST checkbox の aria-label は state-dependent
+               2-path (ON / OFF、DoD 必須化 副作用 含む) で SR には toggle 状態 +
+               next action + 副作用を渡すが checkbox 自体には browser tooltip にならず
+               sighted は hover で同 context disclose 不可。proposal MUST iter2335 /
+               edit-item-must iter2273 と同 MUST checkbox title pattern を template-items
+               にも展開、MUST checkbox 3 element family 完成 (item / proposal / template)。 */
+            title={
+              isMust
+                ? 'MUST が ON: 絶対落とさない — DoD 必須、クリックで OFF'
+                : 'MUST が OFF: 通常タスク — クリックで ON、DoD 必須化'
+            }
           />
           <span aria-hidden="true">MUST (絶対落とさない)</span>
         </label>
