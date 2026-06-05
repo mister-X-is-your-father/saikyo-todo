@@ -541,6 +541,14 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
              em-dash 区切と divergent。`サマリ:` colon を ` — ` em-dash に統一 (内部 em-dash と
              整合)。 */
           aria-label={`サマリ — ${formatDescendantsActivityHintJa(descendantsProgress)} — ${formatDescendantsProgressJa(descendantsProgress)}`}
+          /* iter2379: subtasks-progress-summary の aria-label は dynamic 動的 (activity
+             hint + progress 計算結果) で SR に full 状態を渡すが visible 2 行は aria-hidden
+             で SR 経路集約済、sighted は visible 表示で内容把握可能だが title が無いと
+             hover で aria-label の完全 sentence (= "サマリ — X — Y") は disclose されない。
+             gantt-summary group iter2353 と同 dynamic status summary title sync pattern を
+             subtasks-progress-summary にも展開、SR / sighted / hover の 3 path で同 summary
+             統一。 */
+          title={`サマリ — ${formatDescendantsActivityHintJa(descendantsProgress)} — ${formatDescendantsProgressJa(descendantsProgress)}`}
           data-testid="subtasks-progress-summary"
           data-pct-done={descendantsProgress.pctDone}
         >
