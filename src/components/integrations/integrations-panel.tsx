@@ -466,6 +466,21 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                         ? `名前 — Source 名前 (現在 ${name.length} / 200 文字、上限近接)`
                         : `名前 — Source 名前 (現在 ${name.length} / 200 文字)`
                 }
+                /* iter2385: src-name input の aria-label state-dependent 4-path (空 /
+                   空白のみ / 上限近接 / 通常、文字数 + 用途例 hint 含む) で SR には
+                   full context (validation + 例) を渡すが browser tooltip にならず
+                   sighted は hover で同 context disclose 不可。tmpl-name iter2365 /
+                   editTitle iter2295 と同 input title-aria sync pattern を src-name
+                   にも展開、name input 4-path family 6 element 拡張。 */
+                title={
+                  name.length === 0
+                    ? '名前 — Source 名前 (必須、最大 200 文字、識別しやすい名前 — 例: Yamory チーム A)'
+                    : name.trim() === ''
+                      ? `名前 — Source 名前 (現在 ${name.length} / 200 文字、空白のみは不正)`
+                      : name.length > 180
+                        ? `名前 — Source 名前 (現在 ${name.length} / 200 文字、上限近接)`
+                        : `名前 — Source 名前 (現在 ${name.length} / 200 文字)`
+                }
               />
             </div>
           </div>
