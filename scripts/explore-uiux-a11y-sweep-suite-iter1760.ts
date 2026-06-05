@@ -766,6 +766,29 @@ async function main() {
     })
   }
 
+  // ========= KP. sprint-period cancel / save buttons title sweep (iter2351) =========
+  const spKP = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (
+    !spKP.includes('iter2351') ||
+    !spKP.includes('title={`キャンセル — Sprint「${sprint.name}」の期間編集を破棄`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'KP.sprint-period-buttons-title',
+      message: '[KP] iter2351 sprint-period cancel / save buttons title sync が消えている',
+    })
+  }
+
+  // ========= KO. assignee-picker CommandInput title sweep (iter2351 / parallel) =========
+  const apKO = read(here, `${root}/src/components/workspace/assignee-picker.tsx`)
+  if (!apKO.includes('iter2351')) {
+    findings.push({
+      level: 'error',
+      source: 'KO.assignee-picker-input-title',
+      message: '[KO] iter2351 assignee-picker CommandInput title sync が消えている',
+    })
+  }
+
   // ========= KN. tag-picker CommandInput title sweep (iter2349) =========
   const tpKN = read(here, `${root}/src/components/workspace/tag-picker.tsx`)
   if (
