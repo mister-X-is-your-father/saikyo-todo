@@ -111,6 +111,21 @@ export function InstantiateForm({ workspaceId, template }: Props) {
                 ? `root Item タイトル (現在 ${override.length} / 500 文字、上限近接)`
                 : `root Item タイトル (現在 ${override.length} / 500 文字)`
           }
+          /* iter2423: instantiate override IMEInput の aria-label は state-dependent 3-path
+             (empty: 用途 + Template 名 + 省略時 default 説明 / 上限近接 / 通常) で SR に
+             full context (Template 展開時 root Item タイトル override + 省略 default mental
+             model) を渡すが browser tooltip にならず sighted は hover で同 context (= 省略時
+             default = Template name) 把握不可。visible は Label "root Item タイトル (任意)"
+             のみで「省略時は Template name」 default rule は visible に出ない。tmpl-name
+             iter2365 / tmpl-desc iter2411 と同 Template form input title sync pattern を
+             instantiate form にも展開。 */
+          title={
+            override.length === 0
+              ? `root Item タイトル — Template「${template.name}」展開時の root Item タイトル (任意、最大 500 文字、省略時は「${template.name}」)`
+              : override.length > 480
+                ? `root Item タイトル (現在 ${override.length} / 500 文字、上限近接)`
+                : `root Item タイトル (現在 ${override.length} / 500 文字)`
+          }
         />
       </div>
       {vars.length > 0 ? (
