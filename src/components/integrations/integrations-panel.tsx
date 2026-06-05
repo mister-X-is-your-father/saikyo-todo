@@ -510,6 +510,20 @@ function CreateSourceForm({ workspaceId }: { workspaceId: string }) {
                       ? 'API Token (必須、Yamory API の secret token、type=password で入力中も非表示)'
                       : `API Token (現在 ${token.length} 文字、type=password で内容は SR にも非表示)`
                   }
+                  /* iter2397: src-token IMEInput の aria-label は state-dependent 2-path
+                     (empty hint / valued count) で SR に full context (secret token + type
+                     password の 非表示性 mental model) を渡すが browser tooltip にならず
+                     sighted は hover で同 context (= secret + 非表示 の理由 / 入力字数の
+                     証明) 把握不可。visible は placeholder "Yamory API token" のみで
+                     password input の非表示性 mental model は disclose されない。src-url
+                     iter2313 / src-name iter2385 と同 integrations input title-aria sync
+                     pattern を src-token にも展開、Yamory connector form の hover disclose
+                     拡張、続く project IDs / 各 path input は次 iter 候補。 */
+                  title={
+                    token.length === 0
+                      ? 'API Token (必須、Yamory API の secret token、type=password で入力中も非表示)'
+                      : `API Token (現在 ${token.length} 文字、type=password で内容は SR にも非表示)`
+                  }
                 />
               </div>
               <div className="space-y-1">
