@@ -1121,6 +1121,16 @@ function KeyResultList({
                   ? '単位 (任意、最大 20 文字、目標値とセット — 例: 件 / % / hours)'
                   : `単位 (現在: 「${unit}」、${unit.length} 文字)`
               }
+              /* iter2387: kr-unit input の aria-label は state-dependent 2-path (空 hint /
+                 通常) で SR には 用途 hint + 例 (件 / % / hours) を渡すが browser tooltip
+                 にならず sighted は hover で 用途例 disclose 不可。kr-target iter2373 と
+                 pair で KR manual mode form の hover hint 補完 (target + unit 2 input
+                 family 完成)。 */
+              title={
+                unit.length === 0
+                  ? '単位 (任意、最大 20 文字、目標値とセット — 例: 件 / % / hours)'
+                  : `単位 (現在: 「${unit}」、${unit.length} 文字)`
+              }
               maxLength={20}
               autoComplete="off"
               enterKeyHint="send"
