@@ -1005,6 +1005,22 @@ function KeyResultList({
                     ? `KR タイトル (現在 ${krTitle.length} / 300 文字、上限近接)`
                     : `KR タイトル (現在 ${krTitle.length} / 300 文字)`
             }
+            /* iter2375: kr-title input の aria-label は state-dependent 4-path (空 /
+               空白のみ / 上限近接 / 通常、文字数含む) で SR には full context
+               (validation + 文字数 + 達成判定可能 hint) を渡すが browser tooltip にならず
+               sighted は hover で同 context disclose 不可。editTitle iter2295 / tmpl-name
+               iter2365 / proposal-title iter2371 と同 input title-aria sync pattern を
+               KR title input にも展開、4-path title input family 5 element 拡張、
+               達成判定可能 hint hover disclose。 */
+            title={
+              krTitle.length === 0
+                ? 'KR タイトル (必須、最大 300 文字、達成判定可能な数値目標が望ましい)'
+                : krTitle.trim() === ''
+                  ? `KR タイトル (現在 ${krTitle.length} / 300 文字、空白のみは不正)`
+                  : krTitle.length > 280
+                    ? `KR タイトル (現在 ${krTitle.length} / 300 文字、上限近接)`
+                    : `KR タイトル (現在 ${krTitle.length} / 300 文字)`
+            }
             required
             aria-required="true"
             aria-invalid={(krTitle.length > 0 && krTitle.trim() === '') || undefined}
