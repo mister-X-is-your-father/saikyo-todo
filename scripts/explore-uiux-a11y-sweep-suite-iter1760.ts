@@ -766,6 +766,19 @@ async function main() {
     })
   }
 
+  // ========= KF. proposal MUST checkbox title sweep (iter2335) =========
+  const dpKF = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
+  if (
+    !dpKF.includes('iter2335') ||
+    !dpKF.includes("'MUST が ON: 絶対落とさない — DoD 必須、クリックで OFF'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'KF.proposal-must-checkbox-title',
+      message: '[KF] iter2335 proposal MUST checkbox title 2-path sync が消えている',
+    })
+  }
+
   // ========= KE. budget-limit-input title 3-path sweep (iter2333) =========
   const bpKE = read(here, `${root}/src/components/workspace/budget-panel.tsx`)
   if (!bpKE.includes('iter2333') || !bpKE.includes("'月次上限 (USD) — 空欄で無制限'")) {
