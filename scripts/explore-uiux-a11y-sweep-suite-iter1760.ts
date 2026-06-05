@@ -766,6 +766,26 @@ async function main() {
     })
   }
 
+  // ========= LA. estimate-bias-suggestions ul title sweep (iter2363) =========
+  const ebLA = read(here, `${root}/src/components/time-entry/estimate-bias-insight.tsx`)
+  if (!ebLA.includes('iter2363')) {
+    findings.push({
+      level: 'error',
+      source: 'LA.estimate-bias-suggestions-ul-title',
+      message: '[LA] iter2363 estimate-bias-suggestions ul title sync が消えている',
+    })
+  }
+
+  // ========= KZ. sprint-defaults cancel + save buttons pair title sweep (iter2363 / parallel) =========
+  const spKZ = read(here, `${root}/src/components/workspace/sprints-panel.tsx`)
+  if (!spKZ.includes('iter2363')) {
+    findings.push({
+      level: 'error',
+      source: 'KZ.sprint-defaults-buttons-title',
+      message: '[KZ] iter2363 sprint-defaults cancel + save buttons title sync が消えている',
+    })
+  }
+
   // ========= KY. src-kind select title sweep (iter2361) =========
   const ipKY = read(here, `${root}/src/components/integrations/integrations-panel.tsx`)
   if (
