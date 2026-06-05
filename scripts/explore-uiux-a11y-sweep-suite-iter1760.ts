@@ -766,6 +766,19 @@ async function main() {
     })
   }
 
+  // ========= KC. KR 一覧 ul title sweep (iter2329) =========
+  const gpKC = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
+  if (
+    !gpKC.includes('iter2329') ||
+    !gpKC.includes('title={`Key Result 一覧 — ${(list.data ?? []).length} 件`}')
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'KC.kr-list-ul-title',
+      message: '[KC] iter2329 KR list ul title sync が消えている',
+    })
+  }
+
   // ========= KB. taskchute timeline 時刻 chip title sweep (iter2327) =========
   const tcKB = read(here, `${root}/src/components/workspace/taskchute-view.tsx`)
   if (
