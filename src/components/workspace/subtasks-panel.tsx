@@ -667,6 +667,21 @@ export function SubtasksPanel({ workspaceId, parent }: Props) {
                 ? '改行区切りで bulk 追加 — 子タスクを改行区切りで bulk 追加 (現在 空行のみで追加対象なし)'
                 : `改行区切りで bulk 追加 — 子タスクを改行区切りで bulk 追加 (現在 ${pendingTitleCount} 件、Cmd/Ctrl+Enter で追加)`
           }
+          /* iter2389: subtasks-bulk textarea の aria-label は state-dependent 3-path
+             (empty / 空行のみ / pending 件数) で SR に full context (改行区切り mental model
+             + Cmd/Ctrl+Enter shortcut + 現在件数) を渡すが browser tooltip にならず
+             sighted は hover で同 context 把握不可。visible は placeholder
+             ("例:\n仕様書を読む\nスキーマ設計\nプロトタイプ実装") + Label (空状態のみ)
+             だが state 別の hint (= 空行のみで対象なし警告 / pending 件数) は visible に
+             出ない。subtasks-bulk-add-btn iter2379 と pair で subtasks-bulk-add form の
+             input + button 全 hover disclose 完備。 */
+          title={
+            bulkText === ''
+              ? '改行区切りで bulk 追加 — 子タスクを改行区切りで bulk 追加 (Cmd/Ctrl+Enter で追加)'
+              : pendingTitleCount === 0
+                ? '改行区切りで bulk 追加 — 子タスクを改行区切りで bulk 追加 (現在 空行のみで追加対象なし)'
+                : `改行区切りで bulk 追加 — 子タスクを改行区切りで bulk 追加 (現在 ${pendingTitleCount} 件、Cmd/Ctrl+Enter で追加)`
+          }
           data-testid="subtasks-bulk-input"
         />
         <div className="flex items-center justify-between">
