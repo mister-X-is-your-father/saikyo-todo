@@ -431,6 +431,26 @@ export function GanttView({
                       : zoom
               return `${visible} — Gantt の 1 日あたりの幅 (現在: ${visible})`
             })()}
+            /* iter2361: gantt-zoom-select の aria-label は state-dependent 3-path
+               (compact / normal / wide で px/day 値含む) を SR に渡すが native <select>
+               native UI でも aria-label は browser tooltip にならず sighted は hover で
+               同 context (= 現在 zoom level + px/day 値) 把握不可。visible は dropdown
+               trigger label "zoom" + 隣 option text のみで全 zoom level の比較は disclose
+               不可。gantt-hide-done-toggle iter2325 / gantt-show-deps-toggle iter2323 と同
+               Gantt 操作 bar control title pattern を zoom-select にも展開、Gantt 操作 bar
+               3 control (zoom-select + show-deps-toggle + hide-done-toggle) 全 hover
+               disclose 完備。 */
+            title={(() => {
+              const visible =
+                zoom === 'compact'
+                  ? '狭 24px/day'
+                  : zoom === 'normal'
+                    ? '標準 40px/day'
+                    : zoom === 'wide'
+                      ? '広 64px/day'
+                      : zoom
+              return `${visible} — Gantt の 1 日あたりの幅 (現在: ${visible})`
+            })()}
           >
             <option value="compact">狭 (24px/day)</option>
             <option value="normal">標準 (40px/day)</option>
