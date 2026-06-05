@@ -757,7 +757,12 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                 variant="outline"
                 onClick={() => setTriggerText(JSON.stringify({ kind: 'manual' }, null, 2))}
                 data-testid={`wf-trigger-preset-manual-${wf.id}`}
-                title="手動 trigger 専用 (実行 button から起動)"
+                /* iter2447: 旧 title は短い description ("手動 trigger 専用 (実行 button から起動)") で
+                   aria-label "manual — trigger を manual (手動実行のみ) に切替" の visible "manual"
+                   prefix + 切替 action context と divergent。wf-node-preset iter2445 と同
+                   title-aria divergence 修正 pattern で 4 trigger preset (manual / cron /
+                   item-event / webhook) 一括 sync。 */
+                title="manual — trigger を manual (手動実行のみ) に切替"
                 // iter1117: visible "manual"/"cron"/"item-event"/"webhook" を aria-label 冒頭固定
                 // (iter1093-1116 sweep)。旧 aria-label は visible 中位置持ちで prefix-matching 不可。
                 aria-label="manual — trigger を manual (手動実行のみ) に切替"
@@ -773,7 +778,8 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                   setTriggerText(JSON.stringify({ kind: 'cron', cron: '0 9 * * *' }, null, 2))
                 }
                 data-testid={`wf-trigger-preset-cron-${wf.id}`}
-                title="cron trigger (例: 毎日 09:00)"
+                /* iter2447: 同 sweep cron path、title-aria 4 preset 一括 sync。 */
+                title="cron — trigger を cron (毎日 09:00 等) に切替"
                 aria-label="cron — trigger を cron (毎日 09:00 等) に切替"
               >
                 <span aria-hidden="true">cron</span>
@@ -789,7 +795,8 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                   )
                 }
                 data-testid={`wf-trigger-preset-item-event-${wf.id}`}
-                title="item-event (create / update / status_change / complete)"
+                /* iter2447: 同 sweep item-event path。 */
+                title="item-event — trigger を item-event (create / update / status_change / complete) に切替"
                 aria-label="item-event — trigger を item-event (create / update / status_change / complete) に切替"
               >
                 <span aria-hidden="true">item-event</span>
@@ -812,7 +819,8 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                   )
                 }
                 data-testid={`wf-trigger-preset-webhook-${wf.id}`}
-                title="webhook trigger (POST /api/workflows/webhook/<secret>)"
+                /* iter2447: 同 sweep webhook path、4 trigger preset 全 sync 完成。 */
+                title="webhook — trigger を webhook (POST /api/workflows/webhook/<secret>) に切替"
                 aria-label="webhook — trigger を webhook (POST /api/workflows/webhook/<secret>) に切替"
               >
                 <span aria-hidden="true">webhook</span>
