@@ -164,6 +164,24 @@ export function InstantiateForm({ workspaceId, template }: Props) {
                     return `変数: ${v} — Mustache 変数「${v}」 (現在 ${val.length} / 500 文字、上限近接)`
                   return `変数: ${v} — Mustache 変数「${v}」 (現在 ${val.length} / 500 文字)`
                 })()}
+                /* iter2425: instantiate Var IMEInput の aria-label IIFE は state-dependent
+                   4-path (empty / 空白のみ / 上限近接 / 通常) で SR に Mustache 変数値の
+                   substitute mental model + validation context を渡すが browser tooltip に
+                   ならず sighted は hover で同 context (= "{{${v}}} に substitute" の
+                   template 内動作) 把握不可。visible は Label "変数: {v}" のみで Mustache
+                   substitute semantic は disclose されない。override iter2423 と pair で
+                   instantiate form 内 2 input (override + var) 全 hover disclose 完備、
+                   1 fix で N (= vars 件数) 個の var input 一括効果。 */
+                title={(() => {
+                  const val = values[v] ?? ''
+                  if (val.length === 0)
+                    return `変数: ${v} — Mustache 変数「${v}」 の値 (必須、最大 500 文字、template の {{${v}}} に展開時 substitute される)`
+                  if (val.trim() === '')
+                    return `変数: ${v} — Mustache 変数「${v}」 (現在 ${val.length} / 500 文字、空白のみは不正)`
+                  if (val.length > 480)
+                    return `変数: ${v} — Mustache 変数「${v}」 (現在 ${val.length} / 500 文字、上限近接)`
+                  return `変数: ${v} — Mustache 変数「${v}」 (現在 ${val.length} / 500 文字)`
+                })()}
                 maxLength={500}
                 enterKeyHint="next"
               />
