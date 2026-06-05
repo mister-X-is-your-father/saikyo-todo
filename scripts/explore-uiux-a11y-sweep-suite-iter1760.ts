@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= KE. budget-limit-input title 3-path sweep (iter2333) =========
+  const bpKE = read(here, `${root}/src/components/workspace/budget-panel.tsx`)
+  if (!bpKE.includes('iter2333') || !bpKE.includes("'月次上限 (USD) — 空欄で無制限'")) {
+    findings.push({
+      level: 'error',
+      source: 'KE.budget-limit-input-title',
+      message: '[KE] iter2333 budget-limit-input title 3-path sync が消えている',
+    })
+  }
+
   // ========= KD. AI 分解提案 ul title sweep (iter2331) =========
   const dpKD = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
   if (
