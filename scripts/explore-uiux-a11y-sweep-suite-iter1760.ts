@@ -766,6 +766,19 @@ async function main() {
     })
   }
 
+  // ========= LJ. kr-target input title 3-path sweep (iter2373) =========
+  const gpLJ = read(here, `${root}/src/components/workspace/goals-panel.tsx`)
+  if (
+    !gpLJ.includes('iter2373') ||
+    !gpLJ.includes("'目標値 (KR を達成判定するための数値、必須、decimal 可)'")
+  ) {
+    findings.push({
+      level: 'error',
+      source: 'LJ.kr-target-input-title',
+      message: '[LJ] iter2373 kr-target input title 3-path sync が消えている',
+    })
+  }
+
   // ========= LH. proposal-title input title 4-path sweep (iter2371) =========
   const dpLH = read(here, `${root}/src/components/workspace/decompose-proposals-panel.tsx`)
   if (
