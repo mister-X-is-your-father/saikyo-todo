@@ -676,6 +676,20 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                         ? `active に戻す — Goal「${goal.title}」のステータスを更新中…`
                         : `active に戻す — Goal「${goal.title}」を active に戻す`
                     }
+                    /* iter2365: achieved 状態 goal の reactivate / archive 2 button (pair) は
+                       aria-label state-dependent 2-path (pending / idle、goal.title 含む) を SR に
+                       渡すが browser tooltip にならず sighted は hover で同 context 把握不可。
+                       visible は label のみ + goal.title は親 row で disclose されるが状態遷移
+                       (= active に戻す / archive へ) と pending state は hover 非可視。
+                       sprint-defaults cancel/save iter2363 / sprint-period cancel/save iter2351 と同
+                       pair button title pattern を goals-panel status transition button pair にも
+                       展開、goal status transition button family の achieved 状態 sub-family 完成
+                       (続く archived 状態 reactivate 単独 button は次 iter 候補)。 */
+                    title={
+                      update.isPending
+                        ? `active に戻す — Goal「${goal.title}」のステータスを更新中…`
+                        : `active に戻す — Goal「${goal.title}」を active に戻す`
+                    }
                   >
                     <span aria-hidden="true">active に戻す</span>
                   </Button>
@@ -689,6 +703,12 @@ function GoalCard({ goal, workspaceId }: { goal: Goal; workspaceId: string }) {
                     aria-busy={update.isPending || undefined}
                     data-testid={`goal-archive-${goal.id}`}
                     aria-label={
+                      update.isPending
+                        ? `アーカイブ — Goal「${goal.title}」のステータスを更新中…`
+                        : `アーカイブ — Goal「${goal.title}」をアーカイブ`
+                    }
+                    /* iter2365: archive 隣 button も同 pair title sync。 */
+                    title={
                       update.isPending
                         ? `アーカイブ — Goal「${goal.title}」のステータスを更新中…`
                         : `アーカイブ — Goal「${goal.title}」をアーカイブ`
