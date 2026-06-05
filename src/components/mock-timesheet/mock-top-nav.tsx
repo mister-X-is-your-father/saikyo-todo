@@ -68,7 +68,17 @@ export function MockTopNav({ sessionId }: { sessionId: string }) {
             の 2 回連続読み上げる redundancy。form は landmark/group descriptor として brief 名
             "ログアウト操作" に分け、button 側で詳細 aria-label を維持 (login-form の form aria-labelledby
             + button aria-label が divergent な codebase convention と整合)。 */}
-        <form action={mockLogoutAction} aria-label="ログアウト操作">
+        <form
+          action={mockLogoutAction}
+          aria-label="ログアウト操作"
+          /* iter2407: mock-top-nav の logout form の aria-label "ログアウト操作" は SR に
+             form descriptor (brief 名、redundancy 回避用) を渡すが browser tooltip にならず
+             sighted は hover で form 用途 把握不可。home page logout form iter2395 と同 form
+             landmark title sync pattern を mock-timesheet logout form にも展開、auth flow
+             form-level title family 5 element 拡張 (login + signup + mock-login + home logout +
+             mock-top-nav logout) 全 hover disclose 完備。 */
+          title="ログアウト操作"
+        >
           {/* iter1095: 旧 aria-label "mock-timesheet session をログアウト" は visible "ログアウト"
               を末尾に持つ → voice control prefix-matching で「click ログアウト」 match 不可。
               iter1093/1094 sweep convention に合わせ visible 冒頭固定。
