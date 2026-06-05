@@ -766,6 +766,16 @@ async function main() {
     })
   }
 
+  // ========= KI. assignee-picker AI agent CommandItem title sweep (iter2341) =========
+  const apKI = read(here, `${root}/src/components/workspace/assignee-picker.tsx`)
+  if (!apKI.includes('iter2341') || !apKI.includes('— AI Agent アサイン中 (クリックで解除)')) {
+    findings.push({
+      level: 'error',
+      source: 'KI.assignee-picker-agent-option-title',
+      message: '[KI] iter2341 assignee-picker AI agent option title 2-path sync が消えている',
+    })
+  }
+
   // ========= KH. tag-picker option CommandItem title sweep (iter2339) =========
   const tpKH = read(here, `${root}/src/components/workspace/tag-picker.tsx`)
   if (!tpKH.includes('iter2339') || !tpKH.includes('— タグ付与中 (クリックで解除)')) {
