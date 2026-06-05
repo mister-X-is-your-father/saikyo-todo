@@ -681,7 +681,15 @@ function WorkflowEditorDialog({ open, onOpenChange, wf, onSave }: EditorProps) {
                   variant="outline"
                   onClick={() => setGraphText(appendNodePreset(graphText, preset))}
                   data-testid={`wf-node-preset-${preset.type}-${wf.id}`}
-                  title={preset.title}
+                  /* iter2445: 旧 title={preset.title} (短い description のみ) は aria-label
+                     `+ ${preset.type} — graph に ${preset.title} の skeleton node を追加`
+                     (visible "+ {type}" prefix + 副作用 "skeleton node を追加" 含む) と
+                     divergent (visible prefix も "preset type" も "skeleton 追加" 副作用 も
+                     title から欠落)。pdca-daily-bar iter2443 / goal-decompose iter2435 と同
+                     title-aria divergence 修正 pattern で sync、visible prefix + skeleton
+                     副作用 を hover でも sighted disclose、SR/sighted hover text consistency
+                     復元、N preset 一括効果 (1 fix で NODE_PRESETS.length 個全 button)。 */
+                  title={`+ ${preset.type} — graph に ${preset.title} の skeleton node を追加`}
                   // iter1035: visible "+ ${type}" を aria-label の prefix に固定し
                   // WCAG 2.5.3 Label in Name satisfy (voice control 「click + noop」 で
                   // accessible name に literal "+ noop" substring 必要)。
