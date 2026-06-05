@@ -835,6 +835,12 @@ function KeyResultList({
           className="space-y-2"
           data-testid={`krs-${goalId}`}
           aria-label={`Key Result 一覧 — ${(list.data ?? []).length} 件`}
+          /* iter2329: KR 一覧 ul の aria-label "Key Result 一覧 — N 件" は visible に
+             counter chip が無く 件数 context が sighted hover で disclose 不可。
+             Activity 履歴 ul iter2291 / swimlane lane ul iter2305 / recovery-plan ol
+             iter2315 と同 list family title pattern を KR list にも展開、9 entity 一覧
+             ul/ol family へ拡張。 */
+          title={`Key Result 一覧 — ${(list.data ?? []).length} 件`}
         >
           {(list.data ?? []).map((kr) => {
             const p = krProgressMap.get(kr.id)
