@@ -267,6 +267,19 @@ export function BudgetPanel({ workspaceId }: Props) {
                       ? `月次上限 (USD、0 以上の数値必須、現在値「${draftLimit}」は不正)`
                       : `月次上限 (USD、現在: $${Number(draftLimit).toFixed(2)})`
                 }
+                /* iter2333: budget-limit-input の aria-label は state-dependent 3-path
+                   (empty / invalid / valid) で SR には full validation context を渡すが
+                   browser tooltip にならず sighted は hover で 空欄=無制限 / 不正値警告 /
+                   currency formatted 値 の disclose 不可。src-url iter2313 / editTitle
+                   iter2295 と同 input title-aria sync pattern を budget-limit input にも
+                   展開、AI 月次コスト上限 form の validation hint 補完。 */
+                title={
+                  draftLimit === ''
+                    ? '月次上限 (USD) — 空欄で無制限'
+                    : Number.isNaN(Number(draftLimit)) || Number(draftLimit) < 0
+                      ? `月次上限 (USD、0 以上の数値必須、現在値「${draftLimit}」は不正)`
+                      : `月次上限 (USD、現在: $${Number(draftLimit).toFixed(2)})`
+                }
                 aria-invalid={
                   (draftLimit !== '' &&
                     (Number.isNaN(Number(draftLimit)) || Number(draftLimit) < 0)) ||
