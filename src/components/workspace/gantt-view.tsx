@@ -521,7 +521,13 @@ export function GanttView({
             // iter507: pseudo で tap target を 44x44 化 (visual px-2 py-0.5 text-xs 維持、
             // gantt-summary banner の sibling chip / checkbox と垂直 align も保持)
             className="text-foreground hover:bg-muted focus-visible:ring-ring relative rounded border px-2 py-0.5 text-xs before:absolute before:-inset-3 before:content-[''] focus-visible:ring-2 focus-visible:outline-none"
-            title="今日の縦線まで横スクロール"
+            /* iter2449: 旧 title "今日の縦線まで横スクロール" は短文で aria-label
+               "今日へジャンプ — Gantt timeline を今日 (${date}) の縦線まで横スクロール"
+               (visible "今日へジャンプ" prefix + dynamic 日付 + 副作用 含む) と divergent。
+               wf-trigger-preset iter2447 / wf-node-preset iter2445 と同 title-aria
+               divergence 修正 pattern で sync、visible prefix + 動的日付 を hover でも
+               sighted disclose、SR/sighted hover text consistency 復元。 */
+            title={`今日へジャンプ — Gantt timeline を今日 (${format(new Date(), 'M月d日 (eee)')}) の縦線まで横スクロール`}
             // iter1145: 旧 aria-label "Gantt timeline を今日 (...) の縦線まで横スクロール" は
             // visible "今日へジャンプ" の "へジャンプ" 部が literal substring に含まれず
             // WCAG 2.5.3 (Label in Name) 違反 + voice control「click 今日へジャンプ」 match 不可。
