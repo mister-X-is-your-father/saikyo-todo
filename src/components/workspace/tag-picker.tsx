@@ -217,6 +217,14 @@ export function TagPicker({ workspaceId, value, onChange, disabled }: Props) {
                   // 展開。visible "{query} を作成" を明示 aria-label に冒頭 visible {query}
                   // 固定 + em-dash 区切で "を作成" descriptive 末尾保持。
                   aria-label={`${query.trim() || '新規 tag'} — 「${query.trim()}」を新規 tag として作成`}
+                  /* iter2343: tag-create-new CommandItem の aria-label は query-dependent
+                     dynamic text (visible {query} 含む) で SR には full creation context を
+                     渡すが browser tooltip にならず sighted は hover で同 context (= 何が
+                     作成されるか / 新規 tag のラベル) 即把握不可。assignee-picker user
+                     iter2335 / tag-picker option iter2339 / assignee-picker agent iter2341
+                     と同 CommandItem title pattern を tag-create-new にも展開、tag-picker
+                     内 option + create-new family 完成。 */
+                  title={`${query.trim() || '新規 tag'} — 「${query.trim()}」を新規 tag として作成`}
                 >
                   <PlusIcon className="mr-2 size-4" aria-hidden="true" />「{query.trim()}」を作成
                 </CommandItem>
